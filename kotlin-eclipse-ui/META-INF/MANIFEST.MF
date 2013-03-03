@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: kotlin-eclipse-ui
+Bundle-SymbolicName: org.jetbrains.kotlin.ui
+Bundle-Version: 0.1.0.qualifier
+Bundle-Activator: org.jetbrains.kotlin.ui.Activator
+Bundle-Vendor: JetBrains
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.jetbrains.kotlin.core;bundle-version="0.1.0"
+Bundle-ActivationPolicy: lazy
