@@ -17,19 +17,22 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
 
     IPackageFragmentRoot sourceDir;
     
-    public PackageSelectionDialog(Shell parent, //IProject project, 
-            IPackageFragmentRoot sourceDir) {
+    public PackageSelectionDialog(Shell parent, IPackageFragmentRoot sourceDir) {
         super(parent, new ILabelProvider() {
             @Override
             public void removeListener(ILabelProviderListener listener) {}
+            
             @Override
             public boolean isLabelProperty(Object element, String property) {
                 return false;
             }
+            
             @Override
             public void dispose() {}
+            
             @Override
             public void addListener(ILabelProviderListener listener) {}
+            
             @Override
             public String getText(Object element) {
                 String name = ((IPackageFragment) element).getElementName();
@@ -40,6 +43,7 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
                     return name;
                 }
             }
+            
             @Override
             public Image getImage(Object element) {
                 return null;
@@ -57,12 +61,7 @@ public class PackageSelectionDialog extends ElementListSelectionDialog {
         catch (JavaModelException jme) {
             jme.printStackTrace();
         }
-        /*Collections.sort(elements, new Comparator<IPackageFragment>() {
-            @Override
-            public int compare(IPackageFragment pf1, IPackageFragment pf2) {
-                return pf1.getElementName().compareTo(pf2.getElementName());
-            }
-        });*/
+
         setElements(elements.toArray());
         return super.open();
     }

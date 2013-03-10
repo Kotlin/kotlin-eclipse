@@ -24,6 +24,8 @@ class FileCreationOp implements IRunnableWithProgress {
     private final String contents;
     private final Shell shell;
     
+    private final String ext = ".kt";
+    
     private IFile result;
     
     IFile getResult() {
@@ -35,13 +37,17 @@ class FileCreationOp implements IRunnableWithProgress {
             boolean includePreamble, String contents, Shell shell) {
         this.sourceDir = sourceDir;
         this.packageFragment = packageFragment;
-        this.unitName = unitName;
         this.contents = contents;
         this.shell = shell;
+        if (unitName.endsWith(ext)) {
+        	this.unitName = unitName;
+        } else {
+        	this.unitName = unitName + ext; 
+        }
     }
     
     public void run(IProgressMonitor monitor) {
-        IPath path = packageFragment.getPath().append(unitName + ".kt");
+        IPath path = packageFragment.getPath().append(unitName);
         IProject project = sourceDir.getJavaProject().getProject();
         result = project.getFile(path.makeRelativeTo(project.getFullPath()));
         try {
