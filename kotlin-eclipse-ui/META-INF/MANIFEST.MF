@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-ui
-Bundle-SymbolicName: org.jetbrains.kotlin.ui
+Bundle-SymbolicName: org.jetbrains.kotlin.ui;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: org.jetbrains.kotlin.ui.Activator
 Bundle-Vendor: JetBrains
@@ -9,3 +9,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jetbrains.kotlin.core;bundle-version="0.1.0"
 Bundle-ActivationPolicy: lazy
+Import-Package: org.eclipse.core.resources,
+ org.eclipse.jdt.core,
+ org.eclipse.jdt.internal.ui.refactoring.nls,
+ org.eclipse.jdt.internal.ui.wizards,
+ org.eclipse.jdt.ui,
+ org.eclipse.jdt.ui.dialogs,
+ org.eclipse.ui.ide.undo,
+ org.eclipse.ui.wizards.newresource
