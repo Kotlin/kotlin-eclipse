@@ -210,7 +210,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 						dialog.setTitle("Package Selection");
 	                	dialog.setMessage("Select a package:");
 	                	dialog.open();
-	                	result = dialog.getResult();
+	                	result = dialog.getResult()[0];
 					} 
 					catch (JavaModelException jme) {
 						jme.printStackTrace();
@@ -283,7 +283,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
 
     private boolean unitIsNameLegal(String unitName) {
-        return unitName.matches("(\\w+)(\\.?)(\\w+)");
+        return true;
     }
     
     static String getCompilationUnitName(String name) {

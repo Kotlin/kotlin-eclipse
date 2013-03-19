@@ -3,14 +3,13 @@ package org.jetbrains.kotlin.wizard;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.io.ByteArrayInputStream;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -54,19 +53,17 @@ class FileCreationOp implements IRunnableWithProgress {
             if (!result.exists()) {
                 CreateFileOperation op = new CreateFileOperation(result, null, 
                         null, "Create Kotlin Source File");
-                try {
-                    PlatformUI.getWorkbench().getOperationSupport().getOperationHistory()
-                    .execute(op, monitor, getUIInfoAdapter(shell));
-                } 
-                catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }        
-            result.appendContents(new ByteArrayInputStream(contents.getBytes()), 
-                    false, false, monitor);
+                PlatformUI.getWorkbench().getOperationSupport().getOperationHistory()
+                .execute(op, monitor, getUIInfoAdapter(shell));
+                result.appendContents(new ByteArrayInputStream(contents.getBytes()), 
+                        false, false, monitor);
+            } else {
+            	MessageDialog.openWarning(shell, "Error", "File already exists");
+            }
+            
         }
-        catch (CoreException e) {
-            e.printStackTrace();
+        catch (Exception e) {
+        	MessageDialog.openWarning(shell, "Error", "Could not create destination file");
         }
     }
 }
