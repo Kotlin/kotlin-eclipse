@@ -210,7 +210,9 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 						dialog.setTitle("Package Selection");
 	                	dialog.setMessage("Select a package:");
 	                	dialog.open();
-	                	result = dialog.getResult()[0];
+	                	if (dialog.getResult() != null) {
+	                		result = dialog.getResult()[0];
+	                	}
 					} 
 					catch (JavaModelException jme) {
 						jme.printStackTrace();

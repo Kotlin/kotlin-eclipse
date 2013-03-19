@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.wizard;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -33,7 +34,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
             getContainer().run(true, true, op);
         } 
         catch (InvocationTargetException e) {
-            e.printStackTrace();
+            MessageDialog.openError(getShell(), "Error", e.getMessage());
             return false;
         } 
         catch (InterruptedException e) {

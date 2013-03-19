@@ -14,7 +14,7 @@
             id="org.jetbrains.kotlin.wizard"
             name="Kotlin File"
             preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
-            project="true">
+            project="false">
            <description>
               Create a new Kotlin file
            </description>

@@ -3,13 +3,16 @@ package org.jetbrains.kotlin.wizard;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -45,7 +48,7 @@ class FileCreationOp implements IRunnableWithProgress {
         }
     }
     
-    public void run(IProgressMonitor monitor) {
+    public void run(IProgressMonitor monitor) throws InvocationTargetException {
         IPath path = packageFragment.getPath().append(unitName);
         IProject project = sourceDir.getJavaProject().getProject();
         result = project.getFile(path.makeRelativeTo(project.getFullPath()));
@@ -57,13 +60,13 @@ class FileCreationOp implements IRunnableWithProgress {
                 .execute(op, monitor, getUIInfoAdapter(shell));
                 result.appendContents(new ByteArrayInputStream(contents.getBytes()), 
                         false, false, monitor);
-            } else {
-            	MessageDialog.openWarning(shell, "Error", "File already exists");
             }
-            
         }
-        catch (Exception e) {
-        	MessageDialog.openWarning(shell, "Error", "Could not create destination file");
+        catch (ExecutionException e) {
+        	throw new InvocationTargetException(e, "Could not create destination file"); 
+        }
+        catch (CoreException e) {
+        	e.printStackTrace();
         }
     }
 }
