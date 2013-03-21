@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="org.jetbrains.kotlin.eclipse"
+            name="Kotlin">
+      </category>
+      <wizard
+            category="org.jetbrains.kotlin.eclipse"
+            class="org.jetbrains.kotlin.wizard.NewUnitWizard"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            id="org.jetbrains.kotlin.wizard"
+            name="Kotlin File"
+            preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
+            project="false">
+           <description>
+              Create a new Kotlin file
+           </description>
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <newWizardShortcut
+               id="org.jetbrains.kotlin.wizard">
+         </newWizardShortcut>
+      </perspectiveExtension>
+   </extension>
+</plugin>
