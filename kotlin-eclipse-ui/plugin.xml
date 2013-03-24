@@ -38,13 +38,13 @@
       </page>
       <page
             category="kotlin-eclipse-ui.preferences"
-            class="org.jetbrains.kotlin.preferences.KotlinEditorPreferencePage"
+            class="org.jetbrains.kotlin.preferences.EditorPreferencePage"
             id="kotlin-eclipse-ui.preferences.editor"
             name="Editor">
       </page>
       <page
             category="kotlin-eclipse-ui.preferences"
-            class="org.jetbrains.kotlin.preferences.KotlinCompilerPreferencePage"
+            class="org.jetbrains.kotlin.preferences.CompilerPreferencePage"
             id="kotlin-eclipse-ui.preferences.compiler"
             name="Compiler">
       </page>
