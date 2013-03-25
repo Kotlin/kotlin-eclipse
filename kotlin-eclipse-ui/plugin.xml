@@ -29,4 +29,24 @@
          </newWizardShortcut>
       </perspectiveExtension>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.jetbrains.kotlin.preferences.KotlinPreferencePage"
+            id="kotlin-eclipse-ui.preferences"
+            name="Kotlin">
+      </page>
+      <page
+            category="kotlin-eclipse-ui.preferences"
+            class="org.jetbrains.kotlin.preferences.EditorPreferencePage"
+            id="kotlin-eclipse-ui.preferences.editor"
+            name="Editor">
+      </page>
+      <page
+            category="kotlin-eclipse-ui.preferences"
+            class="org.jetbrains.kotlin.preferences.CompilerPreferencePage"
+            id="kotlin-eclipse-ui.preferences.compiler"
+            name="Compiler">
+      </page>
+   </extension>
 </plugin>
