@@ -4,17 +4,18 @@ import org.eclipse.ui.editors.text.TextEditor;
 
 public class KotlinEditor extends TextEditor {
 
-	private ColorManager colorManager;
+    private ColorManager colorManager;
 
-	public KotlinEditor() {
-		super();
-		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new Configuration(colorManager));
-		setDocumentProvider(new DocumentProvider());
-	}
-	public void dispose() {
-		colorManager.dispose();
-		super.dispose();
-	}
+    public KotlinEditor() {
+        super();
+        colorManager = new ColorManager();
+        setSourceViewerConfiguration(new Configuration(colorManager));
+        setDocumentProvider(new DocumentProvider());
+    }
+
+    public void dispose() {
+        colorManager.dispose();
+        super.dispose();
+    }
 
 }

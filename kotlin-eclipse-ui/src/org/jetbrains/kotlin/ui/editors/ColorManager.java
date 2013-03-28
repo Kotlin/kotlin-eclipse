@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.swt.graphics.Color;
@@ -9,19 +8,20 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
 public class ColorManager {
-	protected Map<RGB, Color> fColorTable = new HashMap<>(10);
+    protected Map<RGB, Color> colorTable = new HashMap<>();
 
-	public void dispose() {
-		Iterator<Color> e = fColorTable.values().iterator();
-		while (e.hasNext())
-			 (e.next()).dispose();
-	}
-	public Color getColor(RGB rgb) {
-		Color color = (Color) fColorTable.get(rgb);
-		if (color == null) {
-			color = new Color(Display.getCurrent(), rgb);
-			fColorTable.put(rgb, color);
-		}
-		return color;
-	}
+    public void dispose() {
+        for (Color c : colorTable.values()) {
+            c.dispose();
+        }
+    }
+
+    public Color getColor(RGB rgb) {
+        Color color = colorTable.get(rgb);
+        if (color == null) {
+            color = new Color(Display.getCurrent(), rgb);
+            colorTable.put(rgb, color);
+        }
+        return color;
+    }
 }
