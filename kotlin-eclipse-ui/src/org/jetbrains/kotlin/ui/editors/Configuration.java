@@ -10,34 +10,34 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
-public class KotlinConfiguration extends SourceViewerConfiguration {
-	private KotlinDoubleClickStrategy doubleClickStrategy;
-	private KotlinScanner scanner;
-	private KotlinColorManager colorManager;
+public class Configuration extends SourceViewerConfiguration {
+	private DoubleClickStrategy doubleClickStrategy;
+	private Scanner scanner;
+	private ColorManager colorManager;
 
-	public KotlinConfiguration(KotlinColorManager colorManager) {
+	public Configuration(ColorManager colorManager) {
 		this.colorManager = colorManager;
 	}
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
 		return new String[] {
 			IDocument.DEFAULT_CONTENT_TYPE,
-			KotlinPartitionScanner.KOTLIN_COMMENT };
+			PartitionScanner.KOTLIN_COMMENT };
 	}
 	public ITextDoubleClickStrategy getDoubleClickStrategy(
 		ISourceViewer sourceViewer,
 		String contentType) {
 		if (doubleClickStrategy == null)
-			doubleClickStrategy = new KotlinDoubleClickStrategy();
+			doubleClickStrategy = new DoubleClickStrategy();
 		return doubleClickStrategy;
 	}
 
-	protected KotlinScanner getXMLScanner() {
+	protected Scanner getXMLScanner() {
 		if (scanner == null) {
-			scanner = new KotlinScanner(colorManager);
+			scanner = new Scanner(colorManager);
 			scanner.setDefaultReturnToken(
 				new Token(
 					new TextAttribute(
-						colorManager.getColor(IKotlinColorConstants.DEFAULT))));
+						colorManager.getColor(IColorConstants.DEFAULT))));
 		}
 		return scanner;
 	}
@@ -54,9 +54,9 @@ public class KotlinConfiguration extends SourceViewerConfiguration {
 		NonRuleBasedDamagerRepairer ndr =
 			new NonRuleBasedDamagerRepairer(
 				new TextAttribute(
-					colorManager.getColor(IKotlinColorConstants.COMMENT)));
-		reconciler.setDamager(ndr, KotlinPartitionScanner.KOTLIN_COMMENT);
-		reconciler.setRepairer(ndr, KotlinPartitionScanner.KOTLIN_COMMENT);
+					colorManager.getColor(IColorConstants.COMMENT)));
+		reconciler.setDamager(ndr, PartitionScanner.KOTLIN_COMMENT);
+		reconciler.setRepairer(ndr, PartitionScanner.KOTLIN_COMMENT);
 
 		return reconciler;
 	}

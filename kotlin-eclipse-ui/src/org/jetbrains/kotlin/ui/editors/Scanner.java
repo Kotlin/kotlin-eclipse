@@ -5,7 +5,7 @@ import java.util.*;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.jface.text.*;
 
-public class KotlinScanner extends RuleBasedScanner {
+public class Scanner extends RuleBasedScanner {
     // TODO: probably we need to load it from configuration file
     private static String[] kotlinKeywords = {
         "package", 
@@ -33,40 +33,28 @@ public class KotlinScanner extends RuleBasedScanner {
         "break",
         "continue"};
 
-	public KotlinScanner(KotlinColorManager manager) {
+	public Scanner(ColorManager manager) {
         IToken keyword = 
                 new Token(
-                        new TextAttribute(manager.getColor(IKotlinColorConstants.KEYWORD)));
+                        new TextAttribute(manager.getColor(IColorConstants.KEYWORD)));
         IToken string =
                 new Token(
-                        new TextAttribute(manager.getColor(IKotlinColorConstants.STRING)));
+                        new TextAttribute(manager.getColor(IColorConstants.STRING)));
 
         List<IRule> rulesList = new ArrayList<IRule>();
         
-        WordRule wr = new WordRule(new KotlinWordDetector());
+        WordRule wr = new WordRule(new WordDetector());
         for (String word : kotlinKeywords) {
             wr.addWord(word, keyword);
         }
         rulesList.add(wr);
         rulesList.add(new SingleLineRule("\"", "\"", string, '\\'));
-        rulesList.add(new WhitespaceRule(new KotlinWhitespaceDetector()));
+        rulesList.add(new WhitespaceRule(new WhitespaceDetector()));
 		
         IRule[] rules = new IRule[rulesList.size()];
 		rules = rulesList.toArray(rules);
 
 		setRules(rules);
 	}
-
-	private class KotlinWordDetector implements IWordDetector {
-        @Override
-        public boolean isWordStart(char c) {
-            return Character.isJavaIdentifierStart(c);
-        }
-
-        @Override
-        public boolean isWordPart(char c) {
-            return Character.isJavaIdentifierPart(c);
-        }
-    }
 
 }

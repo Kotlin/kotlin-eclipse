@@ -2,10 +2,10 @@ package org.jetbrains.kotlin.ui.editors;
 
 import org.eclipse.jface.text.rules.*;
 
-public class KotlinPartitionScanner extends RuleBasedPartitionScanner {
+public class PartitionScanner extends RuleBasedPartitionScanner {
 	public final static String KOTLIN_COMMENT = "__kotlin_comment";
 
-	public KotlinPartitionScanner() {
+	public PartitionScanner() {
 
 		IToken comment = new Token(KOTLIN_COMMENT);
 

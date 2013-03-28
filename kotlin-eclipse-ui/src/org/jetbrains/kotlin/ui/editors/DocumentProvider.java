@@ -6,16 +6,16 @@ import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.ui.editors.text.FileDocumentProvider;
 
-public class KotlinDocumentProvider extends FileDocumentProvider {
+public class DocumentProvider extends FileDocumentProvider {
 
 	protected IDocument createDocument(Object element) throws CoreException {
 		IDocument document = super.createDocument(element);
 		if (document != null) {
 			IDocumentPartitioner partitioner =
 				new FastPartitioner(
-					new KotlinPartitionScanner(),
+					new PartitionScanner(),
 					new String[] {
-						KotlinPartitionScanner.KOTLIN_COMMENT });
+						PartitionScanner.KOTLIN_COMMENT });
 			partitioner.connect(document);
 			document.setDocumentPartitioner(partitioner);
 		}

@@ -8,8 +8,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
-public class KotlinColorManager {
-// TODO: color manager should depend on configuration
+public class ColorManager {
 	protected Map<RGB, Color> fColorTable = new HashMap<>(10);
 
 	public void dispose() {

@@ -2,7 +2,7 @@ package org.jetbrains.kotlin.ui.editors;
 
 import org.eclipse.jface.text.*;
 
-public class KotlinDoubleClickStrategy implements ITextDoubleClickStrategy {
+public class DoubleClickStrategy implements ITextDoubleClickStrategy {
 	protected ITextViewer fText;
 
 	public void doubleClicked(ITextViewer part) {
