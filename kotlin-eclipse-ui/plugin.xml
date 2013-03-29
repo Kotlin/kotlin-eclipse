@@ -49,4 +49,15 @@
             name="Compiler">
       </page>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.jetbrains.kotlin.ui.editors.KotlinEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            extensions="kt"
+            icon="icons/sample.gif"
+            id="org.jetbrains.kotlin.ui.editors.KotlinEditor"
+            name="Kotlin Editor">
+      </editor>
+   </extension>
 </plugin>
