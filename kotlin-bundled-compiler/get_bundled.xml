@@ -1,0 +1,26 @@
+<project default="get_bundled">
+	<property name="project.name" value="kotlin-bundled-compiler" />
+	<property name="target.dir" value="lib" />
+	<property name="temp.dir" value="${target.dir}/temp" />
+	
+	<target name="get_bundled">
+		<mkdir dir="${temp.dir}" />
+
+		<!-- Get 0.5.152 compiler -->
+		<get src="http://teamcity.jetbrains.com/guestAuth/repository/download/bt345/78258:id/kotlin-compiler-0.5.162.zip" dest="${temp.dir}" />
+		<unzip src="${temp.dir}/kotlin-compiler-0.5.162.zip" dest="${target.dir}">
+			<patternset>
+				<include name="kotlinc/lib/kotlin-compiler.jar" />
+			</patternset>
+			<mapper type="merge" to="kotlin-compiler-0.5.162.jar"/>
+		</unzip>
+		
+		<!-- Also retrivive sources -->
+		<get src="http://teamcity.jetbrains.com/guestAuth/repository/download/bt345/78258:id/kotlin-compiler-sources.jar" 
+			dest="${target.dir}/kotlin-compiler-sources-0.5.162.jar" />				
+		
+		<delete dir="${temp.dir}" />
+		
+		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
+	</target>
+</project>

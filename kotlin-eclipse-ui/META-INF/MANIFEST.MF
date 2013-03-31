@@ -7,9 +7,10 @@ Bundle-Activator: org.jetbrains.kotlin.ui.Activator
 Bundle-Vendor: JetBrains
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.jetbrains.kotlin.core;bundle-version="0.1.0",
+ org.jetbrains.kotlin.core,
  org.eclipse.jface.text,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ kotlin-bundled-compiler
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.core.resources,
  org.eclipse.jdt.core,
