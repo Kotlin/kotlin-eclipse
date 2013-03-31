@@ -1,26 +1,40 @@
 <project default="get_bundled">
 	<property name="project.name" value="kotlin-bundled-compiler" />
 	<property name="target.dir" value="lib" />
-	<property name="temp.dir" value="${target.dir}/temp" />
-	
+	<property name="download.name" value="downloads" />
+	<property name="download.dir" value="${target.dir}/${download.name}" />
+	<property name="idea-sdk-url" value="http://teamcity.jetbrains.com/guestAuth/repository/download/bt410/77484:id" />
+
 	<target name="get_bundled">
-		<mkdir dir="${temp.dir}" />
+		<mkdir dir="${target.dir}" />
+		<delete includeemptydirs="true">
+			<fileset dir="${target.dir}" includes="**/*" excludes="${download.name}/*" />
+		</delete>
+
+		<mkdir dir="${download.dir}" />
 
 		<!-- Get 0.5.152 compiler -->
-		<get src="http://teamcity.jetbrains.com/guestAuth/repository/download/bt345/78258:id/kotlin-compiler-0.5.162.zip" dest="${temp.dir}" />
-		<unzip src="${temp.dir}/kotlin-compiler-0.5.162.zip" dest="${target.dir}">
+		<get src="http://teamcity.jetbrains.com/guestAuth/repository/download/bt345/78258:id/kotlin-compiler-0.5.162.zip" dest="${download.dir}" usetimestamp="true" />
+
+		<unzip src="${download.dir}/kotlin-compiler-0.5.162.zip" dest="${target.dir}">
 			<patternset>
 				<include name="kotlinc/lib/kotlin-compiler.jar" />
 			</patternset>
-			<mapper type="merge" to="kotlin-compiler-0.5.162.jar"/>
+			<mapper type="merge" to="kotlin-compiler-0.5.162.jar" />
 		</unzip>
-		
+
 		<!-- Also retrivive sources -->
-		<get src="http://teamcity.jetbrains.com/guestAuth/repository/download/bt345/78258:id/kotlin-compiler-sources.jar" 
-			dest="${target.dir}/kotlin-compiler-sources-0.5.162.jar" />				
-		
-		<delete dir="${temp.dir}" />
-		
+		<get src="http://teamcity.jetbrains.com/guestAuth/repository/download/bt345/78258:id/kotlin-compiler-sources.jar" dest="${download.dir}/kotlin-compiler-jet-sources-0.5.162.jar" usetimestamp="true" />
+
+		<!-- Get idea sources -->
+		<get src="${idea-sdk-url}/sources.zip" dest="${download.dir}/idea-sdk-sources.zip" usetimestamp="true" />
+
+		<!-- Pack souces into single archive -->
+		<zip destfile="${target.dir}/kotlin-compiler-sources-0.5.162.jar">
+			<zipfileset src="${download.dir}/kotlin-compiler-jet-sources-0.5.162.jar" />
+			<zipfileset src="${download.dir}/idea-sdk-sources.zip" />
+		</zip>
+
 		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
 	</target>
 </project>
