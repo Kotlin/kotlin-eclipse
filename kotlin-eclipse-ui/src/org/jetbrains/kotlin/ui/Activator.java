@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.ui;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jetbrains.jet.cli.js.K2JSCompiler;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -21,8 +20,6 @@ public class Activator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        
-        System.out.println(new K2JSCompiler());
     }
 
     @Override
