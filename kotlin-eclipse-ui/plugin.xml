@@ -60,4 +60,24 @@
             name="Kotlin Editor">
       </editor>
    </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="org.jetbrains.kotlin.psi.visualization.PsiVisualization"
+            id="org.jetbrains.kotlin.psi.visualization"
+            name="Psi Visualization">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinEditor.EditorContext">
+         <command
+               commandId="org.jetbrains.kotlin.psi.visualization"
+               label="View Psi Structure of current file"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
 </plugin>
