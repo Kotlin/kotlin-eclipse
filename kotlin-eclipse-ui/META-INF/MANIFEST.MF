@@ -18,5 +18,6 @@ Import-Package: org.eclipse.core.resources,
  org.eclipse.jdt.internal.ui.wizards,
  org.eclipse.jdt.ui,
  org.eclipse.jdt.ui.dialogs,
+ org.eclipse.ui,
  org.eclipse.ui.ide.undo,
  org.eclipse.ui.wizards.newresource
