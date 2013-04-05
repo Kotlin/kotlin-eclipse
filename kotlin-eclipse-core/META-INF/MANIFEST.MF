@@ -5,5 +5,8 @@ Bundle-SymbolicName: org.jetbrains.kotlin.core
 Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: org.jetbrains.kotlin.core.Activator
 Bundle-Vendor: JetBrains
-Require-Bundle: org.eclipse.core.runtime
+Require-Bundle: org.eclipse.core.runtime,
+ kotlin-bundled-compiler;bundle-version="0.1.0"
 Bundle-ActivationPolicy: lazy
+Import-Package: org.jetbrains.jet.plugin
+Export-Package: org.jetbrains.kotlin.parser
