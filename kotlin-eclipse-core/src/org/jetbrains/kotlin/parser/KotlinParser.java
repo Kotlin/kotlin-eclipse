@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.parser;
 
 import java.io.File;
 
+import org.eclipse.core.resources.IFile;
 import org.jetbrains.jet.CompilerModeProvider;
 import org.jetbrains.jet.OperationModeProvider;
 import org.jetbrains.jet.lang.parsing.JetParser;
@@ -52,6 +53,11 @@ public class KotlinParser {
     
     public KotlinParser(File file) {
         this.file = file;
+        this.tree = null;
+    }
+    
+    public KotlinParser(IFile iFile) {
+        this.file = new File(iFile.getRawLocation().toOSString());
         this.tree = null;
     }
     
