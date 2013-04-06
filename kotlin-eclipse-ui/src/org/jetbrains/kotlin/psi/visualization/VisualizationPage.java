@@ -21,8 +21,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jetbrains.kotlin.parser.KotlinParser;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.lang.ASTNode;
+import com.intellij.openapi.util.TextRange;
 
 public final class VisualizationPage extends Dialog {
 
@@ -65,16 +67,22 @@ public final class VisualizationPage extends Dialog {
         psiTreeViewer.setLabelProvider(new LabelProvider());
         
         KotlinParser parser = new KotlinParser(file);
-        psiTreeViewer.setInput(parser.parse());
+        ASTNode parsedAst = parser.parse();
+        psiTreeViewer.setInput(parsedAst);
         
-        psiTreeViewer.addDoubleClickListener(new IDoubleClickListener() {
-            
+        final String parsedText = parsedAst.getText();
+        
+        psiTreeViewer.addDoubleClickListener(new IDoubleClickListener() {            
             @Override
             public void doubleClick(DoubleClickEvent event) {
                 IStructuredSelection thisSelection = (IStructuredSelection) event.getSelection();
                 ASTNode selectedNode = (ASTNode) thisSelection.getFirstElement();
-                programText.setSelection(selectedNode.getTextRange().getStartOffset(), 
-                        selectedNode.getTextRange().getEndOffset());
+                TextRange selectedNodeRange = selectedNode.getTextRange();
+                
+                int start = LineEndUtil.convertLfToOsOffset(parsedText, selectedNodeRange.getStartOffset());
+                int end = LineEndUtil.convertLfToOsOffset(parsedText, selectedNodeRange.getEndOffset());
+                
+                programText.setSelection(start, end);
                 programText.showSelection();
             }
         });
