@@ -63,7 +63,15 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
         setPageComplete(false);
     }
-
+    
+    public IProject getProject() {
+        if (sourceDir != null) {
+            return sourceDir.getJavaProject().getProject();
+        } else {
+            return null;
+        }
+    }
+    
     private void createControls(Composite composite) {
         createFolderField(composite);
         createPackageField(composite);

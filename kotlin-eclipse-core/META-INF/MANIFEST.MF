@@ -1,12 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-core
-Bundle-SymbolicName: org.jetbrains.kotlin.core
+Bundle-SymbolicName: org.jetbrains.kotlin.core;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: org.jetbrains.kotlin.core.Activator
 Bundle-Vendor: JetBrains
 Require-Bundle: org.eclipse.core.runtime,
  kotlin-bundled-compiler;bundle-version="0.1.0"
 Bundle-ActivationPolicy: lazy
-Import-Package: org.jetbrains.jet.plugin
-Export-Package: org.jetbrains.kotlin.parser
+Import-Package: org.eclipse.core.resources,
+ org.jetbrains.jet.plugin
+Export-Package: org.jetbrains.kotlin.model,
+ org.jetbrains.kotlin.parser
