@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.builder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +26,9 @@ public class KotlinManager {
             case IResourceDelta.ADDED:
                 List<IFile> iFiles = projectFiles.get(project);
                 if (iFiles == null) {
-                    projectFiles.put(project, new ArrayList<IFile>(Arrays.asList(file)));
+                    projectFiles.put(project, new ArrayList<IFile>());
                 }
+                projectFiles.get(project).add(file);
                 psiFiles.put(file, new KotlinParser(file).parse());
                 break;
                 
@@ -46,6 +46,24 @@ public class KotlinManager {
     
     public static void updateProjectPsiSources(IResource resource, int flag) {
         updateProjectPsiSources(resource.getProject(), resource.getProject().getFile(resource.getProjectRelativePath()), flag);
+    }
+    
+    public static ArrayList<ASTNode> getAllPsiFiles() {
+        return new ArrayList<ASTNode>(psiFiles.values());
+    }
+    
+    public static ArrayList<ASTNode> getPsiFiles(IProject project) {
+        List<IFile> filesByProject = projectFiles.get(project);
+        if (filesByProject == null) {
+            return null;
+        }
+        
+        ArrayList<ASTNode> psiFilesByProject = new ArrayList<>();
+        for (IFile file : filesByProject) {
+            psiFilesByProject.add(psiFiles.get(file));
+        }
+        
+        return psiFilesByProject;
     }
     
     public static boolean isCompatibleResource(IResource resource) {
