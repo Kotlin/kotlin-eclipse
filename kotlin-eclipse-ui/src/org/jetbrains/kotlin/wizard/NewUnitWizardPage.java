@@ -4,7 +4,9 @@ import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -27,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.SelectionDialog;
+import org.jetbrains.kotlin.model.KotlinNature;
 
 public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
@@ -64,6 +67,28 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         setPageComplete(false);
     }
 
+    void addNature() throws CoreException {
+        IPackageFragment pack = getPackageFragment();
+        if (pack != null) {
+            IProject project = pack.getJavaProject().getProject();
+            if (!KotlinNature.hasKotlinNature(project)) {
+                // add kotlin nature
+                final IProjectDescription description = project.getDescription();
+                final String[] ids = description.getNatureIds();
+                final String[] newIds = new String[ids == null ? 1 : ids.length + 1];
+                if (ids != null) {
+                    for (int i = 0; i < newIds.length-1; i++) {
+                        newIds[i] = ids[i];
+                    }
+                    newIds[newIds.length-1] = KotlinNature.KOTLIN_NATURE;
+                }
+                
+                description.setNatureIds(newIds);
+                project.setDescription(description, null);
+            }
+        }
+    }
+    
     private void createControls(Composite composite) {
         createFolderField(composite);
         createPackageField(composite);
