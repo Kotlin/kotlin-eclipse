@@ -80,4 +80,13 @@
          </command>
       </menuContribution>
    </extension>
+   <extension
+         id="kotlinNature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.jetbrains.kotlin.model.KotlinNature">
+         </run>
+      </runtime>
+   </extension>
 </plugin>

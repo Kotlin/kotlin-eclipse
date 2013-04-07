@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.wizard;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -36,6 +37,11 @@ public class NewUnitWizard extends Wizard implements INewWizard {
             return false;
         } catch (InterruptedException e) {
             return false;
+        }
+        try {
+            page.addNature();
+        } catch (CoreException e) {
+            return true;
         }
         BasicNewResourceWizard.selectAndReveal(op.getResult(), workbench.getActiveWorkbenchWindow());
 
