@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.parser;
 
 import java.io.File;
 
+import org.eclipse.core.resources.IFile;
 import org.jetbrains.jet.CompilerModeProvider;
 import org.jetbrains.jet.OperationModeProvider;
 import org.jetbrains.jet.lang.parsing.JetParser;
@@ -32,11 +33,12 @@ public class KotlinParser {
     
     private final File file;
     
-    private final static JavaCoreApplicationEnvironment applicationEnvironment;
-    private final static Project project;
+    private final JavaCoreApplicationEnvironment applicationEnvironment;
+    private final Project project;
     private ASTNode tree;
     
-    static {
+    public KotlinParser(File file) {
+        
         applicationEnvironment = new JavaCoreApplicationEnvironment(DISPOSABLE);
         
         applicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
@@ -48,11 +50,17 @@ public class KotlinParser {
         JavaCoreProjectEnvironment projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
         
         project = projectEnvironment.getProject();
-    }
-    
-    public KotlinParser(File file) {
+        
         this.file = file;
         this.tree = null;
+    }
+    
+    public KotlinParser(IFile iFile) {
+        this(new File(iFile.getRawLocation().toOSString()));
+    }
+    
+    public static ASTNode parse(IFile iFile) {
+        return new KotlinParser(iFile).parse();
     }
     
     public ASTNode parse() {
