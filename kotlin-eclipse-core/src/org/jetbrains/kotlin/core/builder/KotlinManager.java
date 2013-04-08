@@ -11,6 +11,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.parser.KotlinParser;
 
@@ -77,10 +81,27 @@ public class KotlinManager {
         return psiFilesByProject;
     }
     
-    public static boolean isCompatibleResource(IResource resource) {
-        return resource.getType() == IResource.FILE && 
-                resource.getFileExtension().equals(JetFileType.INSTANCE.getDefaultExtension()) &&
-                !resource.getFullPath().segment(1).contentEquals(binFolder);
+    public static boolean isCompatibleResource(IResource resource) throws JavaModelException {
+        if (!JetFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
+            return false;
+        }
+
+        IJavaProject javaProject = JavaCore.create(resource.getProject());
+        if (javaProject == null) {
+            return false;
+        }
+        
+        IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
+        String resourceRoot = resource.getFullPath().segment(1);
+        for (IClasspathEntry classpathEntry : classpathEntries) {
+            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                if (resourceRoot.equals(classpathEntry.getPath().segment(1))) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
     
     private static boolean containsPsiFile(IFile file) {
