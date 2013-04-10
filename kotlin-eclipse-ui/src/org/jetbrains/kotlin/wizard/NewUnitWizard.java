@@ -2,12 +2,14 @@ package org.jetbrains.kotlin.wizard;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
+import org.jetbrains.kotlin.model.KotlinNature;
 
 public class NewUnitWizard extends Wizard implements INewWizard {
 
@@ -37,6 +39,13 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         } catch (InterruptedException e) {
             return false;
         }
+        
+        try {
+            KotlinNature.addNature(page.getProject());
+        } catch (CoreException e) {
+            throw new RuntimeException("Error while adding Kotlin nature to project.");
+        }
+        
         BasicNewResourceWizard.selectAndReveal(op.getResult(), workbench.getActiveWorkbenchWindow());
 
         return true;
