@@ -10,5 +10,11 @@
          </run>
       </runtime>
    </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.jetbrains.kotlin.core.utils.KotlinFilesCollector">
+      </startup>
+   </extension>
 
 </plugin>
