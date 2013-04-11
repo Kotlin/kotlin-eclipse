@@ -60,6 +60,10 @@ public class KotlinParser {
         this(new File(iFile.getRawLocation().toOSString()));
     }
     
+    public static ASTNode parse(IFile iFile) {
+        return new KotlinParser(iFile).parse();
+    }
+    
     public ASTNode parse() {
         JetParser jetParser = new JetParser(project);
         tree = jetParser.parse(null, createPsiBuilder(getNode(file)), getPsiFile(file));
