@@ -42,11 +42,11 @@ public class KotlinAnalyzer {
         project = kotlinEnvironment.getProject();
     }
     
-    public static BindingContext Analyze() {
-        return new KotlinAnalyzer().AnalyzeAllProjects();
+    public static BindingContext analyze() {
+        return new KotlinAnalyzer().analyzeAllProjects();
     }
     
-    public BindingContext AnalyzeAllProjects() {
+    public BindingContext analyzeAllProjects() {
         KotlinBuiltIns.initialize(project);
         
         BindingTraceContext context = new BindingTraceContext();

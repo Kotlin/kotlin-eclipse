@@ -20,7 +20,7 @@ public class ProjectChangeListener implements IResourceDeltaVisitor {
         if (KotlinManager.isCompatibleResource(resource)) {
             KotlinManager.updateProjectPsiSources(resource, delta.getKind());
             
-            BindingContext bindingContext = KotlinAnalyzer.Analyze();
+            BindingContext bindingContext = KotlinAnalyzer.analyze();
             List<Diagnostic> diagnostics = new ArrayList<Diagnostic>(bindingContext.getDiagnostics());
             for (Diagnostic diagnostic : diagnostics) {
                 System.out.println("Error: " + (diagnostic.getSeverity() == Severity.ERROR) + 
