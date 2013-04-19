@@ -55,7 +55,7 @@
             class="org.jetbrains.kotlin.ui.editors.KotlinEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             extensions="kt"
-            icon="icons/sample.gif"
+            icon="icons/kotlin-file.gif"
             id="org.jetbrains.kotlin.ui.editors.KotlinEditor"
             name="Kotlin Editor">
       </editor>
