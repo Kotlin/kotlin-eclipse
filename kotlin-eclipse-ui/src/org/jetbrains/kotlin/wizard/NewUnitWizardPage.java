@@ -4,8 +4,11 @@ import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -13,6 +16,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -34,16 +38,18 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private String packageName = "";
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
+    private final IStructuredSelection selection;
 
     private final String illegalUnitNameMessage = "Please enter a legal compilation unit name.";
     private final String selectSourceFolderMessage = "Please select a source folder";
     private final String illegalPackageNameMessage = "Please enter a legal package name";
     private final String unitExistsMessage = "File already exists";
 
-    protected NewUnitWizardPage(String title, String description, String defaultUnitName) {
+    protected NewUnitWizardPage(String title, String description, String defaultUnitName, IStructuredSelection selection) {
         super(title);
         super.setTitle(title);
         super.setDescription(description);
+        this.selection = selection;
         unitName = defaultUnitName;
     }
 
@@ -73,8 +79,11 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
     
     private void createControls(Composite composite) {
-        createFolderField(composite);
-        createPackageField(composite);
+        Text folder = createFolderField(composite);
+        folder.setText(getFolderFromSelection());
+        
+        Text pkg = createPackageField(composite);
+        pkg.setText(getPackageFromSelection());
 
         Label separator = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
         GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -240,6 +249,67 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         });
 
         return pkg;
+    }
+    
+    private String getFolderFromSelection() {
+        String destFolder = "";
+        
+        if (selection.isEmpty()) {
+            return destFolder;
+        }
+        
+        Object selectedObject = selection.getFirstElement();
+        IJavaProject javaProject;
+        if (selectedObject instanceof IJavaElement) {
+            javaProject = ((IJavaElement) selectedObject).getJavaProject();
+        } else if (selectedObject instanceof IResource) {
+            javaProject = JavaCore.create(((IResource) selectedObject).getProject());
+        } else {
+            return destFolder;
+        }
+        
+        destFolder = javaProject.getPath().toOSString();
+        
+        IClasspathEntry[] classpathEntries = null;
+        try {
+            classpathEntries = javaProject.getRawClasspath();
+        } catch (JavaModelException e) {
+            e.printStackTrace();
+            
+            return destFolder;
+        }
+        
+        for (IClasspathEntry classpathEntry : classpathEntries) {
+            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                destFolder += IPath.SEPARATOR + classpathEntry.getPath().segment(1);
+                break;
+            }
+        }
+        
+        return destFolder;
+    }
+    
+    private String getPackageFromSelection() {
+        String destPackage =  "";
+        
+        if (selection.isEmpty()) {
+            return destPackage;
+        }
+        
+        Object selectedObject = selection.getFirstElement();
+        if (selectedObject instanceof IPackageFragment) {
+            destPackage = ((IPackageFragment) selectedObject).getElementName();
+        } else if (selectedObject instanceof IResource) {
+            IResource resource = (IResource) selectedObject;
+            try {
+                destPackage = JavaCore.create(resource.getProject()).
+                        findPackageFragment(resource.getFullPath().makeAbsolute().removeLastSegments(1)).getElementName();
+            } catch (JavaModelException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        return destPackage;
     }
 
     private void setFormErrorMessage() {
