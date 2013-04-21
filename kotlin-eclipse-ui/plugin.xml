@@ -11,6 +11,8 @@
             category="org.jetbrains.kotlin.eclipse"
             class="org.jetbrains.kotlin.wizard.NewUnitWizard"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            hasPages="false"
+            icon="icons/kotlin-file.gif"
             id="org.jetbrains.kotlin.wizard"
             name="Kotlin File"
             preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"

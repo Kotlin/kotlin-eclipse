@@ -24,6 +24,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
+        this.setWindowTitle(title);
     }
 
     @Override
