@@ -48,6 +48,12 @@
             id="kotlin-eclipse-ui.preferences.compiler"
             name="Compiler">
       </page>
+      <page
+            category="kotlin-eclipse-ui.preferences.editor"
+            class="org.jetbrains.kotlin.preferences.CompletionPreferencePage"
+            id="kotlin-eclipse-ui.preferences.codeassist.completion.preferences"
+            name="Content Assist">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
