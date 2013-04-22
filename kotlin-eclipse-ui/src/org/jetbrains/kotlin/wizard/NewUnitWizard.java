@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.model.KotlinNature;
 public class NewUnitWizard extends Wizard implements INewWizard {
 
     private IWorkbench workbench;
+    private IStructuredSelection selection;
     private NewUnitWizardPage page;
 
     private final String title = "Kotlin Source File";
@@ -24,6 +25,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
+        this.selection = selection;
         this.setWindowTitle(title);
     }
 
@@ -57,7 +59,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         super.addPages();
 
         if (page == null) {
-            page = new NewUnitWizardPage(title, description, defaultUnitName);
+            page = new NewUnitWizardPage(title, description, defaultUnitName, selection);
         }
         addPage(page);
     }

@@ -2,10 +2,15 @@ package org.jetbrains.kotlin.wizard;
 
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 
+import java.io.File;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -13,6 +18,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -34,16 +40,18 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     private String packageName = "";
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
+    private final IStructuredSelection selection;
 
     private final String illegalUnitNameMessage = "Please enter a legal compilation unit name.";
     private final String selectSourceFolderMessage = "Please select a source folder";
     private final String illegalPackageNameMessage = "Please enter a legal package name";
     private final String unitExistsMessage = "File already exists";
 
-    protected NewUnitWizardPage(String title, String description, String defaultUnitName) {
+    protected NewUnitWizardPage(String title, String description, String defaultUnitName, IStructuredSelection selection) {
         super(title);
         super.setTitle(title);
         super.setDescription(description);
+        this.selection = selection;
         unitName = defaultUnitName;
     }
 
@@ -73,8 +81,11 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
     
     private void createControls(Composite composite) {
-        createFolderField(composite);
-        createPackageField(composite);
+        Text folder = createFolderField(composite);
+        folder.setText(getFolderFromSelection());
+        
+        Text pkg = createPackageField(composite);
+        pkg.setText(getPackageFromSelection());
 
         Label separator = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
         GridData sgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -85,7 +96,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         name.forceFocus();
     }
 
-    Text createNameField(Composite composite) {
+    private Text createNameField(Composite composite) {
         Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
         nameLabel.setText("Name: ");
         GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
@@ -240,6 +251,106 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         });
 
         return pkg;
+    }
+    
+    private String getFolderFromSelection() {
+        String defaultFolder = "";
+        
+        if (selection.isEmpty()) {
+            return defaultFolder;
+        }
+        
+        Object selectedObject = selection.getFirstElement();
+        
+        if (selectedObject instanceof IJavaElement) {
+            IJavaElement selectedJavaElement = (IJavaElement) selectedObject;
+            switch (selectedJavaElement.getElementType()) {
+                case IJavaElement.JAVA_PROJECT:
+                    return getDefaultSrcByProject((IJavaProject) selectedJavaElement);
+                    
+                case IJavaElement.PACKAGE_FRAGMENT_ROOT:
+                    return selectedJavaElement.getPath().toOSString();
+                    
+                case IJavaElement.PACKAGE_FRAGMENT: case IJavaElement.COMPILATION_UNIT:
+                    return selectedJavaElement.getPath().uptoSegment(2).toOSString();
+            }
+        } else if (selectedObject instanceof IResource) {
+            IResource selectedResource = (IResource) selectedObject;
+            switch (selectedResource.getType()) {
+                case IResource.FOLDER:
+                    return getDefaultSrcByProject(JavaCore.create(selectedResource.getProject()));
+                    
+                case IResource.FILE:
+                    return selectedResource.getFullPath().uptoSegment(2).toOSString();
+            }
+        } 
+        
+        return defaultFolder;
+    }
+    
+    private String getPackageFromSelection() {
+        String defaultPackage = "";
+        
+        if (selection.isEmpty()) {
+            return defaultPackage;
+        }
+        
+        Object selectedObject = selection.getFirstElement();
+        
+        if (selectedObject instanceof IJavaElement) {
+            IJavaElement selectedJavaElement = (IJavaElement) selectedObject;
+            switch (selectedJavaElement.getElementType()) {
+                case IJavaElement.PACKAGE_FRAGMENT:  
+                    return selectedJavaElement.getElementName();
+                    
+                case IJavaElement.COMPILATION_UNIT:
+                    try {
+                        return selectedJavaElement.getJavaProject().
+                                findPackageFragment(selectedJavaElement.getPath().makeAbsolute().removeLastSegments(1)).
+                                getElementName();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+            }
+        } else if (selectedObject instanceof IResource) {
+            IResource selectedResource = (IResource) selectedObject;
+            switch (selectedResource.getType()) {
+                case IResource.FILE:
+                    try {
+                        return JavaCore.create(selectedResource.getProject()).
+                                findPackageFragment(selectedResource.getFullPath().makeAbsolute().removeLastSegments(1)).
+                                getElementName();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+            }
+        } 
+        
+        return defaultPackage;
+    }
+    
+    private String getDefaultSrcByProject(IJavaProject javaProject) {
+        String destFolder = javaProject.getPath().toOSString();
+        
+        IClasspathEntry[] classpathEntries = null;
+        try {
+            classpathEntries = javaProject.getRawClasspath();
+        } catch (JavaModelException e) {
+            e.printStackTrace();
+            
+            return destFolder;
+        }
+        
+        for (IClasspathEntry classpathEntry : classpathEntries) {
+            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                destFolder += File.separatorChar + classpathEntry.getPath().segment(1);
+                break;
+            }
+        }
+        
+        return destFolder;
     }
 
     private void setFormErrorMessage() {
