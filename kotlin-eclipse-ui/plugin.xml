@@ -80,4 +80,31 @@
          </command>
       </menuContribution>
    </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            category="org.eclipse.ui.externaltools.builder"
+            class="org.jetbrains.kotlin.ui.launchers.LaunchShortcut"
+            icon="icons/sample.gif"
+            id="org.jetbrains.kotlin.ui.launchers.launchShortcut"
+            label="KotlinProject"
+            modes="run">
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.jetbrains.kotlin.launch.launchConfigurationType"
+            icon="icons/sample.gif"
+            id="org.jetbrains.kotlin.ui.launchers.launchConfigurationTypeImageRun">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.jetbrains.kotlin.ui.launchers.LaunchConfigurationTabGroup"
+            id="org.jetbrains.kotlin.launch.launchConfigurationTabGroup"
+            type="org.jetbrains.kotlin.launch.launchConfigurationType">
+      </launchConfigurationTabGroup>
+   </extension>
 </plugin>
