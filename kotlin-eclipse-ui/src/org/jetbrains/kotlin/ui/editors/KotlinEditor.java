@@ -44,5 +44,4 @@ public class KotlinEditor extends TextEditor {
         
         super.dispose();
     }
-
 }
