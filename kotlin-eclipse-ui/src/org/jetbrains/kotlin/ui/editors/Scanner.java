@@ -1,9 +1,16 @@
 package org.jetbrains.kotlin.ui.editors;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.eclipse.jface.text.rules.*;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.rules.IRule;
+import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.text.rules.RuleBasedScanner;
+import org.eclipse.jface.text.rules.SingleLineRule;
+import org.eclipse.jface.text.rules.Token;
+import org.eclipse.jface.text.rules.WhitespaceRule;
+import org.eclipse.jface.text.rules.WordRule;
 
 public class Scanner extends RuleBasedScanner {
 
@@ -56,5 +63,8 @@ public class Scanner extends RuleBasedScanner {
 
         setRules(rules);
     }
-
+    
+    public static final String[] getAllKeywords() {
+        return kotlinKeywords;
+    }
 }
