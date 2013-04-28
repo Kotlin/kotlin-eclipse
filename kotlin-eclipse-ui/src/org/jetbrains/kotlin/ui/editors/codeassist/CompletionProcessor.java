@@ -13,7 +13,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.jetbrains.kotlin.ui.editors.Scanner;
+import org.jetbrains.kotlin.ui.editors.KeywordManager;
 
 public class CompletionProcessor implements IContentAssistProcessor, ICompletionListener {
      
@@ -71,7 +71,7 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         if (!identifierPart.isEmpty()) {
             if (identOffset == 0 || Character.isWhitespace(viewer.getDocument().get().charAt(identOffset - 1))) {
-                for (String keyword : Scanner.getAllKeywords()) {
+                for (String keyword : KeywordManager.getAllKeywords()) {
                     if (keyword.startsWith(identifierPart)) {
                         proposals.add(new CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length()));
                     }

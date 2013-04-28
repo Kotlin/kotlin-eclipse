@@ -14,44 +14,14 @@ import org.eclipse.jface.text.rules.WordRule;
 
 public class Scanner extends RuleBasedScanner {
 
-    private static final String[] kotlinKeywords = { 
-        "package", 
-        "as", 
-        "type", 
-        "class", 
-        "this", 
-        "super", 
-        "val", 
-        "var",
-        "fun", 
-        "for", 
-        "null", 
-        "true", 
-        "false", 
-        "is", 
-        "in", 
-        "throw", 
-        "return", 
-        "break", 
-        "continue", 
-        "object", 
-        "if",
-        "try", 
-        "else", 
-        "while", 
-        "do", 
-        "when", 
-        "trait", 
-        "This" };
-
-    public Scanner(ColorManager manager) {
+        public Scanner(ColorManager manager) {
         IToken keyword = new Token(new TextAttribute(manager.getColor(IColorConstants.KEYWORD)));
         IToken string = new Token(new TextAttribute(manager.getColor(IColorConstants.STRING)));
 
         List<IRule> rulesList = new ArrayList<IRule>();
 
         WordRule wr = new WordRule(new WordDetector());
-        for (String word : kotlinKeywords) {
+        for (String word : KeywordManager.getAllKeywords()) {
             wr.addWord(word, keyword);
         }
         rulesList.add(wr);
@@ -64,7 +34,4 @@ public class Scanner extends RuleBasedScanner {
         setRules(rules);
     }
     
-    public static final String[] getAllKeywords() {
-        return kotlinKeywords;
-    }
 }
