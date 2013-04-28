@@ -2,8 +2,6 @@ package org.jetbrains.kotlin.wizard;
 
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 
-import java.io.File;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -269,10 +267,10 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     return getDefaultSrcByProject((IJavaProject) selectedJavaElement);
                     
                 case IJavaElement.PACKAGE_FRAGMENT_ROOT:
-                    return selectedJavaElement.getPath().toOSString();
+                    return selectedJavaElement.getPath().toPortableString();
                     
                 case IJavaElement.PACKAGE_FRAGMENT: case IJavaElement.COMPILATION_UNIT:
-                    return selectedJavaElement.getPath().uptoSegment(2).toOSString();
+                    return selectedJavaElement.getPath().uptoSegment(2).toPortableString();
             }
         } else if (selectedObject instanceof IResource) {
             IResource selectedResource = (IResource) selectedObject;
@@ -281,7 +279,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     return getDefaultSrcByProject(JavaCore.create(selectedResource.getProject()));
                     
                 case IResource.FILE:
-                    return selectedResource.getFullPath().uptoSegment(2).toOSString();
+                    return selectedResource.getFullPath().uptoSegment(2).toPortableString();
             }
         } 
         
@@ -332,7 +330,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
     
     private String getDefaultSrcByProject(IJavaProject javaProject) {
-        String destFolder = javaProject.getPath().toOSString();
+        String destFolder = javaProject.getPath().toPortableString();
         
         IClasspathEntry[] classpathEntries = null;
         try {
@@ -345,7 +343,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         
         for (IClasspathEntry classpathEntry : classpathEntries) {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                destFolder += File.separatorChar + classpathEntry.getPath().segment(1);
+                destFolder += IPath.SEPARATOR + classpathEntry.getPath().segment(1);
                 break;
             }
         }
