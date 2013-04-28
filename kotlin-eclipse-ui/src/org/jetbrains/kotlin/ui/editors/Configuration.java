@@ -3,17 +3,20 @@ package org.jetbrains.kotlin.ui.editors;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 
 public class Configuration extends SourceViewerConfiguration {
     private DoubleClickStrategy doubleClickStrategy;
     private Scanner scanner;
-    private ColorManager colorManager;
+    private final ColorManager colorManager;
 
     public Configuration(ColorManager colorManager) {
         this.colorManager = colorManager;
@@ -57,4 +60,15 @@ public class Configuration extends SourceViewerConfiguration {
         return reconciler;
     }
 
+    @Override
+    public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
+         ContentAssistant assistant= new ContentAssistant();
+         assistant.setContentAssistProcessor(new CompletionProcessor(), IDocument.DEFAULT_CONTENT_TYPE);
+         assistant.enableAutoActivation(true);
+         assistant.setAutoActivationDelay(500);
+         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+
+        return assistant;
+    }
 }
