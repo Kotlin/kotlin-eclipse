@@ -4,7 +4,6 @@ Bundle-Name: Bundled Kotlin Compiler 5.1
 Bundle-SymbolicName: kotlin-bundled-compiler;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Vendor: JetBrains
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/kotlin-compiler-0.5.162.jar,
  .
@@ -100,3 +99,4 @@ Export-Package: com.intellij.core,
  org.jetbrains.jet.util.lazy,
  org.jetbrains.jet.util.slicedmap,
  org.jetbrains.jet.utils
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
