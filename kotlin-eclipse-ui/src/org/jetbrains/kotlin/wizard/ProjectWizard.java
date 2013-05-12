@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.wizard;
 
 import java.net.URI;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -31,13 +32,16 @@ public class ProjectWizard extends Wizard implements INewWizard, IExecutableExte
         URI location = null;
         if (!projectPropertiesPage.useDefaults()) {
             location = projectPropertiesPage.getLocationURI();
-        } 
-     
-        KotlinProjectSupport.createProject(name, location);
-
+        }
+        IProject project;
+        try {
+            project = KotlinProjectSupport.createProject(name, location);
+        } catch (CoreException e) {
+            project = null;
+            e.printStackTrace();
+        }
         BasicNewProjectResourceWizard.updatePerspective(configurationElement);
-        
-        return true;
+        return project != null && project.isAccessible();
     }
 
     @Override
