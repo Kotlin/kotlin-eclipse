@@ -21,6 +21,15 @@
               Create a new Kotlin file
            </description>
       </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.eclipse"
+            class="org.jetbrains.kotlin.wizard.ProjectWizard"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            icon="icons/kotlin-file.gif"
+            id="kotlin-eclipse-ui.new.kotlin.project.wizard"
+            name="Kotlin Project"
+            project="true">
+      </wizard>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
