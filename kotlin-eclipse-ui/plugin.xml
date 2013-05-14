@@ -113,6 +113,22 @@
             verticalRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.ruler"
             verticalRulerPreferenceValue="true">
       </specification>
+      <specification
+            annotationType="org.jetbrains.kotlin.ui.annotation.warning"
+            colorPreferenceKey="org.jetbrains.kotlin.ui.annotation.warning.color"
+            colorPreferenceValue="244,200,45"
+            highlightPreferenceKey="org.jetbrains.kotlin.ui.annotation.warning.highlight"
+            label="Kotlin Compilation Warning"
+            overviewRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.warning.overview"
+            overviewRulerPreferenceValue="true"
+            symbolicIcon="warning"
+            textPreferenceKey="org.jetbrains.kotlin.ui.annotation.warning.text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="org.jetbrains.kotlin.ui.annotation.warning.textstyle"
+            textStylePreferenceValue="PROBLEM_UNDERLINE"
+            verticalRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.warning.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
    </extension>
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
