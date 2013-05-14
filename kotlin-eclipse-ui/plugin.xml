@@ -138,5 +138,11 @@
             name="org.jetbrains.kotlin.ui.annotation.error"
             super="org.eclipse.ui.workbench.texteditor.error">
       </type>
+      <type
+            markerSeverity="2"
+            markerType="org.jetbrains.kotlin.ui.marker"
+            name="org.jetbrains.kotlin.ui.annotation.warning"
+            super="org.eclipse.ui.workbench.texteditor.warning">
+      </type>
    </extension>
 </plugin>
