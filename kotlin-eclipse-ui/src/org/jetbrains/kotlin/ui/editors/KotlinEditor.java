@@ -52,6 +52,7 @@ public class KotlinEditor extends TextEditor {
         if (annotationUpdater != null) {
             getWorkspace().removeResourceChangeListener(annotationUpdater);
         }
+        AnalyzerScheduler.excludeFile(ResourceUtil.getFile(this.getEditorInput()));
         
         colorManager.dispose();
         ISourceViewer sourceViewer = getSourceViewer();

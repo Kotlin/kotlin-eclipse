@@ -43,6 +43,13 @@ public class AnalyzerScheduler extends Job {
             editorMap.put(file, editor);
         }
     }
+    
+    public static void excludeFile(IFile file) {
+        synchronized(IFile.class) {
+            fileSet.remove(file);
+            editorMap.remove(file);
+        }
+    }
 
     @Override
     protected void canceling() {
