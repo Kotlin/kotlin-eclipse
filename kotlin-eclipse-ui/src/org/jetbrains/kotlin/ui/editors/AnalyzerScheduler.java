@@ -82,18 +82,23 @@ public class AnalyzerScheduler extends Job {
                     if (ranges.isEmpty()) {
                         continue;
                     }
+                    String annotationType = null;
                     switch (diagnostic.getSeverity()) {
                         case ERROR:
-                            if (annotations.get(curFile) == null) {
-                                annotations.put(curFile, new LinkedList<KotlinAnnotation>());
-                            }
-                            List<KotlinAnnotation> annotationsList = annotations.get(curFile);
-                            annotationsList.add(new KotlinAnnotation(ranges.get(0).getStartOffset(), 
-                                    ranges.get(0).getLength(), AnnotationManager.annotationErrorType));
+                            annotationType = AnnotationManager.annotationErrorType;
+                            break;
+                        case WARNING:
+                            annotationType = AnnotationManager.annotationWarningType;
                             break;
                         default:
                             continue;
                     }
+                    if (annotations.get(curFile) == null) {
+                        annotations.put(curFile, new LinkedList<KotlinAnnotation>());
+                    }
+                    List<KotlinAnnotation> annotationsList = annotations.get(curFile);
+                    annotationsList.add(new KotlinAnnotation(ranges.get(0).getStartOffset(), 
+                            ranges.get(0).getLength(), annotationType));
                 }
                 
                 if (canceling) {
