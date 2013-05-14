@@ -19,6 +19,7 @@ public class AnnotationManager {
     
     public static final String markerType = "org.jetbrains.kotlin.ui.marker";
     public static final String annotationErrorType = "org.jetbrains.kotlin.ui.annotation.error";
+    public static final String annotationWarningType = "org.jetbrains.kotlin.ui.annotation.warning";
     
     public static void updateAnnotations(TextEditor editor, List<KotlinAnnotation> annotations) {
         if (annotations == null) {
