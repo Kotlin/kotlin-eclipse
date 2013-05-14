@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.ui.editors;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,10 @@ public class AnnotationManager {
     public static final String annotationErrorType = "org.jetbrains.kotlin.ui.annotation.error";
     
     public static void updateAnnotations(TextEditor editor, List<KotlinAnnotation> annotations) {
+        if (annotations == null) {
+            annotations = new LinkedList<KotlinAnnotation>();
+        }
+        
         IDocumentProvider documentProvider = editor.getDocumentProvider();
         IDocument document = documentProvider.getDocument(editor.getEditorInput());
         
