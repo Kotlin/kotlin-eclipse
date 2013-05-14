@@ -1,12 +1,18 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.editors.text.TextEditor;
@@ -17,18 +23,25 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import com.intellij.openapi.util.TextRange;
 
 public class AnalyzerScheduler extends Job {
-
-    private final IFile file;
-    private final TextEditor editor;
+    
+    public static final AnalyzerScheduler INSTANCE = new AnalyzerScheduler();
+    
+    private static Set<IFile> fileSet = new HashSet<IFile>();
+    private static Map<IFile, TextEditor> editorMap = new HashMap<IFile, TextEditor>();
     
     private boolean canceling;
     
-    public AnalyzerScheduler(IFile file, TextEditor editor) {
+    private AnalyzerScheduler() {
         super("Analyze");
-        this.file = file;
-        this.editor = editor;
         
         canceling = false;
+    }
+    
+    public static void addFile(IFile file, TextEditor editor) {
+        synchronized(IFile.class) {
+            fileSet.add(file);
+            editorMap.put(file, editor);
+        }
     }
 
     @Override
@@ -43,33 +56,47 @@ public class AnalyzerScheduler extends Job {
                 return Status.CANCEL_STATUS;
             }
             
-            BindingContext bindingContext = KotlinAnalyzer.analyze();
-            
-            List<Diagnostic> diagnostics = new ArrayList<Diagnostic>(bindingContext.getDiagnostics());
-            List<KotlinAnnotation> annotations = new LinkedList<KotlinAnnotation>();
-            for (Diagnostic diagnostic : diagnostics) {
-                if (!diagnostic.getPsiFile().getVirtualFile().getPath().endsWith(file.getFullPath().toString())) {
-                    continue;
+            synchronized (IFile.class) {
+                if (fileSet == null || editorMap == null) {
+                    return Status.OK_STATUS;
                 }
-                List<TextRange> ranges = diagnostic.getTextRanges();
-                if (ranges.isEmpty()) {
-                    continue;
-                }
-                switch (diagnostic.getSeverity()) {
-                    case ERROR:
-                        annotations.add(new KotlinAnnotation(ranges.get(0).getStartOffset(), 
-                                ranges.get(0).getLength(), AnnotationManager.annotationErrorType));
-                        break;
-                    default:
+                
+                BindingContext bindingContext = KotlinAnalyzer.analyze();
+                
+                List<Diagnostic> diagnostics = new ArrayList<Diagnostic>(bindingContext.getDiagnostics());
+                Map<IFile, List<KotlinAnnotation>> annotations = new HashMap<IFile, List<KotlinAnnotation>>();
+                for (Diagnostic diagnostic : diagnostics) {
+                    IFile curFile = ResourcesPlugin.getWorkspace().getRoot().
+                            getFileForLocation(new Path(diagnostic.getPsiFile().getVirtualFile().getPath()));
+                    if (!fileSet.contains(curFile)) {
                         continue;
+                    }
+                    List<TextRange> ranges = diagnostic.getTextRanges();
+                    if (ranges.isEmpty()) {
+                        continue;
+                    }
+                    switch (diagnostic.getSeverity()) {
+                        case ERROR:
+                            if (annotations.get(curFile) == null) {
+                                annotations.put(curFile, new LinkedList<KotlinAnnotation>());
+                            }
+                            List<KotlinAnnotation> annotationsList = annotations.get(curFile);
+                            annotationsList.add(new KotlinAnnotation(ranges.get(0).getStartOffset(), 
+                                    ranges.get(0).getLength(), AnnotationManager.annotationErrorType));
+                            break;
+                        default:
+                            continue;
+                    }
+                }
+                
+                if (canceling) {
+                    return Status.CANCEL_STATUS;
+                }
+                
+                for (IFile file : fileSet) {
+                    AnnotationManager.updateAnnotations(editorMap.get(file), annotations.get(file));
                 }
             }
-            
-            if (canceling) {
-                return Status.CANCEL_STATUS;
-            }
-            
-            AnnotationManager.updateAnnotations(file, editor, annotations);
             
             return Status.OK_STATUS;
             

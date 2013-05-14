@@ -83,7 +83,7 @@
       </menuContribution>
    </extension>
    <extension
-         id="org.jetbrains.kotlin.marker"
+         id="org.jetbrains.kotlin.ui.marker"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.marker">
@@ -98,19 +98,19 @@
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="org.jetbrains.kotlin.annotation.error"
-            colorPreferenceKey="org.jetbrains.kotlin.annotation.error.color"
+            annotationType="org.jetbrains.kotlin.ui.annotation.error"
+            colorPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.color"
             colorPreferenceValue="255,0,128"
-            highlightPreferenceKey="org.jetbrains.kotlin.annotation.errhighlight"
+            highlightPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.highlight"
             label="Kotlin Compilation Error"
-            overviewRulerPreferenceKey="org.jetbrains.kotlin.annotation.error.overview"
+            overviewRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.overview"
             overviewRulerPreferenceValue="true"
             symbolicIcon="error"
-            textPreferenceKey="org.jetbrains.kotlin.annotation.error.text"
+            textPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.text"
             textPreferenceValue="true"
-            textStylePreferenceKey="org.jetbrains.kotlin.annotation.error.textstyle"
+            textStylePreferenceKey="org.jetbrains.kotlin.ui.annotation.error.textstyle"
             textStylePreferenceValue="PROBLEM_UNDERLINE"
-            verticalRulerPreferenceKey="org.jetbrains.kotlin.annotation.error.ruler"
+            verticalRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.ruler"
             verticalRulerPreferenceValue="true">
       </specification>
    </extension>
@@ -118,8 +118,8 @@
          point="org.eclipse.ui.editors.annotationTypes">
       <type
             markerSeverity="1"
-            markerType="org.jetbrains.kotlin.marker"
-            name="org.jetbrains.kotlin.annotation.error"
+            markerType="org.jetbrains.kotlin.ui.marker"
+            name="org.jetbrains.kotlin.ui.annotation.error"
             super="org.eclipse.ui.workbench.texteditor.error">
       </type>
    </extension>
