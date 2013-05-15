@@ -2,7 +2,11 @@ package org.jetbrains.kotlin.ui;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
+import org.jetbrains.kotlin.core.builder.KotlinManager;
 import org.jetbrains.kotlin.ui.editors.AnalyzerScheduler;
 
 public class AnnotationUpdater implements IResourceChangeListener {
@@ -18,10 +22,25 @@ public class AnnotationUpdater implements IResourceChangeListener {
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-            if (analyzerScheduler.getState() != Job.NONE) {
-                analyzerScheduler.cancel();
+            try {
+                event.getDelta().accept(new IResourceDeltaVisitor() {
+                    
+                    @Override
+                    public boolean visit(IResourceDelta delta) throws CoreException {
+                        if (!KotlinManager.isProjectChangedState(delta)) {
+                            return true;
+                        }
+                        if (analyzerScheduler.getState() != Job.NONE) {
+                            analyzerScheduler.cancel();
+                        }
+                        analyzerScheduler.schedule();
+                        
+                        return true;
+                    }
+                });
+            } catch (CoreException e) {
+                e.printStackTrace();
             }
-            analyzerScheduler.schedule();
         }
     }
 }
