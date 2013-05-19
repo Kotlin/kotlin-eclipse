@@ -13,6 +13,8 @@ public class Activator implements BundleActivator {
 	
 	private final IResourceChangeListener resourceChangeListener = new ResourceChangeListener();
 
+	public static final String PLUGIN_ID = "org.jetbrains.kotlin.core";
+	
 	static BundleContext getContext() {
 		return context;
 	}
