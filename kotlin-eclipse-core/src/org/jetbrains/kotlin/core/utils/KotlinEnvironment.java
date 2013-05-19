@@ -1,20 +1,36 @@
 package org.jetbrains.kotlin.core.utils;
 
+import java.io.File;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.jet.CompilerModeProvider;
 import org.jetbrains.jet.OperationModeProvider;
+import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.plugin.JetFileType;
+import org.jetbrains.kotlin.core.Activator;
 
+import com.intellij.codeInsight.ExternalAnnotationsManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
+import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiManager;
 
 public class KotlinEnvironment {
     
     private final JavaCoreApplicationEnvironment applicationEnvironment;
     private final JavaCoreProjectEnvironment projectEnvironment;
-    private final Project project;
+    private final MockProject project;
     
     private final static Disposable DISPOSABLE = new Disposable() {
         
@@ -35,6 +51,40 @@ public class KotlinEnvironment {
         projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
         
         project = projectEnvironment.getProject();
+        
+        CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(project.getComponent(PsiManager.class));
+        project.registerService(ExternalAnnotationsManager.class, annotationsManager);
+        
+        addJreClasspath();
+        
+        // TODO: Add standard kotlin annotations
+        // TODO: Add kotlin-runtime
+    }
+
+    private void addJreClasspath() {
+        try {
+            JavaModelManager modelManager = JavaModelManager.getJavaModelManager();
+            IJavaProject[] javaProjects = modelManager.getJavaModel().getJavaProjects();
+
+            for (IJavaProject javaProject : javaProjects) {
+                IRuntimeClasspathEntry computeJREEntry = JavaRuntime.computeJREEntry(javaProject);
+                IRuntimeClasspathEntry[] jreEntries = JavaRuntime.resolveRuntimeClasspathEntry(computeJREEntry,
+                        javaProject);
+
+                // TODO: Configuring JRE should be specific for each java project. Now the first java project is used.
+                if (jreEntries.length != 0) {
+                    for (IRuntimeClasspathEntry jreEntry : jreEntries) {
+                        addToClasspath(jreEntry.getClasspathEntry().getPath().toFile());
+                    }
+                    
+                    return;
+                }
+            }
+        } catch (JavaModelException e) {
+            e.printStackTrace();
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
     }
     
     public Project getProject() {
@@ -47,5 +97,22 @@ public class KotlinEnvironment {
     
     public JavaCoreApplicationEnvironment getApplicationEnvironment() {
         return applicationEnvironment;
+    }
+    
+    private void addToClasspath(File path) throws CoreException {
+        if (path.isFile()) {
+            VirtualFile jarFile = applicationEnvironment.getJarFileSystem().findFileByPath(path + "!/");
+            if (jarFile == null) {
+                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
+            }
+            projectEnvironment.addJarToClassPath(path);
+        }
+        else {
+            VirtualFile root = applicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath());
+            if (root == null) {
+                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
+            }
+            projectEnvironment.addSourcesToClasspath(root);
+        }
     }
 }

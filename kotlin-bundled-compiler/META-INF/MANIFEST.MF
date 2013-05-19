@@ -9,6 +9,7 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/kotlin-compiler-0.5.162.jar,
  .
 Export-Package: com.google.common.base,
+ com.intellij.codeInsight,
  com.intellij.core,
  com.intellij.lang,
  com.intellij.mock,
