@@ -82,4 +82,17 @@
          </command>
       </menuContribution>
    </extension>
+   <extension
+         id="org.jetbrains.kotlin.ui.marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.marker">
+      </super>
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
 </plugin>
