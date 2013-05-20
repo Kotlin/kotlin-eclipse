@@ -114,4 +114,13 @@
             verticalRulerPreferenceValue="true">
       </specification>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerSeverity="1"
+            markerType="org.jetbrains.kotlin.ui.marker"
+            name="org.jetbrains.kotlin.ui.annotation.error"
+            super="org.eclipse.ui.workbench.texteditor.error">
+      </type>
+   </extension>
 </plugin>
