@@ -86,6 +86,12 @@ public class KotlinManager {
         return Collections.unmodifiableSet(psiFiles.keySet());
     }
     
+    public static boolean isProjectChangedState(IResourceDelta delta) {
+        return (delta.getFlags() & IResourceDelta.CONTENT) != 0 ||
+                (delta.getKind() == IResourceDelta.REMOVED) ||
+                (delta.getKind() == IResourceDelta.ADDED);
+    }
+    
     public static boolean isCompatibleResource(IResource resource) throws JavaModelException {
         if (!JetFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
             return false;
