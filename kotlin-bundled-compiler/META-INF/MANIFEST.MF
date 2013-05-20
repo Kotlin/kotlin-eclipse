@@ -8,7 +8,8 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: lib/kotlin-compiler-0.5.162.jar,
  .
-Export-Package: com.intellij.core,
+Export-Package: com.google.common.base,
+ com.intellij.core,
  com.intellij.lang,
  com.intellij.mock,
  com.intellij.openapi,
