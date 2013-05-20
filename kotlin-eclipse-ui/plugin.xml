@@ -95,4 +95,23 @@
             value="true">
       </persistent>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="org.jetbrains.kotlin.ui.annotation.error"
+            colorPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.color"
+            colorPreferenceValue="255,0,128"
+            highlightPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.highlight"
+            label="Kotlin Compilation Error"
+            overviewRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.overview"
+            overviewRulerPreferenceValue="true"
+            symbolicIcon="error"
+            textPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="org.jetbrains.kotlin.ui.annotation.error.textstyle"
+            textStylePreferenceValue="PROBLEM_UNDERLINE"
+            verticalRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
 </plugin>
