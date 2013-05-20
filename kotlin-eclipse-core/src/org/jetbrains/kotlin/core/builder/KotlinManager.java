@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -79,6 +80,10 @@ public class KotlinManager {
         }
         
         return psiFilesByProject;
+    }
+    
+    public static Set<IFile> getAllFiles() {
+        return Collections.unmodifiableSet(psiFiles.keySet());
     }
     
     public static boolean isCompatibleResource(IResource resource) throws JavaModelException {
