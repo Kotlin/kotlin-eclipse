@@ -83,11 +83,10 @@
    <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            category="org.eclipse.ui.externaltools.builder"
             class="org.jetbrains.kotlin.ui.launchers.LaunchShortcut"
             icon="icons/sample.gif"
             id="org.jetbrains.kotlin.ui.launchers.launchShortcut"
-            label="KotlinProject"
+            label="Kotlin Project"
             modes="run">
       </shortcut>
    </extension>

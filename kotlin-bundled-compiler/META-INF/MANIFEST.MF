@@ -6,7 +6,7 @@ Bundle-Version: 0.1.0.qualifier
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: lib/kotlin-compiler-0.5.162.jar,
+Bundle-ClassPath: lib/kotlin-compiler-0.5.162.jar, lib/kotlin-runtime-0.5.162.jar,
  .
 Export-Package: com.intellij.core,
  com.intellij.lang,
