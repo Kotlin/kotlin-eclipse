@@ -10,10 +10,13 @@ Require-Bundle: org.eclipse.ui,
  org.jetbrains.kotlin.core,
  org.eclipse.jface.text,
  org.eclipse.ui.editors,
- kotlin-bundled-compiler
+ kotlin-bundled-compiler,
+ org.eclipse.debug.ui
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.core.resources,
  org.eclipse.jdt.core,
+ org.eclipse.jdt.debug.ui,
+ org.eclipse.jdt.debug.ui.launchConfigurations,
  org.eclipse.jdt.internal.ui.refactoring.nls,
  org.eclipse.jdt.internal.ui.wizards,
  org.eclipse.jdt.ui,

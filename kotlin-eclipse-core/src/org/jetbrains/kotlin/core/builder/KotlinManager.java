@@ -68,6 +68,10 @@ public class KotlinManager {
         return Collections.unmodifiableCollection(psiFiles.values());
     }
     
+    public static Collection<IFile> getAllProjectFiles() {
+        return Collections.unmodifiableSet(psiFiles.keySet());
+    }
+    
     public static ArrayList<ASTNode> getPsiFiles(IProject project) {
         List<IFile> filesByProject = projectFiles.get(project);
         ArrayList<ASTNode> psiFilesByProject = new ArrayList<>();
