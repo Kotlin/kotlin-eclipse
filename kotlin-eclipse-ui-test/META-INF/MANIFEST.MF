@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: kotlin-eclipse-ui-test
+Bundle-SymbolicName: kotlin-eclipse-ui-test
+Bundle-Version: 0.1.0.qualifier
+Bundle-Vendor: JetBrains
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.junit;bundle-version="4.10.0",
+ org.jetbrains.kotlin.ui,
+ org.junit
