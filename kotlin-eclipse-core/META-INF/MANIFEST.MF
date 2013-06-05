@@ -21,3 +21,4 @@ Export-Package: org.jetbrains.kotlin.core.builder,
  org.jetbrains.kotlin.core.resolve,
  org.jetbrains.kotlin.model,
  org.jetbrains.kotlin.parser
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
