@@ -69,6 +69,11 @@
             id="org.jetbrains.kotlin.psi.visualization"
             name="Psi Visualization">
       </command>
+      <command
+            defaultHandler="org.jetbrains.kotlin.ui.formatter.KotlinCodeFormatter"
+            id="org.jetbrains.kotlin.ui.editor.format"
+            name="Format Kotlin">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -78,6 +83,15 @@
          <command
                commandId="org.jetbrains.kotlin.psi.visualization"
                label="View Psi Structure of current file"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinEditor.EditorContext">
+         <command
+               commandId="org.jetbrains.kotlin.ui.editor.format"
+               label="Format Source Code"
                style="push">
          </command>
       </menuContribution>
