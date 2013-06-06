@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.ui,
  org.jetbrains.kotlin.core,
  org.eclipse.jface.text,
  org.eclipse.ui.editors;visibility:=reexport,
- kotlin-bundled-compiler
+ org.jetbrains.kotlin.bundled-compiler
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.core.resources,
  org.eclipse.jdt.core,
