@@ -7,15 +7,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.IStartup;
 import org.jetbrains.kotlin.core.builder.KotlinManager;
 
-public class KotlinFilesCollector implements IStartup {
-
-    @Override
-    public void earlyStartup() {
+public class KotlinFilesCollector {
+    
+    public static void collectForParsing() {
         try {
-            addFilesToParse();
+            new KotlinFilesCollector().addFilesToParse();
         } catch (CoreException e) {
             e.printStackTrace();
         }
@@ -32,7 +30,7 @@ public class KotlinFilesCollector implements IStartup {
     private void scanForFiles(IResource parentResource) throws CoreException {
         if (KotlinManager.isCompatibleResource(parentResource)) {
             KotlinManager.updateProjectPsiSources(parentResource, IResourceDelta.ADDED);
-            return;
+            return; 
         }
         if (parentResource.getType() != IResource.FOLDER) {
             return;

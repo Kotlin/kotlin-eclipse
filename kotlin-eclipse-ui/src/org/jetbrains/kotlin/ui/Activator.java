@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.ui;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jetbrains.kotlin.core.utils.KotlinFilesCollector;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -14,6 +15,7 @@ public class Activator extends AbstractUIPlugin {
     private static Activator plugin;
 
     public Activator() {
+        KotlinFilesCollector.collectForParsing();
     }
 
     @Override
