@@ -1,11 +1,10 @@
 package org.jetbrains.kotlin.core.utils;
 
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.core.builder.KotlinManager;
 
@@ -20,7 +19,7 @@ public class KotlinFilesCollector {
     }
     
     private void addFilesToParse() throws CoreException {
-        for (IProject project : getWorkspace().getRoot().getProjects()) {
+        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
             for (IResource resource : project.members(false)) {
                 scanForFiles(resource);
             }
