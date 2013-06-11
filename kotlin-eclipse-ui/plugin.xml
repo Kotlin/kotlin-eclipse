@@ -65,10 +65,15 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            categoryId="org.eclihx.ui.commands.category.source"
             defaultHandler="org.jetbrains.kotlin.psi.visualization.PsiVisualization"
             id="org.jetbrains.kotlin.psi.visualization"
             name="Psi Visualization">
+      </command>
+      <command
+            categoryId="org.eclipse.jdt.ui.category.source"
+            defaultHandler="org.jetbrains.kotlin.ui.formatter.KotlinCodeFormatter"
+            id="org.jetbrains.kotlin.ui.editor.format"
+            name="Format Kotlin">
       </command>
    </extension>
    <extension
@@ -79,6 +84,15 @@
          <command
                commandId="org.jetbrains.kotlin.psi.visualization"
                label="View Psi Structure of current file"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinEditor.EditorContext">
+         <command
+               commandId="org.jetbrains.kotlin.ui.editor.format"
+               label="Format Source Code"
                style="push">
          </command>
       </menuContribution>
@@ -149,18 +163,10 @@
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="org.jetbrains.kotlin.psi.visualization"
-            contextId="org.jetbrains.eclipse.ui.context.editor"
+            commandId="org.jetbrains.kotlin.ui.editor.format"
+            contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M3+F">
+            sequence="M1+M2+F">
       </key>
-   </extension>
-   <extension
-         point="org.eclipse.ui.contexts">
-      <context
-            id="org.jetbrains.eclipse.ui.context.editor"
-            name="Kotlin Source"
-            parentId="org.eclipse.ui.textEditorScope">
-      </context>
    </extension>
 </plugin>
