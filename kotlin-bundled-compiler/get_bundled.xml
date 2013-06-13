@@ -1,11 +1,19 @@
 <project default="get_bundled">
 	<property name="project.name" value="kotlin-bundled-compiler" />
-	<property name="target.dir" value="lib" />
+	
+	<condition property="target.dir" value="${teamcity.build.workingDir}/lib" else="lib">
+		<isset property="teamcity.build.workingDir"/>
+	</condition>
+	
 	<property name="download.name" value="downloads" />
 	<property name="download.dir" value="${target.dir}/${download.name}" />
 	<property name="idea-sdk-url" value="http://teamcity.jetbrains.com/guestAuth/repository/download/bt410/77484:id" />
 
-	<target name="get_bundled">
+	<target name="refresh_eclipse" unless="no_eclipse">
+		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
+	</target>
+
+	<target name="download_bundled">
 		<mkdir dir="${target.dir}" />
 		<delete includeemptydirs="true">
 			<fileset dir="${target.dir}" includes="**/*" excludes="${download.name}/*" />
@@ -34,7 +42,8 @@
 			<zipfileset src="${download.dir}/kotlin-compiler-jet-sources-0.5.162.jar" />
 			<zipfileset src="${download.dir}/idea-sdk-sources.zip" />
 		</zip>
-
-		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
 	</target>
+	
+    <target name="get_bundled" depends="download_bundled, refresh_eclipse">
+    </target>
 </project>
