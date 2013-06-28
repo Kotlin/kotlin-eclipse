@@ -177,4 +177,12 @@
             id="org.jetbrains.kotlin.ui.launch.launchConfigurationTypeImageRun">
       </launchConfigurationTypeImage>
    </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.jetbrains.kotlin.ui.launch.LaunchConfigurationTabGroup"
+            id="org.jetbrains.kotlin.ui.launch.launchConfigurationTabGroup"
+            type="org.jetbrains.kotlin.core.launch.launchConfigurationType">
+      </launchConfigurationTabGroup>
+   </extension>
 </plugin>
