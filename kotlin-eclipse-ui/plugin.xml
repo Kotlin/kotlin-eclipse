@@ -169,4 +169,12 @@
             sequence="M1+M2+F">
       </key>
    </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.jetbrains.kotlin.core.launch.launchConfigurationType"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.ui.launch.launchConfigurationTypeImageRun">
+      </launchConfigurationTypeImage>
+   </extension>
 </plugin>
