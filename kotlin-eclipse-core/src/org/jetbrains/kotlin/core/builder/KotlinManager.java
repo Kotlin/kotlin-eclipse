@@ -12,6 +12,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -80,6 +81,15 @@ public class KotlinManager {
         }
         
         return psiFilesByProject;
+    }
+    
+    public static List<IFile> getFilesByProject(IProject project) {
+        return Collections.unmodifiableList(projectFiles.get(project));
+    }
+    
+    public static List<IFile> getFilesByProject(String projectName) {
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+        return getFilesByProject(project);
     }
     
     public static Set<IFile> getAllFiles() {
