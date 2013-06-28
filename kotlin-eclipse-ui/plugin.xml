@@ -185,4 +185,24 @@
             type="org.jetbrains.kotlin.core.launch.launchConfigurationType">
       </launchConfigurationTabGroup>
    </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.ui.launch.launchShortcut"
+            label="Kotlin Application"
+            modes="run">
+         <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
 </plugin>
