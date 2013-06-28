@@ -37,6 +37,13 @@
 			</patternset>
 			<mapper type="merge" to="kotlin-runtime.jar" />
 		</unzip>
+		
+		<unzip src="${download.dir}/kotlin-compiler-0.5.162.zip" dest="${target.dir}">
+			<patternset>
+				<include name="kotlinc/lib/kotlin-jdk-annotations.jar" />
+			</patternset>
+			<mapper type="merge" to="kotlin-jdk-annotations.jar" />
+		</unzip>
 
 		<!-- Also retrivive sources -->
 		<get src="http://teamcity.jetbrains.com/guestAuth/repository/download/bt345/78258:id/kotlin-compiler-sources.jar" dest="${download.dir}/kotlin-compiler-jet-sources-0.5.162.jar" usetimestamp="true" />
