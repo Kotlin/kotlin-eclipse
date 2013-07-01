@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.core.utils;
 
 import java.io.File;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -14,6 +15,7 @@ import org.jetbrains.jet.CompilerModeProvider;
 import org.jetbrains.jet.OperationModeProvider;
 import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
+import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.core.Activator;
 
@@ -85,6 +87,13 @@ public class KotlinEnvironment {
         } catch (CoreException e) {
             e.printStackTrace();
         }
+    }
+    
+    public JetFile getJetFile(IFile file) {
+        VirtualFile fileByPath = applicationEnvironment.getLocalFileSystem().findFileByPath(
+                file.getRawLocation().toOSString());
+        
+        return (JetFile) PsiManager.getInstance(project).findFile(fileByPath);
     }
     
     public Project getProject() {
