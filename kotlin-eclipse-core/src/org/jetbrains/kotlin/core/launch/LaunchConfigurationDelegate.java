@@ -18,6 +18,7 @@ import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.jetbrains.jet.cli.jvm.K2JVMCompiler;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.osgi.framework.Bundle;
 
@@ -34,7 +35,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             
             return path.removeLastSegments(2).toPortableString() + "/kotlin-bundled-compiler/";
         } catch (IOException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
         }
         
         return null;
@@ -73,11 +74,11 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             FqName mainClassName = new FqName(getMainTypeName(configuration));
             for (IFile file : KotlinManager.getFilesByProject(projectName)) {
                 if (ProjectUtils.hasMain(file) && ProjectUtils.createPackageClassName(file).equalsTo(mainClassName)) {
-                        return mainClassName;
-                    }
+                    return mainClassName;
                 }
+            }
         } catch (CoreException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
         }
         
         throw new IllegalArgumentException();
@@ -105,10 +106,11 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         try {
             Runtime.getRuntime().exec(command.toString()).waitFor();
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
             
             abort("Build error", null, 0);
         }
+        System.out.println(command);
     }
     
     private String getOutputDir(ILaunchConfiguration configuration) {
@@ -117,7 +119,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             if (cp.length > 0)
                 return cp[0];
         } catch (CoreException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
         }
         
         return ".";

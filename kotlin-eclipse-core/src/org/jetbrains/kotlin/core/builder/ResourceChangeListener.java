@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.core.builder;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.runtime.CoreException;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class ResourceChangeListener implements IResourceChangeListener {
 
@@ -13,7 +14,7 @@ public class ResourceChangeListener implements IResourceChangeListener {
                 try {
                     event.getDelta().accept(new ProjectChangeListener());
                 } catch (CoreException e) {
-                    e.printStackTrace();
+                    KotlinLogger.logError(e);
                 }
                 break;
         }

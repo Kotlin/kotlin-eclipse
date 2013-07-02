@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class KotlinFilesCollector {
     
@@ -15,7 +16,7 @@ public class KotlinFilesCollector {
         try {
             new KotlinFilesCollector().addFilesToParse();
         } catch (CoreException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
         }
     }
     

@@ -18,6 +18,7 @@ import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.core.Activator;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 import com.intellij.codeInsight.ExternalAnnotationsManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
@@ -83,9 +84,9 @@ public class KotlinEnvironment {
                 }
             }
         } catch (JavaModelException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
         } catch (CoreException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
         }
     }
     

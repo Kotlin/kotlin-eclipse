@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class KotlinNature implements IProjectNature {
     private IProject project;
@@ -34,7 +35,7 @@ public class KotlinNature implements IProjectNature {
         try {
             return project.hasNature(KOTLIN_NATURE);
         } catch (CoreException e) {
-         // project does not exist or is not open
+            KotlinLogger.logError("project does not exist or is not open", e);
         }
         return false;
     }
