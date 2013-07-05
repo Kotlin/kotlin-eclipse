@@ -1,22 +1,31 @@
 package org.jetbrains.kotlin.core.launch;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
+import org.jetbrains.jet.cli.common.messages.CompilerMessageLocation;
+import org.jetbrains.jet.cli.common.messages.CompilerMessageSeverity;
+import org.jetbrains.jet.cli.common.messages.MessageCollector;
 import org.jetbrains.jet.cli.jvm.K2JVMCompiler;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.builder.KotlinManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
@@ -26,6 +35,10 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 
     private final String ktCompiler = "kotlin-compiler-0.5.162.jar";
     private final static String ktHome = getKtHome();
+    
+    private final CompilerOutputData compilerOutput = new CompilerOutputData();
+    
+    private boolean buildFailed = false;
     
     private static String getKtHome() {
         Bundle bundle = Platform.getBundle("org.jetbrains.kotlin.ui");
@@ -52,7 +65,16 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             return;
         }
         
-        compileKotlinFiles(projectFiles, configuration);
+        if (!compileKotlinFiles(projectFiles, configuration)) {
+            IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 1, "", null);
+            IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(status);
+            
+            if (handler != null) {
+                handler.handleStatus(status, compilerOutput);
+            }
+            
+            return;
+        }
         
         super.launch(configuration, mode, launch, monitor);
     }
@@ -84,12 +106,17 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         throw new IllegalArgumentException();
     }
     
-    private void compileKotlinFiles(List<IFile> files, ILaunchConfiguration configuration) throws CoreException {
+    private void refreshInitData() {
+        buildFailed = false;
+        compilerOutput.clear();
+    }
+    
+    private boolean compileKotlinFiles(List<IFile> files, ILaunchConfiguration configuration) throws CoreException {
         StringBuilder command = new StringBuilder();
         command.append("java -cp " + ktHome + "lib/" + ktCompiler);
         command.append(" " + K2JVMCompiler.class.getCanonicalName());
         command.append(" -kotlinHome " + ktHome);
-
+        command.append(" -tags");
 
         command.append(" -src ");
         
@@ -103,14 +130,34 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         
         command.append(" -output " + getOutputDir(configuration));
         
+        refreshInitData();
         try {
-            Runtime.getRuntime().exec(command.toString()).waitFor();
+            Process buildProcess = Runtime.getRuntime().exec(command.toString());
+            
+            MessageCollector messageCollector = new MessageCollector() {
+                @Override
+                public void report(CompilerMessageSeverity messageSeverity, String message, CompilerMessageLocation messageLocation) {
+                    if (CompilerMessageSeverity.ERROR.equals(messageSeverity) || CompilerMessageSeverity.EXCEPTION.equals(messageLocation)) {
+                        buildFailed = true;
+                    }
+                    
+                    compilerOutput.add(messageSeverity, message, messageLocation);
+                }
+            };
+            CompilerOutputParser.parseCompilerMessagesFromReader(messageCollector, new InputStreamReader(buildProcess.getInputStream()));
+            
+            buildProcess.waitFor();
+            
+            if (buildFailed) {
+                return false;
+            }
         } catch (IOException | InterruptedException e) {
             KotlinLogger.logError(e);
             
             abort("Build error", null, 0);
         }
-        System.out.println(command);
+        
+        return true;
     }
     
     private String getOutputDir(ILaunchConfiguration configuration) {

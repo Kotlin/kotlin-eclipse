@@ -205,4 +205,13 @@
          </contextualLaunch>
       </shortcut>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler
+            class="org.jetbrains.kotlin.ui.launch.CompilerStatusHandler"
+            code="1"
+            id="org.jetbrains.kotlin.ui.statusHandler"
+            plugin="org.jetbrains.kotlin.core">
+      </statusHandler>
+   </extension>
 </plugin>
