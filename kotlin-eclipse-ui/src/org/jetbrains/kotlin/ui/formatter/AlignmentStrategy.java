@@ -4,9 +4,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.jet.lexer.JetTokens;
+import org.jetbrains.kotlin.utils.IndenterUtil;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -15,18 +14,11 @@ import com.intellij.psi.tree.IElementType;
 
 public class AlignmentStrategy {
     
-    private final int defaultIndent;
-    private final boolean spacesForTabs;
-    
-    private final StringBuilder tabAsSpaces;
-    
     private final ASTNode parsedFile;
     private StringBuilder edit;
     
-    private static final Set<String> blockElementTypes;
+    public static final Set<String> blockElementTypes;
     private static final String lineSeparator = "\n";
-    private static final char tabChar = '\t';
-    private static final char spaceSeparator = ' ';
     
     static {
         blockElementTypes = new HashSet<String>(Arrays.asList("IF", "FOR", "WHILE", "FUN", "CLASS", "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", "WHEN"));
@@ -34,16 +26,6 @@ public class AlignmentStrategy {
     
     public AlignmentStrategy(ASTNode parsedFile) {
         this.parsedFile = parsedFile;
-        
-        defaultIndent = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
-        spacesForTabs = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
-        
-        tabAsSpaces = new StringBuilder();
-        if (spacesForTabs) {
-            for (int i = 0; i < defaultIndent; ++i) {
-                tabAsSpaces.append(spaceSeparator);
-            }
-        }
     }
     
     public String placeSpaces() {
@@ -69,7 +51,7 @@ public class AlignmentStrategy {
                         shift--;
                     }
                     
-                    edit.append(createWhiteSpace(shift, getLineSeparatorsOccurences(psiElement.getText())));
+                    edit.append(IndenterUtil.createWhiteSpace(shift, getLineSeparatorsOccurences(psiElement.getText())));
                 } else {
                     edit.append(psiElement.getText());
                 }
@@ -113,23 +95,6 @@ public class AlignmentStrategy {
             }
             child = child.getFirstChild();
         }
-    }
-
-    private String createWhiteSpace(int curIndent, int countBreakLines) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < countBreakLines; ++i) {
-            stringBuilder.append(System.lineSeparator());
-        }
-        
-        for (int i = 0; i < curIndent; ++i) {
-            if (spacesForTabs) {
-                stringBuilder.append(tabAsSpaces);
-            } else {
-                stringBuilder.append(tabChar);
-            }
-        }
-
-        return stringBuilder.toString();
     }
     
     private int updateIndent(ASTNode node, int curIndent) {
