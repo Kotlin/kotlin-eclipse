@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.editors;
 
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.TextAttribute;
@@ -40,6 +41,11 @@ public class Configuration extends SourceViewerConfiguration {
             scanner.setDefaultReturnToken(new Token(new TextAttribute(colorManager.getColor(IColorConstants.DEFAULT))));
         }
         return scanner;
+    }
+    
+    @Override
+    public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
+        return new IAutoEditStrategy[] { new KotlinAutoIndentStrategy() };
     }
 
     @Override

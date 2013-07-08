@@ -35,17 +35,21 @@ public class KotlinEditor extends TextEditor {
             bracketInserter.addBrackets('"', '"');
             bracketInserter.addBrackets('\'', '\'');
             bracketInserter.addBrackets('[', ']');        
+            bracketInserter.addBrackets('{', '}');
             ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(bracketInserter);
             
             annotationUpdater = AnnotationUpdater.INSTANCE;
             
             AnalyzerScheduler.INSTANCE.addFile(ResourceUtil.getFile(this.getEditorInput()), this);
-            AnalyzerScheduler.INSTANCE.schedule();
             
             getWorkspace().addResourceChangeListener(annotationUpdater, IResourceChangeEvent.POST_CHANGE);
         }
     }
-
+    
+    public ISourceViewer getViewer() {
+        return super.getSourceViewer();
+    }
+    
     @Override
     public void dispose() {
         if (annotationUpdater != null) {
