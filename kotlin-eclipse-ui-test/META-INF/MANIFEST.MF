@@ -5,6 +5,7 @@ Bundle-SymbolicName: org.jetbrains.kotlin.ui.tests
 Bundle-Version: 0.1.0.qualifier
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Require-Bundle: org.junit;bundle-version="4.10.0",
- org.jetbrains.kotlin.ui,
- org.junit
+Require-Bundle: org.jetbrains.kotlin.ui,
+ org.junit,
+ org.jetbrains.kotlin.testframework;bundle-version="0.1.0"
+Import-Package: org.eclipse.jface.preference
