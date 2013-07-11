@@ -10,6 +10,7 @@
 		<module>kotlin-eclipse-core</module>
 		<module>kotlin-eclipse-ui</module>
 		<module>kotlin-eclipse-ui-test</module>
+		<module>kotlin-eclipse-test-framework</module>
 	</modules>
 
 	<properties>

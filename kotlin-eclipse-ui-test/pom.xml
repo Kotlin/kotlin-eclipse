@@ -15,4 +15,16 @@
 	<groupId>kotlin.eclipse</groupId>
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>eclipse-test-plugin</packaging>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<configuration>
+					<useUIHarness>true</useUIHarness>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
