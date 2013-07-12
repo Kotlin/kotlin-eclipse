@@ -23,7 +23,11 @@ public class KotlinEditorBaseTest {
 	@Test
 	public void openEditorTest() {
 		TextEditorTest textEditor = new TextEditorTest();
-		Assert.assertNotNull(textEditor.createEditor("Test.kt", ""));
+		try {
+			Assert.assertNotNull(textEditor.createEditor("Test.kt", ""));
+		} finally {
+			textEditor.close();
+		}
 	}
 	
 	@Test

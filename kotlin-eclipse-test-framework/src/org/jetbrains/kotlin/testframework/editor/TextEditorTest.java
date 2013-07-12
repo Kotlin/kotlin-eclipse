@@ -86,4 +86,8 @@ public class TextEditorTest {
 		
 		Assert.assertEquals(expectedWithoutCR, actualWithoutCR);
 	}
+	
+	public void close() {
+		editor.close(false);
+	}
 }

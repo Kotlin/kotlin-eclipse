@@ -11,14 +11,21 @@ public class KotlinAutoIndenterTestCase {
     	boolean spacesForTabsBeforeConfigure = getStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
 		int tabWidthBeforeConfigure = getStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 		
-    	TextEditorTest testEditor = configureEditor(input);
-    	if (input.contains(TextEditorTest.CARET)) {
-    		testEditor.typeEnter();
-    	}
-    	
-    	setStorePreference(spacesForTabsBeforeConfigure, tabWidthBeforeConfigure);
-    	
-    	testEditor.assertByEditor(expected);
+		TextEditorTest testEditor = null;
+		try {
+	    	testEditor = configureEditor(input);
+	    	if (input.contains(TextEditorTest.CARET)) {
+	    		testEditor.typeEnter();
+	    	}
+	    	
+	    	setStorePreference(spacesForTabsBeforeConfigure, tabWidthBeforeConfigure);
+	    	
+	    	testEditor.assertByEditor(expected);
+		} finally {
+			if (testEditor != null) {
+				testEditor.close();
+			}
+		}
     }
 	
 	protected IPreferenceStore getStore() {
