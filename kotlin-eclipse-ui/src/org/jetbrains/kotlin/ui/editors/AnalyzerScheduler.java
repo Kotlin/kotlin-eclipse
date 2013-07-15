@@ -3,7 +3,6 @@ package org.jetbrains.kotlin.ui.editors;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,21 +69,17 @@ public class AnalyzerScheduler extends Job {
             AnnotationManager.clearAllMarkers();
             
             List<Diagnostic> diagnostics = new ArrayList<Diagnostic>(bindingContext.getDiagnostics());
-            Map<IFile, List<KotlinAnnotation>> annotations = new HashMap<IFile, List<KotlinAnnotation>>();
             for (Diagnostic diagnostic : diagnostics) {
                 List<TextRange> ranges = diagnostic.getTextRanges();
                 if (ranges.isEmpty()) {
                     continue;
                 }
-                String annotationType = null;
                 int problemSeverity = 0;
                 switch (diagnostic.getSeverity()) {
                     case ERROR:
-                        annotationType = AnnotationManager.annotationErrorType;
                         problemSeverity = IMarker.SEVERITY_ERROR;
                         break;
                     case WARNING:
-                        annotationType = AnnotationManager.annotationWarningType;
                         problemSeverity = IMarker.SEVERITY_WARNING;
                         break;
                     default:
@@ -100,24 +95,10 @@ public class AnalyzerScheduler extends Job {
                 if (!filesToUpdate.contains(curFile)) {
                     continue;
                 }
-                if (annotations.get(curFile) == null) {
-                    annotations.put(curFile, new LinkedList<KotlinAnnotation>());
-                }
-                List<KotlinAnnotation> annotationsList = annotations.get(curFile);
-                annotationsList.add(new KotlinAnnotation(ranges.get(0).getStartOffset(), 
-                        ranges.get(0).getLength(), annotationType));
                 
                 if (canceling) {
                     return Status.CANCEL_STATUS;
                 }
-            }
-            
-            for (IFile file : filesToUpdate) {
-                List<KotlinAnnotation> ktAnnotations = annotations.get(file);
-                if (ktAnnotations == null) {
-                    ktAnnotations = new LinkedList<KotlinAnnotation>();
-                }
-                AnnotationManager.updateAnnotations(correspondEditors.get(file), ktAnnotations);
             }
             
             return Status.OK_STATUS;
