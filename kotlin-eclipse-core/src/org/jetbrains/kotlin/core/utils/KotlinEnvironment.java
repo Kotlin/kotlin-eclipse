@@ -18,6 +18,7 @@ import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.core.Activator;
+import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 import com.intellij.codeInsight.ExternalAnnotationsManager;
@@ -59,9 +60,24 @@ public class KotlinEnvironment {
         project.registerService(ExternalAnnotationsManager.class, annotationsManager);
         
         addJreClasspath();
-        
-        // TODO: Add standard kotlin annotations
-        // TODO: Add kotlin-runtime
+        addKotlinRuntime();
+        addKotlinAnnotations();
+    }
+    
+    private void addKotlinRuntime() {
+        try {
+            addToClasspath(new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH));
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+    }
+    
+    private void addKotlinAnnotations() {
+        try {
+            addToClasspath(new File(LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS));
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
     }
 
     private void addJreClasspath() {
