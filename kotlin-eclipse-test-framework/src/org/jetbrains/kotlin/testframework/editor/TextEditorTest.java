@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
@@ -55,7 +56,7 @@ public class TextEditorTest {
 	}
 	
 	public void setText(String text) {
-		int cursor = 0;
+		int cursor = -1;
 		if (text.contains(CARET)) {
 			cursor = text.indexOf(CARET);
 			text = text.replaceAll(CARET, "");
@@ -87,7 +88,29 @@ public class TextEditorTest {
 		Assert.assertEquals(expectedWithoutCR, actualWithoutCR);
 	}
 	
+	public void save() {
+		editor.doSave(null);
+	}
+	
 	public void close() {
 		editor.close(false);
+	}
+	
+	public IFile getEditingFile() {
+		return (IFile) editor.getEditorInput().getAdapter(IFile.class);
+	}
+	
+	public String getEditorInput() {
+		return editor.getViewer().getDocument().get();
+	}
+	
+	public void deleteEditingFile() {
+		IFile editingFile = getEditingFile();
+		close();
+		try {
+			editingFile.delete(true, null);
+		} catch (CoreException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

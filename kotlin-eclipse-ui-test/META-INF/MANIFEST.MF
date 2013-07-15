@@ -8,4 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Require-Bundle: org.jetbrains.kotlin.ui,
  org.junit,
  org.jetbrains.kotlin.testframework;bundle-version="0.1.0"
-Import-Package: org.eclipse.jface.preference
+Import-Package: org.eclipse.core.resources,
+ org.eclipse.core.runtime;version="3.4.0",
+ org.eclipse.core.runtime.jobs,
+ org.eclipse.jface.preference
