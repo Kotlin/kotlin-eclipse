@@ -14,13 +14,14 @@ import org.eclipse.jface.text.rules.WordRule;
 
 public class Scanner extends RuleBasedScanner {
 
-        public Scanner(ColorManager manager) {
+    public Scanner(ColorManager manager) {
         IToken keyword = new Token(new TextAttribute(manager.getColor(IColorConstants.KEYWORD)));
         IToken string = new Token(new TextAttribute(manager.getColor(IColorConstants.STRING)));
 
         List<IRule> rulesList = new ArrayList<IRule>();
 
-        WordRule wr = new WordRule(new WordDetector());
+        IToken defaultToken = new Token(new TextAttribute(manager.getColor(IColorConstants.DEFAULT)));
+        WordRule wr = new WordRule(new WordDetector(), defaultToken);
         for (String word : KeywordManager.getAllKeywords()) {
             wr.addWord(word, keyword);
         }
