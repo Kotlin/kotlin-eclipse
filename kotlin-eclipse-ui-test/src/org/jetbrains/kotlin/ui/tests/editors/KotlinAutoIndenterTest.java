@@ -126,6 +126,16 @@ public class KotlinAutoIndenterTest extends KotlinAutoIndenterTestCase {
 	}
 	
 	@Test
+	public void beforeFunctionStart() {
+		doTest("<caret>fun tt() {\n" +
+				"}",
+				
+				"\n" +
+				"fun tt() {\n" +
+				"}");
+	}
+	
+	@Test
 	public void typeCloseBraceInEmptyEditor() {
 		doTest("}", "}"); // Check that excetion not throwing
 	}

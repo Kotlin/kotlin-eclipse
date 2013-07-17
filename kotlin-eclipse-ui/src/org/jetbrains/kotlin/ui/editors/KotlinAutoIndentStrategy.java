@@ -9,6 +9,7 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.kotlin.parser.KotlinParser;
 import org.jetbrains.kotlin.utils.IndenterUtil;
 
@@ -125,6 +126,9 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 offset -= document.getLineOfOffset(offset);
             }
             ASTNode leaf = parsedDocument.findLeafElementAt(offset);
+            if (leaf.getElementType() != JetTokens.WHITE_SPACE) {
+                leaf = parsedDocument.findLeafElementAt(offset - 1);
+            }
             int indent = 0;
             while(leaf != null) {
                 if (BLOCK_ELEMENT_TYPES.contains(leaf.getElementType().toString())) {
