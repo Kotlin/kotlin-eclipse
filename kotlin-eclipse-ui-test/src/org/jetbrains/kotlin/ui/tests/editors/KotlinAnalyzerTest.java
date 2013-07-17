@@ -19,4 +19,13 @@ public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
 			"<err>prin</err>(\"Hello\")\r\n" +
 			"}", "Test2.kt");
 	}
+	
+	@Test
+	public void hasAnalyzerKotlinAnnotations() {
+		doTest(
+			"import java.util.regex.Pattern\r\n" +
+			"fun main(args : Array<String>) {\r\n" +
+			"  println(Pattern.compile(\"Some\").matcher(\"Some\"))\r\n" +
+			"}", "Test3.kt");
+	}
 }

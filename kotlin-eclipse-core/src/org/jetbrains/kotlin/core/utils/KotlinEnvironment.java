@@ -17,6 +17,7 @@ import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.plugin.JetFileType;
+import org.jetbrains.jet.utils.PathUtil;
 import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -59,22 +60,16 @@ public class KotlinEnvironment {
         CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(project.getComponent(PsiManager.class));
         project.registerService(ExternalAnnotationsManager.class, annotationsManager);
         
+        VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS));
+        annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
+        
         addJreClasspath();
         addKotlinRuntime();
-        addKotlinAnnotations();
     }
     
     private void addKotlinRuntime() {
         try {
             addToClasspath(new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH));
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
-    
-    private void addKotlinAnnotations() {
-        try {
-            addToClasspath(new File(LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS));
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
