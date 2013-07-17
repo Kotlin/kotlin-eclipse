@@ -7,7 +7,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses( { 
 	KotlinEditorBaseTest.class, 
 	KotlinAutoIndenterTest.class,
-	KotlinAnalyzerTest.class} )
+	KotlinAnalyzerTest.class,
+	KotlinHighlightningScannerTest.class} )
 public class AllTests {
 
 }
