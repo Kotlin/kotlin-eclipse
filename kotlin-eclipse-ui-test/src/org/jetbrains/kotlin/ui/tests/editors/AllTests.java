@@ -8,7 +8,8 @@ import org.junit.runners.Suite;
 	KotlinEditorBaseTest.class, 
 	KotlinAutoIndenterTest.class,
 	KotlinAnalyzerTest.class,
-	KotlinHighlightningScannerTest.class} )
+	KotlinHighlightningScannerTest.class,
+	KotlinBracketInserterTest.class} )
 public class AllTests {
 
 }
