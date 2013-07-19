@@ -15,7 +15,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.rendering.DefaultErrorMessages;
 import org.jetbrains.jet.lang.resolve.BindingContext;
@@ -28,7 +28,7 @@ public class AnalyzerScheduler extends Job {
     public static final AnalyzerScheduler INSTANCE = new AnalyzerScheduler();
     
     private static Set<IFile> filesToUpdate = new HashSet<IFile>();
-    private static Map<IFile, TextEditor> correspondEditors = new HashMap<IFile, TextEditor>();
+    private static Map<IFile, AbstractTextEditor> correspondEditors = new HashMap<IFile, AbstractTextEditor>();
     
     private boolean canceling;
     
@@ -38,7 +38,7 @@ public class AnalyzerScheduler extends Job {
         canceling = false;
     }
     
-    public synchronized void addFile(IFile file, TextEditor editor) {
+    public synchronized void addFile(IFile file, AbstractTextEditor editor) {
         filesToUpdate.add(file);
         correspondEditors.put(file, editor);
     }

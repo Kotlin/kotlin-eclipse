@@ -55,7 +55,7 @@
          point="org.eclipse.ui.editors">
       <editor
             class="org.jetbrains.kotlin.ui.editors.KotlinEditor"
-            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
             extensions="kt"
             icon="icons/kotlin-file.gif"
             id="org.jetbrains.kotlin.ui.editors.KotlinEditor"
@@ -69,12 +69,6 @@
             id="org.jetbrains.kotlin.psi.visualization"
             name="Psi Visualization">
       </command>
-      <command
-            categoryId="org.eclipse.jdt.ui.category.source"
-            defaultHandler="org.jetbrains.kotlin.ui.formatter.KotlinCodeFormatter"
-            id="org.jetbrains.kotlin.ui.editor.format"
-            name="Format Kotlin">
-      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -84,15 +78,6 @@
          <command
                commandId="org.jetbrains.kotlin.psi.visualization"
                label="View Psi Structure of current file"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinEditor.EditorContext">
-         <command
-               commandId="org.jetbrains.kotlin.ui.editor.format"
-               label="Format Source Code"
                style="push">
          </command>
       </menuContribution>
@@ -159,15 +144,6 @@
             name="org.jetbrains.kotlin.ui.annotation.warning"
             super="org.eclipse.ui.workbench.texteditor.warning">
       </type>
-   </extension>
-   <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            commandId="org.jetbrains.kotlin.ui.editor.format"
-            contextId="org.eclipse.ui.textEditorScope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+F">
-      </key>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTypeImages">

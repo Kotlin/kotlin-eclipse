@@ -1,11 +1,11 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.Token;
 import org.jetbrains.kotlin.ui.editors.ColorManager;
 import org.jetbrains.kotlin.ui.editors.IColorConstants;
-import org.jetbrains.kotlin.ui.editors.PartitionScanner;
 import org.junit.Test;
 
 public class KotlinHighlightningScannerTest extends KotlinHighlightningScannerTestCase {
@@ -14,7 +14,8 @@ public class KotlinHighlightningScannerTest extends KotlinHighlightningScannerTe
 	private static final IToken KEYWORD_TOKEN = new Token(new TextAttribute(COLOR_MANAGER.getColor(IColorConstants.KEYWORD)));
 	private static final IToken STRING_TOKEN = new Token(new TextAttribute(COLOR_MANAGER.getColor(IColorConstants.STRING)));
 	private static final IToken DEFAULT_TOKEN = new Token(new TextAttribute(COLOR_MANAGER.getColor(IColorConstants.DEFAULT)));
-	private static final IToken COMMENT_TOKEN = new Token(PartitionScanner.KOTLIN_COMMENT);
+	private static final IToken MULTI_LINE_COMMENT_TOKEN = new Token(JavaPartitionScanner.JAVA_MULTI_LINE_COMMENT);
+	private static final IToken SINGLE_LINE_COMMENT_TOKEN = new Token(JavaPartitionScanner.JAVA_SINGLE_LINE_COMMENT);
 	
 	@Test
 	public void oneKeywordWithoutTextIn() {
@@ -61,11 +62,11 @@ public class KotlinHighlightningScannerTest extends KotlinHighlightningScannerTe
 		doTest(
 				"/*test\n" +
 				"test\n" +
-				"*/", COMMENT_TOKEN, true);
+				"*/", MULTI_LINE_COMMENT_TOKEN, true);
 	}
 	
 	@Test
 	public void singleLineCommentToken() {
-		doTest("// for main", COMMENT_TOKEN, true);
+		doTest("// for main", SINGLE_LINE_COMMENT_TOKEN, true);
 	}
 }
