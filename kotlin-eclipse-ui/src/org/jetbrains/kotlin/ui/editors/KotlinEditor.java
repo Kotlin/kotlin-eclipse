@@ -13,7 +13,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 
-@SuppressWarnings("restriction")
 public class KotlinEditor extends CompilationUnitEditor {
 
     private final ColorManager colorManager;

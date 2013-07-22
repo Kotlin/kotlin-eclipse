@@ -15,7 +15,6 @@ public class KotlinFormatAction extends Action {
         this.editor = editor;
     }
     
-    @SuppressWarnings("restriction")
     @Override
     public void run() {
         IDocument document = editor.getViewer().getDocument(); 

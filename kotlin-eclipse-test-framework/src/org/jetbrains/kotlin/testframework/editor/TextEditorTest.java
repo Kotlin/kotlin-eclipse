@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import junit.framework.Assert;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 
-@SuppressWarnings("restriction")
 public class TextEditorTest {
 	
 	public static String CARET = "<caret>";

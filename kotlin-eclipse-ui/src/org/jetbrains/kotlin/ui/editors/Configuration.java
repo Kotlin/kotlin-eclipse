@@ -16,7 +16,6 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 
-@SuppressWarnings("restriction")
 public class Configuration extends SourceViewerConfiguration {
     private DoubleClickStrategy doubleClickStrategy;
     private Scanner scanner;
