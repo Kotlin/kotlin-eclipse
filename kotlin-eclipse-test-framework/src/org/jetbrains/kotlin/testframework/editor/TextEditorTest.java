@@ -6,16 +6,17 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import junit.framework.Assert;
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 
+@SuppressWarnings("restriction")
 public class TextEditorTest {
 	
 	public static String CARET = "<caret>";
 
 	private final static String PROJECT_NAME = "test_project";
 	private TestJavaProject testProject;
-	private KotlinEditor editor;
+	private JavaEditor editor;
 	
 	public TextEditorTest() {
 		testProject = new TestJavaProject(PROJECT_NAME);
@@ -27,12 +28,12 @@ public class TextEditorTest {
 		return testProject;
 	}
 	
-	public KotlinEditor createEditor(String name, String content) {
+	public JavaEditor createEditor(String name, String content) {
 		if (editor == null) {
 			try {
 				IFile file = testProject.createSourceFile("testing", name, "");
 				
-				editor = (KotlinEditor) EditorTestUtils.openInEditor(file);
+				editor = (JavaEditor) EditorTestUtils.openInEditor(file);
 				
 				setText(content);
 			} catch (Exception e) {

@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.core.launch;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -16,7 +17,6 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
@@ -165,15 +165,22 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         command.append(" -kotlinHome " + KT_HOME);
         command.append(" -tags");
 
-        command.append(" -src ");
-        
+        StringBuilder srcDirectories = new StringBuilder();
+        StringBuilder classPath = new StringBuilder();
+        String pathSeparator = System.getProperty("path.separator");
         IJavaProject javaProject = getJavaProject(configuration);
-        IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
-        for (IClasspathEntry classpathEntry : classpathEntries) {
-            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                command.append(javaProject.getProject().getLocation().removeLastSegments(1).toPortableString() + classpathEntry.getPath().toPortableString() + " ");
-            }
+        
+        for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
+            srcDirectories.append(srcDirectory.getAbsolutePath()).append(' ');
+            classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
         }
+        
+        for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
+            classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
+        }
+        
+        command.append(" -src " + srcDirectories);
+        command.append(" -classpath " + classPath);
         
         command.append(" -output " + getOutputDir(configuration));
         

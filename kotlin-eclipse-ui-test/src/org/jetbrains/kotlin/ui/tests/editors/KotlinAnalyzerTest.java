@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.junit.Test;
 
 public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
@@ -27,5 +28,18 @@ public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
 			"fun main(args : Array<String>) {\r\n" +
 			"  println(Pattern.compile(\"Some\").matcher(\"Some\"))\r\n" +
 			"}", "Test3.kt");
+	}
+	
+	@Test
+	public void useJavaCodeFromKotlinFile() {
+		TextEditorTest editorWithJavaCode = configureEditor("Some.java", "package testing; public class Some() { }");
+		editorWithJavaCode.save();
+		editorWithJavaCode.close();
+		
+		doTest(
+			"package testing\r\n" +
+			"fun tt() {\r\n" +
+			"var a = Some()\r\n" +
+			"}", "Test5.kt");
 	}
 }

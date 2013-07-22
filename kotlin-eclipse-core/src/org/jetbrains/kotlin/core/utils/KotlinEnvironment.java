@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.core.utils;
 
 import java.io.File;
+import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -65,6 +66,38 @@ public class KotlinEnvironment {
         
         addJreClasspath();
         addKotlinRuntime();
+        addSourcesToClasspath();
+        addLibsToClasspath();
+    }
+    
+    private void addLibsToClasspath() {
+        try {
+            IJavaProject[] javaProjects = getAllJavaProjects();
+
+            List<File> libDirectories = ProjectUtils.getLibDirectories(javaProjects[0]);
+            for (File libDirectory : libDirectories) {
+                addToClasspath(libDirectory);
+            }
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+    }
+    
+    private void addSourcesToClasspath() {
+        try {
+            IJavaProject[] javaProjects = getAllJavaProjects();
+
+            List<File> srcDirectories = ProjectUtils.getSrcDirectories(javaProjects[0]);
+            for (File srcDirectory : srcDirectories) {
+                addToClasspath(srcDirectory);
+            }
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
     }
     
     private void addKotlinRuntime() {
@@ -77,8 +110,7 @@ public class KotlinEnvironment {
 
     private void addJreClasspath() {
         try {
-            JavaModelManager modelManager = JavaModelManager.getJavaModelManager();
-            IJavaProject[] javaProjects = modelManager.getJavaModel().getJavaProjects();
+            IJavaProject[] javaProjects = getAllJavaProjects();
 
             for (IJavaProject javaProject : javaProjects) {
                 IRuntimeClasspathEntry computeJREEntry = JavaRuntime.computeJREEntry(javaProject);
@@ -95,10 +127,15 @@ public class KotlinEnvironment {
                 }
             }
         } catch (JavaModelException e) {
-            KotlinLogger.logError(e);
+            KotlinLogger.logAndThrow(e);
         } catch (CoreException e) {
-            KotlinLogger.logError(e);
+            KotlinLogger.logAndThrow(e);
         }
+    }
+    
+    private IJavaProject[] getAllJavaProjects() throws JavaModelException {
+        JavaModelManager modelManager = JavaModelManager.getJavaModelManager();
+        return modelManager.getJavaModel().getJavaProjects();
     }
     
     public JetFile getJetFile(IFile file) {
