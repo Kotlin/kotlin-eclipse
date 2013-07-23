@@ -8,8 +8,10 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -60,9 +62,9 @@ public class AnnotationManager {
         annotationModel.disconnect(document);
     }
     
-    public static void clearAllMarkers() {
-        List<IFile> workspaceFiles = new ArrayList<IFile>(KotlinManager.getAllFiles());
-        for (IFile file : workspaceFiles) {
+    public static void clearAllMarkersFromProject(IJavaProject javaProject) {
+        IProject project = javaProject.getProject();
+        for (IFile file : KotlinManager.getFilesByProject(project)) {
             try {
                 file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             } catch (CoreException e) {

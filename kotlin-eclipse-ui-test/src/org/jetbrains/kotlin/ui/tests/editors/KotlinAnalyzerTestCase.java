@@ -5,6 +5,8 @@ import junit.framework.Assert;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.ui.editors.AnalyzerScheduler;
@@ -18,15 +20,12 @@ public class KotlinAnalyzerTestCase {
 		TextEditorTest testEditor = configureEditor(fileName, input);
 		try {
 			testEditor.save();
+			
+			IJobManager jobManager = Job.getJobManager();
 			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-			}
-			while (AnalyzerScheduler.INSTANCE.getState() != Job.NONE) {
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-				}
+				jobManager.join(AnalyzerScheduler.FAMILY, null);
+			} catch (OperationCanceledException | InterruptedException e) {
+				e.printStackTrace();
 			}
 			
 			String editorInput = insertTagsForErrors(testEditor.getEditorInput(), 

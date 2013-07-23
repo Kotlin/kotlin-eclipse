@@ -88,7 +88,11 @@ public class KotlinManager {
     }
     
     public static List<IFile> getFilesByProject(IProject project) {
-        return Collections.unmodifiableList(projectFiles.get(project));
+        if (projectFiles.containsKey(project)) {
+            return Collections.unmodifiableList(projectFiles.get(project));
+        }
+        
+        return new ArrayList<IFile>();
     }
     
     public static List<IFile> getFilesByProject(String projectName) {

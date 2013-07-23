@@ -1,11 +1,7 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -14,8 +10,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.debug.internal.ui.viewers.AsynchronousSchedulingRuleFactory;
+import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.rendering.DefaultErrorMessages;
 import org.jetbrains.jet.lang.resolve.BindingContext;
@@ -25,27 +23,28 @@ import com.intellij.openapi.util.TextRange;
 
 public class AnalyzerScheduler extends Job {
     
-    public static final AnalyzerScheduler INSTANCE = new AnalyzerScheduler();
+    private final IJavaProject javaProject;
     
-    private static Set<IFile> filesToUpdate = new HashSet<IFile>();
-    private static Map<IFile, AbstractTextEditor> correspondEditors = new HashMap<IFile, AbstractTextEditor>();
+    private volatile boolean canceling;
     
-    private boolean canceling;
+    public static final String FAMILY = "Analyzer";
     
-    private AnalyzerScheduler() {
-        super("Analyze");
+    public AnalyzerScheduler(IJavaProject javaProject) {
+        super("Analyzing " + javaProject.getElementName());
+        ISchedulingRule serialRule = AsynchronousSchedulingRuleFactory.getDefault().newSerialRule();
+        setRule(serialRule);
         
+        this.javaProject = javaProject;
         canceling = false;
     }
     
-    public synchronized void addFile(IFile file, AbstractTextEditor editor) {
-        filesToUpdate.add(file);
-        correspondEditors.put(file, editor);
+    @Override
+    public boolean belongsTo(Object family) {
+        return FAMILY.equals(family);
     }
     
-    public synchronized void excludeFile(IFile file) {
-        filesToUpdate.remove(file);
-        correspondEditors.remove(file);
+    public static void analyzeProjectInBackground(IJavaProject javaProject) {
+        new AnalyzerScheduler(javaProject).schedule();
     }
     
     @Override
@@ -54,19 +53,17 @@ public class AnalyzerScheduler extends Job {
     }
     
     @Override
-    protected synchronized IStatus run(IProgressMonitor monitor) {
+    protected IStatus run(IProgressMonitor monitor) {
         try {
+            assert javaProject != null : "JavaProject is null";
+            
             if (canceling) {
                 return Status.CANCEL_STATUS;
             }
             
-            if (filesToUpdate == null || correspondEditors == null) {
-                return Status.OK_STATUS;
-            }
+            BindingContext bindingContext = KotlinAnalyzer.analyzeProject(javaProject);
             
-            BindingContext bindingContext = KotlinAnalyzer.analyze();
-            
-            AnnotationManager.clearAllMarkers();
+            AnnotationManager.clearAllMarkersFromProject(javaProject);
             
             List<Diagnostic> diagnostics = new ArrayList<Diagnostic>(bindingContext.getDiagnostics());
             for (Diagnostic diagnostic : diagnostics) {
@@ -74,6 +71,7 @@ public class AnalyzerScheduler extends Job {
                 if (ranges.isEmpty()) {
                     continue;
                 }
+                
                 int problemSeverity = 0;
                 switch (diagnostic.getSeverity()) {
                     case ERROR:
@@ -91,10 +89,6 @@ public class AnalyzerScheduler extends Job {
                 
                 AnnotationManager.addProblemMarker(curFile, DefaultErrorMessages.RENDERER.render(diagnostic), 
                         problemSeverity, diagnostic.getPsiFile().getText(), ranges.get(0));
-                
-                if (!filesToUpdate.contains(curFile)) {
-                    continue;
-                }
                 
                 if (canceling) {
                     return Status.CANCEL_STATUS;

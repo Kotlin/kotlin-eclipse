@@ -9,7 +9,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.jet.CompilerModeProvider;
@@ -34,18 +33,16 @@ import com.intellij.psi.PsiManager;
 
 public class KotlinEnvironment {
     
-    private final JavaCoreApplicationEnvironment applicationEnvironment;
-    private final JavaCoreProjectEnvironment projectEnvironment;
-    private final MockProject project;
+    private static final JavaCoreApplicationEnvironment applicationEnvironment;
     
-    private final static Disposable DISPOSABLE = new Disposable() {
+    private static final Disposable DISPOSABLE = new Disposable() {
         
         @Override
         public void dispose() {
         }
     };
     
-    public KotlinEnvironment() {
+    static {
         applicationEnvironment = new JavaCoreApplicationEnvironment(DISPOSABLE);
         
         applicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
@@ -53,6 +50,14 @@ public class KotlinEnvironment {
         applicationEnvironment.registerParserDefinition(new JetParserDefinition());
 
         applicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
+    }
+    
+    private final JavaCoreProjectEnvironment projectEnvironment;
+    private final MockProject project;
+    private final IJavaProject javaProject;
+    
+    public KotlinEnvironment(IJavaProject javaProject) {
+        this.javaProject = javaProject;
         
         projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
         
@@ -72,9 +77,7 @@ public class KotlinEnvironment {
     
     private void addLibsToClasspath() {
         try {
-            IJavaProject[] javaProjects = getAllJavaProjects();
-
-            List<File> libDirectories = ProjectUtils.getLibDirectories(javaProjects[0]);
+            List<File> libDirectories = ProjectUtils.getLibDirectories(javaProject);
             for (File libDirectory : libDirectories) {
                 addToClasspath(libDirectory);
             }
@@ -87,9 +90,7 @@ public class KotlinEnvironment {
     
     private void addSourcesToClasspath() {
         try {
-            IJavaProject[] javaProjects = getAllJavaProjects();
-
-            List<File> srcDirectories = ProjectUtils.getSrcDirectories(javaProjects[0]);
+            List<File> srcDirectories = ProjectUtils.getSrcDirectories(javaProject);
             for (File srcDirectory : srcDirectories) {
                 addToClasspath(srcDirectory);
             }
@@ -110,32 +111,22 @@ public class KotlinEnvironment {
 
     private void addJreClasspath() {
         try {
-            IJavaProject[] javaProjects = getAllJavaProjects();
+            IRuntimeClasspathEntry computeJREEntry = JavaRuntime.computeJREEntry(javaProject);
+            IRuntimeClasspathEntry[] jreEntries = JavaRuntime.resolveRuntimeClasspathEntry(computeJREEntry,
+                    javaProject);
 
-            for (IJavaProject javaProject : javaProjects) {
-                IRuntimeClasspathEntry computeJREEntry = JavaRuntime.computeJREEntry(javaProject);
-                IRuntimeClasspathEntry[] jreEntries = JavaRuntime.resolveRuntimeClasspathEntry(computeJREEntry,
-                        javaProject);
-
-                // TODO: Configuring JRE should be specific for each java project. Now the first java project is used.
-                if (jreEntries.length != 0) {
-                    for (IRuntimeClasspathEntry jreEntry : jreEntries) {
-                        addToClasspath(jreEntry.getClasspathEntry().getPath().toFile());
-                    }
-                    
-                    return;
+            if (jreEntries.length != 0) {
+                for (IRuntimeClasspathEntry jreEntry : jreEntries) {
+                    addToClasspath(jreEntry.getClasspathEntry().getPath().toFile());
                 }
+                
+                return;
             }
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-    }
-    
-    private IJavaProject[] getAllJavaProjects() throws JavaModelException {
-        JavaModelManager modelManager = JavaModelManager.getJavaModelManager();
-        return modelManager.getJavaModel().getJavaProjects();
     }
     
     public JetFile getJetFile(IFile file) {

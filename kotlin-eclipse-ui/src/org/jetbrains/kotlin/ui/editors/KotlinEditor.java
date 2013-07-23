@@ -11,7 +11,6 @@ import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.ResourceUtil;
 
 public class KotlinEditor extends CompilationUnitEditor {
 
@@ -39,8 +38,6 @@ public class KotlinEditor extends CompilationUnitEditor {
             
             annotationUpdater = AnnotationUpdater.INSTANCE;
             
-            AnalyzerScheduler.INSTANCE.addFile(ResourceUtil.getFile(this.getEditorInput()), this);
-            
             getWorkspace().addResourceChangeListener(annotationUpdater, IResourceChangeEvent.POST_CHANGE);
         }
     }
@@ -65,7 +62,6 @@ public class KotlinEditor extends CompilationUnitEditor {
         if (annotationUpdater != null) {
             getWorkspace().removeResourceChangeListener(annotationUpdater);
         }
-        AnalyzerScheduler.INSTANCE.excludeFile(ResourceUtil.getFile(this.getEditorInput()));
 
         colorManager.dispose();
         ISourceViewer sourceViewer = getSourceViewer();

@@ -5,18 +5,13 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.kotlin.core.builder.KotlinManager;
 
 public class AnnotationUpdater implements IResourceChangeListener {
     
     public static final AnnotationUpdater INSTANCE = new AnnotationUpdater();
-
-    private final AnalyzerScheduler analyzerScheduler;
-    
-    private AnnotationUpdater() {
-        analyzerScheduler = AnalyzerScheduler.INSTANCE;
-    }
 
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
@@ -29,10 +24,9 @@ public class AnnotationUpdater implements IResourceChangeListener {
                         if (!KotlinManager.isProjectChangedState(delta)) {
                             return true;
                         }
-                        if (analyzerScheduler.getState() != Job.NONE) {
-                            analyzerScheduler.cancel();
-                        }
-                        analyzerScheduler.schedule();
+                        
+                        IJavaProject javaProject = JavaCore.create(delta.getResource().getProject());
+                        AnalyzerScheduler.analyzeProjectInBackground(javaProject);
                         
                         return true;
                     }

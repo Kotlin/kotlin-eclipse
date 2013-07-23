@@ -9,6 +9,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
 import org.jetbrains.jet.lang.resolve.name.FqName;
@@ -17,7 +18,8 @@ import org.jetbrains.jet.plugin.JetMainDetector;
 public class ProjectUtils {
     
     public static IFile getMainClass(Collection<IFile> files) {
-        KotlinEnvironment kotlinEnvironment = new KotlinEnvironment();
+        IJavaProject javaProject = getJavaProjectFromCollection(files);
+        KotlinEnvironment kotlinEnvironment = new KotlinEnvironment(javaProject);
         
         for (IFile file : files) {
             if (JetMainDetector.hasMain(kotlinEnvironment.getJetFile(file).getDeclarations())) {
@@ -28,12 +30,23 @@ public class ProjectUtils {
         return null;
     }
     
+    public static IJavaProject getJavaProjectFromCollection(Collection<IFile> files) {
+        IJavaProject javaProject = null;
+        for (IFile file : files) {
+            javaProject = JavaCore.create(file.getProject());
+            break;
+        }
+        
+        return javaProject;
+    }
+    
     public static boolean hasMain(IFile file) {
         return getMainClass(Arrays.asList(file)) != null;
     }
     
     public static String getPackageByFile(IFile file) {
-        return new KotlinEnvironment().getJetFile(file).getPackageName();
+        IJavaProject javaProject = JavaCore.create(file.getProject());
+        return new KotlinEnvironment(javaProject).getJetFile(file).getPackageName();
     }
     
     public static FqName createPackageClassName(IFile file) {
