@@ -10,6 +10,7 @@ import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.jetbrains.jet.lexer.JetTokens;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.parser.KotlinParser;
 import org.jetbrains.kotlin.utils.IndenterUtil;
 
@@ -111,7 +112,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 command.text += IndenterUtil.createWhiteSpace(indent, 0);
            }
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            KotlinLogger.logAndThrow(e);
         }
     }
     
@@ -139,7 +140,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             
             return indent;
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            KotlinLogger.logAndThrow(e);
         }
         
         return 0; 
@@ -157,7 +158,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             
             return containsNewLine(document, bufBefore.toString());
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            KotlinLogger.logAndThrow(e);
         }
         
         return false;

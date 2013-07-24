@@ -4,6 +4,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.KotlinFilesCollector;
 import org.jetbrains.kotlin.ui.editors.AnalyzerScheduler;
 import org.osgi.framework.BundleContext;
@@ -32,7 +33,7 @@ public class Activator extends AbstractUIPlugin {
                 AnalyzerScheduler.analyzeProjectInBackground(javaProject);
             }
         } catch (JavaModelException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
         }
     }
 

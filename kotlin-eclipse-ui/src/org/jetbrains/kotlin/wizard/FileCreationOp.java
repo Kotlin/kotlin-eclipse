@@ -17,6 +17,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 class FileCreationOp implements IRunnableWithProgress {
 
@@ -56,9 +57,9 @@ class FileCreationOp implements IRunnableWithProgress {
                 result.appendContents(new ByteArrayInputStream(contents.getBytes()), false, false, monitor);
             }
         } catch (ExecutionException e) {
-            throw new InvocationTargetException(e, "Could not create destination file");
+            KotlinLogger.logAndThrow(e);
         } catch (CoreException e) {
-            e.printStackTrace();
+            KotlinLogger.logAndThrow(e);
         }
     }
 
