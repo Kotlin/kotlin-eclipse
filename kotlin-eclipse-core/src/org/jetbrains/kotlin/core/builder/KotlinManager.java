@@ -3,10 +3,9 @@ package org.jetbrains.kotlin.core.builder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -24,36 +23,32 @@ import com.intellij.lang.ASTNode;
 
 public class KotlinManager {
     
-    private final static Map<IProject, List<IFile>> projectFiles = new HashMap<>();
-    private final static Map<IFile, ASTNode> psiFiles = new HashMap<>();
+    private final static Map<IProject, List<IFile>> projectFiles = new ConcurrentHashMap<>();
+    private final static Map<IFile, ASTNode> psiFiles = new ConcurrentHashMap<>();
     
-    public final static String binFolder = "bin";
-
-    public static void updateProjectPsiSources(IProject project, IFile file, int flag) {
+    private final static Object mapOperationLock = new Object();
+    
+    public static void updateProjectPsiSources(IResource resource, int flag) {
+        IProject project = resource.getProject();
+        
+        IFile file;
+        if (resource instanceof IFile) {
+            file = (IFile) resource;
+        } else {
+            throw new IllegalArgumentException();
+        }
+        
         switch (flag) {
             case IResourceDelta.ADDED:
-                assert !containsPsiFile(file) : "File(" + file.getName() + ") is already added"; 
-                
-                List<IFile> iFiles = projectFiles.get(project);
-                if (iFiles == null) {
-                    projectFiles.put(project, new ArrayList<IFile>());
-                }
-                projectFiles.get(project).add(file);
-                psiFiles.put(file, KotlinParser.parse(file));
+                addFile(file, project);
                 break;
                 
             case IResourceDelta.CHANGED:
-                assert containsPsiFile(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
-                
-                psiFiles.put(file, KotlinParser.parse(file));
+                updatePsiFile(file, null);
                 break;
                 
             case IResourceDelta.REMOVED:
-                assert containsPsiFile(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
-                
-                psiFiles.remove(file);
-                List<IFile> files = projectFiles.get(project);
-                files.remove(file);
+                removeFile(file, project);
                 break;
                 
             default:
@@ -61,38 +56,71 @@ public class KotlinManager {
         }
     }
     
-    public static void updateProjectPsiSources(IResource resource, int flag) {
-        updateProjectPsiSources(resource.getProject(), (IFile) resource, flag);
-    }
-    
-    public static ASTNode getParsedFile(IFile file) {
-        return psiFiles.get(file);
-    }
-    
-    public static Collection<ASTNode> getAllPsiFiles() {
-        return Collections.unmodifiableCollection(psiFiles.values());
-    }
-    
-    public static ArrayList<ASTNode> getPsiFiles(IProject project) {
-        List<IFile> filesByProject = projectFiles.get(project);
-        ArrayList<ASTNode> psiFilesByProject = new ArrayList<>();
-        if (filesByProject == null) {
-            return psiFilesByProject; 
+    public static void addFile(IFile file, IProject project) {
+        synchronized (mapOperationLock) {
+            assert !psiFiles.containsKey(file) : "File(" + file.getName() + ") is already added"; 
+            
+            List<IFile> iFiles = projectFiles.get(project);
+            if (iFiles == null) {
+                projectFiles.put(project, new ArrayList<IFile>());
+            }
+            projectFiles.get(project).add(file);
+            psiFiles.put(file, KotlinParser.parse(file));
         }
-        
-        for (IFile file : filesByProject) {
-            psiFilesByProject.add(psiFiles.get(file));
+    }
+    
+    public static void removeFile(IFile file, IProject project) {
+        synchronized (mapOperationLock) {
+            assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
+            
+            psiFiles.remove(file);
+            List<IFile> files = projectFiles.get(project);
+            files.remove(file);
         }
-        
-        return psiFilesByProject;
+    }
+    
+    public static void updatePsiFile(IFile file, String sourceCode) {
+        synchronized (mapOperationLock) {
+            assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
+            
+            ASTNode parsedFile;
+            if (sourceCode != null) {
+                parsedFile = KotlinParser.parseText(sourceCode);
+            } else {
+                parsedFile = KotlinParser.parse(file);
+            }
+            
+            psiFiles.put(file, parsedFile);
+        }
     }
     
     public static List<IFile> getFilesByProject(IProject project) {
-        if (projectFiles.containsKey(project)) {
-            return Collections.unmodifiableList(projectFiles.get(project));
+        synchronized (mapOperationLock) {
+            if (projectFiles.containsKey(project)) {
+                return Collections.unmodifiableList(projectFiles.get(project));
+            }
+            
+            return new ArrayList<IFile>();
         }
-        
-        return new ArrayList<IFile>();
+    }
+    
+    public static ASTNode getParsedFile(IFile file, String expectedSourceCode) {
+        synchronized (mapOperationLock) {
+            ASTNode currentParsedFile = getParsedFile(file);
+            
+            expectedSourceCode = expectedSourceCode.replaceAll("\r", "");
+            if (!currentParsedFile.getText().equals(expectedSourceCode)) {
+                updatePsiFile(file, expectedSourceCode);
+            }
+            
+            return psiFiles.get(file);
+        }
+    }
+    
+    public static ASTNode getParsedFile(IFile file) {
+        synchronized (mapOperationLock) {
+            return psiFiles.get(file);
+        }
     }
     
     public static List<IFile> getFilesByProject(String projectName) {
@@ -100,8 +128,10 @@ public class KotlinManager {
         return getFilesByProject(project);
     }
     
-    public static Set<IFile> getAllFiles() {
-        return Collections.unmodifiableSet(psiFiles.keySet());
+    public static Collection<IFile> getAllFiles() {
+        synchronized (mapOperationLock) {
+            return Collections.unmodifiableCollection(psiFiles.keySet());
+        }
     }
     
     public static boolean isProjectChangedState(IResourceDelta delta) {
@@ -131,9 +161,5 @@ public class KotlinManager {
         }
         
         return false;
-    }
-    
-    private static boolean containsPsiFile(IFile file) {
-        return psiFiles.containsKey(file);
     }
 }

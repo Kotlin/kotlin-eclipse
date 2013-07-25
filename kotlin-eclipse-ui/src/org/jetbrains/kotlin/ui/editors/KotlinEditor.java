@@ -23,7 +23,7 @@ public class KotlinEditor extends CompilationUnitEditor {
         colorManager = new ColorManager();
         bracketInserter = new BracketInserter();        
         
-        setSourceViewerConfiguration(new Configuration(colorManager));
+        setSourceViewerConfiguration(new Configuration(colorManager, this));
     }
     
     @Override

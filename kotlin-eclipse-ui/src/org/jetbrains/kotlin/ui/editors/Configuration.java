@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.editors;
 
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
 import org.eclipse.jface.text.DefaultTextHover;
@@ -12,6 +13,8 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.reconciler.IReconciler;
+import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.DefaultAnnotationHover;
@@ -24,9 +27,11 @@ public class Configuration extends SourceViewerConfiguration {
     private DoubleClickStrategy doubleClickStrategy;
     private Scanner scanner;
     private final ColorManager colorManager;
+    private final JavaEditor editor;
 
-    public Configuration(ColorManager colorManager) {
+    public Configuration(ColorManager colorManager, JavaEditor editor) {
         this.colorManager = colorManager;
+        this.editor = editor;
     }
     
     @Override
@@ -49,6 +54,12 @@ public class Configuration extends SourceViewerConfiguration {
     @Override
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new DefaultAnnotationHover();
+    }
+    
+    @Override
+    public IReconciler getReconciler(ISourceViewer sourceViewer) {
+        KotlinReconcilingStrategy ktReconcilingStrategy = new KotlinReconcilingStrategy(editor);
+        return new MonoReconciler(ktReconcilingStrategy, false);
     }
 
     @Override
