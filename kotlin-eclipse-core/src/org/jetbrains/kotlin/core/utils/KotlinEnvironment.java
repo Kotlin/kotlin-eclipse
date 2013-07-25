@@ -144,7 +144,7 @@ public class KotlinEnvironment {
         return projectEnvironment;
     }
     
-    public JavaCoreApplicationEnvironment getApplicationEnvironment() {
+    public static JavaCoreApplicationEnvironment getApplicationEnvironment() {
         return applicationEnvironment;
     }
     

@@ -3,13 +3,10 @@ package org.jetbrains.kotlin.parser;
 import java.io.File;
 
 import org.eclipse.core.resources.IFile;
-import org.jetbrains.jet.CompilerModeProvider;
-import org.jetbrains.jet.OperationModeProvider;
 import org.jetbrains.jet.lang.parsing.JetParser;
-import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.jet.plugin.JetLanguage;
+import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 
 import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
@@ -24,31 +21,24 @@ import com.intellij.psi.PsiManager;
 
 public class KotlinParser {
 
-    private final static Disposable DISPOSABLE = new Disposable() {
+    private final File file;
+    
+    private ASTNode tree;
+    private final JavaCoreApplicationEnvironment applicationEnvironment;
+    private final Project project;
+    
+    private static final Disposable DISPOSABLE = new Disposable() {
         
         @Override
         public void dispose() {
         }
     };
     
-    private final File file;
-    
-    private final JavaCoreApplicationEnvironment applicationEnvironment;
-    private final Project project;
-    private ASTNode tree;
-    
     public KotlinParser(File file) {
         this.file = file;
         this.tree = null;
         
-        applicationEnvironment = new JavaCoreApplicationEnvironment(DISPOSABLE);
-        
-        applicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
-        applicationEnvironment.registerFileType(JetFileType.INSTANCE, "jet");
-        applicationEnvironment.registerParserDefinition(new JetParserDefinition());
-
-        applicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
-        
+        applicationEnvironment = KotlinEnvironment.getApplicationEnvironment();
         JavaCoreProjectEnvironment projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
         
         project = projectEnvironment.getProject();
