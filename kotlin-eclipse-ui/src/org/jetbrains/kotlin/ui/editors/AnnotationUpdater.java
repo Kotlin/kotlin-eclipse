@@ -7,7 +7,7 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class AnnotationUpdater implements IResourceChangeListener {
@@ -22,7 +22,7 @@ public class AnnotationUpdater implements IResourceChangeListener {
                     
                     @Override
                     public boolean visit(IResourceDelta delta) throws CoreException {
-                        if (!KotlinManager.isProjectChangedState(delta)) {
+                        if (!KotlinPsiManager.INSTANCE.isProjectChangedState(delta)) {
                             return true;
                         }
                         

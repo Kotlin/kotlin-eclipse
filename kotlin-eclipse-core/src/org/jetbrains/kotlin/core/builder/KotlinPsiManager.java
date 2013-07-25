@@ -21,22 +21,20 @@ import org.jetbrains.kotlin.parser.KotlinParser;
 
 import com.intellij.lang.ASTNode;
 
-public class KotlinManager {
+public class KotlinPsiManager {
     
-    private final static Map<IProject, List<IFile>> projectFiles = new ConcurrentHashMap<>();
-    private final static Map<IFile, ASTNode> psiFiles = new ConcurrentHashMap<>();
+    public static final KotlinPsiManager INSTANCE = new KotlinPsiManager();
     
-    private final static Object mapOperationLock = new Object();
+    private final Map<IProject, List<IFile>> projectFiles = new ConcurrentHashMap<>();
+    private final Map<IFile, ASTNode> psiFiles = new ConcurrentHashMap<>();
     
-    public static void updateProjectPsiSources(IResource resource, int flag) {
-        IProject project = resource.getProject();
-        
-        IFile file;
-        if (resource instanceof IFile) {
-            file = (IFile) resource;
-        } else {
-            throw new IllegalArgumentException();
-        }
+    private final Object mapOperationLock = new Object();
+    
+    private KotlinPsiManager() {
+    }
+    
+    public void updateProjectPsiSources(IFile file, int flag) {
+        IProject project = file.getProject();
         
         switch (flag) {
             case IResourceDelta.ADDED:
@@ -56,12 +54,11 @@ public class KotlinManager {
         }
     }
     
-    public static void addFile(IFile file, IProject project) {
+    public void addFile(IFile file, IProject project) {
         synchronized (mapOperationLock) {
             assert !psiFiles.containsKey(file) : "File(" + file.getName() + ") is already added"; 
             
-            List<IFile> iFiles = projectFiles.get(project);
-            if (iFiles == null) {
+            if (!projectFiles.containsKey(project)) {
                 projectFiles.put(project, new ArrayList<IFile>());
             }
             projectFiles.get(project).add(file);
@@ -69,7 +66,7 @@ public class KotlinManager {
         }
     }
     
-    public static void removeFile(IFile file, IProject project) {
+    public void removeFile(IFile file, IProject project) {
         synchronized (mapOperationLock) {
             assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
@@ -79,7 +76,7 @@ public class KotlinManager {
         }
     }
     
-    public static void updatePsiFile(IFile file, String sourceCode) {
+    public void updatePsiFile(IFile file, String sourceCode) {
         synchronized (mapOperationLock) {
             assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
@@ -94,7 +91,7 @@ public class KotlinManager {
         }
     }
     
-    public static List<IFile> getFilesByProject(IProject project) {
+    public List<IFile> getFilesByProject(IProject project) {
         synchronized (mapOperationLock) {
             if (projectFiles.containsKey(project)) {
                 return Collections.unmodifiableList(projectFiles.get(project));
@@ -104,7 +101,7 @@ public class KotlinManager {
         }
     }
     
-    public static ASTNode getParsedFile(IFile file, String expectedSourceCode) {
+    public ASTNode getParsedFile(IFile file, String expectedSourceCode) {
         synchronized (mapOperationLock) {
             ASTNode currentParsedFile = getParsedFile(file);
             
@@ -117,31 +114,31 @@ public class KotlinManager {
         }
     }
     
-    public static ASTNode getParsedFile(IFile file) {
+    public ASTNode getParsedFile(IFile file) {
         synchronized (mapOperationLock) {
             return psiFiles.get(file);
         }
     }
     
-    public static List<IFile> getFilesByProject(String projectName) {
+    public List<IFile> getFilesByProject(String projectName) {
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
         return getFilesByProject(project);
     }
     
-    public static Collection<IFile> getAllFiles() {
+    public Collection<IFile> getAllFiles() {
         synchronized (mapOperationLock) {
             return Collections.unmodifiableCollection(psiFiles.keySet());
         }
     }
     
-    public static boolean isProjectChangedState(IResourceDelta delta) {
+    public boolean isProjectChangedState(IResourceDelta delta) {
         return (delta.getFlags() & IResourceDelta.CONTENT) != 0 ||
                 (delta.getKind() == IResourceDelta.REMOVED) ||
                 (delta.getKind() == IResourceDelta.ADDED);
     }
     
-    public static boolean isCompatibleResource(IResource resource) throws JavaModelException {
-        if (!JetFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
+    public boolean isCompatibleResource(IResource resource) throws JavaModelException {
+        if (!(resource instanceof IFile) || !JetFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
             return false;
         }
 

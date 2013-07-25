@@ -21,7 +21,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.jetbrains.jet.plugin.JetFileType;
-import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
@@ -78,7 +78,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
     }
     
     private void launchProject(IProject project, String mode) {
-        IFile mainClass = ProjectUtils.getMainClass(KotlinManager.getFilesByProject(project));
+        IFile mainClass = ProjectUtils.getMainClass(KotlinPsiManager.INSTANCE.getFilesByProject(project));
         if (mainClass != null) {
             launchWithMainClass(mainClass, mode);
         }

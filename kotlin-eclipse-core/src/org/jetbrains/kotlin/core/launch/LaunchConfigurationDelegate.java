@@ -26,7 +26,7 @@ import org.jetbrains.jet.cli.common.messages.MessageCollector;
 import org.jetbrains.jet.cli.jvm.K2JVMCompiler;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.Activator;
-import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.osgi.framework.Bundle;
@@ -57,7 +57,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
         String projectName = getJavaProjectName(configuration);
         
-        List<IFile> projectFiles = KotlinManager.getFilesByProject(projectName);
+        List<IFile> projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(projectName);
         if (projectFiles == null) {
             abort("Project name is invalid: " + projectName, null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
             
@@ -105,7 +105,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         try {
             String projectName = getJavaProjectName(configuration);
             FqName mainClassName = new FqName(getMainTypeName(configuration));
-            for (IFile file : KotlinManager.getFilesByProject(projectName)) {
+            for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(projectName)) {
                 if (ProjectUtils.hasMain(file) && ProjectUtils.createPackageClassName(file).equalsTo(mainClassName)) {
                     return mainClassName;
                 }

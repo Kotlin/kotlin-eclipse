@@ -19,7 +19,7 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
@@ -65,7 +65,7 @@ public class AnnotationManager {
     
     public static void clearAllMarkersFromProject(IJavaProject javaProject) {
         IProject project = javaProject.getProject();
-        for (IFile file : KotlinManager.getFilesByProject(project)) {
+        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
             try {
                 file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             } catch (CoreException e) {

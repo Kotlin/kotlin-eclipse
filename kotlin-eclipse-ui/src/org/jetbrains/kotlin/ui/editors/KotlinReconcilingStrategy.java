@@ -6,7 +6,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
-import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 
 public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
@@ -30,7 +30,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         String sourceCode = editor.getViewer().getDocument().get();
         IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
         
-        KotlinManager.updatePsiFile(file, sourceCode);
+        KotlinPsiManager.INSTANCE.updatePsiFile(file, sourceCode);
     }
 
 }

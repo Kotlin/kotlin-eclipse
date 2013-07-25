@@ -2,12 +2,13 @@ package org.jetbrains.kotlin.core.utils;
 
 import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
-import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class KotlinFilesCollector {
@@ -29,8 +30,8 @@ public class KotlinFilesCollector {
     }
     
     private void scanForFiles(IResource parentResource) throws CoreException {
-        if (KotlinManager.isCompatibleResource(parentResource)) {
-            KotlinManager.updateProjectPsiSources(parentResource, IResourceDelta.ADDED);
+        if (KotlinPsiManager.INSTANCE.isCompatibleResource(parentResource)) {
+            KotlinPsiManager.INSTANCE.updateProjectPsiSources((IFile) parentResource, IResourceDelta.ADDED);
             return; 
         }
         if (parentResource.getType() != IResource.FOLDER) {

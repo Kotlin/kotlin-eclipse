@@ -10,7 +10,7 @@ import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
-import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 
 import com.google.common.base.Predicates;
@@ -39,7 +39,7 @@ public class KotlinAnalyzer {
     
     private static List<JetFile> getSourceFiles(IJavaProject javaProject, Project ideaProject, JavaCoreApplicationEnvironment applicationEnvironment) {
         List<JetFile> jetFiles = new ArrayList<JetFile>();
-        for (IFile file : KotlinManager.getFilesByProject(javaProject.getProject())) {
+        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.getProject())) {
             VirtualFile virtualFile = applicationEnvironment.getLocalFileSystem().findFileByPath(
                     file.getRawLocation().toOSString());
             if (virtualFile != null) {

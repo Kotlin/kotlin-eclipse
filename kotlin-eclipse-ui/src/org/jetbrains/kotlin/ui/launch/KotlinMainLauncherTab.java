@@ -11,7 +11,7 @@ import org.eclipse.jdt.internal.ui.viewsupport.JavaUILabelProvider;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.dialogs.ListDialog;
-import org.jetbrains.kotlin.core.builder.KotlinManager;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class KotlinMainLauncherTab extends JavaMainTab implements ILaunchConfigurationTab {
@@ -26,9 +26,9 @@ public class KotlinMainLauncherTab extends JavaMainTab implements ILaunchConfigu
         dialog.setLabelProvider(new JavaUILabelProvider());
 
         Collection<IFile> projectFiles = null;
-        projectFiles = KotlinManager.getFilesByProject(fProjText.getText());
+        projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(fProjText.getText());
         if (projectFiles == null) {
-            projectFiles = KotlinManager.getAllFiles();
+            projectFiles = KotlinPsiManager.INSTANCE.getAllFiles();
         } 
         
         List<IFile> mainFiles = new ArrayList<IFile>();
