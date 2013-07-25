@@ -84,7 +84,7 @@ public class Configuration extends SourceViewerConfiguration {
     
     @Override
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        return new IAutoEditStrategy[] { new KotlinAutoIndentStrategy() };
+        return new IAutoEditStrategy[] { new KotlinAutoIndentStrategy(editor) };
     }
     
     @Override

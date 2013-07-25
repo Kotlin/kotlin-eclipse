@@ -1,9 +1,6 @@
 package org.jetbrains.kotlin.parser;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 
 import org.eclipse.core.resources.IFile;
 import org.jetbrains.jet.CompilerModeProvider;
@@ -90,25 +87,5 @@ public class KotlinParser {
     private ASTNode getNode(File file) {
         JetFile jetFile = (JetFile) getPsiFile(file);
         return jetFile.getNode();
-    }
-    
-    public static ASTNode parseText(String document) {
-        ASTNode parsedFile = null;
-        
-        try {
-            File tempFile;
-            tempFile = File.createTempFile("temp", "." + JetFileType.INSTANCE.getDefaultExtension());
-            BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
-            bw.write(document);
-            bw.close();
-            
-            parsedFile = new KotlinParser(tempFile).parse();
-            
-            tempFile.delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
-        return parsedFile;
     }
 }

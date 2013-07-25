@@ -1,5 +1,9 @@
 package org.jetbrains.kotlin.core.builder;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,7 +86,7 @@ public class KotlinPsiManager {
             
             ASTNode parsedFile;
             if (sourceCode != null) {
-                parsedFile = KotlinParser.parseText(sourceCode);
+                parsedFile = parseText(sourceCode);
             } else {
                 parsedFile = KotlinParser.parse(file);
             }
@@ -158,5 +162,25 @@ public class KotlinPsiManager {
         }
         
         return false;
+    }
+    
+    private ASTNode parseText(String text) {
+        ASTNode parsedFile = null;
+        
+        try {
+            File tempFile;
+            tempFile = File.createTempFile("temp", "." + JetFileType.INSTANCE.getDefaultExtension());
+            BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
+            bw.write(text);
+            bw.close();
+            
+            parsedFile = new KotlinParser(tempFile).parse();
+            
+            tempFile.delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        return parsedFile;
     }
 }

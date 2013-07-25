@@ -53,7 +53,7 @@ public class AnalyzerScheduler extends Job {
     }
     
     @Override
-    protected IStatus run(IProgressMonitor monitor) {
+    protected synchronized IStatus run(IProgressMonitor monitor) {
         try {
             assert javaProject != null : "JavaProject is null";
             

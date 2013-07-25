@@ -4,14 +4,16 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.jetbrains.jet.lexer.JetTokens;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.parser.KotlinParser;
 import org.jetbrains.kotlin.utils.IndenterUtil;
 
 import com.intellij.lang.ASTNode;
@@ -19,6 +21,12 @@ import com.intellij.lang.ASTNode;
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
     public static final Set<String> BLOCK_ELEMENT_TYPES = new HashSet<String>(Arrays.asList("IF", "FOR", "WHILE", "FUN", "CLASS", "FUNCTION_LITERAL_EXPRESSION", "WHEN"));
+    
+    private final JavaEditor editor;
+    
+    public KotlinAutoIndentStrategy(JavaEditor editor) {
+        this.editor = editor;
+    }
     
     @Override
     public void customizeDocumentCommand(IDocument document, DocumentCommand command) {
@@ -122,14 +130,17 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 return 0;
             }
             
-            ASTNode parsedDocument = KotlinParser.parseText(document.get());
+            IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+            ASTNode parsedDocument = KotlinPsiManager.INSTANCE.getParsedFile(file, document.get());
             if (document.get().contains("\r")) {
                 offset -= document.getLineOfOffset(offset);
             }
+            
             ASTNode leaf = parsedDocument.findLeafElementAt(offset);
             if (leaf.getElementType() != JetTokens.WHITE_SPACE) {
                 leaf = parsedDocument.findLeafElementAt(offset - 1);
             }
+            
             int indent = 0;
             while(leaf != null) {
                 if (BLOCK_ELEMENT_TYPES.contains(leaf.getElementType().toString())) {
