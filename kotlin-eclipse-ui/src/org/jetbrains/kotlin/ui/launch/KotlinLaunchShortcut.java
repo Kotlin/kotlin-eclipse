@@ -13,6 +13,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.ILaunchShortcut;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.viewers.ISelection;
@@ -96,11 +97,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
             return; 
         } 
         
-        try {
-            configuration.launch(mode, null);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);;
-        }
+        DebugUITools.launch(configuration, mode);
     }
     
     private ILaunchConfiguration createConfiguration(IFile file) {
