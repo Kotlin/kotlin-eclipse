@@ -11,12 +11,6 @@
       </runtime>
    </extension>
    <extension
-         point="org.eclipse.ui.startup">
-      <startup
-            class="org.jetbrains.kotlin.core.utils.KotlinFilesCollector">
-      </startup>
-   </extension>
-   <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
             delegate="org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate"
