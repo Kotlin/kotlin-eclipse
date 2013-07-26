@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.jetbrains.kotlin.model.KotlinNature;
 
 public class TestJavaProject {
 	
@@ -43,7 +44,7 @@ public class TestJavaProject {
 			javaProject = JavaCore.create(project);
 			
 			if (!projectExists) {
-				setJavaNature();
+				setNatureAndBuilder();
 				
 				javaProject.setRawClasspath(new IClasspathEntry[0], null);
 				
@@ -56,10 +57,13 @@ public class TestJavaProject {
 		}
 	}
 	
-	private void setJavaNature() throws CoreException {
+	private void setNatureAndBuilder() throws CoreException {
         IProjectDescription description = project.getDescription();
         description.setNatureIds(new String[] { JavaCore.NATURE_ID });
         project.setDescription(description, null);
+        
+        KotlinNature.addNature(project);
+        KotlinNature.addBuilder(project);
     }
 	
 	public IFile createFile(IContainer folder, String name, InputStream content) {

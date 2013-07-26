@@ -171,10 +171,8 @@ public class KotlinPsiManager {
         return false;
     }
 
-    @Nullable
+    @NotNull
     private ASTNode parseText(@NotNull String text) {
-        ASTNode parsedFile = null;
-        
         try {
             File tempFile;
             tempFile = File.createTempFile("temp", "." + JetFileType.INSTANCE.getDefaultExtension());
@@ -182,13 +180,12 @@ public class KotlinPsiManager {
             bw.write(text);
             bw.close();
             
-            parsedFile = new KotlinParser(tempFile).parse();
+            ASTNode parsedFile = new KotlinParser(tempFile).parse();
             
-            tempFile.delete();
+            return parsedFile;
         } catch (IOException e) {
             KotlinLogger.logError(e);
+            throw new IllegalStateException(e);
         }
-        
-        return parsedFile;
     }
 }

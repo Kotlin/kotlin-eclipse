@@ -23,11 +23,11 @@ import org.jetbrains.kotlin.utils.LineEndUtil;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 
-public class KotlinAnnotationStorage {
+public class DiagnosticAnnotationUtil {
 
-    public static final KotlinAnnotationStorage INSTANCE = new KotlinAnnotationStorage();
+    public static final DiagnosticAnnotationUtil INSTANCE = new DiagnosticAnnotationUtil();
     
-    private KotlinAnnotationStorage() {
+    private DiagnosticAnnotationUtil() {
     }
     
     public Map<IFile, List<DiagnosticAnnotation>> handleDiagnostics(List<Diagnostic> diagnostics) {
@@ -101,13 +101,13 @@ public class KotlinAnnotationStorage {
                 
                 AbstractTextEditor editor = (AbstractTextEditor) workbenchWindow.getActivePage().getActiveEditor();
                 if (editor != null) {
-                    updateMarkers(editor, annotations);
+                    updateAnnotations(editor, annotations);
                 }
             }
         });
     }
     
-    private void updateMarkers(@NotNull AbstractTextEditor editor, 
+    private void updateAnnotations(@NotNull AbstractTextEditor editor, 
             @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations) {
         IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
 

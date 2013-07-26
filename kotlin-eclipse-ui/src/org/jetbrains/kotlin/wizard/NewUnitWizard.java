@@ -9,6 +9,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.model.KotlinNature;
 
 public class NewUnitWizard extends Wizard implements INewWizard {
@@ -46,7 +47,13 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         try {
             KotlinNature.addNature(page.getProject());
         } catch (CoreException e) {
-            throw new RuntimeException("Error while adding Kotlin nature to project.");
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        try {
+            KotlinNature.addBuilder(page.getProject());
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
         }
         
         BasicNewResourceWizard.selectAndReveal(op.getResult(), workbench.getActiveWorkbenchWindow());

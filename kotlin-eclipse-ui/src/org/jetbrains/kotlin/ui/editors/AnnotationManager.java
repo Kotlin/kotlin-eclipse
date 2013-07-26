@@ -17,22 +17,19 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
-import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.utils.LineEndUtil;
-
-import com.intellij.openapi.util.TextRange;
 
 public class AnnotationManager {
     
-    public static final String markerType = "org.jetbrains.kotlin.ui.marker";
-    public static final String annotationErrorType = "org.jetbrains.kotlin.ui.annotation.error";
-    public static final String annotationWarningType = "org.jetbrains.kotlin.ui.annotation.warning";
+    public static final String MARKER_TYPE = "org.jetbrains.kotlin.ui.marker";
+    public static final String ANNOTATION_ERROR_TYPE = "org.jetbrains.kotlin.ui.annotation.error";
+    public static final String ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning";
     
-    public static void updateAnnotations(TextEditor editor, List<KotlinAnnotation> annotations) {
+    public static void updateAnnotations(@NotNull AbstractTextEditor editor, @NotNull List<DiagnosticAnnotation> annotations) {
         IDocumentProvider documentProvider = editor.getDocumentProvider();
         IDocument document = documentProvider.getDocument(editor.getEditorInput());
         
@@ -41,7 +38,7 @@ public class AnnotationManager {
         if (annotationModel instanceof IAnnotationModelExtension) {
             IAnnotationModelExtension modelExtension = (IAnnotationModelExtension) annotationModel;
             Map<Annotation, Position> newAnnotations = new HashMap<Annotation, Position>();
-            for (KotlinAnnotation annotation : annotations) {
+            for (DiagnosticAnnotation annotation : annotations) {
                 newAnnotations.put(annotation, annotation.getPosition());
             }
             List<Annotation> oldAnnotations = new ArrayList<Annotation>();
@@ -58,7 +55,7 @@ public class AnnotationManager {
         for (Iterator<?> i = annotationModel.getAnnotationIterator(); i.hasNext();) {
             annotationModel.removeAnnotation((Annotation) i.next());
         }
-        for (KotlinAnnotation annotation : annotations) {
+        for (DiagnosticAnnotation annotation : annotations) {
             annotationModel.addAnnotation(annotation, annotation.getPosition());
         }
         annotationModel.disconnect(document);
@@ -75,18 +72,13 @@ public class AnnotationManager {
         }
     }
     
-    public static void addProblemMarker(@NotNull IFile file, @NotNull String message, 
-            int problemSeverity, @NotNull String fileText, @NotNull TextRange range) {
+    public static void addProblemMarker(@NotNull DiagnosticAnnotation annotation, @NotNull IFile file) {
         try {
             IMarker problemMarker = file.createMarker(IMarker.PROBLEM);
-            problemMarker.setAttribute(IMarker.MESSAGE, message);
-            problemMarker.setAttribute(IMarker.SEVERITY, problemSeverity);
-            
-            int start = LineEndUtil.convertLfToOsOffset(fileText, range.getStartOffset());
-            problemMarker.setAttribute(IMarker.CHAR_START, start);
-            
-            int end = LineEndUtil.convertLfToOsOffset(fileText, range.getEndOffset());
-            problemMarker.setAttribute(IMarker.CHAR_END, end);
+            problemMarker.setAttribute(IMarker.MESSAGE, annotation.getText());
+            problemMarker.setAttribute(IMarker.SEVERITY, annotation.getMarkerSeverity());
+            problemMarker.setAttribute(IMarker.CHAR_START, annotation.getRange().getStartOffset());
+            problemMarker.setAttribute(IMarker.CHAR_END, annotation.getRange().getEndOffset());
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }

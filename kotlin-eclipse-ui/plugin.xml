@@ -190,4 +190,23 @@
             plugin="org.jetbrains.kotlin.core">
       </statusHandler>
    </extension>
+   <extension
+         id="org.jetbrains.kotlin.ui.kotlinBuilder"
+         name="KotlinBuilder"
+         point="org.eclipse.core.resources.builders">
+      <builder>
+         <run
+               class="org.jetbrains.kotlin.ui.builder.KotlinBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="org.jetbrains.kotlin.ui.kotlinnature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.jetbrains.kotlin.model.KotlinNature">
+         </run>
+      </runtime>
+   </extension>
 </plugin>

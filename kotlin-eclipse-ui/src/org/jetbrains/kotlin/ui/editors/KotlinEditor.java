@@ -1,8 +1,5 @@
 package org.jetbrains.kotlin.ui.editors;
 
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
-
-import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
@@ -16,7 +13,6 @@ public class KotlinEditor extends CompilationUnitEditor {
 
     private final ColorManager colorManager;
     private final BracketInserter bracketInserter;
-    private AnnotationUpdater annotationUpdater;
     
     public KotlinEditor() {
         super();
@@ -35,10 +31,6 @@ public class KotlinEditor extends CompilationUnitEditor {
             bracketInserter.setSourceViewer(sourceViewer);
             bracketInserter.addBrackets('{', '}');
             ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(bracketInserter);
-            
-            annotationUpdater = AnnotationUpdater.INSTANCE;
-            
-            getWorkspace().addResourceChangeListener(annotationUpdater, IResourceChangeEvent.POST_CHANGE);
         }
     }
     
@@ -59,10 +51,6 @@ public class KotlinEditor extends CompilationUnitEditor {
     
     @Override
     public void dispose() {
-        if (annotationUpdater != null) {
-            getWorkspace().removeResourceChangeListener(annotationUpdater);
-        }
-
         colorManager.dispose();
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer instanceof ITextViewerExtension) {

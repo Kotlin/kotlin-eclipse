@@ -2,15 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="kotlinNature"
-         point="org.eclipse.core.resources.natures">
-      <runtime>
-         <run
-               class="org.jetbrains.kotlin.model.KotlinNature">
-         </run>
-      </runtime>
-   </extension>
-   <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
             delegate="org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate"
@@ -18,6 +9,16 @@
             modes="run"
             name="Kotlin Application">
       </launchConfigurationType>
+   </extension>
+   <extension
+         id="kotlinNature"
+         name="KotlinNature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.jetbrains.kotlin.model.KotlinNature">
+         </run>
+      </runtime>
    </extension>
 
 </plugin>
