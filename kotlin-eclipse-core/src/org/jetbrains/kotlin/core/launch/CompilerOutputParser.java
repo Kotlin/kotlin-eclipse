@@ -41,7 +41,6 @@ public class CompilerOutputParser {
             parser.parse(new InputSource(wrappingReader), new CompilerOutputSAXHandler(messageCollector));
         }
         catch (Throwable e) {
-
             String message = stringBuilder.toString();
             messageCollector.report(CompilerMessageSeverity.ERROR, message, CompilerMessageLocation.NO_LOCATION);
         }

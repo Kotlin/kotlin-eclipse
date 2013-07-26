@@ -11,6 +11,8 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.CompilerModeProvider;
 import org.jetbrains.jet.OperationModeProvider;
 import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
@@ -129,13 +131,15 @@ public class KotlinEnvironment {
         }
     }
     
-    public JetFile getJetFile(IFile file) {
-        VirtualFile fileByPath = applicationEnvironment.getLocalFileSystem().findFileByPath(
-                file.getRawLocation().toOSString());
+    @Nullable
+    public JetFile getJetFile(@NotNull IFile file) {
+        String path = file.getRawLocation().toOSString();
+        VirtualFile fileByPath = applicationEnvironment.getLocalFileSystem().findFileByPath(path);
         
         return (JetFile) PsiManager.getInstance(project).findFile(fileByPath);
     }
     
+    @NotNull
     public Project getProject() {
         return project;
     }
@@ -144,6 +148,7 @@ public class KotlinEnvironment {
         return projectEnvironment;
     }
     
+    @NotNull
     public static JavaCoreApplicationEnvironment getApplicationEnvironment() {
         return applicationEnvironment;
     }

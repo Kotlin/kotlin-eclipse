@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class KotlinNature implements IProjectNature {
@@ -31,7 +32,7 @@ public class KotlinNature implements IProjectNature {
         
     }
 
-    public static boolean hasKotlinNature(final IProject project) {
+    public static boolean hasKotlinNature(@NotNull final IProject project) {
         try {
             return project.hasNature(KOTLIN_NATURE);
         } catch (CoreException e) {
@@ -40,11 +41,7 @@ public class KotlinNature implements IProjectNature {
         return false;
     }
     
-    public static void addNature(final IProject project) throws CoreException {
-        if (project == null) {
-            return;
-        }
-        
+    public static void addNature(@NotNull final IProject project) throws CoreException {
         if (!KotlinNature.hasKotlinNature(project)) {           
             final IProjectDescription description = project.getDescription();
             final String[] ids = description.getNatureIds();

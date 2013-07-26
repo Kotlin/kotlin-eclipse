@@ -3,6 +3,8 @@ package org.jetbrains.kotlin.parser;
 import java.io.File;
 
 import org.eclipse.core.resources.IFile;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.parsing.JetParser;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.plugin.JetLanguage;
@@ -44,14 +46,16 @@ public class KotlinParser {
         project = projectEnvironment.getProject();
     }
     
-    public KotlinParser(IFile iFile) {
+    public KotlinParser(@NotNull IFile iFile) {
         this(new File(iFile.getRawLocation().toOSString()));
     }
     
-    public static ASTNode parse(IFile iFile) {
+    @NotNull
+    public static ASTNode parse(@NotNull IFile iFile) {
         return new KotlinParser(iFile).parse();
     }
     
+    @NotNull
     public ASTNode parse() {
         JetParser jetParser = new JetParser(project);
         tree = jetParser.parse(null, createPsiBuilder(getNode(file)), getPsiFile(file));
@@ -59,23 +63,36 @@ public class KotlinParser {
         return tree;
     }
     
-    public ASTNode getTree() {
-        return  tree;
-    }
-    
+    @NotNull
     private PsiBuilder createPsiBuilder(ASTNode chameleon) {
         return PsiBuilderFactory.getInstance().createBuilder(project, chameleon, null, 
                 JetLanguage.INSTANCE, chameleon.getChars());
     }
     
+    @Nullable
     private PsiFile getPsiFile(File file) {
-        VirtualFile fileByPath = applicationEnvironment.getLocalFileSystem().findFileByPath(file.getAbsolutePath());
+        String path = file.getAbsolutePath();
+        
+        if (path == null) {
+            return null;
+        }
+        
+        VirtualFile fileByPath = applicationEnvironment.getLocalFileSystem().findFileByPath(path);
+        
+        if (fileByPath == null) {
+            return null;
+        }
         
         return PsiManager.getInstance(project).findFile(fileByPath);
     }
     
+    @Nullable
     private ASTNode getNode(File file) {
         JetFile jetFile = (JetFile) getPsiFile(file);
-        return jetFile.getNode();
+        if (jetFile != null) {
+            return jetFile.getNode();
+        }
+        
+        return null;
     }
 }

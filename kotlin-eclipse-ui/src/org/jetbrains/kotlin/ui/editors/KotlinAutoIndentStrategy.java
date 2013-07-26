@@ -137,6 +137,10 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             }
             
             ASTNode leaf = parsedDocument.findLeafElementAt(offset);
+            if (leaf == null) {
+                return 0;
+            }
+            
             if (leaf.getElementType() != JetTokens.WHITE_SPACE) {
                 leaf = parsedDocument.findLeafElementAt(offset - 1);
             }

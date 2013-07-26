@@ -20,6 +20,7 @@ import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.jet.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.jet.cli.common.messages.MessageCollector;
@@ -56,13 +57,14 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
         String projectName = getJavaProjectName(configuration);
-        
-        List<IFile> projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(projectName);
-        if (projectFiles == null) {
+
+        if (projectName == null) {
             abort("Project name is invalid: " + projectName, null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
             
             return;
         }
+        
+        List<IFile> projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(projectName);
         
         if (!compileKotlinFiles(projectFiles, configuration)) {
             IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 1, "", null);
@@ -101,10 +103,16 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         return null;
     }
     
+    @NotNull
     private FqName getPackageClassName(ILaunchConfiguration configuration) {
         try {
             String projectName = getJavaProjectName(configuration);
-            FqName mainClassName = new FqName(getMainTypeName(configuration));
+            String mainTypeName = getMainTypeName(configuration);
+            
+            assert projectName != null;
+            assert mainTypeName != null;
+            
+            FqName mainClassName = new FqName(mainTypeName);
             for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(projectName)) {
                 if (ProjectUtils.hasMain(file) && ProjectUtils.createPackageClassName(file).equalsTo(mainClassName)) {
                     return mainClassName;
@@ -122,7 +130,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         compilerOutput.clear();
     }
     
-    private boolean compileKotlinFiles(List<IFile> files, ILaunchConfiguration configuration) throws CoreException {
+    private boolean compileKotlinFiles(@NotNull List<IFile> files, @NotNull ILaunchConfiguration configuration) throws CoreException {
         String command = configureBuildCommand(configuration);
         
         refreshInitData();
@@ -147,7 +155,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     private void parseCompilerOutput(InputStream inputStream) {
         MessageCollector messageCollector = new MessageCollector() {
             @Override
-            public void report(CompilerMessageSeverity messageSeverity, String message, CompilerMessageLocation messageLocation) {
+            public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message, @NotNull CompilerMessageLocation messageLocation) {
                 if (CompilerMessageSeverity.ERROR.equals(messageSeverity) || CompilerMessageSeverity.EXCEPTION.equals(messageLocation)) {
                     buildFailed = true;
                 }

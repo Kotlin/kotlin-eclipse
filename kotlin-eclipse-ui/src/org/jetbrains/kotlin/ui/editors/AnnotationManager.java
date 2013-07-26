@@ -19,6 +19,7 @@ import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.utils.LineEndUtil;
@@ -63,7 +64,7 @@ public class AnnotationManager {
         annotationModel.disconnect(document);
     }
     
-    public static void clearAllMarkersFromProject(IJavaProject javaProject) {
+    public static void clearAllMarkersFromProject(@NotNull IJavaProject javaProject) {
         IProject project = javaProject.getProject();
         for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
             try {
@@ -74,7 +75,8 @@ public class AnnotationManager {
         }
     }
     
-    public static void addProblemMarker(IFile file, String message, int problemSeverity, String fileText, TextRange range) {
+    public static void addProblemMarker(@NotNull IFile file, @NotNull String message, 
+            int problemSeverity, @NotNull String fileText, @NotNull TextRange range) {
         try {
             IMarker problemMarker = file.createMarker(IMarker.PROBLEM);
             problemMarker.setAttribute(IMarker.MESSAGE, message);

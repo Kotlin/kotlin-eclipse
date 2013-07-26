@@ -27,9 +27,6 @@ public class KotlinMainLauncherTab extends JavaMainTab implements ILaunchConfigu
 
         Collection<IFile> projectFiles = null;
         projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(fProjText.getText());
-        if (projectFiles == null) {
-            projectFiles = KotlinPsiManager.INSTANCE.getAllFiles();
-        } 
         
         List<IFile> mainFiles = new ArrayList<IFile>();
         for (IFile file : projectFiles) {

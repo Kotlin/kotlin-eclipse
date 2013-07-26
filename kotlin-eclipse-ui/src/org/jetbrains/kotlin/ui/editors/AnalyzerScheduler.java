@@ -20,6 +20,8 @@ import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.sun.istack.internal.NotNull;
 
 public class AnalyzerScheduler extends Job {
     
@@ -29,7 +31,7 @@ public class AnalyzerScheduler extends Job {
     
     public static final String FAMILY = "Analyzer";
     
-    public AnalyzerScheduler(IJavaProject javaProject) {
+    public AnalyzerScheduler(@NotNull IJavaProject javaProject) {
         super("Analyzing " + javaProject.getElementName());
         ISchedulingRule serialRule = AsynchronousSchedulingRuleFactory.getDefault().newSerialRule();
         setRule(serialRule);
@@ -43,7 +45,7 @@ public class AnalyzerScheduler extends Job {
         return FAMILY.equals(family);
     }
     
-    public static void analyzeProjectInBackground(IJavaProject javaProject) {
+    public static void analyzeProjectInBackground(@NotNull IJavaProject javaProject) {
         new AnalyzerScheduler(javaProject).schedule();
     }
     
@@ -84,8 +86,13 @@ public class AnalyzerScheduler extends Job {
                         continue;
                 }
                 
+                VirtualFile virtualFile = diagnostic.getPsiFile().getVirtualFile();
+                if (virtualFile == null) {
+                    continue;
+                }
+                
                 IFile curFile = ResourcesPlugin.getWorkspace().getRoot().
-                        getFileForLocation(new Path(diagnostic.getPsiFile().getVirtualFile().getPath()));
+                        getFileForLocation(new Path(virtualFile.getPath()));
                 
                 AnnotationManager.addProblemMarker(curFile, DefaultErrorMessages.RENDERER.render(diagnostic), 
                         problemSeverity, diagnostic.getPsiFile().getText(), ranges.get(0));

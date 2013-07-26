@@ -20,7 +20,10 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.plugin.JetFileType;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.parser.KotlinParser;
 
 import com.intellij.lang.ASTNode;
@@ -37,12 +40,10 @@ public class KotlinPsiManager {
     private KotlinPsiManager() {
     }
     
-    public void updateProjectPsiSources(IFile file, int flag) {
-        IProject project = file.getProject();
-        
+    public void updateProjectPsiSources(@NotNull IFile file, int flag) {
         switch (flag) {
             case IResourceDelta.ADDED:
-                addFile(file, project);
+                addFile(file);
                 break;
                 
             case IResourceDelta.CHANGED:
@@ -50,7 +51,7 @@ public class KotlinPsiManager {
                 break;
                 
             case IResourceDelta.REMOVED:
-                removeFile(file, project);
+                removeFile(file);
                 break;
                 
             default:
@@ -58,9 +59,11 @@ public class KotlinPsiManager {
         }
     }
     
-    public void addFile(IFile file, IProject project) {
+    public void addFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
-            assert !psiFiles.containsKey(file) : "File(" + file.getName() + ") is already added"; 
+            assert !psiFiles.containsKey(file) : "File(" + file.getName() + ") is already added";
+            
+            IProject project = file.getProject();
             
             if (!projectFiles.containsKey(project)) {
                 projectFiles.put(project, new ArrayList<IFile>());
@@ -70,9 +73,11 @@ public class KotlinPsiManager {
         }
     }
     
-    public void removeFile(IFile file, IProject project) {
+    public void removeFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
             assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
+            
+            IProject project = file.getProject();
             
             psiFiles.remove(file);
             List<IFile> files = projectFiles.get(project);
@@ -80,7 +85,7 @@ public class KotlinPsiManager {
         }
     }
     
-    public void updatePsiFile(IFile file, String sourceCode) {
+    public void updatePsiFile(@NotNull IFile file, @Nullable String sourceCode) {
         synchronized (mapOperationLock) {
             assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
@@ -95,7 +100,8 @@ public class KotlinPsiManager {
         }
     }
     
-    public List<IFile> getFilesByProject(IProject project) {
+    @NotNull
+    public List<IFile> getFilesByProject(@Nullable IProject project) {
         synchronized (mapOperationLock) {
             if (projectFiles.containsKey(project)) {
                 return Collections.unmodifiableList(projectFiles.get(project));
@@ -105,51 +111,52 @@ public class KotlinPsiManager {
         }
     }
     
-    public ASTNode getParsedFile(IFile file, String expectedSourceCode) {
+    @NotNull
+    public ASTNode getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
         synchronized (mapOperationLock) {
             ASTNode currentParsedFile = getParsedFile(file);
             
-            expectedSourceCode = expectedSourceCode.replaceAll("\r", "");
-            if (!currentParsedFile.getText().equals(expectedSourceCode)) {
+            String sourceCodeWithouCR = expectedSourceCode.replaceAll("\r", "");
+            if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
                 updatePsiFile(file, expectedSourceCode);
             }
             
             return psiFiles.get(file);
         }
     }
-    
-    public ASTNode getParsedFile(IFile file) {
+
+    @NotNull
+    public ASTNode getParsedFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
             return psiFiles.get(file);
         }
     }
     
-    public List<IFile> getFilesByProject(String projectName) {
+    @NotNull
+    public List<IFile> getFilesByProject(@NotNull String projectName) {
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
         return getFilesByProject(project);
     }
     
+    @NotNull
     public Collection<IFile> getAllFiles() {
         synchronized (mapOperationLock) {
             return Collections.unmodifiableCollection(psiFiles.keySet());
         }
     }
     
-    public boolean isProjectChangedState(IResourceDelta delta) {
+    public boolean isProjectChangedState(@NotNull IResourceDelta delta) {
         return (delta.getFlags() & IResourceDelta.CONTENT) != 0 ||
                 (delta.getKind() == IResourceDelta.REMOVED) ||
                 (delta.getKind() == IResourceDelta.ADDED);
     }
     
-    public boolean isCompatibleResource(IResource resource) throws JavaModelException {
+    public boolean isCompatibleResource(@NotNull IResource resource) throws JavaModelException {
         if (!(resource instanceof IFile) || !JetFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
             return false;
         }
 
         IJavaProject javaProject = JavaCore.create(resource.getProject());
-        if (javaProject == null) {
-            return false;
-        }
         
         IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
         String resourceRoot = resource.getFullPath().segment(1);
@@ -163,8 +170,9 @@ public class KotlinPsiManager {
         
         return false;
     }
-    
-    private ASTNode parseText(String text) {
+
+    @Nullable
+    private ASTNode parseText(@NotNull String text) {
         ASTNode parsedFile = null;
         
         try {
@@ -178,7 +186,7 @@ public class KotlinPsiManager {
             
             tempFile.delete();
         } catch (IOException e) {
-            e.printStackTrace();
+            KotlinLogger.logError(e);
         }
         
         return parsedFile;

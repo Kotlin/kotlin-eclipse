@@ -28,7 +28,8 @@ Import-Package: org.eclipse.core.resources,
  org.eclipse.ui.console,
  org.eclipse.ui.ide,
  org.eclipse.ui.ide.undo,
- org.eclipse.ui.wizards.newresource
+ org.eclipse.ui.wizards.newresource,
+ org.jetbrains.annotations
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.editors

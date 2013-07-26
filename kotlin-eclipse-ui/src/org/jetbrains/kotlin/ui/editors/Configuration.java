@@ -21,6 +21,7 @@ import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 
 public class Configuration extends SourceViewerConfiguration {
@@ -29,7 +30,7 @@ public class Configuration extends SourceViewerConfiguration {
     private final ColorManager colorManager;
     private final JavaEditor editor;
 
-    public Configuration(ColorManager colorManager, JavaEditor editor) {
+    public Configuration(@NotNull ColorManager colorManager, @NotNull JavaEditor editor) {
         this.colorManager = colorManager;
         this.editor = editor;
     }

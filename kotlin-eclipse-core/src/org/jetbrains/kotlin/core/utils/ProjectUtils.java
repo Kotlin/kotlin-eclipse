@@ -11,6 +11,9 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.plugin.JetMainDetector;
@@ -22,7 +25,12 @@ public class ProjectUtils {
         KotlinEnvironment kotlinEnvironment = new KotlinEnvironment(javaProject);
         
         for (IFile file : files) {
-            if (JetMainDetector.hasMain(kotlinEnvironment.getJetFile(file).getDeclarations())) {
+            JetFile jetFile = kotlinEnvironment.getJetFile(file);
+            if (jetFile == null) {
+                continue;
+            }
+            
+            if (JetMainDetector.hasMain(jetFile.getDeclarations())) {
                 return file;
             }
         }
@@ -44,16 +52,26 @@ public class ProjectUtils {
         return getMainClass(Arrays.asList(file)) != null;
     }
     
+    @Nullable
     public static String getPackageByFile(IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        return new KotlinEnvironment(javaProject).getJetFile(file).getPackageName();
+        JetFile jetFile = new KotlinEnvironment(javaProject).getJetFile(file);
+        
+        assert jetFile != null;
+        
+        return jetFile.getPackageName();
     }
     
     public static FqName createPackageClassName(IFile file) {
-        return PackageClassUtils.getPackageClassFqName(new FqName(getPackageByFile(file)));
+        String filePackage = getPackageByFile(file);
+        if (filePackage == null) {
+            return null;
+        }
+        return PackageClassUtils.getPackageClassFqName(new FqName(filePackage));
     }
     
-    public static List<File> getSrcDirectories(IJavaProject javaProject) throws JavaModelException {
+    @NotNull
+    public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> srcDirectories = new ArrayList<File>();
         
         IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
@@ -68,7 +86,8 @@ public class ProjectUtils {
         return srcDirectories;
     }
     
-    public static List<File> getLibDirectories(IJavaProject javaProject) throws JavaModelException {
+    @NotNull
+    public static List<File> getLibDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> libDirectories = new ArrayList<File>();
         
         IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
