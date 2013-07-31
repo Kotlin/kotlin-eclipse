@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -90,10 +91,23 @@ public class ProjectUtils {
     public static List<File> getLibDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> libDirectories = new ArrayList<File>();
         
-        IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
+        IClasspathEntry[] classpathEntries = javaProject.getResolvedClasspath(false);
+        IPath rootDirectory = javaProject.getProject().getLocation();
+        String projectName = rootDirectory.lastSegment();
+        
         for (IClasspathEntry classpathEntry : classpathEntries) {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-                File file = new File(classpathEntry.getPath().toPortableString());
+                String classpath = classpathEntry.getPath().toPortableString();
+                File file = new File(classpath);
+                
+                if (!file.isAbsolute()) {
+                    if (classpathEntry.getPath().segment(0).equals(projectName)) {
+                        file = new File(rootDirectory.removeLastSegments(1).toPortableString() + classpath);
+                    } else {
+                        file = new File(rootDirectory.toPortableString() + classpath);
+                    }
+                }
+                
                 libDirectories.add(file);
             }
         }
