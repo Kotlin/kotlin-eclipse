@@ -17,13 +17,13 @@ public class KotlinEditor extends CompilationUnitEditor {
     public KotlinEditor() {
         super();
         colorManager = new ColorManager();
-        bracketInserter = new BracketInserter();        
-        
-        setSourceViewerConfiguration(new Configuration(colorManager, this));
+        bracketInserter = new BracketInserter();
     }
     
     @Override
     public void createPartControl(Composite parent) {
+        setSourceViewerConfiguration(new Configuration(colorManager, this, getPreferenceStore()));
+        
         super.createPartControl(parent);
         
         ISourceViewer sourceViewer = getSourceViewer();

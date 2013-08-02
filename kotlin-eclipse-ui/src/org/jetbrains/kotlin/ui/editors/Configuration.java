@@ -3,6 +3,8 @@ package org.jetbrains.kotlin.ui.editors;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
+import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
@@ -20,17 +22,17 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 
-public class Configuration extends SourceViewerConfiguration {
+public class Configuration extends JavaSourceViewerConfiguration {
     private DoubleClickStrategy doubleClickStrategy;
     private Scanner scanner;
     private final ColorManager colorManager;
     private final JavaEditor editor;
 
-    public Configuration(@NotNull ColorManager colorManager, @NotNull JavaEditor editor) {
+    public Configuration(@NotNull ColorManager colorManager, @NotNull JavaEditor editor, IPreferenceStore preferenceStore) {
+        super(colorManager, preferenceStore, editor, IJavaPartitions.JAVA_PARTITIONING);
         this.colorManager = colorManager;
         this.editor = editor;
     }
