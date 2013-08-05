@@ -34,4 +34,35 @@ public class LineEndUtil {
         
         return line;
     }
+    
+    public static int convertCrToOsOffset(String crText, int crOffset) {
+        String osLineSeparator = System.lineSeparator();
+        if (osLineSeparator.length() == 1) {
+            return crOffset;
+        }
+        
+        assert osLineSeparator.equals("\r\n") : "Only \r\n is expected as multi char line separator";
+        
+        return crOffset - countCrToLineNumber(crText, crOffset);
+    }
+    
+    private static int countCrToLineNumber(String lfText, int offset) {
+        int countCR = 0;
+        int curOffset = 0;
+        
+        while (curOffset < offset) {
+            if (curOffset == lfText.length()) {
+                break;
+            }
+            
+            char c = lfText.charAt(curOffset);
+            if (c == '\r') {
+                countCR++;
+            } 
+            
+            curOffset++;
+        }
+        
+        return countCR;  
+    }
 }

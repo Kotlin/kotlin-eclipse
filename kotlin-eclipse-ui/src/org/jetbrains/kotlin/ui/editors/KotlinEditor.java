@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
+import org.eclipse.jdt.internal.ui.actions.ActionMessages;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.IAction;
@@ -38,6 +39,8 @@ public class KotlinEditor extends CompilationUnitEditor {
     protected void createActions() {
         super.createActions();
 
+        setAction("QuickFormat", null);
+        
         IAction formatAction = new KotlinFormatAction(this);
         formatAction.setText("Format");
         formatAction.setActionDefinitionId(IJavaEditorActionDefinitionIds.FORMAT);
@@ -46,7 +49,10 @@ public class KotlinEditor extends CompilationUnitEditor {
         markAsSelectionDependentAction("Format", true);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(formatAction, IJavaHelpContextIds.FORMAT_ACTION);
         
-        setAction("QuickFormat", null);
+        IAction openDeclarationAction = new OpenDeclarationAction(this);
+        openDeclarationAction.setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
+        openDeclarationAction.setText(ActionMessages.OpenAction_declaration_label);
+        setAction("OpenEditor", openDeclarationAction);
     }
     
     @Override

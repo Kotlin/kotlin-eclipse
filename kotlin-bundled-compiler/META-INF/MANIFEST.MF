@@ -108,4 +108,6 @@ Export-Package: com.google.common.base,
  org.jetbrains.jet.util,
  org.jetbrains.jet.util.lazy,
  org.jetbrains.jet.util.slicedmap,
- org.jetbrains.jet.utils
+ org.jetbrains.jet.utils,
+ com.intellij.psi.util,
+ com.intellij.extapi.psi

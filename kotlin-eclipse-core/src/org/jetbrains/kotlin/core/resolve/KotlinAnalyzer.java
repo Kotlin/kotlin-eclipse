@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
@@ -15,42 +16,37 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 
 import com.google.common.base.Predicates;
-import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 
 public class KotlinAnalyzer {
 
     @NotNull
     public static BindingContext analyzeProject(@NotNull IJavaProject javaProject) {
         KotlinEnvironment kotlinEnvironment = new KotlinEnvironment(javaProject);
-        
+        return analyzeProject(javaProject, kotlinEnvironment);
+    }
+    
+    @NotNull
+    public static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment) {
         // TODO: Do not initialize builtins for each analyze
         Project ideaProject = kotlinEnvironment.getProject();
         KotlinBuiltIns.initialize(ideaProject);
         
-        JavaCoreApplicationEnvironment applicationEnvironment = KotlinEnvironment.getApplicationEnvironment();
-        
+        List<JetFile> sourceFiles = getSourceFiles(javaProject.getProject(), kotlinEnvironment);
         AnalyzeExhaust analyzeExhaust = AnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                ideaProject, getSourceFiles(javaProject, ideaProject, applicationEnvironment), null, Predicates.<PsiFile>alwaysTrue());
+                ideaProject, sourceFiles, null, Predicates.<PsiFile>alwaysTrue());
         
         return analyzeExhaust.getBindingContext();
     }
     
     @NotNull
-    private static List<JetFile> getSourceFiles(@NotNull IJavaProject javaProject, @NotNull Project ideaProject, 
-            @NotNull JavaCoreApplicationEnvironment applicationEnvironment) {
+    public static List<JetFile> getSourceFiles(@NotNull IProject project, @NotNull KotlinEnvironment kotlinEnvironment) {
         List<JetFile> jetFiles = new ArrayList<JetFile>();
-        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.getProject())) {
-            String path = file.getRawLocation().toOSString();
-            VirtualFile virtualFile = applicationEnvironment.getLocalFileSystem().findFileByPath(path);
-            
-            if (virtualFile != null) {
-                jetFiles.add((JetFile) PsiManager.getInstance(ideaProject).findFile(virtualFile));
-            }
-        }
+        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
+            JetFile jetFile = kotlinEnvironment.getJetFile(file);
+            jetFiles.add(jetFile);
+         }
         
         return jetFiles;
     }
