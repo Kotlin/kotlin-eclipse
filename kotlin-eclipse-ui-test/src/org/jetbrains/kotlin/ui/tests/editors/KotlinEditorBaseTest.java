@@ -26,7 +26,7 @@ public class KotlinEditorBaseTest {
 		try {
 			Assert.assertNotNull(textEditor.createEditor("Test.kt", ""));
 		} finally {
-			textEditor.close();
+			textEditor.deleteEditingFile();
 		}
 	}
 	

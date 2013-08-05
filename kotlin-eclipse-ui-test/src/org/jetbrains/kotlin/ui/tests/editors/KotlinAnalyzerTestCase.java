@@ -4,22 +4,47 @@ import junit.framework.Assert;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
+import org.junit.After;
+import org.junit.Before;
 
 public class KotlinAnalyzerTestCase {
 
 	private static final String ERR_TAG_OPEN = "<err>";
 	private static final String ERR_TAG_CLOSE = "</err>";
 	
+	private TextEditorTest testEditor;
+	
+	@After
+	public void deleteEditingFile() {
+		if (testEditor != null) {
+			testEditor.deleteEditingFile();
+		}
+	}
+	
+	@Before
+	public void refreshWorkspace() {
+		WorkspaceUtil.refreshWorkspace();
+		try {
+			Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_REFRESH, new NullProgressMonitor());
+		} catch (OperationCanceledException | InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	protected void doTest(String input, String fileName) {
-		TextEditorTest testEditor = configureEditor(fileName, input);
+		testEditor = configureEditor(fileName, input);
 		try {
 			testEditor.save();
-			
 			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
+				Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, new NullProgressMonitor());
+			} catch (OperationCanceledException | InterruptedException e) {
 				e.printStackTrace();
 			}
 			
@@ -32,8 +57,6 @@ public class KotlinAnalyzerTestCase {
 			Assert.assertEquals(input, editorInputWithoutCR);
 		} catch (CoreException e) {
 			throw new RuntimeException(e);
-		} finally {
-			testEditor.deleteEditingFile();
 		}
 	} 
 	
