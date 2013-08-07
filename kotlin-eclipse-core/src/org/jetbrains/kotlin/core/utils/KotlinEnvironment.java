@@ -114,6 +114,10 @@ public class KotlinEnvironment {
     private void addJreClasspath() {
         try {
             IRuntimeClasspathEntry computeJREEntry = JavaRuntime.computeJREEntry(javaProject);
+            if (computeJREEntry == null) {
+                return;
+            }
+            
             IRuntimeClasspathEntry[] jreEntries = JavaRuntime.resolveRuntimeClasspathEntry(computeJREEntry,
                     javaProject);
 
