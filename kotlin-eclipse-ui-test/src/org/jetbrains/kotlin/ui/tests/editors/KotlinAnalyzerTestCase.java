@@ -26,7 +26,9 @@ public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 					testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE));
 			
 			String editorInputWithoutCR = editorInput.toString().replaceAll("\r", "");
-			input = input.replaceAll("\r", "");
+			input = input
+					.replaceAll("<br>", System.lineSeparator())
+					.replaceAll("\r", "");
 			
 			Assert.assertEquals(input, editorInputWithoutCR);
 		} catch (CoreException e) {
