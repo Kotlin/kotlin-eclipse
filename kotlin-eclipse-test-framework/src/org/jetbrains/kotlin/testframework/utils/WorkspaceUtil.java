@@ -10,7 +10,6 @@ public class WorkspaceUtil {
 
 	public static void refreshWorkspace() {
 		try {
-			//ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
 			for (IProject project : projects) {
 				project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());

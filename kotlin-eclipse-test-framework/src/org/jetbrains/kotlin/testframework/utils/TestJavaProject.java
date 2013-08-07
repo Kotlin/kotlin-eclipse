@@ -14,7 +14,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.launching.JavaRuntime;
@@ -31,30 +30,31 @@ public class TestJavaProject {
 	private IPackageFragmentRoot sourceFolder;
 	
 	public TestJavaProject(String projectName) {
-		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-		
-		project = workspaceRoot.getProject(projectName);
+		project = createProject(projectName);	
+	}
+	
+	private IProject createProject(String projectName) {
+		project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		try {
 			boolean projectExists = project.exists();
 			if (!projectExists) {
 				project.create(null);
-				project.open(null);
 			}
+			project.open(null);
 			
 			javaProject = JavaCore.create(project);
-			
+
 			if (!projectExists) {
 				setNatureAndBuilder();
-				
 				javaProject.setRawClasspath(new IClasspathEntry[0], null);
-				
 				sourceFolder = createSourceFolder();
-				
 				addSystemLibraries();
 			}
 		} catch (CoreException e) {
 			throw new RuntimeException(e);
 		}
+		
+		return project;
 	}
 	
 	private void setNatureAndBuilder() throws CoreException {
