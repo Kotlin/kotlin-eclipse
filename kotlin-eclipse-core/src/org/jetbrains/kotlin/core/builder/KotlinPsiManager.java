@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -32,8 +32,8 @@ public class KotlinPsiManager {
     
     public static final KotlinPsiManager INSTANCE = new KotlinPsiManager();
     
-    private final Map<IProject, List<IFile>> projectFiles = new ConcurrentHashMap<>();
-    private final Map<IFile, ASTNode> psiFiles = new ConcurrentHashMap<>();
+    private final Map<IProject, List<IFile>> projectFiles = new HashMap<>();
+    private final Map<IFile, ASTNode> psiFiles = new HashMap<>();
     
     private final Object mapOperationLock = new Object();
     
@@ -56,6 +56,24 @@ public class KotlinPsiManager {
                 
             default:
                 throw new IllegalArgumentException();
+        }
+    }
+    
+    public void updateProjectPsiSources(@NotNull IProject project, int flag) {
+        switch (flag) {
+            case IResourceDelta.REMOVED:
+                removeProject(project);
+                break;
+        }
+    }
+    
+    public void removeProject(@NotNull IProject project) {
+        synchronized (mapOperationLock) {
+            List<IFile> files = getFilesByProject(project);
+            projectFiles.remove(project);
+            for (IFile file : files) {
+                psiFiles.remove(file);
+            }
         }
     }
     
@@ -85,7 +103,7 @@ public class KotlinPsiManager {
         }
     }
     
-    public void updatePsiFile(@NotNull IFile file, @Nullable String sourceCode) {
+    public void updatePsiFile(@NotNull IFile file, String sourceCode) {
         synchronized (mapOperationLock) {
             assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
@@ -158,6 +176,10 @@ public class KotlinPsiManager {
 
         IJavaProject javaProject = JavaCore.create(resource.getProject());
         
+        if (!javaProject.exists()) {
+            return false;
+        }
+        
         IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
         String resourceRoot = resource.getFullPath().segment(1);
         for (IClasspathEntry classpathEntry : classpathEntries) {
@@ -170,7 +192,7 @@ public class KotlinPsiManager {
         
         return false;
     }
-
+    
     @NotNull
     private ASTNode parseText(@NotNull String text) {
         try {
