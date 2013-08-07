@@ -9,7 +9,8 @@ import org.junit.runners.Suite;
 	KotlinAutoIndenterTest.class,
 	KotlinAnalyzerTest.class,
 	KotlinHighlightningScannerTest.class,
-	KotlinBracketInserterTest.class} )
+	KotlinBracketInserterTest.class,
+	KotlinOpenDeclarationTest.class} )
 public class AllTests {
 
 }
