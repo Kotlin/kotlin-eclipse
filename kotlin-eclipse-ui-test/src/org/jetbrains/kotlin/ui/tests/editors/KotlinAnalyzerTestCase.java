@@ -9,35 +9,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
-import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
-import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
-import org.junit.After;
-import org.junit.Before;
 
-public class KotlinAnalyzerTestCase {
+public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 
-	private static final String ERR_TAG_OPEN = "<err>";
-	private static final String ERR_TAG_CLOSE = "</err>";
-	
-	private TextEditorTest testEditor;
-	
-	@After
-	public void deleteEditingFile() {
-		if (testEditor != null) {
-			testEditor.deleteEditingFile();
-		}
-	}
-	
-	@Before
-	public void refreshWorkspace() {
-		WorkspaceUtil.refreshWorkspace();
-		try {
-			Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_REFRESH, new NullProgressMonitor());
-		} catch (OperationCanceledException | InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	protected void doTest(String input, String fileName) {
 		testEditor = configureEditor(fileName, input);
 		try {
@@ -75,14 +49,4 @@ public class KotlinAnalyzerTestCase {
 		
 		return editorInput.toString();
 	}
-	
-    protected TextEditorTest configureEditor(String fileName, String content) {
-    	TextEditorTest testEditor = new TextEditorTest();
-    	
-		String toEditor = content.replaceAll(ERR_TAG_OPEN, "");
-		toEditor = toEditor.replaceAll(ERR_TAG_CLOSE, "");
-		testEditor.createEditor(fileName, toEditor);
-		
-		return testEditor;
-    }
 }

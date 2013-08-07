@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.jetbrains.kotlin.testframework.editor.*;
 import org.jetbrains.kotlin.testframework.utils.*;
 
-public class KotlinEditorBaseTest {
+public class KotlinEditorBaseTest extends KotlinEditorTestCase {
 	@Test
 	public void sampleTest() {
 		KotlinEditor kotlinEditor = new KotlinEditor();
@@ -23,17 +23,13 @@ public class KotlinEditorBaseTest {
 	@Test
 	public void openEditorTest() {
 		TextEditorTest textEditor = new TextEditorTest();
-		try {
-			Assert.assertNotNull(textEditor.createEditor("Test.kt", ""));
-		} finally {
-			textEditor.deleteEditingFile();
-		}
+		Assert.assertNotNull(textEditor.createEditor("Test.kt", ""));
 	}
 	
 	@Test
 	public void getJavaProjectTest() {
 		TextEditorTest textEditor = new TextEditorTest();
-		Assert.assertNotNull(textEditor.getJavaProject());
+		Assert.assertNotNull(textEditor.getTestJavaProject());
 	}
 	
 	@Test

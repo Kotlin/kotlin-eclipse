@@ -1,42 +1,12 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
-import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
-import org.junit.After;
-import org.junit.Before;
+import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 
-public class KotlinAutoIndenterTestCase {
-	
-	private TextEditorTest testEditor;
-	
-	@After
-	public void deleteEditingFile() {
-		if (testEditor != null) {
-			testEditor.deleteEditingFile();
-		}
-		
-		boolean spacesForTabsBeforeConfigure = getStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
-		int tabWidthBeforeConfigure = getStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
-		
-		setStorePreference(spacesForTabsBeforeConfigure, tabWidthBeforeConfigure);
-	}
-	
-	@Before
-	public void refreshWorkspace() {
-		WorkspaceUtil.refreshWorkspace();
-		try {
-			Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_REFRESH, new NullProgressMonitor());
-		} catch (OperationCanceledException | InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+public class KotlinAutoIndenterTestCase extends KotlinEditorTestCase {
 	
     protected void doTest(String input, String expected) {
     	testEditor = configureEditor(input);
@@ -44,7 +14,7 @@ public class KotlinAutoIndenterTestCase {
     		testEditor.typeEnter();
     	}
     	
-    	testEditor.assertByEditor(expected);
+    	EditorTestUtils.assertByEditor(testEditor.getEditor(), expected);
     }
 	
 	protected IPreferenceStore getStore() {
@@ -57,8 +27,7 @@ public class KotlinAutoIndenterTestCase {
     }
     
     protected TextEditorTest configureEditor(String content) {
-    	TextEditorTest testEditor = new TextEditorTest();
-		testEditor.createEditor("Test.kt", content);
+    	testEditor = super.configureEditor("Test.kt", content);
 		
 		setStorePreference(false, 2);
 		
