@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
@@ -19,7 +18,9 @@ public class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase {
 		testEditor = configureEditor(inputFileName, input);
 		
 		String expected = referenceFile;
-		createReferenceFile(referenceFileName, referenceFile);
+		if (referenceFileName != null) {
+			createSourceFile(referenceFileName, referenceFile);
+		}
 		
 		refreshWorkspace();
 		joinBuildThread();
@@ -41,16 +42,4 @@ public class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	private void createReferenceFile(String referenceFileName, String referenceFile) {
-		if (referenceFileName != null) {
-			referenceFile = removeTags(referenceFile);
-			try {
-				testEditor.getTestJavaProject().createSourceFile("testing", referenceFileName, referenceFile);
-			} catch (CoreException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-	
 }
