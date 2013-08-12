@@ -43,8 +43,6 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         List<Diagnostic> diagnostics = analyzer.getDiagnostics();
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         
-        DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
-        
         addMarkersToProject(annotations);
         
         return null;
