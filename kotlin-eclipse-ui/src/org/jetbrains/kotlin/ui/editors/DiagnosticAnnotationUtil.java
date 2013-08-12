@@ -16,6 +16,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
+import org.jetbrains.jet.lang.diagnostics.Errors;
 import org.jetbrains.jet.lang.diagnostics.Severity;
 import org.jetbrains.jet.lang.diagnostics.rendering.DefaultErrorMessages;
 import org.jetbrains.kotlin.utils.EditorUtil;
@@ -67,8 +68,11 @@ public class DiagnosticAnnotationUtil {
         
         String message = DefaultErrorMessages.RENDERER.render(diagnostic);
         String annotationType = getAnnotationType(diagnostic.getSeverity());
-        
-        DiagnosticAnnotation annotation = new DiagnosticAnnotation(offset, length, annotationType, message);
+        String markedText = diagnostic.getPsiElement().getText();
+
+        boolean isQuickFixable = Errors.UNRESOLVED_REFERENCE.equals(diagnostic.getFactory());
+        DiagnosticAnnotation annotation = new DiagnosticAnnotation(offset, length, annotationType, 
+                message, markedText, isQuickFixable);
         
         return annotation;
     }

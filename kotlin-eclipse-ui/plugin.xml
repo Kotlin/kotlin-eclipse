@@ -209,4 +209,11 @@
          </run>
       </runtime>
    </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+            class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator"
+            markerType="org.eclipse.core.resources.problemmarker">
+      </markerResolutionGenerator>
+   </extension>
 </plugin>

@@ -9,14 +9,20 @@ import com.intellij.openapi.util.TextRange;
 public class DiagnosticAnnotation extends Annotation {
 
     private final TextRange range;
+    private final String markedText;
+    private final boolean isQuickFixable;
     
-    public DiagnosticAnnotation(TextRange position, String annotationType, String message) {
+    public DiagnosticAnnotation(TextRange position, String annotationType, String message, 
+            String markedText, boolean isQuickFixable) {
         super(annotationType, true, message);
         this.range = position;
+        this.markedText = markedText;
+        this.isQuickFixable = isQuickFixable;
     }
     
-    public DiagnosticAnnotation(int offset, int length, String annotationType, String message) {
-        this(new TextRange(offset, offset + length), annotationType, message);
+    public DiagnosticAnnotation(int offset, int length, String annotationType, String message, 
+            String markedText, boolean isQuickFixable) {
+        this(new TextRange(offset, offset + length), annotationType, message, markedText, isQuickFixable);
     }
     
     public TextRange getRange() {
@@ -38,5 +44,13 @@ public class DiagnosticAnnotation extends Annotation {
     
     public Position getPosition() {
         return new Position(range.getStartOffset(), range.getLength());
+    }
+    
+    public String getMarkedText() {
+        return markedText;
+    }
+    
+    public boolean quickFixable() {
+        return isQuickFixable;
     }
 }

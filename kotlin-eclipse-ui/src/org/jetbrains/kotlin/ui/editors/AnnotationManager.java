@@ -28,6 +28,8 @@ public class AnnotationManager {
     public static final String MARKER_TYPE = "org.jetbrains.kotlin.ui.marker";
     public static final String ANNOTATION_ERROR_TYPE = "org.jetbrains.kotlin.ui.annotation.error";
     public static final String ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning";
+    public static final String MARKED_TEXT = "markedText";
+    public static final String IS_QUICK_FIXABLE = "isQuickFixable";
     
     public static void updateAnnotations(@NotNull AbstractTextEditor editor, @NotNull List<DiagnosticAnnotation> annotations) {
         IDocumentProvider documentProvider = editor.getDocumentProvider();
@@ -79,6 +81,8 @@ public class AnnotationManager {
             problemMarker.setAttribute(IMarker.SEVERITY, annotation.getMarkerSeverity());
             problemMarker.setAttribute(IMarker.CHAR_START, annotation.getRange().getStartOffset());
             problemMarker.setAttribute(IMarker.CHAR_END, annotation.getRange().getEndOffset());
+            problemMarker.setAttribute(MARKED_TEXT, annotation.getMarkedText());
+            problemMarker.setAttribute(IS_QUICK_FIXABLE, annotation.quickFixable());
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
