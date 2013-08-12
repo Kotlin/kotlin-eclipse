@@ -18,7 +18,6 @@ public class AlignmentStrategy {
     private StringBuilder edit;
     
     public static final Set<String> blockElementTypes;
-    private static final String lineSeparator = "\n";
     
     static {
         blockElementTypes = new HashSet<String>(Arrays.asList("IF", "FOR", "WHILE", "FUN", "CLASS", "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", "WHEN"));
@@ -45,34 +44,19 @@ public class AlignmentStrategy {
             PsiElement psiElement = child.getPsi();
             
             if (psiElement instanceof LeafPsiElement) {
-                if (isNewLine((LeafPsiElement) psiElement)) {
+                if (IndenterUtil.isNewLine((LeafPsiElement) psiElement)) {
                     int shift = indent;
                     if (isBrace(psiElement.getNextSibling())) {
                         shift--;
                     }
                     
-                    edit.append(IndenterUtil.createWhiteSpace(shift, getLineSeparatorsOccurences(psiElement.getText())));
+                    edit.append(IndenterUtil.createWhiteSpace(shift, IndenterUtil.getLineSeparatorsOccurences(psiElement.getText())));
                 } else {
                     edit.append(psiElement.getText());
                 }
             }
             buildFormattedCode(child, indent);
         }
-    }
-    
-    private boolean isNewLine(LeafPsiElement psiElement) {
-        return psiElement.getElementType() == JetTokens.WHITE_SPACE && psiElement.getText().contains(lineSeparator);
-    }
-    
-    private int getLineSeparatorsOccurences(String text) {
-        int count = 0;
-        for (int i = 0; i < text.length(); ++i) {
-            if (text.charAt(i) == lineSeparator.charAt(0)) {
-                count++;
-            }
-        }
-        
-        return count;
     }
     
     private boolean isBrace(PsiElement psiElement) {

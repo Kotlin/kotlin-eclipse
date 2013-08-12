@@ -2,11 +2,15 @@ package org.jetbrains.kotlin.utils;
 
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jetbrains.jet.lexer.JetTokens;
+
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 
 public class IndenterUtil {
 
     private static final char tabChar = '\t';
     private static final char spaceSeparator = ' ';
+    private static final String LINE_SEPARATOR = "\n";
     
     public static String createWhiteSpace(int curIndent, int countBreakLines) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -35,6 +39,21 @@ public class IndenterUtil {
         }
         
         return res.toString();
+    }
+    
+    public static int getLineSeparatorsOccurences(String text) {
+        int count = 0;
+        for (int i = 0; i < text.length(); ++i) {
+            if (text.charAt(i) == LINE_SEPARATOR.charAt(0)) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
+    
+    public static boolean isNewLine(LeafPsiElement psiElement) {
+        return psiElement.getElementType() == JetTokens.WHITE_SPACE && psiElement.getText().contains(LINE_SEPARATOR);
     }
     
     public static int getDefaultIndent() {
