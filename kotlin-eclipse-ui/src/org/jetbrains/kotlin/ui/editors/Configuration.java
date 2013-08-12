@@ -15,6 +15,8 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
@@ -57,6 +59,14 @@ public class Configuration extends JavaSourceViewerConfiguration {
     @Override
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new DefaultAnnotationHover();
+    }
+    
+    @Override
+    public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+        IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
+        quickAssist.setQuickAssistProcessor(new KotlinQuickAssistProcessor(editor));
+        quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+        return quickAssist; 
     }
     
     @Override
