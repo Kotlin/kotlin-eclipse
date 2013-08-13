@@ -10,7 +10,8 @@ import org.junit.runners.Suite;
 	KotlinAnalyzerTest.class,
 	KotlinHighlightningScannerTest.class,
 	KotlinBracketInserterTest.class,
-	KotlinOpenDeclarationTest.class} )
+	KotlinOpenDeclarationTest.class,
+	KotlinUnresolvedClassFixTest.class} )
 public class AllTests {
 
 }
