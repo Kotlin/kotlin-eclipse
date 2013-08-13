@@ -1,8 +1,5 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
@@ -32,14 +29,6 @@ public class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase {
 			EditorTestUtils.assertByEditor((KotlinEditor) activeEditor, expected);
 		} else {
 			EditorTestUtils.assertByEditor(activeEditor, expected);
-		}
-	}
-	
-	private void joinBuildThread() {
-		try {
-			Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_BUILD, null);
-		} catch (OperationCanceledException | InterruptedException e) {
-			throw new RuntimeException(e);
 		}
 	}
 }

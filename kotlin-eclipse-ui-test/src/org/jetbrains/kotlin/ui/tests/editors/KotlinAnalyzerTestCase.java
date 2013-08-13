@@ -4,11 +4,7 @@ import junit.framework.Assert;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.jobs.Job;
 
 public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 
@@ -16,11 +12,7 @@ public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 		testEditor = configureEditor(fileName, input);
 		try {
 			testEditor.save();
-			try {
-				Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, new NullProgressMonitor());
-			} catch (OperationCanceledException | InterruptedException e) {
-				e.printStackTrace();
-			}
+			joinBuildThread();
 			
 			String editorInput = insertTagsForErrors(testEditor.getEditorInput(), 
 					testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE));

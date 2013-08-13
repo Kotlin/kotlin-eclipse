@@ -78,4 +78,14 @@ public abstract class KotlinEditorTestCase {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public void joinBuildThread() {
+		while (true) {
+			try {
+				Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
+				break;
+			} catch (OperationCanceledException | InterruptedException e) {
+			}
+		}
+	}
 }

@@ -27,17 +27,6 @@ public class KotlinOpenDeclarationTest extends KotlinOpenDeclarationTestCase {
 	}
 	
 	@Test
-	public void navigateToMethodInOtherKotlinFile() {
-		doTest("Test1.kt",
-				"package testing<br>" +
-				"fun test1() = t<caret>est2()",
-				
-				"Test2.kt",
-				"package testing<br>" +
-				"fun <caret>test2() = {}");
-	}
-	
-	@Test
 	public void navigateToJavaClass() {
 		doTest("Test.kt",
 				"package testing<br>" +
