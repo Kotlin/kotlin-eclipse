@@ -55,10 +55,14 @@ public class KotlinParser {
         return new KotlinParser(iFile).parse();
     }
     
+    public static PsiFile getPsiFile(@NotNull IFile file) {
+        return new KotlinParser(file).getPsiFile();
+    }
+    
     @NotNull
     public ASTNode parse() {
         JetParser jetParser = new JetParser(project);
-        tree = jetParser.parse(null, createPsiBuilder(getNode(file)), getPsiFile(file));
+        tree = jetParser.parse(null, createPsiBuilder(getNode()), getPsiFile());
         
         return tree;
     }
@@ -70,7 +74,7 @@ public class KotlinParser {
     }
     
     @Nullable
-    private PsiFile getPsiFile(File file) {
+    private PsiFile getPsiFile() {
         String path = file.getAbsolutePath();
         
         if (path == null) {
@@ -87,8 +91,8 @@ public class KotlinParser {
     }
     
     @Nullable
-    private ASTNode getNode(File file) {
-        JetFile jetFile = (JetFile) getPsiFile(file);
+    private ASTNode getNode() {
+        JetFile jetFile = (JetFile) getPsiFile();
         if (jetFile != null) {
             return jetFile.getNode();
         }
