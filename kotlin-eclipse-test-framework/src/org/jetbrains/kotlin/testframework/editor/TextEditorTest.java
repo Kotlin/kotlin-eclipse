@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.Event;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class TextEditorTest {
 	
@@ -84,11 +85,11 @@ public class TextEditorTest {
 	}
 	
 	public IFile getEditingFile() {
-		return (IFile) editor.getEditorInput().getAdapter(IFile.class);
+		return EditorUtil.getFile(editor);
 	}
 	
 	public String getEditorInput() {
-		return editor.getViewer().getDocument().get();
+		return EditorUtil.getSourceCode(editor);
 	}
 	
 	public void deleteEditingFile() {

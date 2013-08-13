@@ -5,6 +5,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
+import org.jetbrains.kotlin.utils.EditorUtil;
 
 import com.intellij.lang.ASTNode;
 
@@ -18,12 +19,12 @@ public class KotlinFormatAction extends Action {
     
     @Override
     public void run() {
-        IDocument document = editor.getViewer().getDocument(); 
-        String sourceCode = document.get();
-        IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+        String sourceCode = EditorUtil.getSourceCode(editor);
+        IFile file = EditorUtil.getFile(editor);
         
         ASTNode parsedCode = KotlinPsiManager.INSTANCE.getParsedFile(file, sourceCode);
         
+        IDocument document = editor.getViewer().getDocument(); 
         document.set(AlignmentStrategy.alignCode(parsedCode));
     }
 }

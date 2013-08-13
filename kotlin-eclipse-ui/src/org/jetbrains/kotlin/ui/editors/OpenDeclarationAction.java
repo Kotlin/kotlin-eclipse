@@ -41,6 +41,7 @@ import org.jetbrains.jet.lang.resolve.BindingContextUtils;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
+import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.openapi.vfs.VirtualFile;
@@ -58,7 +59,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     public OpenDeclarationAction(JavaEditor editor) {
         super(editor.getSite());
         this.editor = editor;
-        file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+        file = EditorUtil.getFile(editor);
         javaProject = JavaCore.create(file.getProject());
     }
 

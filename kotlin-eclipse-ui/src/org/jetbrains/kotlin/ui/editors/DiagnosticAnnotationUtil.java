@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.Severity;
 import org.jetbrains.jet.lang.diagnostics.rendering.DefaultErrorMessages;
+import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.openapi.util.TextRange;
@@ -109,7 +110,7 @@ public class DiagnosticAnnotationUtil {
     
     private void updateAnnotations(@NotNull AbstractTextEditor editor, 
             @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations) {
-        IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+        IFile file = EditorUtil.getFile(editor);
 
         List<DiagnosticAnnotation> newAnnotations = annotations.get(file);
         if (newAnnotations == null) {

@@ -14,6 +14,7 @@ import org.eclipse.jface.text.IRegion;
 import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.IndenterUtil;
 
 import com.intellij.lang.ASTNode;
@@ -130,7 +131,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 return 0;
             }
             
-            IFile file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
+            IFile file = EditorUtil.getFile(editor);
             ASTNode parsedDocument = KotlinPsiManager.INSTANCE.getParsedFile(file, document.get());
             if (document.get().contains("\r")) {
                 offset -= document.getLineOfOffset(offset);

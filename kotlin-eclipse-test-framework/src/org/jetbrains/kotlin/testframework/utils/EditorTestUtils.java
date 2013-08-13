@@ -12,6 +12,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class EditorTestUtils {
 
@@ -26,7 +27,7 @@ public class EditorTestUtils {
 	}
 	
 	public static void assertByEditor(JavaEditor activeEditor, String expected) {
-		String actual = activeEditor.getViewer().getDocument().get();
+		String actual = EditorUtil.getSourceCode(activeEditor);
 		
 		expected = expected.replaceAll("<br>", System.lineSeparator());
 		if (expected.contains(TextEditorTest.CARET)) {

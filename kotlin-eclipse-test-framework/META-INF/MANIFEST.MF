@@ -18,7 +18,8 @@ Import-Package: junit.framework;version="4.10.0",
  org.eclipse.jdt.launching,
  org.eclipse.jface.text,
  org.eclipse.ui.part,
- org.jetbrains.kotlin.ui.editors
+ org.jetbrains.kotlin.ui.editors,
+ org.jetbrains.kotlin.utils
 Export-Package: org.jetbrains.kotlin.testframework.editor,
  org.jetbrains.kotlin.testframework.utils
 Bundle-Vendor: JetBrains
