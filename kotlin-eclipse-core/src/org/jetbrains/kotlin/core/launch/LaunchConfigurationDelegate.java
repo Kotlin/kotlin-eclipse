@@ -168,9 +168,9 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     
     private String configureBuildCommand(ILaunchConfiguration configuration) throws CoreException {
         StringBuilder command = new StringBuilder();
-        command.append("java -cp " + KT_HOME + "lib/" + KT_COMPILER);
+        command.append("java -cp " + addQuotes(KT_HOME + "lib/" + KT_COMPILER));
         command.append(" " + K2JVMCompiler.class.getCanonicalName());
-        command.append(" -kotlinHome " + KT_HOME);
+        command.append(" -kotlinHome " + addQuotes(KT_HOME));
         command.append(" -tags");
 
         StringBuilder srcDirectories = new StringBuilder();
@@ -179,7 +179,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         IJavaProject javaProject = getJavaProject(configuration);
         
         for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-            srcDirectories.append(srcDirectory.getAbsolutePath()).append(' ');
+            srcDirectories.append(addQuotes(srcDirectory.getAbsolutePath())).append(" ");
             classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
@@ -188,11 +188,15 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         }
         
         command.append(" -src " + srcDirectories);
-        command.append(" -classpath " + classPath);
+        command.append(" -classpath " + addQuotes(classPath.toString()));
         
-        command.append(" -output " + getOutputDir(configuration));
+        command.append(" -output " + addQuotes(getOutputDir(configuration)));
         
         return command.toString();
+    }
+    
+    private String addQuotes(String text) {
+        return "\"" + text + "\"";
     }
     
     private String getOutputDir(ILaunchConfiguration configuration) {
