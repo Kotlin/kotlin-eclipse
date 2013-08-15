@@ -8,11 +8,20 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.information.IInformationPresenter;
+import org.eclipse.jface.text.information.IInformationProvider;
+import org.eclipse.jface.text.information.IInformationProviderExtension;
+import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
@@ -24,8 +33,14 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
+import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePopup;
+import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class Configuration extends JavaSourceViewerConfiguration {
     private DoubleClickStrategy doubleClickStrategy;
@@ -49,6 +64,23 @@ public class Configuration extends JavaSourceViewerConfiguration {
             IJavaPartitions.JAVA_STRING,
             IJavaPartitions.JAVA_CHARACTER
         };
+    }
+
+    @Override
+    public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer, boolean doCodeResolve) {
+        InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
+            @Override
+            public IInformationControl createInformationControl(Shell parent) {
+                int shellStyle= SWT.RESIZE;
+                int treeStyle= SWT.V_SCROLL | SWT.H_SCROLL;
+                return new KotlinOutlinePopup(editor, parent, shellStyle, treeStyle);
+            }
+        });
+        
+        presenter.setInformationProvider(new OutlineInformationProvider(editor), IDocument.DEFAULT_CONTENT_TYPE);
+        presenter.setSizeConstraints(45, 15, true, false);
+        
+        return presenter;
     }
     
     @Override
@@ -142,5 +174,29 @@ public class Configuration extends JavaSourceViewerConfiguration {
          assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
 
         return assistant;
+    }
+    
+    private static class OutlineInformationProvider implements IInformationProvider, IInformationProviderExtension {
+        
+        private final AbstractTextEditor editor;
+        
+        public OutlineInformationProvider(AbstractTextEditor editor) {
+            this.editor = editor;
+        }
+        
+        @Override
+        public IRegion getSubject(ITextViewer textViewer, int offset) {
+            return new Region(offset, 0);
+        }
+        
+        @Override
+        public String getInformation(ITextViewer textViewer, IRegion subject) {
+            return getInformation2(textViewer, subject).toString();
+        }
+        
+        @Override
+        public Object getInformation2(ITextViewer textViewer, IRegion subject) {
+            return KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
+        }
     }
 }

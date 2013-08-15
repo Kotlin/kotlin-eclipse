@@ -9,16 +9,31 @@ import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 
 public class KotlinEditor extends CompilationUnitEditor {
 
     private final ColorManager colorManager;
     private final BracketInserter bracketInserter;
+    private KotlinOutlinePage kotlinOutlinePage = null;
     
     public KotlinEditor() {
         super();
         colorManager = new ColorManager();
         bracketInserter = new BracketInserter();
+    }
+    
+    @Override
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class required) {
+        if (IContentOutlinePage.class.equals(required)) {
+            if (kotlinOutlinePage == null) {
+                kotlinOutlinePage = new KotlinOutlinePage(this);
+            }
+            return kotlinOutlinePage;
+        }
+        
+        return super.getAdapter(required);
     }
     
     @Override

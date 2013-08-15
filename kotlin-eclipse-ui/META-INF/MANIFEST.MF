@@ -30,7 +30,9 @@ Import-Package: org.eclipse.core.resources,
  org.eclipse.ui.ide,
  org.eclipse.ui.ide.undo,
  org.eclipse.ui.part,
- org.eclipse.ui.wizards.newresource
+ org.eclipse.ui.views.contentoutline,
+ org.eclipse.ui.wizards.newresource,
+ com.intellij.navigation
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.editors,

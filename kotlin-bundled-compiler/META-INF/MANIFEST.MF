@@ -110,4 +110,6 @@ Export-Package: com.google.common.base,
  org.jetbrains.jet.util.slicedmap,
  org.jetbrains.jet.utils,
  com.intellij.psi.util,
- com.intellij.extapi.psi
+ com.intellij.extapi.psi,
+ com.intellij.navigation,
+ com.intellij.psi.impl

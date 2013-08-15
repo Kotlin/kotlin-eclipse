@@ -13,4 +13,9 @@ public class EditorUtil {
     public static String getSourceCode(JavaEditor editor) {
         return editor.getViewer().getDocument().get();
     }
+    
+    public static int getOffsetInEditor(JavaEditor editor, int offset) {
+        String textWithoutCR = getSourceCode(editor).replaceAll("\r", "");
+        return LineEndUtil.convertLfToOsOffset(textWithoutCR, offset);
+    }
 }
