@@ -17,6 +17,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetImportDirective;
 import org.jetbrains.jet.lang.psi.JetNamespaceHeader;
+import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.parser.KotlinParser;
@@ -77,11 +78,15 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
         int countBreakLine = 0;
         if (element instanceof JetNamespaceHeader) {
             ASTNode nextNode = element.getNode().getTreeNext();
-            int countBreakLineAfterHeader = IndenterUtil.getLineSeparatorsOccurences(nextNode.getText());
-            if (countBreakLineAfterHeader == 0) {
+            if (nextNode.getElementType().equals(JetTokens.WHITE_SPACE)) {
+                int countBreakLineAfterHeader = IndenterUtil.getLineSeparatorsOccurences(nextNode.getText());
+                if (countBreakLineAfterHeader == 0) {
+                    countBreakLine = 2;
+                } else if (countBreakLineAfterHeader == 1) {
+                    countBreakLine = 1;
+                }
+            } else {
                 countBreakLine = 2;
-            } else if (countBreakLineAfterHeader == 1) {
-                countBreakLine = 1;
             }
         }
         

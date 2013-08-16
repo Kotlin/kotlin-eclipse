@@ -106,4 +106,19 @@ public class KotlinUnresolvedClassFixTest extends KotlinUnresolvedClassFixTestCa
 				NO_REFERENCE_FILES,
 				"fun test() = Object");
 	}
+	
+	@Test
+	public void importWithAdditionalLine() {
+		doTest(
+				"fun main() {<br>" +
+				"val some: HashSet<Int>()<br>" +
+				"}",
+				NO_REFERENCE_FILES,
+				
+				"import java.util.HashSet<br>" +
+				"<br>" +
+				"fun main() {<br>" +
+				"val some: HashSet<Int>()<br>" +
+				"}");
+	}
 }
