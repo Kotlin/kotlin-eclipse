@@ -55,6 +55,8 @@ public class KotlinOutlinePage extends ContentOutlinePage {
     }
     
     public void refresh() {
-        setInputAndExpand();
+        if (!viewer.getControl().isDisposed()) {
+            setInputAndExpand();
+        }
     }
 }
