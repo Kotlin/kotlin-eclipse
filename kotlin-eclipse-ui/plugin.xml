@@ -50,6 +50,12 @@
             id="kotlin-eclipse-ui.preferences.compiler"
             name="Compiler">
       </page>
+      <page
+            category="kotlin-eclipse-ui.preferences"
+            class="org.jetbrains.kotlin.preferences.KotlinTemplatePreferencePage"
+            id="org.jetbrains.kotlin.ui.preferences.templates"
+            name="Template">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
@@ -215,5 +221,21 @@
             class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator"
             markerType="org.eclipse.core.resources.problemmarker">
       </markerResolutionGenerator>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.templates">
+      <include
+            file="templates/default-templates.xml"
+            translations="templates/default-templates.xml">
+      </include>
+      <contextType
+            class="org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateContextType"
+            id="kotlin-members"
+            name="Kotlin Template Context"
+            registryId="org.jetbrains.kotlin.ui.editors.KotlinEditor">
+      </contextType>
+      <contextTypeRegistry
+            id="org.jetbrains.kotlin.ui.editors.KotlinEditor">
+      </contextTypeRegistry>
    </extension>
 </plugin>

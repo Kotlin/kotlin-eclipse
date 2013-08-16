@@ -2,10 +2,15 @@ package org.jetbrains.kotlin.ui.editors.codeassist;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.jdt.internal.ui.JavaPluginImages;
+import org.eclipse.jdt.internal.ui.text.template.contentassist.TemplateProposal;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ICompletionListener;
@@ -13,7 +18,13 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
+import org.eclipse.jface.text.templates.DocumentTemplateContext;
+import org.eclipse.jface.text.templates.Template;
+import org.eclipse.jface.text.templates.TemplateContext;
+import org.eclipse.swt.graphics.Image;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
+import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateContextType;
+import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
 
 public class CompletionProcessor implements IContentAssistProcessor, ICompletionListener {
      
@@ -51,10 +62,35 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
         
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         
-        //Keywords
         proposals.addAll(generateKeywordProposals(viewer, identOffset, offset, identifierPart));
+        proposals.addAll(generateTemplateProposals(viewer, offset, identifierPart));
         
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
+    }
+    
+    private Collection<ICompletionProposal> generateTemplateProposals(ITextViewer viewer, int offset, String identifierPart) {
+        Template[] templates = KotlinTemplateManager.INSTANCE.getTemplateStore().getTemplates(KotlinTemplateContextType.KOTLIN_ID_MEMBERS);
+        if (templates == null || identifierPart == null) {
+            return Collections.emptyList();
+        }
+        
+        List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+        IRegion region = new Region(offset - identifierPart.length(), identifierPart.length());
+        TemplateContext templateContext = createTemplateContext(viewer, region);
+        Image templateIcon = JavaPluginImages.get(JavaPluginImages.IMG_OBJS_TEMPLATE);
+        for (Template template : templates) {
+            if (template.getName().startsWith(identifierPart)) {
+                proposals.add(new TemplateProposal(template, templateContext, region, templateIcon));
+            }
+        }
+        
+        return proposals;
+    }
+    
+    private TemplateContext createTemplateContext(ITextViewer viewer, IRegion region) {
+        return new DocumentTemplateContext(
+                KotlinTemplateManager.INSTANCE.getContextTypeRegistry().getContextType(KotlinTemplateContextType.KOTLIN_ID_MEMBERS), 
+                viewer.getDocument(), region.getOffset(), region.getLength());
     }
 
     /**
