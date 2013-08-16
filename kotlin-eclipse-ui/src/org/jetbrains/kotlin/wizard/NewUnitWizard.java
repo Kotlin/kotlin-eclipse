@@ -21,7 +21,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     private final String title = "Kotlin Source File";
     private final String description = "Create a new Kotlin souce file";
     private final String defaultUnitName = "";
-    private final String contents = "";
+    private String contents = "";
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -32,6 +32,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
 
     @Override
     public boolean performFinish() {
+        contents = createPackageHeader();
         FileCreationOp op = new FileCreationOp(page.getSourceDir(), page.getPackageFragment(), page.getUnitName(),
                 false, contents, getShell());
 
@@ -59,6 +60,15 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         BasicNewResourceWizard.selectAndReveal(op.getResult(), workbench.getActiveWorkbenchWindow());
 
         return true;
+    }
+    
+    private String createPackageHeader() {
+        String pckg = page.getPackageFragment().getElementName();
+        if (pckg.isEmpty()) {
+            return "";
+        }
+        
+        return "package " + pckg;
     }
 
     @Override
