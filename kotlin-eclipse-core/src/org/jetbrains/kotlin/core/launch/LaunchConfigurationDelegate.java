@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -131,11 +132,11 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     }
     
     private boolean compileKotlinFiles(@NotNull List<IFile> files, @NotNull ILaunchConfiguration configuration) throws CoreException {
-        String command = configureBuildCommand(configuration);
+        List<String> command = configureBuildCommand(configuration);
         
         refreshInitData();
         try {
-            Process buildProcess = Runtime.getRuntime().exec(command);
+            Process buildProcess = Runtime.getRuntime().exec(command.toArray(new String[command.size()]));
             parseCompilerOutput(buildProcess.getInputStream());
             
             buildProcess.waitFor();
@@ -166,20 +167,23 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         CompilerOutputParser.parseCompilerMessagesFromReader(messageCollector, new InputStreamReader(inputStream));
     }
     
-    private String configureBuildCommand(ILaunchConfiguration configuration) throws CoreException {
-        StringBuilder command = new StringBuilder();
-        command.append("java -cp " + addQuotes(KT_HOME + "lib/" + KT_COMPILER));
-        command.append(" " + K2JVMCompiler.class.getCanonicalName());
-        command.append(" -kotlinHome " + addQuotes(KT_HOME));
-        command.append(" -tags");
+    private List<String> configureBuildCommand(ILaunchConfiguration configuration) throws CoreException {
+        List<String> command = new ArrayList<String>();
+        command.add("java");
+        command.add("-cp");
+        command.add(KT_HOME + "lib/" + KT_COMPILER);
+        command.add(K2JVMCompiler.class.getCanonicalName());
+        command.add("-kotlinHome");
+        command.add(KT_HOME);
+        command.add("-tags");
 
-        StringBuilder srcDirectories = new StringBuilder();
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
         IJavaProject javaProject = getJavaProject(configuration);
+        StringBuilder srcDirectories = new StringBuilder();
         
         for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-            srcDirectories.append(addQuotes(srcDirectory.getAbsolutePath())).append(" ");
+            srcDirectories.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
             classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
@@ -187,16 +191,16 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
-        command.append(" -src " + srcDirectories);
-        command.append(" -classpath " + addQuotes(classPath.toString()));
+        command.add("-src");
+        command.add(srcDirectories.toString());
         
-        command.append(" -output " + addQuotes(getOutputDir(configuration)));
+        command.add("-classpath");
+        command.add(classPath.toString());
         
-        return command.toString();
-    }
-    
-    private String addQuotes(String text) {
-        return "\"" + text + "\"";
+        command.add("-output");
+        command.add(getOutputDir(configuration));
+        
+        return command;
     }
     
     private String getOutputDir(ILaunchConfiguration configuration) {
