@@ -5,6 +5,7 @@ import junit.framework.Assert;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 
 public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 

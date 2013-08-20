@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.eclipse.ui.PlatformUI;

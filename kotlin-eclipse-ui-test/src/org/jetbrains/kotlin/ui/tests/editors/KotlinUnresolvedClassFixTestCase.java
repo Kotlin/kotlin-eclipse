@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFile;
 

@@ -1,5 +1,7 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+
 import junit.framework.Assert;
 
 public class KotlinBracketInserterTestCase extends KotlinEditorTestCase {
