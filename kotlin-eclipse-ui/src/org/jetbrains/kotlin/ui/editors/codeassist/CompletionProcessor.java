@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -17,12 +18,12 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
-import org.eclipse.jface.text.templates.DocumentTemplateContext;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
+import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateContextType;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
 
@@ -33,6 +34,12 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
      */
     private static final char[] VALID_PROPOSALS_CHARS = new char[] { '.' };
     private static final char[] VALID_INFO_CHARS = new char[] { '(', ',' };
+    
+    private final JavaEditor editor;
+    
+    public CompletionProcessor(JavaEditor editor) {
+        this.editor = editor;
+    }
     
     /**
      * A very simple context which invalidates information after typing several
@@ -76,7 +83,7 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
         
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         IRegion region = new Region(offset - identifierPart.length(), identifierPart.length());
-        TemplateContext templateContext = createTemplateContext(viewer, region);
+        TemplateContext templateContext = createTemplateContext(region);
         Image templateIcon = JavaPluginImages.get(JavaPluginImages.IMG_OBJS_TEMPLATE);
         for (Template template : templates) {
             if (template.getName().startsWith(identifierPart)) {
@@ -87,10 +94,10 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
         return proposals;
     }
     
-    private TemplateContext createTemplateContext(ITextViewer viewer, IRegion region) {
-        return new DocumentTemplateContext(
+    private TemplateContext createTemplateContext(IRegion region) {
+        return new KotlinDocumentTemplateContext(
                 KotlinTemplateManager.INSTANCE.getContextTypeRegistry().getContextType(KotlinTemplateContextType.KOTLIN_ID_MEMBERS), 
-                viewer.getDocument(), region.getOffset(), region.getLength());
+                editor, region.getOffset(), region.getLength());
     }
 
     /**

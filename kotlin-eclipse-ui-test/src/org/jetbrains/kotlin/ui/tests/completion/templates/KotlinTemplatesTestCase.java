@@ -8,16 +8,21 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
-import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 
 public class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 	
 	public void doTest(String input, String expected) {
+		doTest(input, expected, Separator.TAB, 0);
+	}
+	
+	public void doTest(String input, String expected, Separator separator, int spacesCount) {
+		configureIndents(separator, spacesCount);
+		
 		testEditor = configureEditor("Test.kt", input);
 		
-		CompletionProcessor ktCompletionProcessor = new CompletionProcessor();
+		CompletionProcessor ktCompletionProcessor = new CompletionProcessor(testEditor.getEditor());
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(testEditor.getEditor().getViewer(), getCaret());
 		
 		Assert.assertTrue(proposals.length > 0);
@@ -38,10 +43,8 @@ public class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 		return testEditor.getEditor().getViewer().getTextWidget().getCaretOffset();
 	}
 	
-	@Override
-	protected TextEditorTest configureEditor(String fileName, String content) {
-		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, false);
-		
-		return super.configureEditor(fileName, content);
+	private void configureIndents(Separator separator, int spacesCount) {
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == separator));
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, spacesCount);	
 	}
 }

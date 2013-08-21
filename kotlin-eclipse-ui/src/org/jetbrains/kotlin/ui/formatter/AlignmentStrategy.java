@@ -16,6 +16,7 @@ public class AlignmentStrategy {
     
     private final ASTNode parsedFile;
     private StringBuilder edit;
+    private final int lineIndentation;
     
     public static final Set<String> blockElementTypes;
     
@@ -23,19 +24,24 @@ public class AlignmentStrategy {
         blockElementTypes = new HashSet<String>(Arrays.asList("IF", "FOR", "WHILE", "FUN", "CLASS", "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", "WHEN"));
     }
     
-    public AlignmentStrategy(ASTNode parsedFile) {
+    public AlignmentStrategy(ASTNode parsedFile, int lineIndentation) {
         this.parsedFile = parsedFile;
+        this.lineIndentation = lineIndentation;
     }
     
     public String placeSpaces() {
         edit = new StringBuilder();
-        buildFormattedCode(parsedFile, 0);
+        buildFormattedCode(parsedFile, lineIndentation);
         
         return edit.toString();
     }
     
     public static String alignCode(ASTNode parsedFile) {
-        return new AlignmentStrategy(parsedFile).placeSpaces();
+        return new AlignmentStrategy(parsedFile, 0).placeSpaces();
+    }
+    
+    public static String alignCode(ASTNode parsedFile, int lineIndentation) {
+        return new AlignmentStrategy(parsedFile, lineIndentation).placeSpaces();
     }
     
     private void buildFormattedCode(ASTNode node, int indent) {

@@ -232,8 +232,8 @@
       </include>
       <contextType
             class="org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateContextType"
-            id="kotlin-members"
-            name="Kotlin Template Context"
+            id="kotlin-declarations"
+            name="Kotlin Declarations"
             registryId="org.jetbrains.kotlin.ui.editors.KotlinEditor">
       </contextType>
       <contextTypeRegistry

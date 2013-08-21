@@ -22,6 +22,32 @@ public class KotlinTemplatesTest extends KotlinTemplatesTestCase {
 				"fun main(args : Array<String>) {<br>" +
 				"\t<caret><br>" +
 				"}");
+	}
+	
+	@Test
+	public void completeMainTemplateInBody() {
+		doTest(
+				"class Test {<br>" +
+				"\tmain<caret><br>" +
+				"}",
+				
+				"class Test {<br>" +
+				"\tfun main(args : Array<String>) {<br>" +
+				"\t\t<caret><br>" +
+				"\t}<br>" +
+				"}");
+	}
+	
+	@Test
+	public void completeMainTemplateUsingSpacesInsteadTab() {
+		doTest(
+				"main<caret>",
+				
+				"fun main(args : Array<String>) {<br>" +
+				"  <caret><br>" +
+				"}", 
+				
+				Separator.SPACE, 2);
 				
 	}
 }

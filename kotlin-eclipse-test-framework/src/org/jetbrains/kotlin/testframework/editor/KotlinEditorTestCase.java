@@ -7,25 +7,40 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
 import org.junit.After;
 import org.junit.Before;
 
 public abstract class KotlinEditorTestCase {
 	
+	public enum Separator {
+		TAB, SPACE;
+	}
+	
 	protected TextEditorTest testEditor;
 	public static final String ERR_TAG_OPEN = "<err>";
 	public static final String ERR_TAG_CLOSE = "</err>";
 	public static final String BR = "<br>";
+	
+	private Separator initialSeparator;
+	private int initialSpacesCount;
 
 	@After
 	public void afterTest() {
 		deleteProjectAndCloseEditors();
+		
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == initialSeparator));
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, initialSpacesCount);
 	}
 	
 	@Before
 	public void beforeTest() {
 		refreshWorkspace();
+		
+		initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.TAB : Separator.SPACE;
+		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 	}
 	
 	protected TextEditorTest configureEditor(String fileName, String content) {
