@@ -1,8 +1,6 @@
 package org.jetbrains.kotlin.core.builder;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,10 +21,17 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.plugin.JetFileType;
+import org.jetbrains.jet.plugin.JetLanguage;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.parser.KotlinParser;
+import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.impl.PsiFileFactoryImpl;
+import com.intellij.testFramework.LightVirtualFile;
 
 public class KotlinPsiManager {
     
@@ -44,10 +49,6 @@ public class KotlinPsiManager {
         switch (flag) {
             case IResourceDelta.ADDED:
                 addFile(file);
-                break;
-                
-            case IResourceDelta.CHANGED:
-                updatePsiFile(file, null);
                 break;
                 
             case IResourceDelta.REMOVED:
@@ -86,8 +87,14 @@ public class KotlinPsiManager {
             if (!projectFiles.containsKey(project)) {
                 projectFiles.put(project, new ArrayList<IFile>());
             }
+            
             projectFiles.get(project).add(file);
-            psiFiles.put(file, KotlinParser.getPsiFile(file));
+            try {
+                File IOFile = new File(file.getRawLocation().toOSString());
+                psiFiles.put(file, parseText(FileUtil.loadFile(IOFile), file));
+            } catch (IOException e) {
+                KotlinLogger.logAndThrow(e);
+            }
         }
     }
     
@@ -103,17 +110,11 @@ public class KotlinPsiManager {
         }
     }
     
-    public void updatePsiFile(@NotNull IFile file, String sourceCode) {
+    public void updatePsiFile(@NotNull IFile file, @NotNull String sourceCode) {
         synchronized (mapOperationLock) {
             assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
-            PsiFile parsedFile;
-            if (sourceCode != null) {
-                parsedFile = parseText(sourceCode, JavaCore.create(file.getProject()));
-            } else {
-                parsedFile = KotlinParser.getPsiFile(file);
-            }
-            
+            PsiFile parsedFile = parseText(sourceCode, file);
             psiFiles.put(file, parsedFile);
         }
     }
@@ -193,21 +194,15 @@ public class KotlinPsiManager {
         return false;
     }
     
-    @NotNull
-    private PsiFile parseText(@NotNull String text, IJavaProject javaProject) {
-        try {
-            File tempFile;
-            tempFile = File.createTempFile("temp", "." + JetFileType.INSTANCE.getDefaultExtension());
-            BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
-            bw.write(text);
-            bw.close();
-            
-            PsiFile parsedFile = KotlinParser.getPsiFile(tempFile, javaProject);
-            
-            return parsedFile;
-        } catch (IOException e) {
-            KotlinLogger.logError(e);
-            throw new IllegalStateException(e);
-        }
+    @Nullable
+    private PsiFile parseText(@NotNull String text, IFile file) {
+        IJavaProject javaProject = JavaCore.create(file.getProject());
+        Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
+        
+        String path = file.getRawLocation().toOSString();
+        LightVirtualFile virtualFile = new LightVirtualFile(path, JetLanguage.INSTANCE, text);
+        virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET);
+        
+        return ((PsiFileFactoryImpl) PsiFileFactory.getInstance(project)).trySetupPsiForFile(virtualFile, JetLanguage.INSTANCE, true, false);
     }
 }

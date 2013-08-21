@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.jetbrains.kotlin.parser.KotlinParser;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
 import com.intellij.psi.PsiElement;
@@ -178,7 +178,7 @@ public class KotlinOutlinePopup extends PopupDialog implements IInformationContr
 
     @Override
     public void setInput(Object input) {
-        PsiElement element = KotlinParser.getPsiFile(EditorUtil.getFile(editor));
+        PsiElement element = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
         treeViewer.setInput(element);
     }
 

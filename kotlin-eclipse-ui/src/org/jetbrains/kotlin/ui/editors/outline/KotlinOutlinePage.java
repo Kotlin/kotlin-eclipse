@@ -7,7 +7,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
-import org.jetbrains.kotlin.parser.KotlinParser;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
 import com.intellij.psi.PsiElement;
@@ -49,7 +49,7 @@ public class KotlinOutlinePage extends ContentOutlinePage {
     
     private void setInputAndExpand() {
         IFile file = EditorUtil.getFile(editor);
-        PsiFile psiFile = KotlinParser.getPsiFile(file);
+        PsiFile psiFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         viewer.setInput(psiFile);
         viewer.expandAll();
     }

@@ -112,4 +112,6 @@ Export-Package: com.google.common.base,
  com.intellij.psi.util,
  com.intellij.extapi.psi,
  com.intellij.navigation,
- com.intellij.psi.impl
+ com.intellij.psi.impl,
+ com.intellij.testFramework,
+ com.intellij.openapi.util.io

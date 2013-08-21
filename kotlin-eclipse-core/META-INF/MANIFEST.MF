@@ -22,6 +22,5 @@ Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.log,
  org.jetbrains.kotlin.core.resolve,
  org.jetbrains.kotlin.core.utils,
- org.jetbrains.kotlin.model,
- org.jetbrains.kotlin.parser
+ org.jetbrains.kotlin.model
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

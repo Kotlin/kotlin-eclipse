@@ -18,19 +18,13 @@ import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.plugin.JetMainDetector;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 
 public class ProjectUtils {
     
     public static IFile getMainClass(Collection<IFile> files) {
-        IJavaProject javaProject = getJavaProjectFromCollection(files);
-        KotlinEnvironment kotlinEnvironment = new KotlinEnvironment(javaProject);
-        
         for (IFile file : files) {
-            JetFile jetFile = kotlinEnvironment.getJetFile(file);
-            if (jetFile == null) {
-                continue;
-            }
-            
+            JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
             if (JetMainDetector.hasMain(jetFile.getDeclarations())) {
                 return file;
             }
@@ -55,8 +49,7 @@ public class ProjectUtils {
     
     @Nullable
     public static String getPackageByFile(IFile file) {
-        IJavaProject javaProject = JavaCore.create(file.getProject());
-        JetFile jetFile = new KotlinEnvironment(javaProject).getJetFile(file);
+        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
         
         assert jetFile != null;
         

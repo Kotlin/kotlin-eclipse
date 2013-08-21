@@ -2,6 +2,8 @@ package org.jetbrains.kotlin.core.utils;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -31,11 +33,11 @@ import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 
 public class KotlinEnvironment {
     
-    private static final JavaCoreApplicationEnvironment applicationEnvironment;
     
     private static final Disposable DISPOSABLE = new Disposable() {
         
@@ -44,22 +46,17 @@ public class KotlinEnvironment {
         }
     };
     
-    static {
-        applicationEnvironment = new JavaCoreApplicationEnvironment(DISPOSABLE);
-        
-        applicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
-        applicationEnvironment.registerFileType(JetFileType.INSTANCE, "jet");
-        applicationEnvironment.registerParserDefinition(new JetParserDefinition());
-
-        applicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
-    }
+    private static final ConcurrentMap<IJavaProject, KotlinEnvironment> cachedEnvironment = new ConcurrentHashMap<>();
     
+    private final JavaCoreApplicationEnvironment applicationEnvironment;
     private final JavaCoreProjectEnvironment projectEnvironment;
     private final MockProject project;
     private final IJavaProject javaProject;
     
-    public KotlinEnvironment(IJavaProject javaProject) {
+    private KotlinEnvironment(@NotNull IJavaProject javaProject) {
         this.javaProject = javaProject;
+        
+        applicationEnvironment = createJavaCoreApplicationEnvironment();
         
         projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
         
@@ -75,6 +72,51 @@ public class KotlinEnvironment {
         addKotlinRuntime();
         addSourcesToClasspath();
         addLibsToClasspath();
+        
+        cachedEnvironment.put(javaProject, this);   
+    }
+    
+    @NotNull
+    public static KotlinEnvironment getEnvironment(IJavaProject javaProject) {
+        if (!cachedEnvironment.containsKey(javaProject)) {
+            cachedEnvironment.put(javaProject, new KotlinEnvironment(javaProject));
+        }
+        
+        return cachedEnvironment.get(javaProject);
+    }
+    
+    public static void updateKotlinEnvironment(IJavaProject javaProject) {
+        cachedEnvironment.put(javaProject, new KotlinEnvironment(javaProject));
+    }
+    
+    @Nullable
+    public JetFile getJetFile(@NotNull IFile file) {
+        return getJetFile(new File(file.getRawLocation().toOSString()));
+    }
+    
+    @Nullable
+    public JetFile getJetFile(@NotNull File file) {
+        String path = file.getAbsolutePath();
+        VirtualFile virtualFile = applicationEnvironment.getLocalFileSystem().findFileByPath(path);
+        
+        PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
+        if (psiFile != null && psiFile instanceof JetFile) {
+            return (JetFile) psiFile;
+        }
+
+        return null;
+    }
+
+    private JavaCoreApplicationEnvironment createJavaCoreApplicationEnvironment() {
+        JavaCoreApplicationEnvironment javaApplicationEnvironment = new JavaCoreApplicationEnvironment(DISPOSABLE);
+        
+        javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
+        javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "jet");
+        javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
+
+        javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
+        
+        return javaApplicationEnvironment;
     }
     
     private void addLibsToClasspath() {
@@ -135,19 +177,6 @@ public class KotlinEnvironment {
         }
     }
     
-    @Nullable
-    public JetFile getJetFile(@NotNull IFile file) {
-        return getJetFile(new File(file.getRawLocation().toOSString()));
-    }
-    
-    @Nullable
-    public JetFile getJetFile(@NotNull File file) {
-        String path = file.getAbsolutePath();
-        VirtualFile fileByPath = applicationEnvironment.getLocalFileSystem().findFileByPath(path);
-        
-        return (JetFile) PsiManager.getInstance(project).findFile(fileByPath);
-    }
-    
     @NotNull
     public Project getProject() {
         return project;
@@ -158,7 +187,7 @@ public class KotlinEnvironment {
     }
     
     @NotNull
-    public static JavaCoreApplicationEnvironment getApplicationEnvironment() {
+    public JavaCoreApplicationEnvironment getJavaApplicationEnvironment() {
         return applicationEnvironment;
     }
     

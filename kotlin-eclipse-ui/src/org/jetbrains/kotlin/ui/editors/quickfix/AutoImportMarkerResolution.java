@@ -20,7 +20,6 @@ import org.jetbrains.jet.lang.psi.JetNamespaceHeader;
 import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.parser.KotlinParser;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.IndenterUtil;
@@ -118,7 +117,7 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
     }
     
     private PsiElement findNodeToNewImport(IFile file) {
-        JetFile jetFile = (JetFile) KotlinParser.getPsiFile(file);
+        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
         List<JetImportDirective> jetImportDirective = jetFile.getImportDirectives();
         if (jetImportDirective != null && !jetImportDirective.isEmpty()) {
             return jetImportDirective.get(jetImportDirective.size() - 1);
