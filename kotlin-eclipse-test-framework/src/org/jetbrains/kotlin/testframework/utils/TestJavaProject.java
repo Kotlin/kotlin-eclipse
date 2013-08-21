@@ -47,7 +47,7 @@ public class TestJavaProject {
 			if (!projectExists) {
 				setNatureAndBuilder();
 				javaProject.setRawClasspath(new IClasspathEntry[0], null);
-				sourceFolder = createSourceFolder();
+				sourceFolder = createSourceFolder(SRC_FOLDER);
 				addSystemLibraries();
 			}
 		} catch (CoreException e) {
@@ -87,13 +87,13 @@ public class TestJavaProject {
 
 	public IPackageFragment createPackage(String name) throws CoreException {
 		if (sourceFolder == null) {
-			sourceFolder = createSourceFolder();
+			sourceFolder = createSourceFolder(SRC_FOLDER);
 		}
 		return sourceFolder.createPackageFragment(name, true, null);
 	}
 	
-	private IPackageFragmentRoot createSourceFolder() throws CoreException {
-		IFolder folder = createFolderIfNotExist(SRC_FOLDER);
+	public IPackageFragmentRoot createSourceFolder(String srcFolderName) throws CoreException {
+		IFolder folder = createFolderIfNotExist(srcFolderName);
 		IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(folder);
 		for (IClasspathEntry entry : javaProject.getResolvedClasspath(false)) {
 			if (folder.getFullPath().equals(entry.getPath())) {

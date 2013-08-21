@@ -20,7 +20,8 @@ Import-Package: com.intellij.openapi.util,
  org.eclipse.jface.text,
  org.eclipse.ui.part,
  org.jetbrains.kotlin.ui.editors,
- org.jetbrains.kotlin.utils
+ org.jetbrains.kotlin.utils,
+ org.junit;version="4.10.0"
 Export-Package: org.jetbrains.kotlin.testframework.editor,
  org.jetbrains.kotlin.testframework.utils
 Bundle-Vendor: JetBrains

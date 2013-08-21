@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.ui.tests.editors;
+package org.jetbrains.kotlin.testframework.editor;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -7,7 +7,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.PlatformUI;
-import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -29,10 +28,14 @@ public abstract class KotlinEditorTestCase {
 		refreshWorkspace();
 	}
 	
-    protected TextEditorTest configureEditor(String fileName, String content) {
-    	TextEditorTest testEditor = new TextEditorTest();
+	protected TextEditorTest configureEditor(String fileName, String content) {
+    	return configureEditor(fileName, content, TextEditorTest.TEST_PROJECT_NAME, TextEditorTest.TEST_PACKAGE_NAME);
+    }
+	
+    protected TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {
+    	TextEditorTest testEditor = new TextEditorTest(projectName);
 		String toEditor = resolveTestTags(content);
-		testEditor.createEditor(fileName, toEditor);
+		testEditor.createEditor(fileName, toEditor, packageName);
 		
 		return testEditor;
     }

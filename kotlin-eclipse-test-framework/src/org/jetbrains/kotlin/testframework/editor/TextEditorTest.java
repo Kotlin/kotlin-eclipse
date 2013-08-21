@@ -14,12 +14,17 @@ public class TextEditorTest {
 	
 	public static String CARET = "<caret>";
 
-	private final static String PROJECT_NAME = "test_project";
+	public static final String TEST_PROJECT_NAME = "test_project";
+	public static final String TEST_PACKAGE_NAME = "testing";
 	private TestJavaProject testProject;
 	private JavaEditor editor;
 	
 	public TextEditorTest() {
-		testProject = new TestJavaProject(PROJECT_NAME);
+		this(TEST_PROJECT_NAME);
+	}
+	
+	public TextEditorTest(String projectName) {
+		testProject = new TestJavaProject(projectName);
 		
 		editor = null;
 	}
@@ -29,12 +34,16 @@ public class TextEditorTest {
 	}
 	
 	public JavaEditor createEditor(String name, String content) {
+		return createEditor(name, content, TEST_PACKAGE_NAME);
+	}
+	
+	public JavaEditor createEditor(String name, String content, String packageName) {
 		if (editor == null) {
 			try {
 				int cursor = getCursorPosition(content);
 				content = content.replaceAll(CARET, "");
 				
-				IFile file = testProject.createSourceFile("testing", name, content);
+				IFile file = testProject.createSourceFile(packageName, name, content);
 				editor = (JavaEditor) EditorTestUtils.openInEditor(file);
 				setCaret(cursor);
 			} catch (Exception e) {
