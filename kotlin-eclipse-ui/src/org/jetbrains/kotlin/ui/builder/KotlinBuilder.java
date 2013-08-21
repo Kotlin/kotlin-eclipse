@@ -15,11 +15,6 @@ import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -27,7 +22,6 @@ import org.jetbrains.kotlin.ui.editors.AnalyzerScheduler;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
-import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 
 public class KotlinBuilder extends IncrementalProjectBuilder {
 
@@ -51,32 +45,9 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         
         addMarkersToProject(annotations);
         
-        updateActiveOutlinePage();
-        
         return null;
     }
     
-    private void updateActiveOutlinePage() {
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-                
-                if (workbenchWindow == null) {
-                    return;
-                }
-                
-                AbstractTextEditor editor = (AbstractTextEditor) workbenchWindow.getActivePage().getActiveEditor();
-                if (editor != null) {
-                    IContentOutlinePage outlinePage = (IContentOutlinePage) editor.getAdapter(IContentOutlinePage.class);
-                    if (outlinePage instanceof KotlinOutlinePage) {
-                        ((KotlinOutlinePage) outlinePage).refresh();
-                    }
-                }
-            }
-        });
-    }
-
     private void addMarkersToProject(Map<IFile, List<DiagnosticAnnotation>> annotations) throws CoreException {
         for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getProject())) {
             if (file.exists()) {
