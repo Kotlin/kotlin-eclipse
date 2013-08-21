@@ -30,7 +30,7 @@ import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 public class KotlinLaunchShortcut implements ILaunchShortcut {
 
-    private final String launchConfigurationTypeId = "org.jetbrains.kotlin.core.launch.launchConfigurationType";
+    private static final String launchConfigurationTypeId = "org.jetbrains.kotlin.core.launch.launchConfigurationType";
     
     @Override
     public void launch(ISelection selection, String mode) {
@@ -100,7 +100,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
         DebugUITools.launch(configuration, mode);
     }
     
-    private ILaunchConfiguration createConfiguration(IFile file) {
+    public static ILaunchConfiguration createConfiguration(IFile file) {
         ILaunchConfiguration configuration = null;
         ILaunchConfigurationWorkingCopy configWC = null;
         ILaunchConfigurationType configurationType = getLaunchConfigurationType();
@@ -160,7 +160,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
         }
     }
 
-    private ILaunchConfigurationType getLaunchConfigurationType() {
+    private static ILaunchConfigurationType getLaunchConfigurationType() {
         return DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurationType(launchConfigurationTypeId);
     }
 }
