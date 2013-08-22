@@ -8,13 +8,16 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.quickassist.IQuickAssistInvocationContext;
 import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
 import org.jetbrains.kotlin.utils.EditorUtil;
@@ -34,7 +37,22 @@ public class KotlinQuickAssistProcessor implements IQuickAssistProcessor {
 
     @Override
     public boolean canFix(Annotation annotation) {
-        return true;
+        if (annotation.isMarkedDeleted()) {
+            return false;
+        }
+        
+        IDocumentProvider documentProvider = editor.getDocumentProvider();
+        IAnnotationModel annotationModel = documentProvider.getAnnotationModel(editor.getEditorInput());
+        
+        Position position = annotationModel.getPosition(annotation);
+        try {
+            IMarker marker = findMarkerAt(position.getOffset());
+            return IDE.getMarkerHelpRegistry().hasResolutions(marker);
+        } catch (CoreException e) {
+            KotlinLogger.logError(e);
+        }
+        
+        return false;
     }
 
     @Override
