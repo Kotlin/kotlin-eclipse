@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
-import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiFile;
 
 public class KotlinFormatAction extends Action {
 
@@ -22,9 +22,9 @@ public class KotlinFormatAction extends Action {
         String sourceCode = EditorUtil.getSourceCode(editor);
         IFile file = EditorUtil.getFile(editor);
         
-        ASTNode parsedCode = KotlinPsiManager.INSTANCE.getParsedFile(file, sourceCode);
+        PsiFile parsedCode = KotlinPsiManager.INSTANCE.getParsedFile(file, sourceCode);
         
         IDocument document = editor.getViewer().getDocument(); 
-        document.set(AlignmentStrategy.alignCode(parsedCode));
+        document.set(AlignmentStrategy.alignCode(parsedCode.getNode()));
     }
 }

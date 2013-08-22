@@ -1,7 +1,5 @@
 package org.jetbrains.kotlin.psi.visualization;
 
-import java.io.File;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -10,6 +8,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class PsiVisualization extends AbstractHandler {
 
@@ -18,10 +17,9 @@ public class PsiVisualization extends AbstractHandler {
         Shell shell = HandlerUtil.getActiveShell(event);
         KotlinEditor editor = (KotlinEditor) HandlerUtil.getActiveEditor(event);
         
-        IFile iFile = ((IFileEditorInput) editor.getEditorInput()).getFile();
-        File file = new File(iFile.getRawLocation().toOSString());
+        IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
         
-        String sourceCode = editor.getDocumentProvider().getDocument(HandlerUtil.getActiveEditorInput(event)).get();
+        String sourceCode = EditorUtil.getSourceCode(editor);
         
         new VisualizationPage(shell, sourceCode, file).open();
         

@@ -18,6 +18,8 @@ import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.IndenterUtil;
 
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
@@ -132,26 +134,31 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             }
             
             IFile file = EditorUtil.getFile(editor);
-            ASTNode parsedDocument = KotlinPsiManager.INSTANCE.getParsedFile(file, document.get());
+            PsiFile parsedDocument = KotlinPsiManager.INSTANCE.getParsedFile(file, document.get());
             if (document.get().contains("\r")) {
                 offset -= document.getLineOfOffset(offset);
             }
             
-            ASTNode leaf = parsedDocument.findLeafElementAt(offset);
+            PsiElement leaf = parsedDocument.findElementAt(offset);
             if (leaf == null) {
                 return 0;
             }
             
-            if (leaf.getElementType() != JetTokens.WHITE_SPACE) {
-                leaf = parsedDocument.findLeafElementAt(offset - 1);
+            if (leaf.getNode().getElementType() != JetTokens.WHITE_SPACE) {
+                leaf = parsedDocument.findElementAt(offset - 1);
             }
             
             int indent = 0;
-            while(leaf != null) {
-                if (BLOCK_ELEMENT_TYPES.contains(leaf.getElementType().toString())) {
+            
+            ASTNode node = null;
+            if (leaf != null) {
+                node = leaf.getNode();
+            }
+            while(node != null) {
+                if (BLOCK_ELEMENT_TYPES.contains(node.getElementType().toString())) {
                     indent++;
                 }
-                leaf = leaf.getTreeParent();
+                node = node.getTreeParent();
             }
             
             return indent;

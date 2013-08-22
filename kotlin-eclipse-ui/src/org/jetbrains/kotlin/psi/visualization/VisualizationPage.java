@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.psi.visualization;
 
-import java.io.File;
-
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.DoubleClickEvent;
@@ -20,7 +19,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.jetbrains.kotlin.parser.KotlinParser;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.lang.ASTNode;
@@ -30,11 +29,11 @@ public final class VisualizationPage extends Dialog {
 
     private final Point pageSize = new Point(750, 650);
     private final String sourceCode;
-    private final File file;
+    private final IFile file;
     
     private final String title = "Psi Viewer";
     
-    public VisualizationPage(Shell parentShell, String sourceCode, File file) {
+    public VisualizationPage(Shell parentShell, String sourceCode, IFile file) {
         super(parentShell);
         
         if (sourceCode == null || file == null || !file.exists()) {
@@ -66,8 +65,7 @@ public final class VisualizationPage extends Dialog {
         psiTreeViewer.setContentProvider(new PsiContentProvider());
         psiTreeViewer.setLabelProvider(new LabelProvider());
         
-        KotlinParser parser = new KotlinParser(file);
-        ASTNode parsedAst = parser.parse();
+        ASTNode parsedAst = KotlinPsiManager.INSTANCE.getParsedFile(file).getNode();
         psiTreeViewer.setInput(parsedAst);
         
         final String parsedText = parsedAst.getText();
@@ -132,4 +130,4 @@ public final class VisualizationPage extends Dialog {
         super.configureShell(shell);
         shell.setText(title);
     }
-} 
+}

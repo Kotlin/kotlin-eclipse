@@ -26,14 +26,14 @@ import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.parser.KotlinParser;
 
-import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiFile;
 
 public class KotlinPsiManager {
     
     public static final KotlinPsiManager INSTANCE = new KotlinPsiManager();
     
     private final Map<IProject, List<IFile>> projectFiles = new HashMap<>();
-    private final Map<IFile, ASTNode> psiFiles = new HashMap<>();
+    private final Map<IFile, PsiFile> psiFiles = new HashMap<>();
     
     private final Object mapOperationLock = new Object();
     
@@ -87,7 +87,7 @@ public class KotlinPsiManager {
                 projectFiles.put(project, new ArrayList<IFile>());
             }
             projectFiles.get(project).add(file);
-            psiFiles.put(file, KotlinParser.parse(file));
+            psiFiles.put(file, KotlinParser.getPsiFile(file));
         }
     }
     
@@ -107,11 +107,11 @@ public class KotlinPsiManager {
         synchronized (mapOperationLock) {
             assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
-            ASTNode parsedFile;
+            PsiFile parsedFile;
             if (sourceCode != null) {
-                parsedFile = parseText(sourceCode);
+                parsedFile = parseText(sourceCode, JavaCore.create(file.getProject()));
             } else {
-                parsedFile = KotlinParser.parse(file);
+                parsedFile = KotlinParser.getPsiFile(file);
             }
             
             psiFiles.put(file, parsedFile);
@@ -130,9 +130,9 @@ public class KotlinPsiManager {
     }
     
     @NotNull
-    public ASTNode getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
+    public PsiFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
         synchronized (mapOperationLock) {
-            ASTNode currentParsedFile = getParsedFile(file);
+            PsiFile currentParsedFile = getParsedFile(file);
             
             String sourceCodeWithouCR = expectedSourceCode.replaceAll("\r", "");
             if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
@@ -144,7 +144,7 @@ public class KotlinPsiManager {
     }
 
     @NotNull
-    public ASTNode getParsedFile(@NotNull IFile file) {
+    public PsiFile getParsedFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
             return psiFiles.get(file);
         }
@@ -194,7 +194,7 @@ public class KotlinPsiManager {
     }
     
     @NotNull
-    private ASTNode parseText(@NotNull String text) {
+    private PsiFile parseText(@NotNull String text, IJavaProject javaProject) {
         try {
             File tempFile;
             tempFile = File.createTempFile("temp", "." + JetFileType.INSTANCE.getDefaultExtension());
@@ -202,7 +202,7 @@ public class KotlinPsiManager {
             bw.write(text);
             bw.close();
             
-            ASTNode parsedFile = new KotlinParser(tempFile).parse();
+            PsiFile parsedFile = KotlinParser.getPsiFile(tempFile, javaProject);
             
             return parsedFile;
         } catch (IOException e) {

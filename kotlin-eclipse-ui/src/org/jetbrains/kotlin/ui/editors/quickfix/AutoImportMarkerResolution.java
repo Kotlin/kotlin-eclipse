@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 
 public class AutoImportMarkerResolution implements IMarkerResolution2 {
 
@@ -67,7 +68,7 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
     private int getOffset(PsiElement element, AbstractTextEditor editor) {
         int offset = 0;
         if (element != null) {
-            ASTNode parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
+            PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
             offset = LineEndUtil.convertLfToOsOffset(parsedFile.getText(), element.getTextRange().getEndOffset());
         }
         

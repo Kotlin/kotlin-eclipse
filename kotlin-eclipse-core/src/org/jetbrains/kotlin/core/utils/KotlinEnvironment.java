@@ -137,7 +137,12 @@ public class KotlinEnvironment {
     
     @Nullable
     public JetFile getJetFile(@NotNull IFile file) {
-        String path = file.getRawLocation().toOSString();
+        return getJetFile(new File(file.getRawLocation().toOSString()));
+    }
+    
+    @Nullable
+    public JetFile getJetFile(@NotNull File file) {
+        String path = file.getAbsolutePath();
         VirtualFile fileByPath = applicationEnvironment.getLocalFileSystem().findFileByPath(path);
         
         return (JetFile) PsiManager.getInstance(project).findFile(fileByPath);
