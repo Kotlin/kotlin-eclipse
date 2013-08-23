@@ -23,14 +23,12 @@ public class KotlinAnalyzer {
 
     @NotNull
     public static BindingContext analyzeProject(@NotNull IJavaProject javaProject) {
-        KotlinEnvironment.updateKotlinEnvironment(javaProject);
         KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
         return analyzeProject(javaProject, kotlinEnvironment);
     }
     
     @NotNull
     private static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment) {
-        // TODO: Do not initialize builtins for each analyze
         Project ideaProject = kotlinEnvironment.getProject();
         KotlinBuiltIns.initialize(ideaProject);
         
