@@ -32,7 +32,8 @@ public class DiagnosticAnnotationUtil {
     private DiagnosticAnnotationUtil() {
     }
     
-    public Map<IFile, List<DiagnosticAnnotation>> handleDiagnostics(List<Diagnostic> diagnostics) {
+    @NotNull
+    public Map<IFile, List<DiagnosticAnnotation>> handleDiagnostics(@NotNull List<Diagnostic> diagnostics) {
         Map<IFile, List<DiagnosticAnnotation>> annotations = new HashMap<IFile, List<DiagnosticAnnotation>>();
         for (Diagnostic diagnostic : diagnostics) {
             if (diagnostic.getTextRanges().isEmpty()) {

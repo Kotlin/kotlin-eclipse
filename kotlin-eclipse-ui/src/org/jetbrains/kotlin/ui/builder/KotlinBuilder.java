@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.builder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -15,9 +16,11 @@ import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.ui.editors.AnalyzerScheduler;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
@@ -27,8 +30,23 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
 
     @Override
     protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
-        IJavaProject javaProject = JavaCore.create(getProject());
+        KotlinEnvironment.updateKotlinEnvironment(JavaCore.create(getProject()));
+        updateLineMarkers();
+        
+        return null;
+    }
+
+    private void updateLineMarkers() throws CoreException {
+        List<Diagnostic> diagnostics = analyzeProjectInForeground(JavaCore.create(getProject()));
+        Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
+
+        addMarkersToProject(annotations, getProject());
+    }
+    
+    @NotNull
+    public static List<Diagnostic> analyzeProjectInForeground(IJavaProject javaProject) {
         AnalyzerScheduler analyzer = new AnalyzerScheduler(javaProject);
+        analyzer.cancel();
         analyzer.schedule();
         
         IJobManager jobManager = Job.getJobManager();
@@ -37,19 +55,14 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         } catch (OperationCanceledException | InterruptedException e) {
             KotlinLogger.logInfo(e.getMessage());
             
-            return null;
+            return Collections.emptyList();
         }
         
-        List<Diagnostic> diagnostics = analyzer.getDiagnostics();
-        Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
-        
-        addMarkersToProject(annotations);
-        
-        return null;
+        return analyzer.getDiagnostics();
     }
     
-    private void addMarkersToProject(Map<IFile, List<DiagnosticAnnotation>> annotations) throws CoreException {
-        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getProject())) {
+    private void addMarkersToProject(Map<IFile, List<DiagnosticAnnotation>> annotations, IProject project) throws CoreException {
+        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
             if (file.exists()) {
                 file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             }

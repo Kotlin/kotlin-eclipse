@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -11,7 +12,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.internal.ui.viewers.AsynchronousSchedulingRuleFactory;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
@@ -49,12 +49,12 @@ public class AnalyzerScheduler extends Job {
         return Status.OK_STATUS;
     }
     
-    @Nullable
+    @NotNull
     public List<Diagnostic> getDiagnostics() {
         if (getState() == Job.NONE) {
             return diagnostics;
         }
         
-        return null;
+        return Collections.emptyList();
     }
 }
