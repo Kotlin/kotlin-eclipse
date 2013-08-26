@@ -26,7 +26,7 @@ public class KotlinTemplateManager {
             contextTypeRegistry = new ContributionContextTypeRegistry(KotlinTemplateContextType.CONTEXT_TYPE_REGISTRY);
         }
         
-        contextTypeRegistry.addContextType(KotlinTemplateContextType.KOTLIN_ID_MEMBERS);
+        contextTypeRegistry.addContextType(KotlinTemplateContextType.KOTLIN_ID_TOP_LEVEL_DECLARATIONS);
         
         return contextTypeRegistry;
     }

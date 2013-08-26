@@ -25,17 +25,21 @@ public class KotlinTemplatesTest extends KotlinTemplatesTestCase {
 	}
 	
 	@Test
-	public void completeMainTemplateInBody() {
+	public void doNotCompleteMainInClass() {
 		doTest(
 				"class Test {<br>" +
 				"\tmain<caret><br>" +
-				"}",
-				
-				"class Test {<br>" +
-				"\tfun main(args : Array<String>) {<br>" +
-				"\t\t<caret><br>" +
-				"\t}<br>" +
 				"}");
+	}
+	
+	@Test
+	public void doNotCompleteMainInDeclaration() {
+		doTest("fun test() = main<caret>");
+	}
+	
+	@Test
+	public void doNotCompleteMainInExpression() {
+		doTest("fun test() = if (main<caret>) {}");
 	}
 	
 	@Test

@@ -2,7 +2,6 @@ package org.jetbrains.kotlin.ui.editors.codeassist;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
@@ -22,10 +21,12 @@ import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
+import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext;
-import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateContextType;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
+import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class CompletionProcessor implements IContentAssistProcessor, ICompletionListener {
      
@@ -62,6 +63,9 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         String fileText = viewer.getDocument().get();
+        
+        KotlinPsiManager.INSTANCE.updatePsiFile(EditorUtil.getFile(editor), fileText);
+        
         int identOffset = getIdentifierStartOffset(fileText, offset);
         Assert.isTrue(identOffset <= offset);
         
@@ -76,17 +80,17 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
     }
     
     private Collection<ICompletionProposal> generateTemplateProposals(ITextViewer viewer, int offset, String identifierPart) {
-        Template[] templates = KotlinTemplateManager.INSTANCE.getTemplateStore().getTemplates(KotlinTemplateContextType.KOTLIN_ID_MEMBERS);
-        if (templates == null || identifierPart == null) {
-            return Collections.emptyList();
-        }
+        List<String> contextTypeIds = KotlinApplicableTemplateContext.getApplicableContextTypeIds(viewer, 
+                EditorUtil.getFile(editor), offset - identifierPart.length());
         
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         IRegion region = new Region(offset - identifierPart.length(), identifierPart.length());
-        TemplateContext templateContext = createTemplateContext(region);
         Image templateIcon = JavaPluginImages.get(JavaPluginImages.IMG_OBJS_TEMPLATE);
+        
+        List<Template> templates = KotlinApplicableTemplateContext.getTemplatesByContextTypeIds(contextTypeIds);
         for (Template template : templates) {
             if (template.getName().startsWith(identifierPart)) {
+                TemplateContext templateContext = createTemplateContext(region, template.getContextTypeId());
                 proposals.add(new TemplateProposal(template, templateContext, region, templateIcon));
             }
         }
@@ -94,9 +98,9 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
         return proposals;
     }
     
-    private TemplateContext createTemplateContext(IRegion region) {
+    private TemplateContext createTemplateContext(IRegion region, String contextTypeID) {
         return new KotlinDocumentTemplateContext(
-                KotlinTemplateManager.INSTANCE.getContextTypeRegistry().getContextType(KotlinTemplateContextType.KOTLIN_ID_MEMBERS), 
+                KotlinTemplateManager.INSTANCE.getContextTypeRegistry().getContextType(contextTypeID), 
                 editor, region.getOffset(), region.getLength());
     }
 

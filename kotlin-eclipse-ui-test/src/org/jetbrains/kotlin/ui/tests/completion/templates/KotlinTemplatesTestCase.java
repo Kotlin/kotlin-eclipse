@@ -13,6 +13,10 @@ import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 
 public class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 	
+	public void doTest(String input) {
+		doTest(input, input);
+	}
+	
 	public void doTest(String input, String expected) {
 		doTest(input, expected, Separator.TAB, 0);
 	}
@@ -25,10 +29,14 @@ public class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 		CompletionProcessor ktCompletionProcessor = new CompletionProcessor(testEditor.getEditor());
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(testEditor.getEditor().getViewer(), getCaret());
 		
-		Assert.assertTrue(proposals.length > 0);
-
-		applyTemplateProposal((TemplateProposal)proposals[0]);
-		
+		if (!input.equals(expected)) {
+			Assert.assertTrue(proposals.length > 0);
+	
+			applyTemplateProposal((TemplateProposal)proposals[0]);
+		} else {
+			Assert.assertTrue(proposals.length == 0);
+		}
+			
 		EditorTestUtils.assertByEditor(testEditor.getEditor(), expected);
 	}
 	
