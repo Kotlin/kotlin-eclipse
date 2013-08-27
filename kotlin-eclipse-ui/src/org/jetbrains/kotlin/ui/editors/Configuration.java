@@ -141,9 +141,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         PresentationReconciler reconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
         
-        DefaultDamagerRepairer dr;
-
-        dr = new DefaultDamagerRepairer(getScanner());
+        DefaultDamagerRepairer dr = new KotlinDefaultDamagerRepairer(getScanner(), editor);
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
         
