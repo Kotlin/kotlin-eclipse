@@ -8,7 +8,7 @@ import org.junit.runners.Suite;
 	KotlinEditorBaseTest.class, 
 	KotlinAutoIndenterTest.class,
 	KotlinAnalyzerTest.class,
-	KotlinHighlightningScannerTest.class,
+	KotlinHighlightningTest.class,
 	KotlinBracketInserterTest.class,
 	KotlinOpenDeclarationTest.class,
 	KotlinUnresolvedClassFixTest.class} )
