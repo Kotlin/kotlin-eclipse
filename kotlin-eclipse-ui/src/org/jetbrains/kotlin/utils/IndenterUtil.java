@@ -12,10 +12,14 @@ public class IndenterUtil {
     private static final char spaceSeparator = ' ';
     private static final String LINE_SEPARATOR = "\n";
     
-    public static String createWhiteSpace(int curIndent, int countBreakLines) {
+    public static String createWhiteSpace(int indent, int countBreakLines) {
+        return createWhiteSpace(indent, countBreakLines, System.lineSeparator());
+    }
+    
+    public static String createWhiteSpace(int curIndent, int countBreakLines, String lineSeparator) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < countBreakLines; ++i) {
-            stringBuilder.append(System.lineSeparator());
+            stringBuilder.append(lineSeparator);
         }
         
         String tabAsSpaces = getTabAsSpaces();

@@ -33,7 +33,10 @@ public class AlignmentStrategy {
         edit = new StringBuilder();
         buildFormattedCode(parsedFile, lineIndentation);
         
-        return edit.toString();
+        String editString = edit.toString();
+        editString = editString.replaceAll("\n", System.lineSeparator());
+        
+        return editString;
     }
     
     public static String alignCode(ASTNode parsedFile) {
@@ -56,7 +59,7 @@ public class AlignmentStrategy {
                         shift--;
                     }
                     
-                    edit.append(IndenterUtil.createWhiteSpace(shift, IndenterUtil.getLineSeparatorsOccurences(psiElement.getText())));
+                    edit.append(IndenterUtil.createWhiteSpace(shift, IndenterUtil.getLineSeparatorsOccurences(psiElement.getText()), "\n"));
                 } else {
                     edit.append(psiElement.getText());
                 }
