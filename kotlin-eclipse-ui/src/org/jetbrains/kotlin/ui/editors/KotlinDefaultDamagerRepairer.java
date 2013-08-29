@@ -10,6 +10,7 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.ITokenScanner;
 import org.eclipse.jface.text.rules.Token;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.Nullable;
@@ -95,11 +96,12 @@ public class KotlinDefaultDamagerRepairer extends DefaultDamagerRepairer {
     @Nullable
     private TextAttribute getTextAttributeFor(PsiElement element, IColorManager colorManager) {
         RGB tokenColor = null;
-        
+        int style = SWT.NORMAL;
         if (element instanceof LeafPsiElement) {
             IElementType elementType = ((LeafPsiElement)element).getElementType();
             if (JetTokens.SOFT_KEYWORDS.contains(elementType) || JetTokens.KEYWORDS.contains(elementType) || JetTokens.MODIFIER_KEYWORDS.contains(elementType)) {
                 tokenColor = IColorConstants.KEYWORD;
+                style = SWT.BOLD;
             } else if (JetTokens.STRINGS.contains(elementType)) {
                 tokenColor = IColorConstants.STRING;
             } else if (JetTokens.COMMENTS.contains(elementType)) {
@@ -113,7 +115,7 @@ public class KotlinDefaultDamagerRepairer extends DefaultDamagerRepairer {
             return null;
         }
         
-        return new TextAttribute(colorManager.getColor(tokenColor));
+        return new TextAttribute(colorManager.getColor(tokenColor), null, style);
     }
 }
 
