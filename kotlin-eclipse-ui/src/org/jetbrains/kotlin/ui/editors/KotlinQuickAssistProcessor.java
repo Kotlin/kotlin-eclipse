@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -19,6 +18,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
@@ -37,10 +37,6 @@ public class KotlinQuickAssistProcessor implements IQuickAssistProcessor {
 
     @Override
     public boolean canFix(Annotation annotation) {
-        if (annotation.isMarkedDeleted()) {
-            return false;
-        }
-        
         IDocumentProvider documentProvider = editor.getDocumentProvider();
         IAnnotationModel annotationModel = documentProvider.getAnnotationModel(editor.getEditorInput());
         
@@ -67,10 +63,13 @@ public class KotlinQuickAssistProcessor implements IQuickAssistProcessor {
         
         try {
             IMarker marker = findMarkerAt(caretOffset);
-            if (marker == null) {
-                return Collections.emptyList().toArray(new ICompletionProposal[0]);
+            IMarkerResolution[] markerResolutions = null; 
+            if (marker != null) {
+                markerResolutions = IDE.getMarkerHelpRegistry().getResolutions(marker);
+            } else {
+                KotlinMarkerResolutionGenerator resolutionGenerator = new KotlinMarkerResolutionGenerator();
+                markerResolutions = resolutionGenerator.getResolutions(null);
             }
-            IMarkerResolution[] markerResolutions = IDE.getMarkerHelpRegistry().getResolutions(marker);
             
             for (IMarkerResolution markerResolution : markerResolutions) {
                 completionProposals.add(new KotlinMarkerResolutionProposal(marker, markerResolution));
