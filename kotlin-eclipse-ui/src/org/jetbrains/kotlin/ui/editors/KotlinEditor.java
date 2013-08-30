@@ -51,6 +51,11 @@ public class KotlinEditor extends CompilationUnitEditor {
     }
     
     @Override
+    protected boolean isMarkingOccurrences() {
+        return false;
+    }
+    
+    @Override
     protected void createActions() {
         super.createActions();
 
