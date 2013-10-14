@@ -14,19 +14,19 @@ import org.junit.Test;
 
 public class KotlinCustomLocationBugTest extends KotlinEditorTestCase {
 
-	private static final String TEST_PROJECT_NAME = "Test Project";
-	private static final String TEST_PROJECT_LOCATION = "custom_location/custom_test_project";
+	private static final String CUSTOM_LOCATION_TEST_PROJECT_NAME = "Test Project";
+	private static final String CUSTOM_LOCATION_TEST_PROJECT_LOCATION = "custom_location/custom_test_project";
 
 	@Test
-	public void test() throws JavaModelException {
-		TestJavaProject testProject = new TestJavaProject(TEST_PROJECT_NAME, TEST_PROJECT_LOCATION);
+	public void testGetSrcDirectories() throws JavaModelException {
+		TestJavaProject testProject = new TestJavaProject(CUSTOM_LOCATION_TEST_PROJECT_NAME, CUSTOM_LOCATION_TEST_PROJECT_LOCATION);
 		
 		List<File> files = testProject.getSrcDirectories();
 	
 		IPath workspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-		IPath expectedSourcePath = workspaceRootPath.append(TEST_PROJECT_LOCATION).append(TestJavaProject.SRC_FOLDER);
+		IPath expectedSourcePath = workspaceRootPath.append(CUSTOM_LOCATION_TEST_PROJECT_LOCATION).append(TestJavaProject.SRC_FOLDER);
 		
-		Assert.assertEquals(files.size(), 1);
+		Assert.assertEquals(1, files.size());
 		Assert.assertEquals(expectedSourcePath.toFile(), files.get(0));
 	}
 	
