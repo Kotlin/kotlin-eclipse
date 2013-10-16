@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -67,13 +69,23 @@ public class ProjectUtils {
     @NotNull
     public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> srcDirectories = new ArrayList<File>();
-        
-        IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
-        String rootDirectory = javaProject.getProject().getLocation().removeLastSegments(1).toPortableString();
-        for (IClasspathEntry classpathEntry : classpathEntries) {
-            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                File file = new File(rootDirectory + classpathEntry.getPath().toPortableString());
-                srcDirectories.add(file);
+
+        IClasspathEntry[] classPathEntries = javaProject.getRawClasspath();
+        IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
+        for (IClasspathEntry classPathEntry : classPathEntries) {
+            if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                IPath classPathEntryPath = classPathEntry.getPath();
+                IResource classPathResource = root.findMember(classPathEntryPath);
+                String path;
+                if (classPathResource == null) {
+                    path = classPathEntryPath.toOSString();
+                } else {
+                    path = classPathResource.getLocation().toOSString();
+                }
+                
+                if (!path.isEmpty()) {
+                    srcDirectories.add(new File(path));
+                }
             }
         }
         

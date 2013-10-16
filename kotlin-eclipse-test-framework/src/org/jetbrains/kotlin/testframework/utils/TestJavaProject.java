@@ -8,6 +8,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -15,6 +17,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -22,7 +25,7 @@ import org.jetbrains.kotlin.model.KotlinNature;
 
 public class TestJavaProject {
 	
-	private final static String SRC_FOLDER = "src";
+	public final static String SRC_FOLDER = "src";
 	
 	private IProject project;
 	private IJavaProject javaProject;
@@ -30,15 +33,29 @@ public class TestJavaProject {
 	private IPackageFragmentRoot sourceFolder;
 	
 	public TestJavaProject(String projectName) {
-		project = createProject(projectName);	
+		this(projectName, null);	
+	}	
+
+	public TestJavaProject(String projectName, String location) {
+		project = createProject(projectName, location);	
 	}
-	
-	private IProject createProject(String projectName) {
-		project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+
+	private IProject createProject(String projectName, String location) {
+		
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		IWorkspaceRoot workspaceRoot = workspace.getRoot();
+		IProjectDescription projectDescription = workspace.newProjectDescription(projectName);
+		if (location != null) {
+			IPath rootPath = workspaceRoot.getLocation();
+			IPath locationPath = rootPath.append(location);
+			projectDescription.setLocation(locationPath);
+		}
+		
+		project = workspaceRoot.getProject(projectName);
 		try {
 			boolean projectExists = project.exists();
 			if (!projectExists) {
-				project.create(null);
+				project.create(projectDescription, null);
 			}
 			project.open(null);
 			
@@ -117,6 +134,10 @@ public class TestJavaProject {
 		}
 		
 		return folder;
+	}
+	
+	public IJavaProject getJavaProject() {
+		return javaProject;
 	}
 	
 	private void addSystemLibraries() throws JavaModelException {
