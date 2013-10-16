@@ -11,7 +11,9 @@ import org.junit.runners.Suite;
 	KotlinHighlightningTest.class,
 	KotlinBracketInserterTest.class,
 	KotlinOpenDeclarationTest.class,
-	KotlinUnresolvedClassFixTest.class} )
+	KotlinUnresolvedClassFixTest.class,
+	KotlinCustomLocationBugTest.class
+} )
 public class AllTests {
 
 }
