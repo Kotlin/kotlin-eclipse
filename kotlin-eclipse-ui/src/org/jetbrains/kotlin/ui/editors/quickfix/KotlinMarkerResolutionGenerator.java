@@ -45,10 +45,14 @@ public class KotlinMarkerResolutionGenerator implements IMarkerResolutionGenerat
         }
         
         if (markedText == null) {
-            int caretOffset = ((JavaEditor) getActiveEditor()).getViewer().getTextWidget().getCaretOffset();
-            DiagnosticAnnotation annotation = getAnnotationByOffset(caretOffset);
-            if (annotation != null) {
-                markedText = annotation.getMarkedText();
+            JavaEditor activeEditor = (JavaEditor) getActiveEditor();
+            
+            if (activeEditor != null) {
+                int caretOffset = activeEditor.getViewer().getTextWidget().getCaretOffset();
+                DiagnosticAnnotation annotation = getAnnotationByOffset(caretOffset);
+                if (annotation != null) {
+                    markedText = annotation.getMarkedText();
+                }
             }
         }
         
@@ -89,7 +93,13 @@ public class KotlinMarkerResolutionGenerator implements IMarkerResolutionGenerat
 
     @Override
     public boolean hasResolutions(@Nullable IMarker marker) {
-        int caretOffset = ((JavaEditor) getActiveEditor()).getViewer().getTextWidget().getCaretOffset();
+        JavaEditor activeEditor = (JavaEditor) getActiveEditor();
+        
+        if (activeEditor == null) {
+            return false;
+        }        
+        
+        int caretOffset = activeEditor.getViewer().getTextWidget().getCaretOffset();
         Annotation annotation = getAnnotationByOffset(caretOffset);
         
         if (annotation != null) {
