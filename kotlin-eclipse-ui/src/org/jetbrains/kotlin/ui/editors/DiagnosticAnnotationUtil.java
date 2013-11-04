@@ -19,6 +19,7 @@ import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.Errors;
 import org.jetbrains.jet.lang.diagnostics.Severity;
 import org.jetbrains.jet.lang.diagnostics.rendering.DefaultErrorMessages;
+import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
@@ -33,7 +34,7 @@ public class DiagnosticAnnotationUtil {
     }
     
     @NotNull
-    public Map<IFile, List<DiagnosticAnnotation>> handleDiagnostics(@NotNull List<Diagnostic> diagnostics) {
+    public Map<IFile, List<DiagnosticAnnotation>> handleDiagnostics(@NotNull Diagnostics diagnostics) {
         Map<IFile, List<DiagnosticAnnotation>> annotations = new HashMap<IFile, List<DiagnosticAnnotation>>();
         for (Diagnostic diagnostic : diagnostics) {
             if (diagnostic.getTextRanges().isEmpty()) {

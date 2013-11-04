@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.core.resolve;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -9,9 +10,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.jet.lang.resolve.AnalyzerScriptParameter;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
-import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 
@@ -30,11 +31,10 @@ public class KotlinAnalyzer {
     @NotNull
     private static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment) {
         Project ideaProject = kotlinEnvironment.getProject();
-        KotlinBuiltIns.initialize(ideaProject);
         
         List<JetFile> sourceFiles = getSourceFiles(javaProject.getProject());
         AnalyzeExhaust analyzeExhaust = AnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                ideaProject, sourceFiles, null, Predicates.<PsiFile>alwaysTrue());
+                ideaProject, sourceFiles, Collections.<AnalyzerScriptParameter>emptyList(), Predicates.<PsiFile>alwaysTrue());
         
         return analyzeExhaust.getBindingContext();
     }

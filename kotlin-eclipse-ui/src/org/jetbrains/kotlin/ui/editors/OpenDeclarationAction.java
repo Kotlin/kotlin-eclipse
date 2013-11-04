@@ -96,7 +96,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
         assert virtualFile != null;
         
-        IFile targetFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getCanonicalPath()));
+        IFile targetFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath()));
         AbstractTextEditor targetEditor = (AbstractTextEditor) openInEditor(targetFile);
         if (targetEditor instanceof KotlinEditor) {
             int start = LineEndUtil.convertLfToOsOffset(element.getContainingFile().getText(), element.getTextOffset());

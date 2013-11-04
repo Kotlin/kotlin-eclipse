@@ -16,7 +16,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
-import org.jetbrains.jet.lang.diagnostics.Diagnostic;
+import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.ui.builder.KotlinBuilder;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
@@ -51,7 +51,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     }
     
     private void updateLineAnnotations(final IProject project) {
-        List<Diagnostic> diagnostics = KotlinBuilder.analyzeProjectInForeground(JavaCore.create(project));
+        Diagnostics diagnostics = KotlinBuilder.analyzeProjectInForeground(JavaCore.create(project));
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
     }

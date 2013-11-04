@@ -35,7 +35,7 @@ import org.osgi.framework.Bundle;
 
 public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 
-    private final static String KT_COMPILER = "kotlin-compiler-0.5.162.jar";
+    private final static String KT_COMPILER = "kotlin-compiler.jar";
     private final static String KT_HOME = getKtHome();
     public final static String KT_RUNTIME_PATH = KT_HOME + "lib/kotlin-runtime.jar";
     public final static String KT_JDK_ANNOTATIONS = KT_HOME + "lib/kotlin-jdk-annotations.jar";

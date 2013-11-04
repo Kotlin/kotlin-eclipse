@@ -20,9 +20,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.CompilerModeProvider;
 import org.jetbrains.jet.OperationModeProvider;
+import org.jetbrains.jet.cli.jvm.compiler.ClassPath;
+import org.jetbrains.jet.cli.jvm.compiler.CliVirtualFileFinder;
 import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.jet.utils.PathUtil;
 import org.jetbrains.kotlin.core.Activator;
@@ -34,6 +37,7 @@ import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
 import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -41,9 +45,7 @@ import com.intellij.psi.PsiManager;
 
 public class KotlinEnvironment {
     
-    
-    private static final Disposable DISPOSABLE = new Disposable() {
-        
+    private static final Disposable DISPOSABLE = new Disposable() {        
         @Override
         public void dispose() {
         }
@@ -55,6 +57,8 @@ public class KotlinEnvironment {
     private final JavaCoreProjectEnvironment projectEnvironment;
     private final MockProject project;
     private final IJavaProject javaProject;
+    
+    private final ClassPath classPath = new ClassPath();
     
     private KotlinEnvironment(@NotNull IJavaProject javaProject) {
         this.javaProject = javaProject;
@@ -75,6 +79,8 @@ public class KotlinEnvironment {
         addKotlinRuntime();
         addSourcesToClasspath();
         addLibsToClasspath();
+        
+        project.registerService(VirtualFileFinder.class, new CliVirtualFileFinder(classPath));
         
         cachedEnvironment.put(javaProject, this);   
     }
@@ -129,8 +135,13 @@ public class KotlinEnvironment {
     private JavaCoreApplicationEnvironment createJavaCoreApplicationEnvironment() {
         JavaCoreApplicationEnvironment javaApplicationEnvironment = new JavaCoreApplicationEnvironment(DISPOSABLE);
         
+        // ability to get text from annotations xml files
+        javaApplicationEnvironment.registerFileType(PlainTextFileType.INSTANCE, "xml");
+        
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "jet");
+        javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "ktm");
+        
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
 
         javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
@@ -217,6 +228,7 @@ public class KotlinEnvironment {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
             }
             projectEnvironment.addJarToClassPath(path);
+            classPath.add(jarFile);
         }
         else {
             VirtualFile root = applicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath());
@@ -224,6 +236,7 @@ public class KotlinEnvironment {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
             }
             projectEnvironment.addSourcesToClasspath(root);
+            classPath.add(root);
         }
     }
 }

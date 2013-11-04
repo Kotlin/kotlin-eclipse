@@ -1,9 +1,5 @@
 package org.jetbrains.kotlin.ui.editors;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -12,8 +8,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.internal.ui.viewers.AsynchronousSchedulingRuleFactory;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.resolve.BindingContext;
+import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 
 public class AnalyzerScheduler extends Job {
@@ -22,7 +18,7 @@ public class AnalyzerScheduler extends Job {
     
     public static final String FAMILY = "Analyzer";
     
-    private volatile List<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
+    private volatile Diagnostics diagnostics = Diagnostics.EMPTY;
     
     public AnalyzerScheduler(@NotNull IJavaProject javaProject) {
         super("Analyzing " + javaProject.getElementName());
@@ -44,17 +40,17 @@ public class AnalyzerScheduler extends Job {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         BindingContext bindingContext = KotlinAnalyzer.analyzeProject(javaProject);
-        diagnostics = new ArrayList<Diagnostic>(bindingContext.getDiagnostics());
+        diagnostics = bindingContext.getDiagnostics();
         
         return Status.OK_STATUS;
     }
     
     @NotNull
-    public List<Diagnostic> getDiagnostics() {
+    public Diagnostics getDiagnostics() {
         if (getState() == Job.NONE) {
             return diagnostics;
         }
         
-        return Collections.emptyList();
+        return Diagnostics.EMPTY;
     }
 }
