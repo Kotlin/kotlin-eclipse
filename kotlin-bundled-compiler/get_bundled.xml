@@ -39,8 +39,7 @@
 			<patternset>
 				<include name="kotlinc/lib/kotlin-compiler.jar" />
 			</patternset>
-			<mapper type="merge" to="kotlin-compiler
-				.jar" />
+			<mapper type="merge" to="kotlin-compiler.jar" />
 		</unzip>
 		
 		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
