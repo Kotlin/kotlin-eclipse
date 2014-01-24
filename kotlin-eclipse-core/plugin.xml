@@ -20,5 +20,8 @@
          </run>
       </runtime>
    </extension>
+   <extension point="org.eclipse.team.core.fileTypes">
+      <fileTypes extension="kt" type="text"/>
+   </extension>
 
 </plugin>
