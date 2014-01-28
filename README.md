@@ -18,7 +18,7 @@ In order to start development in Eclipse:
  
         kotlin-eclipse-ui -> Run As -> Eclipse Application
 
-Build from console is also available (Note that Maven **0.3.5** is required):
+Build from console is also available (Note that Maven **3.0.5** is required):
 
     cd {repository}/kotlin-bundled-compiler
     ant -f get_bundled.xml  
