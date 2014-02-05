@@ -134,6 +134,9 @@
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-p2-repository-plugin</artifactId>
 					<version>${tycho.version}</version>
+					<configuration>
+						<finalName>kotlin-eclipse-plugin</finalName>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho.extras</groupId>
