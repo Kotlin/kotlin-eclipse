@@ -53,11 +53,13 @@ import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
 import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 
 public class KotlinEnvironment {
     
@@ -161,6 +163,8 @@ public class KotlinEnvironment {
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
 
         javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
+        
+        JavaCoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME, ClsCustomNavigationPolicy.class);
         
         return javaApplicationEnvironment;
     }
