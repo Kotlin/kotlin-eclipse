@@ -26,7 +26,7 @@ import org.jetbrains.jet.lang.psi.JetClass;
 import org.jetbrains.jet.lang.psi.JetClassInitializer;
 import org.jetbrains.jet.lang.psi.JetElement;
 import org.jetbrains.jet.lang.psi.JetFunction;
-import org.jetbrains.jet.lang.psi.JetNamespaceHeader;
+import org.jetbrains.jet.lang.psi.JetPackageDirective;
 import org.jetbrains.jet.lang.psi.JetParameter;
 import org.jetbrains.jet.lang.psi.JetProperty;
 import org.jetbrains.jet.lang.psi.JetTypeReference;
@@ -53,7 +53,7 @@ public class PsiLabelProvider extends LabelProvider {
             } else {
                 imageName = ISharedImages.IMG_OBJS_CLASS;
             }
-        } else if (element instanceof JetNamespaceHeader) {
+        } else if (element instanceof JetPackageDirective) {
             imageName = ISharedImages.IMG_OBJS_PACKAGE;
         } else if (element instanceof JetFunction) {
             imageName = ISharedImages.IMG_OBJS_PUBLIC;

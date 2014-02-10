@@ -1,11 +1,10 @@
 <project default="get_bundled">
-	<property name="kotlin-bundled-version" value="0.6.1203"/>
-	<property name="idea-sources-build-id" value="100700"/>
+	<property name="idea-sources-build-id" value="112061"/>
 	
 	<property name="teamcity-base" value="http://teamcity.jetbrains.com"/>	
 	<property name="idea-sdk-url" value="${teamcity-base}/guestAuth/repository/download/bt410/${idea-sources-build-id}:id" />
 	
-	<property name="compiler-artifact-file" value="kotlin-compiler-${kotlin-bundled-version}.zip"/>
+	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
 	
 	<property name="project.name" value="kotlin-bundled-compiler" />
@@ -16,7 +15,6 @@
 	
 	<property name="download.name" value="downloads" />
 	<property name="download.dir" value="${target.dir}/${download.name}" />
-
 
 	<target name="refresh_eclipse" unless="no_eclipse">
 		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
@@ -31,38 +29,38 @@
 		<mkdir dir="${download.dir}" />
 
 		<get 
-			src="${teamcity-base}/guestAuth/repository/download/bt345/${kotlin-bundled-version}/${compiler-artifact-file}" 
-			dest="${download.dir}" 
+			src="${teamcity-base}/guestAuth/repository/download/bt345/bootstrap.tcbuildtag/kotlin-plugin-{build.number}.zip" 
+			dest="${download.dir}/${compiler-artifact-file}" 
 			usetimestamp="true" />
 
 		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
 			<patternset>
-				<include name="kotlinc/lib/kotlin-compiler.jar" />
+				<include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
 			</patternset>
 			<mapper type="merge" to="kotlin-compiler.jar" />
 		</unzip>
 		
 		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
 			<patternset>
-				<include name="kotlinc/lib/kotlin-runtime.jar" />
+				<include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
 			</patternset>
 			<mapper type="merge" to="kotlin-runtime.jar" />
 		</unzip>
 		
 		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
 			<patternset>
-				<include name="kotlinc/lib/kotlin-jdk-annotations.jar" />
+				<include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
 			</patternset>
 			<mapper type="merge" to="kotlin-jdk-annotations.jar" />
 		</unzip>
 
 		<!-- Also retrivive sources -->
-		<get src="${teamcity-base}/guestAuth/repository/download/bt345/${kotlin-bundled-version}/kotlin-compiler-sources.jar" 
-			dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
-
+		<get src="${teamcity-base}/guestAuth/repository/download/bt345/bootstrap.tcbuildtag/kotlin-compiler-sources.jar" 
+					dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
+		
 		<!-- Get idea sources -->
 		<get src="${idea-sdk-url}/sources.zip" dest="${download.dir}/idea-sdk-sources.zip" usetimestamp="true" />
-
+		
 		<!-- Pack souces into single archive -->
 		<zip destfile="${target.dir}/${compiler-sources-file}">
 			<zipfileset src="${download.dir}/${compiler-sources-file}" />

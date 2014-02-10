@@ -32,7 +32,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetImportDirective;
-import org.jetbrains.jet.lang.psi.JetNamespaceHeader;
+import org.jetbrains.jet.lang.psi.JetPackageDirective;
 import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -92,7 +92,7 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
     
     private int computeBreakLineAfterImport(PsiElement element) {
         int countBreakLine = 0;
-        if (element instanceof JetNamespaceHeader) {
+        if (element instanceof JetPackageDirective) {
             ASTNode nextNode = element.getNode().getTreeNext();
             if (nextNode.getElementType().equals(JetTokens.WHITE_SPACE)) {
                 int countBreakLineAfterHeader = IndenterUtil.getLineSeparatorsOccurences(nextNode.getText());
@@ -111,7 +111,7 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
     
     private int computeBreakLineBeforeImport(PsiElement element) {
         int countBreakLine = 0;
-        if (element instanceof JetNamespaceHeader) {
+        if (element instanceof JetPackageDirective) {
             if (!element.getText().isEmpty()) {
                 countBreakLine = 2;
             }
@@ -139,7 +139,7 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
             return jetImportDirective.get(jetImportDirective.size() - 1);
         }
         
-        return jetFile.getNamespaceHeader();
+        return jetFile.getPackageDirective();
     }
     
     private KotlinEditor getActiveEditor() {

@@ -51,6 +51,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetReferenceExpression;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
@@ -104,7 +105,11 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     @Nullable
     private PsiElement getTargetElement(@Nullable JetReferenceExpression expression) {
         BindingContext bindingContext = KotlinAnalyzer.analyzeProject(javaProject);
-        List<PsiElement> elements = BindingContextUtils.resolveToDeclarationPsiElements(bindingContext, expression);
+        DeclarationDescriptor descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
+        
+        if (descriptor == null) return null;
+        
+        List<PsiElement> elements = BindingContextUtils.descriptorToDeclarations(bindingContext, descriptor);
         if (elements.size() > 1 || elements.isEmpty()) {
             return null;
         }
