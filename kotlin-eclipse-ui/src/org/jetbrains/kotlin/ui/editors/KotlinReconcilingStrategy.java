@@ -67,7 +67,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     }
     
     private void updateLineAnnotations(final IProject project) {
-        Diagnostics diagnostics = KotlinBuilder.analyzeProjectInForeground(JavaCore.create(project));
+        Diagnostics diagnostics = KotlinBuilder.analyzeProjectInForeground(JavaCore.create(project)).getDiagnostics();
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
     }

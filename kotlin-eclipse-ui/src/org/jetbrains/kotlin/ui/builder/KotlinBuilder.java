@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -52,14 +53,14 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     }
 
     private void updateLineMarkers() throws CoreException {
-        Diagnostics diagnostics = analyzeProjectInForeground(JavaCore.create(getProject()));
+        Diagnostics diagnostics = analyzeProjectInForeground(JavaCore.create(getProject())).getDiagnostics();
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
 
         addMarkersToProject(annotations, getProject());
     }
     
     @NotNull
-    public static Diagnostics analyzeProjectInForeground(IJavaProject javaProject) {
+    public static BindingContext analyzeProjectInForeground(IJavaProject javaProject) {
         AnalyzerScheduler analyzer = new AnalyzerScheduler(javaProject);
         analyzer.cancel();
         analyzer.schedule();
@@ -70,10 +71,10 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         } catch (OperationCanceledException | InterruptedException e) {
             KotlinLogger.logInfo(e.getMessage());
             
-            return Diagnostics.EMPTY;
+            return BindingContext.EMPTY;
         }
         
-        return analyzer.getDiagnostics();
+        return analyzer.getBindingContext();
     }
     
     private void addMarkersToProject(Map<IFile, List<DiagnosticAnnotation>> annotations, IProject project) throws CoreException {
