@@ -93,6 +93,10 @@ public abstract class KotlinEditorTestCase {
 		}
     }
     
+    protected int getCaret() {
+		return testEditor.getEditor().getViewer().getTextWidget().getCaretOffset();
+	}
+    
     public String resolveTestTags(String text) {
 		return text
 				.replaceAll(ERR_TAG_OPEN, "")

@@ -63,10 +63,6 @@ public class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 		testEditor.getEditor().getViewer().getTextWidget().setCaretOffset(point.x);
 	}
 	
-	private int getCaret() {
-		return testEditor.getEditor().getViewer().getTextWidget().getCaretOffset();
-	}
-	
 	private void configureIndents(Separator separator, int spacesCount) {
 		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == separator));
 		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, spacesCount);	
