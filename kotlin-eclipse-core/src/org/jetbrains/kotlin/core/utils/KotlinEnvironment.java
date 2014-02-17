@@ -49,10 +49,12 @@ import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 import com.intellij.codeInsight.ExternalAnnotationsManager;
+import com.intellij.core.CoreJavaFileManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
 import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
@@ -60,6 +62,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
+import com.intellij.psi.impl.file.impl.JavaFileManager;
 
 public class KotlinEnvironment {
     
@@ -82,6 +85,7 @@ public class KotlinEnvironment {
         this.javaProject = javaProject;
         
         applicationEnvironment = createJavaCoreApplicationEnvironment();
+        JavaCoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME, ClsCustomNavigationPolicy.class);
         
         projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
         
@@ -89,6 +93,7 @@ public class KotlinEnvironment {
         
         CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(project.getComponent(PsiManager.class));
         project.registerService(ExternalAnnotationsManager.class, annotationsManager);
+        project.registerService(CoreJavaFileManager.class, (CoreJavaFileManager) ServiceManager.getService(project, JavaFileManager.class));
         
         VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS));
         annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
@@ -163,8 +168,6 @@ public class KotlinEnvironment {
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
 
         javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
-        
-        JavaCoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME, ClsCustomNavigationPolicy.class);
         
         return javaApplicationEnvironment;
     }
