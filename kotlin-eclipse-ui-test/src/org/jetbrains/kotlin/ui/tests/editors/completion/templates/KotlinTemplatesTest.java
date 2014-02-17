@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.completion.templates;
+package org.jetbrains.kotlin.ui.tests.editors.completion.templates;
 
 import org.junit.Test;
 

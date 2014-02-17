@@ -23,6 +23,6 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses( { 
 	org.jetbrains.kotlin.ui.tests.editors.AllTests.class,
 	org.jetbrains.kotlin.core.tests.launch.KotlinLaunchTest.class,
-	org.jetbrains.kotlin.ui.tests.completion.templates.KotlinTemplatesTest.class} )
+	org.jetbrains.kotlin.ui.tests.editors.completion.templates.KotlinTemplatesTest.class} )
 public class AllTests {
 }
