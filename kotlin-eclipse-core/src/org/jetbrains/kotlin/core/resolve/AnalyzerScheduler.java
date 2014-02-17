@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.editors;
+package org.jetbrains.kotlin.core.resolve;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -26,7 +26,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 
 public class AnalyzerScheduler extends Job {
     

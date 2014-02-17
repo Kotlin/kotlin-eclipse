@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.editors;
+package org.jetbrains.kotlin.core.resolve;
 
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 
