@@ -18,9 +18,12 @@ package org.jetbrains.kotlin.ui.editors.codeassist;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IRegion;
@@ -37,12 +40,23 @@ import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
+import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
+import org.jetbrains.jet.lang.resolve.BindingContext;
+import org.jetbrains.jet.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.ui.builder.KotlinBuilder;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
+import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionProvider;
+import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
+import org.jetbrains.kotlin.ui.editors.completion.KotlinDescriptorUtils;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
 import org.jetbrains.kotlin.utils.EditorUtil;
+
+import com.google.common.collect.Lists;
 
 public class CompletionProcessor implements IContentAssistProcessor, ICompletionListener {
      
@@ -53,6 +67,8 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
     private static final char[] VALID_INFO_CHARS = new char[] { '(', ',' };
     
     private final JavaEditor editor;
+    private final List<ICompletionProposal> cachedCompletionProposals = Lists.newArrayList();
+    private boolean isNewSession = true;
     
     public CompletionProcessor(JavaEditor editor) {
         this.editor = editor;
@@ -87,12 +103,45 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
         
         String identifierPart = fileText.substring(identOffset, offset);
         
-        List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+        if (isNewSession) {
+            cachedCompletionProposals.clear();
+            cachedCompletionProposals.addAll(generateBasicCompletionProposals(viewer, identOffset, offset, identifierPart));
+            
+            isNewSession = false;
+        }
         
+        List<ICompletionProposal> proposals = Lists.newArrayList();
+        
+        proposals.addAll(KotlinCompletionUtils.INSTANCE.filterCompletionProposals(cachedCompletionProposals, identifierPart, identOffset));
         proposals.addAll(generateKeywordProposals(viewer, identOffset, offset, identifierPart));
         proposals.addAll(generateTemplateProposals(viewer, offset, identifierPart));
         
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
+    }
+    
+    @NotNull
+    private Collection<ICompletionProposal> generateBasicCompletionProposals(@NotNull ITextViewer viewer, int identOffset, 
+            int offset, @NotNull String identifierPart) {
+        JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE.getSimpleNameExpression(editor, identOffset);
+        if (simpleNameExpression == null) {
+            return Collections.emptyList();
+        }
+        
+        IJavaProject javaProject = JavaCore.create(EditorUtil.getFile(editor).getProject());
+        BindingContext context = KotlinBuilder.analyzeProjectInForeground(javaProject);
+        
+        Collection<DeclarationDescriptor> declarationDescriptors = KotlinCompletionProvider.getReferenceVariants(simpleNameExpression, context);
+        
+        List<ICompletionProposal> proposals = Lists.newArrayList();
+        for (DeclarationDescriptor descriptor : declarationDescriptors) {
+            String completion = descriptor.getName().getIdentifier();
+            Image image = KotlinDescriptorUtils.INSTANCE.getImage(descriptor);
+            String presentableString = DescriptorRenderer.STARTS_FROM_NAME.render(descriptor);
+            
+            proposals.add(new CompletionProposal(completion, identOffset, offset - identOffset, completion.length(), image, presentableString, null, completion));
+        }
+        
+        return proposals;
     }
     
     private Collection<ICompletionProposal> generateTemplateProposals(ITextViewer viewer, int offset, String identifierPart) {
@@ -187,12 +236,16 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
     }
 
     @Override
-    public void assistSessionStarted(ContentAssistEvent event) {}
+    public void assistSessionStarted(ContentAssistEvent event) {
+        isNewSession = true;
+    }
 
     @Override
-    public void assistSessionEnded(ContentAssistEvent event) {}
+    public void assistSessionEnded(ContentAssistEvent event) {
+    }
 
     @Override
-    public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {}
+    public void selectionChanged(ICompletionProposal proposal, boolean smartToggle) {
+    }
 
 }

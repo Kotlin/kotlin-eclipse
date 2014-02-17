@@ -58,6 +58,7 @@ public class AnalyzerScheduler extends Job {
         return Status.OK_STATUS;
     }
     
+    @NotNull
     public BindingContext getBindingContext() {
         if (getState() == Job.NONE) {
             return bindingContext;

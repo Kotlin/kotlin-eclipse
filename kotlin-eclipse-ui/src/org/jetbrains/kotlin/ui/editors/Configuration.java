@@ -181,7 +181,10 @@ public class Configuration extends JavaSourceViewerConfiguration {
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
          ContentAssistant assistant= new ContentAssistant();
-         assistant.setContentAssistProcessor(new CompletionProcessor(editor), IDocument.DEFAULT_CONTENT_TYPE);
+         CompletionProcessor completionProcessor = new CompletionProcessor(editor);
+         
+         assistant.setContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
+         assistant.addCompletionListener(completionProcessor);
          assistant.enableAutoActivation(true);
          assistant.setAutoActivationDelay(500);
          assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);

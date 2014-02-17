@@ -62,17 +62,16 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     @NotNull
     public static BindingContext analyzeProjectInForeground(IJavaProject javaProject) {
         AnalyzerScheduler analyzer = new AnalyzerScheduler(javaProject);
-        analyzer.cancel();
         analyzer.schedule();
         
-        IJobManager jobManager = Job.getJobManager();
         try {
-            jobManager.join(AnalyzerScheduler.FAMILY, null);
+            IJobManager jobManager = Job.getJobManager();
+            jobManager.join(AnalyzerScheduler.FAMILY, jobManager.createProgressGroup());
         } catch (OperationCanceledException | InterruptedException e) {
             KotlinLogger.logInfo(e.getMessage());
             
             return BindingContext.EMPTY;
-        }
+        } 
         
         return analyzer.getBindingContext();
     }
