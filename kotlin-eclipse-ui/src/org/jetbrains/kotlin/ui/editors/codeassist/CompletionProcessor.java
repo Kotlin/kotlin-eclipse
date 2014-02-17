@@ -182,11 +182,9 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
             int offset, String identifierPart) {
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         if (!identifierPart.isEmpty()) {
-            if (identOffset == 0 || Character.isWhitespace(viewer.getDocument().get().charAt(identOffset - 1))) {
-                for (String keyword : KeywordManager.getAllKeywords()) {
-                    if (keyword.startsWith(identifierPart)) {
-                        proposals.add(new CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length()));
-                    }
+            for (String keyword : KeywordManager.getAllKeywords()) {
+                if (keyword.startsWith(identifierPart)) {
+                    proposals.add(new CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length()));
                 }
             }
         }
