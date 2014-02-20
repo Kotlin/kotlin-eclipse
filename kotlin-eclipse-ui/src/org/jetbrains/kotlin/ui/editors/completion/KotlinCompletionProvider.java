@@ -51,9 +51,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.intellij.psi.PsiElement;
 
+//Source code is taken from org.jetbrains.jet.plugin.codeInsight.TipsManager
 public class KotlinCompletionProvider {
     
-    //Source code is taken from org.jetbrains.jet.plugin.codeInsight.TipsManager
     @NotNull
     public static Collection<DeclarationDescriptor> getReferenceVariants(
             @NotNull JetSimpleNameExpression expression,
@@ -77,12 +77,12 @@ public class KotlinCompletionProvider {
                         info = DataFlowInfo.EMPTY;
                     }
 
-                    List<ReceiverValue> variantsForExplicitReceiver = AutoCastUtils.getAutoCastVariants(receiverValue, context, info);
+                    List<JetType> variantsForExplicitReceiver = AutoCastUtils.getAutoCastVariants(receiverValue, context, info);
 
-                    for (ReceiverValue descriptor : variantsForExplicitReceiver) {
+                    for (JetType variant : variantsForExplicitReceiver) {
                         descriptors.addAll(includeExternalCallableExtensions(
-                                excludePrivateDescriptors(descriptor.getType().getMemberScope().getAllDescriptors()),
-                                resolutionScope, descriptor));
+                                excludePrivateDescriptors(variant.getMemberScope().getAllDescriptors()),
+                                resolutionScope, receiverValue));
                     }
 
                     return descriptors;

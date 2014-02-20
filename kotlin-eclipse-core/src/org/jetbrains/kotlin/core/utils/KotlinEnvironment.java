@@ -39,6 +39,7 @@ import org.jetbrains.jet.OperationModeProvider;
 import org.jetbrains.jet.cli.jvm.compiler.ClassPath;
 import org.jetbrains.jet.cli.jvm.compiler.CliVirtualFileFinder;
 import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
+import org.jetbrains.jet.cli.jvm.compiler.MockPsiDocumentManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
@@ -59,6 +60,7 @@ import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
@@ -104,6 +106,8 @@ public class KotlinEnvironment {
         addLibsToClasspath();
         
         project.registerService(VirtualFileFinder.class, new CliVirtualFileFinder(classPath));
+        
+        project.registerService(PsiDocumentManager.class, new MockPsiDocumentManager());
         
         cachedEnvironment.put(javaProject, this);   
     }
