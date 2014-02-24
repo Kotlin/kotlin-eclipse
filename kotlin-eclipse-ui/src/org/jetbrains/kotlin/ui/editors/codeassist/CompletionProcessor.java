@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -46,7 +47,7 @@ import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.ui.builder.KotlinBuilder;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionProvider;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
@@ -127,8 +128,10 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
             return Collections.emptyList();
         }
         
-        IJavaProject javaProject = JavaCore.create(EditorUtil.getFile(editor).getProject());
-        BindingContext context = KotlinBuilder.analyzeProjectInForeground(javaProject);
+        IFile file = EditorUtil.getFile(editor);
+        IJavaProject javaProject = JavaCore.create(file.getProject());
+        
+        BindingContext context = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file));
         
         Collection<DeclarationDescriptor> declarationDescriptors = KotlinCompletionProvider.getReferenceVariants(simpleNameExpression, context);
         

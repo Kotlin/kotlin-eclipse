@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IDocument;
@@ -34,7 +34,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.ui.builder.KotlinBuilder;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
@@ -48,7 +48,6 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     
     @Override
     public void setDocument(IDocument document) {
-
     }
 
     @Override
@@ -62,12 +61,14 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         
         KotlinPsiManager.INSTANCE.updatePsiFile(file, sourceCode);
         
-        updateLineAnnotations(file.getProject());
+        updateLineAnnotations(file);
         updateActiveOutlinePage();
     }
     
-    private void updateLineAnnotations(final IProject project) {
-        Diagnostics diagnostics = KotlinBuilder.analyzeProjectInForeground(JavaCore.create(project)).getDiagnostics();
+    private void updateLineAnnotations(IFile file) {
+        IJavaProject javaProject = JavaCore.create(file.getProject());
+        Diagnostics diagnostics = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file)).getDiagnostics();
+        
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
     }

@@ -32,6 +32,7 @@ import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
@@ -41,16 +42,22 @@ public class KotlinAnalyzer {
     @NotNull
     public static BindingContext analyzeProject(@NotNull IJavaProject javaProject) {
         KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
-        return analyzeProject(javaProject, kotlinEnvironment);
+        return analyzeProject(javaProject, kotlinEnvironment, Predicates.<PsiFile>alwaysTrue());
     }
     
     @NotNull
-    private static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment) {
+    public static BindingContext analyzeOnlyOneFileCompletely(@NotNull IJavaProject javaProject, @NotNull PsiFile psiFile) {
+        KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
+        return analyzeProject(javaProject, kotlinEnvironment, Predicates.equalTo(psiFile));
+    }
+    
+    @NotNull
+    private static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
         Project ideaProject = kotlinEnvironment.getProject();
         
         List<JetFile> sourceFiles = getSourceFiles(javaProject.getProject());
         AnalyzeExhaust analyzeExhaust = AnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                ideaProject, sourceFiles, Collections.<AnalyzerScriptParameter>emptyList(), Predicates.<PsiFile>alwaysTrue());
+                ideaProject, sourceFiles, Collections.<AnalyzerScriptParameter>emptyList(), filesToAnalyzeCompletely);
         
         return analyzeExhaust.getBindingContext();
     }

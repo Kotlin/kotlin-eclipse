@@ -104,7 +104,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     
     @Nullable
     private PsiElement getTargetElement(@Nullable JetReferenceExpression expression) {
-        BindingContext bindingContext = KotlinAnalyzer.analyzeProject(javaProject);
+        BindingContext bindingContext = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file));
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
         
         if (descriptor == null) return null;
