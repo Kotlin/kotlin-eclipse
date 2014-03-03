@@ -50,6 +50,7 @@ import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 import com.intellij.codeInsight.ExternalAnnotationsManager;
+import com.intellij.core.CoreApplicationEnvironment;
 import com.intellij.core.CoreJavaFileManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
@@ -63,6 +64,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.compiled.ClassFileDecompilers;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 import com.intellij.psi.impl.file.impl.JavaFileManager;
 
@@ -87,7 +89,6 @@ public class KotlinEnvironment {
         this.javaProject = javaProject;
         
         applicationEnvironment = createJavaCoreApplicationEnvironment();
-        JavaCoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME, ClsCustomNavigationPolicy.class);
         
         projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
         
@@ -108,6 +109,11 @@ public class KotlinEnvironment {
         project.registerService(VirtualFileFinder.class, new CliVirtualFileFinder(classPath));
         
         project.registerService(PsiDocumentManager.class, new MockPsiDocumentManager());
+        
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME,
+                ClsCustomNavigationPolicy.class);
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
+                ClassFileDecompilers.Decompiler.class);
         
         cachedEnvironment.put(javaProject, this);   
     }
