@@ -42,6 +42,8 @@ public class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 		
 		testEditor = configureEditor("Test.kt", input);
 		
+		joinBuildThread();
+		
 		CompletionProcessor ktCompletionProcessor = new CompletionProcessor(testEditor.getEditor());
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(testEditor.getEditor().getViewer(), getCaret());
 		
