@@ -35,12 +35,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
 import org.jetbrains.jet.lang.resolve.name.FqName;
-import org.jetbrains.jet.plugin.JetMainDetector;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 
 public class ProjectUtils {
-    
-    public static IFile getMainClass(Collection<IFile> files) {
+    public static IFile findFilesWithMain(Collection<IFile> files) {
         for (IFile file : files) {
             JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
             if (JetMainDetector.hasMain(jetFile.getDeclarations())) {
@@ -62,7 +60,7 @@ public class ProjectUtils {
     }
     
     public static boolean hasMain(IFile file) {
-        return getMainClass(Arrays.asList(file)) != null;
+        return findFilesWithMain(Arrays.asList(file)) != null;
     }
     
     @Nullable

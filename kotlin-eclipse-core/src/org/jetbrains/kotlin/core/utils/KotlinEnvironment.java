@@ -42,6 +42,7 @@ import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.jet.cli.jvm.compiler.MockPsiDocumentManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.jet.lang.resolve.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.jet.utils.PathUtil;
@@ -178,6 +179,7 @@ public class KotlinEnvironment {
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
 
         javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
+        javaApplicationEnvironment.getApplication().registerService(KotlinBinaryClassCache.class, new KotlinBinaryClassCache());
         
         return javaApplicationEnvironment;
     }

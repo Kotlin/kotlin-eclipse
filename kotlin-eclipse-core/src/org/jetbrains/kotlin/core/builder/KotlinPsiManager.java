@@ -43,6 +43,8 @@ import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.util.text.StringUtilRt;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
@@ -106,8 +108,8 @@ public class KotlinPsiManager {
             
             projectFiles.get(project).add(file);
             try {
-                File IOFile = new File(file.getRawLocation().toOSString());
-                psiFiles.put(file, parseText(FileUtil.loadFile(IOFile), file));
+                File ioFile = new File(file.getRawLocation().toOSString());
+                psiFiles.put(file, parseText(FileUtil.loadFile(ioFile, null, true), file));
             } catch (IOException e) {
                 KotlinLogger.logAndThrow(e);
             }
@@ -127,11 +129,14 @@ public class KotlinPsiManager {
     }
     
     public void updatePsiFile(@NotNull IFile file, @NotNull String sourceCode) {
+        String sourceCodeWithouCR = StringUtilRt.convertLineSeparators(sourceCode);
         synchronized (mapOperationLock) {
             assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
-            PsiFile parsedFile = parseText(sourceCode, file);
-            psiFiles.put(file, parsedFile);
+            PsiFile currentParsedFile = getParsedFile(file);
+            if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
+                psiFiles.put(file, parseText(sourceCodeWithouCR, file));
+            }
         }
     }
     
@@ -149,14 +154,8 @@ public class KotlinPsiManager {
     @NotNull
     public PsiFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
         synchronized (mapOperationLock) {
-            PsiFile currentParsedFile = getParsedFile(file);
-            
-            String sourceCodeWithouCR = expectedSourceCode.replaceAll("\r", "");
-            if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
-                updatePsiFile(file, expectedSourceCode);
-            }
-            
-            return psiFiles.get(file);
+            updatePsiFile(file, expectedSourceCode);
+            return getParsedFile(file);
         }
     }
 
@@ -212,6 +211,8 @@ public class KotlinPsiManager {
     
     @Nullable
     private PsiFile parseText(@NotNull String text, IFile file) {
+        StringUtil.assertValidSeparators(text);
+        
         IJavaProject javaProject = JavaCore.create(file.getProject());
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
         

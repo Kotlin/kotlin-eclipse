@@ -64,15 +64,14 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
             }
         }
         
-        IFile mainClass = ProjectUtils.getMainClass(files);
-        
-        if (mainClass == null) {
+        IFile fileWithMain = ProjectUtils.findFilesWithMain(files);
+       
+        if (fileWithMain == null) {
             launchProject(files.get(0).getProject(), mode);
-            
             return;
         }
         
-        launchWithMainClass(mainClass, mode);
+        launchWithMainClass(fileWithMain, mode);
     }
     
     @Override
@@ -87,7 +86,6 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
             
             if (ProjectUtils.hasMain(file)) {
                 launchWithMainClass(file, mode);
-                
                 return;
             }
 
@@ -96,17 +94,17 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
     }
     
     private void launchProject(IProject project, String mode) {
-        IFile mainClass = ProjectUtils.getMainClass(KotlinPsiManager.INSTANCE.getFilesByProject(project));
-        if (mainClass != null) {
-            launchWithMainClass(mainClass, mode);
+        IFile fileWithMain = ProjectUtils.findFilesWithMain(KotlinPsiManager.INSTANCE.getFilesByProject(project));
+        if (fileWithMain != null) {
+            launchWithMainClass(fileWithMain, mode);
         }
     }
     
-    private void launchWithMainClass(IFile mainClass, String mode) {
-        ILaunchConfiguration configuration = findLaunchConfiguration(getLaunchConfigurationType(), mainClass);
+    private void launchWithMainClass(IFile fileWithMain, String mode) {
+        ILaunchConfiguration configuration = findLaunchConfiguration(getLaunchConfigurationType(), fileWithMain);
         
         if (configuration == null) {
-            configuration = createConfiguration(mainClass);
+            configuration = createConfiguration(fileWithMain);
         } 
         
         if (configuration == null) {
