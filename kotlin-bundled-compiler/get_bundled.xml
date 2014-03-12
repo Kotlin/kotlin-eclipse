@@ -1,5 +1,5 @@
 <project default="get_bundled">
-	<property name="idea-sources-build-id" value="114358"/>
+	<property name="idea-sources-build-id" value="119597"/>
 	
 	<property name="teamcity-base" value="http://teamcity.jetbrains.com"/>	
 	<property name="idea-sdk-url" value="${teamcity-base}/guestAuth/repository/download/bt410/${idea-sources-build-id}:id" />
