@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Bundled Kotlin Compiler 5.1
+Bundle-Name: Bundled Kotlin Compiler
 Bundle-SymbolicName: org.jetbrains.kotlin.bundled-compiler;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Vendor: JetBrains
