@@ -6,5 +6,5 @@ class Test {
 
 }
 
-// EXIST: util
-// NUMBER: 1
+// TODO: Add completion in package directive
+// Add "util" to exists
