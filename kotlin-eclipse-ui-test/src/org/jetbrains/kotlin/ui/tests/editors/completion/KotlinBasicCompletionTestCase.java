@@ -36,7 +36,10 @@ public class KotlinBasicCompletionTestCase extends KotlinEditorTestCase {
 		
 		List<String> expectedProposals = ExpectedCompletionUtils.itemsShouldExist(fileText);
 		assertExists(expectedProposals, proposalSet);
-
+		
+		List<String> expectedJavaOnlyProposals = ExpectedCompletionUtils.itemsJavaOnlyShouldExists(fileText);
+		assertExists(expectedJavaOnlyProposals, proposalSet);
+		
 		List<String> unexpectedProposals = ExpectedCompletionUtils.itemsShouldAbsent(fileText);
 		assertNotExists(unexpectedProposals, proposalSet);
 	}
