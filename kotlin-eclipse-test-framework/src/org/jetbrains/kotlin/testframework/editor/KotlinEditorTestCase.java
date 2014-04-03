@@ -106,7 +106,7 @@ public abstract class KotlinEditorTestCase {
 	public String getText(String testPath) {
 		try {
 			File file = new File(testPath);
-			return String.valueOf(FileUtil.loadFileText(file, null));
+			return String.valueOf(FileUtil.loadFileText(file));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

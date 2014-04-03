@@ -13,6 +13,36 @@ import com.intellij.openapi.util.text.StringUtil;
 //	Source code is taken from org.jetbrains.jet.InTextDirectivesUtils
 public class InTextDirectivesUtils {
 
+	public static String findStringWithPrefixes(String fileText, String... prefixes) {
+		List<String> strings = findListWithPrefixes(fileText, prefixes);
+        if (strings.isEmpty()) {
+            return null;
+        }
+
+        if (strings.size() != 1) {
+            throw new IllegalStateException("There is more than one string with given prefixes " +
+                                            Arrays.toString(prefixes) + ":\n" +
+                                            StringUtil.join(strings, "\n") + "\n" +
+                                            "Use findListWithPrefixes() instead.");
+        }
+
+        return strings.get(0);
+	}
+	
+    public static List<String> findListWithPrefixes(String fileText, String... prefixes) {
+        List<String> result = new ArrayList<String>();
+
+        for (String line : findLinesWithPrefixesRemoved(fileText, prefixes)) {
+            String[] variants = line.split(",");
+
+            for (String variant : variants) {
+                result.add(StringUtil.unquoteString(variant.trim()));
+            }
+        }
+
+        return result;
+    }
+	
     public static List<String> findLinesWithPrefixesRemoved(String fileText, String... prefixes) {
         List<String> result = new ArrayList<String>();
         List<String> cleanedPrefixes = cleanDirectivesFromComments(Arrays.asList(prefixes));
