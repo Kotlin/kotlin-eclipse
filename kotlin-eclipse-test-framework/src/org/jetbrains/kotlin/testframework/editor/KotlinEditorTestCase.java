@@ -16,11 +16,15 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.testframework.editor;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -28,6 +32,8 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
 import org.junit.After;
 import org.junit.Before;
+
+import com.intellij.openapi.util.io.FileUtil;
 
 public abstract class KotlinEditorTestCase {
 	
@@ -92,6 +98,19 @@ public abstract class KotlinEditorTestCase {
 			e.printStackTrace();
 		}
     }
+    
+    public String getNameByPath(String testPath) {
+		return new Path(testPath).lastSegment();
+	}
+
+	public String getText(String testPath) {
+		try {
+			File file = new File(testPath);
+			return String.valueOf(FileUtil.loadFileText(file, null));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
     
     protected int getCaret() {
 		return testEditor.getEditor().getViewer().getTextWidget().getCaretOffset();
