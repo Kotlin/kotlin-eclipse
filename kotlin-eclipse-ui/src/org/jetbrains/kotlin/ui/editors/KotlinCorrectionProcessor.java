@@ -34,16 +34,20 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.ui.editors.quickfix.KotlinAutoImportMarkerResolutionGenerator;
+import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProcessor;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
 import org.jetbrains.kotlin.utils.EditorUtil;
+
+import com.google.common.collect.Lists;
 
 public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
     
     private final AbstractTextEditor editor;
+    private final KotlinQuickAssistProcessor kotlinQuickAssistProcessor;
     
     public KotlinCorrectionProcessor(AbstractTextEditor editor) {
         this.editor = editor;
+        kotlinQuickAssistProcessor = new KotlinQuickAssistProcessor();
     }
 
     @Override
@@ -74,28 +78,33 @@ public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
 
     @Override
     public ICompletionProposal[] computeQuickAssistProposals(IQuickAssistInvocationContext invocationContext) {
-        int caretOffset = invocationContext.getOffset();
         List<ICompletionProposal> completionProposals = new ArrayList<ICompletionProposal>();
         
         try {
+            int caretOffset = invocationContext.getOffset();
             IMarker marker = findMarkerAt(caretOffset);
-            IMarkerResolution[] markerResolutions = null; 
             if (marker != null) {
-                markerResolutions = IDE.getMarkerHelpRegistry().getResolutions(marker);
-            } else {
-                KotlinAutoImportMarkerResolutionGenerator resolutionGenerator = new KotlinAutoImportMarkerResolutionGenerator();
-                markerResolutions = resolutionGenerator.getResolutions(null);
-            }
+                for (IMarkerResolution markerResolution : IDE.getMarkerHelpRegistry().getResolutions(marker)) {
+                    completionProposals.add(new KotlinMarkerResolutionProposal(marker, markerResolution));
+                }
+            } 
             
-            for (IMarkerResolution markerResolution : markerResolutions) {
-                completionProposals.add(new KotlinMarkerResolutionProposal(marker, markerResolution));
-            }
+            completionProposals.addAll(collectQuickAssistProposals());
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
         
         
         return completionProposals.toArray(new ICompletionProposal[completionProposals.size()]);
+    }
+    
+    private List<ICompletionProposal> collectQuickAssistProposals() throws CoreException {
+        List<ICompletionProposal> proposals = Lists.newArrayList();
+        for (ICompletionProposal proposal : kotlinQuickAssistProcessor.getAssists(null, null)) {
+            proposals.add(proposal);
+        }
+        
+        return proposals;
     }
     
     private IMarker findMarkerAt(int offset) throws CoreException {
