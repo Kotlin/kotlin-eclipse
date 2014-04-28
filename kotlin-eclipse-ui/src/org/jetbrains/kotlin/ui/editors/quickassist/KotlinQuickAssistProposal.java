@@ -70,6 +70,15 @@ public abstract class KotlinQuickAssistProposal implements IJavaCompletionPropos
         return (KotlinEditor) workbenchWindow.getActivePage().getActiveEditor();
     }
     
+    @Nullable
+    public static IFile getActiveFile() {
+        AbstractTextEditor editor = getActiveEditor();
+        if (editor == null) return null;
+        
+        JavaEditor javaEditor = (JavaEditor) editor;
+        return EditorUtil.getFile(javaEditor);
+    }
+    
     private static int getCaretOffset(@NotNull JavaEditor activeEditor) {
         ISelection selection = activeEditor.getSelectionProvider().getSelection();
         if (selection instanceof ITextSelection) {

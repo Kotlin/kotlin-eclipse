@@ -36,6 +36,7 @@ public class KotlinQuickAssistProcessor implements IQuickAssistProcessor {
         List<KotlinQuickAssistProposal> proposals = Lists.newArrayList();
         
         proposals.add(new KotlinReplaceGetAssistProposal());
+        proposals.add(new KotlinSpecifyTypeAssistProposal());
         
         return proposals;
     }
