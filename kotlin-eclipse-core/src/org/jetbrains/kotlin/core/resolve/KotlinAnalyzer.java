@@ -17,7 +17,6 @@
 package org.jetbrains.kotlin.core.resolve;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -25,9 +24,10 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.descriptors.serialization.descriptors.MemberFilter;
 import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.lang.resolve.AnalyzerScriptParameter;
 import org.jetbrains.jet.lang.resolve.BindingContext;
+import org.jetbrains.jet.lang.resolve.BindingTraceContext;
 import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
@@ -57,7 +57,7 @@ public class KotlinAnalyzer {
         
         List<JetFile> sourceFiles = getSourceFiles(javaProject.getProject());
         AnalyzeExhaust analyzeExhaust = AnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                ideaProject, sourceFiles, Collections.<AnalyzerScriptParameter>emptyList(), filesToAnalyzeCompletely);
+                ideaProject, sourceFiles,  new BindingTraceContext(), filesToAnalyzeCompletely, false, AnalyzerFacadeForJVM.createJavaModule("<module>"), MemberFilter.ALWAYS_TRUE);
         
         return analyzeExhaust.getBindingContext();
     }
