@@ -34,7 +34,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator;
+import org.jetbrains.kotlin.ui.editors.quickfix.KotlinAutoImportMarkerResolutionGenerator;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
@@ -83,7 +83,7 @@ public class KotlinQuickAssistProcessor implements IQuickAssistProcessor {
             if (marker != null) {
                 markerResolutions = IDE.getMarkerHelpRegistry().getResolutions(marker);
             } else {
-                KotlinMarkerResolutionGenerator resolutionGenerator = new KotlinMarkerResolutionGenerator();
+                KotlinAutoImportMarkerResolutionGenerator resolutionGenerator = new KotlinAutoImportMarkerResolutionGenerator();
                 markerResolutions = resolutionGenerator.getResolutions(null);
             }
             

@@ -45,7 +45,7 @@ import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 
 import com.intellij.openapi.util.TextRange;
 
-public class KotlinMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
+public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
     
     private static SearchEngine searchEngine = new SearchEngine();
     private static IMarkerResolution[] NO_RESOLUTIONS = new IMarkerResolution[] { };

@@ -220,7 +220,7 @@
    <extension
          point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
-            class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator"
+            class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinAutoImportMarkerResolutionGenerator"
             markerType="org.eclipse.core.resources.problemmarker">
       </markerResolutionGenerator>
    </extension>
