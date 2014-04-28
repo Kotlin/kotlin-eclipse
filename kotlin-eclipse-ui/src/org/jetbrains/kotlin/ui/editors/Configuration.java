@@ -112,7 +112,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
         IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
-        quickAssist.setQuickAssistProcessor(new KotlinQuickAssistProcessor(editor));
+        quickAssist.setQuickAssistProcessor(new KotlinCorrectionProcessor(editor));
         quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
         return quickAssist; 
     }

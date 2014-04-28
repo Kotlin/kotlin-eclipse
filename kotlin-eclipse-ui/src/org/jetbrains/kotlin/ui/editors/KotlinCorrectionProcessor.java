@@ -38,11 +38,11 @@ import org.jetbrains.kotlin.ui.editors.quickfix.KotlinAutoImportMarkerResolution
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
-public class KotlinQuickAssistProcessor implements IQuickAssistProcessor {
+public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
     
     private final AbstractTextEditor editor;
     
-    public KotlinQuickAssistProcessor(AbstractTextEditor editor) {
+    public KotlinCorrectionProcessor(AbstractTextEditor editor) {
         this.editor = editor;
     }
 
