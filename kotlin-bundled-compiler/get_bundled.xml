@@ -9,6 +9,8 @@
 	
 	<property name="project.name" value="kotlin-bundled-compiler" />
 	
+	<property name="compiler.tag" value="bootstrap" />
+	
 	<condition property="target.dir" value="${teamcity.build.workingDir}/lib" else="lib">
 		<isset property="teamcity.build.workingDir"/>
 	</condition>
@@ -29,7 +31,7 @@
 		<mkdir dir="${download.dir}" />
 
 		<get 
-			src="${teamcity-base}/guestAuth/repository/download/bt345/bootstrap.tcbuildtag/kotlin-plugin-{build.number}.zip" 
+			src="${teamcity-base}/guestAuth/repository/download/bt345/${compiler.tag}.tcbuildtag/kotlin-plugin-{build.number}.zip" 
 			dest="${download.dir}/${compiler-artifact-file}" 
 			usetimestamp="true" />
 
