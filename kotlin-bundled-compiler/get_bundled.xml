@@ -1,5 +1,6 @@
 <project default="get_bundled">
-	<property name="idea-sources-build-id" value="119597"/>
+	<property name="idea-sources-build-id" value="132618"/>
+	<property name="compiler.tag" value="bootstrap" />
 	
 	<property name="teamcity-base" value="http://teamcity.jetbrains.com"/>	
 	<property name="idea-sdk-url" value="${teamcity-base}/guestAuth/repository/download/bt410/${idea-sources-build-id}:id" />
@@ -9,7 +10,6 @@
 	
 	<property name="project.name" value="kotlin-bundled-compiler" />
 	
-	<property name="compiler.tag" value="bootstrap" />
 	
 	<condition property="target.dir" value="${teamcity.build.workingDir}/lib" else="lib">
 		<isset property="teamcity.build.workingDir"/>
