@@ -71,7 +71,7 @@ public abstract class KotlinEditorTestCase {
 	
     protected TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {
     	TextEditorTest testEditor = new TextEditorTest(projectName);
-		String toEditor = resolveTestTags(content);
+		String toEditor = resolveTestTags(content).replaceAll("\r", "").replaceAll("\n", System.lineSeparator());
 		testEditor.createEditor(fileName, toEditor, packageName);
 		
 		return testEditor;
