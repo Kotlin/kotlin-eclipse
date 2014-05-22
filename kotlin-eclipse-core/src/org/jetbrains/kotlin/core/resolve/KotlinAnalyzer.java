@@ -57,7 +57,7 @@ public class KotlinAnalyzer {
         
         List<JetFile> sourceFiles = getSourceFiles(javaProject.getProject());
         AnalyzeExhaust analyzeExhaust = AnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                ideaProject, sourceFiles,  new BindingTraceContext(), filesToAnalyzeCompletely, false, AnalyzerFacadeForJVM.createJavaModule("<module>"), MemberFilter.ALWAYS_TRUE);
+                ideaProject, sourceFiles, new BindingTraceContext(), filesToAnalyzeCompletely, AnalyzerFacadeForJVM.createJavaModule("<module>"), MemberFilter.ALWAYS_TRUE);
         
         return analyzeExhaust.getBindingContext();
     }
