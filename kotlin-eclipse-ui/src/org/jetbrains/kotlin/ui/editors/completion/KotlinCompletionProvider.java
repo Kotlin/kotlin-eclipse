@@ -34,6 +34,7 @@ import org.jetbrains.jet.lang.psi.JetImportDirective;
 import org.jetbrains.jet.lang.psi.JetPackageDirective;
 import org.jetbrains.jet.lang.psi.JetQualifiedExpression;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
+import org.jetbrains.jet.lang.psi.psiUtil.PsiUtilPackage;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.AutoCastUtils;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowInfo;
@@ -59,7 +60,7 @@ public class KotlinCompletionProvider {
             @NotNull JetSimpleNameExpression expression,
             @NotNull BindingContext context
     ) {
-        JetExpression receiverExpression = expression.getReceiverExpression();
+        JetExpression receiverExpression = PsiUtilPackage.getReceiverExpression(expression);
         PsiElement parent = expression.getParent();
         boolean inPositionForCompletionWithReceiver = parent instanceof JetCallExpression || parent instanceof JetQualifiedExpression;
         if (receiverExpression != null && inPositionForCompletionWithReceiver) {

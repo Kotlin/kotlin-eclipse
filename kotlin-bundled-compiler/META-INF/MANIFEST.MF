@@ -722,6 +722,7 @@ Export-Package: com.google.common.base;uses:="new com.google.common.base",
    com.intellij.openapi.project,
    org.jetbrains.jet,
    org.jetbrains.jet.lang.resolve",
+ org.jetbrains.jet.lang.psi.psiUtil,
  org.jetbrains.jet.lang.psi.stubs;uses:="org.jetbrains.jet.lang.resolve.name,com.intellij.psi.stubs",
  org.jetbrains.jet.lang.psi.stubs.elements;
   uses:="com.intellij.psi.tree,
