@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.completion.templates;
 
-import junit.framework.Assert;
-
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Point;
@@ -26,6 +24,7 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
+import org.junit.Assert;
 
 public class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 	

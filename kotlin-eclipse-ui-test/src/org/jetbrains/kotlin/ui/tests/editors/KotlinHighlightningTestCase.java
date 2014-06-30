@@ -16,13 +16,12 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import junit.framework.Assert;
-
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.ui.editors.ColorManager;
 import org.jetbrains.kotlin.ui.editors.IColorConstants;
+import org.junit.Assert;
 
 public class KotlinHighlightningTestCase extends KotlinEditorTestCase {
 	

@@ -16,12 +16,11 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import junit.framework.Assert;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.junit.Assert;
 
 public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 

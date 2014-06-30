@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.tests.launch;
 
-import junit.framework.Assert;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -28,6 +26,7 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut;
+import org.junit.Assert;
 
 public class KotlinLaunchTestCase extends KotlinEditorTestCase {
 	

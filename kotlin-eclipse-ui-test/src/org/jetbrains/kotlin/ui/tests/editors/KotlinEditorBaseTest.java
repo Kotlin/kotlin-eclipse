@@ -16,12 +16,12 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import junit.framework.Assert;
-
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.junit.Assert;
 import org.junit.Test;
-import org.jetbrains.kotlin.testframework.editor.*;
-import org.jetbrains.kotlin.testframework.utils.*;
 
 public class KotlinEditorBaseTest extends KotlinEditorTestCase {
 	@Test

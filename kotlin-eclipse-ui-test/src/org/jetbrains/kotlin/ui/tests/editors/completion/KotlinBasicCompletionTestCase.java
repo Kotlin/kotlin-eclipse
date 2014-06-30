@@ -5,12 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.Assert;
+
+
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
+import org.junit.Assert;
 
 public class KotlinBasicCompletionTestCase extends KotlinEditorTestCase {
 

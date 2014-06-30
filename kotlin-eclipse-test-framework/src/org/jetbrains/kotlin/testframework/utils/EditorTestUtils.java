@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.testframework.utils;
 
-import junit.framework.Assert;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.ui.IEditorDescriptor;
@@ -29,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.utils.EditorUtil;
+import org.junit.Assert;
 
 public class EditorTestUtils {
 

@@ -19,8 +19,6 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import java.io.File;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaProject;
@@ -28,6 +26,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class KotlinCustomLocationBugTest extends KotlinEditorTestCase {
