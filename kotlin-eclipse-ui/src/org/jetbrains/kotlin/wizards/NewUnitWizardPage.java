@@ -396,7 +396,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
 
     private boolean packageNameIsLegal(String packageName) {
-        return packageName.isEmpty() || packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$");
+        return packageName.isEmpty() || packageName.matches("^[a-zA-Z_]\\w*(\\.[a-zA-Z_]\\w*)*$");
     }
 
     private boolean packageNameIsLegal() {
