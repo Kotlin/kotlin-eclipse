@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.wizard;
+package org.jetbrains.kotlin.wizards;
 
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 

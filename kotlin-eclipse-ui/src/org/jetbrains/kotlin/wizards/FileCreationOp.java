@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.wizard;
+package org.jetbrains.kotlin.wizards;
 
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
@@ -43,7 +43,7 @@ class FileCreationOp implements IRunnableWithProgress {
     private final String contents;
     private final Shell shell;
 
-    private final static String ext = ".kt";
+    private final static String EXT = ".kt";
 
     private IFile result;
 
@@ -80,9 +80,18 @@ class FileCreationOp implements IRunnableWithProgress {
     }
 
     static String getCompilationUnitName(String name) {
-        if (name.endsWith(ext)) {
+        if (name.endsWith(EXT)) {
             return name;
         }
-        return name + ext;
+        
+        return name + EXT;
+    }
+    
+    static String getSimpleUnitName(String name) {
+        if (name.endsWith(EXT)) {
+            return name.substring(0, name.length() - EXT.length());
+        }
+        
+        return name;
     }
 }
