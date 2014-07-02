@@ -51,16 +51,18 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
+    private static final String ILLEGAL_UNIT_NAME_MESSAGE = "Please enter a legal compilation unit name.";
+    private static final String SELECT_SOURCE_FOLDER_MESSAGE = "Please select a source folder";
+    private static final String ILLEGAL_PACKAGE_NAME_MESSAGE = "Please enter a legal package name";
+    private static final String UNIT_EXISTS_MESSAGE = "File already exists";
+    
+    private static final String JAVA_IDENTIFIER_REGEXP = "[a-zA-Z_]\\w*";    
+    
     private String unitName;
     private String packageName = "";
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
     private final IStructuredSelection selection;
-
-    private final String illegalUnitNameMessage = "Please enter a legal compilation unit name.";
-    private final String selectSourceFolderMessage = "Please select a source folder";
-    private final String illegalPackageNameMessage = "Please enter a legal package name";
-    private final String unitExistsMessage = "File already exists";
 
     protected NewUnitWizardPage(String title, String description, String defaultUnitName, IStructuredSelection selection) {
         super(title);
@@ -234,7 +236,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (sourceDir == null) {
-                    MessageDialog.openWarning(getShell(), "No Source Folder", selectSourceFolderMessage);
+                    MessageDialog.openWarning(getShell(), "No Source Folder", SELECT_SOURCE_FOLDER_MESSAGE);
                 } else {
                     SelectionDialog dialog;
                     Object result = null;
@@ -374,13 +376,13 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             packageFragment = sourceDir.getPackageFragment(packageName);
         }
         if (sourceDir == null) {
-            setErrorMessage(selectSourceFolderMessage);
+            setErrorMessage(SELECT_SOURCE_FOLDER_MESSAGE);
         } else if (!packageNameIsLegal()) {
-            setErrorMessage(illegalPackageNameMessage);
+            setErrorMessage(ILLEGAL_PACKAGE_NAME_MESSAGE);
         } else if (!unitIsNameLegal()) {
-            setErrorMessage(illegalUnitNameMessage);
+            setErrorMessage(ILLEGAL_UNIT_NAME_MESSAGE);
         } else if (unitExists()) {
-            setErrorMessage(unitExistsMessage);
+            setErrorMessage(UNIT_EXISTS_MESSAGE);
         } else {
             setErrorMessage(null);
             pageCompleteStatus = true;
@@ -396,7 +398,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
 
     private boolean packageNameIsLegal(String packageName) {
-        return packageName.isEmpty() || packageName.matches("^[a-zA-Z_]\\w*(\\.[a-zA-Z_]\\w*)*$");
+        return packageName.matches("^(|" + JAVA_IDENTIFIER_REGEXP + "(\\." + JAVA_IDENTIFIER_REGEXP + ")*)$");
     }
 
     private boolean packageNameIsLegal() {
@@ -408,7 +410,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
 
     private boolean unitIsNameLegal(String unitName) {
-        return !unitName.trim().isEmpty();
+        return unitName.matches("^" + JAVA_IDENTIFIER_REGEXP + FileCreationOp.getExtensionRegexp() + "$");
     }
 
     IPackageFragment getPackageFragment() {
