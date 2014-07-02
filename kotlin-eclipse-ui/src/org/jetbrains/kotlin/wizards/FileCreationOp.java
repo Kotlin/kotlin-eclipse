@@ -94,4 +94,8 @@ class FileCreationOp implements IRunnableWithProgress {
         
         return name;
     }
+    
+    static String getExtensionRegexp() {
+        return "(\\" + EXT + ")?";
+    }
 }

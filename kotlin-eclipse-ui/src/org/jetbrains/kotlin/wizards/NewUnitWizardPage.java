@@ -51,16 +51,18 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
+    private static final String ILLEGAL_UNIT_NAME_MESSAGE = "Please enter a legal compilation unit name.";
+    private static final String SELECT_SOURCE_FOLDER_MESSAGE = "Please select a source folder";
+    private static final String ILLEGAL_PACKAGE_NAME_MESSAGE = "Please enter a legal package name";
+    private static final String UNIT_EXISTS_MESSAGE = "File already exists";
+
+    private static final String JAVA_IDENTIFIER_REGEXP = "[a-zA-Z_]\\w*";
+
     private String unitName;
     private String packageName = "";
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
     private final IStructuredSelection selection;
-
-    private final String illegalUnitNameMessage = "Please enter a legal compilation unit name.";
-    private final String selectSourceFolderMessage = "Please select a source folder";
-    private final String illegalPackageNameMessage = "Please enter a legal package name";
-    private final String unitExistsMessage = "File already exists";
 
     protected NewUnitWizardPage(String title, String description, String defaultUnitName, IStructuredSelection selection) {
         super(title);
@@ -86,7 +88,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
         setPageComplete(false);
     }
-    
+
     public IProject getProject() {
         if (sourceDir != null) {
             return sourceDir.getJavaProject().getProject();
@@ -94,11 +96,11 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             return null;
         }
     }
-    
+
     private void createControls(Composite composite) {
         Text folder = createFolderField(composite);
         folder.setText(getFolderFromSelection());
-        
+
         Text pkg = createPackageField(composite);
         pkg.setText(getPackageFromSelection());
 
@@ -234,7 +236,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (sourceDir == null) {
-                    MessageDialog.openWarning(getShell(), "No Source Folder", selectSourceFolderMessage);
+                    MessageDialog.openWarning(getShell(), "No Source Folder", SELECT_SOURCE_FOLDER_MESSAGE);
                 } else {
                     SelectionDialog dialog;
                     Object result = null;
@@ -267,104 +269,103 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
         return pkg;
     }
-    
+
     private String getFolderFromSelection() {
         String defaultFolder = "";
-        
+
         if (selection.isEmpty()) {
             return defaultFolder;
         }
-        
+
         Object selectedObject = selection.getFirstElement();
-        
+
         if (selectedObject instanceof IJavaElement) {
             IJavaElement selectedJavaElement = (IJavaElement) selectedObject;
             switch (selectedJavaElement.getElementType()) {
-                case IJavaElement.JAVA_PROJECT:
-                    return getDefaultSrcByProject((IJavaProject) selectedJavaElement);
-                    
-                case IJavaElement.PACKAGE_FRAGMENT_ROOT:
-                    return selectedJavaElement.getPath().toPortableString();
-                    
-                case IJavaElement.PACKAGE_FRAGMENT: case IJavaElement.COMPILATION_UNIT:
-                    return selectedJavaElement.getPath().uptoSegment(2).toPortableString();
+            case IJavaElement.JAVA_PROJECT:
+                return getDefaultSrcByProject((IJavaProject) selectedJavaElement);
+
+            case IJavaElement.PACKAGE_FRAGMENT_ROOT:
+                return selectedJavaElement.getPath().toPortableString();
+
+            case IJavaElement.PACKAGE_FRAGMENT:
+            case IJavaElement.COMPILATION_UNIT:
+                return selectedJavaElement.getPath().uptoSegment(2).toPortableString();
             }
         } else if (selectedObject instanceof IResource) {
             IResource selectedResource = (IResource) selectedObject;
             switch (selectedResource.getType()) {
-                case IResource.FOLDER:
-                    return getDefaultSrcByProject(JavaCore.create(selectedResource.getProject()));
-                    
-                case IResource.FILE:
-                    return selectedResource.getFullPath().uptoSegment(2).toPortableString();
+            case IResource.FOLDER:
+                return getDefaultSrcByProject(JavaCore.create(selectedResource.getProject()));
+
+            case IResource.FILE:
+                return selectedResource.getFullPath().uptoSegment(2).toPortableString();
             }
-        } 
-        
+        }
+
         return defaultFolder;
     }
-    
+
     private String getPackageFromSelection() {
         String defaultPackage = "";
-        
+
         if (selection.isEmpty()) {
             return defaultPackage;
         }
-        
+
         Object selectedObject = selection.getFirstElement();
-        
+
         if (selectedObject instanceof IJavaElement) {
             IJavaElement selectedJavaElement = (IJavaElement) selectedObject;
             switch (selectedJavaElement.getElementType()) {
-                case IJavaElement.PACKAGE_FRAGMENT:  
-                    return selectedJavaElement.getElementName();
-                    
-                case IJavaElement.COMPILATION_UNIT:
-                    try {
-                        return selectedJavaElement.getJavaProject().
-                                findPackageFragment(selectedJavaElement.getPath().makeAbsolute().removeLastSegments(1)).
-                                getElementName();
-                    } catch (Exception e) {
-                        KotlinLogger.logAndThrow(e);
-                    }
-                    break;
+            case IJavaElement.PACKAGE_FRAGMENT:
+                return selectedJavaElement.getElementName();
+
+            case IJavaElement.COMPILATION_UNIT:
+                try {
+                    return selectedJavaElement.getJavaProject().findPackageFragment(
+                            selectedJavaElement.getPath().makeAbsolute().removeLastSegments(1)).getElementName();
+                } catch (Exception e) {
+                    KotlinLogger.logAndThrow(e);
+                }
+                break;
             }
         } else if (selectedObject instanceof IResource) {
             IResource selectedResource = (IResource) selectedObject;
             switch (selectedResource.getType()) {
-                case IResource.FILE:
-                    try {
-                        return JavaCore.create(selectedResource.getProject()).
-                                findPackageFragment(selectedResource.getFullPath().makeAbsolute().removeLastSegments(1)).
-                                getElementName();
-                    } catch (Exception e) {
-                        KotlinLogger.logAndThrow(e);
-                    }
-                    break;
+            case IResource.FILE:
+                try {
+                    return JavaCore.create(selectedResource.getProject()).findPackageFragment(
+                            selectedResource.getFullPath().makeAbsolute().removeLastSegments(1)).getElementName();
+                } catch (Exception e) {
+                    KotlinLogger.logAndThrow(e);
+                }
+                break;
             }
-        } 
-        
+        }
+
         return defaultPackage;
     }
-    
+
     private String getDefaultSrcByProject(IJavaProject javaProject) {
         String destFolder = javaProject.getPath().toPortableString();
-        
+
         IClasspathEntry[] classpathEntries = null;
         try {
             classpathEntries = javaProject.getRawClasspath();
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
-            
+
             return destFolder;
         }
-        
+
         for (IClasspathEntry classpathEntry : classpathEntries) {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
                 destFolder += IPath.SEPARATOR + classpathEntry.getPath().segment(1);
                 break;
             }
         }
-        
+
         return destFolder;
     }
 
@@ -374,13 +375,13 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             packageFragment = sourceDir.getPackageFragment(packageName);
         }
         if (sourceDir == null) {
-            setErrorMessage(selectSourceFolderMessage);
+            setErrorMessage(SELECT_SOURCE_FOLDER_MESSAGE);
         } else if (!packageNameIsLegal()) {
-            setErrorMessage(illegalPackageNameMessage);
+            setErrorMessage(ILLEGAL_PACKAGE_NAME_MESSAGE);
         } else if (!unitIsNameLegal()) {
-            setErrorMessage(illegalUnitNameMessage);
+            setErrorMessage(ILLEGAL_UNIT_NAME_MESSAGE);
         } else if (unitExists()) {
-            setErrorMessage(unitExistsMessage);
+            setErrorMessage(UNIT_EXISTS_MESSAGE);
         } else {
             setErrorMessage(null);
             pageCompleteStatus = true;
@@ -396,7 +397,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
 
     private boolean packageNameIsLegal(String packageName) {
-        return packageName.isEmpty() || packageName.matches("^[a-z_]\\w*(\\.[a-z_]\\w*)*$");
+        return packageName.matches("^(|" + JAVA_IDENTIFIER_REGEXP + "(\\." + JAVA_IDENTIFIER_REGEXP + ")*)$");
     }
 
     private boolean packageNameIsLegal() {
@@ -408,7 +409,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
 
     private boolean unitIsNameLegal(String unitName) {
-        return !unitName.trim().isEmpty();
+        return unitName.matches("^" + JAVA_IDENTIFIER_REGEXP + FileCreationOp.getExtensionRegexp() + "$");
     }
 
     IPackageFragment getPackageFragment() {
