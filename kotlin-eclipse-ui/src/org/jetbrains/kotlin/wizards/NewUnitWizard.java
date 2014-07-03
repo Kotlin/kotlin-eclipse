@@ -24,6 +24,10 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.model.KotlinNature;
@@ -34,13 +38,13 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     private static final String DESCRIPTION_FORMAT = "Create a new Kotlin %s file";
     private static final String DEFAULT_FILE_NAME = "";
     private static final String PACKAGE_FORMAT = "package %s\n\n";
-    
+
     private IWorkbench workbench;
     private IStructuredSelection selection;
     private NewUnitWizardPage page;
-    
+
     protected WizardType type;
-    
+
     public NewUnitWizard() {
         type = WizardType.NONE;
     }
@@ -66,42 +70,55 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         } catch (InterruptedException e) {
             return false;
         }
-        
+
         try {
             KotlinNature.addNature(page.getProject());
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
+
         try {
             KotlinNature.addBuilder(page.getProject());
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
-        BasicNewResourceWizard.selectAndReveal(op.getResult(), workbench.getActiveWorkbenchWindow());
+
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+        BasicNewResourceWizard.selectAndReveal(op.getResult(), window);
+
+        try {
+            if (window != null) {
+                IWorkbenchPage page = window.getActivePage();
+
+                if (page != null) {
+                    IDE.openEditor(page, op.getResult(), true);
+                }
+            }
+        } catch (PartInitException e) {
+            KotlinLogger.logAndThrow(e);
+        }
 
         return true;
     }
-    
+
     private String createPageTitle() {
         return String.format(TITLE_FORMAT, type.getWizardTypeName());
     }
-    
+
     private String createTypeBody() {
         if (type == WizardType.NONE) {
             return "";
         }
-        
+
         return String.format(type.getFileBodyFormat(), FileCreationOp.getSimpleUnitName(page.getUnitName()));
     }
-    
+
     private String createPackageHeader() {
         String pckg = page.getPackageFragment().getElementName();
         if (pckg.isEmpty()) {
             return "";
         }
-        
+
         return String.format(PACKAGE_FORMAT, pckg);
     }
 
@@ -110,7 +127,8 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         super.addPages();
 
         if (page == null) {
-            page = new NewUnitWizardPage(createPageTitle(), String.format(DESCRIPTION_FORMAT, type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, selection);
+            page = new NewUnitWizardPage(createPageTitle(), String.format(DESCRIPTION_FORMAT,
+                    type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, selection);
         }
         addPage(page);
     }
