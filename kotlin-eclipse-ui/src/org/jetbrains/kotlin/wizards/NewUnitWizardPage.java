@@ -17,8 +17,9 @@
 package org.jetbrains.kotlin.wizards;
 
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
+import static org.jetbrains.kotlin.wizards.FileCreationOp.fileExists;
+import static org.jetbrains.kotlin.wizards.FileCreationOp.makeFile;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -390,10 +391,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
     }
 
     private boolean unitExists() {
-        IPath path = packageFragment.getPath().append(FileCreationOp.getCompilationUnitName(unitName));
-        IProject project = sourceDir.getJavaProject().getProject();
-        IFile result = project.getFile(path.makeRelativeTo(project.getFullPath()));
-        return result.exists();
+        return fileExists(makeFile(packageFragment, sourceDir, unitName));
     }
 
     private boolean packageNameIsLegal(String packageName) {

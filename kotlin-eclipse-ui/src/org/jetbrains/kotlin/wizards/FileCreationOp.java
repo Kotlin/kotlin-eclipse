@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.wizards;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -57,14 +58,12 @@ class FileCreationOp implements IRunnableWithProgress {
         this.packageFragment = packageFragment;
         this.contents = contents;
         this.shell = shell;
-        this.unitName = getCompilationUnitName(unitName);
+        this.unitName = unitName;
     }
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
-        IPath path = packageFragment.getPath().append(unitName);
-        IProject project = sourceDir.getJavaProject().getProject();
-        result = project.getFile(path.makeRelativeTo(project.getFullPath()));
+        result = makeFile(packageFragment, sourceDir, unitName);
         try {
             if (!result.exists()) {
                 CreateFileOperation op = new CreateFileOperation(result, null, null, "Create Kotlin Source File");
@@ -97,5 +96,16 @@ class FileCreationOp implements IRunnableWithProgress {
     
     static String getExtensionRegexp() {
         return "(\\" + EXT + ")?";
+    }
+    
+    static IFile makeFile(IPackageFragment packageFragment, IPackageFragmentRoot sourceDir, String unitName) {
+        IPath path = packageFragment.getPath().append(getCompilationUnitName(unitName));
+        IProject project = sourceDir.getJavaProject().getProject();
+        
+        return project.getFile(path.makeRelativeTo(project.getFullPath()));
+    }
+    
+    static boolean fileExists(IFile file) {
+        return new File(file.getRawLocation().toOSString()).exists();
     }
 }
