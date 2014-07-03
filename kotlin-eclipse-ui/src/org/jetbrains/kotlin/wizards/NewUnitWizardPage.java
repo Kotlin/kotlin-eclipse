@@ -144,7 +144,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 unitName = name.getText();
-                setFormErrorMessage();
+                validate();
             }
         });
 
@@ -173,7 +173,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 setSourceDir(folder.getText());
-                setFormErrorMessage();
+                validate();
             }
 
             private void setSourceDir(String folderName) {
@@ -209,7 +209,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     folder.setText(folderName);
                     packageFragment = sourceDir.getPackageFragment(packageName);
                 }
-                setFormErrorMessage();
+                validate();
             }
         });
 
@@ -233,7 +233,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 packageName = pkg.getText();
-                setFormErrorMessage();
+                validate();
             }
         });
 
@@ -268,7 +268,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                             packageFragment = sourceDir.getPackageFragment(packageName);
                         }
                     }
-                    setFormErrorMessage();
+                    validate();
                 }
             }
 
@@ -379,7 +379,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         return destFolder;
     }
 
-    private void setFormErrorMessage() {
+    private void validate() {
         boolean pageCompleteStatus = false;
         if (sourceDir != null && packageNameIsLegal()) {
             packageFragment = sourceDir.getPackageFragment(packageName);

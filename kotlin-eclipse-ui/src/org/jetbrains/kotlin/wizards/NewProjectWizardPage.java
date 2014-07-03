@@ -68,7 +68,7 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
         createControls(composite);
         setControl(composite);
 
-        setFormErrorMessage();
+        validate();
     }
 
     private void createControls(Composite composite) {
@@ -99,7 +99,7 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 projectName = nameText.getText();
-                setFormErrorMessage();
+                validate();
             }
         });
 
@@ -127,7 +127,7 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 projectLocation = locationText.getText();
-                setFormErrorMessage();
+                validate();
             }
         });
 
@@ -149,14 +149,14 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
                     locationText.setText(directoryPath);
                 }
 
-                setFormErrorMessage();
+                validate();
             }
         });
 
         return locationText;
     }
 
-    private void setFormErrorMessage() {
+    private void validate() {
         boolean pageCompleteStatus = false;
         
         if (projectName.isEmpty()) {
