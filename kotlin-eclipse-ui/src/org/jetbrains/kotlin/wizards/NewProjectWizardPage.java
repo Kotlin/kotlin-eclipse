@@ -22,8 +22,8 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -38,8 +38,6 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
     private static final String PROJECT_NAME_TITLE = "Project name: ";
     private static final String PROJECT_LOCATION_TITLE = "Project location: ";
     private static final String SELECT_LOCATION_BUTTON_TITLE = "...";
-    // private static final String PROJECT_SDK_TITLE = "Project SDK: ";
-    // private static final String KOTLIN_RUNTIME_TITLE = "Kotlin runtime: ";
     private static final String EMPTY_PROJECT_NAME_MESSAGE = "Please enter a project name";
     private static final String EMPTY_PROJECT_LOCATION_MESSAGE = "Please enter a project location";
     private static final String PROJECT_EXISTS_MESSAGE = "Project already exists";
@@ -139,7 +137,7 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
         Button selectLocationButton = new Button(composite, SWT.PUSH);
         selectLocationButton.setText(SELECT_LOCATION_BUTTON_TITLE);
         selectLocationButton.setLayoutData(bgd);
-        selectLocationButton.addSelectionListener(new SelectionListener() {
+        selectLocationButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dd = new DirectoryDialog(getShell(), SWT.OPEN);
@@ -152,10 +150,6 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
                 }
 
                 setFormErrorMessage();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
 
