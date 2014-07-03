@@ -52,7 +52,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class NewUnitWizardPage extends WizardPage implements IWizardPage {
 
-    private static final String ILLEGAL_UNIT_NAME_MESSAGE = "Please enter a legal compilation unit name.";
+    private static final String ILLEGAL_UNIT_NAME_MESSAGE = "Please enter a legal compilation unit name";
     private static final String SELECT_SOURCE_FOLDER_MESSAGE = "Please select a source folder";
     private static final String ILLEGAL_PACKAGE_NAME_MESSAGE = "Please enter a legal package name";
     private static final String UNIT_EXISTS_MESSAGE = "File already exists";
@@ -71,6 +71,18 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         super.setDescription(description);
         this.selection = selection;
         unitName = defaultUnitName;
+    }
+    
+    public IPackageFragment getPackageFragment() {
+        return packageFragment;
+    }
+
+    public IPackageFragmentRoot getSourceDir() {
+        return sourceDir;
+    }
+
+    public String getUnitName() {
+        return unitName;
     }
 
     @Override
@@ -410,15 +422,4 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         return unitName.matches("^" + JAVA_IDENTIFIER_REGEXP + FileCreationOp.getExtensionRegexp() + "$");
     }
 
-    IPackageFragment getPackageFragment() {
-        return packageFragment;
-    }
-
-    IPackageFragmentRoot getSourceDir() {
-        return sourceDir;
-    }
-
-    String getUnitName() {
-        return unitName;
-    }
 }
