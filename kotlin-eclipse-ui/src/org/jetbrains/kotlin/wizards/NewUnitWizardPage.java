@@ -39,6 +39,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -197,7 +198,7 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
         GridData sfgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         sfgd.horizontalSpan = 1;
         selectFolder.setLayoutData(sfgd);
-        selectFolder.addSelectionListener(new SelectionListener() {
+        selectFolder.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 IPackageFragmentRoot pfr = getSourceContainer(getShell(), ResourcesPlugin.getWorkspace().getRoot(),
@@ -209,10 +210,6 @@ public class NewUnitWizardPage extends WizardPage implements IWizardPage {
                     packageFragment = sourceDir.getPackageFragment(packageName);
                 }
                 setFormErrorMessage();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
 
