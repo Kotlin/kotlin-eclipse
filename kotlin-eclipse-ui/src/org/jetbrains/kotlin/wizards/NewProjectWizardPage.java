@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.Text;
 
 public class NewProjectWizardPage extends WizardPage implements IWizardPage {
 
-    private static final String DEFAULT_PROJECT_NAME = "untitled";
+    private static final String DEFAULT_PROJECT_NAME = "";
     private static final String PROJECT_NAME_TITLE = "Project name: ";
     private static final String PROJECT_LOCATION_TITLE = "Project location: ";
     private static final String SELECT_LOCATION_BUTTON_TITLE = "...";
@@ -68,7 +68,7 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
         createControls(composite);
         setControl(composite);
 
-        validate();
+        setPageComplete(false);
     }
 
     private void createControls(Composite composite) {
@@ -103,7 +103,7 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
             }
         });
 
-        new Label(composite, SWT.NONE);
+        new Label(composite, SWT.NONE); // empty space
 
         return nameText;
     }
