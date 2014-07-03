@@ -34,33 +34,34 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
+import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 class FileCreationOp implements IRunnableWithProgress {
-
+    
+    private final static String EXT = "." + JetFileType.INSTANCE.getDefaultExtension();
+    
     private final IPackageFragmentRoot sourceDir;
     private final IPackageFragment packageFragment;
     private final String unitName;
     private final String contents;
     private final Shell shell;
-
-    private final static String EXT = ".kt";
-
+    
     private IFile result;
-
-    IFile getResult() {
-        return result;
-    }
-
-    FileCreationOp(IPackageFragmentRoot sourceDir, IPackageFragment packageFragment, String unitName,
-            boolean includePreamble, String contents, Shell shell) {
+    
+    FileCreationOp(IPackageFragmentRoot sourceDir, IPackageFragment packageFragment, String unitName, String contents,
+            Shell shell) {
         this.sourceDir = sourceDir;
         this.packageFragment = packageFragment;
         this.contents = contents;
         this.shell = shell;
         this.unitName = unitName;
     }
-
+    
+    public IFile getResult() {
+        return result;
+    }
+    
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         result = makeFile(packageFragment, sourceDir, unitName);
@@ -77,7 +78,7 @@ class FileCreationOp implements IRunnableWithProgress {
             KotlinLogger.logAndThrow(e);
         }
     }
-
+    
     static String getCompilationUnitName(String name) {
         if (name.endsWith(EXT)) {
             return name;

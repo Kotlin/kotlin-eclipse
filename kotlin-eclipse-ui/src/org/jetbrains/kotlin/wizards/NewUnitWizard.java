@@ -16,103 +16,94 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.ui.INewWizard;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.ide.IDE;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.model.KotlinNature;
 
-public class NewUnitWizard extends Wizard implements INewWizard {
-
+public class NewUnitWizard extends AbstractWizard {
+    
     private static final String TITLE_FORMAT = "Kotlin %s File";
     private static final String DESCRIPTION_FORMAT = "Create a new Kotlin %s file";
-    private static final String DEFAULT_FILE_NAME = "";
-    private static final String PACKAGE_FORMAT = "package %s\n\n";
     
-    private IWorkbench workbench;
-    private IStructuredSelection selection;
-    private NewUnitWizardPage page;
+    private static final String DEFAULT_FILE_NAME = "";
+    private static final String DEFAULT_PACKAGE_NAME = "";
+    private static final String DEFAULT_TYPE_BODY = "";
+    private static final String PACKAGE_FORMAT = "package %s\n\n";
     
     protected WizardType type;
     
     public NewUnitWizard() {
         type = WizardType.NONE;
     }
-
-    @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
-        this.workbench = workbench;
-        this.selection = selection;
-        this.setWindowTitle(createPageTitle());
-    }
-
+    
     @Override
     public boolean performFinish() {
+        NewUnitWizardPage wizardPage = getWizardPage();
         String contents = createPackageHeader() + createTypeBody();
-        FileCreationOp op = new FileCreationOp(page.getSourceDir(), page.getPackageFragment(), page.getUnitName(),
-                false, contents, getShell());
-
-        try {
-            getContainer().run(true, true, op);
-        } catch (InvocationTargetException e) {
-            MessageDialog.openError(getShell(), "Error", e.getMessage());
-            return false;
-        } catch (InterruptedException e) {
-            return false;
-        }
         
-        try {
-            KotlinNature.addNature(page.getProject());
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
+        FileCreationOp op = new FileCreationOp(wizardPage.getSourceDir(), wizardPage.getPackageFragment(),
+                wizardPage.getUnitName(), contents, getShell());
+        performOperation(op);
         
-        try {
-            KotlinNature.addBuilder(page.getProject());
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
+        addNatureToProject(wizardPage.getProject());
+        addBuilderToProject(wizardPage.getProject());
         
-        BasicNewResourceWizard.selectAndReveal(op.getResult(), workbench.getActiveWorkbenchWindow());
-
+        selectAndRevealResource(op.getResult());
+        openFile(op.getResult());
+        
         return true;
     }
     
-    private String createPageTitle() {
+    protected void openFile(IFile file) {
+        IWorkbenchWindow window = getWorkbench().getActiveWorkbenchWindow();
+        
+        try {
+            if (window != null) {
+                IWorkbenchPage page = window.getActivePage();
+                
+                if (page != null) {
+                    IDE.openEditor(page, file, true);
+                }
+            }
+        } catch (PartInitException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+    }
+    
+    @Override
+    protected String getPageTitle() {
         return String.format(TITLE_FORMAT, type.getWizardTypeName());
+    }
+    
+    @Override
+    public NewUnitWizardPage getWizardPage() {
+        return (NewUnitWizardPage) super.getWizardPage();
+    }
+    
+    @Override
+    protected NewUnitWizardPage createWizardPage() {
+        return new NewUnitWizardPage(getPageTitle(), String.format(DESCRIPTION_FORMAT,
+                type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, getStructuredSelection());
     }
     
     private String createTypeBody() {
         if (type == WizardType.NONE) {
-            return "";
+            return DEFAULT_TYPE_BODY;
         }
         
-        return String.format(type.getFileBodyFormat(), FileCreationOp.getSimpleUnitName(page.getUnitName()));
+        return String.format(type.getFileBodyFormat(), FileCreationOp.getSimpleUnitName(getWizardPage().getUnitName()));
     }
     
     private String createPackageHeader() {
-        String pckg = page.getPackageFragment().getElementName();
+        String pckg = getWizardPage().getPackageFragment().getElementName();
         if (pckg.isEmpty()) {
-            return "";
+            return DEFAULT_PACKAGE_NAME;
         }
         
         return String.format(PACKAGE_FORMAT, pckg);
     }
-
-    @Override
-    public void addPages() {
-        super.addPages();
-
-        if (page == null) {
-            page = new NewUnitWizardPage(createPageTitle(), String.format(DESCRIPTION_FORMAT, type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, selection);
-        }
-        addPage(page);
-    }
-
+    
 }
