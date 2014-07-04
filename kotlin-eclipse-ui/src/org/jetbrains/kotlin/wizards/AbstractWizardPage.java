@@ -30,6 +30,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public abstract class AbstractWizardPage extends WizardPage implements IWizardPage {
+    
+    private static final String LABEL_TEXT_SUFFIX = ": ";
 
     protected AbstractWizardPage(String title, String description) {
         super(title);
@@ -79,7 +81,7 @@ public abstract class AbstractWizardPage extends WizardPage implements IWizardPa
 
     protected static Label createLabel(Composite parent, String text, Object layoutData) {
         Label result = new Label(parent, SWT.LEFT | SWT.WRAP);
-        result.setText(text);
+        result.setText(text + LABEL_TEXT_SUFFIX);
         result.setLayoutData(layoutData);
 
         return result;
