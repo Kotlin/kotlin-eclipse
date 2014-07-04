@@ -16,23 +16,16 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-public class NewProjectWizardPage extends WizardPage implements IWizardPage {
+public class NewProjectWizardPage extends AbstractWizardPage {
 
     private static final String DEFAULT_PROJECT_NAME = "";
     private static final String PROJECT_NAME_TITLE = "Project name: ";
@@ -46,55 +39,24 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
     private String projectLocation;
 
     protected NewProjectWizardPage(String title, String description) {
-        super(title);
-        super.setTitle(title);
-        super.setDescription(description);
+        super(title, description);
 
         projectName = DEFAULT_PROJECT_NAME;
         projectLocation = getOSWorkspaceLocation();
     }
 
     @Override
-    public void createControl(Composite parent) {
-        initializeDialogUnits(parent);
-
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setFont(parent.getFont());
-
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 4;
-        composite.setLayout(layout);
-
-        createControls(composite);
-        setControl(composite);
-
-        setPageComplete(false);
-    }
-
-    private void createControls(Composite composite) {
+    protected void createControls(Composite composite) {
         Text projectName = createNameField(composite);
-        projectName.setText(this.projectName);
         projectName.forceFocus();
 
-        Text projectLocation = createLocationField(composite);
-        projectLocation.setText(this.projectLocation);
+        createLocationField(composite);
     }
 
     private Text createNameField(Composite composite) {
-        GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        lgd.horizontalSpan = 1;
+        createLabel(composite, PROJECT_NAME_TITLE, createGridData(1, false));
 
-        Label nameLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        nameLabel.setText(PROJECT_NAME_TITLE);
-        nameLabel.setLayoutData(lgd);
-
-        GridData tgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        tgd.horizontalSpan = 2;
-        tgd.grabExcessHorizontalSpace = true;
-
-        final Text nameText = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        nameText.setLayoutData(tgd);
-        nameText.setText(projectName);
+        final Text nameText = createText(composite, projectName, createGridData(2, true));
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -103,26 +65,15 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
             }
         });
 
-        new Label(composite, SWT.NONE); // empty space
+        createEmptySpace(composite);
 
         return nameText;
     }
 
     private Text createLocationField(Composite composite) {
-        GridData lgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        lgd.horizontalSpan = 1;
+        createLabel(composite, PROJECT_LOCATION_TITLE, createGridData(1, false));
 
-        Label locationLabel = new Label(composite, SWT.LEFT | SWT.WRAP);
-        locationLabel.setText(PROJECT_LOCATION_TITLE);
-        locationLabel.setLayoutData(lgd);
-
-        GridData tgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        tgd.horizontalSpan = 2;
-        tgd.grabExcessHorizontalSpace = true;
-
-        final Text locationText = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        locationText.setLayoutData(tgd);
-
+        final Text locationText = createText(composite, projectLocation, createGridData(2, true));
         locationText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -131,18 +82,12 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
             }
         });
 
-        GridData bgd = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
-        bgd.horizontalSpan = 1;
-
-        Button selectLocationButton = new Button(composite, SWT.PUSH);
-        selectLocationButton.setText(SELECT_LOCATION_BUTTON_TITLE);
-        selectLocationButton.setLayoutData(bgd);
-        selectLocationButton.addSelectionListener(new SelectionAdapter() {
+        createButton(composite, SELECT_LOCATION_BUTTON_TITLE, createGridData(1, false), new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dd = new DirectoryDialog(getShell(), SWT.OPEN);
                 dd.setFilterPath(getOSWorkspaceLocation());
-                                
+
                 String directoryPath = dd.open();
                 if (directoryPath != null) {
                     projectLocation = directoryPath;
@@ -156,29 +101,25 @@ public class NewProjectWizardPage extends WizardPage implements IWizardPage {
         return locationText;
     }
 
-    private void validate() {
-        boolean pageCompleteStatus = false;
-        
+    @Override
+    protected String createErrorMessage() {
         if (projectName.isEmpty()) {
-            setErrorMessage(EMPTY_PROJECT_NAME_MESSAGE);
+            return EMPTY_PROJECT_NAME_MESSAGE;
         } else if (projectLocation.isEmpty()) {
-            setErrorMessage(EMPTY_PROJECT_LOCATION_MESSAGE);
+            return EMPTY_PROJECT_LOCATION_MESSAGE;
         } else if (projectExists()) {
-            setErrorMessage(PROJECT_EXISTS_MESSAGE);
+            return PROJECT_EXISTS_MESSAGE;
         } else {
-            setErrorMessage(null);
-            pageCompleteStatus = true;
+            return null;
         }
-        
-        setPageComplete(pageCompleteStatus);
     }
-    
+
     private boolean projectExists() {
         return false;
     }
 
     static String getOSWorkspaceLocation() {
-        return ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+        return getWorkspaceRoot().getLocation().toOSString();
     }
 
 }
