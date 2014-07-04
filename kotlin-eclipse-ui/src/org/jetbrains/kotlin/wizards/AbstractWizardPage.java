@@ -66,6 +66,8 @@ public abstract class AbstractWizardPage extends WizardPage implements IWizardPa
         setErrorMessage(errorMessage);
         setPageComplete(errorMessage == null);
     }
+    
+    protected abstract boolean alreadyExists();
 
     protected static IWorkspaceRoot getWorkspaceRoot() {
         return ResourcesPlugin.getWorkspace().getRoot();
