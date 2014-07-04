@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Text;
 public class NewProjectWizardPage extends AbstractWizardPage {
 
     private static final String DEFAULT_PROJECT_NAME = "";
+    
     private static final String PROJECT_NAME_LABEL_TITLE = "Project name";
     private static final String PROJECT_LOCATION_LABEL_TITLE = "Project location";
     private static final String BROWSE_BUTTON_TITLE = "...";
@@ -54,10 +55,10 @@ public class NewProjectWizardPage extends AbstractWizardPage {
         createLocationField(parent);
     }
 
-    private Text createNameField(Composite composite) {
-        createLabel(composite, PROJECT_NAME_LABEL_TITLE);
+    private Text createNameField(Composite parent) {
+        createLabel(parent, PROJECT_NAME_LABEL_TITLE);
 
-        final Text nameText = createText(composite, projectName);
+        final Text nameText = createText(parent, projectName);
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -66,15 +67,15 @@ public class NewProjectWizardPage extends AbstractWizardPage {
             }
         });
 
-        createEmptySpace(composite);
+        createEmptySpace(parent);
 
         return nameText;
     }
 
-    private Text createLocationField(Composite composite) {
-        createLabel(composite, PROJECT_LOCATION_LABEL_TITLE);
+    private Text createLocationField(Composite parent) {
+        createLabel(parent, PROJECT_LOCATION_LABEL_TITLE);
 
-        final Text locationText = createText(composite, projectLocation);
+        final Text locationText = createText(parent, projectLocation);
         locationText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -83,7 +84,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
             }
         });
 
-        createButton(composite, BROWSE_BUTTON_TITLE, new SelectionAdapter() {
+        createButton(parent, BROWSE_BUTTON_TITLE, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dd = new DirectoryDialog(getShell(), SWT.OPEN);
@@ -108,14 +109,15 @@ public class NewProjectWizardPage extends AbstractWizardPage {
             return EMPTY_PROJECT_NAME_MESSAGE;
         } else if (projectLocation.isEmpty()) {
             return EMPTY_PROJECT_LOCATION_MESSAGE;
-        } else if (projectExists()) {
+        } else if (alreadyExists()) {
             return PROJECT_EXISTS_MESSAGE;
         } else {
             return null;
         }
     }
 
-    private boolean projectExists() {
+    @Override
+    protected boolean alreadyExists() {
         return false;
     }
 
