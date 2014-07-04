@@ -60,7 +60,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
     public boolean performFinish() {
         String contents = createPackageHeader() + createTypeBody();
         FileCreationOp op = new FileCreationOp(page.getSourceDir(), page.getPackageFragment(), page.getUnitName(),
-                false, contents, getShell());
+                contents, getShell());
 
         try {
             getContainer().run(true, true, op);
