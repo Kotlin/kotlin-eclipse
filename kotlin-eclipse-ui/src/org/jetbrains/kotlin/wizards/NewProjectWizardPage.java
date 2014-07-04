@@ -46,6 +46,10 @@ public class NewProjectWizardPage extends AbstractWizardPage {
         projectName = DEFAULT_PROJECT_NAME;
         projectLocation = getOSWorkspaceLocation();
     }
+    
+    public String getProjectName() {
+        return projectName;
+    }
 
     @Override
     protected void createControls(Composite parent) {
