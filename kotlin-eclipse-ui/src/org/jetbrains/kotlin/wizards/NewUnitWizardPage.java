@@ -46,7 +46,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
 
     private static final String DEFAULT_SOURCE_FOLDER = "";
     private static final String DEFAULT_PACKAGE = "";
-    
+
     private static final String NAME_LABEL_TITLE = "Name";
     private static final String SOURCE_FOLDER_LABEL_TITLE = "Source folder";
     private static final String PACKAGE_LABEL_TITLE = "Package";
@@ -60,7 +60,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     private static final String JAVA_IDENTIFIER_REGEXP = "[a-zA-Z_]\\w*";
 
     private String unitName;
-    private String packageName = "";
+    private String packageName;
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
     private final IStructuredSelection selection;
@@ -94,11 +94,8 @@ public class NewUnitWizardPage extends AbstractWizardPage {
 
     @Override
     protected void createControls(Composite parent) {
-        Text folder = createSourceFolderField(parent);
-        folder.setText(getFolderFromSelection());
-
-        Text pkg = createPackageField(parent);
-        pkg.setText(getPackageFromSelection());
+        createSourceFolderField(parent);
+        createPackageField(parent);
 
         createSeparator(parent);
 
@@ -123,39 +120,41 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         return name;
     }
 
+    private void setSourceDirByFolderName(String folderName) {
+        try {
+            sourceDir = null;
+            for (IJavaProject jp : JavaCore.create(getWorkspaceRoot()).getJavaProjects()) {
+                for (IPackageFragmentRoot pfr : jp.getPackageFragmentRoots()) {
+                    if (pfr.getPath().toPortableString().equals(folderName)) {
+                        sourceDir = pfr;
+                        return;
+                    }
+                }
+            }
+        } catch (JavaModelException jme) {
+            KotlinLogger.logAndThrow(jme);
+        }
+    }
+
     private Text createSourceFolderField(Composite parent) {
         createLabel(parent, SOURCE_FOLDER_LABEL_TITLE);
 
-        final Text folder = createText(parent, sourceDir != null ? sourceDir.getPath().toPortableString() : DEFAULT_SOURCE_FOLDER);
+        String sourceFolderFromSelection = getSourceFolderFromSelection();
+        setSourceDirByFolderName(sourceFolderFromSelection);
+
+        final Text folder = createText(parent, sourceFolderFromSelection);
         folder.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                setSourceDir(folder.getText());
+                setSourceDirByFolderName(folder.getText());
                 validate();
-            }
-
-            private void setSourceDir(String folderName) {
-                try {
-                    sourceDir = null;
-                    for (IJavaProject jp : JavaCore.create(getWorkspaceRoot()).getJavaProjects()) {
-                        for (IPackageFragmentRoot pfr : jp.getPackageFragmentRoots()) {
-                            if (pfr.getPath().toPortableString().equals(folderName)) {
-                                sourceDir = pfr;
-                                return;
-                            }
-                        }
-                    }
-                } catch (JavaModelException jme) {
-                    KotlinLogger.logAndThrow(jme);
-                }
             }
         });
 
         createButton(parent, BROWSE_BUTTON_TITLE, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IPackageFragmentRoot pfr = getSourceContainer(getShell(), getWorkspaceRoot(),
-                        sourceDir);
+                IPackageFragmentRoot pfr = getSourceContainer(getShell(), getWorkspaceRoot(), sourceDir);
                 if (pfr != null) {
                     sourceDir = pfr;
                     String folderName = sourceDir.getPath().toPortableString();
@@ -173,7 +172,10 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     private Text createPackageField(Composite parent) {
         createLabel(parent, PACKAGE_LABEL_TITLE);
 
-        final Text pkg = createText(parent, packageName);
+        String packageFromSelection = getPackageFromSelection();
+        packageName = packageFromSelection;
+
+        final Text pkg = createText(parent, packageFromSelection);
         pkg.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -216,7 +218,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         return pkg;
     }
 
-    private String getFolderFromSelection() {
+    private String getSourceFolderFromSelection() {
         String defaultFolder = DEFAULT_SOURCE_FOLDER;
 
         if (selection.isEmpty()) {
