@@ -28,9 +28,10 @@ import org.eclipse.swt.widgets.Text;
 public class NewProjectWizardPage extends AbstractWizardPage {
 
     private static final String DEFAULT_PROJECT_NAME = "";
-    private static final String PROJECT_NAME_TITLE = "Project name: ";
-    private static final String PROJECT_LOCATION_TITLE = "Project location: ";
+    private static final String PROJECT_NAME_LABEL_TITLE = "Project name";
+    private static final String PROJECT_LOCATION_LABEL_TITLE = "Project location";
     private static final String SELECT_LOCATION_BUTTON_TITLE = "...";
+    
     private static final String EMPTY_PROJECT_NAME_MESSAGE = "Please enter a project name";
     private static final String EMPTY_PROJECT_LOCATION_MESSAGE = "Please enter a project location";
     private static final String PROJECT_EXISTS_MESSAGE = "Project already exists";
@@ -54,7 +55,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     }
 
     private Text createNameField(Composite composite) {
-        createLabel(composite, PROJECT_NAME_TITLE, createGridData(1, false));
+        createLabel(composite, PROJECT_NAME_LABEL_TITLE, createGridData(1, false));
 
         final Text nameText = createText(composite, projectName, createGridData(2, true));
         nameText.addModifyListener(new ModifyListener() {
@@ -71,7 +72,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     }
 
     private Text createLocationField(Composite composite) {
-        createLabel(composite, PROJECT_LOCATION_TITLE, createGridData(1, false));
+        createLabel(composite, PROJECT_LOCATION_LABEL_TITLE, createGridData(1, false));
 
         final Text locationText = createText(composite, projectLocation, createGridData(2, true));
         locationText.addModifyListener(new ModifyListener() {
