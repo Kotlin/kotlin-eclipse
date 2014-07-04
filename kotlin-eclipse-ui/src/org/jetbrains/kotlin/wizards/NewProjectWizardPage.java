@@ -47,11 +47,11 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     }
 
     @Override
-    protected void createControls(Composite composite) {
-        Text projectName = createNameField(composite);
+    protected void createControls(Composite parent) {
+        Text projectName = createNameField(parent);
         projectName.forceFocus();
 
-        createLocationField(composite);
+        createLocationField(parent);
     }
 
     private Text createNameField(Composite composite) {
@@ -119,7 +119,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
         return false;
     }
 
-    static String getOSWorkspaceLocation() {
+    private static String getOSWorkspaceLocation() {
         return getWorkspaceRoot().getLocation().toOSString();
     }
 

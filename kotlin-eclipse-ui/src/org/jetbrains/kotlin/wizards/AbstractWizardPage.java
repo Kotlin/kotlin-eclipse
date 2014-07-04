@@ -104,8 +104,15 @@ public abstract class AbstractWizardPage extends WizardPage implements IWizardPa
         return result;
     }
 
-    protected static Label createEmptySpace(Composite composite) {
-        return new Label(composite, SWT.NONE);
+    protected static Label createSeparator(Composite parent) {
+        Label result = new Label(parent, SWT.HORIZONTAL | SWT.SEPARATOR);
+        result.setLayoutData(createGridData(4, false));
+
+        return result;
+    }
+
+    protected static Label createEmptySpace(Composite parent) {
+        return new Label(parent, SWT.NONE);
     }
 
 }
