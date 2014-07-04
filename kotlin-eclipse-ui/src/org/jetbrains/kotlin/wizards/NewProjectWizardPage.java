@@ -30,8 +30,8 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     private static final String DEFAULT_PROJECT_NAME = "";
     private static final String PROJECT_NAME_LABEL_TITLE = "Project name";
     private static final String PROJECT_LOCATION_LABEL_TITLE = "Project location";
-    private static final String SELECT_LOCATION_BUTTON_TITLE = "...";
-    
+    private static final String BROWSE_BUTTON_TITLE = "...";
+
     private static final String EMPTY_PROJECT_NAME_MESSAGE = "Please enter a project name";
     private static final String EMPTY_PROJECT_LOCATION_MESSAGE = "Please enter a project location";
     private static final String PROJECT_EXISTS_MESSAGE = "Project already exists";
@@ -55,9 +55,9 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     }
 
     private Text createNameField(Composite composite) {
-        createLabel(composite, PROJECT_NAME_LABEL_TITLE, createGridData(1, false));
+        createLabel(composite, PROJECT_NAME_LABEL_TITLE);
 
-        final Text nameText = createText(composite, projectName, createGridData(2, true));
+        final Text nameText = createText(composite, projectName);
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -72,9 +72,9 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     }
 
     private Text createLocationField(Composite composite) {
-        createLabel(composite, PROJECT_LOCATION_LABEL_TITLE, createGridData(1, false));
+        createLabel(composite, PROJECT_LOCATION_LABEL_TITLE);
 
-        final Text locationText = createText(composite, projectLocation, createGridData(2, true));
+        final Text locationText = createText(composite, projectLocation);
         locationText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -83,7 +83,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
             }
         });
 
-        createButton(composite, SELECT_LOCATION_BUTTON_TITLE, createGridData(1, false), new SelectionAdapter() {
+        createButton(composite, BROWSE_BUTTON_TITLE, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dd = new DirectoryDialog(getShell(), SWT.OPEN);

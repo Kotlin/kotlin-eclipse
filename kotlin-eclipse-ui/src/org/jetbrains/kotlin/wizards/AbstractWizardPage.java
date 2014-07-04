@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public abstract class AbstractWizardPage extends WizardPage implements IWizardPage {
-    
+
     private static final String LABEL_TEXT_SUFFIX = ": ";
 
     protected AbstractWizardPage(String title, String description) {
@@ -71,7 +71,7 @@ public abstract class AbstractWizardPage extends WizardPage implements IWizardPa
         return ResourcesPlugin.getWorkspace().getRoot();
     }
 
-    protected static GridData createGridData(int horizontalSpan, boolean grabExcessHorizontalSpace) {
+    private static GridData createGridData(int horizontalSpan, boolean grabExcessHorizontalSpace) {
         GridData result = new GridData(GridData.HORIZONTAL_ALIGN_FILL);
         result.horizontalSpan = horizontalSpan;
         result.grabExcessHorizontalSpace = grabExcessHorizontalSpace;
@@ -79,27 +79,26 @@ public abstract class AbstractWizardPage extends WizardPage implements IWizardPa
         return result;
     }
 
-    protected static Label createLabel(Composite parent, String text, Object layoutData) {
+    protected static Label createLabel(Composite parent, String text) {
         Label result = new Label(parent, SWT.LEFT | SWT.WRAP);
         result.setText(text + LABEL_TEXT_SUFFIX);
-        result.setLayoutData(layoutData);
+        result.setLayoutData(createGridData(1, false));
 
         return result;
     }
 
-    protected static Text createText(Composite parent, String text, Object layoutData) {
+    protected static Text createText(Composite parent, String text) {
         Text result = new Text(parent, SWT.SINGLE | SWT.BORDER);
         result.setText(text);
-        result.setLayoutData(layoutData);
+        result.setLayoutData(createGridData(2, true));
 
         return result;
     }
 
-    protected static Button createButton(Composite parent, String text, Object layoutData,
-            SelectionListener selectionListener) {
+    protected static Button createButton(Composite parent, String text, SelectionListener selectionListener) {
         Button result = new Button(parent, SWT.PUSH);
         result.setText(text);
-        result.setLayoutData(layoutData);
+        result.setLayoutData(createGridData(1, false));
         result.addSelectionListener(selectionListener);
 
         return result;
