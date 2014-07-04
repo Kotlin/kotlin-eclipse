@@ -38,19 +38,15 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 class FileCreationOp implements IRunnableWithProgress {
 
+    private final static String EXT = ".kt";
+    
     private final IPackageFragmentRoot sourceDir;
     private final IPackageFragment packageFragment;
     private final String unitName;
     private final String contents;
     private final Shell shell;
 
-    private final static String EXT = ".kt";
-
     private IFile result;
-
-    IFile getResult() {
-        return result;
-    }
 
     FileCreationOp(IPackageFragmentRoot sourceDir, IPackageFragment packageFragment, String unitName,
             boolean includePreamble, String contents, Shell shell) {
@@ -59,6 +55,10 @@ class FileCreationOp implements IRunnableWithProgress {
         this.contents = contents;
         this.shell = shell;
         this.unitName = unitName;
+    }
+    
+    public IFile getResult() {
+        return result;
     }
 
     @Override

@@ -26,13 +26,13 @@ public class ProjectCreationOp implements IRunnableWithProgress {
     
     private IProject result;
     
-    IProject getResult() {
+    public IProject getResult() {
         return result;
     }
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-
+        // TODO: add project creation
     }
 
 }
