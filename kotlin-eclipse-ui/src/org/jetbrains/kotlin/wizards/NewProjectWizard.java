@@ -16,48 +16,35 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.ui.INewWizard;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
-public class NewProjectWizard extends Wizard implements INewWizard {
+public class NewProjectWizard extends AbstractWizard {
 
     private static final String TITLE = "Kotlin project";
     private static final String DESCRIPTION = "Create a new Kotlin project";
 
-    private IWorkbench workbench;
-    private NewProjectWizardPage page;
-
-    public NewProjectWizard() {
-
-    }
-
-    @Override
-    public void init(IWorkbench workbench, IStructuredSelection selection) {
-        this.workbench = workbench;
-        this.setWindowTitle(TITLE);
-    }
-
     @Override
     public boolean performFinish() {
-        ProjectCreationOp op = new ProjectCreationOp();
-
-        BasicNewResourceWizard.selectAndReveal(op.getResult(), workbench.getActiveWorkbenchWindow());
+        ProjectCreationOp op = new ProjectCreationOp(null, getWizardPage().getProjectName(), getShell());
+        performOperation(op);
+        
+        selectAndRevealResource(op.getResult());
 
         return true;
     }
 
     @Override
-    public void addPages() {
-        super.addPages();
+    protected String getPageTitle() {
+        return TITLE;
+    }
 
-        if (page == null) {
-            page = new NewProjectWizardPage(TITLE, DESCRIPTION);
-        }
+    @Override
+    public NewProjectWizardPage getWizardPage() {
+        return (NewProjectWizardPage) super.getWizardPage();
+    }
 
-        addPage(page);
+    @Override
+    protected NewProjectWizardPage createWizardPage() {
+        return new NewProjectWizardPage(TITLE, DESCRIPTION);
     }
 
 }
