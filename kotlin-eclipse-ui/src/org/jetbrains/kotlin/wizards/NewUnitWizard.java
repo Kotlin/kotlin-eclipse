@@ -106,15 +106,4 @@ public class NewUnitWizard extends AbstractWizard {
         return String.format(PACKAGE_FORMAT, pckg);
     }
 
-    @Override
-    public void addPages() {
-        super.addPages();
-
-        if (page == null) {
-            page = new NewUnitWizardPage(createPageTitle(), String.format(DESCRIPTION_FORMAT,
-                    type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, selection);
-        }
-        addPage(page);
-    }
-
 }
