@@ -19,6 +19,11 @@ package org.jetbrains.kotlin.wizards;
 import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
 import static org.jetbrains.kotlin.wizards.FileCreationOp.fileExists;
 import static org.jetbrains.kotlin.wizards.FileCreationOp.makeFile;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createButton;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createEmptySpace;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createLabel;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createSeparator;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createText;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
