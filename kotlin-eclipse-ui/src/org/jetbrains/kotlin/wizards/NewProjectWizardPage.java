@@ -16,6 +16,11 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createButton;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createEmptySpace;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createLabel;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createText;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -28,7 +33,7 @@ import org.eclipse.swt.widgets.Text;
 public class NewProjectWizardPage extends AbstractWizardPage {
 
     private static final String DEFAULT_PROJECT_NAME = "";
-    
+
     private static final String PROJECT_NAME_LABEL_TITLE = "Project name";
     private static final String PROJECT_LOCATION_LABEL_TITLE = "Project location";
     private static final String BROWSE_BUTTON_TITLE = "...";
@@ -46,7 +51,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
         projectName = DEFAULT_PROJECT_NAME;
         projectLocation = getOSWorkspaceLocation();
     }
-    
+
     public String getProjectName() {
         return projectName;
     }
