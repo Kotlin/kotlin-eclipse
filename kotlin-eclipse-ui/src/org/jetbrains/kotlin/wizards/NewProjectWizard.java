@@ -24,8 +24,13 @@ public class NewProjectWizard extends AbstractWizard {
 
     @Override
     public boolean performFinish() {
-        ProjectCreationOp op = new ProjectCreationOp(null, getWizardPage().getProjectName(), getShell());
+        NewProjectWizardPage page = getWizardPage();
+        
+        ProjectCreationOp op = new ProjectCreationOp(page.getProjectName(), page.getProjectLocation(), getShell());
         performOperation(op);
+        
+        addNatureToProject(op.getResult());
+        addBuilderToProject(op.getResult());
         
         selectAndRevealResource(op.getResult());
 
