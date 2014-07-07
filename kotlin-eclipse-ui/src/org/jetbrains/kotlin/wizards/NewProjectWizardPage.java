@@ -21,6 +21,8 @@ import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createEmptySpace;
 import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createLabel;
 import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createText;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -54,6 +56,10 @@ public class NewProjectWizardPage extends AbstractWizardPage {
 
     public String getProjectName() {
         return projectName;
+    }
+    
+    public String getProjectLocation() {
+        return projectLocation;
     }
 
     @Override
@@ -127,6 +133,12 @@ public class NewProjectWizardPage extends AbstractWizardPage {
 
     @Override
     protected boolean alreadyExists() {
+        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            if (project.getName().equals(projectName)) {
+                return true;
+            }
+        }
+        
         return false;
     }
 
