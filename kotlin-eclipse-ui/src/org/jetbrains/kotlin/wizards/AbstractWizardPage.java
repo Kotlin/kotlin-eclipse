@@ -16,15 +16,17 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createComposite;
+
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
 public abstract class AbstractWizardPage extends WizardPage implements IWizardPage {
+    
+    protected static final String BROWSE_BUTTON_TITLE = "Browse...";
 
     protected AbstractWizardPage(String title, String description) {
         super(title);
@@ -36,13 +38,7 @@ public abstract class AbstractWizardPage extends WizardPage implements IWizardPa
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setFont(parent.getFont());
-
-        GridLayout layout = new GridLayout();
-        layout.numColumns = 4;
-        composite.setLayout(layout);
-
+        Composite composite = createComposite(parent);
         createControls(composite);
         setControl(composite);
 

@@ -19,13 +19,16 @@ package org.jetbrains.kotlin.wizards;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 public class SWTWizardUtils {
 
+    private static final int NUM_COLUMNS = 4;
     private static final String LABEL_TEXT_SUFFIX = ": ";
 
     private static GridData createGridData(int horizontalSpan, boolean grabExcessHorizontalSpace) {
@@ -34,6 +37,46 @@ public class SWTWizardUtils {
         result.grabExcessHorizontalSpace = grabExcessHorizontalSpace;
 
         return result;
+    }
+
+    private static Button createButton(Composite parent, String text, SelectionListener selectionListener, int style,
+            int horizontalSpan, boolean grabExcessHorizontalSpace) {
+        Button result = new Button(parent, style);
+        result.setText(text);
+        result.setLayoutData(createGridData(horizontalSpan, grabExcessHorizontalSpace));
+        if (selectionListener != null) {
+            result.addSelectionListener(selectionListener);
+        }
+
+        return result;
+    }
+
+    private static GridLayout createGridLayout() {
+        GridLayout result = new GridLayout();
+        result.numColumns = NUM_COLUMNS;
+
+        return result;
+    }
+
+    public static Composite createComposite(Composite parent) {
+        Composite result = new Composite(parent, SWT.NONE);
+        result.setFont(parent.getFont());
+        result.setLayout(createGridLayout());
+
+        return result;
+    }
+
+    public static Group createGroup(Composite parent, String text) {
+        Group result = new Group(parent, SWT.SHADOW_ETCHED_IN);
+        result.setText(text);
+        result.setLayout(createGridLayout());
+        result.setLayoutData(createGridData(NUM_COLUMNS, true));
+
+        return result;
+    }
+
+    public static Button createCheckbox(Composite parent, String text) {
+        return createButton(parent, text, null, SWT.CHECK, NUM_COLUMNS, true);
     }
 
     public static Label createLabel(Composite parent, String text) {
@@ -53,17 +96,12 @@ public class SWTWizardUtils {
     }
 
     public static Button createButton(Composite parent, String text, SelectionListener selectionListener) {
-        Button result = new Button(parent, SWT.PUSH);
-        result.setText(text);
-        result.setLayoutData(createGridData(1, false));
-        result.addSelectionListener(selectionListener);
-
-        return result;
+        return createButton(parent, text, selectionListener, SWT.PUSH, 1, false);
     }
 
     public static Label createSeparator(Composite parent) {
         Label result = new Label(parent, SWT.HORIZONTAL | SWT.SEPARATOR);
-        result.setLayoutData(createGridData(4, false));
+        result.setLayoutData(createGridData(NUM_COLUMNS, false));
 
         return result;
     }
