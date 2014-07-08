@@ -17,28 +17,33 @@
 package org.jetbrains.kotlin.wizards;
 
 import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createButton;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createCheckbox;
 import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createEmptySpace;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createGroup;
 import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createLabel;
 import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createText;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 
 public class NewProjectWizardPage extends AbstractWizardPage {
 
     private static final String DEFAULT_PROJECT_NAME = "";
+    private static final String DEFAULT_PROJECT_LOCATION = "";
 
     private static final String PROJECT_NAME_LABEL_TITLE = "Project name";
+    private static final String LOCATION_GROUP_TITLE = "Location";
+    private static final String PROJECT_LOCATION_CHECKBOX_TITLE = "Use default location";
     private static final String PROJECT_LOCATION_LABEL_TITLE = "Project location";
-    private static final String BROWSE_BUTTON_TITLE = "...";
 
     private static final String EMPTY_PROJECT_NAME_MESSAGE = "Please enter a project name";
     private static final String EMPTY_PROJECT_LOCATION_MESSAGE = "Please enter a project location";
@@ -57,7 +62,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     public String getProjectName() {
         return projectName;
     }
-    
+
     public String getProjectLocation() {
         return projectLocation;
     }
@@ -65,15 +70,35 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     @Override
     protected void createControls(Composite parent) {
         Text projectName = createNameField(parent);
-        projectName.forceFocus();
+        projectName.forceFocus();       
 
-        createLocationField(parent);
+        Group group = createGroup(parent, LOCATION_GROUP_TITLE);
+
+        final Button checkbox = createCheckbox(group, PROJECT_LOCATION_CHECKBOX_TITLE);
+        checkbox.setSelection(true);
+
+        final Text locationField = createLocationField(group);
+        locationField.setEnabled(false);
+
+        checkbox.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean selection = checkbox.getSelection();
+
+                locationField.setText(selection ? DEFAULT_PROJECT_LOCATION : projectLocation);
+                if (selection) {
+                    projectLocation = getOSWorkspaceLocation();
+                }
+
+                locationField.setEnabled(!selection);
+            }
+        });
     }
 
     private Text createNameField(Composite parent) {
         createLabel(parent, PROJECT_NAME_LABEL_TITLE);
 
-        final Text nameText = createText(parent, projectName);
+        final Text nameText = createText(parent, DEFAULT_PROJECT_NAME);
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -90,7 +115,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     private Text createLocationField(Composite parent) {
         createLabel(parent, PROJECT_LOCATION_LABEL_TITLE);
 
-        final Text locationText = createText(parent, projectLocation);
+        final Text locationText = createText(parent, DEFAULT_PROJECT_LOCATION);
         locationText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -103,7 +128,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dd = new DirectoryDialog(getShell(), SWT.OPEN);
-                dd.setFilterPath(getOSWorkspaceLocation());
+                dd.setFilterPath(locationText.getText());
 
                 String directoryPath = dd.open();
                 if (directoryPath != null) {
@@ -133,12 +158,12 @@ public class NewProjectWizardPage extends AbstractWizardPage {
 
     @Override
     protected boolean alreadyExists() {
-        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+        for (IProject project : getWorkspaceRoot().getProjects()) {
             if (project.getName().equals(projectName)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
