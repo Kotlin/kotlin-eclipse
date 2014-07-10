@@ -57,24 +57,13 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     private final static String KT_HOME = getKtHome();
     private final static String KT_COMPILER_PATH = buildLibPath("kotlin-compiler");
     public final static String KT_JDK_ANNOTATIONS_PATH = buildLibPath("kotlin-jdk-annotations");
-    
+
     public final static String KT_RUNTIME_FILENAME = buildLibName("kotlin-runtime");
     public final static String KT_RUNTIME_PATH = buildLibPath("kotlin-runtime");
 
     private final CompilerOutputData compilerOutput = new CompilerOutputData();
 
-    private boolean buildFailed = false;   
-    
-    private static String getKtHome() {
-        try {
-            Bundle compilerBundle = Platform.getBundle("org.jetbrains.kotlin.bundled-compiler");
-            return FileLocator.toFileURL(compilerBundle.getEntry("/")).getFile();
-        } catch (IOException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-
-        return null;
-    }
+    private boolean buildFailed = false;
 
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
@@ -240,11 +229,22 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 
         return ".";
     }
-    
+
+    private static String getKtHome() {
+        try {
+            Bundle compilerBundle = Platform.getBundle("org.jetbrains.kotlin.bundled-compiler");
+            return FileLocator.toFileURL(compilerBundle.getEntry("/")).getFile();
+        } catch (IOException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+
+        return null;
+    }
+
     private static String buildLibName(String libName) {
         return LIB_FOLDER + System.getProperty("file.separator") + libName + "." + LIB_EXTENSION;
     }
-    
+
     private static String buildLibPath(String libName) {
         return KT_HOME + buildLibName(libName);
     }
