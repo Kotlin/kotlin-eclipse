@@ -45,7 +45,7 @@ public class ProjectUtils {
                 return file;
             }
         }
-                
+        
         return null;
     }
     
@@ -83,7 +83,7 @@ public class ProjectUtils {
     @NotNull
     public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> srcDirectories = new ArrayList<File>();
-
+        
         IClasspathEntry[] classPathEntries = javaProject.getRawClasspath();
         IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
         for (IClasspathEntry classPathEntry : classPathEntries) {
@@ -119,12 +119,10 @@ public class ProjectUtils {
                 String classpath = classpathEntry.getPath().toPortableString();
                 File file = new File(classpath);
                 
-                if (!file.isAbsolute()) {
-                    if (classpathEntry.getPath().segment(0).equals(projectName)) {
-                        file = new File(rootDirectory.removeLastSegments(1).toPortableString() + classpath);
-                    } else {
-                        file = new File(rootDirectory.toPortableString() + classpath);
-                    }
+                if (classpathEntry.getPath().segment(0).equals(projectName)) {
+                    file = new File(rootDirectory.removeLastSegments(1).toPortableString() + classpath);
+                } else if (!file.isAbsolute()) {
+                    file = new File(rootDirectory.toPortableString() + classpath);
                 }
                 
                 libDirectories.add(file);
