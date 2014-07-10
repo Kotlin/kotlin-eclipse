@@ -34,11 +34,12 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
+import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 class FileCreationOp implements IRunnableWithProgress {
 
-    private final static String EXT = ".kt";
+    private final static String EXT = "." + JetFileType.INSTANCE.getDefaultExtension();
 
     private final IPackageFragmentRoot sourceDir;
     private final IPackageFragment packageFragment;
