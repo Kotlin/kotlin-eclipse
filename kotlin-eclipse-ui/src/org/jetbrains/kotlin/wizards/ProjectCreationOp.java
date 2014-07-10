@@ -36,7 +36,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
@@ -116,6 +118,13 @@ public class ProjectCreationOp implements IRunnableWithProgress {
 
         return result;
     }
+    
+    private static IClasspathEntry createKotlinRuntimeEntry() {
+        return new ClasspathEntry(IPackageFragmentRoot.K_BINARY, IClasspathEntry.CPE_LIBRARY, new Path(
+                LaunchConfigurationDelegate.KT_RUNTIME_FILENAME), ClasspathEntry.INCLUDE_ALL,
+                ClasspathEntry.EXCLUDE_NONE, null, null, null, false, ClasspathEntry.NO_ACCESS_RULES, false,
+                ClasspathEntry.NO_EXTRA_ATTRIBUTES);
+    }
 
     private static IJavaProject buildJavaProject(IProject project) throws CoreException, FileNotFoundException {
         IJavaProject result = JavaCore.create(project);
@@ -131,7 +140,7 @@ public class ProjectCreationOp implements IRunnableWithProgress {
             srcFolder.create(false, true, null);
         }
 
-        IFolder libFolder = project.getFolder(LaunchConfigurationDelegate.KT_RUNTIME_FOLDER);
+        IFolder libFolder = project.getFolder(LaunchConfigurationDelegate.LIB_FOLDER);
         if (!libFolder.exists()) {
             libFolder.create(false, true, null);
         }
@@ -142,13 +151,11 @@ public class ProjectCreationOp implements IRunnableWithProgress {
             kotlinRuntime.create(new FileInputStream(kotlinRuntimeJarFile.getFullPath().toOSString()), true, null);
         }
 
-        // new Path("./" + LaunchConfigurationDelegate.KT_RUNTIME_FILENAME);
-        result.setRawClasspath(
-                new IClasspathEntry[] { JavaCore.newContainerEntry(new Path(JavaRuntime.JRE_CONTAINER)),
-                        JavaCore.newSourceEntry(result.getPackageFragmentRoot(srcFolder).getPath()),
-                        JavaCore.newLibraryEntry(kotlinRuntime.getLocation(), null, null, true) }, null);
+        result.setRawClasspath(new IClasspathEntry[] {
+                JavaCore.newContainerEntry(new Path(JavaRuntime.JRE_CONTAINER)),
+                JavaCore.newSourceEntry(result.getPackageFragmentRoot(srcFolder).getPath()),
+                createKotlinRuntimeEntry() }, null);
 
         return result;
     }
-
 }

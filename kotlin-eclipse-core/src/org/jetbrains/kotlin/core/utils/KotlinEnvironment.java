@@ -68,76 +68,78 @@ import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 import com.intellij.psi.impl.file.impl.JavaFileManager;
 
 public class KotlinEnvironment {
-    
-    private static final Disposable DISPOSABLE = new Disposable() {        
+
+    private static final Disposable DISPOSABLE = new Disposable() {
         @Override
         public void dispose() {
         }
     };
-    
+
     private static final ConcurrentMap<IJavaProject, KotlinEnvironment> cachedEnvironment = new ConcurrentHashMap<>();
-    
+
     private final JavaCoreApplicationEnvironment applicationEnvironment;
     private final JavaCoreProjectEnvironment projectEnvironment;
     private final MockProject project;
     private final IJavaProject javaProject;
-    
+
     private final ClassPath classPath = new ClassPath();
-    
+
     private KotlinEnvironment(@NotNull IJavaProject javaProject) {
         this.javaProject = javaProject;
-        
+
         applicationEnvironment = createJavaCoreApplicationEnvironment();
-        
+
         projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
-        
+
         project = projectEnvironment.getProject();
-        
-        CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(project.getComponent(PsiManager.class));
+
+        CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(
+                project.getComponent(PsiManager.class));
         project.registerService(ExternalAnnotationsManager.class, annotationsManager);
-        project.registerService(CoreJavaFileManager.class, (CoreJavaFileManager) ServiceManager.getService(project, JavaFileManager.class));
-        
-        VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS));
+        project.registerService(CoreJavaFileManager.class,
+                (CoreJavaFileManager) ServiceManager.getService(project, JavaFileManager.class));
+
+        VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(
+                LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS_PATH));
         annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
-        
+
         addJreClasspath();
-        addKotlinRuntime();
         addSourcesToClasspath();
         addLibsToClasspath();
-        
+
         project.registerService(VirtualFileFinder.class, new CliVirtualFileFinder(classPath));
-        
+
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME,
                 ClsCustomNavigationPolicy.class);
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
                 ClassFileDecompilers.Decompiler.class);
-        
-        cachedEnvironment.put(javaProject, this);   
+
+        cachedEnvironment.put(javaProject, this);
     }
-    
+
     @NotNull
     public static KotlinEnvironment getEnvironment(IJavaProject javaProject) {
         if (!cachedEnvironment.containsKey(javaProject)) {
             cachedEnvironment.put(javaProject, new KotlinEnvironment(javaProject));
         }
-        
+
         return cachedEnvironment.get(javaProject);
     }
-    
+
     public static void updateKotlinEnvironment(IJavaProject javaProject) {
         cachedEnvironment.put(javaProject, new KotlinEnvironment(javaProject));
     }
-    
+
     @Nullable
     public JetFile getJetFile(@NotNull IFile file) {
         return getJetFile(new File(file.getRawLocation().toOSString()));
     }
-    
+
     @Nullable
     public JetFile getJetFile(@NotNull File file) {
         String path = file.getAbsolutePath();
         VirtualFile virtualFile = applicationEnvironment.getLocalFileSystem().findFileByPath(path);
-        
+
         PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
         if (psiFile != null && psiFile instanceof JetFile) {
             return (JetFile) psiFile;
@@ -145,7 +147,7 @@ public class KotlinEnvironment {
 
         return null;
     }
-    
+
     @Nullable
     public JetFile parseTopLevelDeclaration(@NotNull String text) {
         try {
@@ -154,32 +156,34 @@ public class KotlinEnvironment {
             BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
             bw.write(text);
             bw.close();
-            
+
             return getJetFile(tempFile);
         } catch (IOException e) {
             KotlinLogger.logError(e);
             throw new IllegalStateException(e);
         }
     }
-    
+
     private JavaCoreApplicationEnvironment createJavaCoreApplicationEnvironment() {
         JavaCoreApplicationEnvironment javaApplicationEnvironment = new JavaCoreApplicationEnvironment(DISPOSABLE);
-        
+
         // ability to get text from annotations xml files
         javaApplicationEnvironment.registerFileType(PlainTextFileType.INSTANCE, "xml");
-        
+
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "jet");
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "ktm");
-        
+
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
 
-        javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class, new CompilerModeProvider());
-        javaApplicationEnvironment.getApplication().registerService(KotlinBinaryClassCache.class, new KotlinBinaryClassCache());
-        
+        javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class,
+                new CompilerModeProvider());
+        javaApplicationEnvironment.getApplication().registerService(KotlinBinaryClassCache.class,
+                new KotlinBinaryClassCache());
+
         return javaApplicationEnvironment;
     }
-    
+
     private void addLibsToClasspath() {
         try {
             List<File> libDirectories = ProjectUtils.getLibDirectories(javaProject);
@@ -192,7 +196,7 @@ public class KotlinEnvironment {
             KotlinLogger.logAndThrow(e);
         }
     }
-    
+
     private void addSourcesToClasspath() {
         try {
             List<File> srcDirectories = ProjectUtils.getSrcDirectories(javaProject);
@@ -205,14 +209,6 @@ public class KotlinEnvironment {
             KotlinLogger.logAndThrow(e);
         }
     }
-    
-    private void addKotlinRuntime() {
-        try {
-            addToClasspath(new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH));
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
 
     private void addJreClasspath() {
         try {
@@ -220,15 +216,14 @@ public class KotlinEnvironment {
             if (computeJREEntry == null) {
                 return;
             }
-            
-            IRuntimeClasspathEntry[] jreEntries = JavaRuntime.resolveRuntimeClasspathEntry(computeJREEntry,
-                    javaProject);
+
+            IRuntimeClasspathEntry[] jreEntries = JavaRuntime.resolveRuntimeClasspathEntry(computeJREEntry, javaProject);
 
             if (jreEntries.length != 0) {
                 for (IRuntimeClasspathEntry jreEntry : jreEntries) {
                     addToClasspath(jreEntry.getClasspathEntry().getPath().toFile());
                 }
-                
+
                 return;
             }
         } catch (JavaModelException e) {
@@ -237,21 +232,21 @@ public class KotlinEnvironment {
             KotlinLogger.logAndThrow(e);
         }
     }
-    
+
     @NotNull
     public Project getProject() {
         return project;
     }
-    
+
     public JavaCoreProjectEnvironment getProjectEnvironment() {
         return projectEnvironment;
     }
-    
+
     @NotNull
     public JavaCoreApplicationEnvironment getJavaApplicationEnvironment() {
         return applicationEnvironment;
     }
-    
+
     private void addToClasspath(File path) throws CoreException {
         if (path.isFile()) {
             VirtualFile jarFile = applicationEnvironment.getJarFileSystem().findFileByPath(path + "!/");
@@ -260,8 +255,7 @@ public class KotlinEnvironment {
             }
             projectEnvironment.addJarToClassPath(path);
             classPath.add(jarFile);
-        }
-        else {
+        } else {
             VirtualFile root = applicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath());
             if (root == null) {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));

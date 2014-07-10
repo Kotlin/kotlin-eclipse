@@ -51,16 +51,19 @@ import org.osgi.framework.Bundle;
 
 public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
 
-    private final static String KT_COMPILER = "kotlin-compiler.jar";
+    public final static String LIB_FOLDER = "lib";
+    private final static String LIB_EXTENSION = "jar";
+
     private final static String KT_HOME = getKtHome();
-    public final static String KT_RUNTIME_FOLDER = "lib";
-    public final static String KT_RUNTIME_FILENAME = KT_RUNTIME_FOLDER + System.getProperty("file.separator") + "kotlin-runtime.jar";
-    public final static String KT_RUNTIME_PATH = KT_HOME + KT_RUNTIME_FILENAME;
-    public final static String KT_JDK_ANNOTATIONS = KT_HOME + KT_RUNTIME_FOLDER + System.getProperty("file.separator") + "kotlin-jdk-annotations.jar";
+    private final static String KT_COMPILER_PATH = buildLibPath("kotlin-compiler");
+    public final static String KT_JDK_ANNOTATIONS_PATH = buildLibPath("kotlin-jdk-annotations");
     
+    public final static String KT_RUNTIME_FILENAME = buildLibName("kotlin-runtime");
+    public final static String KT_RUNTIME_PATH = buildLibPath("kotlin-runtime");
+
     private final CompilerOutputData compilerOutput = new CompilerOutputData();
-    
-    private boolean buildFailed = false;
+
+    private boolean buildFailed = false;   
     
     private static String getKtHome() {
         try {
@@ -69,68 +72,70 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         } catch (IOException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
+
         return null;
     }
-    
+
     @Override
-    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
+    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
+            throws CoreException {
         String projectName = getJavaProjectName(configuration);
 
         if (projectName == null) {
-            abort("Project name is invalid: " + projectName, null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
-            
+            abort("Project name is invalid: " + projectName, null,
+                    IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
+
             return;
         }
-        
+
         List<IFile> projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(projectName);
-        
+
         if (!compileKotlinFiles(projectFiles, configuration)) {
             IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 1, "", null);
             IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(status);
-            
+
             if (handler != null) {
                 handler.handleStatus(status, compilerOutput);
             }
-            
+
             return;
         }
-        
+
         super.launch(configuration, mode, launch, monitor);
     }
-    
+
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
         String[] oldClasspath = super.getClasspath(configuration);
-        String[] newClasspath = new String[oldClasspath.length + 2];
+        String[] newClasspath = new String[oldClasspath.length + 1];
         System.arraycopy(oldClasspath, 0, newClasspath, 0, oldClasspath.length);
-        
-        newClasspath[oldClasspath.length] = KT_RUNTIME_PATH;
-        newClasspath[oldClasspath.length + 1] = KT_JDK_ANNOTATIONS;
-        
+
+        newClasspath[oldClasspath.length] = KT_JDK_ANNOTATIONS_PATH;
+
         return newClasspath;
     }
-    
+
     @Override
     public String verifyMainTypeName(ILaunchConfiguration configuration) throws CoreException {
         try {
             return getPackageClassName(configuration).toString();
         } catch (IllegalArgumentException e) {
-            abort("File with main method not defined", null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_MAIN_TYPE);
+            abort("File with main method not defined", null,
+                    IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_MAIN_TYPE);
         }
-        
+
         return null;
     }
-    
+
     @NotNull
     private FqName getPackageClassName(ILaunchConfiguration configuration) {
         try {
             String projectName = getJavaProjectName(configuration);
             String mainTypeName = getMainTypeName(configuration);
-            
+
             assert projectName != null;
             assert mainTypeName != null;
-            
+
             FqName mainClassName = new FqName(mainTypeName);
             for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(projectName)) {
                 if (ProjectUtils.hasMain(file) && ProjectUtils.createPackageClassName(file).equalsTo(mainClassName)) {
@@ -140,56 +145,59 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         } catch (CoreException e) {
             KotlinLogger.logError(e);
         }
-        
+
         throw new IllegalArgumentException();
     }
-    
+
     private void refreshInitData() {
         buildFailed = false;
         compilerOutput.clear();
     }
-    
-    private boolean compileKotlinFiles(@NotNull List<IFile> files, @NotNull ILaunchConfiguration configuration) throws CoreException {
+
+    private boolean compileKotlinFiles(@NotNull List<IFile> files, @NotNull ILaunchConfiguration configuration)
+            throws CoreException {
         List<String> command = configureBuildCommand(configuration);
-        
+
         refreshInitData();
         try {
             Process buildProcess = Runtime.getRuntime().exec(command.toArray(new String[command.size()]));
             parseCompilerOutput(buildProcess.getInputStream());
-            
+
             buildProcess.waitFor();
-            
+
             if (buildFailed) {
                 return false;
             }
         } catch (IOException | InterruptedException e) {
             KotlinLogger.logError(e);
-            
+
             abort("Build error", null, 0);
         }
-        
+
         return true;
     }
-    
+
     private void parseCompilerOutput(InputStream inputStream) {
         MessageCollector messageCollector = new MessageCollector() {
             @Override
-            public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message, @NotNull CompilerMessageLocation messageLocation) {
-                if (CompilerMessageSeverity.ERROR.equals(messageSeverity) || CompilerMessageSeverity.EXCEPTION.equals(messageLocation)) {
+            public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message,
+                    @NotNull CompilerMessageLocation messageLocation) {
+                if (CompilerMessageSeverity.ERROR.equals(messageSeverity)
+                        || CompilerMessageSeverity.EXCEPTION.equals(messageLocation)) {
                     buildFailed = true;
                 }
-                
+
                 compilerOutput.add(messageSeverity, message, messageLocation);
             }
         };
         CompilerOutputParser.parseCompilerMessagesFromReader(messageCollector, new InputStreamReader(inputStream));
     }
-    
+
     private List<String> configureBuildCommand(ILaunchConfiguration configuration) throws CoreException {
         List<String> command = new ArrayList<String>();
         command.add("java");
         command.add("-cp");
-        command.add(KT_HOME + "lib/" + KT_COMPILER);
+        command.add(KT_COMPILER_PATH);
         command.add(K2JVMCompiler.class.getCanonicalName());
         command.add("-kotlinHome");
         command.add(KT_HOME);
@@ -199,28 +207,28 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         String pathSeparator = System.getProperty("path.separator");
         IJavaProject javaProject = getJavaProject(configuration);
         StringBuilder srcDirectories = new StringBuilder();
-        
+
         for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
             srcDirectories.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
             classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
         }
-        
+
         for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
             classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
         }
-        
+
         command.add("-src");
         command.add(srcDirectories.toString());
-        
+
         command.add("-classpath");
         command.add(classPath.toString());
-        
+
         command.add("-output");
         command.add(getOutputDir(configuration));
-        
+
         return command;
     }
-    
+
     private String getOutputDir(ILaunchConfiguration configuration) {
         try {
             String[] cp = getClasspath(configuration);
@@ -229,7 +237,15 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         } catch (CoreException e) {
             KotlinLogger.logError(e);
         }
-        
+
         return ".";
+    }
+    
+    private static String buildLibName(String libName) {
+        return LIB_FOLDER + System.getProperty("file.separator") + libName + "." + LIB_EXTENSION;
+    }
+    
+    private static String buildLibPath(String libName) {
+        return KT_HOME + buildLibName(libName);
     }
 }
