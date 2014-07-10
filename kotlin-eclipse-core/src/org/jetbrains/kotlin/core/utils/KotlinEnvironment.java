@@ -68,7 +68,7 @@ import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 import com.intellij.psi.impl.file.impl.JavaFileManager;
 
 public class KotlinEnvironment {
-
+    
     private static final Disposable DISPOSABLE = new Disposable() {
         @Override
         public void dispose() {
@@ -92,13 +92,13 @@ public class KotlinEnvironment {
         projectEnvironment = new JavaCoreProjectEnvironment(DISPOSABLE, applicationEnvironment);
 
         project = projectEnvironment.getProject();
-
+        
         CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(
                 project.getComponent(PsiManager.class));
         project.registerService(ExternalAnnotationsManager.class, annotationsManager);
         project.registerService(CoreJavaFileManager.class,
                 (CoreJavaFileManager) ServiceManager.getService(project, JavaFileManager.class));
-
+        
         VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(
                 LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS_PATH));
         annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
@@ -113,7 +113,7 @@ public class KotlinEnvironment {
                 ClsCustomNavigationPolicy.class);
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
                 ClassFileDecompilers.Decompiler.class);
-
+        
         cachedEnvironment.put(javaProject, this);
     }
 
@@ -144,7 +144,7 @@ public class KotlinEnvironment {
         if (psiFile != null && psiFile instanceof JetFile) {
             return (JetFile) psiFile;
         }
-
+        
         return null;
     }
 
@@ -175,12 +175,12 @@ public class KotlinEnvironment {
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "ktm");
 
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
-
+        
         javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class,
                 new CompilerModeProvider());
         javaApplicationEnvironment.getApplication().registerService(KotlinBinaryClassCache.class,
                 new KotlinBinaryClassCache());
-
+        
         return javaApplicationEnvironment;
     }
 
@@ -209,16 +209,16 @@ public class KotlinEnvironment {
             KotlinLogger.logAndThrow(e);
         }
     }
-
+    
     private void addJreClasspath() {
         try {
             IRuntimeClasspathEntry computeJREEntry = JavaRuntime.computeJREEntry(javaProject);
             if (computeJREEntry == null) {
                 return;
             }
-
+            
             IRuntimeClasspathEntry[] jreEntries = JavaRuntime.resolveRuntimeClasspathEntry(computeJREEntry, javaProject);
-
+            
             if (jreEntries.length != 0) {
                 for (IRuntimeClasspathEntry jreEntry : jreEntries) {
                     addToClasspath(jreEntry.getClasspathEntry().getPath().toFile());

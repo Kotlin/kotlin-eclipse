@@ -45,7 +45,7 @@ public class ProjectUtils {
                 return file;
             }
         }
-
+        
         return null;
     }
 
@@ -83,7 +83,7 @@ public class ProjectUtils {
     @NotNull
     public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> srcDirectories = new ArrayList<File>();
-
+        
         IClasspathEntry[] classPathEntries = javaProject.getRawClasspath();
         IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
         for (IClasspathEntry classPathEntry : classPathEntries) {
@@ -118,7 +118,7 @@ public class ProjectUtils {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
                 String classpath = classpathEntry.getPath().toPortableString();
                 File file = new File(classpath);
-
+                
                 if (classpathEntry.getPath().segment(0).equals(projectName)) {
                     file = new File(rootDirectory.removeLastSegments(1).toPortableString() + classpath);
                 } else if (!file.isAbsolute()) {
