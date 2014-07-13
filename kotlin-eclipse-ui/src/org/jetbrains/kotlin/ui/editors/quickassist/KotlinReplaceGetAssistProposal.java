@@ -16,6 +16,7 @@ import org.jetbrains.jet.lang.psi.JetPsiFactory;
 import org.jetbrains.jet.lang.psi.JetQualifiedExpression;
 import org.jetbrains.jet.lang.psi.ValueArgument;
 import org.jetbrains.jet.lang.resolve.BindingContext;
+import org.jetbrains.jet.lang.resolve.bindingContextUtil.BindingContextUtilPackage;
 import org.jetbrains.jet.lang.resolve.calls.model.DefaultValueArgument;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedValueArgument;
@@ -136,7 +137,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         BindingContext bindingContext = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file));
         
-        return bindingContext.get(BindingContext.RESOLVED_CALL, jetCallExpression.getCalleeExpression());
+        return BindingContextUtilPackage.getResolvedCall(jetCallExpression.getCalleeExpression(), bindingContext);
     }
     
     @Override
