@@ -14,13 +14,17 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.wizard;
+package org.jetbrains.kotlin.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
@@ -28,63 +32,36 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.model.KotlinNature;
 
-public class NewUnitWizard extends Wizard implements INewWizard {
+public abstract class AbstractWizard extends Wizard implements INewWizard {
+
+    private static final String ERROR_MESSAGE = "Error";
 
     private IWorkbench workbench;
     private IStructuredSelection selection;
-    private NewUnitWizardPage page;
+    private IWizardPage page;
 
-    private final String title = "Kotlin Source File";
-    private final String description = "Create a new Kotlin souce file";
-    private final String defaultUnitName = "";
-    private String contents = "";
+    public IWorkbench getWorkbench() {
+        return workbench;
+    }
+
+    public IStructuredSelection getStructuredSelection() {
+        return selection;
+    }
+
+    public IWizardPage getWizardPage() {
+        return page;
+    }
+
+    protected abstract String getPageTitle();
+
+    protected abstract IWizardPage createWizardPage();
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;
-        this.setWindowTitle(title);
-    }
 
-    @Override
-    public boolean performFinish() {
-        contents = createPackageHeader();
-        FileCreationOp op = new FileCreationOp(page.getSourceDir(), page.getPackageFragment(), page.getUnitName(),
-                false, contents, getShell());
-
-        try {
-            getContainer().run(true, true, op);
-        } catch (InvocationTargetException e) {
-            MessageDialog.openError(getShell(), "Error", e.getMessage());
-            return false;
-        } catch (InterruptedException e) {
-            return false;
-        }
-        
-        try {
-            KotlinNature.addNature(page.getProject());
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-        
-        try {
-            KotlinNature.addBuilder(page.getProject());
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-        
-        BasicNewResourceWizard.selectAndReveal(op.getResult(), workbench.getActiveWorkbenchWindow());
-
-        return true;
-    }
-    
-    private String createPackageHeader() {
-        String pckg = page.getPackageFragment().getElementName();
-        if (pckg.isEmpty()) {
-            return "";
-        }
-        
-        return "package " + pckg;
+        setWindowTitle(getPageTitle());
     }
 
     @Override
@@ -92,9 +69,43 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         super.addPages();
 
         if (page == null) {
-            page = new NewUnitWizardPage(title, description, defaultUnitName, selection);
+            page = createWizardPage();
         }
+
         addPage(page);
+    }
+
+    protected void selectAndRevealResource(IResource resource) {
+        BasicNewResourceWizard.selectAndReveal(resource, getWorkbench().getActiveWorkbenchWindow());
+    }
+
+    protected boolean performOperation(IRunnableWithProgress operation) {
+        try {
+            getContainer().run(true, true, operation);
+        } catch (InvocationTargetException e) {
+            MessageDialog.openError(getShell(), ERROR_MESSAGE, e.getMessage());
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected static void addNatureToProject(IProject project) {
+        try {
+            KotlinNature.addNature(project);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+    }
+
+    protected static void addBuilderToProject(IProject project) {
+        try {
+            KotlinNature.addBuilder(project);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
     }
 
 }

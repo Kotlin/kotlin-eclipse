@@ -14,11 +14,12 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.wizard;
+package org.jetbrains.kotlin.wizards;
 
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -33,9 +34,12 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
+import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 class FileCreationOp implements IRunnableWithProgress {
+
+    private final static String EXT = "." + JetFileType.INSTANCE.getDefaultExtension();
 
     private final IPackageFragmentRoot sourceDir;
     private final IPackageFragment packageFragment;
@@ -43,28 +47,24 @@ class FileCreationOp implements IRunnableWithProgress {
     private final String contents;
     private final Shell shell;
 
-    private final static String ext = ".kt";
-
     private IFile result;
 
-    IFile getResult() {
-        return result;
-    }
-
-    FileCreationOp(IPackageFragmentRoot sourceDir, IPackageFragment packageFragment, String unitName,
-            boolean includePreamble, String contents, Shell shell) {
+    FileCreationOp(IPackageFragmentRoot sourceDir, IPackageFragment packageFragment, String unitName, String contents,
+            Shell shell) {
         this.sourceDir = sourceDir;
         this.packageFragment = packageFragment;
         this.contents = contents;
         this.shell = shell;
-        this.unitName = getCompilationUnitName(unitName);
+        this.unitName = unitName;
+    }
+
+    public IFile getResult() {
+        return result;
     }
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
-        IPath path = packageFragment.getPath().append(unitName);
-        IProject project = sourceDir.getJavaProject().getProject();
-        result = project.getFile(path.makeRelativeTo(project.getFullPath()));
+        result = makeFile(packageFragment, sourceDir, unitName);
         try {
             if (!result.exists()) {
                 CreateFileOperation op = new CreateFileOperation(result, null, null, "Create Kotlin Source File");
@@ -80,9 +80,33 @@ class FileCreationOp implements IRunnableWithProgress {
     }
 
     static String getCompilationUnitName(String name) {
-        if (name.endsWith(ext)) {
+        if (name.endsWith(EXT)) {
             return name;
         }
-        return name + ext;
+
+        return name + EXT;
+    }
+
+    static String getSimpleUnitName(String name) {
+        if (name.endsWith(EXT)) {
+            return name.substring(0, name.length() - EXT.length());
+        }
+
+        return name;
+    }
+
+    static String getExtensionRegexp() {
+        return "(\\" + EXT + ")?";
+    }
+
+    static IFile makeFile(IPackageFragment packageFragment, IPackageFragmentRoot sourceDir, String unitName) {
+        IPath path = packageFragment.getPath().append(getCompilationUnitName(unitName));
+        IProject project = sourceDir.getJavaProject().getProject();
+
+        return project.getFile(path.makeRelativeTo(project.getFullPath()));
+    }
+
+    static boolean fileExists(IFile file) {
+        return new File(file.getRawLocation().toOSString()).exists();
     }
 }

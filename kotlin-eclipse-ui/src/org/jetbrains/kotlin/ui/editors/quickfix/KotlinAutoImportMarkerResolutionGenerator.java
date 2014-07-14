@@ -22,7 +22,9 @@ import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
@@ -102,6 +104,18 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
                     null);
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
+        }
+        
+        for (Iterator<IType> iterator = searchCollector.iterator(); iterator.hasNext();) {
+            try {
+                IType type = iterator.next();
+                
+                if (!Flags.isPublic(type.getFlags())) {
+                    iterator.remove();
+                }
+            } catch (JavaModelException e) {
+                KotlinLogger.logAndThrow(e);
+            }
         }
         
         return searchCollector;
