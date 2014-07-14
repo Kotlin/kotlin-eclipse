@@ -20,10 +20,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
@@ -48,10 +50,10 @@ import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import com.intellij.openapi.util.TextRange;
 
 public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
-    
+
     private static SearchEngine searchEngine = new SearchEngine();
-    private static IMarkerResolution[] NO_RESOLUTIONS = new IMarkerResolution[] { };
-    
+    private static IMarkerResolution[] NO_RESOLUTIONS = new IMarkerResolution[] {};
+
     @Override
     public IMarkerResolution[] getResolutions(@Nullable IMarker marker) {
         if (!hasResolutions(marker)) {
@@ -61,10 +63,10 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
         if (marker != null) {
             markedText = marker.getAttribute(AnnotationManager.MARKED_TEXT, null);
         }
-        
+
         if (markedText == null) {
             JavaEditor activeEditor = (JavaEditor) getActiveEditor();
-            
+
             if (activeEditor != null) {
                 int caretOffset = activeEditor.getViewer().getTextWidget().getCaretOffset();
                 DiagnosticAnnotation annotation = getAnnotationByOffset(caretOffset);
@@ -73,103 +75,118 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
                 }
             }
         }
-        
+
         if (markedText == null) {
             return NO_RESOLUTIONS;
         }
-        
+
         List<IType> typeResolutions = findAllTypes(markedText);
         List<AutoImportMarkerResolution> markerResolutions = new ArrayList<AutoImportMarkerResolution>();
+        if (marker != null) {
+            removeNotShownTypes(typeResolutions, (IFile) marker.getResource());
+        }
+
         for (IType type : typeResolutions) {
             markerResolutions.add(new AutoImportMarkerResolution(type));
         }
-        
+
         return markerResolutions.toArray(new IMarkerResolution[markerResolutions.size()]);
     }
-    
+
+    private void removeNotShownTypes(@NotNull List<IType> types, @Nullable IFile file) {
+        if (file != null) {
+            for (Iterator<IType> iterator = types.iterator(); iterator.hasNext();) {
+                try {
+                    IType type = iterator.next();
+
+                    if (typeIsNotAccessibleFromFile(type, file)) {
+                        iterator.remove();
+                    }
+                } catch (JavaModelException e) {
+                    KotlinLogger.logAndThrow(e);
+                }
+            }
+        }
+    }
+
+    private boolean typeIsNotAccessibleFromFile(@NotNull IType type, @NotNull IFile file) throws JavaModelException {
+        if (Flags.isPrivate(type.getFlags())) {
+            return true;
+        }
+
+        String packageName = JavaCore.create(file.getParent()).getElementName();
+        if (type.getPackageFragment().getElementName().equals(packageName)) {
+            return true;
+        }
+
+        return !Flags.isPublic(type.getFlags());
+    }
+
     @NotNull
     private List<IType> findAllTypes(@NotNull String typeName) {
         IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
         List<IType> searchCollector = new ArrayList<IType>();
         TypeNameMatchRequestor requestor = new KotlinSearchTypeRequestor(searchCollector);
         try {
-            searchEngine.searchAllTypeNames(null, 
-                    SearchPattern.R_EXACT_MATCH, 
-                    typeName.toCharArray(), 
-                    SearchPattern.R_EXACT_MATCH, 
-                    IJavaSearchConstants.TYPE, 
-                    scope, 
-                    requestor,
-                    IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, 
-                    null);
+            searchEngine.searchAllTypeNames(null, SearchPattern.R_EXACT_MATCH, typeName.toCharArray(),
+                    SearchPattern.R_EXACT_MATCH, IJavaSearchConstants.TYPE, scope, requestor,
+                    IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, null);
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
-        for (Iterator<IType> iterator = searchCollector.iterator(); iterator.hasNext();) {
-            try {
-                IType type = iterator.next();
-                
-                if (!Flags.isPublic(type.getFlags())) {
-                    iterator.remove();
-                }
-            } catch (JavaModelException e) {
-                KotlinLogger.logAndThrow(e);
-            }
-        }
-        
+
         return searchCollector;
     }
 
     @Override
     public boolean hasResolutions(@Nullable IMarker marker) {
         JavaEditor activeEditor = (JavaEditor) getActiveEditor();
-        
+
         if (activeEditor == null) {
             return false;
-        }        
-        
+        }
+
         int caretOffset = activeEditor.getViewer().getTextWidget().getCaretOffset();
         Annotation annotation = getAnnotationByOffset(caretOffset);
-        
+
         if (annotation != null) {
             if (annotation instanceof DiagnosticAnnotation) {
                 return ((DiagnosticAnnotation) annotation).quickFixable();
             }
         }
-        
+
         if (marker != null) {
             return marker.getAttribute(AnnotationManager.IS_QUICK_FIXABLE, false);
         }
-     
+
         return false;
     }
-    
+
     @Nullable
     private DiagnosticAnnotation getAnnotationByOffset(int offset) {
         AbstractTextEditor editor = getActiveEditor();
         if (editor == null) {
             return null;
         }
-        
+
         IDocumentProvider documentProvider = editor.getDocumentProvider();
         IAnnotationModel annotationModel = documentProvider.getAnnotationModel(editor.getEditorInput());
-        
+
         for (Iterator<?> i = annotationModel.getAnnotationIterator(); i.hasNext();) {
             Annotation annotation = (Annotation) i.next();
             if (annotation instanceof DiagnosticAnnotation) {
                 DiagnosticAnnotation diagnosticAnnotation = (DiagnosticAnnotation) annotation;
-                
+
                 TextRange range = diagnosticAnnotation.getRange();
                 if (range.getStartOffset() <= offset && range.getEndOffset() >= offset) {
                     return diagnosticAnnotation;
                 }
             }
         }
-        
+
         return null;
     }
-    
+
     @Nullable
     private AbstractTextEditor getActiveEditor() {
         IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -179,7 +196,7 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
         }
 
         AbstractTextEditor editor = (AbstractTextEditor) workbenchWindow.getActivePage().getActiveEditor();
-        
+
         return editor;
     }
 }
