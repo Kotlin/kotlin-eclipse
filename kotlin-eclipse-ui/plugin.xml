@@ -12,7 +12,7 @@
             class="org.jetbrains.kotlin.wizards.NewUnitWizard"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
             hasPages="true"
-            icon="icons/kotlin-file.gif"
+            icon="icons/newfile_wiz.gif"
             id="org.jetbrains.kotlin.wizard"
             name="Kotlin File"
             preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
@@ -26,7 +26,7 @@
             class="org.jetbrains.kotlin.wizards.NewClassWizard"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
             hasPages="true"
-            icon="icons/kotlin-file.gif"
+            icon="icons/newclass_wiz.gif"
             id="org.jetbrains.kotlin.classWizard"
             name="Kotlin Class"
             preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
@@ -40,7 +40,7 @@
             class="org.jetbrains.kotlin.wizards.NewTraitWizard"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
             hasPages="true"
-            icon="icons/kotlin-file.gif"
+            icon="icons/newint_wiz.gif"
             id="org.jetbrains.kotlin.traitWizard"
             name="Kotlin Trait"
             preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
@@ -54,7 +54,7 @@
             class="org.jetbrains.kotlin.wizards.NewObjectWizard"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
             hasPages="true"
-            icon="icons/kotlin-file.gif"
+            icon="icons/newobj_wiz.gif"
             id="org.jetbrains.kotlin.objectWizard"
             name="Kotlin Object"
             preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
@@ -68,7 +68,7 @@
             class="org.jetbrains.kotlin.wizards.NewEnumWizard"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
             hasPages="true"
-            icon="icons/kotlin-file.gif"
+            icon="icons/newenum_wiz.gif"
             id="org.jetbrains.kotlin.enumWizard"
             name="Kotlin Enum"
             preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
@@ -365,7 +365,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="org.jetbrains.kotlin.perspective.KotlinPerspectiveFactory"
-            icon="icons/kotlin-file.gif"
+            icon="icons/kotlin.png"
             id="org.jetbrains.kotlin.perspective"
             name="Kotlin">
          <description>
