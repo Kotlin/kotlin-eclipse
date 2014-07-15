@@ -9,7 +9,7 @@
       </category>
       <wizard
             category="org.jetbrains.kotlin.eclipse"
-            class="org.jetbrains.kotlin.wizard.NewUnitWizard"
+            class="org.jetbrains.kotlin.wizards.NewUnitWizard"
             finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
             hasPages="true"
             icon="icons/kotlin-file.gif"
@@ -21,6 +21,62 @@
               Create a new Kotlin file
            </description>
       </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.eclipse"
+            class="org.jetbrains.kotlin.wizards.NewClassWizard"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            hasPages="true"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.classWizard"
+            name="Kotlin Class"
+            preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
+            project="false">
+         <description>
+            Create a new Kotlin class
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.eclipse"
+            class="org.jetbrains.kotlin.wizards.NewTraitWizard"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            hasPages="true"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.traitWizard"
+            name="Kotlin Trait"
+            preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
+            project="false">
+         <description>
+            Create a new Kotlin trait
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.eclipse"
+            class="org.jetbrains.kotlin.wizards.NewObjectWizard"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            hasPages="true"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.objectWizard"
+            name="Kotlin Object"
+            preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
+            project="false">
+         <description>
+            Create a new Kotlin object
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.eclipse"
+            class="org.jetbrains.kotlin.wizards.NewEnumWizard"
+            finalPerspective="org.eclipse.jdt.ui.JavaPerspective"
+            hasPages="true"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.enumWizard"
+            name="Kotlin Enum"
+            preferredPerspectives="org.eclipse.jdt.ui.JavaPerspective"
+            project="false">
+         <description>
+            Create a new Kotlin enum
+         </description>
+      </wizard>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -28,6 +84,71 @@
             targetID="org.eclipse.jdt.ui.JavaPerspective">
          <newWizardShortcut
                id="org.jetbrains.kotlin.wizard">
+         </newWizardShortcut>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.jetbrains.kotlin.perspective">
+         <view
+               id="org.eclipse.jdt.ui.PackageExplorer"
+               minimized="false"
+               ratio="0.3"
+               relationship="left"
+               relative="org.eclipse.ui.editorss"
+               visible="true">
+         </view>
+         <view
+               id="org.eclipse.ui.views.ProblemView"
+               minimized="false"
+               relationship="bottom"
+               relative="org.eclipse.ui.editorss"
+               visible="true">
+         </view>
+         <view
+               id="org.eclipse.ui.console.ConsoleView"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ProblemView"
+               visible="true">
+         </view>
+         <view
+               id="org.eclipse.ui.views.ContentOutline"
+               minimized="false"
+               relationship="right"
+               relative="org.eclipse.ui.editorss"
+               visible="true">
+         </view>
+         <newWizardShortcut
+               id="org.jetbrains.kotlin.wizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.jetbrains.kotlin.classWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.jetbrains.kotlin.traitWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.jetbrains.kotlin.objectWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.jetbrains.kotlin.enumWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.eclipse.jdt.ui.wizards.NewPackageCreationWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.eclipse.jdt.ui.wizards.NewClassCreationWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.eclipse.jdt.ui.wizards.NewInterfaceCreationWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.eclipse.jdt.ui.wizards.NewSourceFolderCreationWizard">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.eclipse.ui.wizards.new.folder">
+         </newWizardShortcut>
+         <newWizardShortcut
+               id="org.eclipse.ui.wizards.new.file">
          </newWizardShortcut>
       </perspectiveExtension>
    </extension>
@@ -239,5 +360,17 @@
       <contextTypeRegistry
             id="org.jetbrains.kotlin.ui.editors.KotlinEditor">
       </contextTypeRegistry>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.jetbrains.kotlin.perspective.KotlinPerspectiveFactory"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.perspective"
+            name="Kotlin">
+         <description>
+            Open Kotlin pespective
+         </description>
+      </perspective>
    </extension>
 </plugin>

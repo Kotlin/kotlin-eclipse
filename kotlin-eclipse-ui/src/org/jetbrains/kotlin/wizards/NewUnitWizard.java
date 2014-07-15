@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.wizard;
+package org.jetbrains.kotlin.wizards;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -30,25 +30,31 @@ import org.jetbrains.kotlin.model.KotlinNature;
 
 public class NewUnitWizard extends Wizard implements INewWizard {
 
+    private static final String TITLE_FORMAT = "Kotlin %s File";
+    private static final String DESCRIPTION_FORMAT = "Create a new Kotlin %s file";
+    private static final String DEFAULT_FILE_NAME = "";
+    private static final String PACKAGE_FORMAT = "package %s\n\n";
+    
     private IWorkbench workbench;
     private IStructuredSelection selection;
     private NewUnitWizardPage page;
-
-    private final String title = "Kotlin Source File";
-    private final String description = "Create a new Kotlin souce file";
-    private final String defaultUnitName = "";
-    private String contents = "";
+    
+    protected WizardType type;
+    
+    public NewUnitWizard() {
+        type = WizardType.NONE;
+    }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;
-        this.setWindowTitle(title);
+        this.setWindowTitle(createPageTitle());
     }
 
     @Override
     public boolean performFinish() {
-        contents = createPackageHeader();
+        String contents = createPackageHeader() + createTypeBody();
         FileCreationOp op = new FileCreationOp(page.getSourceDir(), page.getPackageFragment(), page.getUnitName(),
                 false, contents, getShell());
 
@@ -78,13 +84,25 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         return true;
     }
     
+    private String createPageTitle() {
+        return String.format(TITLE_FORMAT, type.getWizardTypeName());
+    }
+    
+    private String createTypeBody() {
+        if (type == WizardType.NONE) {
+            return "";
+        }
+        
+        return String.format(type.getFileBodyFormat(), FileCreationOp.getSimpleUnitName(page.getUnitName()));
+    }
+    
     private String createPackageHeader() {
         String pckg = page.getPackageFragment().getElementName();
         if (pckg.isEmpty()) {
             return "";
         }
         
-        return "package " + pckg;
+        return String.format(PACKAGE_FORMAT, pckg);
     }
 
     @Override
@@ -92,7 +110,7 @@ public class NewUnitWizard extends Wizard implements INewWizard {
         super.addPages();
 
         if (page == null) {
-            page = new NewUnitWizardPage(title, description, defaultUnitName, selection);
+            page = new NewUnitWizardPage(createPageTitle(), String.format(DESCRIPTION_FORMAT, type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, selection);
         }
         addPage(page);
     }
