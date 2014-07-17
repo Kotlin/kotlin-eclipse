@@ -333,7 +333,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
             return ILLEGAL_PACKAGE_NAME_MESSAGE;
         } else if (!unitIsNameLegal()) {
             return ILLEGAL_UNIT_NAME_MESSAGE;
-        } else if (alreadyExists()) {
+        } else if (resourceAlreadyExists()) {
             return UNIT_EXISTS_MESSAGE;
         } else {
             return null;
@@ -341,7 +341,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     }
     
     @Override
-    protected boolean alreadyExists() {
+    protected boolean resourceAlreadyExists() {
         return fileExists(makeFile(packageFragment, sourceDir, unitName));
     }
     

@@ -23,7 +23,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
-public class NewUnitWizard extends AbstractWizard {
+public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     
     private static final String TITLE_FORMAT = "Kotlin %s File";
     private static final String DESCRIPTION_FORMAT = "Create a new Kotlin %s file";
@@ -48,8 +48,8 @@ public class NewUnitWizard extends AbstractWizard {
                 wizardPage.getUnitName(), contents, getShell());
         performOperation(op);
         
-        addNatureToProject(wizardPage.getProject());
-        addBuilderToProject(wizardPage.getProject());
+        addKotlinNatureToProject(wizardPage.getProject());
+        addKotlinBuilderToProject(wizardPage.getProject());
         
         selectAndRevealResource(op.getResult());
         openFile(op.getResult());
@@ -76,11 +76,6 @@ public class NewUnitWizard extends AbstractWizard {
     @Override
     protected String getPageTitle() {
         return String.format(TITLE_FORMAT, type.getWizardTypeName());
-    }
-    
-    @Override
-    public NewUnitWizardPage getWizardPage() {
-        return (NewUnitWizardPage) super.getWizardPage();
     }
     
     @Override
