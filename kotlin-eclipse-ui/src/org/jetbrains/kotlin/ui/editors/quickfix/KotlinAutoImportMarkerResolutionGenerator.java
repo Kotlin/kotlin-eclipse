@@ -134,7 +134,7 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-
+        
         return searchCollector;
     }
 

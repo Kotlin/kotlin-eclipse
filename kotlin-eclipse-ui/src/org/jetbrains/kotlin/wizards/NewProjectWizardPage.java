@@ -149,7 +149,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
             return EMPTY_PROJECT_NAME_MESSAGE;
         } else if (projectLocation.isEmpty()) {
             return EMPTY_PROJECT_LOCATION_MESSAGE;
-        } else if (alreadyExists()) {
+        } else if (resourceAlreadyExists()) {
             return PROJECT_EXISTS_MESSAGE;
         } else {
             return null;
@@ -157,7 +157,7 @@ public class NewProjectWizardPage extends AbstractWizardPage {
     }
 
     @Override
-    protected boolean alreadyExists() {
+    protected boolean resourceAlreadyExists() {
         for (IProject project : getWorkspaceRoot().getProjects()) {
             if (project.getName().equals(projectName)) {
                 return true;

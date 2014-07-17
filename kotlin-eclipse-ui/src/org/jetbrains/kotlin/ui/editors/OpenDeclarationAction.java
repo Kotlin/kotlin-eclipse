@@ -56,7 +56,7 @@ import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetReferenceExpression;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.resolve.BindingContextUtils;
+import org.jetbrains.jet.lang.resolve.DescriptorToSourceUtils;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
@@ -109,7 +109,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         
         if (descriptor == null) return null;
         
-        List<PsiElement> elements = BindingContextUtils.descriptorToDeclarations(bindingContext, descriptor);
+        List<PsiElement> elements = DescriptorToSourceUtils.descriptorToDeclarations(descriptor);
         if (elements.size() > 1 || elements.isEmpty()) {
             return null;
         }
