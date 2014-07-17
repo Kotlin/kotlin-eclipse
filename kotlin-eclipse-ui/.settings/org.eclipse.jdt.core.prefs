@@ -152,7 +152,7 @@ org.eclipse.jdt.core.formatter.comment.indent_parameter_description=true
 org.eclipse.jdt.core.formatter.comment.indent_root_tags=true
 org.eclipse.jdt.core.formatter.comment.insert_new_line_before_root_tags=do not insert
 org.eclipse.jdt.core.formatter.comment.insert_new_line_for_parameter=do not insert
-org.eclipse.jdt.core.formatter.comment.line_length=120
+org.eclipse.jdt.core.formatter.comment.line_length=80
 org.eclipse.jdt.core.formatter.comment.new_lines_at_block_boundaries=true
 org.eclipse.jdt.core.formatter.comment.new_lines_at_javadoc_boundaries=true
 org.eclipse.jdt.core.formatter.comment.preserve_white_space_between_code_and_line_comments=true
@@ -168,7 +168,7 @@ org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_enum_constant
 org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_enum_declaration_header=true
 org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_type_header=true
 org.eclipse.jdt.core.formatter.indent_breaks_compare_to_cases=true
-org.eclipse.jdt.core.formatter.indent_empty_lines=false
+org.eclipse.jdt.core.formatter.indent_empty_lines=true
 org.eclipse.jdt.core.formatter.indent_statements_compare_to_block=true
 org.eclipse.jdt.core.formatter.indent_statements_compare_to_body=true
 org.eclipse.jdt.core.formatter.indent_switchstatements_compare_to_cases=true
