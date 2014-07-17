@@ -17,7 +17,7 @@
 package org.jetbrains.kotlin.wizards;
 
 
-public class NewProjectWizard extends AbstractWizard {
+public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
 
     private static final String TITLE = "Kotlin project";
     private static final String DESCRIPTION = "Create a new Kotlin project";
@@ -29,8 +29,8 @@ public class NewProjectWizard extends AbstractWizard {
         ProjectCreationOp op = new ProjectCreationOp(page.getProjectName(), page.getProjectLocation(), getShell());
         performOperation(op);
         
-        addNatureToProject(op.getResult());
-        addBuilderToProject(op.getResult());
+        addKotlinNatureToProject(op.getResult());
+        addKotlinBuilderToProject(op.getResult());
         
         selectAndRevealResource(op.getResult());
 
@@ -40,11 +40,6 @@ public class NewProjectWizard extends AbstractWizard {
     @Override
     protected String getPageTitle() {
         return TITLE;
-    }
-
-    @Override
-    public NewProjectWizardPage getWizardPage() {
-        return (NewProjectWizardPage) super.getWizardPage();
     }
 
     @Override

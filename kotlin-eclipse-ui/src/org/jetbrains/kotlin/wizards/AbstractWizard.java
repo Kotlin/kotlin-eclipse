@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
@@ -32,13 +31,13 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.model.KotlinNature;
 
-public abstract class AbstractWizard extends Wizard implements INewWizard {
+public abstract class AbstractWizard<WP extends AbstractWizardPage> extends Wizard implements INewWizard {
 
     private static final String ERROR_MESSAGE = "Error";
 
     private IWorkbench workbench;
     private IStructuredSelection selection;
-    private IWizardPage page;
+    private WP page;
 
     public IWorkbench getWorkbench() {
         return workbench;
@@ -48,13 +47,13 @@ public abstract class AbstractWizard extends Wizard implements INewWizard {
         return selection;
     }
 
-    public IWizardPage getWizardPage() {
+    public WP getWizardPage() {
         return page;
     }
 
     protected abstract String getPageTitle();
 
-    protected abstract IWizardPage createWizardPage();
+    protected abstract WP createWizardPage();
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
@@ -92,7 +91,7 @@ public abstract class AbstractWizard extends Wizard implements INewWizard {
         return true;
     }
 
-    protected static void addNatureToProject(IProject project) {
+    protected static void addKotlinNatureToProject(IProject project) {
         try {
             KotlinNature.addNature(project);
         } catch (CoreException e) {
@@ -100,7 +99,7 @@ public abstract class AbstractWizard extends Wizard implements INewWizard {
         }
     }
 
-    protected static void addBuilderToProject(IProject project) {
+    protected static void addKotlinBuilderToProject(IProject project) {
         try {
             KotlinNature.addBuilder(project);
         } catch (CoreException e) {
