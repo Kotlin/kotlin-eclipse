@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.testframework.utils;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 
 import org.eclipse.core.resources.IContainer;
@@ -27,16 +28,17 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.launching.JavaRuntime;
+import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.model.KotlinNature;
 
 public class TestJavaProject {
@@ -82,6 +84,7 @@ public class TestJavaProject {
 				javaProject.setRawClasspath(new IClasspathEntry[0], null);
 				sourceFolder = createSourceFolder(SRC_FOLDER);
 				addSystemLibraries();
+				addKotlinRuntime();
 			}
 		} catch (CoreException e) {
 			throw new RuntimeException(e);
@@ -156,14 +159,23 @@ public class TestJavaProject {
 		return javaProject;
 	}
 	
-	private void addSystemLibraries() throws JavaModelException {
-		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
+    private void addToClasspath(IClasspathEntry newEntry) throws JavaModelException {
+        IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
         IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
         
         System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
         
-        newEntries[oldEntries.length] = JavaRuntime.getDefaultJREContainerEntry();
+        newEntries[oldEntries.length] = newEntry;
         
         javaProject.setRawClasspath(newEntries, null);
-	}
+    }
+    
+    public void addKotlinRuntime() throws JavaModelException {
+        File file = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
+        addToClasspath(JavaCore.newLibraryEntry(new Path(file.getAbsolutePath()), null, null));
+    }
+    
+    private void addSystemLibraries() throws JavaModelException {
+        addToClasspath(JavaRuntime.getDefaultJREContainerEntry());
+    }
 }
