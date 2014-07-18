@@ -20,9 +20,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
@@ -78,11 +82,44 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
         
         List<IType> typeResolutions = findAllTypes(markedText);
         List<AutoImportMarkerResolution> markerResolutions = new ArrayList<AutoImportMarkerResolution>();
+        if (marker != null) {
+            removeNotShownTypes(typeResolutions, (IFile) marker.getResource());
+        }
+        
         for (IType type : typeResolutions) {
             markerResolutions.add(new AutoImportMarkerResolution(type));
         }
         
         return markerResolutions.toArray(new IMarkerResolution[markerResolutions.size()]);
+    }
+    
+    private void removeNotShownTypes(@NotNull List<IType> types, @Nullable IFile file) {
+        if (file != null) {
+            for (Iterator<IType> iterator = types.iterator(); iterator.hasNext();) {
+                try {
+                    IType type = iterator.next();
+
+                    if (typeIsNotAccessibleFromFile(type, file)) {
+                        iterator.remove();
+                    }
+                } catch (JavaModelException e) {
+                    KotlinLogger.logAndThrow(e);
+                }
+            }
+        }
+    }
+
+    private boolean typeIsNotAccessibleFromFile(@NotNull IType type, @NotNull IFile file) throws JavaModelException {
+        if (Flags.isPrivate(type.getFlags())) {
+            return true;
+        }
+
+        String packageName = JavaCore.create(file.getParent()).getElementName();
+        if (type.getPackageFragment().getElementName().equals(packageName)) {
+            return true;
+        }
+
+        return !Flags.isPublic(type.getFlags());
     }
     
     @NotNull
