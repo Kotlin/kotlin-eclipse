@@ -85,14 +85,14 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
         if (marker != null) {
             removeNotShownTypes(typeResolutions, (IFile) marker.getResource());
         }
-
+        
         for (IType type : typeResolutions) {
             markerResolutions.add(new AutoImportMarkerResolution(type));
         }
 
         return markerResolutions.toArray(new IMarkerResolution[markerResolutions.size()]);
     }
-
+    
     private void removeNotShownTypes(@NotNull List<IType> types, @Nullable IFile file) {
         if (file != null) {
             for (Iterator<IType> iterator = types.iterator(); iterator.hasNext();) {
@@ -121,7 +121,7 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
 
         return !Flags.isPublic(type.getFlags());
     }
-
+    
     @NotNull
     private List<IType> findAllTypes(@NotNull String typeName) {
         IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
