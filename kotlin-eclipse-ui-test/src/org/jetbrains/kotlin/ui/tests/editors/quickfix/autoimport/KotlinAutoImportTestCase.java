@@ -20,12 +20,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.ui.IMarkerResolution;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinCorrectionProcessor;
@@ -46,22 +48,25 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorTestCase {
 
 	@Rule
 	public TestName name = new TestName();
-	private String fileText;
-	private List<ICompletionProposal> proposals;
+	
+	private String getTestNameProjectRelative() {
+		return TEST_DATA_PROJECT_RELATIVE + name.getMethodName();
+	}
+	
+	private JavaEditor getEditor() {
+		return testEditor.getEditor();
+	}
 	
 	protected void doTest() {
-		doTestFor(TEST_DATA_PROJECT_RELATIVE + name.getMethodName() + KT_FILE_EXTENSION);
+		doTestFor(getTestNameProjectRelative() + KT_FILE_EXTENSION);
 	}
-
-	private void doTestFor(String testPath) {
-		fileText = getText(testPath);
-		testEditor = configureEditor(getNameByPath(testPath), fileText);
-
+	
+	private void performTest(String fileText, String testPath) {
 		joinBuildThread();
 		
-		proposals = createProposals();
-		assertCount();
-		assertExistence();
+		List<ICompletionProposal> proposals = createProposals();
+		assertCount(proposals, fileText);
+		assertExistence(proposals, fileText);
 		
 		if (!proposals.isEmpty()) {
 			proposals.get(0).apply(getEditor().getViewer().getDocument());
@@ -69,32 +74,89 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorTestCase {
 		
 		EditorTestUtils.assertByEditor(getEditor(), getText(testPath + AFTER_FILE_EXTENSION));
 	}
-	
-	private void assertCount() {
-		Integer expectedNumber = ExpectedCompletionUtils.numberOfItemsShouldPresent(fileText);
-		if (expectedNumber != null) {
-			Assert.assertEquals(COUNT_ASSERTION_ERROR_MESSAGE, expectedNumber.intValue(), proposals.size());
-		}
+
+	private void doTestFor(String testPath) {
+		String fileText = getText(testPath);
+		testEditor = configureEditor(getNameByPath(testPath), fileText, TextEditorTest.TEST_PROJECT_NAME, TextEditorTest.TEST_PACKAGE_NAME);
+
+		performTest(fileText, testPath);
 	}
 	
-	private void assertExistence() {
-		List<String> expectedStrings = ExpectedCompletionUtils.itemsShouldExist(fileText);
-		List<String> actualStrings = getProposalsStrings();
+	protected void doMultifileTest(int targetFileNumber, String... files) {
+		doMultifileTestFor(getTestNameProjectRelative(), targetFileNumber, files);
+	}
+	
+	private void doMultifileTestFor(String testFolderPath, int targetFileNumber, String[] files) {
+		List<String> fileNames = getProjectRelativeFileNames(files);
+		List<String> packageNames = getPackageNames(files);
+		List<String> contents = getContents(fileNames);
 		
-		for (String string : expectedStrings) {
-			Assert.assertTrue(String.format(EXISTENCE_ASSERTION_ERROR_MESSAGE_FORMAT, string), actualStrings.contains(string));
-		}		
+		testEditor = configureEditor(getNameByPath(files[targetFileNumber]), contents.get(targetFileNumber), TextEditorTest.TEST_PROJECT_NAME, packageNames.get(targetFileNumber));				
+		for (int i = 0; i < files.length; i++) {
+			if (i != targetFileNumber) {
+				createSourceFile(packageNames.get(i), getNameByPath(files[i]), contents.get(i));
+			}
+		}
+		
+		performTest(contents.get(targetFileNumber), fileNames.get(targetFileNumber));
 	}
 	
-	private JavaEditor getEditor() {
-		return testEditor.getEditor();
+	private List<String> getProjectRelativeFileNames(String[] fileNames) {
+		List<String> result = new ArrayList<String>();
+		
+		for (String fileName : fileNames) {
+			result.add(getTestNameProjectRelative() + "/" + fileName);
+		}
+		
+		return result;
+	}
+	
+	private static List<String> getPackageNames(String[] fileNames) {
+		List<String> result = new ArrayList<String>();
+		
+		for (String fileName : fileNames) {
+			result.add(getPackageName(fileName));
+		}
+		
+		return result;
+	}
+	
+	private static List<String> getContents(List<String> fileNames) {
+		List<String> result = new ArrayList<String>();
+		
+		for (String fileName : fileNames) {
+			result.add(getText(fileName));
+		}
+		
+		return result;
+	}
+	
+	private static String getPackageName(String projectRelativeTestPath) {
+		return new Path(projectRelativeTestPath).removeLastSegments(1).toString().replaceAll("/", ".");
 	}
 	
 	private List<ICompletionProposal> createProposals() {
 		return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(new TextInvocationContext(getEditor().getViewer(), getCaret(), -1)));
 	}
 	
-	private List<String> getProposalsStrings() {
+	private static void assertCount(List<ICompletionProposal> proposals, String fileText) {
+		Integer expectedNumber = ExpectedCompletionUtils.numberOfItemsShouldPresent(fileText);
+		
+		if (expectedNumber != null) {
+			Assert.assertEquals(COUNT_ASSERTION_ERROR_MESSAGE, expectedNumber.intValue(), proposals.size());
+		}
+	}
+
+	private static void assertExistence(List<ICompletionProposal> proposals, String fileText) {
+		List<String> expectedStrings = ExpectedCompletionUtils.itemsShouldExist(fileText);
+		List<String> actualStrings = getProposalsStrings(proposals);
+		
+		for (String string : expectedStrings) {
+			Assert.assertTrue(String.format(EXISTENCE_ASSERTION_ERROR_MESSAGE_FORMAT, string), actualStrings.contains(string));
+		}		
+	}
+	
+	private static List<String> getProposalsStrings(List<ICompletionProposal> proposals) {
 		List<String> result = new ArrayList<String>();
 		
 		for (ICompletionProposal proposal : proposals) {
