@@ -29,5 +29,10 @@ public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
 	public void packageArrayListAutoImport() {
 		doTest();
 	}
+	
+	@Test
+	public void sameProjectJavaClassAutoImport() {
+		doMultifileTest(1, "first/Foo.java", "second/Bar.kt");
+	}
 
 }
