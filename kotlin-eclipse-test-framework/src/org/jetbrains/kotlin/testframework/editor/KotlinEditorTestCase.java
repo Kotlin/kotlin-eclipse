@@ -65,11 +65,28 @@ public abstract class KotlinEditorTestCase {
 		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 	}
 	
-	protected TextEditorTest configureEditor(String fileName, String content) {
+    protected int getCaret() {
+		return testEditor.getEditor().getViewer().getTextWidget().getCaretOffset();
+	}
+    
+	public void createSourceFile(String pkg, String fileName, String content) {
+		content = removeTags(content);
+		try {
+			testEditor.getTestJavaProject().createSourceFile(pkg, fileName, content);
+		} catch (CoreException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public void createSourceFile(String fileName, String content) {
+		createSourceFile(TextEditorTest.TEST_PACKAGE_NAME, fileName, content);
+	}
+	
+	protected static TextEditorTest configureEditor(String fileName, String content) {
     	return configureEditor(fileName, content, TextEditorTest.TEST_PROJECT_NAME, TextEditorTest.TEST_PACKAGE_NAME);
     }
 	
-    protected TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {
+    protected static TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {
     	TextEditorTest testEditor = new TextEditorTest(projectName);
 		String toEditor = resolveTestTags(content).replaceAll("\r", "").replaceAll("\n", System.lineSeparator());
 		testEditor.createEditor(fileName, toEditor, packageName);
@@ -77,7 +94,7 @@ public abstract class KotlinEditorTestCase {
 		return testEditor;
     }
     
-    public void deleteProjectAndCloseEditors() {
+    public static void deleteProjectAndCloseEditors() {
 		try {
 			IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
 			for (IProject project : projects) {
@@ -90,7 +107,7 @@ public abstract class KotlinEditorTestCase {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
     }
     
-    public void refreshWorkspace() {
+    public static void refreshWorkspace() {
 		WorkspaceUtil.refreshWorkspace();
 		try {
 			Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_REFRESH, new NullProgressMonitor());
@@ -98,12 +115,8 @@ public abstract class KotlinEditorTestCase {
 			e.printStackTrace();
 		}
     }
-    
-    public String getNameByPath(String testPath) {
-		return new Path(testPath).lastSegment();
-	}
 
-	public String getText(String testPath) {
+	public static String getText(String testPath) {
 		try {
 			File file = new File(testPath);
 			return String.valueOf(FileUtil.loadFile(file));
@@ -111,32 +124,8 @@ public abstract class KotlinEditorTestCase {
 			throw new RuntimeException(e);
 		}
 	}
-    
-    protected int getCaret() {
-		return testEditor.getEditor().getViewer().getTextWidget().getCaretOffset();
-	}
-    
-    public String resolveTestTags(String text) {
-		return text
-				.replaceAll(ERR_TAG_OPEN, "")
-				.replaceAll(ERR_TAG_CLOSE, "")
-				.replaceAll(BR, System.lineSeparator());
-    }
-    
-    public String removeTags(String text) {
-    	return resolveTestTags(text).replaceAll("<caret>", "");
-    }
-    
-	public void createSourceFile(String referenceFileName, String referenceFile) {
-		referenceFile = removeTags(referenceFile);
-		try {
-			testEditor.getTestJavaProject().createSourceFile("testing", referenceFileName, referenceFile);
-		} catch (CoreException e) {
-			throw new RuntimeException(e);
-		}
-	}
 	
-	public void joinBuildThread() {
+	public static void joinBuildThread() {
 		while (true) {
 			try {
 				Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
@@ -144,5 +133,20 @@ public abstract class KotlinEditorTestCase {
 			} catch (OperationCanceledException | InterruptedException e) {
 			}
 		}
+	}
+	
+    public static String resolveTestTags(String text) {
+		return text
+				.replaceAll(ERR_TAG_OPEN, "")
+				.replaceAll(ERR_TAG_CLOSE, "")
+				.replaceAll(BR, System.lineSeparator());
+    }
+    
+    public static String removeTags(String text) {
+    	return resolveTestTags(text).replaceAll("<caret>", "");
+    }
+	
+    public static String getNameByPath(String testPath) {
+		return new Path(testPath).lastSegment();
 	}
 }
