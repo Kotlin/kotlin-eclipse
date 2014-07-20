@@ -52,6 +52,10 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
     public AutoImportMarkerResolution(IType type) {
         this.type = type;
     }
+    
+    public IType getType() {
+        return type;
+    }
 
     @Override
     public String getLabel() {
