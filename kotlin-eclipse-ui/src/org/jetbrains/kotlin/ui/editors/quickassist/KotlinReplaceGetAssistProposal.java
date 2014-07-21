@@ -12,8 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetCallExpression;
 import org.jetbrains.jet.lang.psi.JetExpression;
-import org.jetbrains.jet.lang.psi.JetPsiFactory;
 import org.jetbrains.jet.lang.psi.JetQualifiedExpression;
+import org.jetbrains.jet.lang.psi.PsiPackage;
 import org.jetbrains.jet.lang.psi.ValueArgument;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.bindingContextUtil.BindingContextUtilPackage;
@@ -63,10 +63,13 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         IDocument document = editor.getViewer().getDocument();
         
         try {
-            document.replace(getStartOffset(element, editor), element.getTextLength() + IndenterUtil.getLineSeparatorsOccurences(element.getText()), 
-                    JetPsiFactory.createExpression(
-                    element.getProject(), 
-                    element.getReceiverExpression().getText() + "[" + arguments + "]").getText());
+            JetExpression indexExpression = PsiPackage.JetPsiFactory(element).createExpression(
+                    element.getReceiverExpression().getText() + "[" + arguments + "]");
+            
+            document.replace(
+                    getStartOffset(element, editor), 
+                    element.getTextLength() + IndenterUtil.getLineSeparatorsOccurences(element.getText()), 
+                    indexExpression.getText());
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
