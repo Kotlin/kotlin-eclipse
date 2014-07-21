@@ -16,11 +16,15 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -38,6 +42,35 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 
 public abstract class KotlinAutoImportTestCase extends KotlinEditorTestCase {
+	
+	private static class SourceFileData {
+
+		private final static String DEFAULT_PACKAGE_NAME = "";
+		private final static String JAVA_IDENTIFIER_REGEXP = "[_a-zA-Z]\\w*";
+		private final static String PACKAGE_REGEXP = "package\\s((" + JAVA_IDENTIFIER_REGEXP + ")(\\." + JAVA_IDENTIFIER_REGEXP + ")*)";
+		private final static Pattern PATTERN = Pattern.compile(PACKAGE_REGEXP);
+
+		private final String packageName;
+		private final String content;
+
+		public SourceFileData(File file) {
+			this.content = getText(file);
+			this.packageName = getPackageFromContent(content);
+		}
+
+		public String getPackageName() {
+			return packageName;
+		}
+
+		public String getContent() {
+			return content;
+		}
+
+		private static String getPackageFromContent(String content) {
+			Matcher matcher = PATTERN.matcher(content);
+			return matcher.find() ? matcher.group(1) : DEFAULT_PACKAGE_NAME;
+		}
+	}
 
 	private static final String KT_FILE_EXTENSION = ".kt";
 	private static final String AFTER_FILE_EXTENSION = ".after";
@@ -57,11 +90,11 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorTestCase {
 		return testEditor.getEditor();
 	}
 	
-	protected void doTest() {
-		doTestFor(getTestNameProjectRelative() + KT_FILE_EXTENSION);
+	private List<ICompletionProposal> createProposals() {
+		return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(new TextInvocationContext(getEditor().getViewer(), getCaret(), -1)));
 	}
 	
-	private void performTest(String fileText, String testPath) {
+	private void performTest(String fileText, String content) {
 		joinBuildThread();
 		
 		List<ICompletionProposal> proposals = createProposals();
@@ -72,71 +105,53 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorTestCase {
 			proposals.get(0).apply(getEditor().getViewer().getDocument());
 		}
 		
-		EditorTestUtils.assertByEditor(getEditor(), getText(testPath + AFTER_FILE_EXTENSION));
+		EditorTestUtils.assertByEditor(getEditor(), content);
 	}
-
-	private void doTestFor(String testPath) {
+	
+	protected void doTest() {
+		String testPath = getTestNameProjectRelative();
+		File testFile = new File(testPath);
+		
+		if (testFile.exists() && testFile.isDirectory()) {
+			doMultiFileTest(testFile);
+		} else {
+			doSingleFileTest(testPath + KT_FILE_EXTENSION);
+		}
+	}
+	
+	private void doSingleFileTest(String testPath) {
 		String fileText = getText(testPath);
 		testEditor = configureEditor(getNameByPath(testPath), fileText, TextEditorTest.TEST_PROJECT_NAME, TextEditorTest.TEST_PACKAGE_NAME);
 
-		performTest(fileText, testPath);
+		performTest(fileText, getText(testPath + AFTER_FILE_EXTENSION));
 	}
 	
-	protected void doMultifileTest(int targetFileNumber, String... files) {
-		doMultifileTestFor(getTestNameProjectRelative(), targetFileNumber, files);
-	}
-	
-	private void doMultifileTestFor(String testFolderPath, int targetFileNumber, String[] files) {
-		List<String> fileNames = getProjectRelativeFileNames(files);
-		List<String> packageNames = getPackageNames(files);
-		List<String> contents = getContents(fileNames);
+	private void doMultiFileTest(File testFolder) {
+		Map<String, SourceFileData> map = new HashMap<String, SourceFileData>();
 		
-		testEditor = configureEditor(getNameByPath(files[targetFileNumber]), contents.get(targetFileNumber), TextEditorTest.TEST_PROJECT_NAME, packageNames.get(targetFileNumber));				
-		for (int i = 0; i < files.length; i++) {
-			if (i != targetFileNumber) {
-				createSourceFile(packageNames.get(i), getNameByPath(files[i]), contents.get(i));
+		String targetFileName = null;
+		File targetAfterTestFile = null;
+		for (File file : testFolder.listFiles()) {
+			String fileName = file.getName();
+			
+			if (!fileName.endsWith(AFTER_FILE_EXTENSION)) {
+				map.put(fileName, new SourceFileData(file));
+			} else {
+				targetFileName = fileName.replace(AFTER_FILE_EXTENSION, "");
+				targetAfterTestFile = file;
 			}
 		}
 		
-		performTest(contents.get(targetFileNumber), fileNames.get(targetFileNumber));
-	}
-	
-	private List<String> getProjectRelativeFileNames(String[] fileNames) {
-		List<String> result = new ArrayList<String>();
+		SourceFileData target = map.get(targetFileName);
+		testEditor = configureEditor(targetFileName, target.getContent(), TextEditorTest.TEST_PROJECT_NAME, target.getPackageName());
+		map.remove(targetFileName);
 		
-		for (String fileName : fileNames) {
-			result.add(getTestNameProjectRelative() + "/" + fileName);
+		for (Map.Entry<String, SourceFileData> entry : map.entrySet()) {
+			SourceFileData data = entry.getValue();
+			createSourceFile(data.getPackageName(), entry.getKey(), data.getContent());
 		}
 		
-		return result;
-	}
-	
-	private static List<String> getPackageNames(String[] fileNames) {
-		List<String> result = new ArrayList<String>();
-		
-		for (String fileName : fileNames) {
-			result.add(getPackageName(fileName));
-		}
-		
-		return result;
-	}
-	
-	private static List<String> getContents(List<String> fileNames) {
-		List<String> result = new ArrayList<String>();
-		
-		for (String fileName : fileNames) {
-			result.add(getText(fileName));
-		}
-		
-		return result;
-	}
-	
-	private static String getPackageName(String projectRelativeTestPath) {
-		return new Path(projectRelativeTestPath).removeLastSegments(1).toString().replaceAll("/", ".");
-	}
-	
-	private List<ICompletionProposal> createProposals() {
-		return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(new TextInvocationContext(getEditor().getViewer(), getCaret(), -1)));
+		performTest(target.getContent(), getText(targetAfterTestFile));
 	}
 	
 	private static void assertCount(List<ICompletionProposal> proposals, String fileText) {
@@ -153,7 +168,7 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorTestCase {
 		
 		for (String string : expectedStrings) {
 			Assert.assertTrue(String.format(EXISTENCE_ASSERTION_ERROR_MESSAGE_FORMAT, string), actualStrings.contains(string));
-		}		
+		}
 	}
 	
 	private static List<String> getProposalsStrings(List<ICompletionProposal> proposals) {
