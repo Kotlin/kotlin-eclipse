@@ -32,7 +32,7 @@ public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
 	
 	@Test
 	public void sameProjectJavaClassAutoImport() {
-		doMultifileTest(1, "first/Foo.java", "second/Bar.kt");
+		doTest();
 	}
 
 }
