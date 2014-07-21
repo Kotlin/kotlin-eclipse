@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.editors.quickfix;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,6 +48,8 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.intellij.openapi.util.TextRange;
 
 public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
@@ -55,7 +58,7 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
     private static IMarkerResolution[] NO_RESOLUTIONS = new IMarkerResolution[] {};
 
     @Override
-    public IMarkerResolution[] getResolutions(@Nullable IMarker marker) {
+    public IMarkerResolution[] getResolutions(@Nullable final IMarker marker) {
         if (!hasResolutions(marker)) {
             return NO_RESOLUTIONS;
         }
@@ -79,47 +82,44 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
         if (markedText == null) {
             return NO_RESOLUTIONS;
         }
-
-        List<IType> typeResolutions = findAllTypes(markedText);
-        List<AutoImportMarkerResolution> markerResolutions = new ArrayList<AutoImportMarkerResolution>();
+        
+        Collection<IType> typeResolutions = findAllTypes(markedText);
         if (marker != null) {
-            removeNotShownTypes(typeResolutions, (IFile) marker.getResource());
+            typeResolutions = Collections2.filter(typeResolutions, new Predicate<IType>() {
+                private final IFile file = (IFile) marker.getResource();
+                
+                @Override
+                public boolean apply(IType type) {
+                    return typeIsAccessibleFromFile(type, file);
+                }
+            });
         }
         
+        List<AutoImportMarkerResolution> markerResolutions = new ArrayList<AutoImportMarkerResolution>();
         for (IType type : typeResolutions) {
             markerResolutions.add(new AutoImportMarkerResolution(type));
         }
 
         return markerResolutions.toArray(new IMarkerResolution[markerResolutions.size()]);
     }
-    
-    private void removeNotShownTypes(@NotNull List<IType> types, @Nullable IFile file) {
-        if (file != null) {
-            for (Iterator<IType> iterator = types.iterator(); iterator.hasNext();) {
-                try {
-                    IType type = iterator.next();
 
-                    if (typeIsNotAccessibleFromFile(type, file)) {
-                        iterator.remove();
-                    }
-                } catch (JavaModelException e) {
-                    KotlinLogger.logAndThrow(e);
-                }
+    private boolean typeIsAccessibleFromFile(@NotNull IType type, @NotNull IFile file) {
+        try {
+            if (Flags.isPrivate(type.getFlags())) {
+                return false;
             }
-        }
-    }
 
-    private boolean typeIsNotAccessibleFromFile(@NotNull IType type, @NotNull IFile file) throws JavaModelException {
-        if (Flags.isPrivate(type.getFlags())) {
-            return true;
+            String packageName = JavaCore.create(file.getParent()).getElementName();
+            if (type.getPackageFragment().getElementName().equals(packageName)) {
+                return false;
+            }
+    
+            return Flags.isPublic(type.getFlags());
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
         }
-
-        String packageName = JavaCore.create(file.getParent()).getElementName();
-        if (type.getPackageFragment().getElementName().equals(packageName)) {
-            return true;
-        }
-
-        return !Flags.isPublic(type.getFlags());
+        
+        return false;
     }
     
     @NotNull
