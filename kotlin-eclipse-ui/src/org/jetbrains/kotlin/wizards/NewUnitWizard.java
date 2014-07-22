@@ -34,7 +34,7 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     private static final String PACKAGE_FORMAT = "package %s\n\n";
     
     protected WizardType type;
-    
+
     public NewUnitWizard() {
         type = WizardType.NONE;
     }
@@ -91,7 +91,7 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         
         return String.format(type.getFileBodyFormat(), FileCreationOp.getSimpleUnitName(getWizardPage().getUnitName()));
     }
-    
+
     private String createPackageHeader() {
         String pckg = getWizardPage().getPackageFragment().getElementName();
         if (pckg.isEmpty()) {

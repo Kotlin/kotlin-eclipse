@@ -37,6 +37,10 @@ public class KotlinMarkerResolutionProposal implements ICompletionProposal {
         this.markerResolution = markerResolution;
     }
     
+    public IMarkerResolution getMarkerResolution() {
+        return markerResolution;
+    }
+    
     @Override
     public void apply(IDocument document) {
         markerResolution.run(marker);

@@ -48,30 +48,30 @@ public class ProjectUtils {
         
         return null;
     }
-    
+
     public static IJavaProject getJavaProjectFromCollection(Collection<IFile> files) {
         IJavaProject javaProject = null;
         for (IFile file : files) {
             javaProject = JavaCore.create(file.getProject());
             break;
         }
-        
+
         return javaProject;
     }
-    
+
     public static boolean hasMain(IFile file) {
         return findFilesWithMain(Arrays.asList(file)) != null;
     }
-    
+
     @Nullable
     public static String getPackageByFile(IFile file) {
         JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
-        
+
         assert jetFile != null;
-        
+
         return jetFile.getPackageName();
     }
-    
+
     public static FqName createPackageClassName(IFile file) {
         String filePackage = getPackageByFile(file);
         if (filePackage == null) {
@@ -79,7 +79,7 @@ public class ProjectUtils {
         }
         return PackageClassUtils.getPackageClassFqName(new FqName(filePackage));
     }
-    
+
     @NotNull
     public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> srcDirectories = new ArrayList<File>();
@@ -96,24 +96,24 @@ public class ProjectUtils {
                 } else {
                     path = classPathResource.getLocation().toOSString();
                 }
-                
+
                 if (!path.isEmpty()) {
                     srcDirectories.add(new File(path));
                 }
             }
         }
-        
+
         return srcDirectories;
     }
-    
+
     @NotNull
     public static List<File> getLibDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> libDirectories = new ArrayList<File>();
-        
+
         IClasspathEntry[] classpathEntries = javaProject.getResolvedClasspath(false);
         IPath rootDirectory = javaProject.getProject().getLocation();
         String projectName = rootDirectory.lastSegment();
-        
+
         for (IClasspathEntry classpathEntry : classpathEntries) {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
                 String classpath = classpathEntry.getPath().toPortableString();
@@ -124,11 +124,11 @@ public class ProjectUtils {
                 } else if (!file.isAbsolute()) {
                     file = new File(rootDirectory.toPortableString() + classpath);
                 }
-                
+
                 libDirectories.add(file);
             }
         }
-        
+
         return libDirectories;
     }
 }

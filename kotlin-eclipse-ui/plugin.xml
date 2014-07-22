@@ -90,6 +90,19 @@
             Create a new Kotlin enum
          </description>
       </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.eclipse"
+            class="org.jetbrains.kotlin.wizards.NewProjectWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.projectWizard"
+            name="Kotlin Project"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="true">
+         <description>
+            Create a new Kotlin project
+         </description>
+      </wizard>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">

@@ -83,29 +83,29 @@ class FileCreationOp implements IRunnableWithProgress {
         if (name.endsWith(EXT)) {
             return name;
         }
-        
+
         return name + EXT;
     }
-    
+
     static String getSimpleUnitName(String name) {
         if (name.endsWith(EXT)) {
             return name.substring(0, name.length() - EXT.length());
         }
-        
+
         return name;
     }
-    
+
     static String getExtensionRegexp() {
         return "(\\" + EXT + ")?";
     }
-    
+
     static IFile makeFile(IPackageFragment packageFragment, IPackageFragmentRoot sourceDir, String unitName) {
         IPath path = packageFragment.getPath().append(getCompilationUnitName(unitName));
         IProject project = sourceDir.getJavaProject().getProject();
-        
+
         return project.getFile(path.makeRelativeTo(project.getFullPath()));
     }
-    
+
     static boolean fileExists(IFile file) {
         return new File(file.getRawLocation().toOSString()).exists();
     }

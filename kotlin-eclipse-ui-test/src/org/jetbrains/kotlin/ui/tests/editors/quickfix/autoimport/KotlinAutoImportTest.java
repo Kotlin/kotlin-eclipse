@@ -14,19 +14,25 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui;
+package org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.Test;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses( { 
-	org.jetbrains.kotlin.ui.tests.editors.AllTests.class,
-	org.jetbrains.kotlin.core.tests.launch.KotlinLaunchTest.class,
-	org.jetbrains.kotlin.ui.tests.editors.completion.templates.KotlinTemplatesTest.class,
-	org.jetbrains.kotlin.ui.tests.editors.completion.KotlinBasicCompletionTest.class,
-	org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions.KotlinReplaceGetIntentionTest.class,
-	org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions.KotlinSpecifyTypeTest.class,
-	org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport.KotlinAutoImportTest.class} )
-public class AllTests {
+public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
+
+	@Test
+	public void standardArrayListAutoImport() {
+		doTest();
+	}
+
+	@Test
+	public void packageArrayListAutoImport() {
+		doTest();
+	}
+	
+	@Test
+	public void sameProjectJavaClassAutoImport() {
+		doTest();
+	}
+
 }
