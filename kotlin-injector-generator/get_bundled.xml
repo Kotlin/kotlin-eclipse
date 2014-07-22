@@ -1,0 +1,20 @@
+<project default="download_bundled">
+	<property name="idea-sources-build-id" value="144918"/>
+	<property name="compiler.tag" value="bootstrap" />
+	
+	<property name="teamcity-base" value="http://teamcity.jetbrains.com"/>
+	<property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/bt345/${compiler.tag}.tcbuildtag" />
+	<property name="idea-sdk-url" value="${teamcity-base}/guestAuth/repository/download/bt410/${idea-sources-build-id}:id" />
+	
+	<property name="target.dir" value="lib"/>
+	
+	<target name="download_bundled">
+        <mkdir dir="${target.dir}" />
+        <delete includeemptydirs="true">
+            <fileset dir="${target.dir}" includes="**/*" />
+        </delete>
+        
+        <get src="${idea-sdk-url}/core/intellij-core.jar" dest="${target.dir}/intellij-core.jar" usetimestamp="true"/>
+    </target>
+	
+</project>

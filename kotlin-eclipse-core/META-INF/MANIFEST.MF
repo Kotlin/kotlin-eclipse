@@ -18,7 +18,11 @@ Import-Package: com.intellij.openapi.vfs,
  org.eclipse.jdt.core,
  org.eclipse.jdt.internal.core,
  org.eclipse.jdt.internal.corext.dom,
- org.jetbrains.jet.plugin
+ org.jetbrains.jet.di,
+ org.jetbrains.jet.plugin,
+ org.jetbrains.kotlin.core.resolve,
+ org.jetbrains.kotlin.core.utils,
+ com.google.common.collect
 Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.builder,
  org.jetbrains.kotlin.core.launch,

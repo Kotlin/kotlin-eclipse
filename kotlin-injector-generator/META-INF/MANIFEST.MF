@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: kotlin-injector-generator
+Bundle-SymbolicName: kotlin-injector-generator
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: com.intellij.openapi.project,
+ org.eclipse.core.runtime;version="3.4.0",
+ org.eclipse.jdt.core,
+ org.jetbrains.jet.context,
+ org.jetbrains.jet.di,
+ org.jetbrains.jet.lang.descriptors,
+ org.jetbrains.jet.lang.resolve,
+ org.jetbrains.jet.lang.resolve.java,
+ org.jetbrains.jet.lang.resolve.java.resolver,
+ org.jetbrains.jet.lang.resolve.kotlin,
+ org.osgi.framework;version="1.7.0"

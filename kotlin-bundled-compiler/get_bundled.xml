@@ -1,23 +1,25 @@
 <project default="get_bundled">
-	<property name="idea-sources-build-id" value="132618"/>
+	<property name="idea-sources-build-id" value="149643"/>
 	<property name="compiler.tag" value="for_eclipse" />
 	
-	<property name="teamcity-base" value="http://teamcity.jetbrains.com"/>	
+	<property name="teamcity-base" value="http://teamcity.jetbrains.com"/>
+	<property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/bt345/${compiler.tag}.tcbuildtag" />
 	<property name="idea-sdk-url" value="${teamcity-base}/guestAuth/repository/download/bt410/${idea-sources-build-id}:id" />
 	
 	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
+	<property name="injector-generator-file" value="injector-generator.jar"/>
+	<property name="guava-file" value="guava-17.0.jar"/>
 	
 	<property name="project.name" value="kotlin-bundled-compiler" />
-	
-	
+		
 	<condition property="target.dir" value="${teamcity.build.workingDir}/lib" else="lib">
 		<isset property="teamcity.build.workingDir"/>
 	</condition>
 	
 	<property name="download.name" value="downloads" />
 	<property name="download.dir" value="${target.dir}/${download.name}" />
-
+	
 	<target name="refresh_eclipse" unless="no_eclipse">
 		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
 	</target>
@@ -31,7 +33,7 @@
 		<mkdir dir="${download.dir}" />
 
 		<get 
-			src="${teamcity-base}/guestAuth/repository/download/bt345/${compiler.tag}.tcbuildtag/kotlin-plugin-{build.number}.zip" 
+			src="${teamcity-kotlin-url}/kotlin-plugin-{build.number}.zip" 
 			dest="${download.dir}/${compiler-artifact-file}" 
 			usetimestamp="true" />
 
@@ -56,8 +58,16 @@
 			<mapper type="merge" to="kotlin-jdk-annotations.jar" />
 		</unzip>
 
+		<get 
+			src="${teamcity-kotlin-url}/InjectorGenerator/injector-generator.jar"
+			dest="${target.dir}/${injector-generator-file}" />
+		
+		<get
+			src="${idea-sdk-url}/core/guava-17.0.jar"
+			dest="${target.dir}/${guava-file}" />
+
 		<!-- Also retrivive sources -->
-		<get src="${teamcity-base}/guestAuth/repository/download/bt345/bootstrap.tcbuildtag/kotlin-compiler-sources.jar" 
+		<get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar" 
 					dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
 		
 		<!-- Get idea sources -->
