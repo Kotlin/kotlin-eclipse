@@ -51,7 +51,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     
     private static final String DEFAULT_SOURCE_FOLDER = "";
     private static final String DEFAULT_PACKAGE = "";
-
+    
     private static final String NAME_LABEL_TITLE = "Name";
     private static final String SOURCE_FOLDER_LABEL_TITLE = "Source folder";
     private static final String PACKAGE_LABEL_TITLE = "Package";
@@ -71,7 +71,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     
     protected NewUnitWizardPage(String title, String description, String unitName, IStructuredSelection selection) {
         super(title, description);
-
+        
         this.selection = selection;
         this.unitName = unitName;
     }
@@ -360,4 +360,5 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     private boolean unitIsNameLegal(String unitName) {
         return unitName.matches("^" + JAVA_IDENTIFIER_REGEXP + FileCreationOp.getExtensionRegexp() + "$");
     }
+    
 }

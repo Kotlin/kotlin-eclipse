@@ -38,17 +38,17 @@ import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 class FileCreationOp implements IRunnableWithProgress {
-
+    
     private final static String EXT = "." + JetFileType.INSTANCE.getDefaultExtension();
-
+    
     private final IPackageFragmentRoot sourceDir;
     private final IPackageFragment packageFragment;
     private final String unitName;
     private final String contents;
     private final Shell shell;
-
+    
     private IFile result;
-
+    
     FileCreationOp(IPackageFragmentRoot sourceDir, IPackageFragment packageFragment, String unitName, String contents,
             Shell shell) {
         this.sourceDir = sourceDir;

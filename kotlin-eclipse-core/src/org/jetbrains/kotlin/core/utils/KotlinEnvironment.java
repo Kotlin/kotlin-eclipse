@@ -173,7 +173,7 @@ public class KotlinEnvironment {
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "jet");
         javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "ktm");
-
+        
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
         
         javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class,

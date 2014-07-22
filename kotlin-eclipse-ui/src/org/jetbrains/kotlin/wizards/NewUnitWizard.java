@@ -56,7 +56,7 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         
         return true;
     }
-
+    
     protected void openFile(IFile file) {
         IWorkbenchWindow window = getWorkbench().getActiveWorkbenchWindow();
         
@@ -100,4 +100,5 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         
         return String.format(PACKAGE_FORMAT, pckg);
     }
+    
 }
