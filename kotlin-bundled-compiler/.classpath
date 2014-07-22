@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/guava-17.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-compiler.jar" sourcepath="lib/kotlin-compiler-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-runtime.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/injector-generator.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

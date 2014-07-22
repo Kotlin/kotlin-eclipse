@@ -7,6 +7,7 @@ Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
+ lib/guava-17.0.jar,
  lib/kotlin-compiler.jar,
  lib/kotlin-runtime.jar
 Export-Package: com.google.common.base,
@@ -106,4 +107,15 @@ Export-Package: com.google.common.base,
  org.jetbrains.jet.renderer,
  org.jetbrains.jet.util,
  org.jetbrains.jet.util.slicedmap,
- org.jetbrains.jet.utils
+ org.jetbrains.jet.utils,
+ org.jetbrains.jet.context,
+ org.jetbrains.jet.storage,
+ kotlin,
+ org.jetbrains.jet.lang.resolve.java.sources,
+ org.jetbrains.jet.lang.resolve.java.structure,
+ org.jetbrains.jet.lang.resolve.java.resolver,
+ org.jetbrains.jet.lang.resolve.java.lazy,
+ org.jetbrains.jet.lang.reflect,
+ org.jetbrains.jet.lang.resolve.java.structure.impl,
+ org.jetbrains.jet.utils,
+ org.jetbrains.jet.di
