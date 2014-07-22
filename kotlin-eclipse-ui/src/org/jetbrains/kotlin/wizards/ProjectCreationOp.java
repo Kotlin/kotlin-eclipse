@@ -48,28 +48,28 @@ import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class ProjectCreationOp implements IRunnableWithProgress {
-
+    
     private static final String SRC_FOLDER = "src";
     private static final String BIN_FOLDER = "bin";
-
+    
     private final IProjectDescription projectDescription;
     private final String projectName;
     private final Shell shell;
-
+    
     private IProject result;
     private IJavaProject javaResult;
-
+    
     public ProjectCreationOp(String projectName, String projectLocation, Shell shell) {
         projectDescription = buildProjectDescription(projectName, projectLocation);
 
         this.projectName = projectName;
         this.shell = shell;
     }
-
+    
     public IProject getResult() {
         return result;
     }
-
+    
     public IJavaProject getJavaResult() {
         if (javaResult == null) {
             try {
@@ -83,7 +83,7 @@ public class ProjectCreationOp implements IRunnableWithProgress {
 
         return javaResult;
     }
-
+    
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         CreateProjectOperation operation = new CreateProjectOperation(projectDescription, projectName);
@@ -100,7 +100,7 @@ public class ProjectCreationOp implements IRunnableWithProgress {
             KotlinLogger.logAndThrow(e);
         }
     }
-
+    
     private static IProjectDescription buildProjectDescription(String projectName, String projectLocation) {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
@@ -128,18 +128,18 @@ public class ProjectCreationOp implements IRunnableWithProgress {
 
     private static IJavaProject buildJavaProject(IProject project) throws CoreException, FileNotFoundException {
         IJavaProject result = JavaCore.create(project);
-
+        
         IFolder binFolder = project.getFolder(BIN_FOLDER);
         if (!binFolder.exists()) {
             binFolder.create(false, true, null);
         }
         result.setOutputLocation(binFolder.getFullPath(), null);
-
+        
         IFolder srcFolder = project.getFolder(SRC_FOLDER);
         if (!srcFolder.exists()) {
             srcFolder.create(false, true, null);
         }
-
+        
         IFolder libFolder = project.getFolder(LaunchConfigurationDelegate.LIB_FOLDER);
         if (!libFolder.exists()) {
             libFolder.create(false, true, null);
@@ -150,7 +150,7 @@ public class ProjectCreationOp implements IRunnableWithProgress {
         if (!kotlinRuntime.exists()) {
             kotlinRuntime.create(new FileInputStream(kotlinRuntimeJarFile.getFullPath().toOSString()), true, null);
         }
-
+        
         result.setRawClasspath(new IClasspathEntry[] {
                 JavaCore.newContainerEntry(new Path(JavaRuntime.JRE_CONTAINER)),
                 JavaCore.newSourceEntry(result.getPackageFragmentRoot(srcFolder).getPath()),

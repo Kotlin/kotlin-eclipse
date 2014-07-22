@@ -48,46 +48,46 @@ import org.eclipse.ui.dialogs.SelectionDialog;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class NewUnitWizardPage extends AbstractWizardPage {
-
+    
     private static final String DEFAULT_SOURCE_FOLDER = "";
     private static final String DEFAULT_PACKAGE = "";
 
     private static final String NAME_LABEL_TITLE = "Name";
     private static final String SOURCE_FOLDER_LABEL_TITLE = "Source folder";
     private static final String PACKAGE_LABEL_TITLE = "Package";
-
+    
     private static final String ILLEGAL_UNIT_NAME_MESSAGE = "Please enter a legal compilation unit name";
     private static final String SELECT_SOURCE_FOLDER_MESSAGE = "Please select a source folder";
     private static final String ILLEGAL_PACKAGE_NAME_MESSAGE = "Please enter a legal package name";
     private static final String UNIT_EXISTS_MESSAGE = "File already exists";
-
+    
     private static final String JAVA_IDENTIFIER_REGEXP = "[a-zA-Z_]\\w*";
-
+    
     private String unitName;
     private String packageName;
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
     private final IStructuredSelection selection;
-
+    
     protected NewUnitWizardPage(String title, String description, String unitName, IStructuredSelection selection) {
         super(title, description);
 
         this.selection = selection;
         this.unitName = unitName;
     }
-
+    
     public IPackageFragment getPackageFragment() {
         return packageFragment;
     }
-
+    
     public IPackageFragmentRoot getSourceDir() {
         return sourceDir;
     }
-
+    
     public String getUnitName() {
         return unitName;
     }
-
+    
     public IProject getProject() {
         if (sourceDir != null) {
             return sourceDir.getJavaProject().getProject();
@@ -95,21 +95,21 @@ public class NewUnitWizardPage extends AbstractWizardPage {
             return null;
         }
     }
-
+    
     @Override
     protected void createControls(Composite parent) {
         createSourceFolderField(parent);
         createPackageField(parent);
-
+        
         createSeparator(parent);
-
+        
         Text name = createNameField(parent);
         name.forceFocus();
     }
-
+    
     private Text createNameField(Composite parent) {
         createLabel(parent, NAME_LABEL_TITLE);
-
+        
         final Text name = createText(parent, unitName);
         name.addModifyListener(new ModifyListener() {
             @Override
@@ -118,12 +118,12 @@ public class NewUnitWizardPage extends AbstractWizardPage {
                 validate();
             }
         });
-
+        
         createEmptySpace(parent);
-
+        
         return name;
     }
-
+    
     private void setSourceDirByFolderName(String folderName) {
         try {
             sourceDir = null;
@@ -139,13 +139,13 @@ public class NewUnitWizardPage extends AbstractWizardPage {
             KotlinLogger.logAndThrow(jme);
         }
     }
-
+    
     private Text createSourceFolderField(Composite parent) {
         createLabel(parent, SOURCE_FOLDER_LABEL_TITLE);
-
+        
         String sourceFolderFromSelection = getSourceFolderFromSelection();
         setSourceDirByFolderName(sourceFolderFromSelection);
-
+        
         final Text folder = createText(parent, sourceFolderFromSelection);
         folder.addModifyListener(new ModifyListener() {
             @Override
@@ -154,7 +154,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
                 validate();
             }
         });
-
+        
         createButton(parent, BROWSE_BUTTON_TITLE, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -165,20 +165,20 @@ public class NewUnitWizardPage extends AbstractWizardPage {
                     folder.setText(folderName);
                     packageFragment = sourceDir.getPackageFragment(packageName);
                 }
-
+                
                 validate();
             }
         });
-
+        
         return folder;
     }
-
+    
     private Text createPackageField(Composite parent) {
         createLabel(parent, PACKAGE_LABEL_TITLE);
-
+        
         String packageFromSelection = getPackageFromSelection();
         packageName = packageFromSelection;
-
+        
         final Text pkg = createText(parent, packageFromSelection);
         pkg.addModifyListener(new ModifyListener() {
             @Override
@@ -187,7 +187,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
                 validate();
             }
         });
-
+        
         createButton(parent, BROWSE_BUTTON_TITLE, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -218,28 +218,28 @@ public class NewUnitWizardPage extends AbstractWizardPage {
                 }
             }
         });
-
+        
         return pkg;
     }
-
+    
     private String getSourceFolderFromSelection() {
         String defaultFolder = DEFAULT_SOURCE_FOLDER;
-
+        
         if (selection.isEmpty()) {
             return defaultFolder;
         }
-
+        
         Object selectedObject = selection.getFirstElement();
-
+        
         if (selectedObject instanceof IJavaElement) {
             IJavaElement selectedJavaElement = (IJavaElement) selectedObject;
             switch (selectedJavaElement.getElementType()) {
             case IJavaElement.JAVA_PROJECT:
                 return getDefaultSrcByProject((IJavaProject) selectedJavaElement);
-
+                
             case IJavaElement.PACKAGE_FRAGMENT_ROOT:
                 return selectedJavaElement.getPath().toPortableString();
-
+                
             case IJavaElement.PACKAGE_FRAGMENT:
             case IJavaElement.COMPILATION_UNIT:
                 return selectedJavaElement.getPath().uptoSegment(2).toPortableString();
@@ -249,30 +249,30 @@ public class NewUnitWizardPage extends AbstractWizardPage {
             switch (selectedResource.getType()) {
             case IResource.FOLDER:
                 return getDefaultSrcByProject(JavaCore.create(selectedResource.getProject()));
-
+                
             case IResource.FILE:
                 return selectedResource.getFullPath().uptoSegment(2).toPortableString();
             }
         }
-
+        
         return defaultFolder;
     }
-
+    
     private String getPackageFromSelection() {
         String defaultPackage = DEFAULT_PACKAGE;
-
+        
         if (selection.isEmpty()) {
             return defaultPackage;
         }
-
+        
         Object selectedObject = selection.getFirstElement();
-
+        
         if (selectedObject instanceof IJavaElement) {
             IJavaElement selectedJavaElement = (IJavaElement) selectedObject;
             switch (selectedJavaElement.getElementType()) {
             case IJavaElement.PACKAGE_FRAGMENT:
                 return selectedJavaElement.getElementName();
-
+                
             case IJavaElement.COMPILATION_UNIT:
                 try {
                     return selectedJavaElement.getJavaProject().findPackageFragment(
@@ -295,38 +295,38 @@ public class NewUnitWizardPage extends AbstractWizardPage {
                 break;
             }
         }
-
+        
         return defaultPackage;
     }
-
+    
     private String getDefaultSrcByProject(IJavaProject javaProject) {
         String destFolder = javaProject.getPath().toPortableString();
-
+        
         IClasspathEntry[] classpathEntries = null;
         try {
             classpathEntries = javaProject.getRawClasspath();
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
-
+            
             return destFolder;
         }
-
+        
         for (IClasspathEntry classpathEntry : classpathEntries) {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
                 destFolder += IPath.SEPARATOR + classpathEntry.getPath().segment(1);
                 break;
             }
         }
-
+        
         return destFolder;
     }
-
+    
     @Override
     protected String createErrorMessage() {
         if (sourceDir != null && packageNameIsLegal()) {
             packageFragment = sourceDir.getPackageFragment(packageName);
         }
-
+        
         if (sourceDir == null) {
             return SELECT_SOURCE_FOLDER_MESSAGE;
         } else if (!packageNameIsLegal()) {
@@ -339,26 +339,25 @@ public class NewUnitWizardPage extends AbstractWizardPage {
             return null;
         }
     }
-
+    
     @Override
     protected boolean resourceAlreadyExists() {
         return fileExists(makeFile(packageFragment, sourceDir, unitName));
     }
-
+    
     private boolean packageNameIsLegal(String packageName) {
         return packageName.matches("^(|" + JAVA_IDENTIFIER_REGEXP + "(\\." + JAVA_IDENTIFIER_REGEXP + ")*)$");
     }
-
+    
     private boolean packageNameIsLegal() {
         return packageName != null && packageNameIsLegal(packageName);
     }
-
+    
     private boolean unitIsNameLegal() {
         return unitName != null && unitIsNameLegal(unitName);
     }
-
+    
     private boolean unitIsNameLegal(String unitName) {
         return unitName.matches("^" + JAVA_IDENTIFIER_REGEXP + FileCreationOp.getExtensionRegexp() + "$");
     }
-
 }

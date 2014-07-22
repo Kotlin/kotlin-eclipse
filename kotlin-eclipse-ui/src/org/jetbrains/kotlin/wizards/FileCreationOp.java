@@ -57,11 +57,11 @@ class FileCreationOp implements IRunnableWithProgress {
         this.shell = shell;
         this.unitName = unitName;
     }
-
+    
     public IFile getResult() {
         return result;
     }
-
+    
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException {
         result = makeFile(packageFragment, sourceDir, unitName);
@@ -78,7 +78,7 @@ class FileCreationOp implements IRunnableWithProgress {
             KotlinLogger.logAndThrow(e);
         }
     }
-
+    
     static String getCompilationUnitName(String name) {
         if (name.endsWith(EXT)) {
             return name;
