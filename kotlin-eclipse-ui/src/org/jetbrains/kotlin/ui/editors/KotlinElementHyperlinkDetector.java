@@ -42,7 +42,7 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         
-        IAction openAction = textEditor.getAction("OpenEditor");
+        IAction openAction = textEditor.getAction(OpenDeclarationAction.OPEN_EDITOR_TEXT);
         if (!(openAction instanceof SelectionDispatchAction)) {
             return null;
         }
