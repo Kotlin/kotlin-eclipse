@@ -389,4 +389,24 @@
          </description>
       </perspective>
    </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
+      <target
+            id="org.jetbrains.kotlin.ui.editors.kotlinCode"
+            name="Kotlin Editor">
+         <context
+               type="org.jetbrains.kotlin.ui.editors.KotlinEditor">
+         </context>
+      </target>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector
+            activate="true"
+            class="org.jetbrains.kotlin.ui.editors.KotlinElementHyperlinkDetector"
+            id="org.jetbrains.kotlin.ui.editors.KotlinElementHyperlinkDetector"
+            name="KotlinElementHyperlinkDetector"
+            targetId="org.jetbrains.kotlin.ui.editors.kotlinCode">
+      </hyperlinkDetector>
+   </extension>
 </plugin>

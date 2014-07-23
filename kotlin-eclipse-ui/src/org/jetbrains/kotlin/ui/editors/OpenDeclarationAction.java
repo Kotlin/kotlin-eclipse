@@ -71,6 +71,8 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
 
 public class OpenDeclarationAction extends SelectionDispatchAction {
+    
+    public static final String OPEN_EDITOR_TEXT = "OpenEditor";
 
     private final JavaEditor editor;
     private final IJavaProject javaProject;
@@ -82,11 +84,8 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         file = EditorUtil.getFile(editor);
         javaProject = JavaCore.create(file.getProject());
     }
-
-    @Override
-    public void run(ITextSelection selection) {
-        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
-        JetReferenceExpression expression = getSelectedExpression(jetFile, selection.getOffset());
+    
+    private void doRun(JetReferenceExpression expression) {
         PsiElement element = getTargetElement(expression);
         
         if (element == null) {
@@ -100,6 +99,22 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         } catch (PartInitException e) {
             KotlinLogger.logError(e);
         }
+    }
+
+    @Override
+    public void run(ITextSelection selection) {
+        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+        doRun(getSelectedExpression(jetFile, selection.getOffset()));
+    }
+    
+    @Override
+    public void run(IStructuredSelection selection) {
+        Object expression = selection.getFirstElement();
+        
+        if (!(expression instanceof JetReferenceExpression)) {
+            return;
+        }
+        doRun((JetReferenceExpression) expression);
     }
     
     @Nullable
@@ -285,6 +300,17 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     
     @Nullable
     private JetReferenceExpression getSelectedExpression(@NotNull JetFile jetFile, int offset) {
+        return getSelectedExpression(editor, jetFile, offset);
+    }
+    
+    @Nullable
+    public static IEditorPart openInEditor(IFile file) throws PartInitException {
+        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        return IDE.openEditor(page, file, false);
+    }
+    
+    @Nullable
+    public static JetReferenceExpression getSelectedExpression(@NotNull JavaEditor editor, @NotNull JetFile jetFile, int offset) {
         IDocument document = editor.getViewer().getDocument();
         
         offset = LineEndUtil.convertCrToOsOffset(document.get(), offset);
@@ -295,15 +321,5 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         }
         
         return PsiTreeUtil.getParentOfType(psiExpression, JetSimpleNameExpression.class);
-    }
-    
-    @Nullable
-    public static IEditorPart openInEditor(IFile file) throws PartInitException {
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        return IDE.openEditor(page, file, false);
-    }
-    
-    @Override
-    public void run(IStructuredSelection selection) {
     }
 }
