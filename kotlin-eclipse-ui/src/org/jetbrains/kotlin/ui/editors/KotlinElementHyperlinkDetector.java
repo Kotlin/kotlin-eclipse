@@ -35,7 +35,7 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
         }
         KotlinEditor kotlinEditor = (KotlinEditor) textEditor;
         
-        IAction openAction = textEditor.getAction("OpenAction");
+        IAction openAction = textEditor.getAction(OpenDeclarationAction.OPEN_EDITOR_TEXT);
         if (!(openAction instanceof OpenDeclarationAction)) {
             return null;
         }

@@ -88,7 +88,7 @@ public class KotlinEditor extends CompilationUnitEditor {
         IAction openDeclarationAction = new OpenDeclarationAction(this);
         openDeclarationAction.setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
         openDeclarationAction.setText(ActionMessages.OpenAction_declaration_label);
-        setAction("OpenEditor", openDeclarationAction);
+        setAction(OpenDeclarationAction.OPEN_EDITOR_TEXT, openDeclarationAction);
     }
     
     @Override

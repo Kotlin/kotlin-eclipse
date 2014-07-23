@@ -69,6 +69,8 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
 
 public class OpenDeclarationAction extends SelectionDispatchAction {
+    
+    public static final String OPEN_EDITOR_TEXT = "OpenEditor";
 
     private final JavaEditor editor;
     private final IJavaProject javaProject;
