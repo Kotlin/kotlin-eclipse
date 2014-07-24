@@ -17,12 +17,15 @@
 package org.jetbrains.kotlin.ui.editors.quickfix;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
@@ -43,6 +46,8 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.intellij.openapi.util.TextRange;
 
 public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolutionGenerator2 {
@@ -75,8 +80,21 @@ public class KotlinAutoImportMarkerResolutionGenerator implements IMarkerResolut
         if (markedText == null) {
             return NO_RESOLUTIONS;
         }
+                
+        Collection<IType> typeResolutions = Collections2.filter(findAllTypes(markedText), new Predicate<IType>() {
+            
+            @Override
+            public boolean apply(IType type) {
+                try {
+                    return Flags.isPublic(type.getFlags());
+                } catch (JavaModelException e) {
+                    KotlinLogger.logAndThrow(e);
+                }
+                
+                return false;
+            }
+        });
         
-        List<IType> typeResolutions = findAllTypes(markedText);
         List<AutoImportMarkerResolution> markerResolutions = new ArrayList<AutoImportMarkerResolution>();
         for (IType type : typeResolutions) {
             markerResolutions.add(new AutoImportMarkerResolution(type));
