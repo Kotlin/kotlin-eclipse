@@ -50,7 +50,7 @@ public class EditorTestUtils {
 			actual = actual.substring(0, caretOffset) + TextEditorTest.CARET + actual.substring(caretOffset);
 		}
 		
-		String expectedWithoutCR =  expected.replaceAll("\r", "");
+		String expectedWithoutCR = expected.replaceAll("\r", "");
 		String actualWithoutCR = actual.replaceAll("\r", "");
 		
 		Assert.assertEquals(expectedWithoutCR, actualWithoutCR);
