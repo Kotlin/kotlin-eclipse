@@ -19,18 +19,16 @@ package org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.ui.IMarkerResolution;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
@@ -38,57 +36,75 @@ import org.jetbrains.kotlin.ui.editors.KotlinCorrectionProcessor;
 import org.jetbrains.kotlin.ui.editors.quickfix.AutoImportMarkerResolution;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
 import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.rules.TestName;
 
-public abstract class KotlinAutoImportTestCase extends KotlinEditorTestCase {
+public abstract class KotlinAutoImportTestCase extends KotlinEditorAutoTestCase {
 	
-	private static class SourceFileData {
+	private static class AutoimportSourceFileData extends SourceFileData {
+		
+		private static final String NO_TARGET_FILE_FOUND_ERROR_MESSAGE = "No target file found";
+		private static final String NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT = "No target file found for \'%s\' file";
+		
+		private String contentAfter = null;
 
-		private final static String DEFAULT_PACKAGE_NAME = "";
-		private final static String JAVA_IDENTIFIER_REGEXP = "[_a-zA-Z]\\w*";
-		private final static String PACKAGE_REGEXP = "package\\s((" + JAVA_IDENTIFIER_REGEXP + ")(\\." + JAVA_IDENTIFIER_REGEXP + ")*)";
-		private final static Pattern PATTERN = Pattern.compile(PACKAGE_REGEXP);
-
-		private final String packageName;
-		private final String content;
-
-		public SourceFileData(File file) {
-			this.content = getText(file);
-			this.packageName = getPackageFromContent(content);
+		public AutoimportSourceFileData(File file) {
+			super(file);
 		}
-
-		public String getPackageName() {
-			return packageName;
+		
+		public String getContentAfter() {
+			return contentAfter;
 		}
-
-		public String getContent() {
-			return content;
+		
+		public void setContentAfter(String contentAfter) {
+			this.contentAfter = contentAfter;
 		}
-
-		private static String getPackageFromContent(String content) {
-			Matcher matcher = PATTERN.matcher(content);
-			return matcher.find() ? matcher.group(1) : DEFAULT_PACKAGE_NAME;
+		
+		public boolean isTarget() {
+			return contentAfter != null;
+		}
+		
+		public static Collection<AutoimportSourceFileData> getTestFiles(File testFolder) {
+			Map<String, AutoimportSourceFileData> result = new HashMap<String, AutoimportSourceFileData>();
+			
+			File targetAfterFile = null;
+			for (File file : testFolder.listFiles()) {
+				String fileName = file.getName();
+				
+				if (!fileName.endsWith(AFTER_FILE_EXTENSION)) {
+					result.put(fileName, new AutoimportSourceFileData(file));
+				} else {
+					targetAfterFile = file;
+				}
+			}
+			
+			if (targetAfterFile == null) {
+				throw new RuntimeException(NO_TARGET_FILE_FOUND_ERROR_MESSAGE);
+			}
+			
+			AutoimportSourceFileData target = result.get(targetAfterFile.getName().replace(AFTER_FILE_EXTENSION, ""));
+			if (target == null) {
+				throw new RuntimeException(String.format(NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT, targetAfterFile.getAbsolutePath()));
+			}
+			
+			target.setContentAfter(getText(targetAfterFile));		
+			
+			return result.values();
+		}
+		
+		public static AutoimportSourceFileData getTargetFile(Collection<AutoimportSourceFileData> files) {
+			for (AutoimportSourceFileData data : files) {
+				if (data.isTarget()) {
+					return data;
+				}
+			}
+			
+			return null;
 		}
 	}
-
-	private static final String KT_FILE_EXTENSION = ".kt";
-	private static final String AFTER_FILE_EXTENSION = ".after";
-	private static final String TEST_DATA_PROJECT_RELATIVE = "testData/completion/autoimport/";
+	
+	private static final String AUTOIMPORT_TEST_DATA_PATH = "completion/autoimport/";
 	
 	private static final String COUNT_ASSERTION_ERROR_MESSAGE = "Number of actual proposals differs from the number of expected proposals";
 	private static final String EXISTENCE_ASSERTION_ERROR_MESSAGE_FORMAT = "List of actual proposals doesn't contain expected proposal: %s";
-
-	@Rule
-	public TestName name = new TestName();
-	
-	private String getTestNameProjectRelative() {
-		return TEST_DATA_PROJECT_RELATIVE + name.getMethodName();
-	}
-	
-	private JavaEditor getEditor() {
-		return testEditor.getEditor();
-	}
 	
 	private List<ICompletionProposal> createProposals() {
 		return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(new TextInvocationContext(getEditor().getViewer(), getCaret(), -1)));
@@ -108,50 +124,33 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorTestCase {
 		EditorTestUtils.assertByEditor(getEditor(), content);
 	}
 	
-	protected void doTest() {
-		String testPath = getTestNameProjectRelative();
-		File testFile = new File(testPath);
-		
-		if (testFile.exists() && testFile.isDirectory()) {
-			doMultiFileTest(testFile);
-		} else {
-			doSingleFileTest(testPath + KT_FILE_EXTENSION);
-		}
-	}
-	
-	private void doSingleFileTest(String testPath) {
+	@Override
+	protected void doSingleFileAutoTest(String testPath) {
 		String fileText = getText(testPath);
-		testEditor = configureEditor(getNameByPath(testPath), fileText, TextEditorTest.TEST_PROJECT_NAME, TextEditorTest.TEST_PACKAGE_NAME);
+		testEditor = configureEditor(getNameByPath(testPath), fileText, TextEditorTest.TEST_PROJECT_NAME, AutoimportSourceFileData.getPackageFromContent(fileText));
 
 		performTest(fileText, getText(testPath + AFTER_FILE_EXTENSION));
 	}
 	
-	private void doMultiFileTest(File testFolder) {
-		Map<String, SourceFileData> map = new HashMap<String, SourceFileData>();
+	@Override
+	protected void doMultiFileAutoTest(File testFolder) {
+		Collection<AutoimportSourceFileData> files = AutoimportSourceFileData.getTestFiles(testFolder);
 		
-		String targetFileName = null;
-		File targetAfterTestFile = null;
-		for (File file : testFolder.listFiles()) {
-			String fileName = file.getName();
-			
-			if (!fileName.endsWith(AFTER_FILE_EXTENSION)) {
-				map.put(fileName, new SourceFileData(file));
-			} else {
-				targetFileName = fileName.replace(AFTER_FILE_EXTENSION, "");
-				targetAfterTestFile = file;
+		AutoimportSourceFileData target = AutoimportSourceFileData.getTargetFile(files);
+		testEditor = configureEditor(target.getFileName(), target.getContent(), TextEditorTest.TEST_PROJECT_NAME, target.getPackageName());
+		
+		for (AutoimportSourceFileData data : files) {
+			if (!data.isTarget()) {
+				createSourceFile(data.getPackageName(), data.getFileName(), data.getContent());
 			}
 		}
 		
-		SourceFileData target = map.get(targetFileName);
-		testEditor = configureEditor(targetFileName, target.getContent(), TextEditorTest.TEST_PROJECT_NAME, target.getPackageName());
-		map.remove(targetFileName);
-		
-		for (Map.Entry<String, SourceFileData> entry : map.entrySet()) {
-			SourceFileData data = entry.getValue();
-			createSourceFile(data.getPackageName(), entry.getKey(), data.getContent());
-		}
-		
-		performTest(target.getContent(), getText(targetAfterTestFile));
+		performTest(target.getContent(), target.getContentAfter());
+	}
+	
+	@Override
+	protected String getTestDataPath() {
+		return super.getTestDataPath() + AUTOIMPORT_TEST_DATA_PATH;
 	}
 	
 	private static void assertCount(List<ICompletionProposal> proposals, String fileText) {
