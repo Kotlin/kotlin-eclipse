@@ -1,0 +1,3 @@
+package navigation
+
+public open class <caret>Foo

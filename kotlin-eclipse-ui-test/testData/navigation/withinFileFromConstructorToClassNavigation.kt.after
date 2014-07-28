@@ -1,0 +1,7 @@
+package temp
+
+fun test() {
+	BigTest()
+}
+
+class <caret>BigTest
