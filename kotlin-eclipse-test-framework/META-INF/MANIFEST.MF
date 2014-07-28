@@ -23,7 +23,8 @@ Import-Package: com.intellij.openapi.util,
  org.jetbrains.kotlin.ui.editors,
  org.jetbrains.kotlin.utils,
  com.intellij.openapi.util.io,
- org.junit;version="4.10.0"
+ org.junit;version="4.10.0",
+ org.junit.rules;version="4.10.0"
 Export-Package: org.jetbrains.kotlin.testframework.editor,
  org.jetbrains.kotlin.testframework.utils
 Bundle-Vendor: JetBrains
