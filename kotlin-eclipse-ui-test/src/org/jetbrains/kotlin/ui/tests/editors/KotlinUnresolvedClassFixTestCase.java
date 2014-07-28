@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFile;
 
-public class KotlinUnresolvedClassFixTestCase extends KotlinEditorTestCase {
+public abstract class KotlinUnresolvedClassFixTestCase extends KotlinEditorTestCase {
 
 	public void doTest(String input, List<SourceFile> files, String expected) {
 		testEditor = configureEditor("Test.kt", input);

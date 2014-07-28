@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.ui.editors.ColorManager;
 import org.jetbrains.kotlin.ui.editors.IColorConstants;
 import org.junit.Assert;
 
-public class KotlinHighlightningTestCase extends KotlinEditorTestCase {
+public abstract class KotlinHighlightningTestCase extends KotlinEditorTestCase {
 	
 	private static final ColorManager COLOR_MANAGER = new ColorManager();
 	private static final Color KEYWORD = COLOR_MANAGER.getColor(IColorConstants.KEYWORD);
@@ -36,7 +36,6 @@ public class KotlinHighlightningTestCase extends KotlinEditorTestCase {
 	private static final String STRING_CLOSE = "</string>";
 	private static final String COMMENT_OPEN = "<comment>";
 	private static final String COMMENT_CLOSE = "</comment>";
-	
 
 	protected void doTest(String input) {
 		testEditor = configureEditor("Test.kt", removeColorTags(input));
@@ -84,6 +83,5 @@ public class KotlinHighlightningTestCase extends KotlinEditorTestCase {
 				.replaceAll(STRING_CLOSE, "")
 				.replaceAll(COMMENT_OPEN, "")
 				.replaceAll(COMMENT_CLOSE, "");
-				
 	}
 }

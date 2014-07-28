@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.eclipse.ui.PlatformUI;
 
-public class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase {
+public abstract class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase {
 	
 	protected void doTest(String inputFileName, String input, String expected) {
 		doTest(inputFileName, input, null, expected);

@@ -14,20 +14,15 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.editors;
+package org.jetbrains.kotlin.ui.tests.editors.completion;
 
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
-import org.junit.Assert;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public abstract class KotlinBracketInserterTestCase extends KotlinEditorTestCase {
+@RunWith(Suite.class)
+@Suite.SuiteClasses( { 
+	KotlinBasicCompletionTest.class
+} )
+public class AllTests {
 
-	protected void doTest(String input, char element, String expected) {
-		testEditor = configureEditor("Test.kt", input);
-		
-		testEditor.type(element);
-		
-		String actual = testEditor.getEditorInput();
-		
-		Assert.assertEquals(expected, actual);
-	}
 }
