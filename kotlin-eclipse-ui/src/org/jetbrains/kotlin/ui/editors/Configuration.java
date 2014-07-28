@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
+import java.util.Map;
+
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
@@ -215,5 +218,14 @@ public class Configuration extends JavaSourceViewerConfiguration {
         public Object getInformation2(ITextViewer textViewer, IRegion subject) {
             return KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
         }
+    }
+    
+    @Override
+    protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
+        Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
+        targets.remove("org.eclipse.jdt.ui.javaCode");
+        targets.put("org.jetbrains.kotlin.ui.editors.kotlinCode", getEditor());
+        
+        return targets;
     }
 }
