@@ -1,0 +1,3 @@
+package navigation
+
+public class Bar : <caret>Foo()
