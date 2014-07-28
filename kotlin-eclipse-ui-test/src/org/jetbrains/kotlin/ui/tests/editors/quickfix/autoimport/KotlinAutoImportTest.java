@@ -22,17 +22,17 @@ public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
 
 	@Test
 	public void standardArrayListAutoImport() {
-		doTest();
+		doAutoTest();
 	}
 
 	@Test
 	public void packageArrayListAutoImport() {
-		doTest();
+		doAutoTest();
 	}
 	
 	@Test
 	public void sameProjectJavaClassAutoImport() {
-		doTest();
+		doAutoTest();
 	}
 
 }
