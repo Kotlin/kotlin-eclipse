@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProposal;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinReplaceGetAssistProposal;
 import org.junit.Assert;
 
-public class KotlinReplaceGetIntentionTestCase extends KotlinEditorTestCase {
+public abstract class KotlinReplaceGetIntentionTestCase extends KotlinEditorTestCase {
 	
 	protected void doTest(String testPath) {
 		doTestFor(testPath, new KotlinReplaceGetAssistProposal());	

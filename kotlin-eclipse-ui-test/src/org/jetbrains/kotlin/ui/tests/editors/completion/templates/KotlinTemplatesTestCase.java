@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 import org.junit.Assert;
 
-public class KotlinTemplatesTestCase extends KotlinEditorTestCase {
+public abstract class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 	
 	public void doTest(String input) {
 		doTest(input, input);

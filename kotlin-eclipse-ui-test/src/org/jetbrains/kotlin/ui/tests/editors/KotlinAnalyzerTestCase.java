@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.junit.Assert;
 
-public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
+public abstract class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 
 	protected void doTest(String input, String fileName) {
 		testEditor = configureEditor(fileName, input);

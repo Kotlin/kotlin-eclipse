@@ -47,5 +47,4 @@ public class KotlinCustomLocationBugTest extends KotlinEditorTestCase {
 		Assert.assertEquals(1, files.size());
 		Assert.assertEquals(expectedSourcePath.toFile(), files.get(0));
 	}
-	
 }
