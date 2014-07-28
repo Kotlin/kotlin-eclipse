@@ -206,14 +206,13 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
-        command.add("-src");
-        command.add(srcDirectories.toString());
-        
         command.add("-classpath");
         command.add(classPath.toString());
         
-        command.add("-output");
+        command.add("-d");
         command.add(getOutputDir(configuration));
+        
+        command.add(srcDirectories.toString());
         
         return command;
     }
