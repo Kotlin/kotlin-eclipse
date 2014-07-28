@@ -26,26 +26,31 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import com.intellij.openapi.util.io.FileUtil;
 
 public abstract class KotlinEditorTestCase {
-	
+
 	public enum Separator {
 		TAB, SPACE;
 	}
 	
-	protected TextEditorTest testEditor;
 	public static final String ERR_TAG_OPEN = "<err>";
 	public static final String ERR_TAG_CLOSE = "</err>";
 	public static final String BR = "<br>";
 	
+    @Rule
+    public TestName name = new TestName();
+	protected TextEditorTest testEditor;
 	private Separator initialSeparator;
 	private int initialSpacesCount;
 
@@ -65,8 +70,12 @@ public abstract class KotlinEditorTestCase {
 		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 	}
 	
+    protected JavaEditor getEditor() {
+		return testEditor.getEditor();
+	}
+	
     protected int getCaret() {
-		return testEditor.getEditor().getViewer().getTextWidget().getCaretOffset();
+		return getEditor().getViewer().getTextWidget().getCaretOffset();
 	}
     
 	public void createSourceFile(String pkg, String fileName, String content) {
