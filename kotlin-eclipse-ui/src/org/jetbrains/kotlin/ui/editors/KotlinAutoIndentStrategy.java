@@ -62,9 +62,27 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
     private void autoEditBeforeCloseBrace(IDocument document, DocumentCommand command) {
         if (isNewLineBefore(document, command.offset)) {
-            int indent = computeIndentByOffset(document, command.offset);
-            command.offset -= indent * IndenterUtil.getDefaultIndent();
-            command.text = IndenterUtil.createWhiteSpace(indent - 1, 0) + "}";
+            try {
+                int indent = IndenterUtil.getDefaultIndent();
+                                
+                while (indent > 0) {
+                    char c = document.getChar(command.offset - 1);
+                    if (c == '\t') {
+                        indent -= IndenterUtil.getDefaultIndent();
+                    } else if (c == ' ') {
+                        indent--;
+                    } else {
+                        break;
+                    }
+                    
+                    command.offset--;
+                    document.replace(command.offset, 1, "");
+                }
+            } catch (BadLocationException e) {
+                KotlinLogger.logAndThrow(e);
+            }
+            
+            command.text = "}";
         }
     }
     

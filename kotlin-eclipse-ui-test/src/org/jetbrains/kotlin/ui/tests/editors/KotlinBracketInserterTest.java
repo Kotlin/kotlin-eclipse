@@ -19,7 +19,7 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import org.junit.Test;
 
 public class KotlinBracketInserterTest extends KotlinBracketInserterTestCase {
-
+    
 	@Test
 	public void simpleBracketAutoCompletion() {
 		doTest("<caret>", '(', "()");
@@ -48,5 +48,20 @@ public class KotlinBracketInserterTest extends KotlinBracketInserterTestCase {
 	@Test
 	public void insertBracketInsideString() {
 		doTest("\"Hel<caret>lo\"", '(', "\"Hel(lo\"");
+	}
+	
+   @Test
+    public void insertClosingBraceOnLastLine() {
+        doTest("fun foo() {\n\tFoo()\n<caret>", '}', "fun foo() {\n\tFoo()\n}");
+    }
+	
+	@Test
+	public void insertClosingBrace() {
+	    doTest("fun foo() {\n\tFoo()\n<caret>\nclass Foo", '}', "fun foo() {\n\tFoo()\n}\nclass Foo");
+	}
+	
+	@Test
+	public void insertClosingBraceWithRemovingTabulation() {
+	    doTest("class Foo {\n\tfun foo() {\n\t\tFoo()\n\t\t<caret>\n}", '}', "class Foo {\n\tfun foo() {\n\t\tFoo()\n\t}\n}");
 	}
 }
