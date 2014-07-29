@@ -41,6 +41,9 @@ import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiErrorElement;
+import com.intellij.psi.PsiFile;
 
 public class DiagnosticAnnotationUtil {
 
@@ -74,6 +77,36 @@ public class DiagnosticAnnotationUtil {
         }
         
         return annotations;
+    }
+    
+    @NotNull
+    public List<DiagnosticAnnotation> createParsingDiagnosticAnnotations(@NotNull PsiFile psiFile) {
+        return recursiveCreateParsingDiagnosticAnnotations(psiFile);
+    }
+    
+    @NotNull
+    private List<DiagnosticAnnotation> recursiveCreateParsingDiagnosticAnnotations(@NotNull PsiElement psiElement) {
+        List<DiagnosticAnnotation> result = new ArrayList<DiagnosticAnnotation>();
+        
+        if (psiElement instanceof PsiErrorElement) {
+            result.add(createKotlinAnnotation((PsiErrorElement) psiElement));
+        } else {
+            for (PsiElement child : psiElement.getChildren()) {
+                result.addAll(recursiveCreateParsingDiagnosticAnnotations(child));
+            }
+        }
+
+        return result;
+    }
+    
+    @NotNull
+    private DiagnosticAnnotation createKotlinAnnotation(@NotNull PsiErrorElement psiErrorElement) {
+        return new DiagnosticAnnotation(
+                psiErrorElement.getNode().getTextRange(),
+                AnnotationManager.ANNOTATION_ERROR_TYPE,
+                psiErrorElement.getErrorDescription(),
+                psiErrorElement.getText(),
+                false);
     }
     
     @NotNull

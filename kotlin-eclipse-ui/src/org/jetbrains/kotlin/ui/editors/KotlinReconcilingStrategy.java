@@ -38,6 +38,8 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
+import com.intellij.psi.PsiFile;
+
 public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
     private final JavaEditor editor;
@@ -65,15 +67,24 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         updateActiveOutlinePage();
     }
     
-    private void updateLineAnnotations(IFile file) {
+    private static void updateLineAnnotations(IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        Diagnostics diagnostics = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file)).getDiagnostics();
+        PsiFile psiFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
+        Diagnostics diagnostics = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, psiFile).getDiagnostics();        
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
+        
+        List<DiagnosticAnnotation> parsingAnnotations = DiagnosticAnnotationUtil.INSTANCE.createParsingDiagnosticAnnotations(psiFile);
+        if (annotations.containsKey(file)) {
+            annotations.get(file).addAll(parsingAnnotations);
+        } else {
+            annotations.put(file, parsingAnnotations);
+        }
+        
         DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
     }
     
-    private void updateActiveOutlinePage() {
+    private static void updateActiveOutlinePage() {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
