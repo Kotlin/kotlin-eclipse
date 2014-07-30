@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
@@ -43,7 +44,7 @@ public abstract class KotlinAnalyzerTestCase extends KotlinProjectTestCase {
 			
 			String editorInputWithoutCR = editorInput.toString().replaceAll("\r", "");
 			input = input
-					.replaceAll("<br>", System.lineSeparator())
+					.replaceAll(KotlinEditorTestCase.BREAK_TAG, System.lineSeparator())
 					.replaceAll("\r", "");
 			
 			Assert.assertEquals(input, editorInputWithoutCR);
