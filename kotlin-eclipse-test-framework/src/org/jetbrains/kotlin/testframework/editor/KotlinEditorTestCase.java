@@ -46,6 +46,7 @@ public abstract class KotlinEditorTestCase {
 		TAB, SPACE;
 	}
 	
+	public static final String CARET_TAG = "<caret>";
 	public static final String ERROR_TAG_OPEN = "<error>";
 	public static final String ERROR_TAG_CLOSE = "</error>";
 	public static final String WARNING_TAG_OPEN = "<warning>";
@@ -161,7 +162,7 @@ public abstract class KotlinEditorTestCase {
     }
     
     public static String removeTags(String text) {
-    	return resolveTestTags(text).replaceAll("<caret>", "");
+    	return resolveTestTags(text).replaceAll(CARET_TAG, "");
     }
 	
     public static String getNameByPath(String testPath) {

@@ -27,8 +27,6 @@ import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class TextEditorTest {
-	
-	public static String CARET = "<caret>";
 
 	public static final String TEST_PROJECT_NAME = "test_project";
 	public static final String TEST_PACKAGE_NAME = "testing";
@@ -57,7 +55,7 @@ public class TextEditorTest {
 		if (editor == null) {
 			try {
 				int cursor = getCursorPosition(content);
-				content = content.replaceAll(CARET, "");
+				content = content.replaceAll(KotlinEditorTestCase.CARET_TAG, "");
 				
 				IFile file = testProject.createSourceFile(packageName, name, content);
 				editor = (JavaEditor) EditorTestUtils.openInEditor(file);
@@ -72,8 +70,8 @@ public class TextEditorTest {
 	
 	private int getCursorPosition(String content) {
 		int cursor = -1;
-        if (content.contains(CARET)) {
-            cursor = content.indexOf(CARET);
+        if (content.contains(KotlinEditorTestCase.CARET_TAG)) {
+            cursor = content.indexOf(KotlinEditorTestCase.CARET_TAG);
         }
         
         return cursor;
