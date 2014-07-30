@@ -44,7 +44,7 @@ public class EditorTestUtils {
 	public static void assertByEditor(JavaEditor activeEditor, String expected) {
 		String actual = EditorUtil.getSourceCode(activeEditor);
 		
-		expected = expected.replaceAll("<br>", System.lineSeparator());
+		expected = expected.replaceAll(KotlinEditorTestCase.BREAK_TAG, System.lineSeparator());
 		if (expected.contains(KotlinEditorTestCase.CARET_TAG)) {
 			int caretOffset = activeEditor.getViewer().getTextWidget().getCaretOffset();
 			actual = actual.substring(0, caretOffset) + KotlinEditorTestCase.CARET_TAG + actual.substring(caretOffset);

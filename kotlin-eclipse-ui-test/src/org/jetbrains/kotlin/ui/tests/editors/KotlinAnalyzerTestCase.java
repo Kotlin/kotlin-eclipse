@@ -35,7 +35,7 @@ public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 			
 			String editorInputWithoutCR = editorInput.toString().replaceAll("\r", "");
 			input = input
-					.replaceAll("<br>", System.lineSeparator())
+					.replaceAll(BREAK_TAG, System.lineSeparator())
 					.replaceAll("\r", "");
 			
 			Assert.assertEquals(input, editorInputWithoutCR);
