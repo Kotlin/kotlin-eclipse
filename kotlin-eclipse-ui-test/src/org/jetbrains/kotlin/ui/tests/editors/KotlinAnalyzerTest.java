@@ -34,7 +34,7 @@ public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
 	public void checkAnalyzerFoundError() {
 		doTest(
 			"fun main(args : Array<String>) {<br>" +
-			"<err>prin</err>(\"Hello\")<br>" +
+			"<error>prin</error>(\"Hello\")<br>" +
 			"}", "Test2.kt");
 	}
 	

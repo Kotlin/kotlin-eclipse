@@ -57,11 +57,11 @@ public abstract class KotlinAnalyzerTestCase extends KotlinProjectTestCase {
 		int tagShift = 0;
 		for (IMarker marker : markers) {
 			if (marker.getAttribute(IMarker.SEVERITY, 0) == IMarker.SEVERITY_ERROR) {
-				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_START) + tagShift, KotlinTestUtils.ERR_TAG_OPEN);
-				tagShift += KotlinTestUtils.ERR_TAG_OPEN.length();
+				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_START) + tagShift, KotlinTestUtils.ERROR_TAG_OPEN);
+				tagShift += KotlinTestUtils.ERROR_TAG_OPEN.length();
 				
-				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_END) + tagShift, KotlinTestUtils.ERR_TAG_CLOSE);
-				tagShift += KotlinTestUtils.ERR_TAG_CLOSE.length();
+				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_END) + tagShift, KotlinTestUtils.ERROR_TAG_CLOSE);
+				tagShift += KotlinTestUtils.ERROR_TAG_CLOSE.length();
 			}
 		}
 		

@@ -17,8 +17,8 @@ public class KotlinTestUtils {
 		TAB, SPACE;
 	}
 	
-	public static final String ERR_TAG_OPEN = "<err>";
-	public static final String ERR_TAG_CLOSE = "</err>";
+	public static final String ERROR_TAG_OPEN = "<error>";
+	public static final String ERROR_TAG_CLOSE = "</error>";
 	public static final String BR = "<br>";
 
 	public static String getText(String testPath) {
@@ -59,8 +59,8 @@ public class KotlinTestUtils {
 	
 	public static String resolveTestTags(String text) {
 		return text
-				.replaceAll(ERR_TAG_OPEN, "")
-				.replaceAll(ERR_TAG_CLOSE, "")
+				.replaceAll(ERROR_TAG_OPEN, "")
+				.replaceAll(ERROR_TAG_CLOSE, "")
 				.replaceAll(BR, System.lineSeparator());
     }
 }

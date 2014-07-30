@@ -46,8 +46,10 @@ public abstract class KotlinEditorTestCase {
 		TAB, SPACE;
 	}
 	
-	public static final String ERR_TAG_OPEN = "<err>";
-	public static final String ERR_TAG_CLOSE = "</err>";
+	public static final String ERROR_TAG_OPEN = "<error>";
+	public static final String ERROR_TAG_CLOSE = "</error>";
+	public static final String WARNING_TAG_OPEN = "<warning>";
+	public static final String WARNING_TAG_CLOSE = "</warning>";
 	public static final String BR = "<br>";
 	
     @Rule
@@ -155,8 +157,10 @@ public abstract class KotlinEditorTestCase {
 	
     public static String resolveTestTags(String text) {
 		return text
-				.replaceAll(ERR_TAG_OPEN, "")
-				.replaceAll(ERR_TAG_CLOSE, "")
+				.replaceAll(ERROR_TAG_OPEN, "")
+				.replaceAll(ERROR_TAG_CLOSE, "")
+				.replaceAll(WARNING_TAG_OPEN, "")
+				.replaceAll(WARNING_TAG_CLOSE, "")
 				.replaceAll(BR, System.lineSeparator());
     }
     
