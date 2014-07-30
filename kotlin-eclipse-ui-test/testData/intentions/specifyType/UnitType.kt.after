@@ -1,2 +1,2 @@
 // "Specify type explicitly" "true"
-val x: Unit = Unit.VALUE
+val x: Unit = Unit
