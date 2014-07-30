@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase.Separator;
@@ -50,7 +51,7 @@ public abstract class KotlinAutoIndenterTestCase extends KotlinProjectTestCase {
     	TextEditorTest testEditor = configureEditor("Test.kt", resolvedInput);
     	setStorePreference(false, 2);
     	
-    	if (input.contains(TextEditorTest.CARET)) {
+    	if (input.contains(KotlinEditorTestCase.CARET_TAG)) {
     		testEditor.typeEnter();
     	}
     	

@@ -25,7 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
-import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.junit.Assert;
 
@@ -45,9 +45,9 @@ public class EditorTestUtils {
 		String actual = EditorUtil.getSourceCode(activeEditor);
 		
 		expected = expected.replaceAll("<br>", System.lineSeparator());
-		if (expected.contains(TextEditorTest.CARET)) {
+		if (expected.contains(KotlinEditorTestCase.CARET_TAG)) {
 			int caretOffset = activeEditor.getViewer().getTextWidget().getCaretOffset();
-			actual = actual.substring(0, caretOffset) + TextEditorTest.CARET + actual.substring(caretOffset);
+			actual = actual.substring(0, caretOffset) + KotlinEditorTestCase.CARET_TAG + actual.substring(caretOffset);
 		}
 		
 		String expectedWithoutCR = expected.replaceAll("\r", "");
