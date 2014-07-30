@@ -49,11 +49,11 @@ public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 		int tagShift = 0;
 		for (IMarker marker : markers) {
 			if (marker.getAttribute(IMarker.SEVERITY, 0) == IMarker.SEVERITY_ERROR) {
-				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_START) + tagShift, ERR_TAG_OPEN);
-				tagShift += ERR_TAG_OPEN.length();
+				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_START) + tagShift, ERROR_TAG_OPEN);
+				tagShift += ERROR_TAG_OPEN.length();
 				
-				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_END) + tagShift, ERR_TAG_CLOSE);
-				tagShift += ERR_TAG_CLOSE.length();
+				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_END) + tagShift, ERROR_TAG_CLOSE);
+				tagShift += ERROR_TAG_CLOSE.length();
 			}
 		}
 		
