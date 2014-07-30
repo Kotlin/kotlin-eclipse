@@ -27,24 +27,24 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
+import com.intellij.openapi.util.Condition;
+import com.intellij.util.containers.ContainerUtil;
 
 public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase {
     
     private static class NavigationSourceFileData extends SourceFileData {
         
-        public static final Predicate<NavigationSourceFileData> IS_BEFORE_PREDICATE = new Predicate<NavigationSourceFileData>() {
+        public static final Condition<NavigationSourceFileData> IS_BEFORE_PREDICATE = new Condition<NavigationSourceFileData>() {
             @Override
-            public boolean apply(NavigationSourceFileData data) {
+            public boolean value(NavigationSourceFileData data) {
                 return data.isBefore;
             }
             
         };
         
-        public static final Predicate<NavigationSourceFileData> IS_AFTER_PREDICATE = new Predicate<NavigationSourceFileData>() {
+        public static final Condition<NavigationSourceFileData> IS_AFTER_PREDICATE = new Condition<NavigationSourceFileData>() {
             @Override
-            public boolean apply(NavigationSourceFileData data) {
+            public boolean value(NavigationSourceFileData data) {
                 return data.isAfter;
             }
             
@@ -78,8 +78,8 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         }
         
         public static NavigationSourceFileData getFileByPredicate(Iterable<NavigationSourceFileData> files,
-                Predicate<NavigationSourceFileData> predicate) {
-            return Iterables.<NavigationSourceFileData> find(files, predicate, null);
+                Condition<NavigationSourceFileData> predicate) {
+            return ContainerUtil.find(files, predicate);
         }
     }
     
