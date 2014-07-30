@@ -104,4 +104,5 @@ Export-Package: com.google.common.base,
  org.jetbrains.jet.renderer,
  org.jetbrains.jet.util,
  org.jetbrains.jet.util.slicedmap,
- org.jetbrains.jet.utils
+ org.jetbrains.jet.utils,
+ com.intellij.util

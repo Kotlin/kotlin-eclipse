@@ -49,6 +49,8 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.osgi.framework.Bundle;
 
+import com.intellij.openapi.util.text.StringUtil;
+
 public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     
     public final static String LIB_FOLDER = "lib";
@@ -146,11 +148,11 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     private boolean compileKotlinFiles(@NotNull List<IFile> files, @NotNull ILaunchConfiguration configuration)
             throws CoreException {
         List<String> command = configureBuildCommand(configuration);
-        
+         
         refreshInitData();
         try {
-            Process buildProcess = Runtime.getRuntime().exec(command.toArray(new String[command.size()]));
-            parseCompilerOutput(buildProcess.getInputStream());
+            Process buildProcess = Runtime.getRuntime().exec(StringUtil.join(command, " "));
+            parseCompilerOutput(buildProcess.getErrorStream());
             
             buildProcess.waitFor();
             
@@ -192,28 +194,26 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         command.add(KT_HOME);
         command.add("-tags");
         
-        StringBuilder classPath = new StringBuilder();
-        String pathSeparator = System.getProperty("path.separator");
         IJavaProject javaProject = getJavaProject(configuration);
-        StringBuilder srcDirectories = new StringBuilder();
         
+        StringBuilder srcDirectories = new StringBuilder();
         for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-            srcDirectories.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
-            classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
+            srcDirectories.append(StringUtil.QUOTER.fun(srcDirectory.getAbsolutePath())).append(" ");
         }
         
+        StringBuilder classPath = new StringBuilder();
+        String pathSeparator = System.getProperty("path.separator");
         for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
             classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
-        command.add("-src");
-        command.add(srcDirectories.toString());
-        
         command.add("-classpath");
-        command.add(classPath.toString());
+        command.add(StringUtil.QUOTER.fun(classPath.toString()));
         
-        command.add("-output");
-        command.add(getOutputDir(configuration));
+        command.add("-d");
+        command.add(StringUtil.QUOTER.fun(getOutputDir(configuration)));
+        
+        command.add(srcDirectories.toString());
         
         return command;
     }
