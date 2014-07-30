@@ -57,7 +57,7 @@ public class TextEditorTest {
 	public JavaEditor createEditor(String name, String content, String packageName) {
 		if (editor == null) {
 			try {
-				int cursor = getCursorPosition(content);
+				int cursor = content.indexOf(KotlinEditorTestCase.CARET_TAG);
 				content = content.replaceAll(KotlinEditorTestCase.CARET_TAG, "");
 				
 				IFile file = testProject.createSourceFile(packageName, name, content);
@@ -69,15 +69,6 @@ public class TextEditorTest {
 		}
 		
 		return editor;
-	}
-	
-	private int getCursorPosition(String content) {
-		int cursor = -1;
-        if (content.contains(KotlinEditorTestCase.CARET_TAG)) {
-            cursor = content.indexOf(KotlinEditorTestCase.CARET_TAG);
-        }
-        
-        return cursor;
 	}
 	
 	public void type(char c) {
