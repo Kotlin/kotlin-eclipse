@@ -19,12 +19,12 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jetbrains.kotlin.testframework.utils.SourceFile;
+import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 import org.junit.Test;
 
 public class KotlinUnresolvedClassFixTest extends KotlinUnresolvedClassFixTestCase {
 	
-	List<SourceFile> NO_REFERENCE_FILES = new ArrayList<SourceFile>();
+	List<SourceFileData> NO_REFERENCE_FILES = new ArrayList<SourceFileData>();
 
 	@Test
 	public void importOneStandardClass() {
@@ -67,8 +67,8 @@ public class KotlinUnresolvedClassFixTest extends KotlinUnresolvedClassFixTestCa
 
 	@Test
 	public void importLocalJavaClass() {
-		List<SourceFile> files = new ArrayList<>();
-		files.add(new SourceFile(
+		List<SourceFileData> files = new ArrayList<>();
+		files.add(new SourceFileData(
 				"JavaClass1.java", 
 
 				"package testing;<br>" +
@@ -84,8 +84,8 @@ public class KotlinUnresolvedClassFixTest extends KotlinUnresolvedClassFixTestCa
 	
 	@Test
 	public void importLocalJavaInterface() {
-		List<SourceFile> files = new ArrayList<>();
-		files.add(new SourceFile(
+		List<SourceFileData> files = new ArrayList<>();
+		files.add(new SourceFileData(
 				"JavaInterface1.java", 
 
 				"package testing;<br>" +
@@ -101,8 +101,8 @@ public class KotlinUnresolvedClassFixTest extends KotlinUnresolvedClassFixTestCa
 	
 	@Test
 	public void importLocalJavaEnum() {
-		List<SourceFile> files = new ArrayList<>();
-		files.add(new SourceFile(
+		List<SourceFileData> files = new ArrayList<>();
+		files.add(new SourceFileData(
 				"JavaEnum1.java", 
 
 				"package testing;<br>" +

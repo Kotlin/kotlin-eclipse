@@ -17,45 +17,78 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jetbrains.kotlin.testframework.utils.SourceFileData;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
 
-	protected static class SourceFileData {
-		
-		private final static String DEFAULT_PACKAGE_NAME = "";
-		private final static String JAVA_IDENTIFIER_REGEXP = "[_a-zA-Z]\\w*";
-		private final static String PACKAGE_REGEXP = "package\\s((" + JAVA_IDENTIFIER_REGEXP + ")(\\." + JAVA_IDENTIFIER_REGEXP + ")*)";
-		private final static Pattern PATTERN = Pattern.compile(PACKAGE_REGEXP);
-		
-		private final String fileName;
-		private final String packageName;
-		private final String content;
+	protected abstract static class EditorSourceFileData extends SourceFileData {
 
-		public SourceFileData(File file) {
-			this.fileName = file.getName();
-			this.content = getText(file);
-			this.packageName = getPackageFromContent(content);
-		}
-		
-		public String getFileName() {
-			return fileName; 
-		}
-		
-		public String getPackageName() {
-			return packageName;
-		}
-
-		public String getContent() {
-			return content;
-		}
-
-		public static String getPackageFromContent(String content) {
-			Matcher matcher = PATTERN.matcher(content);
-			return matcher.find() ? matcher.group(1) : DEFAULT_PACKAGE_NAME;
+		public EditorSourceFileData(File file) {
+			super(file.getName(), getText(file));
 		}
 	}
+	
+	protected static class WithAfterSourceFileData extends EditorSourceFileData {
+        
+	    private static final Predicate<WithAfterSourceFileData> TARGET_PREDICATE = new Predicate<WithAfterSourceFileData>() {
+            @Override
+            public boolean apply(WithAfterSourceFileData data) {
+                return data.contentAfter != null;
+            }
+	    };
+       
+        private static final String NO_TARGET_FILE_FOUND_ERROR_MESSAGE = "No target file found";
+        private static final String NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT = "No target file found for \'%s\' file";
+        
+        private String contentAfter = null;
+        
+        public WithAfterSourceFileData(File file) {
+            super(file);
+        }
+        
+        public String getContentAfter() {
+            return contentAfter;
+        }
+        
+        public static Collection<WithAfterSourceFileData> getTestFiles(File testFolder) {
+            Map<String, WithAfterSourceFileData> result = new HashMap<String, WithAfterSourceFileData>();
+            
+            File targetAfterFile = null;
+            for (File file : testFolder.listFiles()) {
+                String fileName = file.getName();
+                
+                if (!fileName.endsWith(AFTER_FILE_EXTENSION)) {
+                    result.put(fileName, new WithAfterSourceFileData(file));
+                } else {
+                    targetAfterFile = file;
+                }
+            }
+            
+            if (targetAfterFile == null) {
+                throw new RuntimeException(NO_TARGET_FILE_FOUND_ERROR_MESSAGE);
+            }
+            
+            WithAfterSourceFileData target = result.get(targetAfterFile.getName().replace(AFTER_FILE_EXTENSION, ""));
+            if (target == null) {
+                throw new RuntimeException(String.format(NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT, targetAfterFile.getAbsolutePath()));
+            }
+            
+            target.contentAfter = getText(targetAfterFile);       
+            
+            return result.values();
+        }
+        
+        public static WithAfterSourceFileData getTargetFile(Iterable<WithAfterSourceFileData> files) {
+            return Iterables.<WithAfterSourceFileData>find(files, TARGET_PREDICATE, null);
+        }
+    }
 	
 	protected final void doAutoTest() {
 		String testPath = getTestDataPath() + name.getMethodName();
