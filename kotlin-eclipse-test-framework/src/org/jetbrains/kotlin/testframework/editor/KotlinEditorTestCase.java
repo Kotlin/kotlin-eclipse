@@ -84,7 +84,7 @@ public abstract class KotlinEditorTestCase {
 	}
     
 	public void createSourceFile(String pkg, String fileName, String content) {
-		content = removeTags(content).replaceAll("\r", "").replaceAll("\n", System.lineSeparator());
+		content = removeTags(content);
 		try {
 			testEditor.getTestJavaProject().createSourceFile(pkg, fileName, content);
 		} catch (CoreException e) {

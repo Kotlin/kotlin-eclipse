@@ -43,8 +43,8 @@ public class SourceFileData {
     public SourceFileData(File file) throws IOException {
     	this(file.getName(), FileUtil.loadFile(file));
 	}
-
-	public String getFileName() {
+    
+    public String getFileName() {
         return fileName; 
     }
     
