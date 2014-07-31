@@ -59,6 +59,10 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             }
         }
         
+        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getProject())) {
+            DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);
+        }
+        
         for (Map.Entry<IFile, List<DiagnosticAnnotation>> entry : annotations.entrySet()) {
             for (DiagnosticAnnotation annotation : entry.getValue()) {
                 AnnotationManager.addProblemMarker(annotation, entry.getKey());
