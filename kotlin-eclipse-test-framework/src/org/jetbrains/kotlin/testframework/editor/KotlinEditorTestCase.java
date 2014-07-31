@@ -92,7 +92,11 @@ public abstract class KotlinEditorTestCase {
 	}
 	
 	protected static TextEditorTest configureEditor(String fileName, String content) {
-    	return configureEditor(fileName, content, TextEditorTest.TEST_PROJECT_NAME, TextEditorTest.TEST_PACKAGE_NAME);
+    	return configureEditor(fileName, content, TextEditorTest.TEST_PACKAGE_NAME);
+    }
+	
+	protected static TextEditorTest configureEditor(String fileName, String content, String packageName) {
+        return configureEditor(fileName, content, TextEditorTest.TEST_PROJECT_NAME, packageName);
     }
 	
     protected static TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {

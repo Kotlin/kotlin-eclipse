@@ -26,16 +26,16 @@ import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
-import org.jetbrains.kotlin.testframework.utils.SourceFile;
+import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 
 public abstract class KotlinUnresolvedClassFixTestCase extends KotlinEditorTestCase {
 
-	public void doTest(String input, List<SourceFile> files, String expected) {
+	public void doTest(String input, List<SourceFileData> files, String expected) {
 		testEditor = configureEditor("Test.kt", input);
 
 		if (files != null) {
-			for (SourceFile file : files) {
-				createSourceFile(file.getName(), file.getContent());
+			for (SourceFileData data : files) {
+				createSourceFile(data.getFileName(), data.getContent());
 			}
 		}
 
