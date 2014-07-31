@@ -18,12 +18,19 @@ package org.jetbrains.kotlin.ui.tests.editors.markers;
 
 import java.io.File;
 import java.util.Collection;
+
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.testframework.utils.TypingUtils;
+import org.jetbrains.kotlin.ui.editors.AnnotationManager;
+import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
+import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class KotlinParsingMarkersTestCase extends KotlinEditorAutoTestCase {
     
@@ -32,9 +39,20 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorAutoTestCase {
     private void performTest(String fileText, String expected) {
         joinBuildThread();
         
+        IFile file = testEditor.getEditingFile();
+        
+        Character typedCharacter = TypingUtils.typedCharacter(fileText);
+        if (typedCharacter != null) {
+            testEditor.type(typedCharacter);
+            
+            for (DiagnosticAnnotation annotation : DiagnosticAnnotationUtil.INSTANCE.createParsingDiagnosticAnnotations(file)) {
+                AnnotationManager.addProblemMarker(annotation, file);
+            }
+        }
+        
         try {
             IMarker[] markers = testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
-            String actual = insertTagsForErrors(fileText, markers);
+            String actual = insertTagsForErrors(EditorUtil.getSourceCode(getEditor()), markers);
             
             EditorTestUtils.assertByStringWithOffset(actual, expected);
         } catch (CoreException e) {

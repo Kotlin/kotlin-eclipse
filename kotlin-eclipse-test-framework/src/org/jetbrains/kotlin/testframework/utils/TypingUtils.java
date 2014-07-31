@@ -14,29 +14,19 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.editors.markers;
+package org.jetbrains.kotlin.testframework.utils;
 
-import org.junit.Test;
+import static org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils.getItems;
 
-public class KotlinParsingMarkersTest extends KotlinParsingMarkersTestCase {
+import java.util.List;
+
+public class TypingUtils {
     
-    @Test
-    public void missingClosingBraceErrorTest() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void classDefinitionTypoErrorTest() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void missingFunctionBodyErrorTest() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void excessBraceTypingErrorTest() {
-        doAutoTest();
-    }
+    private static final String TYPE_PREFIX = "TYPE:";
+
+    public static Character typedCharacter(String fileText) {
+        List<String> items = getItems(fileText, TYPE_PREFIX);
+        
+        return !items.isEmpty() ? items.get(0).charAt(0) : null;
+    }    
 }
