@@ -174,7 +174,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message,
                     @NotNull CompilerMessageLocation messageLocation) {
                 if (CompilerMessageSeverity.ERROR.equals(messageSeverity)
-                        || CompilerMessageSeverity.EXCEPTION.equals(messageLocation)) {
+                        || CompilerMessageSeverity.EXCEPTION.equals(messageSeverity)) {
                     buildFailed = true;
                 }
                 
