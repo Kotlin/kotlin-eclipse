@@ -36,6 +36,7 @@ import org.jetbrains.jet.lang.diagnostics.Errors;
 import org.jetbrains.jet.lang.diagnostics.Severity;
 import org.jetbrains.jet.lang.diagnostics.rendering.DefaultErrorMessages;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
@@ -79,9 +80,19 @@ public class DiagnosticAnnotationUtil {
         return annotations;
     }
     
+    public void addParsingDiagnosticAnnotations(@NotNull IFile file, @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations) {
+        List<DiagnosticAnnotation> parsingAnnotations = createParsingDiagnosticAnnotations(file);
+        
+        if (annotations.containsKey(file)) {
+            annotations.get(file).addAll(parsingAnnotations);
+        } else {
+            annotations.put(file, parsingAnnotations);
+        }
+    }
+    
     @NotNull
-    public List<DiagnosticAnnotation> createParsingDiagnosticAnnotations(@NotNull PsiFile psiFile) {
-        return recursiveCreateParsingDiagnosticAnnotations(psiFile);
+    public List<DiagnosticAnnotation> createParsingDiagnosticAnnotations(@NotNull IFile file) {
+        return recursiveCreateParsingDiagnosticAnnotations(KotlinPsiManager.INSTANCE.getParsedFile(file));
     }
     
     @NotNull

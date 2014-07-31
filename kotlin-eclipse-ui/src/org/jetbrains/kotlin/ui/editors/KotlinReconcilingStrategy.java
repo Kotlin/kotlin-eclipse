@@ -74,13 +74,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         Diagnostics diagnostics = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, psiFile).getDiagnostics();        
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         
-        List<DiagnosticAnnotation> parsingAnnotations = DiagnosticAnnotationUtil.INSTANCE.createParsingDiagnosticAnnotations(psiFile);
-        if (annotations.containsKey(file)) {
-            annotations.get(file).addAll(parsingAnnotations);
-        } else {
-            annotations.put(file, parsingAnnotations);
-        }
-        
+        DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);
         DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
     }
     
