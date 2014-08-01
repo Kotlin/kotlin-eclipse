@@ -23,10 +23,11 @@ import org.jetbrains.jet.lexer.JetTokens;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 
 public class IndenterUtil {
-
-    private static final char tabChar = '\t';
-    private static final char spaceSeparator = ' ';
-    private static final String LINE_SEPARATOR = "\n";
+    
+    public static final char SPACE_CHAR = ' ';
+    public static final String SPACE_STRING = Character.toString(SPACE_CHAR);
+    public static final char TAB_CHAR = '\t';
+    public static final String TAB_STRING = Character.toString(TAB_CHAR);
     
     public static String createWhiteSpace(int indent, int countBreakLines) {
         return createWhiteSpace(indent, countBreakLines, System.lineSeparator());
@@ -43,7 +44,7 @@ public class IndenterUtil {
             if (isSpacesForTabs()) {
                 stringBuilder.append(tabAsSpaces);
             } else {
-                stringBuilder.append(tabChar);
+                stringBuilder.append(TAB_CHAR);
             }
         }
 
@@ -54,7 +55,7 @@ public class IndenterUtil {
         StringBuilder res = new StringBuilder();
         if (isSpacesForTabs()) {
             for (int i = 0; i < getDefaultIndent(); ++i) {
-               res.append(spaceSeparator);
+               res.append(SPACE_CHAR);
             }
         }
         
@@ -64,7 +65,7 @@ public class IndenterUtil {
     public static int getLineSeparatorsOccurences(String text) {
         int count = 0;
         for (int i = 0; i < text.length(); ++i) {
-            if (text.charAt(i) == LINE_SEPARATOR.charAt(0)) {
+            if (text.charAt(i) == LineEndUtil.NEW_LINE_CHAR) {
                 count++;
             }
         }
@@ -73,7 +74,7 @@ public class IndenterUtil {
     }
     
     public static boolean isNewLine(LeafPsiElement psiElement) {
-        return psiElement.getElementType() == JetTokens.WHITE_SPACE && psiElement.getText().contains(LINE_SEPARATOR);
+        return psiElement.getElementType() == JetTokens.WHITE_SPACE && psiElement.getText().contains(LineEndUtil.NEW_LINE_STRING);
     }
     
     public static int getDefaultIndent() {

@@ -17,13 +17,19 @@
 package org.jetbrains.kotlin.utils;
 
 public class LineEndUtil {
+    
+    public static final char CARRIAGE_RETURN_CHAR = '\r';
+    public static final String CARRIAGE_RETURN_STRING = Character.toString(CARRIAGE_RETURN_CHAR);
+    public static final char NEW_LINE_CHAR = '\n';
+    public static final String NEW_LINE_STRING = Character.toString(NEW_LINE_CHAR);
+    
     public static int convertLfToOsOffset(String lfText, int lfOffset) {
         String osLineSeparator = System.lineSeparator();
         if (osLineSeparator.length() == 1) {
             return lfOffset;
         }
         
-        assert osLineSeparator.equals("\r\n") : "Only \r\n is expected as multi char line separator";
+        assertLineSeparator(osLineSeparator);
         
         // In CrLf move to new line takes 2 char instead of 1 in Lf
         return lfOffset + offsetToLineNumber(lfText, lfOffset);
@@ -39,9 +45,9 @@ public class LineEndUtil {
             }
             
             char c = lfText.charAt(curOffset);
-            if (c == '\n') {
+            if (c == NEW_LINE_CHAR) {
                 line++;
-            } else if (c == '\r') {
+            } else if (c == CARRIAGE_RETURN_CHAR) {
                 throw new IllegalArgumentException("Given text shouldn't contain \\r char");
             }
             
@@ -57,7 +63,7 @@ public class LineEndUtil {
             return crOffset;
         }
         
-        assert osLineSeparator.equals("\r\n") : "Only \r\n is expected as multi char line separator";
+        assertLineSeparator(osLineSeparator);
         
         return crOffset - countCrToLineNumber(crText, crOffset);
     }
@@ -72,7 +78,7 @@ public class LineEndUtil {
             }
             
             char c = lfText.charAt(curOffset);
-            if (c == '\r') {
+            if (c == CARRIAGE_RETURN_CHAR) {
                 countCR++;
             } 
             
@@ -80,5 +86,9 @@ public class LineEndUtil {
         }
         
         return countCR;  
+    }
+    
+    private static void assertLineSeparator(String osLineSeparator) {
+        assert osLineSeparator.equals(CARRIAGE_RETURN_STRING + NEW_LINE_STRING) : "Only \r\n is expected as multi char line separator";
     }
 }

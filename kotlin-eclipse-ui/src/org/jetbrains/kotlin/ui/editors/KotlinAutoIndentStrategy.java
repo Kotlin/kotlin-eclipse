@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.IndenterUtil;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -40,6 +41,10 @@ import com.intellij.psi.PsiFile;
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
     public static final Set<String> BLOCK_ELEMENT_TYPES = new HashSet<String>(Arrays.asList("IF", "FOR", "WHILE", "FUN", "CLASS", "FUNCTION_LITERAL_EXPRESSION", "WHEN"));
+    
+    private static final char OPENING_BRACE_CHAR = '{';
+    private static final char CLOSING_BRACE_CHAR = '}';
+    private static final String CLOSING_BRACE_STRING = Character.toString(CLOSING_BRACE_CHAR);
     
     private final JavaEditor editor;
     
@@ -55,7 +60,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         
         if (command.length == 0 && command.text != null && isNewLine(document, command.text)) {
             autoEditAfterNewLine(document, command);
-        } else if ("}".equals(command.text)) {
+        } else if (CLOSING_BRACE_STRING.equals(command.text)) {
             autoEditBeforeCloseBrace(document, command);
         }
     }
@@ -67,10 +72,10 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                                 
                 while (indent > 0) {
                     char c = document.getChar(command.offset - 1);
-                    if (c == '\t') {
-                        indent -= IndenterUtil.getDefaultIndent();
-                    } else if (c == ' ') {
+                    if (c == IndenterUtil.SPACE_CHAR) {
                         indent--;
+                    } else if (c == IndenterUtil.TAB_CHAR) {
+                        indent -= IndenterUtil.getDefaultIndent();
                     } else {
                         break;
                     }
@@ -82,14 +87,14 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 KotlinLogger.logAndThrow(e);
             }
             
-            command.text = "}";
+            command.text = CLOSING_BRACE_STRING;
         }
     }
     
     private int findEndOfWhiteSpaceAfter(IDocument document, int offset, int end) throws BadLocationException {
         while (offset < end) {
             char c = document.getChar(offset);
-            if (c != ' ' && c != '\t') {
+            if (c != IndenterUtil.SPACE_CHAR && c != IndenterUtil.TAB_CHAR) {
                 return offset;
             }
             offset++;
@@ -100,7 +105,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     private int findEndOfWhiteSpaceBefore(IDocument document, int offset, int start) throws BadLocationException {
         while (offset >= start) {
             char c = document.getChar(offset);
-            if (c != ' ' && c != '\t') {
+            if (c != IndenterUtil.SPACE_CHAR && c != IndenterUtil.TAB_CHAR) {
                 return offset;
             }
             offset--;
@@ -110,7 +115,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
     private boolean isAfterOpenBrace(IDocument document, int offset, int startLineOffset) throws BadLocationException {
         int nonEmptyOffset = findEndOfWhiteSpaceBefore(document, offset, startLineOffset);
-        return document.getChar(nonEmptyOffset) == '{';
+        return document.getChar(nonEmptyOffset) == OPENING_BRACE_CHAR;
     }
     
     private boolean isBeforeCloseBrace(IDocument document, int offset, int endLineOffset) throws BadLocationException {
@@ -118,7 +123,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         if (nonEmptyOffset == document.getLength()) {
             nonEmptyOffset--;
         }
-        return document.getChar(nonEmptyOffset) == '}';
+        return document.getChar(nonEmptyOffset) == CLOSING_BRACE_CHAR;
     }
     
     private void autoEditAfterNewLine(IDocument document, DocumentCommand command) {
@@ -169,7 +174,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             
             IFile file = EditorUtil.getFile(editor);
             PsiFile parsedDocument = KotlinPsiManager.INSTANCE.getParsedFile(file, document.get());
-            if (document.get().contains("\r")) {
+            if (document.get().contains(LineEndUtil.CARRIAGE_RETURN_STRING)) {
                 offset -= document.getLineOfOffset(offset);
             }
             
@@ -206,9 +211,9 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     private boolean isNewLineBefore(IDocument document, int offset) {
         try {
             offset--;
-            String prev = " ";
+            String prev = IndenterUtil.SPACE_STRING;
             StringBuilder bufBefore = new StringBuilder(prev);
-            while ((" ".equals(prev) || "\t".equals(prev)) && offset > 0) {
+            while ((prev.equals(IndenterUtil.SPACE_STRING) || prev.equals(IndenterUtil.TAB_STRING)) && offset > 0) {
                 prev = document.get(offset--, 1);
                 bufBefore.append(prev);
             }

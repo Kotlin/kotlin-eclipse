@@ -31,6 +31,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
+import org.jetbrains.kotlin.utils.LineEndUtil;
+import org.jetbrains.kotlin.utils.StringUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -101,7 +103,7 @@ public abstract class KotlinEditorTestCase {
 	
     protected static TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {
     	TextEditorTest testEditor = new TextEditorTest(projectName);
-		String toEditor = resolveTestTags(content).replaceAll("\r", "").replaceAll("\n", System.lineSeparator());
+		String toEditor = StringUtil.removeAllCarriageReturns(resolveTestTags(content)).replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
 		testEditor.createEditor(fileName, toEditor, packageName);
 		
 		return testEditor;
