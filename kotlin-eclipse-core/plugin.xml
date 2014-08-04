@@ -11,7 +11,7 @@
       </launchConfigurationType>
    </extension>
    <extension
-         id="kotlinNature"
+         id="org.jetbrains.kotlin.core.kotlinNature"
          name="KotlinNature"
          point="org.eclipse.core.resources.natures">
       <runtime>
