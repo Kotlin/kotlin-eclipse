@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.utils.StringUtil;
 import org.junit.Assert;
 
 public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
@@ -33,10 +34,9 @@ public class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 			String editorInput = insertTagsForErrors(testEditor.getEditorInput(), 
 					testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE));
 			
-			String editorInputWithoutCR = editorInput.toString().replaceAll("\r", "");
-			input = input
-					.replaceAll(BREAK_TAG, System.lineSeparator())
-					.replaceAll("\r", "");
+			String editorInputWithoutCR = StringUtil.removeAllCarriageReturns(editorInput.toString());
+			input = StringUtil.removeAllCarriageReturns(input
+					.replaceAll(BREAK_TAG, System.lineSeparator()));
 			
 			Assert.assertEquals(input, editorInputWithoutCR);
 		} catch (CoreException e) {

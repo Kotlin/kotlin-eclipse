@@ -27,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.utils.EditorUtil;
+import org.jetbrains.kotlin.utils.StringUtil;
 import org.junit.Assert;
 
 public class EditorTestUtils {
@@ -55,10 +56,6 @@ public class EditorTestUtils {
             actual = actual.substring(0, caretOffset) + KotlinEditorTestCase.CARET_TAG + actual.substring(caretOffset);
         }
         
-        Assert.assertEquals(removeCarriegeReturns(expected), removeCarriegeReturns(actual));
-    }
-    
-    private static String removeCarriegeReturns(String s) {
-        return s.replaceAll("\r", "");
+        Assert.assertEquals(StringUtil.removeAllCarriageReturns(expected), StringUtil.removeAllCarriageReturns(actual));
     }
 }

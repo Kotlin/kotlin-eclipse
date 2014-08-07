@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.utils.EditorUtil;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 
 public class TextEditorTest {
 
@@ -87,7 +88,7 @@ public class TextEditorTest {
 	}
 	
 	public void typeEnter() {
-		type('\n');
+		type(LineEndUtil.NEW_LINE_CHAR);
 	}
 	
 	public void save() {
