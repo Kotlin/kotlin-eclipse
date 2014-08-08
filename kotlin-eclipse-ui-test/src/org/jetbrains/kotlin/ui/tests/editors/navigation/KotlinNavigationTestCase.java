@@ -32,7 +32,7 @@ import com.google.common.collect.Iterables;
 
 public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase {
     
-    private static class NavigationSourceFileData extends SourceFileData {
+    private static class NavigationSourceFileData extends EditorSourceFileData {
         
         public static final Predicate<NavigationSourceFileData> IS_BEFORE_PREDICATE = new Predicate<NavigationSourceFileData>() {
             @Override
