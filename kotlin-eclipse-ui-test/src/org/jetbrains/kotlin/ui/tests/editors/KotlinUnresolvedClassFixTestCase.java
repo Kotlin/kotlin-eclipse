@@ -24,14 +24,22 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFile;
+import org.junit.Before;
 
-public class KotlinUnresolvedClassFixTestCase extends KotlinEditorTestCase {
+public class KotlinUnresolvedClassFixTestCase extends KotlinProjectTestCase {
+	@Before
+	public void configure() {
+		configureProject();
+	}
 
 	public void doTest(String input, List<SourceFile> files, String expected) {
-		testEditor = configureEditor("Test.kt", input);
+		String resolvedInput = KotlinTestUtils.resolveTestTags(input);
+		TextEditorTest testEditor = configureEditor("Test.kt", resolvedInput);
 
 		if (files != null) {
 			for (SourceFile file : files) {
@@ -40,7 +48,7 @@ public class KotlinUnresolvedClassFixTestCase extends KotlinEditorTestCase {
 		}
 
 		testEditor.save();
-		joinBuildThread();
+		KotlinTestUtils.joinBuildThread();
 
 		try {
 			IMarker[] markers = testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);

@@ -45,6 +45,11 @@ public class TextEditorTest {
 		editor = null;
 	}
 	
+	public TextEditorTest(TestJavaProject testProject) {
+		this.testProject = testProject;
+		editor = null;
+	}
+	
 	public TestJavaProject getTestJavaProject() {
 		return testProject;
 	}

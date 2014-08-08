@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
@@ -38,6 +39,7 @@ public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
 	}
 	
 	@Test
+	@Ignore("Temporary disable external annotations")
 	public void hasAnalyzerKotlinAnnotations() {
 		doTest(
 			"import java.util.regex.Pattern<br>" +
