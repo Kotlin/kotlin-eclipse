@@ -34,7 +34,7 @@ public class TextEditorTest {
 	public static final String TEST_PROJECT_NAME = "test_project";
 	public static final String TEST_PACKAGE_NAME = "testing";
 	private TestJavaProject testProject;
-	private JavaEditor editor;
+	private JavaEditor editor = null;
 	
 	public TextEditorTest() {
 		this(TEST_PROJECT_NAME);
@@ -42,8 +42,10 @@ public class TextEditorTest {
 	
 	public TextEditorTest(String projectName) {
 		testProject = new TestJavaProject(projectName);
-		
-		editor = null;
+	}
+	
+	public TextEditorTest(TestJavaProject testProject) {
+		this.testProject = testProject;
 	}
 	
 	public TestJavaProject getTestJavaProject() {

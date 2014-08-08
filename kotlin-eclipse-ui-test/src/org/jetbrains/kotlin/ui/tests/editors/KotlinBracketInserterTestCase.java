@@ -16,13 +16,19 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.junit.Assert;
+import org.junit.Before;
 
-public abstract class KotlinBracketInserterTestCase extends KotlinEditorTestCase {
+public abstract class KotlinBracketInserterTestCase extends KotlinProjectTestCase {
+	@Before
+	public void configure() {
+		configureProject();
+	}
 
 	protected void doTest(String input, char element, String expected) {
-		testEditor = configureEditor("Test.kt", input);
+		TextEditorTest testEditor = configureEditor("Test.kt", input);
 		
 		testEditor.type(element);
 		

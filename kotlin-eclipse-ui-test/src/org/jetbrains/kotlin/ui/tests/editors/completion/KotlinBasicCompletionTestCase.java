@@ -21,21 +21,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 import org.junit.Assert;
+import org.junit.Before;
 
-public abstract class KotlinBasicCompletionTestCase extends KotlinEditorTestCase {
+public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCase {
+	@Before
+	public void configure() {
+		configureProject();
+	}
 
 	protected void doTest(String testPath) {
-		String fileText = getText(testPath);
-		testEditor = configureEditor(getNameByPath(testPath), fileText);
+		String fileText = KotlinTestUtils.getText(testPath);
+		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
 
-		joinBuildThread();
+		KotlinTestUtils.joinBuildThread();
 
-		List<String> actualProposals = getActualProposals();
+		List<String> actualProposals = getActualProposals(testEditor.getEditor());
 
 		Integer expectedNumber = ExpectedCompletionUtils.numberOfItemsShouldPresent(fileText);
 		if (expectedNumber != null) {
@@ -54,9 +62,11 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinEditorTestCase
 		assertNotExists(unexpectedProposals, proposalSet);
 	}
 	
-	private List<String> getActualProposals() {
-		CompletionProcessor ktCompletionProcessor = new CompletionProcessor(testEditor.getEditor());
-		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(testEditor.getEditor().getViewer(), getCaret());
+	private List<String> getActualProposals(JavaEditor javaEditor) {
+		CompletionProcessor ktCompletionProcessor = new CompletionProcessor(javaEditor);
+		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(
+				javaEditor.getViewer(), 
+				KotlinTestUtils.getCaret(javaEditor));
 		
 		List<String> actualProposals = new ArrayList<String>();
 		for (ICompletionProposal proposal : proposals) {

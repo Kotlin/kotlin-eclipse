@@ -19,16 +19,24 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Assert;
+import org.junit.Before;
 
-public abstract class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
+public abstract class KotlinAnalyzerTestCase extends KotlinProjectTestCase {
+	@Before
+	public void configure() {
+		configureProjectWithStdLib();
+	}
 
 	protected void doTest(String input, String fileName) {
-		testEditor = configureEditor(fileName, input);
+		String resolvedInput = KotlinTestUtils.resolveTestTags(input).replaceAll("\r", "").replaceAll("\n", System.lineSeparator());
+		TextEditorTest testEditor = configureEditor(fileName, resolvedInput);
 		try {
 			testEditor.save();
-			joinBuildThread();
+			KotlinTestUtils.joinBuildThread();
 			
 			String editorInput = insertTagsForErrors(testEditor.getEditorInput(), 
 					testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE));
@@ -49,11 +57,11 @@ public abstract class KotlinAnalyzerTestCase extends KotlinEditorTestCase {
 		int tagShift = 0;
 		for (IMarker marker : markers) {
 			if (marker.getAttribute(IMarker.SEVERITY, 0) == IMarker.SEVERITY_ERROR) {
-				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_START) + tagShift, ERR_TAG_OPEN);
-				tagShift += ERR_TAG_OPEN.length();
+				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_START) + tagShift, KotlinTestUtils.ERR_TAG_OPEN);
+				tagShift += KotlinTestUtils.ERR_TAG_OPEN.length();
 				
-				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_END) + tagShift, ERR_TAG_CLOSE);
-				tagShift += ERR_TAG_CLOSE.length();
+				editorInput.insert((int) marker.getAttribute(IMarker.CHAR_END) + tagShift, KotlinTestUtils.ERR_TAG_CLOSE);
+				tagShift += KotlinTestUtils.ERR_TAG_CLOSE.length();
 			}
 		}
 		

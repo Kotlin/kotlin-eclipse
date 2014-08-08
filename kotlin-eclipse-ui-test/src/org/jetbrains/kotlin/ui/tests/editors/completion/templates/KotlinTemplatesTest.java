@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.completion.templates;
 
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Test;
 
 public class KotlinTemplatesTest extends KotlinTemplatesTestCase {
@@ -67,7 +68,7 @@ public class KotlinTemplatesTest extends KotlinTemplatesTestCase {
 				"  <caret><br>" +
 				"}", 
 				
-				Separator.SPACE, 2);
+				KotlinTestUtils.Separator.SPACE, 2);
 				
 	}
 }

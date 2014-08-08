@@ -17,14 +17,13 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
+import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
-import org.eclipse.ui.PlatformUI;
 
 public abstract class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase {
 	
-	protected void doTest(String inputFileName, String input, String expected) {
+	public void doTest(String inputFileName, String input, String expected) {
 		doTest(inputFileName, input, null, expected);
 	}
 	
@@ -42,10 +41,6 @@ public abstract class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase
     	testEditor.accelerateOpenDeclaration();
 
 		JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (activeEditor instanceof KotlinEditor) {
-			EditorTestUtils.assertByEditor((KotlinEditor) activeEditor, expected);
-		} else {
-			EditorTestUtils.assertByEditor(activeEditor, expected);
-		}
+		EditorTestUtils.assertByEditor(activeEditor, expected);
 	}
 }

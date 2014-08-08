@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class KotlinLaunchTest extends KotlinLaunchTestCase {
 	
-	private static final String sourceCode = "fun main(args : Array<String>) = {}";
+	private static final String sourceCode = "fun main(args : Array<String>) {}";
 
 	@Test
 	public void launchSimpleProject() {

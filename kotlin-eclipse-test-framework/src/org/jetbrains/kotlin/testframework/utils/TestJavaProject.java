@@ -20,11 +20,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 
+import javax.management.RuntimeErrorException;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -39,6 +42,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
+import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.model.KotlinNature;
 
 public class TestJavaProject {
@@ -80,11 +84,9 @@ public class TestJavaProject {
 			javaProject = JavaCore.create(project);
 
 			if (!projectExists) {
-				setNatureAndBuilder();
-				javaProject.setRawClasspath(new IClasspathEntry[0], null);
-				sourceFolder = createSourceFolder(SRC_FOLDER);
-				addSystemLibraries();
-				addKotlinRuntime();
+				setNatureSpecificProperties();
+				setDefaultSettings();
+				
 			}
 		} catch (CoreException e) {
 			throw new RuntimeException(e);
@@ -93,7 +95,17 @@ public class TestJavaProject {
 		return project;
 	}
 	
-	private void setNatureAndBuilder() throws CoreException {
+	public void setDefaultSettings() {
+		try {
+			javaProject.setRawClasspath(new IClasspathEntry[0], null);
+			addSystemLibraries();
+			sourceFolder = createSourceFolder(SRC_FOLDER);
+		} catch (CoreException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private void setNatureSpecificProperties() throws CoreException {
         IProjectDescription description = project.getDescription();
         description.setNatureIds(new String[] { JavaCore.NATURE_ID });
         project.setDescription(description, null);
@@ -102,7 +114,7 @@ public class TestJavaProject {
         KotlinNature.addBuilder(project);
     }
 	
-	public IFile createFile(IContainer folder, String name, InputStream content) {
+	private IFile createFile(IContainer folder, String name, InputStream content) {
 		IFile file = folder.getFile(new Path(name));
 		try {
 			if (file.exists()) {
@@ -118,14 +130,18 @@ public class TestJavaProject {
 	
 	public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
 		IPackageFragment fragment = createPackage(pkg);
-		return createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(content.getBytes()));
+		IFile file = createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(content.getBytes()));
+		
+		return file;
 	}
 
 	public IPackageFragment createPackage(String name) throws CoreException {
 		if (sourceFolder == null) {
 			sourceFolder = createSourceFolder(SRC_FOLDER);
 		}
-		return sourceFolder.createPackageFragment(name, true, null);
+		IPackageFragment pckg = sourceFolder.createPackageFragment(name, true, null);
+		
+		return pckg;
 	}
 	
 	public IPackageFragmentRoot createSourceFolder(String srcFolderName) throws CoreException {
@@ -155,12 +171,16 @@ public class TestJavaProject {
 		return folder;
 	}
 	
+	public KotlinEnvironment getKotlinEnvironment() {
+		return KotlinEnvironment.getEnvironment(javaProject);
+	}
+	
 	public IJavaProject getJavaProject() {
 		return javaProject;
 	}
 	
-    private void addToClasspath(IClasspathEntry newEntry) throws JavaModelException {
-        IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
+	private void addToClasspath(IClasspathEntry newEntry) throws JavaModelException {
+		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
         IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
         
         System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
@@ -168,14 +188,72 @@ public class TestJavaProject {
         newEntries[oldEntries.length] = newEntry;
         
         javaProject.setRawClasspath(newEntries, null);
-    }
-    
-    public void addKotlinRuntime() throws JavaModelException {
-        File file = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
-        addToClasspath(JavaCore.newLibraryEntry(new Path(file.getAbsolutePath()), null, null));
-    }
-    
-    private void addSystemLibraries() throws JavaModelException {
-        addToClasspath(JavaRuntime.getDefaultJREContainerEntry());
-    }
+	}
+	
+	private boolean hasKotlinRuntime() throws JavaModelException {
+		File ktRuntime = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
+		for (IClasspathEntry cpEntry : javaProject.getRawClasspath()) {
+			File cpFile = new File(cpEntry.getPath().toOSString());
+			if (ktRuntime.equals(cpFile)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public void addKotlinRuntime() {
+		try {
+			if (!hasKotlinRuntime()) {
+				File file = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
+				addToClasspath(JavaCore.newLibraryEntry(new Path(file.getAbsolutePath()), null, null));
+			}
+		} catch (JavaModelException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private void addSystemLibraries() throws JavaModelException {
+		addToClasspath(JavaRuntime.getDefaultJREContainerEntry());
+	}
+
+	public void clean() {
+		try {
+			cleanSourceFolder();
+			
+			IResource outputFolder = findResourceInProject(javaProject.getOutputLocation());
+			cleanFolder((IContainer) outputFolder);
+		} catch (JavaModelException e) {
+			throw new RuntimeException(e);
+		} catch (CoreException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private void cleanSourceFolder() throws CoreException {
+		for (IClasspathEntry resolvedCP : javaProject.getResolvedClasspath(true)) {
+			if (resolvedCP.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+				IResource sourceFolder = findResourceInProject(resolvedCP.getPath());
+				cleanFolder((IContainer) sourceFolder);
+			}
+		}
+	}
+	
+	private IResource findResourceInProject(IPath path) {
+		return ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+	}
+	
+	private void cleanFolder(IContainer container) throws CoreException {
+		if (container == null) {
+			return;
+		}
+		if (container.exists()) {
+			for (IResource member : container.members()) {
+				if (member instanceof IContainer) {
+					cleanFolder((IContainer) member);
+				}
+				member.delete(true, null);
+			}
+		}
+	}
 }

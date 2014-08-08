@@ -19,14 +19,40 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase.Separator;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+import org.junit.After;
+import org.junit.Before;
 
-public abstract class KotlinAutoIndenterTestCase extends KotlinEditorTestCase {
-	
-    protected void doTest(String input, String expected) {
-    	testEditor = configureEditor(input);
+public abstract class KotlinAutoIndenterTestCase extends KotlinProjectTestCase {
+    private int initialSpacesCount;
+	private Separator initialSeparator;
+
+	@Before
+	public void configure() {
+    	configureProject();
+    	
+    	initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.TAB : Separator.SPACE;
+		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+	}
+    
+	@Override
+	@After
+	public void afterTest() {
+		super.afterTest();
+		
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == initialSeparator));
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, initialSpacesCount);
+	}
+
+	protected void doTest(String input, String expected) {
+		String resolvedInput = KotlinTestUtils.resolveTestTags(input);
+    	TextEditorTest testEditor = configureEditor("Test.kt", resolvedInput);
+    	setStorePreference(false, 2);
+    	
     	if (input.contains(TextEditorTest.CARET)) {
     		testEditor.typeEnter();
     	}
@@ -41,13 +67,5 @@ public abstract class KotlinAutoIndenterTestCase extends KotlinEditorTestCase {
     protected void setStorePreference(boolean isSpacesForTabs, int tabWidth) {
     	getStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, isSpacesForTabs);
 		getStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, tabWidth);
-    }
-    
-    protected TextEditorTest configureEditor(String content) {
-    	testEditor = super.configureEditor("Test.kt", content);
-		
-		setStorePreference(false, 2);
-		
-		return testEditor;
     }
 }
