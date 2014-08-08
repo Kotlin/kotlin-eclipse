@@ -9,7 +9,8 @@ Require-Bundle: org.jetbrains.kotlin.ui,
  org.junit,
  org.jetbrains.kotlin.testframework;bundle-version="0.1.0",
  org.eclipse.jdt.ui,
- org.jetbrains.kotlin.core
+ org.jetbrains.kotlin.core,
+ org.jetbrains.kotlin.bundled-compiler
 Import-Package: com.google.common.base,
  com.google.common.collect,
  com.intellij.openapi.util,
