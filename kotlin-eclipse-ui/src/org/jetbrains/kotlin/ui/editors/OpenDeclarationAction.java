@@ -15,7 +15,7 @@
  *
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
-
+ 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,9 +38,7 @@ import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.ui.JavaElementLabelProvider;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -71,7 +69,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
 
 public class OpenDeclarationAction extends SelectionDispatchAction {
-
+    
     private final JavaEditor editor;
     private final IJavaProject javaProject;
     private final IFile file;
@@ -82,13 +80,10 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         file = EditorUtil.getFile(editor);
         javaProject = JavaCore.create(file.getProject());
     }
-
+    
     @Override
     public void run(ITextSelection selection) {
-        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
-        JetReferenceExpression expression = getSelectedExpression(jetFile, selection.getOffset());
-        PsiElement element = getTargetElement(expression);
-        
+        PsiElement element = getTargetElement(getSelectedExpression(file, selection.getOffset()));   
         if (element == null) {
             return;
         }
@@ -147,7 +142,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         if (psiClass == null) {
             return null;
         }
-
+        
         IType targetType = javaProject.findType(psiClass.getQualifiedName());
         
         return EditorUtility.openInEditor(targetType, true);
@@ -270,12 +265,12 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     @Nullable
     private IJavaElement selectMethod(IMethod[] methods) {
         int flags = JavaElementLabelProvider.SHOW_DEFAULT | JavaElementLabelProvider.SHOW_QUALIFIED | JavaElementLabelProvider.SHOW_ROOT;
-
+        
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), new JavaElementLabelProvider(flags));
         dialog.setTitle("Method navigation");
         dialog.setMessage("Select method to navigate");
         dialog.setElements(methods);
-
+        
         if (dialog.open() == Window.OK) {
             return (IJavaElement) dialog.getFirstResult();
         }
@@ -284,12 +279,15 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private JetReferenceExpression getSelectedExpression(@NotNull JetFile jetFile, int offset) {
-        IDocument document = editor.getViewer().getDocument();
+    private JetReferenceExpression getSelectedExpression(@NotNull IFile file, int offset) {
+        return getSelectedExpression(editor, file, offset);
+    }
+    
+    @Nullable
+    public static JetReferenceExpression getSelectedExpression(@NotNull JavaEditor editor, @NotNull IFile file, int offset) {
+        offset = LineEndUtil.convertCrToOsOffset(editor.getViewer().getDocument().get(), offset);
         
-        offset = LineEndUtil.convertCrToOsOffset(document.get(), offset);
-        
-        PsiElement psiExpression = jetFile.findElementAt(offset);
+        PsiElement psiExpression = ((JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file)).findElementAt(offset);  
         if (psiExpression == null) {
             return null;
         }
@@ -301,9 +299,5 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     public static IEditorPart openInEditor(IFile file) throws PartInitException {
         IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         return IDE.openEditor(page, file, false);
-    }
-    
-    @Override
-    public void run(IStructuredSelection selection) {
     }
 }
