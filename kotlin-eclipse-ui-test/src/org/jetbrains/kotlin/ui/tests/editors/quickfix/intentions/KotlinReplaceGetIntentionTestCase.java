@@ -16,24 +16,31 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProposal;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinReplaceGetAssistProposal;
 import org.junit.Assert;
+import org.junit.Before;
 
-public abstract class KotlinReplaceGetIntentionTestCase extends KotlinEditorTestCase {
-	
+public abstract class KotlinReplaceGetIntentionTestCase extends KotlinProjectTestCase {
+	@Before
+	public void configure() {
+		configureProject();
+	}
+
 	protected void doTest(String testPath) {
 		doTestFor(testPath, new KotlinReplaceGetAssistProposal());	
 	}
 	
 	private void doTestFor(String testPath, KotlinQuickAssistProposal proposal) {
-		String fileText = getText(testPath);
-		testEditor = configureEditor(getNameByPath(testPath), fileText);
+		String fileText = KotlinTestUtils.getText(testPath);
+		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
 		
-		joinBuildThread();
+		KotlinTestUtils.joinBuildThread();
 		
 		String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");
@@ -49,7 +56,7 @@ public abstract class KotlinReplaceGetIntentionTestCase extends KotlinEditorTest
 	
 			if (shouldFailString == null) {
 				String pathToExpectedFile = testPath + ".after";
-				EditorTestUtils.assertByEditor(testEditor.getEditor(), getText(pathToExpectedFile));
+				EditorTestUtils.assertByEditor(testEditor.getEditor(), KotlinTestUtils.getText(pathToExpectedFile));
 			}
 		}
 	}

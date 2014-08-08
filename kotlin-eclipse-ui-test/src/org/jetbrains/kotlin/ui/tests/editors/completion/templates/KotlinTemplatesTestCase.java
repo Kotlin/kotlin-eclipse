@@ -16,18 +16,27 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.completion.templates;
 
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils.Separator;
 import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
 import org.junit.Assert;
+import org.junit.Before;
 
-public abstract class KotlinTemplatesTestCase extends KotlinEditorTestCase {
-	
+public abstract class KotlinTemplatesTestCase extends KotlinProjectTestCase {
+	@Before
+	public void configure() {
+		configureProject();
+	}
+
 	public void doTest(String input) {
 		doTest(input, input);
 	}
@@ -38,34 +47,42 @@ public abstract class KotlinTemplatesTestCase extends KotlinEditorTestCase {
 	
 	public void doTest(String input, String expected, Separator separator, int spacesCount) {
 		configureIndents(separator, spacesCount);
+
+		input = KotlinTestUtils.resolveTestTags(input);
+		expected = KotlinTestUtils.resolveTestTags(expected);
+		TextEditorTest testEditor = configureEditor("Test.kt", input);
 		
-		testEditor = configureEditor("Test.kt", input);
+		KotlinTestUtils.joinBuildThread();
 		
-		joinBuildThread();
-		
-		CompletionProcessor ktCompletionProcessor = new CompletionProcessor(testEditor.getEditor());
-		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(testEditor.getEditor().getViewer(), getCaret());
+		JavaEditor editor = testEditor.getEditor();
+		CompletionProcessor ktCompletionProcessor = new CompletionProcessor(editor);
+		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(editor.getViewer(), 
+				KotlinTestUtils.getCaret(editor));
 		
 		if (!input.equals(expected)) {
 			Assert.assertTrue(proposals.length > 0);
 	
-			applyTemplateProposal((TemplateProposal)proposals[0]);
+			applyTemplateProposal((TemplateProposal)proposals[0], editor);
 		} else {
 			Assert.assertTrue(proposals.length == 0);
 		}
 			
-		EditorTestUtils.assertByEditor(testEditor.getEditor(), expected);
+		EditorTestUtils.assertByEditor(editor, expected);
 	}
 	
-	private void applyTemplateProposal(TemplateProposal templateProposal) {
-		templateProposal.apply(testEditor.getEditor().getViewer(), (char) 0, 0, getCaret());
+	private void applyTemplateProposal(TemplateProposal templateProposal, JavaEditor editor) {
+		templateProposal.apply(editor.getViewer(), (char) 0, 0, KotlinTestUtils.getCaret(editor));
 		
 		Point point = templateProposal.getSelection(null);
-		testEditor.getEditor().getViewer().getTextWidget().setCaretOffset(point.x);
+		editor.getViewer().getTextWidget().setCaretOffset(point.x);
 	}
 	
 	private void configureIndents(Separator separator, int spacesCount) {
-		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == separator));
-		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, spacesCount);	
+		EditorsUI.getPreferenceStore().setValue(
+				AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, 
+				(Separator.SPACE == separator));
+		EditorsUI.getPreferenceStore().setValue(
+				AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, 
+				spacesCount);	
 	}
 }

@@ -18,12 +18,15 @@ package org.jetbrains.kotlin.ui.tests.editors;
 
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.ColorManager;
 import org.jetbrains.kotlin.ui.editors.IColorConstants;
 import org.junit.Assert;
+import org.junit.Before;
 
-public abstract class KotlinHighlightningTestCase extends KotlinEditorTestCase {
+public abstract class KotlinHighlightningTestCase extends KotlinProjectTestCase {
 	
 	private static final ColorManager COLOR_MANAGER = new ColorManager();
 	private static final Color KEYWORD = COLOR_MANAGER.getColor(IColorConstants.KEYWORD);
@@ -37,13 +40,19 @@ public abstract class KotlinHighlightningTestCase extends KotlinEditorTestCase {
 	private static final String COMMENT_OPEN = "<comment>";
 	private static final String COMMENT_CLOSE = "</comment>";
 
+	@Before
+	public void configure() {
+		configureProject();
+	}
+
 	protected void doTest(String input) {
-		testEditor = configureEditor("Test.kt", removeColorTags(input));
+		String resolvedInput = KotlinTestUtils.resolveTestTags(input);
+		TextEditorTest testEditor = configureEditor("Test.kt", removeColorTags(resolvedInput));
 		
 		StyleRange[] styleRanges = testEditor.getEditor().getViewer().getTextWidget().getStyleRanges();
 		String actualText = insertTokenTags(testEditor.getEditorInput(), styleRanges);
 		
-		Assert.assertEquals(resolveTestTags(input), actualText);
+		Assert.assertEquals(resolvedInput, actualText);
 	}
 	
 	private String insertTokenTags(String text, StyleRange[] styleRanges) {
