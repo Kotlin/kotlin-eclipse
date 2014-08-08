@@ -409,4 +409,10 @@
             targetId="org.jetbrains.kotlin.ui.editors.kotlinCode">
       </hyperlinkDetector>
    </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.jetbrains.kotlin.ui.KotlinUiStartupClass">
+      </startup>
+   </extension>
 </plugin>
