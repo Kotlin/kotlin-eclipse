@@ -36,7 +36,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.CompilerModeProvider;
 import org.jetbrains.jet.OperationModeProvider;
+import org.jetbrains.jet.asJava.KotlinLightClassForPackage;
+import org.jetbrains.jet.asJava.LightClassGenerationSupport;
 import org.jetbrains.jet.cli.jvm.compiler.ClassPath;
+import org.jetbrains.jet.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
@@ -98,6 +101,11 @@ public class KotlinEnvironment {
         project.registerService(ExternalAnnotationsManager.class, annotationsManager);
         project.registerService(CoreJavaFileManager.class,
                 (CoreJavaFileManager) ServiceManager.getService(project, JavaFileManager.class));
+        
+        CliLightClassGenerationSupport cliLightClassGenerationSupport = new CliLightClassGenerationSupport();
+        project.registerService(LightClassGenerationSupport.class, cliLightClassGenerationSupport);
+        project.registerService(CliLightClassGenerationSupport.class, cliLightClassGenerationSupport);
+        project.registerService(KotlinLightClassForPackage.FileStubCache.class, new KotlinLightClassForPackage.FileStubCache(project));
         
         VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(
                 LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS_PATH));
