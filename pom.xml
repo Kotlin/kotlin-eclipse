@@ -91,6 +91,7 @@
 							<enableJavadoc />
 							<encoding>ISO-8859-1</encoding>
 						</compilerArguments>
+						<compilerArgument>-err:-forbidden</compilerArgument>
 					</configuration>
 				</plugin>
 				<plugin>
