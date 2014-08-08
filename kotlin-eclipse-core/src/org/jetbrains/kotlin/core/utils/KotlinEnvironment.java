@@ -37,7 +37,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.CompilerModeProvider;
 import org.jetbrains.jet.OperationModeProvider;
 import org.jetbrains.jet.cli.jvm.compiler.ClassPath;
-import org.jetbrains.jet.cli.jvm.compiler.CliVirtualFileFinder;
 import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
@@ -48,6 +47,7 @@ import org.jetbrains.jet.utils.PathUtil;
 import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
 
 import com.intellij.codeInsight.ExternalAnnotationsManager;
 import com.intellij.core.CoreApplicationEnvironment;
@@ -107,7 +107,7 @@ public class KotlinEnvironment {
         addSourcesToClasspath();
         addLibsToClasspath();
         
-        project.registerService(VirtualFileFinder.class, new CliVirtualFileFinder(classPath));
+        project.registerService(VirtualFileFinder.class, new EclipseVirtualFileFinder(classPath));
         
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME,
                 ClsCustomNavigationPolicy.class);

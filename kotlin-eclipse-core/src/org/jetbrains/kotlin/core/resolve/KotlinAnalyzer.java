@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
@@ -33,7 +32,6 @@ import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 
 public class KotlinAnalyzer {
@@ -51,14 +49,15 @@ public class KotlinAnalyzer {
     }
     
     @NotNull
-    private static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
-        Project ideaProject = kotlinEnvironment.getProject();
-        
-        List<JetFile> sourceFiles = getSourceFiles(javaProject.getProject());
-        AnalyzeExhaust analyzeExhaust = AnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                ideaProject, sourceFiles, new BindingTraceContext(), filesToAnalyzeCompletely, AnalyzerFacadeForJVM.createJavaModule("<module>"), null, null);
-        
-        return analyzeExhaust.getBindingContext();
+    private static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
+            @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
+        return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+                javaProject, 
+                kotlinEnvironment.getProject(), 
+                getSourceFiles(javaProject.getProject()), 
+                new BindingTraceContext(), 
+                filesToAnalyzeCompletely, 
+                AnalyzerFacadeForJVM.createJavaModule("<module>")).getBindingContext();
     }
     
     @NotNull
