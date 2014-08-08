@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 
-public class KotlinAutoIndenterTestCase extends KotlinEditorTestCase {
+public abstract class KotlinAutoIndenterTestCase extends KotlinEditorTestCase {
 	
     protected void doTest(String input, String expected) {
     	testEditor = configureEditor(input);

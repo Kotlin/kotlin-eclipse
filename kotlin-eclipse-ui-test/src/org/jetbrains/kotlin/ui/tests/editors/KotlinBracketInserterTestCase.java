@@ -19,7 +19,7 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.junit.Assert;
 
-public class KotlinBracketInserterTestCase extends KotlinEditorTestCase {
+public abstract class KotlinBracketInserterTestCase extends KotlinEditorTestCase {
 
 	protected void doTest(String input, char element, String expected) {
 		testEditor = configureEditor("Test.kt", input);

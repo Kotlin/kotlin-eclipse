@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Event;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.OpenDeclarationAction;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class TextEditorTest {
@@ -87,7 +88,7 @@ public class TextEditorTest {
 	}
 	
 	public void accelerateOpenDeclaration() {
-		((KotlinEditor) editor).getAction("OpenEditor").run();
+		((KotlinEditor) editor).getAction(OpenDeclarationAction.OPEN_EDITOR_TEXT).run();
 	}
 	
 	public void setCaret(int offset) {

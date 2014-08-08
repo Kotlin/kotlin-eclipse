@@ -1,0 +1,11 @@
+package temp
+
+fun main(args : Array<String>) {
+    BigTest()
+    test()
+}
+
+fun <caret>test() {
+}
+
+class BigTest

@@ -1,0 +1,12 @@
+package navigation
+
+public class Foo {
+	
+	public void method<caret>() {
+		
+	}
+	
+	public static void staticMethod() {
+		
+	}
+}

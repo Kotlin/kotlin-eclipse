@@ -27,6 +27,7 @@ import org.junit.runners.Suite;
 	org.jetbrains.kotlin.ui.tests.editors.completion.KotlinBasicCompletionTest.class,
 	org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions.KotlinReplaceGetIntentionTest.class,
 	org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions.KotlinSpecifyTypeTest.class,
-	org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport.KotlinAutoImportTest.class} )
+	org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport.KotlinAutoImportTest.class,
+	org.jetbrains.kotlin.ui.tests.editors.navigation.KotlinNavigationTest.class} )
 public class AllTests {
 }

@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
+import java.util.Map;
+
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
@@ -63,7 +66,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     private Scanner scanner;
     private final ColorManager colorManager;
     private final JavaEditor editor;
-
+ 
     public Configuration(@NotNull ColorManager colorManager, @NotNull JavaEditor editor, IPreferenceStore preferenceStore) {
         super(colorManager, preferenceStore, editor, IJavaPartitions.JAVA_PARTITIONING);
         this.colorManager = colorManager;
@@ -81,7 +84,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
             IJavaPartitions.JAVA_CHARACTER
         };
     }
-
+    
     @Override
     public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer, boolean doCodeResolve) {
         InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
@@ -122,14 +125,14 @@ public class Configuration extends JavaSourceViewerConfiguration {
         KotlinReconcilingStrategy ktReconcilingStrategy = new KotlinReconcilingStrategy(editor);
         return new MonoReconciler(ktReconcilingStrategy, false);
     }
-
+    
     @Override
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
         if (doubleClickStrategy == null)
             doubleClickStrategy = new DoubleClickStrategy();
         return doubleClickStrategy;
     }
-
+    
     protected Scanner getScanner() {
         if (scanner == null) {
             scanner = new Scanner(colorManager);
@@ -177,7 +180,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
         
         return reconciler;
     }
-
+    
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
          ContentAssistant assistant= new ContentAssistant();
@@ -189,8 +192,8 @@ public class Configuration extends JavaSourceViewerConfiguration {
          assistant.setAutoActivationDelay(500);
          assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
          assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-
-        return assistant;
+         
+         return assistant;
     }
     
     private static class OutlineInformationProvider implements IInformationProvider, IInformationProviderExtension {
@@ -215,5 +218,14 @@ public class Configuration extends JavaSourceViewerConfiguration {
         public Object getInformation2(ITextViewer textViewer, IRegion subject) {
             return KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
         }
+    }
+    
+    @Override
+    protected Map<String, IAdaptable> getHyperlinkDetectorTargets(ISourceViewer sourceViewer) {
+        Map<String, IAdaptable> targets = super.getHyperlinkDetectorTargets(sourceViewer);
+        targets.remove("org.eclipse.jdt.ui.javaCode");
+        targets.put("org.jetbrains.kotlin.ui.editors.kotlinCode", getEditor());
+        
+        return targets;
     }
 }

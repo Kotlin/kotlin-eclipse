@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut;
 import org.junit.Assert;
 
-public class KotlinLaunchTestCase extends KotlinEditorTestCase {
+public abstract class KotlinLaunchTestCase extends KotlinEditorTestCase {
 	
 	public void doTest(String input, String projectName, String packageName, String additionalSrcFolderName) {
 		testEditor = configureEditor("Test.kt", input, projectName, packageName);

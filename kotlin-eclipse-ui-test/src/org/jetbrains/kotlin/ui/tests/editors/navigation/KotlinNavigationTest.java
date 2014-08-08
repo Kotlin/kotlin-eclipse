@@ -14,25 +14,45 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport;
+package org.jetbrains.kotlin.ui.tests.editors.navigation;
 
 import org.junit.Test;
 
-public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
-
-	@Test
-	public void standardArrayListAutoImport() {
-		doAutoTest();
-	}
-
-	@Test
-	public void packageArrayListAutoImport() {
-		doAutoTest();
-	}
-	
-	@Test
-	public void sameProjectJavaClassAutoImport() {
-		doAutoTest();
-	}
-
+public class KotlinNavigationTest extends KotlinNavigationTestCase {
+    
+    @Test
+    public void withinFileToClassNavigation() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void withinFileToMethodNavigation() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void withinFileFromConstructorToClassNavigation() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void toKotlinClassNavigation() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void toKotlinMethodNavigation() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void toJavaClassNavigation() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void toJavaMethodNavigation() {
+        doAutoTest();
+    }
+    
 }

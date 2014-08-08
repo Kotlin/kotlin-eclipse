@@ -14,23 +14,15 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.testframework.utils;
+package org.jetbrains.kotlin.ui.tests.editors.navigation;
 
-import com.intellij.openapi.util.Pair;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class SourceFile {
+@RunWith(Suite.class)
+@Suite.SuiteClasses( { 
+	KotlinNavigationTest.class
+} )
+public class AllTests {
 
-	private Pair<String, String> sourceFile;
-	
-	public SourceFile(String name, String content) {
-		sourceFile = Pair.create(name, content);
-	}
-	
-	public String getName() {
-		return sourceFile.getFirst();
-	}
-	
-	public String getContent() {
-		return sourceFile.getSecond();
-	}
 }

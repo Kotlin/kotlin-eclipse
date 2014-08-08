@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProposal;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinSpecifyTypeAssistProposal;
 import org.junit.Assert;
 
-public class KotlinSpecifyTypeTestCase extends KotlinEditorTestCase {
+public abstract class KotlinSpecifyTypeTestCase extends KotlinEditorTestCase {
 
 	protected void doTest(String testPath) {
 		doTestFor(testPath, new KotlinSpecifyTypeAssistProposal());

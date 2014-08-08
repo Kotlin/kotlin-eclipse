@@ -14,25 +14,15 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport;
+package org.jetbrains.kotlin.ui.tests.editors.completion;
 
-import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
-
-	@Test
-	public void standardArrayListAutoImport() {
-		doAutoTest();
-	}
-
-	@Test
-	public void packageArrayListAutoImport() {
-		doAutoTest();
-	}
-	
-	@Test
-	public void sameProjectJavaClassAutoImport() {
-		doAutoTest();
-	}
+@RunWith(Suite.class)
+@Suite.SuiteClasses( { 
+	KotlinBasicCompletionTest.class
+} )
+public class AllTests {
 
 }
