@@ -14,23 +14,15 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.utils;
+package org.jetbrains.kotlin.ui.tests.editors.markers;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class EditorUtil {
+@RunWith(Suite.class)
+@Suite.SuiteClasses( { 
+    KotlinParsingMarkersTest.class
+} )
+public class AllTests {
     
-    public static IFile getFile(AbstractTextEditor editor) {
-        return (IFile) editor.getEditorInput().getAdapter(IFile.class);
-    }
-    
-    public static String getSourceCode(JavaEditor editor) {
-        return editor.getViewer().getDocument().get();
-    }
-    
-    public static int getOffsetInEditor(JavaEditor editor, int offset) {
-        return LineEndUtil.convertLfToOsOffset(StringUtil.removeAllCarriageReturns(getSourceCode(editor)), offset);
-    }
 }

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.kotlin.utils.IndenterUtil;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -50,7 +51,7 @@ public class AlignmentStrategy {
         buildFormattedCode(parsedFile, lineIndentation);
         
         String editString = edit.toString();
-        editString = editString.replaceAll("\n", System.lineSeparator());
+        editString = editString.replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
         
         return editString;
     }
@@ -75,7 +76,7 @@ public class AlignmentStrategy {
                         shift--;
                     }
                     
-                    edit.append(IndenterUtil.createWhiteSpace(shift, IndenterUtil.getLineSeparatorsOccurences(psiElement.getText()), "\n"));
+                    edit.append(IndenterUtil.createWhiteSpace(shift, IndenterUtil.getLineSeparatorsOccurences(psiElement.getText()), LineEndUtil.NEW_LINE_STRING));
                 } else {
                     edit.append(psiElement.getText());
                 }

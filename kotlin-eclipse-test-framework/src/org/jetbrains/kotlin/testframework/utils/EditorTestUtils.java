@@ -25,34 +25,37 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
-import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.utils.EditorUtil;
+import org.jetbrains.kotlin.utils.StringUtil;
 import org.junit.Assert;
 
 public class EditorTestUtils {
-
-	public static IEditorPart openInEditor(IFile file) throws PartInitException {
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		IWorkbenchPage page = window.getActivePage();
-		
-		FileEditorInput fileEditorInput = new FileEditorInput(file);
-		IEditorDescriptor defaultEditor = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
-		
-		return page.openEditor(fileEditorInput, defaultEditor.getId());
-	}
-	
-	public static void assertByEditor(JavaEditor activeEditor, String expected) {
-		String actual = EditorUtil.getSourceCode(activeEditor);
-		
-		expected = expected.replaceAll("<br>", System.lineSeparator());
-		if (expected.contains(TextEditorTest.CARET)) {
-			int caretOffset = activeEditor.getViewer().getTextWidget().getCaretOffset();
-			actual = actual.substring(0, caretOffset) + TextEditorTest.CARET + actual.substring(caretOffset);
-		}
-		
-		String expectedWithoutCR =  expected.replaceAll("\r", "");
-		String actualWithoutCR = actual.replaceAll("\r", "");
-		
-		Assert.assertEquals(expectedWithoutCR, actualWithoutCR);
-	}
+    
+    public static IEditorPart openInEditor(IFile file) throws PartInitException {
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        IWorkbenchPage page = window.getActivePage();
+        
+        FileEditorInput fileEditorInput = new FileEditorInput(file);
+        IEditorDescriptor defaultEditor = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+        
+        return page.openEditor(fileEditorInput, defaultEditor.getId());
+    }
+    
+    public static void assertByEditor(JavaEditor activeEditor, String expected) {
+    	assertByStringWithOffset(EditorUtil.getSourceCode(activeEditor), expected, activeEditor.getViewer().getTextWidget().getCaretOffset());
+    }
+    
+    public static void assertByStringWithOffset(String actual, String expected) {
+        assertByStringWithOffset(actual, expected, -1);        
+    }
+    
+    private static void assertByStringWithOffset(String actual, String expected, int caretOffset) {
+        expected = expected.replaceAll(KotlinEditorTestCase.BREAK_TAG, System.lineSeparator());
+        if (expected.contains(KotlinEditorTestCase.CARET_TAG) && caretOffset != -1) {
+            actual = actual.substring(0, caretOffset) + KotlinEditorTestCase.CARET_TAG + actual.substring(caretOffset);
+        }
+        
+        Assert.assertEquals(StringUtil.removeAllCarriageReturns(expected), StringUtil.removeAllCarriageReturns(actual));
+    }
 }

@@ -26,26 +26,36 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
+import org.jetbrains.kotlin.utils.LineEndUtil;
+import org.jetbrains.kotlin.utils.StringUtil;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import com.intellij.openapi.util.io.FileUtil;
 
 public abstract class KotlinEditorTestCase {
-	
+
 	public enum Separator {
 		TAB, SPACE;
 	}
 	
-	protected TextEditorTest testEditor;
-	public static final String ERR_TAG_OPEN = "<err>";
-	public static final String ERR_TAG_CLOSE = "</err>";
-	public static final String BR = "<br>";
+	public static final String CARET_TAG = "<caret>";
+	public static final String ERROR_TAG_OPEN = "<error>";
+	public static final String ERROR_TAG_CLOSE = "</error>";
+	public static final String WARNING_TAG_OPEN = "<warning>";
+	public static final String WARNING_TAG_CLOSE = "</warning>";
+	public static final String BREAK_TAG = "<br>";
 	
+    @Rule
+    public TestName name = new TestName();
+	protected TextEditorTest testEditor;
 	private Separator initialSeparator;
 	private int initialSpacesCount;
 
@@ -65,8 +75,12 @@ public abstract class KotlinEditorTestCase {
 		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 	}
 	
+    protected JavaEditor getEditor() {
+		return testEditor.getEditor();
+	}
+	
     protected int getCaret() {
-		return testEditor.getEditor().getViewer().getTextWidget().getCaretOffset();
+		return getEditor().getViewer().getTextWidget().getCaretOffset();
 	}
     
 	public void createSourceFile(String pkg, String fileName, String content) {
@@ -83,12 +97,16 @@ public abstract class KotlinEditorTestCase {
 	}
 	
 	protected static TextEditorTest configureEditor(String fileName, String content) {
-    	return configureEditor(fileName, content, TextEditorTest.TEST_PROJECT_NAME, TextEditorTest.TEST_PACKAGE_NAME);
+    	return configureEditor(fileName, content, TextEditorTest.TEST_PACKAGE_NAME);
+    }
+	
+	protected static TextEditorTest configureEditor(String fileName, String content, String packageName) {
+        return configureEditor(fileName, content, TextEditorTest.TEST_PROJECT_NAME, packageName);
     }
 	
     protected static TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {
     	TextEditorTest testEditor = new TextEditorTest(projectName);
-		String toEditor = resolveTestTags(content).replaceAll("\r", "").replaceAll("\n", System.lineSeparator());
+		String toEditor = StringUtil.removeAllCarriageReturns(resolveTestTags(content)).replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
 		testEditor.createEditor(fileName, toEditor, packageName);
 		
 		return testEditor;
@@ -140,13 +158,15 @@ public abstract class KotlinEditorTestCase {
 	
     public static String resolveTestTags(String text) {
 		return text
-				.replaceAll(ERR_TAG_OPEN, "")
-				.replaceAll(ERR_TAG_CLOSE, "")
-				.replaceAll(BR, System.lineSeparator());
+				.replaceAll(ERROR_TAG_OPEN, "")
+				.replaceAll(ERROR_TAG_CLOSE, "")
+				.replaceAll(WARNING_TAG_OPEN, "")
+				.replaceAll(WARNING_TAG_CLOSE, "")
+				.replaceAll(BREAK_TAG, System.lineSeparator());
     }
     
     public static String removeTags(String text) {
-    	return resolveTestTags(text).replaceAll("<caret>", "");
+    	return resolveTestTags(text).replaceAll(CARET_TAG, "");
     }
 	
     public static String getNameByPath(String testPath) {

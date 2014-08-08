@@ -14,23 +14,19 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.utils;
+package org.jetbrains.kotlin.testframework.utils;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
+import static org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils.getItems;
 
-public class EditorUtil {
+import java.util.List;
+
+public class TypingUtils {
     
-    public static IFile getFile(AbstractTextEditor editor) {
-        return (IFile) editor.getEditorInput().getAdapter(IFile.class);
-    }
-    
-    public static String getSourceCode(JavaEditor editor) {
-        return editor.getViewer().getDocument().get();
-    }
-    
-    public static int getOffsetInEditor(JavaEditor editor, int offset) {
-        return LineEndUtil.convertLfToOsOffset(StringUtil.removeAllCarriageReturns(getSourceCode(editor)), offset);
-    }
+    private static final String TYPE_PREFIX = "TYPE:";
+
+    public static Character typedCharacter(String fileText) {
+        List<String> items = getItems(fileText, TYPE_PREFIX);
+        
+        return !items.isEmpty() ? items.get(0).charAt(0) : null;
+    }    
 }

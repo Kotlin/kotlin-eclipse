@@ -55,6 +55,10 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     private void updateLineMarkers() throws CoreException {
         Diagnostics diagnostics = analyzeProjectInForeground(JavaCore.create(getProject())).getDiagnostics();
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
+        
+        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getProject())) {
+            DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);
+        }
 
         addMarkersToProject(annotations, getProject());
     }

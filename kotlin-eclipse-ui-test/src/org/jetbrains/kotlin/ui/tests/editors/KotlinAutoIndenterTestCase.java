@@ -27,7 +27,7 @@ public class KotlinAutoIndenterTestCase extends KotlinEditorTestCase {
 	
     protected void doTest(String input, String expected) {
     	testEditor = configureEditor(input);
-    	if (input.contains(TextEditorTest.CARET)) {
+    	if (input.contains(CARET_TAG)) {
     		testEditor.typeEnter();
     	}
     	

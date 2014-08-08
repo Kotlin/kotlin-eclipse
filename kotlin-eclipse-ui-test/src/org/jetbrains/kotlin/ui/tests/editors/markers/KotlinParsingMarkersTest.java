@@ -14,23 +14,29 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.testframework.utils;
+package org.jetbrains.kotlin.ui.tests.editors.markers;
 
-import com.intellij.openapi.util.Pair;
+import org.junit.Test;
 
-public class SourceFile {
-
-	private Pair<String, String> sourceFile;
-	
-	public SourceFile(String name, String content) {
-		sourceFile = Pair.create(name, content);
-	}
-	
-	public String getName() {
-		return sourceFile.getFirst();
-	}
-	
-	public String getContent() {
-		return sourceFile.getSecond();
-	}
+public class KotlinParsingMarkersTest extends KotlinParsingMarkersTestCase {
+    
+    @Test
+    public void missingClosingBraceErrorTest() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void classDefinitionTypoErrorTest() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void missingFunctionBodyErrorTest() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void excessBraceTypingErrorTest() {
+        doAutoTest();
+    }
 }

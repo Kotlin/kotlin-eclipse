@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.testframework.utils;
 
-import java.util.ArrayList;
+import static org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils.getItems;
+
 import java.util.List;
 
 public class ExpectedCompletionUtils {
@@ -30,19 +31,5 @@ public class ExpectedCompletionUtils {
 		}
 
 		return new Integer(numbers.get(0));
-	}
-
-//	TODO: Parse JSon string from tests
-	private static List<String> getItems(String fileText, String prefix) {
-		List<String> items = new ArrayList<String>();
-		for (String itemStr : InTextDirectivesUtils.findLinesWithPrefixesRemoved(fileText, prefix)) {
-			if (itemStr.startsWith("{")) continue;
-
-			for (String item : itemStr.split(",")) {
-				items.add(item.trim());
-			}
-		}
-
-		return items;
 	}
 }

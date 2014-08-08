@@ -43,7 +43,7 @@ public class InTextDirectivesUtils {
         return result;
     }
 	
-    public static List<String> findLinesWithPrefixesRemoved(String fileText, String... prefixes) {
+    private static List<String> findLinesWithPrefixesRemoved(String fileText, String... prefixes) {
         List<String> result = new ArrayList<String>();
         List<String> cleanedPrefixes = cleanDirectivesFromComments(Arrays.asList(prefixes));
 
@@ -105,5 +105,19 @@ public class InTextDirectivesUtils {
         }
 
         return result;
+    }
+    
+    //  TODO: Parse JSon string from tests
+    static List<String> getItems(String fileText, String prefix) {
+        List<String> items = new ArrayList<String>();
+        for (String itemStr : findLinesWithPrefixesRemoved(fileText, prefix)) {
+            if (itemStr.startsWith("{")) continue;
+
+            for (String item : itemStr.split(",")) {
+                items.add(item.trim());
+            }
+        }
+
+        return items;
     }
 }

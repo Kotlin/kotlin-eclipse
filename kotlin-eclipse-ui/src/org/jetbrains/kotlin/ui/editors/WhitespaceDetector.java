@@ -17,11 +17,13 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import org.eclipse.jface.text.rules.IWhitespaceDetector;
+import org.jetbrains.kotlin.utils.IndenterUtil;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 
 public class WhitespaceDetector implements IWhitespaceDetector {
 
     @Override
     public boolean isWhitespace(char c) {
-        return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
+        return (c == IndenterUtil.SPACE_CHAR || c == IndenterUtil.TAB_CHAR || c == LineEndUtil.NEW_LINE_CHAR || c == LineEndUtil.CARRIAGE_RETURN_CHAR);
     }
 }

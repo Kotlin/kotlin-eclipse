@@ -36,11 +36,15 @@ import org.jetbrains.jet.lang.diagnostics.Errors;
 import org.jetbrains.jet.lang.diagnostics.Severity;
 import org.jetbrains.jet.lang.diagnostics.rendering.DefaultErrorMessages;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiErrorElement;
+import com.intellij.psi.PsiFile;
 
 public class DiagnosticAnnotationUtil {
 
@@ -76,23 +80,80 @@ public class DiagnosticAnnotationUtil {
         return annotations;
     }
     
+    public void addParsingDiagnosticAnnotations(@NotNull IFile file, @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations) {
+        List<DiagnosticAnnotation> parsingAnnotations = createParsingDiagnosticAnnotations(file);
+        
+        if (annotations.containsKey(file)) {
+            annotations.get(file).addAll(parsingAnnotations);
+        } else {
+            annotations.put(file, parsingAnnotations);
+        }
+    }
+    
+    @NotNull
+    public List<DiagnosticAnnotation> createParsingDiagnosticAnnotations(@NotNull IFile file) {
+        return recursiveCreateParsingDiagnosticAnnotations(KotlinPsiManager.INSTANCE.getParsedFile(file));
+    }
+    
+    @NotNull
+    private List<DiagnosticAnnotation> recursiveCreateParsingDiagnosticAnnotations(@NotNull PsiElement psiElement) {
+        List<DiagnosticAnnotation> result = new ArrayList<DiagnosticAnnotation>();
+        
+        if (psiElement instanceof PsiErrorElement) {
+            result.add(createKotlinAnnotation((PsiErrorElement) psiElement));
+        } else {
+            for (PsiElement child : psiElement.getChildren()) {
+                result.addAll(recursiveCreateParsingDiagnosticAnnotations(child));
+            }
+        }
+
+        return result;
+    }
+    
+    @NotNull
+    private DiagnosticAnnotation createKotlinAnnotation(@NotNull PsiErrorElement psiErrorElement) {
+        PsiFile psiFile = psiErrorElement.getContainingFile();
+        
+        TextRange range = psiErrorElement.getTextRange();
+        int startOffset = range.getStartOffset();
+        int length = range.getLength();
+        String markedText = psiErrorElement.getText();
+        
+        if (range.isEmpty()) {
+            startOffset--;
+            length++;
+            markedText = psiFile.getText().substring(startOffset, startOffset + length);
+        }
+        
+        startOffset = getOffset(psiFile, range.getStartOffset());
+        if (range.isEmpty()) {
+            startOffset--;
+        }
+        
+        return new DiagnosticAnnotation(
+                startOffset,
+                length,
+                AnnotationManager.ANNOTATION_ERROR_TYPE,
+                psiErrorElement.getErrorDescription(),
+                markedText,
+                false);
+    }
+    
     @NotNull
     private DiagnosticAnnotation createKotlinAnnotation(@NotNull Diagnostic diagnostic) {
-        List<TextRange> ranges = diagnostic.getTextRanges();
-        String text = diagnostic.getPsiFile().getText();
-        
-        int offset = LineEndUtil.convertLfToOsOffset(text, ranges.get(0).getStartOffset());
-        int length = ranges.get(0).getLength();
-        
-        String message = DefaultErrorMessages.RENDERER.render(diagnostic);
-        String annotationType = getAnnotationType(diagnostic.getSeverity());
-        String markedText = diagnostic.getPsiElement().getText();
+        TextRange range = diagnostic.getTextRanges().get(0);
 
-        boolean isQuickFixable = Errors.UNRESOLVED_REFERENCE.equals(diagnostic.getFactory());
-        DiagnosticAnnotation annotation = new DiagnosticAnnotation(offset, length, annotationType, 
-                message, markedText, isQuickFixable);
-        
-        return annotation;
+        return new DiagnosticAnnotation(
+                getOffset(diagnostic.getPsiFile(), range.getStartOffset()),
+                range.getLength(),
+                getAnnotationType(diagnostic.getSeverity()), 
+                DefaultErrorMessages.RENDERER.render(diagnostic),
+                diagnostic.getPsiElement().getText(),
+                Errors.UNRESOLVED_REFERENCE.equals(diagnostic.getFactory()));
+    }
+    
+    private int getOffset(@NotNull PsiFile psiFile, int startOffset) {
+        return LineEndUtil.convertLfToOsOffset(psiFile.getText(), startOffset);
     }
     
     @Nullable

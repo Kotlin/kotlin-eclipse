@@ -25,10 +25,9 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.utils.EditorUtil;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 
 public class TextEditorTest {
-	
-	public static String CARET = "<caret>";
 
 	public static final String TEST_PROJECT_NAME = "test_project";
 	public static final String TEST_PACKAGE_NAME = "testing";
@@ -56,8 +55,8 @@ public class TextEditorTest {
 	public JavaEditor createEditor(String name, String content, String packageName) {
 		if (editor == null) {
 			try {
-				int cursor = getCursorPosition(content);
-				content = content.replaceAll(CARET, "");
+				int cursor = content.indexOf(KotlinEditorTestCase.CARET_TAG);
+				content = content.replaceAll(KotlinEditorTestCase.CARET_TAG, "");
 				
 				IFile file = testProject.createSourceFile(packageName, name, content);
 				editor = (JavaEditor) EditorTestUtils.openInEditor(file);
@@ -68,15 +67,6 @@ public class TextEditorTest {
 		}
 		
 		return editor;
-	}
-	
-	private int getCursorPosition(String content) {
-		int cursor = -1;
-        if (content.contains(CARET)) {
-            cursor = content.indexOf(CARET);
-        }
-        
-        return cursor;
 	}
 	
 	public void type(char c) {
@@ -98,7 +88,7 @@ public class TextEditorTest {
 	}
 	
 	public void typeEnter() {
-		type('\n');
+		type(LineEndUtil.NEW_LINE_CHAR);
 	}
 	
 	public void save() {
