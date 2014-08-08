@@ -16,56 +16,50 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.IClassFile;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.ILocalVariable;
-import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.Signature;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
-import org.eclipse.jdt.ui.JavaElementLabelProvider;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.window.Window;
+import org.eclipse.jface.util.OpenStrategy;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
+import org.jetbrains.jet.lang.descriptors.SourceElement;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetReferenceExpression;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.resolve.DescriptorToSourceUtils;
+import org.jetbrains.jet.lang.resolve.source.KotlinSourceElement;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseSourceElement;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
 
 public class OpenDeclarationAction extends SelectionDispatchAction {
@@ -85,7 +79,8 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
 
     @Override
     public void run(ITextSelection selection) {
-        PsiElement element = getTargetElement(getSelectedExpression(file, selection.getOffset()));
+        SourceElement element = getTargetElement(getSelectedExpression(file, selection.getOffset()));
+        
         if (element == null) {
             return;
         }
@@ -100,42 +95,66 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private PsiElement getTargetElement(@Nullable JetReferenceExpression expression) {
+    private SourceElement getTargetElement(@Nullable JetReferenceExpression expression) {
         BindingContext bindingContext = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file));
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
-        
-        if (descriptor == null) return null;
-        
-        List<PsiElement> elements = DescriptorToSourceUtils.descriptorToDeclarations(descriptor);
-        if (elements.size() > 1 || elements.isEmpty()) {
-            return null;
+        if (descriptor != null) {
+            List<SourceElement> declarations = EclipseDescriptorUtils.descriptorToDeclarations(descriptor);
+            
+            if (declarations.size() > 1 || declarations.isEmpty()) {
+                return null;
+            }
+            
+            return declarations.get(0);
         }
-        
-        return elements.get(0);
+
+        return null;
     }
     
-    private void gotoElement(@NotNull PsiElement element) throws JavaModelException, PartInitException {
+    private void gotoElement(@NotNull SourceElement element) throws JavaModelException, PartInitException {
+        if (element instanceof EclipseSourceElement) {
+            IBinding binding = ((EclipseSourceElement) element).getBinding();
+            gotoJavaDeclaration(binding, javaProject);
+        } else if (element instanceof KotlinSourceElement) {
+            PsiElement psiElement = ((KotlinSourceElement) element).getPsi();
+            gotoKotlinDeclaration(psiElement, javaProject);
+        }
+    }
+    
+    private static void gotoKotlinDeclaration(@NotNull PsiElement element, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
         VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
         assert virtualFile != null;
         
         IFile targetFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath()));
-        IEditorPart editorPart = findEditorPart(targetFile, element);
+        IEditorPart editorPart = findEditorPart(targetFile, element, javaProject);
         if (editorPart == null) {
             return;
         }
         
         AbstractTextEditor targetEditor = (AbstractTextEditor) editorPart;
         
-        if (targetEditor instanceof KotlinEditor) {
-            int start = LineEndUtil.convertLfToOsOffset(element.getContainingFile().getText(), element.getTextOffset());
-            targetEditor.selectAndReveal(start, 0);
-        } else if (targetEditor instanceof JavaEditor) {
-            gotoDeclarationInJavaFile(element, (JavaEditor) targetEditor);
+        int start = LineEndUtil.convertLfToOsOffset(element.getContainingFile().getText(), element.getTextOffset());
+        targetEditor.selectAndReveal(start, 0);
+    }
+    
+    private static void gotoJavaDeclaration(@NotNull IBinding binding, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
+        IJavaElement javaElement = binding.getJavaElement();
+        if (javaElement == null && binding instanceof IMethodBinding) { 
+            IMethodBinding methodBinding = (IMethodBinding) binding;
+            if (methodBinding.isConstructor()) { // because <init>() may correspond to null java element
+                javaElement = methodBinding.getDeclaringClass().getJavaElement();
+            }
+        } 
+        
+        if (javaElement != null) {
+            IEditorPart editorPart = EditorUtility.openInEditor(javaElement, OpenStrategy.activateOnOpen());
+            JavaUI.revealInEditor(editorPart, javaElement);
         }
     }
     
     @Nullable
-    private IEditorPart findEditorPart(@Nullable IFile targetFile, @NotNull PsiElement element) throws JavaModelException, PartInitException {
+    private static IEditorPart findEditorPart(@Nullable IFile targetFile, @NotNull PsiElement element, 
+            @NotNull IJavaProject javaProject) throws JavaModelException, PartInitException {
         if (targetFile != null && targetFile.exists()) {
             return openInEditor(targetFile);
         } 
@@ -148,136 +167,6 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         IType targetType = javaProject.findType(psiClass.getQualifiedName());
         
         return EditorUtility.openInEditor(targetType, true);
-    }
-    
-    private void gotoDeclarationInJavaFile(@NotNull PsiElement element, @NotNull JavaEditor editor) throws PartInitException, JavaModelException {
-        if (element instanceof PsiClass) {
-            IJavaElement targetJavaElement = getJavaClass(((PsiClass) element).getQualifiedName(), editor);
-            JavaUI.revealInEditor(editor, targetJavaElement);
-        } else if (element instanceof PsiMethod) {
-            List<IMethod> methods = getJavaMethods((PsiMethod) element, editor);
-            
-            if (methods.size() == 1) {
-                JavaUI.revealInEditor(editor, (IJavaElement) methods.get(0));
-            } else {
-                IJavaElement targetJavaElement = selectMethod(methods.toArray(new IMethod[methods.size()]));
-                JavaUI.revealInEditor(editor, targetJavaElement);
-            }
-        }
-    }
-    
-    private boolean matchMethodSignature(IMethod javaMethod, PsiMethod psiMethod) {
-        if (!javaMethod.getElementName().equals(psiMethod.getName())) {
-            return false;
-        }
-        
-        try {
-            ILocalVariable[] javaParameterTypes = javaMethod.getParameters();
-            PsiType[] psiParameterTypes = psiMethod.getHierarchicalMethodSignature().getParameterTypes();
-            
-            if (javaParameterTypes.length != psiParameterTypes.length) {
-                return false;
-            }
-            
-            for (int i = 0; i < javaParameterTypes.length; ++i) {
-                String psiCanonicalName = psiParameterTypes[i].getCanonicalText();
-                String javaCanonicalName = Signature.toString(javaParameterTypes[i].getTypeSignature());
-                if (!psiCanonicalName.equals(javaCanonicalName)) {
-                    return false;
-                }
-            }
-        } catch (JavaModelException e) {
-            KotlinLogger.logError(e);
-        }  
-        
-        return true;
-    }
-    
-    @NotNull
-    private List<IMethod> getJavaMethods(@NotNull PsiMethod psiMethod, @NotNull JavaEditor editor) throws JavaModelException {
-        PsiClass psiClass = psiMethod.getContainingClass();
-        assert psiClass != null;
-        
-        IType javaClass = getJavaClass(psiClass.getQualifiedName(), editor);
-        if (javaClass == null) {
-            return Collections.emptyList();
-        }
-        
-        List<IMethod> methods = new ArrayList<IMethod>();
-        for (IMethod javaMethod : javaClass.getMethods()) {
-            if (matchMethodSignature(javaMethod, psiMethod)) {
-                methods.add(javaMethod);
-            }
-        }
-        
-        return methods;
-    }
-    
-    @Nullable
-    private IType getJavaClass(@Nullable String qualifiedName, @NotNull JavaEditor javaEditor) throws JavaModelException {
-        List<IType> types = new ArrayList<IType>();
-        
-        Object viewPartInput = javaEditor.getViewPartInput();
-        if (viewPartInput instanceof ICompilationUnit) {
-            IType[] typesInEditor = ((ICompilationUnit) viewPartInput).getAllTypes(); 
-            for (IType type : typesInEditor) {
-                types.add(type);
-            }
-        } else if (viewPartInput instanceof IClassFile) {
-            types.addAll(getTypes((IClassFile) viewPartInput));
-        } else {
-            return null;
-        }
-        
-        for (IType type : types) {
-            String javaQualifiedName = type.getFullyQualifiedName('.');
-            if (javaQualifiedName.equals(qualifiedName)) {
-                return type;
-            }
-        }
-        
-        return null;
-    }
-    
-    private List<IType> getTypes(@NotNull IClassFile classFile) throws JavaModelException {
-        IJavaElement[] javaElements = classFile.getChildren();
-        
-        List<IType> types = new ArrayList<IType>();
-        for (IJavaElement javaElement : javaElements) {
-            if (javaElement instanceof IType) {
-                IType topLevelType = (IType) javaElement;
-                
-                types.add(topLevelType);
-                types.addAll(getNestedTypes(topLevelType));
-            }
-        } 
-        
-        return types;
-    }
-    
-    private List<IType> getNestedTypes(@NotNull IType javaType) throws JavaModelException {
-        List<IType> nestedTypes = new ArrayList<IType>();
-        for (IType nestedType : javaType.getTypes()) {
-            nestedTypes.add(nestedType);
-        }
-        
-        return nestedTypes;
-    }
-    
-    @Nullable
-    private IJavaElement selectMethod(IMethod[] methods) {
-        int flags = JavaElementLabelProvider.SHOW_DEFAULT | JavaElementLabelProvider.SHOW_QUALIFIED | JavaElementLabelProvider.SHOW_ROOT;
-
-        ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), new JavaElementLabelProvider(flags));
-        dialog.setTitle("Method navigation");
-        dialog.setMessage("Select method to navigate");
-        dialog.setElements(methods);
-
-        if (dialog.open() == Window.OK) {
-            return (IJavaElement) dialog.getFirstResult();
-        }
-        
-        return null;
     }
     
     @Nullable
