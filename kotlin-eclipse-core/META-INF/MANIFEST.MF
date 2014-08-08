@@ -11,7 +11,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.debug.core,
  org.jetbrains.kotlin.bundled-compiler
 Bundle-ActivationPolicy: lazy
-Import-Package: com.intellij.openapi.vfs,
+Import-Package: com.google.common.collect,
+ com.intellij.openapi.vfs,
+ javax.inject,
  org.eclipse.core.resources,
  org.eclipse.debug.internal.ui.viewers,
  org.eclipse.jdt.core,
@@ -20,8 +22,7 @@ Import-Package: com.intellij.openapi.vfs,
  org.jetbrains.jet.di,
  org.jetbrains.jet.plugin,
  org.jetbrains.kotlin.core.resolve,
- org.jetbrains.kotlin.core.utils,
- com.google.common.collect
+ org.jetbrains.kotlin.core.utils
 Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.builder,
  org.jetbrains.kotlin.core.launch,

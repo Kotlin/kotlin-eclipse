@@ -64,7 +64,7 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
 
     private static SearchEngine searchEngine = new SearchEngine();
     private static IJavaSearchScope searchScope = SearchEngine.createWorkspaceScope();
-    private static ASTParser parser = ASTParser.newParser(AST.JLS8);
+    private static ASTParser parser = ASTParser.newParser(AST.JLS4);
     
     private IJavaProject javaProject = null;
     
