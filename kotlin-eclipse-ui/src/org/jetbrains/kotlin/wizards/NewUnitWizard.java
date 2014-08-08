@@ -17,11 +17,13 @@
 package org.jetbrains.kotlin.wizards;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
 
 public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     
@@ -48,8 +50,10 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
                 wizardPage.getUnitName(), contents, getShell());
         performOperation(op);
         
-        addKotlinNatureToProject(wizardPage.getProject());
-        addKotlinBuilderToProject(wizardPage.getProject());
+        IProject project = wizardPage.getProject();
+        addKotlinNatureToProject(project);
+        addKotlinBuilderToProject(project);
+        KotlinRuntimeConfigurationSuggestor.suggestForProject(project, getShell());
         
         selectAndRevealResource(op.getResult());
         openFile(op.getResult());
