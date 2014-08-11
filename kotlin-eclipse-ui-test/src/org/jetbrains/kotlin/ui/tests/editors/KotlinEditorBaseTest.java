@@ -16,26 +16,12 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
-import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class KotlinEditorBaseTest extends KotlinEditorTestCase {
-	@Test
-	public void sampleTest() {
-		KotlinEditor kotlinEditor = new KotlinEditor();
-		Assert.assertNotNull(kotlinEditor);
-	}
-	
-	@Test
-	public void TextEditorTest() {
-		TextEditorTest textEditor = new TextEditorTest();
-		Assert.assertNotNull(textEditor);
-	}
-	
+public class KotlinEditorBaseTest extends KotlinProjectTestCase {
 	@Test
 	public void openEditorTest() {
 		TextEditorTest textEditor = new TextEditorTest();
@@ -46,11 +32,5 @@ public class KotlinEditorBaseTest extends KotlinEditorTestCase {
 	public void getJavaProjectTest() {
 		TextEditorTest textEditor = new TextEditorTest();
 		Assert.assertNotNull(textEditor.getTestJavaProject());
-	}
-	
-	@Test
-	public void createTestProjectTest() {
-		TestJavaProject testProject = new TestJavaProject("test_project");
-		Assert.assertNotNull(testProject);
 	}
 }

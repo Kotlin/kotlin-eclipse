@@ -23,13 +23,17 @@ public class KotlinProjectTestCase {
 	public void afterTest() {
 		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
 		
-		testJavaProject.clean();
+		if (testJavaProject != null) {
+			testJavaProject.clean();
+		}
 	}
 	
 	@AfterClass
 	public static void afterAllTests() {
-		testJavaProject.clean();
-		testJavaProject.setDefaultSettings();
+		if (testJavaProject != null) {
+			testJavaProject.clean();
+			testJavaProject.setDefaultSettings();
+		}
 	}
 	
 	protected void configureProject() {
