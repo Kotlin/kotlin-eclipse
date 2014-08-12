@@ -16,8 +16,12 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.testframework.utils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.intellij.openapi.util.io.FileUtil;
 
 public class SourceFileData {
     
@@ -36,7 +40,11 @@ public class SourceFileData {
         this.packageName = getPackageFromContent(content);
     }
     
-    public String getFileName() {
+    public SourceFileData(File file) throws IOException {
+    	this(file.getName(), FileUtil.loadFile(file));
+	}
+
+	public String getFileName() {
         return fileName; 
     }
     

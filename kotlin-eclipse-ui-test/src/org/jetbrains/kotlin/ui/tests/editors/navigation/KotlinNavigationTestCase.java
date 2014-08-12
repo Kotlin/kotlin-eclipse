@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.tests.editors.navigation;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
@@ -53,7 +55,7 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         private boolean isBefore = false;
         private boolean isAfter = false;
         
-        public NavigationSourceFileData(File file) {
+        public NavigationSourceFileData(File file) throws IOException {
             super(file);
         }
         
@@ -61,17 +63,23 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
             List<NavigationSourceFileData> result = new ArrayList<NavigationSourceFileData>();
             
             for (File file : testFolder.listFiles()) {
-                String fileName = file.getName();
-                
-                NavigationSourceFileData data = new NavigationSourceFileData(file);
-                result.add(data);
-                
-                if (fileName.endsWith(BEFORE_FILE_EXTENSION)) {
-                    data.isBefore = true;
-                }
-                if (fileName.endsWith(AFTER_FILE_EXTENSION)) {
-                    data.isAfter = true;
-                }
+            	String fileName = file.getName();
+
+            	NavigationSourceFileData data;
+				try {
+					data = new NavigationSourceFileData(file);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+				
+            	result.add(data);
+
+            	if (fileName.endsWith(BEFORE_FILE_EXTENSION)) {
+            		data.isBefore = true;
+            	}
+            	if (fileName.endsWith(AFTER_FILE_EXTENSION)) {
+            		data.isAfter = true;
+            	}
             }
             
             return result;
