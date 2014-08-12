@@ -44,10 +44,10 @@ fun intFunctionLiteral(): Int = <!TYPE_MISMATCH!>{ 10 }<!>
 fun blockReturnUnitMismatch() : Int {<!RETURN_TYPE_MISMATCH!>return<!>}
 fun blockReturnValueTypeMismatch() : Int {return <!CONSTANT_EXPECTED_TYPE_MISMATCH!>3.4<!>}
 fun blockReturnValueTypeMatch() : Int {return 1}
-fun blockReturnValueTypeMismatchUnit() : Int {return <!TYPE_MISMATCH!>Unit<!>}
+fun blockReturnValueTypeMismatchUnit() : Int {return <!TYPE_MISMATCH, TYPE_MISMATCH!>Unit<!>}
 
 fun blockAndAndMismatch() : Int {
-  <!UNUSED_EXPRESSION!>true && false<!>
+  true && false
 <!NO_RETURN_IN_FUNCTION_WITH_BLOCK_BODY!>}<!>
 fun blockAndAndMismatch1() : Int {
   return <!TYPE_MISMATCH!>true && false<!>
@@ -57,7 +57,7 @@ fun blockAndAndMismatch2() : Int {
 }
 
 fun blockAndAndMismatch3() : Int {
-  <!UNUSED_EXPRESSION!>true || false<!>
+  true || false
 <!NO_RETURN_IN_FUNCTION_WITH_BLOCK_BODY!>}<!>
 fun blockAndAndMismatch4() : Int {
   return <!TYPE_MISMATCH!>true || false<!>
@@ -91,18 +91,18 @@ fun blockReturnValueTypeMatch6() : Int {
 }
 fun blockReturnValueTypeMatch7() : Int {
   if (1 > 2)
-    <!UNUSED_EXPRESSION!>1.0<!>
-  else <!UNUSED_EXPRESSION!>2.0<!>
+    1.0
+  else 2.0
 <!NO_RETURN_IN_FUNCTION_WITH_BLOCK_BODY!>}<!>
 fun blockReturnValueTypeMatch8() : Int {
   if (1 > 2)
-    <!UNUSED_EXPRESSION!>1.0<!>
-  else <!UNUSED_EXPRESSION!>2.0<!>
+    1.0
+  else 2.0
   return 1
 }
 fun blockReturnValueTypeMatch9() : Int {
   if (1 > 2)
-    <!UNUSED_EXPRESSION!>1.0<!>
+    1.0
 <!NO_RETURN_IN_FUNCTION_WITH_BLOCK_BODY!>}<!>
 fun blockReturnValueTypeMatch10() : Int {
   return <!TYPE_MISMATCH!>if (1 > 2)
@@ -110,7 +110,7 @@ fun blockReturnValueTypeMatch10() : Int {
 }
 fun blockReturnValueTypeMatch11() : Int {
   if (1 > 2)
-  else <!UNUSED_EXPRESSION!>1.0<!>
+  else 1.0
 <!NO_RETURN_IN_FUNCTION_WITH_BLOCK_BODY!>}<!>
 fun blockReturnValueTypeMatch12() : Int {
   if (1 > 2)
