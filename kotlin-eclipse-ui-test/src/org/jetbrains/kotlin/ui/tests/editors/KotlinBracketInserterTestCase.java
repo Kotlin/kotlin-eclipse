@@ -18,7 +18,7 @@ package org.jetbrains.kotlin.ui.tests.editors;
 
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
-import org.junit.Assert;
+import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.junit.Before;
 
 public abstract class KotlinBracketInserterTestCase extends KotlinProjectTestCase {
@@ -26,14 +26,11 @@ public abstract class KotlinBracketInserterTestCase extends KotlinProjectTestCas
 	public void configure() {
 		configureProject();
 	}
-
+	
 	protected void doTest(String input, char element, String expected) {
 		TextEditorTest testEditor = configureEditor("Test.kt", input);
-		
 		testEditor.type(element);
 		
-		String actual = testEditor.getEditorInput();
-		
-		Assert.assertEquals(expected, actual);
+		EditorTestUtils.assertByEditor(testEditor.getEditor(), expected);
 	}
 }

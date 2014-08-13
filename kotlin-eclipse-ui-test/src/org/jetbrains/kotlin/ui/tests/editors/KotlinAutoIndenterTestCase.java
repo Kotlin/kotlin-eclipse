@@ -34,7 +34,6 @@ public abstract class KotlinAutoIndenterTestCase extends KotlinProjectTestCase {
 	@Before
 	public void configure() {
     	configureProject();
-    	
     	initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.TAB : Separator.SPACE;
 		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 	}
@@ -43,9 +42,7 @@ public abstract class KotlinAutoIndenterTestCase extends KotlinProjectTestCase {
 	@After
 	public void afterTest() {
 		super.afterTest();
-		
-		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == initialSeparator));
-		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, initialSpacesCount);
+		setStorePreference(Separator.SPACE == initialSeparator, initialSpacesCount);
 	}
 
 	protected void doTest(String input, String expected) {
