@@ -26,17 +26,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.jobs.IJobManager;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.resolve.AnalyzerScheduler;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
@@ -47,33 +42,14 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     @Override
     protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
         KotlinEnvironment.updateKotlinEnvironment(JavaCore.create(getProject()));
-        updateLineMarkers();
+        BindingContext bindingContext = KotlinAnalyzer.analyzeProject(JavaCore.create(getProject()));
+        updateLineMarkers(bindingContext.getDiagnostics());
         
         return null;
     }
 
-    private void updateLineMarkers() throws CoreException {
-        Diagnostics diagnostics = analyzeProjectInForeground(JavaCore.create(getProject())).getDiagnostics();
-        Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
-
-        addMarkersToProject(annotations, getProject());
-    }
-    
-    @NotNull
-    public static BindingContext analyzeProjectInForeground(IJavaProject javaProject) {
-        AnalyzerScheduler analyzer = new AnalyzerScheduler(javaProject);
-        analyzer.schedule();
-        
-        try {
-            IJobManager jobManager = Job.getJobManager();
-            jobManager.join(AnalyzerScheduler.FAMILY, jobManager.createProgressGroup());
-        } catch (OperationCanceledException | InterruptedException e) {
-            KotlinLogger.logInfo(e.getMessage());
-            
-            return BindingContext.EMPTY;
-        } 
-        
-        return analyzer.getBindingContext();
+    private void updateLineMarkers(@NotNull Diagnostics diagnostics) throws CoreException {
+        addMarkersToProject(DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics), getProject());
     }
     
     private void addMarkersToProject(Map<IFile, List<DiagnosticAnnotation>> annotations, IProject project) throws CoreException {
