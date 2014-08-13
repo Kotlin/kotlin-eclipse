@@ -16,7 +16,7 @@
          point="org.eclipse.core.resources.natures">
       <runtime>
          <run
-               class="org.jetbrains.kotlin.model.KotlinNature">
+               class="org.jetbrains.kotlin.core.model.KotlinNature">
          </run>
       </runtime>
    </extension>

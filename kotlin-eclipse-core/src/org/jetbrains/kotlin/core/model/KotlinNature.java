@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.model;
+package org.jetbrains.kotlin.core.model;
 
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;

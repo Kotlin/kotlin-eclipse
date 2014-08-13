@@ -27,8 +27,8 @@ Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.builder,
  org.jetbrains.kotlin.core.launch,
  org.jetbrains.kotlin.core.log,
+ org.jetbrains.kotlin.core.model,
  org.jetbrains.kotlin.core.resolve,
  org.jetbrains.kotlin.core.resolve.lang.java.resolver,
- org.jetbrains.kotlin.core.utils,
- org.jetbrains.kotlin.model
+ org.jetbrains.kotlin.core.utils
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

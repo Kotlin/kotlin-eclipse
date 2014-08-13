@@ -42,8 +42,8 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
-import org.jetbrains.kotlin.model.KotlinNature;
 
 public class TestJavaProject {
 	

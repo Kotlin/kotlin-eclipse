@@ -29,7 +29,7 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.model.KotlinNature;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 
 public abstract class AbstractWizard<WP extends AbstractWizardPage> extends Wizard implements INewWizard {
 
