@@ -43,6 +43,7 @@ import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.utils.LineEndUtil;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class TestJavaProject {
 	
@@ -180,17 +181,6 @@ public class TestJavaProject {
 		return javaProject;
 	}
 	
-	private void addToClasspath(IClasspathEntry newEntry) throws JavaModelException {
-		IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
-        IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
-        
-        System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
-        
-        newEntries[oldEntries.length] = newEntry;
-        
-        javaProject.setRawClasspath(newEntries, null);
-	}
-	
 	private boolean hasKotlinRuntime() throws JavaModelException {
 		File ktRuntime = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
 		for (IClasspathEntry cpEntry : javaProject.getRawClasspath()) {
@@ -207,7 +197,7 @@ public class TestJavaProject {
 		try {
 			if (!hasKotlinRuntime()) {
 				File file = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
-				addToClasspath(JavaCore.newLibraryEntry(new Path(file.getAbsolutePath()), null, null));
+				ProjectUtils.addToClasspath(JavaCore.newLibraryEntry(new Path(file.getAbsolutePath()), null, null), javaProject);
 			}
 		} catch (JavaModelException e) {
 			throw new RuntimeException(e);
@@ -215,7 +205,7 @@ public class TestJavaProject {
 	}
 	
 	private void addSystemLibraries() throws JavaModelException {
-		addToClasspath(JavaRuntime.getDefaultJREContainerEntry());
+		ProjectUtils.addToClasspath(JavaRuntime.getDefaultJREContainerEntry(), javaProject);
 	}
 
 	public void clean() {

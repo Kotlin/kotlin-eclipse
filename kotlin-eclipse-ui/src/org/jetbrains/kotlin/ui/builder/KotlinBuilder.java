@@ -23,13 +23,16 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.resolve.BindingContext;
+import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
+import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
@@ -41,9 +44,27 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
 
     @Override
     protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
-        KotlinEnvironment.updateKotlinEnvironment(JavaCore.create(getProject()));
-        BindingContext bindingContext = KotlinAnalyzer.analyzeProject(JavaCore.create(getProject()));
-        updateLineMarkers(bindingContext.getDiagnostics());
+        IJavaProject javaProject = JavaCore.create(getProject());
+        KotlinEnvironment.updateKotlinEnvironment(javaProject);
+        
+        AnalyzeExhaust analyzeExhaust = KotlinAnalyzer.analyzeExhaustProject(javaProject);
+        updateLineMarkers(analyzeExhaust.getBindingContext().getDiagnostics());
+        
+        boolean needRebuild = false;
+        if (kind == FULL_BUILD) {
+            needRebuild = true;
+        } else {
+            IResourceDelta delta = getDelta(getProject());
+            if (delta != null) {
+                needRebuild = delta.getAffectedChildren().length > 0;
+            }
+        }
+        
+        if (needRebuild) {
+            KotlinLightClassGeneration.buildAndSaveLightClasses(analyzeExhaust, javaProject);
+            getProject().refreshLocal(0, null);
+        }
+        
         
         return null;
     }

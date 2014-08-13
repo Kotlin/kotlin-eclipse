@@ -118,4 +118,6 @@ Export-Package: com.google.common.base,
  org.jetbrains.jet.storage,
  org.jetbrains.jet.util,
  org.jetbrains.jet.util.slicedmap,
- org.jetbrains.jet.utils
+ org.jetbrains.jet.utils,
+ org.jetbrains.org.objectweb.asm,
+ org.jetbrains.jet.cli.common.output.outputUtils

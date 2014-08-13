@@ -23,5 +23,14 @@
    <extension point="org.eclipse.team.core.fileTypes">
       <fileTypes extension="kt" type="text"/>
    </extension>
+   <extension
+         point="org.eclipse.core.filesystem.filesystems">
+      <filesystem
+            scheme="org.jetbrains.kotlin.core.filesystem">
+         <run
+               class="org.jetbrains.kotlin.core.filesystem.KotlinFileSystem">
+         </run>
+      </filesystem>
+   </extension>
 
 </plugin>

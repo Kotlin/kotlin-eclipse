@@ -80,6 +80,17 @@ public class ProjectUtils {
         return PackageClassUtils.getPackageClassFqName(new FqName(filePackage));
     }
     
+    public static void addToClasspath(IClasspathEntry newEntry, IJavaProject javaProject) throws JavaModelException {
+        IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
+        IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
+        
+        System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
+        
+        newEntries[oldEntries.length] = newEntry;
+        
+        javaProject.setRawClasspath(newEntries, null);
+    }
+    
     @NotNull
     public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> srcDirectories = new ArrayList<File>();
