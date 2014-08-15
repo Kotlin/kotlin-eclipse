@@ -22,9 +22,8 @@ import java.util.List;
 
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -33,7 +32,6 @@ import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaElement;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaPackage;
 import org.jetbrains.jet.lang.resolve.name.FqName;
-import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 
@@ -42,9 +40,11 @@ import com.google.common.collect.Lists;
 public class EclipseJavaPackage implements JavaElement, JavaPackage {
     
     private final List<IPackageFragment> packages = Lists.newArrayList();
+    private final IJavaProject javaProject;
 
     public EclipseJavaPackage(List<IPackageFragment> packages) {
         this.packages.addAll(packages);
+        this.javaProject = packages.get(0).getJavaProject();
     }
     
     public EclipseJavaPackage(IPackageFragment pckg) {
@@ -65,49 +65,28 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
     @Override
     @NotNull
     public Collection<JavaPackage> getSubPackages() {
+        String thisPackageName = getFqName().asString();
+        String pattern = thisPackageName.isEmpty() ? "*" : thisPackageName + ".";
+        
+        IPackageFragment[] packageFragments = EclipseJavaClassFinder.findPackageFragments(
+                javaProject, pattern, true, true);
+
+        int thisNestedLevel = thisPackageName.split("\\.").length;
         List<JavaPackage> javaPackages = Lists.newArrayList();
-        for (IPackageFragment packageFragment : packages) {
-            javaPackages.addAll(getSubPackagesFor(packageFragment));
+        if (packageFragments != null && packageFragments.length > 0) {
+            for (IPackageFragment packageFragment : packageFragments) {
+                int subNestedLevel = packageFragment.getElementName().split("\\.").length;
+                boolean applicableForRootPackage = thisNestedLevel == 1 && thisNestedLevel == subNestedLevel;
+                if (!packageFragment.getElementName().isEmpty() && 
+                   (applicableForRootPackage || (thisNestedLevel + 1 == subNestedLevel))) {
+                    javaPackages.add(new EclipseJavaPackage(packageFragment));
+                }
+            }
         }
         
         return javaPackages;
     }
 
-    private List<JavaPackage> getSubPackagesFor(IPackageFragment packageFragment) {
-        try {
-            IJavaElement parent = packageFragment.getParent();
-            if (parent instanceof IPackageFragmentRoot) {
-                IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) parent;
-                List<JavaPackage> subPackages = Lists.newArrayList();
-                for (IJavaElement child : packageFragmentRoot.getChildren()) {
-                    if (!(child instanceof IPackageFragment)) continue;
-                    
-                    IPackageFragment subPackageFragment = (IPackageFragment) child;
-                    if (isSubPackageFor(packageFragment, subPackageFragment)) {
-                        subPackages.add(new EclipseJavaPackage(subPackageFragment));
-                    }
-                }
-                
-                return subPackages;
-            }
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-        
-        return Collections.emptyList();
-    }
-    
-    private boolean isSubPackageFor(IPackageFragment rootPackage, IPackageFragment subPackage) {
-        FqName rootFqName = new FqName(rootPackage.getElementName());
-        FqName subFqName = new FqName(subPackage.getElementName());
-        
-        if (!subFqName.isRoot()) {
-            return subFqName.parent().equals(rootFqName);
-        }
-        
-        return false;
-    }
-    
     @Override
     @NotNull
     public FqName getFqName() {
@@ -129,11 +108,9 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
             
             for (ICompilationUnit cu : javaPackage.getCompilationUnits()) {
                 for (IType javaClass : cu.getAllTypes()) {
-                    if (Name.isValidIdentifier(javaClass.getElementName())) {
-                        ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(javaClass);
-                        if (typeBinding != null) {
-                            javaClasses.add(new EclipseJavaClass(typeBinding));
-                        }
+                    ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(javaClass);
+                    if (typeBinding != null) {
+                        javaClasses.add(new EclipseJavaClass(typeBinding));
                     }
                 }
             }
@@ -144,7 +121,8 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
             throw new IllegalStateException(e);
         }
     }
-    
+
+    // TODO: Add correct resolve binding for all class files with $
     private boolean isOuterClass(IClassFile classFile) {
         return !classFile.getElementName().contains("$");
     }

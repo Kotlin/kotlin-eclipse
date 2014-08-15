@@ -22,7 +22,7 @@ Import-Package: com.intellij.openapi.vfs,
  org.jetbrains.jet.plugin,
  org.jetbrains.kotlin.core.resolve,
  org.jetbrains.kotlin.core.utils,
- com.google.common.collect
+ org.eclipse.jdt.ui
 Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.builder,
  org.jetbrains.kotlin.core.launch,

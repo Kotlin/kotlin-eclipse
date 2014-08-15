@@ -16,13 +16,11 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java;
 
-import java.util.List;
+import java.util.Arrays;
 
 import javax.inject.Inject;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.Flags;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -31,6 +29,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -42,11 +41,8 @@ import org.eclipse.jdt.core.dom.EnumConstantDeclaration;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
-import org.eclipse.jdt.core.search.IJavaSearchConstants;
-import org.eclipse.jdt.core.search.IJavaSearchScope;
-import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.core.search.SearchParticipant;
-import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.internal.core.JavaProject;
+import org.eclipse.jdt.internal.core.NameLookup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.resolve.java.JavaClassFinder;
@@ -56,14 +52,9 @@ import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClass;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPackage;
-import org.jetbrains.kotlin.core.utils.KotlinSearchPackageRequestor;
-
-import com.google.common.collect.Lists;
 
 public class EclipseJavaClassFinder implements JavaClassFinder {
 
-    private static SearchEngine searchEngine = new SearchEngine();
-    private static IJavaSearchScope searchScope = SearchEngine.createWorkspaceScope();
     private static ASTParser parser = ASTParser.newParser(AST.JLS4);
     
     private IJavaProject javaProject = null;
@@ -71,52 +62,17 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
     @Inject
     public void setProjectScope(@NotNull IJavaProject project) {
         javaProject = project;
-        try {
-            searchScope = SearchEngine.createJavaSearchScope(project.getAllPackageFragmentRoots());
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-        }
     }
     
     @Override
     @Nullable
     public JavaPackage findPackage(@NotNull FqName fqName) {
-        try {
-            String packageName = fqName.asString();
-            if (fqName.asString().isEmpty()) {
-                return new EclipseJavaPackage(getDefaultPackageFragment());
-            }
-            
-            SearchPattern searchPattern = SearchPattern.createPattern(packageName, IJavaSearchConstants.PACKAGE, 
-                    IJavaSearchConstants.DECLARATIONS, SearchPattern.R_EXACT_MATCH);
-            KotlinSearchPackageRequestor requestor = new KotlinSearchPackageRequestor();
-            
-            searchEngine.search(
-                    searchPattern, 
-                    new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() },
-                    searchScope, requestor, null);
-            
-            List<IPackageFragment> packages = requestor.getPackages();
-            if (!packages.isEmpty()) {
-                return new EclipseJavaPackage(packages);
-            }
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
+        IPackageFragment[] packageFragments = findPackageFragments(javaProject, fqName.asString(), false, false);
+        if (packageFragments != null && packageFragments.length > 0) {
+            return new EclipseJavaPackage(Arrays.asList(packageFragments));
         }
 
         return null;
-    }
-    
-    private List<IPackageFragment> getDefaultPackageFragment() throws JavaModelException {
-        List<IPackageFragment> rootPackages = Lists.newArrayList();
-        for (IClasspathEntry cpEntry : javaProject.getResolvedClasspath(true)) {
-            if (cpEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                IPackageFragment rootPackageFragment = javaProject.findPackageFragment(cpEntry.getPath());
-                rootPackages.add(rootPackageFragment);
-            }
-        }
-        
-        return rootPackages;
     }
     
     @Override
@@ -125,6 +81,19 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
         ITypeBinding typeBinding = findType(fqName, javaProject);
         if (typeBinding != null) {
             return new EclipseJavaClass(typeBinding);
+        }
+        
+        return null;
+    }
+    
+    @Nullable
+    public static IPackageFragment[] findPackageFragments(IJavaProject javaProject, String name, 
+            boolean partialMatch, boolean patternMatch) {
+        try {
+            NameLookup nameLookup = ((JavaProject) javaProject).newNameLookup((WorkingCopyOwner) null);
+            return nameLookup.findPackageFragments(name, partialMatch, patternMatch);
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
         }
         
         return null;
@@ -167,17 +136,10 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
         return getTypeBinding(root, type);
     }
     
-    public static ASTNode getParent(ASTNode node, Class<? extends ASTNode> parentClass) {
+    private static ASTNode getParent(ASTNode node, Class<? extends ASTNode> parentClass) {
         do {
             node = node.getParent();
         } while (node != null && !parentClass.isInstance(node));
-        return node;
-    }
-    
-    public static ASTNode getParent(ASTNode node, int nodeType) {
-        do {
-            node = node.getParent();
-        } while (node != null && node.getNodeType() != nodeType);
         return node;
     }
     
