@@ -16,15 +16,12 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.markers;
 
-import java.io.File;
-import java.util.Collection;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TypingUtils;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
@@ -32,20 +29,21 @@ import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
-public class KotlinParsingMarkersTestCase extends KotlinEditorAutoTestCase {
+public class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestCase {
     
-    private static final String PARSING_MARKERS_TEST_DATA_PATH = "markers/parsing/";
+    private static final String PARSING_MARKERS_TEST_DATA_PATH_SEGMENTS = "markers/parsing";
     
-    private void performTest(String fileText, String expected) {
+    @Override
+    protected void performTest(String fileText, String expected) {
         IFile file = testEditor.getEditingFile();
         
         Character typedCharacter = TypingUtils.typedCharacter(fileText);
         if (typedCharacter != null) {
             testEditor.type(typedCharacter);
         }
-            
+        
         for (DiagnosticAnnotation annotation : DiagnosticAnnotationUtil.INSTANCE.createParsingDiagnosticAnnotations(file)) {
-        	AnnotationManager.addProblemMarker(annotation, file);
+            AnnotationManager.addProblemMarker(annotation, file);
         }
         
         try {
@@ -59,33 +57,8 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorAutoTestCase {
     }
     
     @Override
-    protected void doSingleFileAutoTest(String testPath) {
-        String fileText = getText(testPath);
-        testEditor = configureEditor(getNameByPath(testPath), fileText,
-                WithAfterSourceFileData.getPackageFromContent(fileText));
-        
-        performTest(fileText, getText(testPath + AFTER_FILE_EXTENSION));
-    }
-    
-    @Override
-    protected void doMultiFileAutoTest(File testFolder) {
-        Collection<WithAfterSourceFileData> files = WithAfterSourceFileData.getTestFiles(testFolder);
-        
-        WithAfterSourceFileData target = WithAfterSourceFileData.getTargetFile(files);
-        testEditor = configureEditor(target.getFileName(), target.getContent(), target.getPackageName());
-        
-        for (WithAfterSourceFileData file : files) {
-            if (file != target) {
-                createSourceFile(file.getPackageName(), file.getFileName(), file.getContent());
-            }
-        }
-        
-        performTest(target.getContent(), target.getContentAfter());
-    }
-    
-    @Override
-    protected String getTestDataPath() {
-        return super.getTestDataPath() + PARSING_MARKERS_TEST_DATA_PATH;
+    protected String getTestDataRelativePath() {
+        return PARSING_MARKERS_TEST_DATA_PATH_SEGMENTS;
     }
     
     private static String insertTagsForErrors(String fileText, IMarker[] markers) throws CoreException {

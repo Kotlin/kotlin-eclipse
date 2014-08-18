@@ -16,17 +16,14 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.TextInvocationContext;
 import org.eclipse.ui.IMarkerResolution;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
@@ -35,9 +32,9 @@ import org.jetbrains.kotlin.ui.editors.quickfix.AutoImportMarkerResolution;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
 import org.junit.Assert;
 
-public abstract class KotlinAutoImportTestCase extends KotlinEditorAutoTestCase {
+public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFileTestCase {
     
-    private static final String AUTOIMPORT_TEST_DATA_PATH = "completion/autoimport/";
+    private static final String AUTOIMPORT_TEST_DATA_PATH_SEGMENT = "completion/autoimport";
     
     private static final String COUNT_ASSERTION_ERROR_MESSAGE = "Number of actual proposals differs from the number of expected proposals";
     private static final String EXISTENCE_ASSERTION_ERROR_MESSAGE_FORMAT = "List of actual proposals doesn't contain expected proposal: %s";
@@ -46,9 +43,10 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorAutoTestCase 
         return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(new TextInvocationContext(getEditor().getViewer(), getCaret(), -1)));
     }
     
-    private void performTest(String fileText, String content) {
-    	KotlinTestUtils.addKotlinBuilder(testEditor.getEclipseProject());
-    	KotlinTestUtils.joinBuildThread();
+    @Override
+    protected void performTest(String fileText, String content) {
+        KotlinTestUtils.addKotlinBuilder(testEditor.getEclipseProject());
+        KotlinTestUtils.joinBuildThread();
         
         List<ICompletionProposal> proposals = createProposals();
         assertCount(proposals, fileText);
@@ -62,32 +60,8 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorAutoTestCase 
     }
     
     @Override
-    protected void doSingleFileAutoTest(String testPath) {
-        String fileText = getText(testPath);
-        testEditor = configureEditor(getNameByPath(testPath), fileText, WithAfterSourceFileData.getPackageFromContent(fileText));
-        
-        performTest(fileText, getText(testPath + AFTER_FILE_EXTENSION));
-    }
-    
-    @Override
-    protected void doMultiFileAutoTest(File testFolder) {
-        Collection<WithAfterSourceFileData> files = WithAfterSourceFileData.getTestFiles(testFolder);
-        
-        WithAfterSourceFileData target = WithAfterSourceFileData.getTargetFile(files);
-        testEditor = configureEditor(target.getFileName(), target.getContent(), target.getPackageName());
-        
-        for (WithAfterSourceFileData file : files) {
-            if (file != target) {
-                createSourceFile(file.getPackageName(), file.getFileName(), file.getContent());
-            }
-        }
-        
-        performTest(target.getContent(), target.getContentAfter());
-    }
-    
-    @Override
-    protected String getTestDataPath() {
-        return super.getTestDataPath() + AUTOIMPORT_TEST_DATA_PATH;
+    protected String getTestDataRelativePath() {
+        return AUTOIMPORT_TEST_DATA_PATH_SEGMENT;
     }
     
     private static void assertCount(List<ICompletionProposal> proposals, String fileText) {
