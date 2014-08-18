@@ -57,13 +57,23 @@ public class KotlinBracketInserterTest extends KotlinBracketInserterTestCase {
     }
     
     @Test
+    public void insertClosingBraceAfterExpression() {
+        doTest("fun foo() {\n\tFoo() <caret>", '}', "fun foo() {\n\tFoo() }");
+    }
+    
+    @Test
     public void insertClosingBrace() {
-        doTest("fun foo() {\n\tFoo()\n<caret>\nclass Foo", '}', "fun foo() {\n\tFoo()\n}\nclass Foo");
+        doTest("class Foo {\n\tfun foo() {\n\t\tFoo()\n<caret>\n}", '}', "class Foo {\n\tfun foo() {\n\t\tFoo()\n\t}\n}");
     }
     
     @Test
     @Ignore("Bug with line separators")
     public void insertClosingBraceWithRemovingTabulation() {
-        doTest("class Foo {\n\tfun foo() {\n\t\tFoo()\n\t\t<caret>\n}", '}', "class Foo {\n\tfun foo() {\n\t\tFoo()\n\t}\n}");
+        doTest("class Foo {\n\tfun foo() {\n\t\tFoo()\n\t\t\t<caret>\n}", '}', "class Foo {\n\tfun foo() {\n\t\tFoo()\n\t}\n}");
+    }
+    
+    @Test
+    public void insertClosingBraceWithoutRemovingTabulation() {
+        doTest("class Foo {\n\tfun foo() {\n\t\tFoo()\n\t<caret>\n}", '}', "class Foo {\n\tfun foo() {\n\t\tFoo()\n\t}\n}");
     }
 }
