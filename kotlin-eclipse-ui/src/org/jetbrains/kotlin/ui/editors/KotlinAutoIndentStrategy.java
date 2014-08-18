@@ -16,10 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.BadLocationException;
@@ -30,6 +26,7 @@ import org.eclipse.jface.text.IRegion;
 import org.jetbrains.jet.lexer.JetTokens;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.IndenterUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
@@ -39,8 +36,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
-    
-    public static final Set<String> BLOCK_ELEMENT_TYPES = new HashSet<String>(Arrays.asList("IF", "FOR", "WHILE", "FUN", "CLASS", "FUNCTION_LITERAL_EXPRESSION", "WHEN"));
     
     private static final char OPENING_BRACE_CHAR = '{';
     private static final char CLOSING_BRACE_CHAR = '}';
@@ -143,7 +138,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             String lineSpaces = (end > start) ? document.get(start, end - start) : ""; 
             buf.append(lineSpaces);
             
-            if (isAfterOpenBrace(document, command.offset - 1, start)) {                            
+            if (isAfterOpenBrace(document, command.offset - 1, start)) {
                 buf.append(IndenterUtil.createWhiteSpace(1, 0));
                 
                 if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
@@ -151,7 +146,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                     command.caretOffset = command.offset + buf.length();
                     
                     buf.append(command.text);
-                    buf.append(lineSpaces);                                 
+                    buf.append(lineSpaces);
                 }
                 command.text = buf.toString();
             } else {
@@ -194,9 +189,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 node = leaf.getNode();
             }
             while(node != null) {
-                if (BLOCK_ELEMENT_TYPES.contains(node.getElementType().toString())) {
-                    indent++;
-                }
+                indent = AlignmentStrategy.updateIndent(node, indent);
                 node = node.getTreeParent();
             }
             
