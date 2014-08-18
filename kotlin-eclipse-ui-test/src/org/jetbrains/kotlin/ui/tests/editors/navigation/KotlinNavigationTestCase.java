@@ -91,7 +91,7 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         }
     }
     
-    private static final String NAVIGATION_TEST_DATA_PATH = "navigation/";
+    private static final String NAVIGATION_TEST_DATA_PATH_SEGMENT = "navigation";
     
     private void performTest(String contentAfter) {
         joinBuildThread();
@@ -145,7 +145,7 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
     }
     
     @Override
-    protected String getTestDataPath() {
-        return super.getTestDataPath() + NAVIGATION_TEST_DATA_PATH;
+    protected String getTestDataRelativePath() {
+        return NAVIGATION_TEST_DATA_PATH_SEGMENT;
     }
 }

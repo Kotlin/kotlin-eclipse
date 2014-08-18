@@ -23,8 +23,8 @@ import java.util.Map;
 
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
+import com.intellij.util.containers.ContainerUtil;
+import com.intellij.openapi.util.Condition;
 
 public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
     
@@ -37,9 +37,9 @@ public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
     
     protected static class WithAfterSourceFileData extends EditorSourceFileData {
         
-        private static final Predicate<WithAfterSourceFileData> TARGET_PREDICATE = new Predicate<WithAfterSourceFileData>() {
+        private static final Condition<WithAfterSourceFileData> TARGET_PREDICATE = new Condition<WithAfterSourceFileData>() {
             @Override
-            public boolean apply(WithAfterSourceFileData data) {
+            public boolean value(WithAfterSourceFileData data) {
                 return data.contentAfter != null;
             }
         };
@@ -87,12 +87,18 @@ public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
         }
         
         public static WithAfterSourceFileData getTargetFile(Iterable<WithAfterSourceFileData> files) {
-            return Iterables.<WithAfterSourceFileData> find(files, TARGET_PREDICATE, null);
+            return ContainerUtil.find(files, TARGET_PREDICATE);
         }
     }
     
+    private static final String TEST_DATA_PATH = "testData";
+    
+    protected static final String KT_FILE_EXTENSION = ".kt";
+    protected static final String AFTER_FILE_EXTENSION = ".after";
+    protected static final String BEFORE_FILE_EXTENSION = ".before";
+    
     protected final void doAutoTest() {
-        String testPath = getTestDataPath() + name.getMethodName();
+        String testPath = TEST_DATA_PATH + "/" + getTestDataRelativePath() + "/" + name.getMethodName();
         File testFolder = new File(testPath);
         File testFile = new File(testPath + KT_FILE_EXTENSION);
         
@@ -101,22 +107,13 @@ public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
         } else if (testFile.exists() && testFile.isFile()) {
             doSingleFileAutoTest(testPath + KT_FILE_EXTENSION);
         } else {
-            throw new RuntimeException(String.format("Neither file \'%s\' nor directory \'%s\' was found",
-                    testFile.getAbsolutePath(), testFolder.getAbsolutePath()));
+            throw new RuntimeException(String.format("Neither file \'%s\' nor directory \'%s\' was found", testFile.getAbsolutePath(), testFolder.getAbsolutePath()));
         }
     }
-    
-    private static final String TEST_DATA_PATH = "testData/";
-    
-    protected static final String KT_FILE_EXTENSION = ".kt";
-    protected static final String AFTER_FILE_EXTENSION = ".after";
-    protected static final String BEFORE_FILE_EXTENSION = ".before";
     
     protected abstract void doSingleFileAutoTest(String testPath);
     
     protected abstract void doMultiFileAutoTest(File testFolder);
     
-    protected String getTestDataPath() {
-        return TEST_DATA_PATH;
-    }
+    protected abstract String getTestDataRelativePath();
 }
