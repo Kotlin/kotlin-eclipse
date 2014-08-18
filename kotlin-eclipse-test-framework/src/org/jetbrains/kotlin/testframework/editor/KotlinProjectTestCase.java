@@ -10,8 +10,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
-import com.intellij.openapi.util.text.StringUtilRt;
-
 public class KotlinProjectTestCase {
 	
 	private static TestJavaProject testJavaProject;
@@ -77,10 +75,9 @@ public class KotlinProjectTestCase {
 	
 	protected TextEditorTest configureEditor(String fileName, String content) {
 		TextEditorTest testEditor = new TextEditorTest(testJavaProject);
-		String processedContent = StringUtil.removeAllCarriageReturns(content).replaceAll(
+		String contentWithouCR = StringUtil.removeAllCarriageReturns(content).replaceAll(
 				LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
-		String contentWithSystemLineSeparators = StringUtilRt.convertLineSeparators(processedContent, System.lineSeparator());
-		testEditor.createEditor(fileName, contentWithSystemLineSeparators, TextEditorTest.TEST_PACKAGE_NAME);
+		testEditor.createEditor(fileName, contentWithouCR, TextEditorTest.TEST_PACKAGE_NAME);
 		
 		return testEditor;
     }

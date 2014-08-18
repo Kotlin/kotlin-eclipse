@@ -20,8 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 
-import javax.management.RuntimeErrorException;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -44,6 +42,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 
 public class TestJavaProject {
 	
@@ -130,7 +129,9 @@ public class TestJavaProject {
 	
 	public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
 		IPackageFragment fragment = createPackage(pkg);
-		IFile file = createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(content.getBytes()));
+		String contentWithoutCR = org.jetbrains.kotlin.utils.StringUtil.removeAllCarriageReturns(content)
+				.replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
+		IFile file = createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(contentWithoutCR.getBytes()));
 		
 		return file;
 	}
