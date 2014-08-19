@@ -166,6 +166,10 @@ public class KotlinPsiManager {
         }
     }
     
+    public boolean exists(@NotNull IFile psiFile) {
+        return psiFiles.containsKey(psiFile);
+    }
+    
     @NotNull
     public List<IFile> getFilesByProject(@NotNull String projectName) {
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
