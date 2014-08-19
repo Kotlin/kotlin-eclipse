@@ -126,10 +126,8 @@ public class TestJavaProject {
     
     public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
         IPackageFragment fragment = createPackage(pkg);
-        String contentWithoutCR = org.jetbrains.kotlin.utils.StringUtil.removeAllCarriageReturns(content).replaceAll(
-                LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
-        IFile file = createFile((IFolder) fragment.getResource(), fileName,
-                new ByteArrayInputStream(contentWithoutCR.getBytes()));
+        String contentWithoutCR = LineEndUtil.replaceAllSeparatorsWithSystemLineSeparators(content);
+        IFile file = createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(contentWithoutCR.getBytes()));
         
         return file;
     }

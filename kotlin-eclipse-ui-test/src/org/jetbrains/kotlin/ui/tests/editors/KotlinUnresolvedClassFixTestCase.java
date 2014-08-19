@@ -31,7 +31,6 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 import org.jetbrains.kotlin.utils.LineEndUtil;
-import org.jetbrains.kotlin.utils.StringUtil;
 import org.junit.Before;
 
 public class KotlinUnresolvedClassFixTestCase extends KotlinProjectTestCase {
@@ -42,8 +41,8 @@ public class KotlinUnresolvedClassFixTestCase extends KotlinProjectTestCase {
 	}
 	
 	public void doTest(String input, List<SourceFileData> files, String expected) {
-		String toEditor = StringUtil.removeAllCarriageReturns(
-				KotlinEditorTestCase.resolveTestTags(input)).replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
+		String toEditor = LineEndUtil.replaceAllSeparatorsWithSystemLineSeparators(
+				KotlinEditorTestCase.resolveTestTags(input));
 		TextEditorTest testEditor = configureEditor("Test.kt", toEditor);
 
 		if (files != null) {

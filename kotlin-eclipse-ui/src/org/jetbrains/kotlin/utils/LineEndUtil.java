@@ -91,4 +91,16 @@ public class LineEndUtil {
     private static void assertLineSeparator(String osLineSeparator) {
         assert osLineSeparator.equals(CARRIAGE_RETURN_STRING + NEW_LINE_STRING) : "Only \r\n is expected as multi char line separator";
     }
+    
+    public static String removeAllCarriageReturns(String s) {
+        return s.replaceAll(CARRIAGE_RETURN_STRING, "");
+    }
+    
+    public static String replaceAllNewLinesWithSystemLineSeparators(String s) {
+        return s.replaceAll(NEW_LINE_STRING, System.lineSeparator());
+    }
+    
+    public static String replaceAllSeparatorsWithSystemLineSeparators(String s) {
+        return replaceAllNewLinesWithSystemLineSeparators(removeAllCarriageReturns(s));
+    }
 }
