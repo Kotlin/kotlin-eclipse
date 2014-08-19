@@ -21,14 +21,14 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( { 
-	KotlinEditorBaseTest.class, 
-	KotlinAutoIndenterTest.class,
-	KotlinAnalyzerTest.class,
-	KotlinHighlightningTest.class,
-	KotlinBracketInserterTest.class,
-	KotlinOpenDeclarationTest.class,
-	KotlinUnresolvedClassFixTest.class,
-	KotlinCustomLocationBugTest.class
+    KotlinEditorBaseTest.class, 
+    KotlinAutoIndenterTest.class,
+    KotlinAnalyzerTest.class,
+    KotlinHighlightningTest.class,
+    KotlinBracketInserterTest.class,
+    KotlinOpenDeclarationTest.class,
+    KotlinUnresolvedClassFixTest.class,
+    KotlinCustomLocationBugTest.class
 } )
 public class AllTests {
 

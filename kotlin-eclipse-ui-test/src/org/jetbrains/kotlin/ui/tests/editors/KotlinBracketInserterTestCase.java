@@ -22,15 +22,15 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.junit.Before;
 
 public abstract class KotlinBracketInserterTestCase extends KotlinProjectTestCase {
-	@Before
-	public void configure() {
-		configureProject();
-	}
-	
-	protected void doTest(String input, char element, String expected) {
-		TextEditorTest testEditor = configureEditor("Test.kt", input);
-		testEditor.type(element);
-		
-		EditorTestUtils.assertByEditor(testEditor.getEditor(), expected);
-	}
+    @Before
+    public void configure() {
+        configureProject();
+    }
+    
+    protected void doTest(String input, char element, String expected) {
+        TextEditorTest testEditor = configureEditor("Test.kt", input);
+        testEditor.type(element);
+        
+        EditorTestUtils.assertByEditor(testEditor.getEditor(), expected);
+    }
 }

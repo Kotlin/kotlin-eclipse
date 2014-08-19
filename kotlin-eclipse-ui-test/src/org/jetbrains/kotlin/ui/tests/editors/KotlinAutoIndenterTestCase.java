@@ -30,40 +30,40 @@ import org.junit.Before;
 
 public abstract class KotlinAutoIndenterTestCase extends KotlinProjectTestCase {
     private int initialSpacesCount;
-	private Separator initialSeparator;
-
-	@Before
-	public void configure() {
-    	configureProject();
-    	initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.TAB : Separator.SPACE;
-		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
-	}
+    private Separator initialSeparator;
     
-	@Override
-	@After
-	public void afterTest() {
-		super.afterTest();
-		setStorePreference(Separator.SPACE == initialSeparator, initialSpacesCount);
-	}
-
-	protected void doTest(String input, String expected) {
-		String resolvedInput = KotlinTestUtils.resolveTestTags(input);
-    	TextEditorTest testEditor = configureEditor("Test.kt", resolvedInput);
-    	setStorePreference(false, 2);
-    	
-    	if (input.contains(KotlinEditorTestCase.CARET_TAG)) {
-    		testEditor.typeEnter();
-    	}
-    	
-    	EditorTestUtils.assertByEditor(testEditor.getEditor(), expected);
+    @Before
+    public void configure() {
+        configureProject();
+        initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.TAB : Separator.SPACE;
+        initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
     }
-	
-	protected IPreferenceStore getStore() {
-    	return EditorsUI.getPreferenceStore();
+    
+    @Override
+    @After
+    public void afterTest() {
+        super.afterTest();
+        setStorePreference(Separator.SPACE == initialSeparator, initialSpacesCount);
+    }
+    
+    protected void doTest(String input, String expected) {
+        String resolvedInput = KotlinTestUtils.resolveTestTags(input);
+        TextEditorTest testEditor = configureEditor("Test.kt", resolvedInput);
+        setStorePreference(false, 2);
+        
+        if (input.contains(KotlinEditorTestCase.CARET_TAG)) {
+            testEditor.typeEnter();
+        }
+        
+        EditorTestUtils.assertByEditor(testEditor.getEditor(), expected);
+    }
+    
+    protected IPreferenceStore getStore() {
+        return EditorsUI.getPreferenceStore();
     }
     
     protected void setStorePreference(boolean isSpacesForTabs, int tabWidth) {
-    	getStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, isSpacesForTabs);
-		getStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, tabWidth);
+        getStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, isSpacesForTabs);
+        getStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, tabWidth);
     }
 }

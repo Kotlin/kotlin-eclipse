@@ -65,7 +65,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 public class OpenDeclarationAction extends SelectionDispatchAction {
     
     public static final String OPEN_EDITOR_TEXT = "OpenEditor";
-
+    
     private final JavaEditor editor;
     private final IJavaProject javaProject;
     private final IFile file;
@@ -76,7 +76,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         file = EditorUtil.getFile(editor);
         javaProject = JavaCore.create(file.getProject());
     }
-
+    
     @Override
     public void run(ITextSelection selection) {
         SourceElement element = getTargetElement(getSelectedExpression(file, selection.getOffset()));
@@ -109,7 +109,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
             
             return declarations.get(0);
         }
-
+        
         return null;
     }
     
@@ -165,7 +165,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
         if (psiClass == null) {
             return null;
         }
-
+        
         IType targetType = javaProject.findType(psiClass.getQualifiedName());
         
         return EditorUtility.openInEditor(targetType, true);

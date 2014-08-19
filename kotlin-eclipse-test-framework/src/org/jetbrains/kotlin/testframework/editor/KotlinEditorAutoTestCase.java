@@ -27,23 +27,23 @@ import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
 
 public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
-
-	protected abstract static class EditorSourceFileData extends SourceFileData {
-
-		public EditorSourceFileData(File file) {
-			super(file.getName(), getText(file));
-		}
-	}
-	
-	protected static class WithAfterSourceFileData extends EditorSourceFileData {
+    
+    protected abstract static class EditorSourceFileData extends SourceFileData {
         
-	    private static final Condition<WithAfterSourceFileData> TARGET_PREDICATE = new Condition<WithAfterSourceFileData>() {
+        public EditorSourceFileData(File file) {
+            super(file.getName(), getText(file));
+        }
+    }
+    
+    protected static class WithAfterSourceFileData extends EditorSourceFileData {
+        
+        private static final Predicate<WithAfterSourceFileData> TARGET_PREDICATE = new Predicate<WithAfterSourceFileData>() {
             @Override
-            public boolean value(WithAfterSourceFileData data) {
+            public boolean apply(WithAfterSourceFileData data) {
                 return data.contentAfter != null;
             }
-	    };
-       
+        };
+        
         private static final String NO_TARGET_FILE_FOUND_ERROR_MESSAGE = "No target file found";
         private static final String NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT = "No target file found for \'%s\' file";
         
@@ -77,10 +77,11 @@ public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
             
             WithAfterSourceFileData target = result.get(targetAfterFile.getName().replace(AFTER_FILE_EXTENSION, ""));
             if (target == null) {
-                throw new RuntimeException(String.format(NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT, targetAfterFile.getAbsolutePath()));
+                throw new RuntimeException(String.format(NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT,
+                        targetAfterFile.getAbsolutePath()));
             }
             
-            target.contentAfter = getText(targetAfterFile);       
+            target.contentAfter = getText(targetAfterFile);
             
             return result.values();
         }
@@ -89,32 +90,33 @@ public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
         	return ContainerUtil.find(files, TARGET_PREDICATE);
         }
     }
-	
-	protected final void doAutoTest() {
-		String testPath = getTestDataPath() + name.getMethodName();
-		File testFolder = new File(testPath);
-		File testFile = new File(testPath + KT_FILE_EXTENSION);
-		
-		if (testFolder.exists() && testFolder.isDirectory()) {
-			doMultiFileAutoTest(testFolder);
-		} else if (testFile.exists() && testFile.isFile()) {
-			doSingleFileAutoTest(testPath + KT_FILE_EXTENSION);
-		} else {
-			throw new RuntimeException(String.format("Neither file \'%s\' nor directory \'%s\' was found", testFile.getAbsolutePath(), testFolder.getAbsolutePath()));
-		}
-	}
-	
-	private static final String TEST_DATA_PATH = "testData/";
-	
-	protected static final String KT_FILE_EXTENSION = ".kt";
-	protected static final String AFTER_FILE_EXTENSION = ".after";
-	protected static final String BEFORE_FILE_EXTENSION = ".before";
-	
-	protected abstract void doSingleFileAutoTest(String testPath);
-	
-	protected abstract void doMultiFileAutoTest(File testFolder);
-
-	protected String getTestDataPath() {
-		return TEST_DATA_PATH;
-	}
+    
+    protected final void doAutoTest() {
+        String testPath = getTestDataPath() + name.getMethodName();
+        File testFolder = new File(testPath);
+        File testFile = new File(testPath + KT_FILE_EXTENSION);
+        
+        if (testFolder.exists() && testFolder.isDirectory()) {
+            doMultiFileAutoTest(testFolder);
+        } else if (testFile.exists() && testFile.isFile()) {
+            doSingleFileAutoTest(testPath + KT_FILE_EXTENSION);
+        } else {
+            throw new RuntimeException(String.format("Neither file \'%s\' nor directory \'%s\' was found",
+                    testFile.getAbsolutePath(), testFolder.getAbsolutePath()));
+        }
+    }
+    
+    private static final String TEST_DATA_PATH = "testData/";
+    
+    protected static final String KT_FILE_EXTENSION = ".kt";
+    protected static final String AFTER_FILE_EXTENSION = ".after";
+    protected static final String BEFORE_FILE_EXTENSION = ".before";
+    
+    protected abstract void doSingleFileAutoTest(String testPath);
+    
+    protected abstract void doMultiFileAutoTest(File testFolder);
+    
+    protected String getTestDataPath() {
+        return TEST_DATA_PATH;
+    }
 }

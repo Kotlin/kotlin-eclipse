@@ -63,23 +63,23 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
             List<NavigationSourceFileData> result = new ArrayList<NavigationSourceFileData>();
             
             for (File file : testFolder.listFiles()) {
-            	String fileName = file.getName();
-
-            	NavigationSourceFileData data;
-				try {
-					data = new NavigationSourceFileData(file);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-				
-            	result.add(data);
-
-            	if (fileName.endsWith(BEFORE_FILE_EXTENSION)) {
-            		data.isBefore = true;
-            	}
-            	if (fileName.endsWith(AFTER_FILE_EXTENSION)) {
-            		data.isAfter = true;
-            	}
+                String fileName = file.getName();
+                
+                NavigationSourceFileData data;
+                try {
+                    data = new NavigationSourceFileData(file);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                
+                result.add(data);
+                
+                if (fileName.endsWith(BEFORE_FILE_EXTENSION)) {
+                    data.isBefore = true;
+                }
+                if (fileName.endsWith(AFTER_FILE_EXTENSION)) {
+                    data.isAfter = true;
+                }
             }
             
             return result;

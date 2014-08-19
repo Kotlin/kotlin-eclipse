@@ -22,22 +22,22 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 
 public abstract class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase {
-	
-	public void doTest(String inputFileName, String input, String expected) {
-		doTest(inputFileName, input, null, expected);
-	}
-	
-	protected void doTest(String inputFileName, String input, String referenceFileName, String referenceFile) {
-		testEditor = configureEditor(inputFileName, input);
-		
-		String expected = referenceFile;
-		if (referenceFileName != null) {
-			createSourceFile(referenceFileName, referenceFile);
-		}
-		
-    	testEditor.accelerateOpenDeclaration();
-
-		JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		EditorTestUtils.assertByEditor(activeEditor, expected);
-	}
+    
+    public void doTest(String inputFileName, String input, String expected) {
+        doTest(inputFileName, input, null, expected);
+    }
+    
+    protected void doTest(String inputFileName, String input, String referenceFileName, String referenceFile) {
+        testEditor = configureEditor(inputFileName, input);
+        
+        String expected = referenceFile;
+        if (referenceFileName != null) {
+            createSourceFile(referenceFileName, referenceFile);
+        }
+        
+        testEditor.accelerateOpenDeclaration();
+        
+        JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        EditorTestUtils.assertByEditor(activeEditor, expected);
+    }
 }
