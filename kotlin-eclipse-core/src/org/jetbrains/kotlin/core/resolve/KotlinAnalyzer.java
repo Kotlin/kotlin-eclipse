@@ -25,7 +25,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
 import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
@@ -38,34 +37,23 @@ import com.intellij.psi.PsiFile;
 public class KotlinAnalyzer {
 
     @NotNull
-    public static AnalyzeExhaust analyzeOnlyDeclarations(@NotNull IJavaProject javaProject) {
-        return analyzeExhaustProject(javaProject, Predicates.<PsiFile>alwaysFalse());
+    public static AnalyzeExhaust analyzeDeclarations(@NotNull IJavaProject javaProject) {
+        return analyzeProject(javaProject, Predicates.<PsiFile>alwaysFalse());
     }
     
     @NotNull
-    public static AnalyzeExhaust analyzeExhaustProject(@NotNull IJavaProject javaProject) {
-        return analyzeExhaustProject(javaProject, Predicates.<PsiFile>alwaysTrue());
+    public static AnalyzeExhaust analyzeWholeProject(@NotNull IJavaProject javaProject) {
+        return analyzeProject(javaProject, Predicates.<PsiFile>alwaysTrue());
     }
-    
+
     @NotNull
-    public static BindingContext analyzeOnlyOneFileCompletely(@NotNull IJavaProject javaProject, @NotNull PsiFile psiFile) {
+    public static AnalyzeExhaust analyzeOneFileCompletely(@NotNull IJavaProject javaProject, @NotNull PsiFile psiFile) {
         return analyzeProject(javaProject, Predicates.equalTo(psiFile));
     }
     
-    private static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
-        KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
-        return analyzeProject(javaProject, kotlinEnvironment, filesToAnalyzeCompletely);
-    }
-    
-    private static AnalyzeExhaust analyzeExhaustProject(@NotNull IJavaProject javaProject, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
+    private static AnalyzeExhaust analyzeProject(@NotNull IJavaProject javaProject, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
         KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
         return analyzeExhaustProject(javaProject, kotlinEnvironment, filesToAnalyzeCompletely);
-    }
-    
-    @NotNull
-    private static BindingContext analyzeProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
-            @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
-        return analyzeExhaustProject(javaProject, kotlinEnvironment, filesToAnalyzeCompletely).getBindingContext();
     }
     
     @NotNull

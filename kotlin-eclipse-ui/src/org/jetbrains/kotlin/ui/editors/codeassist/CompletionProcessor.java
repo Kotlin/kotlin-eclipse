@@ -131,7 +131,9 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
         IFile file = EditorUtil.getFile(editor);
         IJavaProject javaProject = JavaCore.create(file.getProject());
         
-        BindingContext context = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file));
+        BindingContext context = KotlinAnalyzer
+                .analyzeOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
+                .getBindingContext();
         
         Collection<DeclarationDescriptor> declarationDescriptors = KotlinCompletionProvider.getReferenceVariants(simpleNameExpression, context);
         

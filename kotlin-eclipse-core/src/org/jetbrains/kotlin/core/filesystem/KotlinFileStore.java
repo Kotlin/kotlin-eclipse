@@ -37,7 +37,7 @@ public class KotlinFileStore extends LocalFile {
             IJavaProject javaProject = getJavaProject();
             assert javaProject != null;
             
-            AnalyzeExhaust analyzeExhaust = KotlinAnalyzer.analyzeOnlyDeclarations(javaProject);
+            AnalyzeExhaust analyzeExhaust = KotlinAnalyzer.analyzeDeclarations(javaProject);
             GenerationState state = KotlinLightClassGeneration.buildLightClasses(analyzeExhaust, javaProject, jetFiles);
             
             IPath absolutePath = new Path(file.getAbsolutePath());

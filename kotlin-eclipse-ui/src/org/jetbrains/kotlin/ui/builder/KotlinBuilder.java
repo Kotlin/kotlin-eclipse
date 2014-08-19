@@ -47,7 +47,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         IJavaProject javaProject = JavaCore.create(getProject());
         KotlinEnvironment.updateKotlinEnvironment(javaProject);
         
-        AnalyzeExhaust analyzeExhaust = KotlinAnalyzer.analyzeExhaustProject(javaProject);
+        AnalyzeExhaust analyzeExhaust = KotlinAnalyzer.analyzeWholeProject(javaProject);
         updateLineMarkers(analyzeExhaust.getBindingContext().getDiagnostics());
         
         boolean needRebuild = false;
@@ -64,7 +64,6 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             KotlinLightClassGeneration.buildAndSaveLightClasses(analyzeExhaust, javaProject);
             getProject().refreshLocal(0, null);
         }
-        
         
         return null;
     }

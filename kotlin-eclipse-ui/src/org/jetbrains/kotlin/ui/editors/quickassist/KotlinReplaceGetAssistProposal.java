@@ -138,7 +138,9 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         JetCallExpression jetCallExpression = (JetCallExpression) call; 
         
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        BindingContext bindingContext = KotlinAnalyzer.analyzeOnlyOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file));
+        BindingContext bindingContext = KotlinAnalyzer
+                .analyzeOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
+                .getBindingContext();
         
         return BindingContextUtilPackage.getResolvedCall(jetCallExpression.getCalleeExpression(), bindingContext);
     }
