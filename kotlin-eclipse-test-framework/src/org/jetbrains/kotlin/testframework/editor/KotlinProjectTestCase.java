@@ -5,7 +5,6 @@ import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.utils.LineEndUtil;
-import org.jetbrains.kotlin.utils.StringUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -80,9 +79,8 @@ public class KotlinProjectTestCase {
     
     protected TextEditorTest configureEditor(String fileName, String content) {
         TextEditorTest testEditor = new TextEditorTest(testJavaProject);
-        String contentWithouCR = StringUtil.removeAllCarriageReturns(content).replaceAll(
-                LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
-        testEditor.createEditor(fileName, contentWithouCR, TextEditorTest.TEST_PACKAGE_NAME);
+        String contentWithoutCR = LineEndUtil.replaceAllSeparatorsWithSystemLineSeparators(content);
+        testEditor.createEditor(fileName, contentWithoutCR, TextEditorTest.TEST_PACKAGE_NAME);
         
         return testEditor;
     }

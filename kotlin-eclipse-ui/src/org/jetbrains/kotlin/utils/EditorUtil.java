@@ -31,6 +31,6 @@ public class EditorUtil {
     }
     
     public static int getOffsetInEditor(JavaEditor editor, int offset) {
-        return LineEndUtil.convertLfToOsOffset(StringUtil.removeAllCarriageReturns(getSourceCode(editor)), offset);
+        return LineEndUtil.convertLfToOsOffset(LineEndUtil.removeAllCarriageReturns(getSourceCode(editor)), offset);
     }
 }
