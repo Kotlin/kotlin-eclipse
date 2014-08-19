@@ -60,7 +60,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         }
     }
     
-    private int computeIndentByOffset(IDocument document, int offset) {
+    private int computeIndentCount(IDocument document, int offset) {
         try {
             if (offset == document.getLength()) {
                 return 0;
@@ -129,7 +129,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 }
                 command.text = buf.toString();
             } else {
-                int indent = computeIndentByOffset(document, command.offset);
+                int indent = computeIndentCount(document, command.offset);
                 if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
                     indent--;
                 }
@@ -140,51 +140,41 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         }
     }
     
-    private static void autoEditBeforeCloseBrace(IDocument document, DocumentCommand command) {
+    private void autoEditBeforeCloseBrace(IDocument document, DocumentCommand command) {
         if (isNewLineBefore(document, command.offset)) {
             try {
-                int indent = IndenterUtil.getDefaultIndent();
+                int spaceLength = command.offset - findEndOfWhiteSpaceBefore(document, command.offset - 1, 0) - 1;
                 
-                while (indent > 0) {
-                    char c = document.getChar(command.offset - 1);
-                    if (c == IndenterUtil.SPACE_CHAR) {
-                        indent--;
-                    } else if (c == IndenterUtil.TAB_CHAR) {
-                        indent -= IndenterUtil.getDefaultIndent();
-                    } else {
-                        break;
-                    }
-                    
-                    command.offset--;
-                    document.replace(command.offset, 1, "");
-                }
+                command.text = IndenterUtil.createWhiteSpace(computeIndentCount(document, command.offset) - 1, 0) + CLOSING_BRACE_STRING;
+                command.offset -= spaceLength;
+                document.replace(command.offset, spaceLength, "");
             } catch (BadLocationException e) {
                 KotlinLogger.logAndThrow(e);
             }
-            
-            command.text = CLOSING_BRACE_STRING;
         }
     }
     
     private static int findEndOfWhiteSpaceAfter(IDocument document, int offset, int end) throws BadLocationException {
         while (offset < end) {
-            char c = document.getChar(offset);
-            if (c != IndenterUtil.SPACE_CHAR && c != IndenterUtil.TAB_CHAR) {
+            if (!IndenterUtil.isWhiteSpaceChar(document.getChar(offset))) {
                 return offset;
             }
+            
             offset++;
         }
+        
         return end;
     }
     
     private static int findEndOfWhiteSpaceBefore(IDocument document, int offset, int start) throws BadLocationException {
         while (offset >= start) {
-            char c = document.getChar(offset);
-            if (c != IndenterUtil.SPACE_CHAR && c != IndenterUtil.TAB_CHAR) {
+            if (!IndenterUtil.isWhiteSpaceChar(document.getChar(offset))) {
                 return offset;
             }
+            
             offset--;
         }
+        
         return start;
     }
     
@@ -204,10 +194,10 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     private static boolean isNewLineBefore(IDocument document, int offset) {
         try {
             offset--;
-            String prev = IndenterUtil.SPACE_STRING;
+            char prev = IndenterUtil.SPACE_CHAR;
             StringBuilder bufBefore = new StringBuilder(prev);
-            while ((prev.equals(IndenterUtil.SPACE_STRING) || prev.equals(IndenterUtil.TAB_STRING)) && offset > 0) {
-                prev = document.get(offset--, 1);
+            while (IndenterUtil.isWhiteSpaceChar(prev) && offset > 0) {
+                prev = document.getChar(offset--);
                 bufBefore.append(prev);
             }
             
