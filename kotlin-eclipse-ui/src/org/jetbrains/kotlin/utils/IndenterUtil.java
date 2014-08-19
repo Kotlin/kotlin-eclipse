@@ -25,9 +25,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 public class IndenterUtil {
     
     public static final char SPACE_CHAR = ' ';
-    public static final String SPACE_STRING = Character.toString(SPACE_CHAR);
     public static final char TAB_CHAR = '\t';
-    public static final String TAB_STRING = Character.toString(TAB_CHAR);
     
     public static String createWhiteSpace(int indent, int countBreakLines) {
         return createWhiteSpace(indent, countBreakLines, System.lineSeparator());
@@ -83,5 +81,9 @@ public class IndenterUtil {
     
     public static boolean isSpacesForTabs() {
         return EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
+    }
+    
+    public static boolean isWhiteSpaceChar(char c) {
+        return c == SPACE_CHAR || c == TAB_CHAR;
     }
 }
