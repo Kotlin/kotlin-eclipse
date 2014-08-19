@@ -41,125 +41,134 @@ import org.junit.rules.TestName;
 import com.intellij.openapi.util.io.FileUtil;
 
 public abstract class KotlinEditorTestCase {
-
-	public enum Separator {
-		TAB, SPACE;
-	}
-	
-	public static final String CARET_TAG = "<caret>";
-	public static final String ERROR_TAG_OPEN = "<error>";
-	public static final String ERROR_TAG_CLOSE = "</error>";
-	public static final String WARNING_TAG_OPEN = "<warning>";
-	public static final String WARNING_TAG_CLOSE = "</warning>";
-	public static final String BREAK_TAG = "<br>";
-	
+    
+    public enum Separator {
+        TAB, SPACE;
+    }
+    
+    public static final String CARET_TAG = "<caret>";
+    public static final String ERROR_TAG_OPEN = "<error>";
+    public static final String ERROR_TAG_CLOSE = "</error>";
+    public static final String WARNING_TAG_OPEN = "<warning>";
+    public static final String WARNING_TAG_CLOSE = "</warning>";
+    public static final String BREAK_TAG = "<br>";
+    
     @Rule
     public TestName name = new TestName();
-	protected TextEditorTest testEditor;
-	private Separator initialSeparator;
-	private int initialSpacesCount;
-
-	@After
-	public void afterTest() {
-		deleteProjectAndCloseEditors();
-		
-		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == initialSeparator));
-		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, initialSpacesCount);
-	}
-	
-	@Before
-	public void beforeTest() {
-		refreshWorkspace();
-		
-		initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.TAB : Separator.SPACE;
-		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
-	}
-	
-    protected JavaEditor getEditor() {
-		return testEditor.getEditor();
-	}
-	
-    protected int getCaret() {
-		return getEditor().getViewer().getTextWidget().getCaretOffset();
-	}
+    protected TextEditorTest testEditor;
+    private Separator initialSeparator;
+    private int initialSpacesCount;
     
-	public void createSourceFile(String pkg, String fileName, String content) {
-		content = removeTags(content);
-		try {
-			testEditor.getTestJavaProject().createSourceFile(pkg, fileName, content);
-		} catch (CoreException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public void createSourceFile(String fileName, String content) {
-		createSourceFile(TextEditorTest.TEST_PACKAGE_NAME, fileName, content);
-	}
-	
-	protected static TextEditorTest configureEditor(String fileName, String content) {
-    	return configureEditor(fileName, content, TextEditorTest.TEST_PACKAGE_NAME);
+    @After
+    public void afterTest() {
+        deleteProjectAndCloseEditors();
+        
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == initialSeparator));
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, initialSpacesCount);
     }
-	
-	protected static TextEditorTest configureEditor(String fileName, String content, String packageName) {
+    
+    @Before
+    public void beforeTest() {
+        refreshWorkspace();
+        
+        initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.TAB : Separator.SPACE;
+        initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+    }
+    
+    protected JavaEditor getEditor() {
+        return testEditor.getEditor();
+    }
+    
+    protected int getCaret() {
+        return getEditor().getViewer().getTextWidget().getCaretOffset();
+    }
+    
+    public void createSourceFile(String pkg, String fileName, String content) {
+        content = removeTags(content);
+        try {
+            testEditor.getTestJavaProject().createSourceFile(pkg, fileName, content);
+        } catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public void createSourceFile(String fileName, String content) {
+        createSourceFile(TextEditorTest.TEST_PACKAGE_NAME, fileName, content);
+    }
+    
+    protected static TextEditorTest configureEditor(String fileName, String content) {
+        return configureEditor(fileName, content, TextEditorTest.TEST_PACKAGE_NAME);
+    }
+    
+    protected static TextEditorTest configureEditor(String fileName, String content, String packageName) {
         return configureEditor(fileName, content, TextEditorTest.TEST_PROJECT_NAME, packageName);
     }
-	
+    
     protected static TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {
-    	TextEditorTest testEditor = new TextEditorTest(projectName);
-		String toEditor = StringUtil.removeAllCarriageReturns(resolveTestTags(content)).replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
-		testEditor.createEditor(fileName, toEditor, packageName);
-		
-		return testEditor;
+        TextEditorTest testEditor = new TextEditorTest(projectName);
+        String toEditor = StringUtil.removeAllCarriageReturns(resolveTestTags(content)).replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
+        testEditor.createEditor(fileName, toEditor, packageName);
+        
+        return testEditor;
     }
     
     public static void deleteProjectAndCloseEditors() {
-		try {
-			IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-			for (IProject project : projects) {
-				project.delete(true, true, null);
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-		
-		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
+        try {
+            IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+            for (IProject project : projects) {
+                project.delete(true, true, null);
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+        
+        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
     }
     
     public static void refreshWorkspace() {
-		WorkspaceUtil.refreshWorkspace();
-		try {
-			Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_REFRESH, new NullProgressMonitor());
-		} catch (OperationCanceledException | InterruptedException e) {
-			e.printStackTrace();
-		}
+        WorkspaceUtil.refreshWorkspace();
+        try {
+            Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_REFRESH, new NullProgressMonitor());
+        } catch (OperationCanceledException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
-
-	public static String getText(String testPath) {
-		return getText(new File(testPath));
-	}
-	
-	public static String getText(File file) {
-		try {
-			return String.valueOf(FileUtil.loadFile(file));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
+    
+    public static String getText(String testPath) {
+        return getText(new File(testPath));
+    }
+    
+    public static String getText(File file) {
+        try {
+            return String.valueOf(FileUtil.loadFile(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static void joinBuildThread() {
+        while (true) {
+            try {
+                Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
+                break;
+            } catch (OperationCanceledException | InterruptedException e) {
+            }
+        }
+    }
+    
     public static String resolveTestTags(String text) {
-		return text
-				.replaceAll(ERROR_TAG_OPEN, "")
-				.replaceAll(ERROR_TAG_CLOSE, "")
-				.replaceAll(WARNING_TAG_OPEN, "")
-				.replaceAll(WARNING_TAG_CLOSE, "")
-				.replaceAll(BREAK_TAG, System.lineSeparator());
+        return text.replaceAll(ERROR_TAG_OPEN, "")
+                .replaceAll(ERROR_TAG_CLOSE, "")
+                .replaceAll(WARNING_TAG_OPEN, "")
+                .replaceAll(WARNING_TAG_CLOSE, "")
+                .replaceAll(BREAK_TAG, System.lineSeparator());
     }
     
     public static String removeTags(String text) {
-    	return resolveTestTags(text).replaceAll(CARET_TAG, "");
+        return resolveTestTags(text).replaceAll(CARET_TAG, "");
     }
-	
+    
     public static String getNameByPath(String testPath) {
-		return new Path(testPath).lastSegment();
-	}
+        return new Path(testPath).lastSegment();
+    }
 }
