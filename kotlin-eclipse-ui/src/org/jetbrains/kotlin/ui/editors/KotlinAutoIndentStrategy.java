@@ -60,107 +60,6 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         }
     }
     
-    private void autoEditBeforeCloseBrace(IDocument document, DocumentCommand command) {
-        if (isNewLineBefore(document, command.offset)) {
-            try {
-                int indent = IndenterUtil.getDefaultIndent();
-                                
-                while (indent > 0) {
-                    char c = document.getChar(command.offset - 1);
-                    if (c == IndenterUtil.SPACE_CHAR) {
-                        indent--;
-                    } else if (c == IndenterUtil.TAB_CHAR) {
-                        indent -= IndenterUtil.getDefaultIndent();
-                    } else {
-                        break;
-                    }
-                    
-                    command.offset--;
-                    document.replace(command.offset, 1, "");
-                }
-            } catch (BadLocationException e) {
-                KotlinLogger.logAndThrow(e);
-            }
-            
-            command.text = CLOSING_BRACE_STRING;
-        }
-    }
-    
-    private int findEndOfWhiteSpaceAfter(IDocument document, int offset, int end) throws BadLocationException {
-        while (offset < end) {
-            char c = document.getChar(offset);
-            if (c != IndenterUtil.SPACE_CHAR && c != IndenterUtil.TAB_CHAR) {
-                return offset;
-            }
-            offset++;
-        }
-        return end;
-    }
-    
-    private int findEndOfWhiteSpaceBefore(IDocument document, int offset, int start) throws BadLocationException {
-        while (offset >= start) {
-            char c = document.getChar(offset);
-            if (c != IndenterUtil.SPACE_CHAR && c != IndenterUtil.TAB_CHAR) {
-                return offset;
-            }
-            offset--;
-        }
-        return start;
-    }
-    
-    private boolean isAfterOpenBrace(IDocument document, int offset, int startLineOffset) throws BadLocationException {
-        int nonEmptyOffset = findEndOfWhiteSpaceBefore(document, offset, startLineOffset);
-        return document.getChar(nonEmptyOffset) == OPENING_BRACE_CHAR;
-    }
-    
-    private boolean isBeforeCloseBrace(IDocument document, int offset, int endLineOffset) throws BadLocationException {
-        int nonEmptyOffset = findEndOfWhiteSpaceAfter(document, offset, endLineOffset);
-        if (nonEmptyOffset == document.getLength()) {
-            nonEmptyOffset--;
-        }
-        return document.getChar(nonEmptyOffset) == CLOSING_BRACE_CHAR;
-    }
-    
-    private void autoEditAfterNewLine(IDocument document, DocumentCommand command) {
-        if (command.offset == -1 || document.getLength() == 0) {
-            return;
-        }
-        
-        try {
-            int p = command.offset == document.getLength() ? command.offset - 1 : command.offset;
-            IRegion info = document.getLineInformationOfOffset(p);
-            int start = info.getOffset();
-            
-            StringBuffer buf = new StringBuffer(command.text);
-            
-            int end = findEndOfWhiteSpaceAfter(document, start, command.offset);
-            
-            String lineSpaces = (end > start) ? document.get(start, end - start) : ""; 
-            buf.append(lineSpaces);
-            
-            if (isAfterOpenBrace(document, command.offset - 1, start)) {
-                buf.append(IndenterUtil.createWhiteSpace(1, 0));
-                
-                if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
-                    command.shiftsCaret = false;
-                    command.caretOffset = command.offset + buf.length();
-                    
-                    buf.append(command.text);
-                    buf.append(lineSpaces);
-                }
-                command.text = buf.toString();
-            } else {
-                int indent = computeIndentByOffset(document, command.offset);
-                if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
-                    indent--;
-                }
-                command.text += IndenterUtil.createWhiteSpace(indent, 0);
-           }
-        } catch (BadLocationException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
-    
     private int computeIndentByOffset(IDocument document, int offset) {
         try {
             if (offset == document.getLength()) {
@@ -201,7 +100,108 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         return 0; 
     }
     
-    private boolean isNewLineBefore(IDocument document, int offset) {
+    private void autoEditAfterNewLine(IDocument document, DocumentCommand command) {
+        if (command.offset == -1 || document.getLength() == 0) {
+            return;
+        }
+        
+        try {
+            int p = command.offset == document.getLength() ? command.offset - 1 : command.offset;
+            IRegion info = document.getLineInformationOfOffset(p);
+            int start = info.getOffset();
+            
+            StringBuffer buf = new StringBuffer(command.text);
+            
+            int end = findEndOfWhiteSpaceAfter(document, start, command.offset);
+            
+            String lineSpaces = (end > start) ? document.get(start, end - start) : "";
+            buf.append(lineSpaces);
+            
+            if (isAfterOpenBrace(document, command.offset - 1, start)) {
+                buf.append(IndenterUtil.createWhiteSpace(1, 0));
+                
+                if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
+                    command.shiftsCaret = false;
+                    command.caretOffset = command.offset + buf.length();
+                    
+                    buf.append(command.text);
+                    buf.append(lineSpaces);
+                }
+                command.text = buf.toString();
+            } else {
+                int indent = computeIndentByOffset(document, command.offset);
+                if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
+                    indent--;
+                }
+                command.text += IndenterUtil.createWhiteSpace(indent, 0);
+           }
+        } catch (BadLocationException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+    }
+    
+    private static void autoEditBeforeCloseBrace(IDocument document, DocumentCommand command) {
+        if (isNewLineBefore(document, command.offset)) {
+            try {
+                int indent = IndenterUtil.getDefaultIndent();
+                
+                while (indent > 0) {
+                    char c = document.getChar(command.offset - 1);
+                    if (c == IndenterUtil.SPACE_CHAR) {
+                        indent--;
+                    } else if (c == IndenterUtil.TAB_CHAR) {
+                        indent -= IndenterUtil.getDefaultIndent();
+                    } else {
+                        break;
+                    }
+                    
+                    command.offset--;
+                    document.replace(command.offset, 1, "");
+                }
+            } catch (BadLocationException e) {
+                KotlinLogger.logAndThrow(e);
+            }
+            
+            command.text = CLOSING_BRACE_STRING;
+        }
+    }
+    
+    private static int findEndOfWhiteSpaceAfter(IDocument document, int offset, int end) throws BadLocationException {
+        while (offset < end) {
+            char c = document.getChar(offset);
+            if (c != IndenterUtil.SPACE_CHAR && c != IndenterUtil.TAB_CHAR) {
+                return offset;
+            }
+            offset++;
+        }
+        return end;
+    }
+    
+    private static int findEndOfWhiteSpaceBefore(IDocument document, int offset, int start) throws BadLocationException {
+        while (offset >= start) {
+            char c = document.getChar(offset);
+            if (c != IndenterUtil.SPACE_CHAR && c != IndenterUtil.TAB_CHAR) {
+                return offset;
+            }
+            offset--;
+        }
+        return start;
+    }
+    
+    private static boolean isAfterOpenBrace(IDocument document, int offset, int startLineOffset) throws BadLocationException {
+        int nonEmptyOffset = findEndOfWhiteSpaceBefore(document, offset, startLineOffset);
+        return document.getChar(nonEmptyOffset) == OPENING_BRACE_CHAR;
+    }
+    
+    private static boolean isBeforeCloseBrace(IDocument document, int offset, int endLineOffset) throws BadLocationException {
+        int nonEmptyOffset = findEndOfWhiteSpaceAfter(document, offset, endLineOffset);
+        if (nonEmptyOffset == document.getLength()) {
+            nonEmptyOffset--;
+        }
+        return document.getChar(nonEmptyOffset) == CLOSING_BRACE_CHAR;
+    }
+    
+    private static boolean isNewLineBefore(IDocument document, int offset) {
         try {
             offset--;
             String prev = IndenterUtil.SPACE_STRING;
@@ -219,7 +219,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         return false;
     }
     
-    private boolean containsNewLine(IDocument document, String text) {
+    private static boolean containsNewLine(IDocument document, String text) {
         String[] delimiters = document.getLegalLineDelimiters();
         for (String delimiter : delimiters) {
             if (text.contains(delimiter)) {
@@ -230,7 +230,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         return false;
     }
     
-    private boolean isNewLine(IDocument document, String text) {
+    private static boolean isNewLine(IDocument document, String text) {
         String[] delimiters = document.getLegalLineDelimiters();
         for (String delimiter : delimiters) {
             if (delimiter.equals(text)) {
