@@ -27,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.utils.EditorUtil;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 import org.junit.Assert;
 
 public class EditorTestUtils {
@@ -42,11 +43,11 @@ public class EditorTestUtils {
     }
     
     public static void assertByEditor(JavaEditor activeEditor, String expected) {
-    	assertByStringWithOffset(EditorUtil.getSourceCode(activeEditor), expected, activeEditor.getViewer().getTextWidget().getCaretOffset());
+        assertByStringWithOffset(EditorUtil.getSourceCode(activeEditor), expected, activeEditor.getViewer().getTextWidget().getCaretOffset());
     }
     
     public static void assertByStringWithOffset(String actual, String expected) {
-        assertByStringWithOffset(actual, expected, -1);        
+        assertByStringWithOffset(actual, expected, -1);
     }
     
     private static void assertByStringWithOffset(String actual, String expected, int caretOffset) {
@@ -55,10 +56,6 @@ public class EditorTestUtils {
             actual = actual.substring(0, caretOffset) + KotlinEditorTestCase.CARET_TAG + actual.substring(caretOffset);
         }
         
-        Assert.assertEquals(removeCarriegeReturns(expected), removeCarriegeReturns(actual));
-    }
-    
-    private static String removeCarriegeReturns(String s) {
-        return s.replaceAll("\r", "");
+        Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected), LineEndUtil.removeAllCarriageReturns(actual));
     }
 }

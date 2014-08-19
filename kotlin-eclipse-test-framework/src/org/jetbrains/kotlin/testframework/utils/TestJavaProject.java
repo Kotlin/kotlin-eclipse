@@ -62,7 +62,7 @@ public class TestJavaProject {
         project = createProject(projectName, location);
     }
     
-    private IProject createProject(String projectName, String location) {
+    private IProject createProject(String projectName, String location) {    
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IWorkspaceRoot workspaceRoot = workspace.getRoot();
         IProjectDescription projectDescription = workspace.newProjectDescription(projectName);
@@ -129,7 +129,7 @@ public class TestJavaProject {
     
     public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
         IPackageFragment fragment = createPackage(pkg);
-        String contentWithoutCR = org.jetbrains.kotlin.utils.StringUtil.removeAllCarriageReturns(content).replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
+        String contentWithoutCR = LineEndUtil.replaceAllSeparatorsWithSystemLineSeparators(content);
         IFile file = createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(contentWithoutCR.getBytes()));
         
         return file;
