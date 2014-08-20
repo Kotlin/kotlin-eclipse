@@ -26,6 +26,10 @@ public class KotlinLightClassManager {
         sourceFiles.put(lightClass, sourceIOFiles);
     }
     
+    public boolean isLightClass(@NotNull File file) {
+        return sourceFiles.get(file) != null;
+    }
+    
     @NotNull
     public List<JetFile> getSourceFiles(@NotNull File lightClass) {
         List<File> sourceIOFiles = sourceFiles.get(lightClass);

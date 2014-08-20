@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.kotlin;
 
+import java.io.File;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.cli.jvm.compiler.ClassPath;
@@ -25,6 +27,7 @@ import org.jetbrains.jet.lang.resolve.kotlin.KotlinJvmBinaryClass;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileKotlinClassFinder;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 
 import com.intellij.ide.highlighter.JavaClassFileType;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -43,8 +46,10 @@ public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder imple
         for (VirtualFile root : classPath) {
             VirtualFile fileInRoot = findFileInRoot(className.asString(), root, '.');
             //NOTE: currently we use VirtualFileFinder to find Kotlin binaries only
-            if (fileInRoot != null && KotlinBinaryClassCache.getKotlinBinaryClass(fileInRoot) != null) {
-                return fileInRoot;
+            if (fileInRoot != null) {
+                if (!isKotlinLightClass(fileInRoot.getPath()) && KotlinBinaryClassCache.getKotlinBinaryClass(fileInRoot) != null) {
+                    return fileInRoot;
+                }
             }
         }
         return null;
@@ -89,6 +94,10 @@ public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder imple
             }
         }
         return null;
+    }
+    
+    private static boolean isKotlinLightClass(@NotNull String fullPath) {
+        return KotlinLightClassManager.INSTANCE.isLightClass(new File(fullPath));
     }
 
     //NOTE: copied with some changes from CoreJavaFileManager
