@@ -213,7 +213,7 @@ public class TestJavaProject {
 			cleanSourceFolder();
 			
 			IResource outputFolder = findResourceInProject(javaProject.getOutputLocation());
-			cleanFolder((IContainer) outputFolder);
+			ProjectUtils.cleanFolder((IContainer) outputFolder);
 		} catch (JavaModelException e) {
 			throw new RuntimeException(e);
 		} catch (CoreException e) {
@@ -225,26 +225,12 @@ public class TestJavaProject {
 		for (IClasspathEntry resolvedCP : javaProject.getResolvedClasspath(true)) {
 			if (resolvedCP.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
 				IResource sourceFolder = findResourceInProject(resolvedCP.getPath());
-				cleanFolder((IContainer) sourceFolder);
+				ProjectUtils.cleanFolder((IContainer) sourceFolder);
 			}
 		}
 	}
 	
 	private IResource findResourceInProject(IPath path) {
 		return ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-	}
-	
-	private void cleanFolder(IContainer container) throws CoreException {
-		if (container == null) {
-			return;
-		}
-		if (container.exists()) {
-			for (IResource member : container.members()) {
-				if (member instanceof IContainer) {
-					cleanFolder((IContainer) member);
-				}
-				member.delete(true, null);
-			}
-		}
 	}
 }

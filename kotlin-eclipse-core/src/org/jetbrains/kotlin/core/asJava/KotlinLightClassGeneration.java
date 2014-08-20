@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 import com.intellij.openapi.project.Project;
 
@@ -56,6 +57,9 @@ public class KotlinLightClassGeneration {
     
     private static void saveKotlinDeclarationClasses(@NotNull GenerationState state, @NotNull IJavaProject javaProject) throws CoreException {
         IProject project = javaProject.getProject();
+        
+        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project));
+        
         for (OutputFile outputFile : state.getFactory().asList()) {
             IPath path = KotlinJavaManager.KOTLIN_BIN_FOLDER.append(new Path(outputFile.getRelativePath()));
             LightClassFile lightClassFile = new LightClassFile(project.getFile(path));

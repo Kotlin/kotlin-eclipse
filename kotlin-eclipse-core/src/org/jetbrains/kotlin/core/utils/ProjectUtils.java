@@ -22,9 +22,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -89,6 +91,20 @@ public class ProjectUtils {
         newEntries[oldEntries.length] = newEntry;
         
         javaProject.setRawClasspath(newEntries, null);
+    }
+    
+    public static void cleanFolder(IContainer container) throws CoreException {
+        if (container == null) {
+            return;
+        }
+        if (container.exists()) {
+            for (IResource member : container.members()) {
+                if (member instanceof IContainer) {
+                    cleanFolder((IContainer) member);
+                }
+                member.delete(true, null);
+            }
+        }
     }
     
     @NotNull
