@@ -18,13 +18,11 @@ package org.jetbrains.kotlin.wizards;
 
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ICommand;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -36,16 +34,15 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
-import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class ProjectCreationOp implements IRunnableWithProgress {
     
@@ -119,14 +116,7 @@ public class ProjectCreationOp implements IRunnableWithProgress {
         return result;
     }
     
-    private static IClasspathEntry createKotlinRuntimeEntry() {
-        return new ClasspathEntry(IPackageFragmentRoot.K_BINARY, IClasspathEntry.CPE_LIBRARY, new Path(
-                LaunchConfigurationDelegate.KT_RUNTIME_FILENAME), ClasspathEntry.INCLUDE_ALL,
-                ClasspathEntry.EXCLUDE_NONE, null, null, null, false, ClasspathEntry.NO_ACCESS_RULES, false,
-                ClasspathEntry.NO_EXTRA_ATTRIBUTES);
-    }
-    
-    private static IJavaProject buildJavaProject(IProject project) throws CoreException, FileNotFoundException {
+    private static IJavaProject buildJavaProject(@NotNull IProject project) throws CoreException, FileNotFoundException {
         IJavaProject result = JavaCore.create(project);
         
         IFolder binFolder = project.getFolder(BIN_FOLDER);
@@ -140,21 +130,12 @@ public class ProjectCreationOp implements IRunnableWithProgress {
             srcFolder.create(false, true, null);
         }
         
-        IFolder libFolder = project.getFolder(LaunchConfigurationDelegate.LIB_FOLDER);
-        if (!libFolder.exists()) {
-            libFolder.create(false, true, null);
-        }
-        IFile kotlinRuntime = project.getFile(LaunchConfigurationDelegate.KT_RUNTIME_FILENAME);
-        IFile kotlinRuntimeJarFile = ResourcesPlugin.getWorkspace().getRoot().getFile(
-                new Path(LaunchConfigurationDelegate.KT_RUNTIME_PATH));
-        if (!kotlinRuntime.exists()) {
-            kotlinRuntime.create(new FileInputStream(kotlinRuntimeJarFile.getFullPath().toOSString()), true, null);
-        }
-        
         result.setRawClasspath(new IClasspathEntry[] {
                 JavaCore.newContainerEntry(new Path(JavaRuntime.JRE_CONTAINER)),
-                JavaCore.newSourceEntry(result.getPackageFragmentRoot(srcFolder).getPath()),
-                createKotlinRuntimeEntry() }, null);
+                JavaCore.newSourceEntry(result.getPackageFragmentRoot(srcFolder).getPath())
+                }, null);
+        
+        ProjectUtils.addKotlinRuntime(project);
         
         return result;
     }

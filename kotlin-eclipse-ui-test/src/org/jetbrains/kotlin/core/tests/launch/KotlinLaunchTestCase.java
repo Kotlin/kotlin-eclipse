@@ -32,14 +32,14 @@ public abstract class KotlinLaunchTestCase extends KotlinEditorTestCase {
     
     public void doTest(String input, String projectName, String packageName, String additionalSrcFolderName) {
         testEditor = configureEditor("Test.kt", input, projectName, packageName);
-        testEditor.getTestJavaProject().addKotlinRuntime();
-        
-        if (additionalSrcFolderName != null) {
-            try {
+        try {
+            testEditor.getTestJavaProject().addKotlinRuntime();
+            
+            if (additionalSrcFolderName != null) {
                 testEditor.getTestJavaProject().createSourceFolder(additionalSrcFolderName);
-            } catch (CoreException e) {
-                throw new RuntimeException(e);
             }
+        } catch (CoreException e) {
+            throw new RuntimeException(e);
         }
         
         launchInForeground();

@@ -17,7 +17,6 @@
 package org.jetbrains.kotlin.testframework.utils;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 
 import org.eclipse.core.resources.IContainer;
@@ -39,11 +38,10 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaRuntime;
-import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
-import org.jetbrains.kotlin.utils.LineEndUtil;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.utils.LineEndUtil;
 
 public class TestJavaProject {
     
@@ -141,9 +139,7 @@ public class TestJavaProject {
         if (sourceFolder == null) {
             sourceFolder = createSourceFolder(SRC_FOLDER);
         }
-        IPackageFragment pckg = sourceFolder.createPackageFragment(name, true, null);
-        
-        return pckg;
+        return sourceFolder.createPackageFragment(name, true, null);
     }
     
     public IPackageFragmentRoot createSourceFolder(String srcFolderName) throws CoreException {
@@ -181,31 +177,14 @@ public class TestJavaProject {
         return javaProject;
     }
     
-    private boolean hasKotlinRuntime() throws JavaModelException {
-        File ktRuntime = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
-        for (IClasspathEntry cpEntry : javaProject.getRawClasspath()) {
-            File cpFile = new File(cpEntry.getPath().toOSString());
-            if (ktRuntime.equals(cpFile)) {
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    public void addKotlinRuntime() {
-        try {
-            if (!hasKotlinRuntime()) {
-                File file = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
-                ProjectUtils.addToClasspath(javaProject, JavaCore.newLibraryEntry(new Path(file.getAbsolutePath()), null, null));
-            }
-        } catch (JavaModelException e) {
-            throw new RuntimeException(e);
+    public void addKotlinRuntime() throws CoreException {
+        if (!ProjectUtils.hasKotlinRuntime(project)) {
+            ProjectUtils.addKotlinRuntime(project);
         }
     }
     
     private void addSystemLibraries() throws JavaModelException {
-        addToClasspath(javaProject, JavaRuntime.getDefaultJREContainerEntry());
+        ProjectUtils.addToClasspath(javaProject, JavaRuntime.getDefaultJREContainerEntry());
     }
     
     public void clean() {

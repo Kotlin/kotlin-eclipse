@@ -25,10 +25,8 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
@@ -48,35 +46,25 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.osgi.framework.Bundle;
 
 import com.google.common.collect.Lists;
 import com.intellij.openapi.util.text.StringUtil;
 
 public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     
-    public final static String LIB_FOLDER = "lib";
-    private final static String LIB_EXTENSION = "jar";
-    
-    private final static String KT_HOME = getKtHome();
-    private final static String KT_COMPILER_PATH = buildLibPath("kotlin-compiler");
-    public final static String KT_JDK_ANNOTATIONS_PATH = buildLibPath("kotlin-jdk-annotations");
-    
-    public final static String KT_RUNTIME_FILENAME = buildLibName("kotlin-runtime");
-    public final static String KT_RUNTIME_PATH = buildLibPath("kotlin-runtime");
+    private final static String KT_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler");
+    public final static String KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations");
     
     private final CompilerOutputData compilerOutput = new CompilerOutputData();
     
     private boolean buildFailed = false;
     
     @Override
-    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
-            throws CoreException {
+    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
         String projectName = getJavaProjectName(configuration);
         
         if (projectName == null) {
-            abort("Project name is invalid: " + projectName, null,
-                    IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
+            abort("Project name is invalid: " + projectName, null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
             
             return;
         }
@@ -113,8 +101,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         try {
             return getPackageClassName(configuration).toString();
         } catch (IllegalArgumentException e) {
-            abort("File with main method not defined", null,
-                    IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_MAIN_TYPE);
+            abort("File with main method not defined", null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_MAIN_TYPE);
         }
         
         return null;
@@ -150,7 +137,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     private boolean compileKotlinFiles(@NotNull List<IFile> files, @NotNull ILaunchConfiguration configuration)
             throws CoreException {
         List<String> command = configureBuildCommand(configuration);
-         
+        
         refreshInitData();
         try {
             Process buildProcess = Runtime.getRuntime().exec(StringUtil.join(command, " "));
@@ -193,7 +180,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         command.add(KT_COMPILER_PATH);
         command.add(K2JVMCompiler.class.getCanonicalName());
         command.add("-kotlinHome");
-        command.add(KT_HOME);
+        command.add(ProjectUtils.KT_HOME);
         command.add("-tags");
         
         StringBuilder classPath = new StringBuilder();
@@ -243,24 +230,5 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         }
         
         return ".";
-    }
-    
-    private static String getKtHome() {
-        try {
-            Bundle compilerBundle = Platform.getBundle("org.jetbrains.kotlin.bundled-compiler");
-            return FileLocator.toFileURL(compilerBundle.getEntry("/")).getFile();
-        } catch (IOException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-        
-        return null;
-    }
-    
-    private static String buildLibName(String libName) {
-        return LIB_FOLDER + System.getProperty("file.separator") + libName + "." + LIB_EXTENSION;
-    }
-    
-    private static String buildLibPath(String libName) {
-        return KT_HOME + buildLibName(libName);
     }
 }

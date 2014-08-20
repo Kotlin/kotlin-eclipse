@@ -58,7 +58,12 @@ public class KotlinProjectTestCase {
     
     protected void configureProjectWithStdLib(String projectName, String location) {
         configureProject(projectName, location);
-        testJavaProject.addKotlinRuntime();
+        
+        try {
+            testJavaProject.addKotlinRuntime();
+        } catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     public void createSourceFile(String pkg, String fileName, String content) {
