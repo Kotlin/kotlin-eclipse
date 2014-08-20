@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.ui.editors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 import org.jetbrains.kotlin.utils.EditorUtil;
@@ -26,10 +27,11 @@ import org.jetbrains.kotlin.utils.EditorUtil;
 import com.intellij.psi.PsiFile;
 
 public class KotlinFormatAction extends Action {
-
-    private final KotlinEditor editor; 
     
-    protected KotlinFormatAction(KotlinEditor editor) {
+    @NotNull
+    private final KotlinEditor editor;
+    
+    public KotlinFormatAction(@NotNull KotlinEditor editor) {
         this.editor = editor;
     }
     
