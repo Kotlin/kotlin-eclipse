@@ -24,10 +24,10 @@ public class KotlinElementHyperlink implements IHyperlink {
     
     private static final String HYPERLINK_TEXT = "Open Kotlin Declaration";
     
-    private final OpenDeclarationAction openAction;
+    private final KotlinOpenDeclarationAction openAction;
     private final IRegion region;
     
-    public KotlinElementHyperlink(@NotNull OpenDeclarationAction openAction, @NotNull IRegion region) {
+    public KotlinElementHyperlink(@NotNull KotlinOpenDeclarationAction openAction, @NotNull IRegion region) {
         this.openAction = openAction;
         this.region = region;
     }

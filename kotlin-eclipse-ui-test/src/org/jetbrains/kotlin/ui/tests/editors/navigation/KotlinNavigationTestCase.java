@@ -96,7 +96,7 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
     private void performTest(String contentAfter) {
         joinBuildThread();
         
-        testEditor.accelerateOpenDeclaration();
+        testEditor.accelerateOpenDeclarationAction();
         
         JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         EditorTestUtils.assertByEditor(activeEditor, contentAfter);

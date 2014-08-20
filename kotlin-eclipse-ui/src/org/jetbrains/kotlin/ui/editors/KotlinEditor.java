@@ -85,10 +85,10 @@ public class KotlinEditor extends CompilationUnitEditor {
         markAsSelectionDependentAction("Format", true);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(formatAction, IJavaHelpContextIds.FORMAT_ACTION);
         
-        IAction openDeclarationAction = new OpenDeclarationAction(this);
+        IAction openDeclarationAction = new KotlinOpenDeclarationAction(this);
         openDeclarationAction.setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
         openDeclarationAction.setText(ActionMessages.OpenAction_declaration_label);
-        setAction(OpenDeclarationAction.OPEN_EDITOR_TEXT, openDeclarationAction);
+        setAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT, openDeclarationAction);
     }
     
     @Override

@@ -35,8 +35,8 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
         }
         KotlinEditor kotlinEditor = (KotlinEditor) textEditor;
         
-        IAction openAction = textEditor.getAction(OpenDeclarationAction.OPEN_EDITOR_TEXT);
-        if (!(openAction instanceof OpenDeclarationAction)) {
+        IAction openAction = textEditor.getAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT);
+        if (!(openAction instanceof KotlinOpenDeclarationAction)) {
             return null;
         }
         
@@ -46,12 +46,12 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         
-        if (OpenDeclarationAction.getSelectedExpression(kotlinEditor, EditorUtil.getFile(kotlinEditor), offset) == null) {
+        if (KotlinOpenDeclarationAction.getSelectedExpression(kotlinEditor, EditorUtil.getFile(kotlinEditor), offset) == null) {
             return null;
         }
         
         return new IHyperlink[] {
-                new KotlinElementHyperlink((OpenDeclarationAction) openAction, wordRegion)
+                new KotlinElementHyperlink((KotlinOpenDeclarationAction) openAction, wordRegion)
         };
     }
 }
