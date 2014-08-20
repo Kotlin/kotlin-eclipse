@@ -66,11 +66,12 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     public static final String OPEN_EDITOR_TEXT = "OpenEditor";
     
-    private final JavaEditor editor;
+    @NotNull
+    private final KotlinEditor editor;
     private final IJavaProject javaProject;
     private final IFile file;
     
-    public KotlinOpenDeclarationAction(JavaEditor editor) {
+    public KotlinOpenDeclarationAction(@NotNull KotlinEditor editor) {
         super(editor.getSite());
         this.editor = editor;
         file = EditorUtil.getFile(editor);
