@@ -1,0 +1,8 @@
+package format
+
+object Foo {
+    fun foo() {
+        fun localFoo() {
+        }
+    }
+}

@@ -29,7 +29,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 
 public class KotlinEditor extends CompilationUnitEditor {
-
+    
     private final ColorManager colorManager;
     private final BracketInserter bracketInserter;
     private KotlinOutlinePage kotlinOutlinePage = null;
@@ -74,15 +74,15 @@ public class KotlinEditor extends CompilationUnitEditor {
     @Override
     protected void createActions() {
         super.createActions();
-
+        
         setAction("QuickFormat", null);
         
         IAction formatAction = new KotlinFormatAction(this);
-        formatAction.setText("Format");
+        formatAction.setText(KotlinFormatAction.FORMAT_ACTION_TEXT);
         formatAction.setActionDefinitionId(IJavaEditorActionDefinitionIds.FORMAT);
-        setAction("Format", formatAction);
-        markAsStateDependentAction("Format", true);
-        markAsSelectionDependentAction("Format", true);
+        setAction(KotlinFormatAction.FORMAT_ACTION_TEXT, formatAction);
+        markAsStateDependentAction(KotlinFormatAction.FORMAT_ACTION_TEXT, true);
+        markAsSelectionDependentAction(KotlinFormatAction.FORMAT_ACTION_TEXT, true);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(formatAction, IJavaHelpContextIds.FORMAT_ACTION);
         
         IAction openDeclarationAction = new KotlinOpenDeclarationAction(this);
