@@ -94,7 +94,7 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
     private static final String NAVIGATION_TEST_DATA_PATH_SEGMENT = "navigation";
     
     private void performTest(String contentAfter) {
-        testEditor.accelerateOpenDeclaration();
+        testEditor.accelerateOpenDeclarationAction();
         
         JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         EditorTestUtils.assertByEditor(activeEditor, contentAfter);
