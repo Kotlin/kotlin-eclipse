@@ -28,6 +28,8 @@ import com.intellij.psi.PsiFile;
 
 public class KotlinFormatAction extends Action {
     
+    public static final String FORMAT_ACTION_TEXT = "Format";
+    
     @NotNull
     private final KotlinEditor editor;
     
