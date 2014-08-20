@@ -17,77 +17,13 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
-
-import com.intellij.util.containers.ContainerUtil;
-import com.intellij.openapi.util.Condition;
 
 public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
     
     protected abstract static class EditorSourceFileData extends SourceFileData {
-        
         public EditorSourceFileData(File file) {
             super(file.getName(), getText(file));
-        }
-    }
-    
-    protected static class WithAfterSourceFileData extends EditorSourceFileData {
-        
-        private static final Condition<WithAfterSourceFileData> TARGET_PREDICATE = new Condition<WithAfterSourceFileData>() {
-            @Override
-            public boolean value(WithAfterSourceFileData data) {
-                return data.contentAfter != null;
-            }
-        };
-        
-        private static final String NO_TARGET_FILE_FOUND_ERROR_MESSAGE = "No target file found";
-        private static final String NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT = "No target file found for \'%s\' file";
-        
-        private String contentAfter = null;
-        
-        public WithAfterSourceFileData(File file) {
-            super(file);
-        }
-        
-        public String getContentAfter() {
-            return contentAfter;
-        }
-        
-        public static Collection<WithAfterSourceFileData> getTestFiles(File testFolder) {
-            Map<String, WithAfterSourceFileData> result = new HashMap<String, WithAfterSourceFileData>();
-            
-            File targetAfterFile = null;
-            for (File file : testFolder.listFiles()) {
-                String fileName = file.getName();
-                
-                if (!fileName.endsWith(AFTER_FILE_EXTENSION)) {
-                    result.put(fileName, new WithAfterSourceFileData(file));
-                } else {
-                    targetAfterFile = file;
-                }
-            }
-            
-            if (targetAfterFile == null) {
-                throw new RuntimeException(NO_TARGET_FILE_FOUND_ERROR_MESSAGE);
-            }
-            
-            WithAfterSourceFileData target = result.get(targetAfterFile.getName().replace(AFTER_FILE_EXTENSION, ""));
-            if (target == null) {
-                throw new RuntimeException(String.format(NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT,
-                        targetAfterFile.getAbsolutePath()));
-            }
-            
-            target.contentAfter = getText(targetAfterFile);
-            
-            return result.values();
-        }
-        
-        public static WithAfterSourceFileData getTargetFile(Iterable<WithAfterSourceFileData> files) {
-            return ContainerUtil.find(files, TARGET_PREDICATE);
         }
     }
     
