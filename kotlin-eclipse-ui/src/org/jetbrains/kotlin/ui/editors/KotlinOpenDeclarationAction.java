@@ -62,7 +62,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 
-public class OpenDeclarationAction extends SelectionDispatchAction {
+public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     public static final String OPEN_EDITOR_TEXT = "OpenEditor";
     
@@ -70,7 +70,7 @@ public class OpenDeclarationAction extends SelectionDispatchAction {
     private final IJavaProject javaProject;
     private final IFile file;
     
-    public OpenDeclarationAction(JavaEditor editor) {
+    public KotlinOpenDeclarationAction(JavaEditor editor) {
         super(editor.getSite());
         this.editor = editor;
         file = EditorUtil.getFile(editor);
