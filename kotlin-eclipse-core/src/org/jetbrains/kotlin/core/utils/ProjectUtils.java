@@ -82,7 +82,7 @@ public class ProjectUtils {
         return PackageClassUtils.getPackageClassFqName(new FqName(filePackage));
     }
     
-    public static void addToClasspath(IClasspathEntry newEntry, IJavaProject javaProject) throws JavaModelException {
+    public static void addToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry) throws JavaModelException {
         IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
         IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
         

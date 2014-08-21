@@ -196,7 +196,7 @@ public class TestJavaProject {
 		try {
 			if (!hasKotlinRuntime()) {
 				File file = new File(LaunchConfigurationDelegate.KT_RUNTIME_PATH);
-				ProjectUtils.addToClasspath(JavaCore.newLibraryEntry(new Path(file.getAbsolutePath()), null, null), javaProject);
+				ProjectUtils.addToClasspath(javaProject, JavaCore.newLibraryEntry(new Path(file.getAbsolutePath()), null, null));
 			}
 		} catch (JavaModelException e) {
 			throw new RuntimeException(e);
@@ -204,7 +204,7 @@ public class TestJavaProject {
 	}
 	
 	private void addSystemLibraries() throws JavaModelException {
-		ProjectUtils.addToClasspath(JavaRuntime.getDefaultJREContainerEntry(), javaProject);
+		ProjectUtils.addToClasspath(javaProject, JavaRuntime.getDefaultJREContainerEntry());
 	}
 
 	public void clean() {

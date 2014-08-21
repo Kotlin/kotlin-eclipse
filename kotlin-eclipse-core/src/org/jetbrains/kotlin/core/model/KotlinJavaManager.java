@@ -58,8 +58,8 @@ public class KotlinJavaManager {
                 }
                 
                 ProjectUtils.addToClasspath(
-                        JavaCore.newLibraryEntry(getKotlinBinFullPath(javaProject.getProject()), null, null),
-                        javaProject);
+                        javaProject,
+                        JavaCore.newLibraryEntry(getKotlinBinFullPath(javaProject.getProject()), null, null));
             }
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
