@@ -61,7 +61,6 @@ public class TestJavaProject {
     }
     
     private IProject createProject(String projectName, String location) {
-        
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IWorkspaceRoot workspaceRoot = workspace.getRoot();
         IProjectDescription projectDescription = workspace.newProjectDescription(projectName);
@@ -178,13 +177,11 @@ public class TestJavaProject {
     }
     
     public void addKotlinRuntime() throws CoreException {
-        if (!ProjectUtils.hasKotlinRuntime(project)) {
-            ProjectUtils.addKotlinRuntime(project);
-        }
+        ProjectUtils.addKotlinRuntime(javaProject);
     }
     
     private void addSystemLibraries() throws JavaModelException {
-        ProjectUtils.addToClasspath(javaProject, JavaRuntime.getDefaultJREContainerEntry());
+        ProjectUtils.addContainerEntryToClasspath(javaProject, JavaRuntime.getDefaultJREContainerEntry());
     }
     
     public void clean() {
