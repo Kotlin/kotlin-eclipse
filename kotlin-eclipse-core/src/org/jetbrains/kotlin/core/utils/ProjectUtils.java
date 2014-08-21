@@ -17,8 +17,6 @@
 package org.jetbrains.kotlin.core.utils;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,33 +25,26 @@ import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.kotlin.core.KotlinClasspathContainer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.osgi.framework.Bundle;
-
-import com.intellij.openapi.util.Condition;
-import com.intellij.util.containers.ContainerUtil;
 
 public class ProjectUtils {
     
@@ -61,21 +52,6 @@ public class ProjectUtils {
     private final static String LIB_EXTENSION = "jar";
     
     public final static String KT_HOME = getKtHome();
-    private final static String KT_RUNTIME_FILENAME = buildLibName("kotlin-runtime");
-    private final static String KT_RUNTIME_PATH = buildLibPath("kotlin-runtime");
-    
-    public static final IClasspathEntry KT_RUNTIME_ENTRY = new ClasspathEntry(IPackageFragmentRoot.K_BINARY,
-                IClasspathEntry.CPE_LIBRARY,
-                new Path(KT_RUNTIME_FILENAME),
-                ClasspathEntry.INCLUDE_ALL,
-                ClasspathEntry.EXCLUDE_NONE,
-                null,
-                null,
-                null,
-                false,
-                ClasspathEntry.NO_ACCESS_RULES,
-                false,
-                ClasspathEntry.NO_EXTRA_ATTRIBUTES);
     
     public static IFile findFilesWithMain(Collection<IFile> files) {
         for (IFile file : files) {
@@ -185,63 +161,41 @@ public class ProjectUtils {
         return libDirectories;
     }
     
-    public static void addToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry) throws JavaModelException {
+    public static void addToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry)
+            throws JavaModelException {
         IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
-        IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
         
+        IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
         System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
         newEntries[oldEntries.length] = newEntry;
         
         javaProject.setRawClasspath(newEntries, null);
     }
     
-    public static boolean classpathContainsEntry(@NotNull IJavaProject javaProject, @NotNull final IClasspathEntry newEntry) throws JavaModelException {
-        return !ContainerUtil.filter(Arrays.asList(javaProject.getRawClasspath()), new Condition<IClasspathEntry>() {
-            @Override
-            public boolean value(IClasspathEntry entry) {
-                return entry.getPath().toString().endsWith(newEntry.getPath().toString());
-            }
-            
-        }).isEmpty();
+    public static void addContainerEntryToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry)
+            throws JavaModelException {
+        if (!classpathContainsContainerEntry(javaProject.getRawClasspath(), newEntry)) {
+            addToClasspath(javaProject, newEntry);
+        }
     }
     
-    private static IFolder getLibFolder(@NotNull IProject project) {
-        return project.getFolder(LIB_FOLDER);
+    private static boolean classpathContainsContainerEntry(@NotNull IClasspathEntry[] entries,
+            @NotNull IClasspathEntry entry) {
+        return Arrays.asList(entries).contains(entry);
     }
     
-    private static IFile getKotlinRuntime(@NotNull IProject project) {
-        return project.getFile(KT_RUNTIME_FILENAME);
-    }
-    
-    public static boolean hasKotlinRuntime(@NotNull IProject project) throws JavaModelException {
-        return getLibFolder(project).exists() && getKotlinRuntime(project).exists() && classpathContainsEntry(JavaCore.create(project), KT_RUNTIME_ENTRY);
+    public static boolean hasKotlinRuntime(@NotNull IProject project) throws CoreException {
+        return classpathContainsContainerEntry(JavaCore.create(project).getRawClasspath(),
+                KotlinClasspathContainer.getKotlinRuntimeContainerEntry());
     }
     
     public static void addKotlinRuntime(@NotNull IProject project) throws CoreException {
-        IFolder libFolder = getLibFolder(project);
-        if (!libFolder.exists()) {
-            libFolder.create(false, true, null);
-        }
-        
-        IFile kotlinRuntime = getKotlinRuntime(project);
-        if (!kotlinRuntime.exists()) {
-            try {
-                kotlinRuntime.create(new FileInputStream(
-                        ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(KT_RUNTIME_PATH)).getFullPath().toOSString()),
-                        true, 
-                        null);
-            } catch (FileNotFoundException e) {
-                KotlinLogger.logAndThrow(e);
-            }
-
-        }
-        
-        IJavaProject javaProject = JavaCore.create(project);
-        if (!classpathContainsEntry(javaProject, KT_RUNTIME_ENTRY)) {
-            addToClasspath(javaProject, KT_RUNTIME_ENTRY);
-        }
+        addKotlinRuntime(JavaCore.create(project));
     }
     
+    public static void addKotlinRuntime(@NotNull IJavaProject javaProject) throws CoreException {
+        addContainerEntryToClasspath(javaProject, KotlinClasspathContainer.getKotlinRuntimeContainerEntry());
+    }
     
     private static String buildLibName(String libName) {
         return LIB_FOLDER + "/" + libName + "." + LIB_EXTENSION;
