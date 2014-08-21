@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.ui;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jetbrains.kotlin.core.KotlinClasspathContainerInitializer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinFilesCollector;
@@ -50,7 +49,6 @@ public class Activator extends AbstractUIPlugin {
             KotlinNature.addBuilder(project);
             
             KotlinRuntimeConfigurationSuggestor.suggestForProject(project, Display.getCurrent().getActiveShell());
-            KotlinClasspathContainerInitializer.INSTANCE.initialize(project);
         }
     }
     

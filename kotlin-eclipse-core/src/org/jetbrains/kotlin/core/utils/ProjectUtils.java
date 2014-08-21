@@ -42,17 +42,16 @@ import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.KotlinClasspathContainer;
-import org.jetbrains.kotlin.core.KotlinClasspathContainerInitializer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.osgi.framework.Bundle;
 
 public class ProjectUtils {
     
-    private final static String LIB_FOLDER = "lib";
-    private final static String LIB_EXTENSION = "jar";
+    private static final String LIB_FOLDER = "lib";
+    private static final String LIB_EXTENSION = "jar";
     
-    public final static String KT_HOME = getKtHome();
+    public static final String KT_HOME = getKtHome();
     
     public static IFile findFilesWithMain(Collection<IFile> files) {
         for (IFile file : files) {
@@ -196,15 +195,14 @@ public class ProjectUtils {
     
     public static void addKotlinRuntime(@NotNull IJavaProject javaProject) throws CoreException {
         addContainerEntryToClasspath(javaProject, KotlinClasspathContainer.getKotlinRuntimeContainerEntry());
-        KotlinClasspathContainerInitializer.INSTANCE.initialize(javaProject);
-    }
-    
-    private static String buildLibName(String libName) {
-        return LIB_FOLDER + "/" + libName + "." + LIB_EXTENSION;
     }
     
     public static String buildLibPath(String libName) {
         return KT_HOME + buildLibName(libName);
+    }
+    
+    private static String buildLibName(String libName) {
+        return LIB_FOLDER + "/" + libName + "." + LIB_EXTENSION;
     }
     
     private static String getKtHome() {

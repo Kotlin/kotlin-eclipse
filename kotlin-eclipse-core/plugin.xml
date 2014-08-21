@@ -36,7 +36,7 @@
          point="org.eclipse.jdt.core.classpathContainerInitializer">
       <classpathContainerInitializer
             class="org.jetbrains.kotlin.core.KotlinClasspathContainerInitializer"
-            id="org.jetbrains.kotlin.core.kotlinClasspathContainerInitializer">
+            id="org.jetbrains.kotlin.core.KOTLIN_CONTAINER">
       </classpathContainerInitializer>
    </extension>
 
