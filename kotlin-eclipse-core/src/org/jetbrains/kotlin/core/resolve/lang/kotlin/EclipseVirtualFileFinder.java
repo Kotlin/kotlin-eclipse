@@ -25,14 +25,16 @@ import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
 import org.jetbrains.jet.lang.resolve.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.jet.lang.resolve.kotlin.KotlinJvmBinaryClass;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
+import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinderFactory;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileKotlinClassFinder;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 
 import com.intellij.ide.highlighter.JavaClassFileType;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.search.GlobalSearchScope;
 
-public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder implements VirtualFileFinder {
+public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder implements VirtualFileFinderFactory {
     @NotNull
     private final ClassPath classPath;
 
@@ -128,6 +130,12 @@ public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder imple
             return vFile;
         }
         return null;
+    }
+
+    @Override
+    @NotNull
+    public VirtualFileFinder create(@NotNull GlobalSearchScope scope) {
+        return new EclipseVirtualFileFinder(classPath);
     }
 
 }

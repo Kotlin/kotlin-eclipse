@@ -41,9 +41,9 @@ import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowInfo;
 import org.jetbrains.jet.lang.resolve.scopes.JetScope;
 import org.jetbrains.jet.lang.resolve.scopes.JetScopeUtils;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
+import org.jetbrains.jet.lang.resolve.scopes.receivers.Qualifier;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.jet.lang.types.JetType;
-import org.jetbrains.jet.lang.types.PackageType;
 import org.jetbrains.jet.lang.types.expressions.ExpressionTypingUtils;
 
 import com.google.common.base.Predicate;
@@ -64,91 +64,83 @@ public class KotlinCompletionProvider {
         PsiElement parent = expression.getParent();
         boolean inPositionForCompletionWithReceiver = parent instanceof JetCallExpression || parent instanceof JetQualifiedExpression;
         if (receiverExpression != null && inPositionForCompletionWithReceiver) {
+            Set<DeclarationDescriptor> descriptors = new HashSet<DeclarationDescriptor>();
             // Process as call expression
             JetScope resolutionScope = context.get(BindingContext.RESOLUTION_SCOPE, expression);
+            if (resolutionScope == null) return descriptors;
+
+            Qualifier qualifier = context.get(BindingContext.QUALIFIER, receiverExpression);
+            if (qualifier != null) {
+                // It's impossible to add extension function for package or class (if it's class object, expression type is not null)
+                descriptors.addAll(excludePrivateDescriptors(qualifier.getScope().getAllDescriptors()));
+            }
+
             JetType expressionType = context.get(BindingContext.EXPRESSION_TYPE, receiverExpression);
+            if (expressionType != null && !expressionType.isError()) {
+                ExpressionReceiver receiverValue = new ExpressionReceiver(receiverExpression, expressionType);
 
-            if (expressionType != null && resolutionScope != null && !expressionType.isError()) {
-                if (!(expressionType instanceof PackageType)) {
-                    ExpressionReceiver receiverValue = new ExpressionReceiver(receiverExpression, expressionType);
-                    Set<DeclarationDescriptor> descriptors = new HashSet<DeclarationDescriptor>();
+                DataFlowInfo info = getDataFlowInfo(context, expression);
 
-                    DataFlowInfo info = context.get(BindingContext.NON_DEFAULT_EXPRESSION_DATA_FLOW, expression);
-                    if (info == null) {
-                        info = DataFlowInfo.EMPTY;
-                    }
+                List<JetType> variantsForExplicitReceiver = AutoCastUtils.getAutoCastVariants(receiverValue, context, info);
 
-                    List<JetType> variantsForExplicitReceiver = AutoCastUtils.getAutoCastVariants(receiverValue, context, info);
-
-                    for (JetType variant : variantsForExplicitReceiver) {
-                        descriptors.addAll(includeExternalCallableExtensions(
-                                excludePrivateDescriptors(variant.getMemberScope().getAllDescriptors()),
-                                resolutionScope, receiverValue));
-                    }
-
-                    return descriptors;
+                for (JetType variant : variantsForExplicitReceiver) {
+                    descriptors.addAll(excludePrivateDescriptors(variant.getMemberScope().getAllDescriptors()));
                 }
 
-                return includeExternalCallableExtensions(
-                        excludePrivateDescriptors(expressionType.getMemberScope().getAllDescriptors()),
-                        resolutionScope, new ExpressionReceiver(receiverExpression, expressionType));
+                descriptors.addAll(externalCallableExtensions(resolutionScope, receiverValue, context, info));
             }
-            return Collections.emptyList();
+
+            return descriptors;
         }
         else {
             return getVariantsNoReceiver(expression, context);
         }
     }
     
-    private static Set<DeclarationDescriptor> includeExternalCallableExtensions(
-            @NotNull Collection<DeclarationDescriptor> descriptors,
+    private static DataFlowInfo getDataFlowInfo(BindingContext context, JetExpression expression) {
+        DataFlowInfo dataFlowInfo = context.get(BindingContext.EXPRESSION_DATA_FLOW_INFO, expression);
+        return dataFlowInfo != null ? dataFlowInfo : DataFlowInfo.EMPTY;
+    }
+
+    private static Collection<CallableDescriptor> externalCallableExtensions(
             @NotNull JetScope externalScope,
-            @NotNull final ReceiverValue receiverValue
+            @NotNull final ReceiverValue receiverValue,
+            @NotNull final BindingContext context,
+            @NotNull final DataFlowInfo dataFlowInfo
     ) {
-        // It's impossible to add extension function for package
-        JetType receiverType = receiverValue.getType();
-        if (receiverType instanceof PackageType) {
-            return new HashSet<DeclarationDescriptor>(descriptors);
-        }
-
-        Set<DeclarationDescriptor> descriptorsSet = Sets.newHashSet(descriptors);
-
-        descriptorsSet.addAll(
-                Collections2.filter(JetScopeUtils.getAllExtensions(externalScope),
+        return Collections2.filter(JetScopeUtils.getAllExtensions(externalScope),
                                     new Predicate<CallableDescriptor>() {
                                         @Override
                                         public boolean apply(CallableDescriptor callableDescriptor) {
-                                            return ExpressionTypingUtils.checkIsExtensionCallable(receiverValue, callableDescriptor);
+                                            return ExpressionTypingUtils.checkIsExtensionCallable(receiverValue, callableDescriptor, context, dataFlowInfo);
                                         }
-                                    }));
-
-        return descriptorsSet;
+                                    });
     }
     
-    @NotNull
-    private static Collection<DeclarationDescriptor> getVariantsNoReceiver(
-            @NotNull JetSimpleNameExpression expression,
-            @NotNull BindingContext context) {
+    public static Collection<DeclarationDescriptor> getVariantsNoReceiver(JetExpression expression, BindingContext context) {
         JetScope resolutionScope = context.get(BindingContext.RESOLUTION_SCOPE, expression);
-        if (resolutionScope == null) {
-            return Collections.emptySet();
-        }
-        
-        if (expression.getParent() instanceof JetImportDirective || expression.getParent() instanceof JetPackageDirective) {
-            return excludeNonPackageDescriptors(resolutionScope.getAllDescriptors());
-        }
+        if (resolutionScope != null) {
+            if (expression.getParent() instanceof JetImportDirective || expression.getParent() instanceof JetPackageDirective) {
+                return excludeNonPackageDescriptors(resolutionScope.getAllDescriptors());
+            }
+            else {
+                Collection<DeclarationDescriptor> descriptorsSet = Sets.newHashSet();
 
-        Collection<DeclarationDescriptor> descriptors = Sets.newHashSet();
+                List<ReceiverParameterDescriptor> result = resolutionScope.getImplicitReceiversHierarchy();
 
-        List<ReceiverParameterDescriptor> result = resolutionScope.getImplicitReceiversHierarchy();
-        for (ReceiverParameterDescriptor receiverDescriptor : result) {
-            JetType receiverType = receiverDescriptor.getType();
-            descriptors.addAll(receiverType.getMemberScope().getAllDescriptors());
+                for (ReceiverParameterDescriptor receiverDescriptor : result) {
+                    JetType receiverType = receiverDescriptor.getType();
+                    descriptorsSet.addAll(receiverType.getMemberScope().getAllDescriptors());
+                }
+
+                descriptorsSet.addAll(resolutionScope.getAllDescriptors());
+
+                DataFlowInfo info = getDataFlowInfo(context, expression);
+
+                return excludeNotCallableExtensions(excludePrivateDescriptors(descriptorsSet), resolutionScope, context, info);
+            }
         }
-        
-        descriptors.addAll(resolutionScope.getAllDescriptors());
-        
-        return excludeNotCallableExtensions(excludePrivateDescriptors(descriptors), resolutionScope);
+        return Collections.emptyList();
     }
     
     @NotNull
@@ -187,9 +179,12 @@ public class KotlinCompletionProvider {
         });
     }
     
-    @NotNull
-    private static Collection<DeclarationDescriptor> excludeNotCallableExtensions(
-            @NotNull Collection<? extends DeclarationDescriptor> descriptors, @NotNull JetScope scope) {
+    public static Collection<DeclarationDescriptor> excludeNotCallableExtensions(
+            @NotNull Collection<? extends DeclarationDescriptor> descriptors,
+            @NotNull JetScope scope,
+            @NotNull final BindingContext context,
+            @NotNull final DataFlowInfo dataFlowInfo
+    ) {
         Set<DeclarationDescriptor> descriptorsSet = Sets.newHashSet(descriptors);
 
         final List<ReceiverParameterDescriptor> result = scope.getImplicitReceiversHierarchy();
@@ -201,9 +196,8 @@ public class KotlinCompletionProvider {
                         if (callableDescriptor.getReceiverParameter() == null) {
                             return false;
                         }
-                        
                         for (ReceiverParameterDescriptor receiverDescriptor : result) {
-                            if (ExpressionTypingUtils.checkIsExtensionCallable(receiverDescriptor.getValue(), callableDescriptor)) {
+                            if (ExpressionTypingUtils.checkIsExtensionCallable(receiverDescriptor.getValue(), callableDescriptor, context, dataFlowInfo)) {
                                 return false;
                             }
                         }

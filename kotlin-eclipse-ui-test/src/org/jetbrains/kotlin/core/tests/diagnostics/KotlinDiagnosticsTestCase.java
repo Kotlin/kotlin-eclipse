@@ -34,7 +34,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.asJava.AsJavaPackage;
 import org.jetbrains.jet.checkers.CheckerTestUtil;
 import org.jetbrains.jet.cli.jvm.compiler.CliLightClassGenerationSupport;
-import org.jetbrains.jet.lang.descriptors.DependencyKind;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.DiagnosticFactory;
@@ -55,7 +54,7 @@ import org.jetbrains.jet.lang.resolve.DelegatingBindingTrace;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.jet.lang.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
-import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
+import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.junit.Assert;
@@ -69,7 +68,6 @@ import com.google.common.collect.Sets;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.Conditions;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.util.text.StringUtilRt;
@@ -80,31 +78,32 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
+import com.intellij.psi.search.GlobalSearchScope;
 
 public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
-	
-	public static final Pattern DIAGNOSTICS_PATTERN = Pattern.compile("([\\+\\-!])(\\w+)\\s*");
-	public static final String DIAGNOSTICS_DIRECTIVE = "DIAGNOSTICS";
-	@SuppressWarnings("unchecked")
-	public static final ImmutableSet<DiagnosticFactory<?>> DIAGNOSTICS_TO_INCLUDE_ANYWAY =
-		ImmutableSet.of(
-				Errors.UNRESOLVED_REFERENCE,
-				Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER,
-				CheckerTestUtil.SyntaxErrorDiagnosticFactory.INSTANCE,
-				CheckerTestUtil.DebugInfoDiagnosticFactory.ELEMENT_WITH_ERROR_TYPE,
-				CheckerTestUtil.DebugInfoDiagnosticFactory.MISSING_UNRESOLVED,
-				CheckerTestUtil.DebugInfoDiagnosticFactory.UNRESOLVED_WITH_TARGET
-		);
-	public static final String CHECK_TYPE_DIRECTIVE = "CHECK_TYPE";
-	private static final String CHECK_TYPE_DECLARATIONS = "\nclass _<T>" +
-			"\nfun <T> T.checkType(f: (_<T>) -> Unit) = f";
-	
-	@Before
-	public void configure() {
-		configureProject();
-	}
+    
+    public static final Pattern DIAGNOSTICS_PATTERN = Pattern.compile("([\\+\\-!])(\\w+)\\s*");
+    public static final String DIAGNOSTICS_DIRECTIVE = "DIAGNOSTICS";
+    @SuppressWarnings("unchecked")
+    public static final ImmutableSet<DiagnosticFactory<?>> DIAGNOSTICS_TO_INCLUDE_ANYWAY =
+        ImmutableSet.of(
+                Errors.UNRESOLVED_REFERENCE,
+                Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER,
+                CheckerTestUtil.SyntaxErrorDiagnosticFactory.INSTANCE,
+                CheckerTestUtil.DebugInfoDiagnosticFactory.ELEMENT_WITH_ERROR_TYPE,
+                CheckerTestUtil.DebugInfoDiagnosticFactory.MISSING_UNRESOLVED,
+                CheckerTestUtil.DebugInfoDiagnosticFactory.UNRESOLVED_WITH_TARGET
+        );
+    public static final String CHECK_TYPE_DIRECTIVE = "CHECK_TYPE";
+    private static final String CHECK_TYPE_DECLARATIONS = "\nclass _<T>" +
+            "\nfun <T> T.checkType(f: (_<T>) -> Unit) = f";
+    
+    @Before
+    public void configure() {
+        configureProject();
+    }
 
-	protected void doTest(String filePath) throws IOException {
+    protected void doTest(String filePath) throws IOException {
         File file = new File(filePath);
         
         String expectedText = JetTestUtils.doLoadFile(file);
@@ -129,7 +128,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                         if (fileName.endsWith(".java")) {
                             writeJavaFile(fileName, text);
                         }
-                    	
+                        
                         return new TestFile(module, fileName, text, directives);
                     }
 
@@ -160,8 +159,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         analyzeAndCheck(file, testFiles, "<" + file.getName().substring(0, file.getName().length() - ".kt".length()));
     }
-	
-	protected void analyzeAndCheck(File testDataFile, List<TestFile> testFiles, String moduleName) {
+    
+    protected void analyzeAndCheck(File testDataFile, List<TestFile> testFiles, String moduleName) {
         Map<TestModule, List<TestFile>> groupedByModule = KotlinPackage.groupByTo(
                 testFiles,
                 new LinkedHashMap<TestModule, List<TestFile>>(),
@@ -194,13 +193,21 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                                            : supportTrace;
             moduleBindings.put(testModule, moduleTrace.getBindingContext());
             
+            if (module == null) {
+                module = support.newModule();
+            }
+            else {
+                module.addDependencyOnModule(KotlinBuiltIns.getInstance().getBuiltInsModule());
+                module.seal();
+            }
+            
             EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-            		getTestProject().getJavaProject(), getProject(),
-            		jetFiles,
-            		moduleTrace,
-            		Predicates.<PsiFile>alwaysTrue(),
-            		AnalyzerFacadeForJVM.createJavaModule(moduleName)
-            		);
+                    getTestProject().getJavaProject(), getProject(),
+                    jetFiles,
+                    moduleTrace,
+                    Predicates.<PsiFile>alwaysTrue(),
+                    module
+                    );
             checkAllResolvedCallsAreCompleted(jetFiles, moduleTrace.getBindingContext());
         }
 
@@ -217,8 +224,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         checkAllResolvedCallsAreCompleted(allJetFiles, supportTrace.getBindingContext());
     }
-	
-	private static void checkAllResolvedCallsAreCompleted(@NotNull List<JetFile> jetFiles, @NotNull BindingContext bindingContext) {
+    
+    private static void checkAllResolvedCallsAreCompleted(@NotNull List<JetFile> jetFiles, @NotNull BindingContext bindingContext) {
         for (JetFile file : jetFiles) {
             if (!AnalyzingUtils.getSyntaxErrorRanges(file).isEmpty()) {
                 return;
@@ -239,8 +246,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         checkResolvedCallsInDiagnostics(bindingContext);
     }
-	
-	@SuppressWarnings({"unchecked"})
+    
+    @SuppressWarnings({"unchecked"})
     private static void checkResolvedCallsInDiagnostics(BindingContext bindingContext) {
         Set<DiagnosticFactory1<PsiElement, Collection<? extends ResolvedCall<?>>>> diagnosticsStoringResolvedCalls1 = Sets.newHashSet(
                 OVERLOAD_RESOLUTION_AMBIGUITY, NONE_APPLICABLE, CANNOT_COMPLETE_RESOLVE, UNRESOLVED_REFERENCE_WRONG_RECEIVER,
@@ -266,13 +273,13 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             }
         }
     }
-	
-	public static Condition<Diagnostic> parseDiagnosticFilterDirective(Map<String, String> directiveMap) {
+    
+    public static Condition<Diagnostic> parseDiagnosticFilterDirective(Map<String, String> directiveMap) {
         String directives = directiveMap.get(DIAGNOSTICS_DIRECTIVE);
         if (directives == null) {
-            return Conditions.alwaysTrue();
+            return AdditionalConditions.alwaysTrue();
         }
-        Condition<Diagnostic> condition = Conditions.alwaysTrue();
+        Condition<Diagnostic> condition = AdditionalConditions.alwaysTrue();
         Matcher matcher = DIAGNOSTICS_PATTERN.matcher(directives);
         if (!matcher.find()) {
             Assert.fail("Wrong syntax in the '// !DIAGNOSTICS: ...' directive:\n" +
@@ -332,8 +339,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     }
                 });
     }
-	
-	private static void assertResolvedCallsAreCompleted(
+    
+    private static void assertResolvedCallsAreCompleted(
             @NotNull Diagnostic diagnostic, @NotNull Collection<? extends ResolvedCall<?>> resolvedCalls
     ) {
         boolean allCallsAreCompleted = true;
@@ -351,8 +358,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                    "for '" + element.getText() + "'" + lineAndColumn + " are not completed",
                    allCallsAreCompleted);
     }
-	
-	private Map<TestModule, ModuleDescriptorImpl> createModules(Map<TestModule, List<TestFile>> groupedByModule) {
+    
+    private Map<TestModule, ModuleDescriptorImpl> createModules(Map<TestModule, List<TestFile>> groupedByModule) {
         Map<TestModule, ModuleDescriptorImpl> modules = new HashMap<TestModule, ModuleDescriptorImpl>();
 
         for (TestModule testModule : groupedByModule.keySet()) {
@@ -365,15 +372,15 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             if (testModule == null) continue;
 
             ModuleDescriptorImpl module = modules.get(testModule);
+            module.addDependencyOnModule(module);
             for (TestModule dependency : testModule.getDependencies()) {
-                // Adding other modules as BINARIES here, because in the reduced dependency ordering model they are equal to binaries
-                module.addFragmentProvider(DependencyKind.BINARIES, modules.get(dependency).getPackageFragmentProvider());
+                module.addDependencyOnModule(modules.get(dependency));
             }
         }
         return modules;
     }
-	
-	protected static List<JetFile> getJetFiles(List<? extends TestFile> testFiles) {
+    
+    protected static List<JetFile> getJetFiles(List<? extends TestFile> testFiles) {
         List<JetFile> jetFiles = Lists.newArrayList();
         for (TestFile testFile : testFiles) {
             if (testFile.getJetFile() != null) {
@@ -382,20 +389,20 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         }
         return jetFiles;
     }
-	
-	private boolean writeJavaFile(@NotNull String filePath, @NotNull String content) {
+    
+    private boolean writeJavaFile(@NotNull String filePath, @NotNull String content) {
         try {
-        	getTestProject().createSourceFile(
-        			PathUtil.getParentPath(filePath), 
-        			PathUtil.getFileName(filePath), 
-        			content);
+            getTestProject().createSourceFile(
+                    PathUtil.getParentPath(filePath), 
+                    PathUtil.getFileName(filePath), 
+                    content);
             return true;
         } catch (Exception e) {
-        	throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
-	
-	protected static class TestModule {
+    
+    protected static class TestModule {
         private final String name;
         private final List<TestModule> dependencies = new ArrayList<TestModule>();
 
@@ -411,13 +418,13 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             return dependencies;
         }
     }
-	
-	@NotNull
+    
+    @NotNull
     public Project getProject() {
-    	return getTestProject().getKotlinEnvironment().getProject();
+        return getTestProject().getKotlinEnvironment().getProject();
     }
-	
-	protected class TestFile {
+    
+    protected class TestFile {
         private final List<CheckerTestUtil.DiagnosedRange> diagnosedRanges = Lists.newArrayList();
         private final String expectedText;
         private final TestModule module;
@@ -508,7 +515,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             Set<Diagnostic> jvmSignatureDiagnostics = new HashSet<Diagnostic>();
             Collection<JetDeclaration> declarations = PsiTreeUtil.findChildrenOfType(jetFile, JetDeclaration.class);
             for (JetDeclaration declaration : declarations) {
-                Diagnostics diagnostics = AsJavaPackage.getJvmSignatureDiagnostics(declaration, bindingContext.getDiagnostics());
+                Diagnostics diagnostics = AsJavaPackage.getJvmSignatureDiagnostics(declaration, 
+                        bindingContext.getDiagnostics(), GlobalSearchScope.allScope(getProject()));
                 if (diagnostics == null) continue;
                 jvmSignatureDiagnostics.addAll(diagnostics.forElement(declaration));
             }

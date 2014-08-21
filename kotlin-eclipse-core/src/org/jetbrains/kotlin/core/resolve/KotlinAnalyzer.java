@@ -19,8 +19,9 @@ package org.jetbrains.kotlin.core.resolve;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
-import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
+import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
@@ -53,12 +54,17 @@ public class KotlinAnalyzer {
     @NotNull
     private static AnalyzeExhaust analyzeExhaustProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
             @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
+        ModuleDescriptorImpl module = EclipseAnalyzerFacadeForJVM.createJavaModule("<module>");
+        module.addDependencyOnModule(module);
+        module.addDependencyOnModule(KotlinBuiltIns.getInstance().getBuiltInsModule());
+        module.seal();
+        
         return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                 javaProject, 
                 kotlinEnvironment.getProject(), 
                 ProjectUtils.getSourceFilesWithDependencies(javaProject), 
                 new BindingTraceContext(), 
                 filesToAnalyzeCompletely, 
-                AnalyzerFacadeForJVM.createJavaModule("<module>"));
+                module);
     }
 }

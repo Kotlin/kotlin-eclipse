@@ -52,12 +52,6 @@ public class EclipseTraceBasedJavaResolverCache implements JavaResolverCache {
         return trace.get(BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, fqName.toUnsafe());
     }
 
-    @Nullable
-    @Override
-    public ClassDescriptor getClass(@NotNull JavaClass javaClass) {
-        return trace.get(EclipseBindingContext.ECLIPSE_CLASS, ((EclipseJavaClass) javaClass).getBinding());
-    }
-
     @Override
     public void recordMethod(@NotNull JavaMethod method, @NotNull SimpleFunctionDescriptor descriptor) {
         trace.record(EclipseBindingContext.ECLIPSE_FUNCTION, ((EclipseJavaMethod) method).getBinding(), descriptor);

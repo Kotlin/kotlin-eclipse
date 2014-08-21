@@ -23,10 +23,9 @@ import java.util.List;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
-import org.jetbrains.jet.analyzer.AnalyzerFacade;
 import org.jetbrains.jet.context.ContextPackage;
 import org.jetbrains.jet.context.GlobalContext;
-import org.jetbrains.jet.lang.descriptors.DependencyKind;
+import org.jetbrains.jet.lang.descriptors.PackageFragmentProvider;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
@@ -38,11 +37,11 @@ import org.jetbrains.kotlin.core.injectors.EclipseInjectorForTopDownAnalyzerForJ
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.search.GlobalSearchScope;
 
-public enum EclipseAnalyzerFacadeForJVM implements AnalyzerFacade {
+public enum EclipseAnalyzerFacadeForJVM {
 
     INSTANCE;
 
@@ -77,8 +76,10 @@ public enum EclipseAnalyzerFacadeForJVM implements AnalyzerFacade {
         EclipseInjectorForTopDownAnalyzerForJvm injector = new EclipseInjectorForTopDownAnalyzerForJvm(project, 
                 topDownAnalysisParameters, trace, module, javaProject);
         try {
-            module.addFragmentProvider(DependencyKind.BINARIES, injector.getJavaDescriptorResolver().getPackageFragmentProvider());
-            injector.getTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, files);
+            List<PackageFragmentProvider> additionalProviders = Lists.newArrayList();
+            additionalProviders.add(injector.getJavaDescriptorResolver().getPackageFragmentProvider());
+            
+            injector.getTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, files, additionalProviders);
             return AnalyzeExhaust.success(trace.getBindingContext(), module);
         }
         finally {
@@ -89,12 +90,5 @@ public enum EclipseAnalyzerFacadeForJVM implements AnalyzerFacade {
     @NotNull
     public static ModuleDescriptorImpl createJavaModule(@NotNull String name) {
         return new ModuleDescriptorImpl(Name.special(name), DEFAULT_IMPORTS, JavaToKotlinClassMap.getInstance());
-    }
-
-    @Override
-    @NotNull
-    public Setup createSetup(@NotNull Project project, @NotNull Collection<JetFile> syntheticFiles,
-            @NotNull GlobalSearchScope filesScope) {
-        throw new UnsupportedOperationException();
     }
 }

@@ -4,6 +4,25 @@ import com.intellij.openapi.util.Condition;
 
 public class AdditionalConditions {
 
+	public static Condition<Object> TRUE = new Condition<Object>() {
+		@Override
+		public boolean value(final Object object) {
+			return true;
+		}
+	};
+	
+	public static Condition<Object> FALSE = new Condition<Object>() {
+		@Override
+		public boolean value(final Object object) {
+			return false;
+		}
+	};
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Condition<T> alwaysTrue() {
+		return (Condition<T>) TRUE;
+	}
+	
 	private static class And<T> implements Condition<T>  {
 		private final Condition<T> t1;
 		private final Condition<T> t2;

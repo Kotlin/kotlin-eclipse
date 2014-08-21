@@ -55,7 +55,8 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseSourceElement;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement;
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 
@@ -120,8 +121,8 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     private void gotoElement(@NotNull SourceElement element) throws JavaModelException, PartInitException {
-        if (element instanceof EclipseSourceElement) {
-            IBinding binding = ((EclipseSourceElement) element).getBinding();
+        if (element instanceof EclipseJavaSourceElement) {
+            IBinding binding = ((EclipseJavaElement<?>) ((EclipseJavaSourceElement) element).getJavaElement()).getBinding();
             gotoJavaDeclaration(binding, javaProject);
         } else if (element instanceof KotlinSourceElement) {
             PsiElement psiElement = ((KotlinSourceElement) element).getPsi();
