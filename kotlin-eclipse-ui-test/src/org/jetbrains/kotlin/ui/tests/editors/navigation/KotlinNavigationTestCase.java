@@ -94,8 +94,6 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
     private static final String NAVIGATION_TEST_DATA_PATH_SEGMENT = "navigation";
     
     private void performTest(String contentAfter) {
-        joinBuildThread();
-        
         testEditor.accelerateOpenDeclarationAction();
         
         JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -110,6 +108,8 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
                 fileText,
                 TextEditorTest.TEST_PROJECT_NAME,
                 NavigationSourceFileData.getPackageFromContent(fileText));
+        
+        joinBuildThread();
         
         performTest(getText(testPath + AFTER_FILE_EXTENSION));
     }
@@ -140,6 +140,8 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
                         data.getContent());
             }
         }
+        
+        joinBuildThread();
         
         performTest(targetAfter.getContent());
     }

@@ -35,8 +35,6 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestC
     
     @Override
     protected void performTest(String fileText, String expected) {
-        joinBuildThread();
-        
         IFile file = testEditor.getEditingFile();
         
         Character typedCharacter = TypingUtils.typedCharacter(fileText);

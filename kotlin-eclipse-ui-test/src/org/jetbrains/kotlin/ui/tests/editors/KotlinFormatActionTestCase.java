@@ -27,8 +27,6 @@ public class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCas
     
     @Override
     protected void performTest(String fileText, String content) {
-        joinBuildThread();
-        
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
         testEditor.accelerateFormatAction();
         

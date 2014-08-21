@@ -89,6 +89,8 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
         testEditor = configureEditor(getNameByPath(testPath), fileText,
                 WithAfterSourceFileData.getPackageFromContent(fileText));
         
+        joinBuildThread();
+        
         performTest(fileText, getText(testPath + AFTER_FILE_EXTENSION));
     }
     
@@ -104,6 +106,8 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
                 createSourceFile(file.getPackageName(), file.getFileName(), file.getContent());
             }
         }
+        
+        joinBuildThread();
         
         performTest(target.getContent(), target.getContentAfter());
     }

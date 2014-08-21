@@ -45,8 +45,6 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
     
     @Override
     protected void performTest(String fileText, String content) {
-        joinBuildThread();
-        
         List<ICompletionProposal> proposals = createProposals();
         assertCount(proposals, fileText);
         assertExistence(proposals, fileText);
