@@ -9,6 +9,12 @@
             modes="run"
             name="Kotlin Application">
       </launchConfigurationType>
+      <launchConfigurationType
+            delegate="org.jetbrains.kotlin.core.launch.KotlinJUnitLaunchConfigurationDelegate"
+            id="org.jetbrains.kotlin.core.launch.jUnitLaunchConfigurationDelegate"
+            modes="run"
+            name="Kotlin JUnit Test">
+      </launchConfigurationType>
    </extension>
    <extension
          id="org.jetbrains.kotlin.core.kotlinNature"

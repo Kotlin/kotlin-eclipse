@@ -325,6 +325,23 @@
             </enablement>
          </contextualLaunch>
       </shortcut>
+      <shortcut
+            class="org.jetbrains.kotlin.ui.launch.KotlinJUnitLaunchShortcut"
+            icon="icons/julaunch.gif"
+            id="org.jetbrains.kotlin.ui.launch.junit"
+            label="Kotlin JUnit Test"
+            modes="run">
+         <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
    </extension>
    <extension
          point="org.eclipse.debug.core.statusHandlers">

@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.ui,
  org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.debug.ui,
  org.eclipse.jdt.debug.ui,
- org.eclipse.jdt.ui
+ org.eclipse.jdt.ui,
+ org.eclipse.jdt.junit
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.navigation,
  org.eclipse.core.resources,
@@ -34,7 +35,8 @@ Import-Package: com.intellij.navigation,
  org.eclipse.ui.part,
  org.eclipse.ui.texteditor.templates,
  org.eclipse.ui.views.contentoutline,
- org.eclipse.ui.wizards.newresource
+ org.eclipse.ui.wizards.newresource,
+ org.eclipse.jdt.junit.launcher
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.editors,

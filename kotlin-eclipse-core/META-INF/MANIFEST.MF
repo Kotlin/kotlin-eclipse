@@ -10,7 +10,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.launching,
  org.eclipse.debug.core,
  org.jetbrains.kotlin.bundled-compiler,
- org.eclipse.core.filesystem
+ org.eclipse.core.filesystem,
+ org.eclipse.core.expressions,
+ org.eclipse.jdt.junit;bundle-version="3.7.100"
 Bundle-ActivationPolicy: lazy
 Import-Package: com.google.common.collect,
  com.intellij.openapi.vfs,
@@ -21,11 +23,12 @@ Import-Package: com.google.common.collect,
  org.eclipse.jdt.core,
  org.eclipse.jdt.internal.core,
  org.eclipse.jdt.internal.corext.dom,
+ org.eclipse.jdt.junit.launcher,
+ org.eclipse.jdt.ui,
  org.jetbrains.jet.di,
  org.jetbrains.jet.plugin,
  org.jetbrains.kotlin.core.resolve,
- org.jetbrains.kotlin.core.utils,
- org.eclipse.jdt.ui
+ org.jetbrains.kotlin.core.utils
 Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.asJava,
  org.jetbrains.kotlin.core.builder,
