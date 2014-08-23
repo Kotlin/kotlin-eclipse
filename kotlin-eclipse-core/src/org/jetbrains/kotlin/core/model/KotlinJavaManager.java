@@ -15,8 +15,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.eclipse.jdt.internal.core.ExternalFoldersManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
@@ -27,14 +28,27 @@ public class KotlinJavaManager {
     public static final KotlinJavaManager INSTANCE = new KotlinJavaManager();
     
     public static final Path KOTLIN_BIN_FOLDER = new Path("kotlin_bin");
+    private static final IClasspathEntry KOTLIN_BIN_CLASSPATH_ENTRY = new ClasspathEntry(IPackageFragmentRoot.K_BINARY,
+            IClasspathEntry.CPE_LIBRARY,
+            KOTLIN_BIN_FOLDER,
+            ClasspathEntry.INCLUDE_ALL,
+            ClasspathEntry.EXCLUDE_NONE,
+            null,
+            null,
+            null,
+            false,
+            ClasspathEntry.NO_ACCESS_RULES,
+            false,
+            ClasspathEntry.NO_EXTRA_ATTRIBUTES);
     
     private KotlinJavaManager() {
     }
     
     public void registerKtExternalBinFolder(@NotNull IJavaProject javaProject) {
         if (!hasKotlinBinFolder(javaProject)) {
-            addFolderForKotlinClassFiles(javaProject.getProject());
+            addFolderForKotlinClassFiles(javaProject);
         }
+        
         updateKotlinBinFolderFileSystem(javaProject);
     }
     
@@ -48,18 +62,15 @@ public class KotlinJavaManager {
         return project.getFolder(KOTLIN_BIN_FOLDER);
     }
     
-    private void addFolderForKotlinClassFiles(@NotNull final IProject project) { 
+    private void addFolderForKotlinClassFiles(@NotNull IJavaProject javaProject) { 
         try {
-            IJavaProject javaProject = JavaCore.create(project);
             if (!hasKotlinBinFolder(javaProject)) {
-                IFolder folder = project.getFolder(KOTLIN_BIN_FOLDER);
+                IFolder folder = javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER);
                 if (!folder.exists()) {
                     folder.create(true, true, null);
                 }
                 
-                ProjectUtils.addToClasspath(
-                        javaProject,
-                        JavaCore.newLibraryEntry(getKotlinBinFullPath(javaProject.getProject()), null, null));
+                ProjectUtils.addToClasspath(javaProject, KOTLIN_BIN_CLASSPATH_ENTRY);
             }
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
@@ -93,9 +104,8 @@ public class KotlinJavaManager {
                 return false;
             }
             
-            IPath kotlinBinPath = getKotlinBinFullPath(javaProject.getProject());
             for (IClasspathEntry cp : javaProject.getRawClasspath()) {
-                if (kotlinBinPath.equals(cp.getPath())) {
+                if (KOTLIN_BIN_FOLDER.equals(cp.getPath().removeFirstSegments(1))) {
                     return true;
                 }
             }
