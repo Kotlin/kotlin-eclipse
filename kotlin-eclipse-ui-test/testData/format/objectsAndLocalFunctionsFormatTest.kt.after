@@ -1,8 +1,8 @@
 package format
 
 object Foo {
-    fun foo() {
-        fun localFoo() {
-        }
-    }
+	fun foo() {
+		fun localFoo() {
+		}
+	}
 }

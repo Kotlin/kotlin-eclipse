@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.eclipse.ui.editors.text.EditorsUI;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 
@@ -27,7 +25,6 @@ public class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCas
     
     @Override
     protected void performTest(String fileText, String content) {
-        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
         testEditor.accelerateFormatAction();
         
         EditorTestUtils.assertByEditor(getEditor(), content);

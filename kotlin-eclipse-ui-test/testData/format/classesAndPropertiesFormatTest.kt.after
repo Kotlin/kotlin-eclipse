@@ -1,8 +1,8 @@
 package format
 
 class Foo {
-    fun foo() {
-    }
+	fun foo() {
+	}
 
-    val f: String? = null
+	val f: String? = null
 }
