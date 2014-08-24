@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaElement;
@@ -32,11 +31,6 @@ public abstract class EclipseJavaElement<T extends IBinding> implements JavaElem
     @NotNull
     public T getBinding() {
         return binding;
-    }
-    
-    @NotNull
-    public IJavaProject getJavaProject() {
-        return binding.getJavaElement().getJavaProject();
     }
     
     @Override
