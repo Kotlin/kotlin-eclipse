@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 import org.jetbrains.annotations.NotNull;
@@ -33,8 +34,11 @@ import com.google.common.collect.Lists;
 
 public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding> implements JavaAnnotation {
 
+    private final IJavaProject javaProject;
+    
     protected EclipseJavaAnnotation(IAnnotationBinding javaAnnotation) {
         super(javaAnnotation);
+        this.javaProject = javaAnnotation.getAnnotationType().getJavaElement().getJavaProject();
     }
 
     @Override
@@ -42,7 +46,7 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     public JavaAnnotationArgument findArgument(@NotNull Name name) {
         for (IMemberValuePairBinding member : getBinding().getDeclaredMemberValuePairs()) {
             if (name.equals(member.getName())) {
-                return EclipseJavaAnnotationArgument.create(member.getValue(), name, getJavaProject());
+                return EclipseJavaAnnotationArgument.create(member.getValue(), name, javaProject);
             }
         }
         
@@ -57,7 +61,7 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
             arguments.add(EclipseJavaAnnotationArgument.create(
                     memberValuePair.getValue(), 
                     Name.identifier(memberValuePair.getName()), 
-                    getJavaProject()));
+                    javaProject));
         }
         
         return arguments;
@@ -74,5 +78,4 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     public JavaClass resolve() {
         return new EclipseJavaClass(getBinding().getAnnotationType());
     }
-
 }
