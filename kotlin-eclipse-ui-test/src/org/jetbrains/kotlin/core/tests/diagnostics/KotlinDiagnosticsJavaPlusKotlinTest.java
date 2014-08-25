@@ -8,7 +8,7 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
 	@Override
 	@Before
 	public void configure() {
-		configureProjectWithStdLib("Diagnostics", createJavaFilesDir().getAbsolutePath());
+		configureProjectWithStdLib();
 	}
 
 	@Test
