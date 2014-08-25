@@ -70,7 +70,6 @@ import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Conditions;
-import com.intellij.openapi.util.SystemInfoRt;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.util.text.StringUtilRt;
@@ -79,6 +78,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
+import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 
 public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
@@ -101,35 +101,11 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 	
 	@Before
 	public void configure() {
-		configureProject("Diagnostics", createJavaFilesDir().getAbsolutePath());
+		configureProject();
 	}
-
-	private static String calcCanonicalTempPath() {
-		final File file = new File(System.getProperty("java.io.tmpdir"));
-		try {
-			final String canonical = file.getCanonicalPath();
-			if (!SystemInfoRt.isWindows || !canonical.contains(" ")) {
-				return canonical;
-			}
-		}
-		catch (IOException ignore) { }
-		return file.getAbsolutePath();
-	}
-	
-	protected static File createJavaFilesDir() {
-        File javaFilesDir = new File(calcCanonicalTempPath());
-        try {
-            JetTestUtils.mkdirs(javaFilesDir);
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return javaFilesDir;
-    }
 
 	protected void doTest(String filePath) throws IOException {
         File file = new File(filePath);
-        final File javaFilesDir = createJavaFilesDir();
         
         String expectedText = JetTestUtils.doLoadFile(file);
         expectedText = StringUtilRt.convertLineSeparators(expectedText);
@@ -151,7 +127,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     @Override
                     public TestFile createFile(@Nullable TestModule module, String fileName, String text, Map<String, String> directives) {
                         if (fileName.endsWith(".java")) {
-                            writeJavaFile(fileName, text, javaFilesDir);
+                            writeJavaFile(fileName, text);
                         }
                     	
                         return new TestFile(module, fileName, text, directives);
@@ -407,17 +383,12 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         return jetFiles;
     }
 	
-	private boolean writeJavaFile(@NotNull String filePath, @NotNull String content, @NotNull File javaFilesDir) {
+	private boolean writeJavaFile(@NotNull String filePath, @NotNull String content) {
         try {
-            File javaFile = new File(javaFilesDir, filePath);
-
-            String pkg = filePath.substring(0, filePath.length() - javaFile.getName().length());
-            pkg = pkg.replaceAll("/", ".");
-            if (pkg.endsWith(".")) {
-            	pkg = pkg.substring(0, pkg.length() - 1);
-            }
-            
-            getTestProject().createSourceFile(pkg, javaFile.getName(), content);
+        	getTestProject().createSourceFile(
+        			PathUtil.getParentPath(filePath), 
+        			PathUtil.getFileName(filePath), 
+        			content);
             return true;
         } catch (Exception e) {
         	throw new RuntimeException(e);
