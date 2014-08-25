@@ -25,10 +25,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
 import org.junit.Assert;
+import org.junit.ComparisonFailure;
 
 public class EditorTestUtils {
     
@@ -56,6 +58,14 @@ public class EditorTestUtils {
             actual = actual.substring(0, caretOffset) + KotlinEditorTestCase.CARET_TAG + actual.substring(caretOffset);
         }
         
-        Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected), LineEndUtil.removeAllCarriageReturns(actual));
+        try {
+            Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected), LineEndUtil.removeAllCarriageReturns(actual));
+        } catch (ComparisonFailure e) {
+            throw new ComparisonFailure("", escapeNewLines(e.getExpected()), escapeNewLines(e.getActual()));
+        }
+    }
+    
+    private static String escapeNewLines(String s) {
+        return s.replaceAll("\n", "\\\\n").replaceAll("\r", "\\\\r");
     }
 }
