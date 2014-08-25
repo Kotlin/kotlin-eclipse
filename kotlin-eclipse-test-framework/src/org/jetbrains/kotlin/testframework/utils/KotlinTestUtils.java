@@ -3,12 +3,17 @@ package org.jetbrains.kotlin.testframework.utils;
 import java.io.File;
 import java.io.IOException;
 
+import javax.management.RuntimeErrorException;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 
 import com.intellij.openapi.util.io.FileUtil;
 
@@ -55,6 +60,14 @@ public class KotlinTestUtils {
 	
 	public static int getCaret(JavaEditor javaEditor) {
 		return javaEditor.getViewer().getTextWidget().getCaretOffset();
+	}
+	
+	public static void addKotlinBuilder(IProject project) {
+		try {
+			KotlinNature.addBuilder(project);
+		} catch (CoreException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public static String resolveTestTags(String text) {

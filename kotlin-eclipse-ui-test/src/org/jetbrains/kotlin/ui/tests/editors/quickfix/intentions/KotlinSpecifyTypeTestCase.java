@@ -40,8 +40,6 @@ public abstract class KotlinSpecifyTypeTestCase extends KotlinProjectTestCase {
 		String fileText = KotlinTestUtils.getText(testPath);
 		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
 		
-		KotlinTestUtils.joinBuildThread();
-		
 		String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");
 

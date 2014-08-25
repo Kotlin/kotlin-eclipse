@@ -217,7 +217,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                                            ? new DelegatingBindingTrace(supportTrace.getBindingContext(), "Trace for module " + module)
                                            : supportTrace;
             moduleBindings.put(testModule, moduleTrace.getBindingContext());
-
             
             EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
             		getTestProject().getJavaProject(), getProject(),
