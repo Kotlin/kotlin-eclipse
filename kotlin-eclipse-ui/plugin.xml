@@ -11,7 +11,7 @@
             category="org.jetbrains.kotlin.wizards"
             class="org.jetbrains.kotlin.wizards.NewProjectWizard"
             finalPerspective="org.jetbrains.kotlin.perspective"
-            icon="icons/kotlin-file.gif"
+            icon="icons/newprj_kotlin_wiz.gif"
             id="org.jetbrains.kotlin.projectWizard"
             name="Kotlin Project"
             preferredPerspectives="org.jetbrains.kotlin.perspective,org.eclipse.jdt.ui.JavaPerspective"
