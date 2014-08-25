@@ -48,7 +48,6 @@ import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 import com.google.common.collect.Lists;
-import com.intellij.openapi.util.text.StringUtil;
 
 public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     
@@ -136,11 +135,11 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     
     private boolean compileKotlinFiles(@NotNull List<IFile> files, @NotNull ILaunchConfiguration configuration)
             throws CoreException {
-        List<String> command = configureBuildCommand(configuration);
+        String[] command = configureBuildCommand(configuration);
         
         refreshInitData();
         try {
-            Process buildProcess = Runtime.getRuntime().exec(StringUtil.join(command, " "));
+            Process buildProcess = Runtime.getRuntime().exec(command);
             parseCompilerOutput(buildProcess.getErrorStream());
             
             buildProcess.waitFor();
@@ -173,7 +172,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         CompilerOutputParser.parseCompilerMessagesFromReader(messageCollector, new InputStreamReader(inputStream));
     }
     
-    private List<String> configureBuildCommand(ILaunchConfiguration configuration) throws CoreException {
+    private String[] configureBuildCommand(ILaunchConfiguration configuration) throws CoreException {
         List<String> command = new ArrayList<String>();
         command.add("java");
         command.add("-cp");
@@ -184,12 +183,10 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         command.add("-tags");
         
         StringBuilder classPath = new StringBuilder();
-        StringBuilder srcDirectories = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
         
         IJavaProject javaProject = getJavaProject(configuration);
         for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-            srcDirectories.append(StringUtil.QUOTER.fun(srcDirectory.getAbsolutePath())).append(" ");
             classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
@@ -198,14 +195,16 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         }
         
         command.add("-classpath");
-        command.add(StringUtil.QUOTER.fun(classPath.toString()));
+        command.add(classPath.toString());
         
         command.add("-d");
-        command.add(StringUtil.QUOTER.fun(getOutputDir(configuration)));
+        command.add(getOutputDir(configuration));
         
-        command.add(srcDirectories.toString());
+        for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
+            command.add(srcDirectory.getAbsolutePath());
+        }
         
-        return command;
+        return command.toArray(new String[command.size()]);
     }
     
     private List<File> excludeKotlinBinFolder(@NotNull List<File> libDirectories) {
