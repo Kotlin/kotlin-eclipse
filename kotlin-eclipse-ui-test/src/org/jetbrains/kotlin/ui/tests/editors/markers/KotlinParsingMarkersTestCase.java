@@ -37,8 +37,6 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorAutoTestCase {
     private static final String PARSING_MARKERS_TEST_DATA_PATH = "markers/parsing/";
     
     private void performTest(String fileText, String expected) {
-        joinBuildThread();
-        
         IFile file = testEditor.getEditingFile();
         
         Character typedCharacter = TypingUtils.typedCharacter(fileText);

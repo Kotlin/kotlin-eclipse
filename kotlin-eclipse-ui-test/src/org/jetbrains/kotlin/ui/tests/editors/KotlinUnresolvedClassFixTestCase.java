@@ -25,13 +25,26 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
+import org.jetbrains.kotlin.utils.LineEndUtil;
+import org.jetbrains.kotlin.utils.StringUtil;
+import org.junit.Before;
 
-public class KotlinUnresolvedClassFixTestCase extends KotlinEditorTestCase {
-
+public class KotlinUnresolvedClassFixTestCase extends KotlinProjectTestCase {
+	@Before
+	public void configure() {
+		configureProject();
+		KotlinTestUtils.addKotlinBuilder(getTestProject().getJavaProject().getProject());
+	}
+	
 	public void doTest(String input, List<SourceFileData> files, String expected) {
-		testEditor = configureEditor("Test.kt", input);
+		String toEditor = StringUtil.removeAllCarriageReturns(
+				KotlinEditorTestCase.resolveTestTags(input)).replaceAll(LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
+		TextEditorTest testEditor = configureEditor("Test.kt", toEditor);
 
 		if (files != null) {
 			for (SourceFileData data : files) {
@@ -40,7 +53,7 @@ public class KotlinUnresolvedClassFixTestCase extends KotlinEditorTestCase {
 		}
 
 		testEditor.save();
-		joinBuildThread();
+		KotlinTestUtils.joinBuildThread();
 
 		try {
 			IMarker[] markers = testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);

@@ -146,16 +146,6 @@ public abstract class KotlinEditorTestCase {
 		}
 	}
 	
-	public static void joinBuildThread() {
-		while (true) {
-			try {
-				Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
-				break;
-			} catch (OperationCanceledException | InterruptedException e) {
-			}
-		}
-	}
-	
     public static String resolveTestTags(String text) {
 		return text
 				.replaceAll(ERROR_TAG_OPEN, "")

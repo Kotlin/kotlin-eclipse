@@ -30,6 +30,7 @@ public abstract class KotlinAnalyzerTestCase extends KotlinProjectTestCase {
 	@Before
 	public void configure() {
 		configureProjectWithStdLib();
+		KotlinTestUtils.addKotlinBuilder(getTestProject().getJavaProject().getProject());
 	}
 
 	protected void doTest(String input, String fileName) {

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.TextInvocationContext;
@@ -28,6 +29,7 @@ import org.eclipse.ui.IMarkerResolution;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinCorrectionProcessor;
 import org.jetbrains.kotlin.ui.editors.quickfix.AutoImportMarkerResolution;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
@@ -45,7 +47,8 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorAutoTestCase 
     }
     
     private void performTest(String fileText, String content) {
-        joinBuildThread();
+    	KotlinTestUtils.addKotlinBuilder(testEditor.getEclipseProject());
+    	KotlinTestUtils.joinBuildThread();
         
         List<ICompletionProposal> proposals = createProposals();
         assertCount(proposals, fileText);

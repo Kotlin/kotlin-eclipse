@@ -111,7 +111,6 @@ public class TestJavaProject {
         project.setDescription(description, null);
         
         KotlinNature.addNature(project);
-        KotlinNature.addBuilder(project);
     }
 	
 	private IFile createFile(IContainer folder, String name, InputStream content) {

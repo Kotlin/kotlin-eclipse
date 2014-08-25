@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.swt.SWT;
@@ -48,6 +49,10 @@ public class TextEditorTest {
 	
 	public TestJavaProject getTestJavaProject() {
 		return testProject;
+	}
+	
+	public IProject getEclipseProject() {
+		return testProject.getJavaProject().getProject();
 	}
 	
 	public JavaEditor createEditor(String name, String content) {
