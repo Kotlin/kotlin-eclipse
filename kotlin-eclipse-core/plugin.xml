@@ -11,7 +11,7 @@
       </launchConfigurationType>
    </extension>
    <extension
-         id="kotlinNature"
+         id="org.jetbrains.kotlin.core.kotlinNature"
          name="KotlinNature"
          point="org.eclipse.core.resources.natures">
       <runtime>
@@ -31,6 +31,13 @@
                class="org.jetbrains.kotlin.core.filesystem.KotlinFileSystem">
          </run>
       </filesystem>
+   </extension>
+   <extension
+         point="org.eclipse.jdt.core.classpathContainerInitializer">
+      <classpathContainerInitializer
+            class="org.jetbrains.kotlin.core.KotlinClasspathContainerInitializer"
+            id="org.jetbrains.kotlin.core.KOTLIN_CONTAINER">
+      </classpathContainerInitializer>
    </extension>
 
 </plugin>

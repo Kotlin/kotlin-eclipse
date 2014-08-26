@@ -346,15 +346,6 @@
       </builder>
    </extension>
    <extension
-         id="org.jetbrains.kotlin.ui.kotlinnature"
-         point="org.eclipse.core.resources.natures">
-      <runtime>
-         <run
-               class="org.jetbrains.kotlin.model.KotlinNature">
-         </run>
-      </runtime>
-   </extension>
-   <extension
          point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
             class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinAutoImportMarkerResolutionGenerator"

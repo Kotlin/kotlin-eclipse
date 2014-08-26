@@ -86,6 +86,13 @@ public class KotlinPsiManager {
         }
     }
     
+    @NotNull
+    public List<IProject> getProjects() {
+        synchronized (mapOperationLock) {
+            return Collections.unmodifiableList(new ArrayList<IProject>(projectFiles.keySet()));
+        }
+    }
+    
     public void removeProject(@NotNull IProject project) {
         synchronized (mapOperationLock) {
             List<IFile> files = getFilesByProject(project);

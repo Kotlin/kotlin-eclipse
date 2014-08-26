@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.core.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,10 +25,13 @@ import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -37,9 +41,18 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.kotlin.core.KotlinClasspathContainer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.osgi.framework.Bundle;
 
 public class ProjectUtils {
+    
+    private static final String LIB_FOLDER = "lib";
+    private static final String LIB_EXTENSION = "jar";
+    
+    public static final String KT_HOME = getKtHome();
+    
     public static IFile findFilesWithMain(Collection<IFile> files) {
         for (IFile file : files) {
             JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
@@ -80,17 +93,6 @@ public class ProjectUtils {
             return null;
         }
         return PackageClassUtils.getPackageClassFqName(new FqName(filePackage));
-    }
-    
-    public static void addToClasspath(IClasspathEntry newEntry, IJavaProject javaProject) throws JavaModelException {
-        IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
-        IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
-        
-        System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
-        
-        newEntries[oldEntries.length] = newEntry;
-        
-        javaProject.setRawClasspath(newEntries, null);
     }
     
     public static void cleanFolder(IContainer container) throws CoreException {
@@ -157,5 +159,60 @@ public class ProjectUtils {
         }
         
         return libDirectories;
+    }
+    
+    public static void addToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry)
+            throws JavaModelException {
+        IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
+        
+        IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
+        System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
+        newEntries[oldEntries.length] = newEntry;
+        
+        javaProject.setRawClasspath(newEntries, null);
+    }
+    
+    public static void addContainerEntryToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry)
+            throws JavaModelException {
+        if (!classpathContainsContainerEntry(javaProject.getRawClasspath(), newEntry)) {
+            addToClasspath(javaProject, newEntry);
+        }
+    }
+    
+    private static boolean classpathContainsContainerEntry(@NotNull IClasspathEntry[] entries,
+            @NotNull IClasspathEntry entry) {
+        return Arrays.asList(entries).contains(entry);
+    }
+    
+    public static boolean hasKotlinRuntime(@NotNull IProject project) throws CoreException {
+        return classpathContainsContainerEntry(JavaCore.create(project).getRawClasspath(),
+                KotlinClasspathContainer.getKotlinRuntimeContainerEntry());
+    }
+    
+    public static void addKotlinRuntime(@NotNull IProject project) throws CoreException {
+        addKotlinRuntime(JavaCore.create(project));
+    }
+    
+    public static void addKotlinRuntime(@NotNull IJavaProject javaProject) throws CoreException {
+        addContainerEntryToClasspath(javaProject, KotlinClasspathContainer.getKotlinRuntimeContainerEntry());
+    }
+    
+    public static String buildLibPath(String libName) {
+        return KT_HOME + buildLibName(libName);
+    }
+    
+    private static String buildLibName(String libName) {
+        return LIB_FOLDER + "/" + libName + "." + LIB_EXTENSION;
+    }
+    
+    private static String getKtHome() {
+        try {
+            Bundle compilerBundle = Platform.getBundle("org.jetbrains.kotlin.bundled-compiler");
+            return FileLocator.toFileURL(compilerBundle.getEntry("/")).getFile();
+        } catch (IOException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return null;
     }
 }
