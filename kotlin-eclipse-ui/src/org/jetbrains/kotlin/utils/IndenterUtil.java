@@ -33,42 +33,40 @@ public class IndenterUtil {
     
     public static String createWhiteSpace(int curIndent, int countBreakLines, String lineSeparator) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < countBreakLines; ++i) {
+        for (int i = 0; i < countBreakLines; i++) {
             stringBuilder.append(lineSeparator);
         }
         
-        String tabAsSpaces = getTabAsSpaces();
-        for (int i = 0; i < curIndent; ++i) {
-            if (isSpacesForTabs()) {
-                stringBuilder.append(tabAsSpaces);
-            } else {
-                stringBuilder.append(TAB_CHAR);
-            }
+        String whiteSpace = getIndentString();
+        for (int i = 0; i < curIndent; i++) {
+            stringBuilder.append(whiteSpace);
         }
-
+        
         return stringBuilder.toString();
     }
     
-    private static String getTabAsSpaces() {
-        StringBuilder res = new StringBuilder();
+    private static String getIndentString() {
         if (isSpacesForTabs()) {
-            for (int i = 0; i < getDefaultIndent(); ++i) {
-               res.append(SPACE_CHAR);
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < getDefaultIndent(); i++) {
+               result.append(SPACE_CHAR);
             }
+            return result.toString();
+        } else {
+            return new Character(TAB_CHAR).toString();
         }
-        
-        return res.toString();
     }
     
     public static int getLineSeparatorsOccurences(String text) {
-        int count = 0;
-        for (int i = 0; i < text.length(); ++i) {
-            if (text.charAt(i) == LineEndUtil.NEW_LINE_CHAR) {
-                count++;
+        int result = 0;
+        
+        for (char c : text.toCharArray()) {
+            if (c == LineEndUtil.NEW_LINE_CHAR) {
+                result++;
             }
         }
         
-        return count;
+        return result;
     }
     
     public static boolean isNewLine(LeafPsiElement psiElement) {
