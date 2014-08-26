@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
-import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
+import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -61,7 +61,7 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 	}
 	
 	private List<String> getActualProposals(JavaEditor javaEditor) {
-		CompletionProcessor ktCompletionProcessor = new CompletionProcessor(javaEditor);
+		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(javaEditor);
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(
 				javaEditor.getViewer(), 
 				KotlinTestUtils.getCaret(javaEditor));

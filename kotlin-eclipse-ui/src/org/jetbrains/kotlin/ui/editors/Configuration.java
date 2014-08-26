@@ -57,7 +57,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.ui.editors.codeassist.CompletionProcessor;
+import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePopup;
 import org.jetbrains.kotlin.utils.EditorUtil;
 
@@ -184,7 +184,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
          ContentAssistant assistant= new ContentAssistant();
-         CompletionProcessor completionProcessor = new CompletionProcessor(editor);
+         KotlinCompletionProcessor completionProcessor = new KotlinCompletionProcessor(editor);
          
          assistant.setContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
          assistant.addCompletionListener(completionProcessor);

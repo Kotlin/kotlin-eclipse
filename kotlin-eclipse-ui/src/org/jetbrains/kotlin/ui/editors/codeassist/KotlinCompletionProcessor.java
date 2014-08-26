@@ -59,7 +59,7 @@ import org.jetbrains.kotlin.utils.EditorUtil;
 
 import com.google.common.collect.Lists;
 
-public class CompletionProcessor implements IContentAssistProcessor, ICompletionListener {
+public class KotlinCompletionProcessor implements IContentAssistProcessor, ICompletionListener {
      
     /**
      * Characters for auto activation proposal computation.
@@ -71,7 +71,7 @@ public class CompletionProcessor implements IContentAssistProcessor, ICompletion
     private final List<ICompletionProposal> cachedCompletionProposals = Lists.newArrayList();
     private boolean isNewSession = true;
     
-    public CompletionProcessor(JavaEditor editor) {
+    public KotlinCompletionProcessor(JavaEditor editor) {
         this.editor = editor;
     }
     
