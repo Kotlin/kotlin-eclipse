@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.testframework.editor;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
+import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.utils.LineEndUtil;
@@ -75,8 +76,7 @@ public class KotlinProjectTestCase {
 	
 	protected TextEditorTest configureEditor(String fileName, String content) {
 		TextEditorTest testEditor = new TextEditorTest(testJavaProject);
-		String contentWithouCR = StringUtil.removeAllCarriageReturns(content).replaceAll(
-				LineEndUtil.NEW_LINE_STRING, System.lineSeparator());
+		String contentWithouCR = EditorTestUtils.setSystemLineSeparators(content);
 		testEditor.createEditor(fileName, contentWithouCR, TextEditorTest.TEST_PACKAGE_NAME);
 		
 		return testEditor;

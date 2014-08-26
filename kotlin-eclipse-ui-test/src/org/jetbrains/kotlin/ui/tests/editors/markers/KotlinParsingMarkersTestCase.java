@@ -42,10 +42,10 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorAutoTestCase {
         Character typedCharacter = TypingUtils.typedCharacter(fileText);
         if (typedCharacter != null) {
             testEditor.type(typedCharacter);
+        }
             
-            for (DiagnosticAnnotation annotation : DiagnosticAnnotationUtil.INSTANCE.createParsingDiagnosticAnnotations(file)) {
-                AnnotationManager.addProblemMarker(annotation, file);
-            }
+        for (DiagnosticAnnotation annotation : DiagnosticAnnotationUtil.INSTANCE.createParsingDiagnosticAnnotations(file)) {
+        	AnnotationManager.addProblemMarker(annotation, file);
         }
         
         try {
