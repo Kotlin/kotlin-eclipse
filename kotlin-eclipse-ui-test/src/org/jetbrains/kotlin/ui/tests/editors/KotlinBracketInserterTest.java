@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinBracketInserterTest extends KotlinBracketInserterTestCase {
@@ -67,7 +66,6 @@ public class KotlinBracketInserterTest extends KotlinBracketInserterTestCase {
     }
     
     @Test
-    @Ignore("Bug with line separators")
     public void insertClosingBraceWithRemovingTabulation() {
         doTest("class Foo {\n\tfun foo() {\n\t\tFoo()\n\t\t\t<caret>\n}", '}', "class Foo {\n\tfun foo() {\n\t\tFoo()\n\t}\n}");
     }

@@ -16,18 +16,37 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.junit.After;
 import org.junit.Before;
 
 public abstract class KotlinBracketInserterTestCase extends KotlinProjectTestCase {
+    
+    private boolean spacesForTabsInitialValue;
+    
     @Before
-    public void configure() {
+    public void setUp() {
         configureProject();
+        
+        spacesForTabsInitialValue = EditorsUI.getPreferenceStore().getBoolean(
+                AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
+    }
+    
+    @After
+    public void tearDown() {
+        EditorsUI.getPreferenceStore().setValue(
+                AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, spacesForTabsInitialValue);
+        
+        super.afterTest();
     }
     
     protected void doTest(String input, char element, String expected) {
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, false);
+        
         TextEditorTest testEditor = configureEditor("Test.kt", input);
         testEditor.type(element);
         
