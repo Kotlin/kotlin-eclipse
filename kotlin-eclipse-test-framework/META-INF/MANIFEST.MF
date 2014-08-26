@@ -11,9 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text;bundle-version="3.8.1"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: com.google.common.base,
- com.google.common.collect,
- com.intellij.openapi.util,
+Import-Package: com.intellij.openapi.util,
  com.intellij.openapi.util.io,
  com.intellij.openapi.util.text,
  com.intellij.util.containers,

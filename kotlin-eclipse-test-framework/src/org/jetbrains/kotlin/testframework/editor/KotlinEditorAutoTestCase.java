@@ -23,8 +23,8 @@ import java.util.Map;
 
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
+import com.intellij.openapi.util.Condition;
+import com.intellij.util.containers.ContainerUtil;
 
 public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
 
@@ -37,9 +37,9 @@ public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
 	
 	protected static class WithAfterSourceFileData extends EditorSourceFileData {
         
-	    private static final Predicate<WithAfterSourceFileData> TARGET_PREDICATE = new Predicate<WithAfterSourceFileData>() {
+	    private static final Condition<WithAfterSourceFileData> TARGET_PREDICATE = new Condition<WithAfterSourceFileData>() {
             @Override
-            public boolean apply(WithAfterSourceFileData data) {
+            public boolean value(WithAfterSourceFileData data) {
                 return data.contentAfter != null;
             }
 	    };
@@ -86,7 +86,7 @@ public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
         }
         
         public static WithAfterSourceFileData getTargetFile(Iterable<WithAfterSourceFileData> files) {
-            return Iterables.<WithAfterSourceFileData>find(files, TARGET_PREDICATE, null);
+        	return ContainerUtil.find(files, TARGET_PREDICATE);
         }
     }
 	
