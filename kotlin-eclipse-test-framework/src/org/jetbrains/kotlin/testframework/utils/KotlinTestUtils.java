@@ -3,8 +3,6 @@ package org.jetbrains.kotlin.testframework.utils;
 import java.io.File;
 import java.io.IOException;
 
-import javax.management.RuntimeErrorException;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
