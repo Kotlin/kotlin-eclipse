@@ -28,9 +28,11 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.internal.ui.actions.ActionMessages;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.util.OpenStrategy;
@@ -76,6 +78,9 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         this.editor = editor;
         file = EditorUtil.getFile(editor);
         javaProject = JavaCore.create(file.getProject());
+        
+        setText(ActionMessages.OpenAction_declaration_label);
+        setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
     }
     
     @Override

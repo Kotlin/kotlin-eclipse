@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +36,9 @@ public class KotlinFormatAction extends Action {
     
     public KotlinFormatAction(@NotNull KotlinEditor editor) {
         this.editor = editor;
+        
+        setText(FORMAT_ACTION_TEXT);
+        setActionDefinitionId(IJavaEditorActionDefinitionIds.FORMAT);
     }
     
     @Override
