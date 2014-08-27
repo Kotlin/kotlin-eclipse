@@ -20,7 +20,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
-    
     @Test
     public void analyzerHasKotlinRuntime() {
         doAutoTest();
@@ -39,6 +38,46 @@ public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
     
     @Test
     public void javaFromKotlin() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void kotlinFromJava() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void kotlinInpackageFromJava() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void kotlinJavaKotlin() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void kotlinWithErrorsFromJava() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void checkTestsFoundJavaError() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void classObjectFromJava() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void packageLevelFunctionsFromJava() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void packageLevelPropertiesFromJava() {
         doAutoTest();
     }
 }
