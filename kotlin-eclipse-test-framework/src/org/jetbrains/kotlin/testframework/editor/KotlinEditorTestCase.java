@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.testframework.editor;
 import java.io.File;
 import java.io.IOException;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -82,17 +83,20 @@ public abstract class KotlinEditorTestCase {
         return getEditor().getViewer().getTextWidget().getCaretOffset();
     }
     
-    public void createSourceFile(String pkg, String fileName, String content) {
+    public IFile createSourceFile(String pkg, String fileName, String content) {
         content = removeTags(content);
         try {
-            testEditor.getTestJavaProject().createSourceFile(pkg, fileName, content);
+            if (testEditor == null) {
+                testEditor = new TextEditorTest(TextEditorTest.TEST_PROJECT_NAME);
+            }
+            return testEditor.getTestJavaProject().createSourceFile(pkg, fileName, content);
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
     }
     
-    public void createSourceFile(String fileName, String content) {
-        createSourceFile(TextEditorTest.TEST_PACKAGE_NAME, fileName, content);
+    public IFile createSourceFile(String fileName, String content) {
+        return createSourceFile(TextEditorTest.TEST_PACKAGE_NAME, fileName, content);
     }
     
     protected static TextEditorTest configureEditor(String fileName, String content) {
