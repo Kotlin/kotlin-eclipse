@@ -84,11 +84,11 @@ public class TextEditorTest {
         e.widget.notifyListeners(SWT.KeyDown, e);
     }
     
-    public void accelerateOpenDeclarationAction() {
+    public void runOpenDeclarationAction() {
         ((KotlinEditor) editor).getAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT).run();
     }
     
-    public void accelerateFormatAction() {
+    public void runFormatAction() {
         ((KotlinEditor) editor).getAction(KotlinFormatAction.FORMAT_ACTION_TEXT).run();
     }
     

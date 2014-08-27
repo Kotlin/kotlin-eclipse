@@ -30,7 +30,7 @@ public class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCas
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, 4);
         
-        testEditor.accelerateFormatAction();
+        testEditor.runFormatAction();
         
         EditorTestUtils.assertByEditor(getEditor(), content);
     }

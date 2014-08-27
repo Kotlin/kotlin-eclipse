@@ -35,7 +35,7 @@ public abstract class KotlinOpenDeclarationTestCase extends KotlinEditorTestCase
             createSourceFile(referenceFileName, referenceFile);
         }
         
-        testEditor.accelerateOpenDeclarationAction();
+        testEditor.runOpenDeclarationAction();
         
         JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         EditorTestUtils.assertByEditor(activeEditor, expected);
