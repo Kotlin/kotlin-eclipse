@@ -84,7 +84,7 @@ public class ProjectUtils {
         
         assert jetFile != null;
         
-        return jetFile.getPackageName();
+        return jetFile.getPackageFqName().asString();
     }
     
     public static FqName createPackageClassName(IFile file) {
