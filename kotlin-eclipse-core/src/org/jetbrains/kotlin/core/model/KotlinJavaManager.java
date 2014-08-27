@@ -18,7 +18,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.ClasspathEntry;
-import org.eclipse.jdt.internal.core.ExternalFoldersManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -49,7 +48,7 @@ public class KotlinJavaManager {
             addFolderForKotlinClassFiles(javaProject);
         }
         
-        updateKotlinBinFolderFileSystem(javaProject);
+        setKtFileSystemFor(getKotlinBinFolderFor(javaProject.getProject()));
     }
     
     @NotNull
@@ -74,25 +73,6 @@ public class KotlinJavaManager {
             }
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
-    
-    private void updateKotlinBinFolderFileSystem(@NotNull IJavaProject javaProject) {
-        try {
-            IProject externalProject = ExternalFoldersManager.getExternalFoldersManager().getExternalFoldersProject();
-            if (!externalProject.exists()) {
-                return;
-            }
-            
-            IPath ktBinPath = getKotlinBinFullPath(javaProject.getProject());
-            for (IResource member : externalProject.members()) {
-                if (ktBinPath.equals(member.getLocation())) {
-                    setKtFileSystemFor(member);
-                    return;
-                }
-            }
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
