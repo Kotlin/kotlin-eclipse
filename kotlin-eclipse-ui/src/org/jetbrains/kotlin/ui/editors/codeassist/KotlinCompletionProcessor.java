@@ -68,7 +68,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     private static final char[] VALID_INFO_CHARS = new char[] { '(', ',' };
     
     private final JavaEditor editor;
-    private final List<ICompletionProposal> cachedCompletionProposals = Lists.newArrayList();
+    private final List<DeclarationDescriptor> cachedDescriptors = Lists.newArrayList();
     private boolean isNewSession = true;
     
     public KotlinCompletionProcessor(JavaEditor editor) {
@@ -105,15 +105,19 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         String identifierPart = fileText.substring(identOffset, offset);
         
         if (isNewSession) {
-            cachedCompletionProposals.clear();
-            cachedCompletionProposals.addAll(generateBasicCompletionProposals(viewer, identOffset, offset, identifierPart));
+            cachedDescriptors.clear();
+            cachedDescriptors.addAll(generateBasicCompletionProposals(viewer, identOffset));
             
             isNewSession = false;
         }
         
         List<ICompletionProposal> proposals = Lists.newArrayList();
         
-        proposals.addAll(KotlinCompletionUtils.INSTANCE.filterCompletionProposals(cachedCompletionProposals, identifierPart, identOffset));
+        proposals.addAll(
+                collectCompletionProposals(
+                        KotlinCompletionUtils.INSTANCE.filterCompletionProposals(cachedDescriptors, identifierPart),
+                        identOffset,
+                        offset - identOffset));
         proposals.addAll(generateKeywordProposals(viewer, identOffset, offset, identifierPart));
         proposals.addAll(generateTemplateProposals(viewer, offset, identifierPart));
         
@@ -121,29 +125,45 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     }
     
     @NotNull
-    private Collection<ICompletionProposal> generateBasicCompletionProposals(@NotNull ITextViewer viewer, int identOffset, 
-            int offset, @NotNull String identifierPart) {
+    private Collection<DeclarationDescriptor> generateBasicCompletionProposals(@NotNull ITextViewer viewer, int identOffset) {
         JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE.getSimpleNameExpression(editor, identOffset);
         if (simpleNameExpression == null) {
             return Collections.emptyList();
         }
         
-        IFile file = EditorUtil.getFile(editor);
+        return getReferenceVariants(simpleNameExpression, EditorUtil.getFile(editor));
+    }
+    
+    @NotNull
+    private Collection<DeclarationDescriptor> getReferenceVariants(@NotNull JetSimpleNameExpression simpleNameExpression,
+            @NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        
         BindingContext context = KotlinAnalyzer
                 .analyzeOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
                 .getBindingContext();
         
-        Collection<DeclarationDescriptor> declarationDescriptors = KotlinCompletionProvider.getReferenceVariants(simpleNameExpression, context);
-        
+        return KotlinCompletionProvider.getReferenceVariants(simpleNameExpression, context);
+    }
+    
+    private List<ICompletionProposal> collectCompletionProposals(
+            @NotNull Collection<DeclarationDescriptor> descriptors,
+            int replacementOffset,
+            int replacementLength) {
         List<ICompletionProposal> proposals = Lists.newArrayList();
-        for (DeclarationDescriptor descriptor : declarationDescriptors) {
+        for (DeclarationDescriptor descriptor : descriptors) {
             String completion = descriptor.getName().getIdentifier();
             Image image = KotlinDescriptorUtils.INSTANCE.getImage(descriptor);
             String presentableString = DescriptorRenderer.STARTS_FROM_NAME.render(descriptor);
             
-            proposals.add(new CompletionProposal(completion, identOffset, offset - identOffset, completion.length(), image, presentableString, null, completion));
+            proposals.add(new CompletionProposal(
+                    completion, 
+                    replacementOffset, 
+                    replacementLength, 
+                    completion.length(), 
+                    image, 
+                    presentableString, 
+                    null, 
+                    completion));
         }
         
         return proposals;
@@ -245,6 +265,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
 
     @Override
     public void assistSessionEnded(ContentAssistEvent event) {
+        cachedDescriptors.clear();
     }
 
     @Override
