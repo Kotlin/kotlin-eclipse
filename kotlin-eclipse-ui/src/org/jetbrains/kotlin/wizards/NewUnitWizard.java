@@ -53,7 +53,7 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         IProject project = wizardPage.getProject();
         addKotlinNatureToProject(project);
         addKotlinBuilderToProject(project);
-        KotlinRuntimeConfigurationSuggestor.suggestForProject(project, getShell());
+        KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
         
         selectAndRevealResource(op.getResult());
         openFile(op.getResult());

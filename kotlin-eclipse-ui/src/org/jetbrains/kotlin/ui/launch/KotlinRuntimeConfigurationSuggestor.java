@@ -20,7 +20,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
@@ -39,12 +38,9 @@ public class KotlinRuntimeConfigurationSuggestor implements Runnable {
     
     @NotNull
     private final IProject project;
-    @NotNull
-    private final Shell shell;
     
-    protected KotlinRuntimeConfigurationSuggestor(@NotNull IProject project, @NotNull Shell shell) {
+    protected KotlinRuntimeConfigurationSuggestor(@NotNull IProject project) {
         this.project = project;
-        this.shell = shell;
     }
     
     @Override
@@ -53,7 +49,7 @@ public class KotlinRuntimeConfigurationSuggestor implements Runnable {
             if (!ProjectUtils.hasKotlinRuntime(project)) {
                 if (ProjectScopedPreferenceUtils.getBooleanPreference(project, PREFERENCE_KEY, true)) {
                     MessageDialogWithToggle dialogWithToogle = MessageDialogWithToggle.openYesNoQuestion(
-                            shell,
+                            Display.getDefault().getActiveShell(),
                             MESSAGE_DIALOG_TITLE,
                             String.format(MESSAGE_DIALOG_TEXT_FORMAT, SUGGESTION, project.getName()),
                             MESSAGE_DIALOG_TOOGLE_TEXT,
@@ -74,7 +70,7 @@ public class KotlinRuntimeConfigurationSuggestor implements Runnable {
         }
     }
     
-    public static void suggestForProject(@NotNull IProject project, @NotNull Shell shell) {
-        Display.getDefault().asyncExec(new KotlinRuntimeConfigurationSuggestor(project, shell));
+    public static void suggestForProject(@NotNull IProject project) {
+        Display.getDefault().asyncExec(new KotlinRuntimeConfigurationSuggestor(project));
     }
 }
