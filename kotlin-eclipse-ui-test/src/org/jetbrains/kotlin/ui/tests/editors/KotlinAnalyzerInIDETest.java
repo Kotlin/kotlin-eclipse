@@ -19,7 +19,7 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class KotlinAnalyzerTest extends KotlinAnalyzerTestCase {
+public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
     @Test
     public void analyzerHasKotlinRuntime() {
         doAutoTest();
