@@ -44,10 +44,7 @@ import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-
-import com.google.common.collect.Lists;
 
 public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     
@@ -190,7 +187,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
-        for (File libDirectory : excludeKotlinBinFolder(ProjectUtils.getLibDirectories(javaProject))) {
+        for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
             classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
@@ -205,18 +202,6 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         }
         
         return command.toArray(new String[command.size()]);
-    }
-    
-    private List<File> excludeKotlinBinFolder(@NotNull List<File> libDirectories) {
-        List<File> libraries = Lists.newArrayList();
-        for (File libDirectory : libDirectories) {
-            if (libDirectory.getName().equals(KotlinJavaManager.KOTLIN_BIN_FOLDER.toString())) {
-                continue;
-            }
-            libraries.add(libDirectory);
-        }
-        
-        return libraries;
     }
     
     private String getOutputDir(ILaunchConfiguration configuration) {
