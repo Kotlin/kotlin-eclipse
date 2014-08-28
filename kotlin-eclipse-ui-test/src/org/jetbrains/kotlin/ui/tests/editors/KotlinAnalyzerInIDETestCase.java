@@ -36,7 +36,7 @@ import org.junit.Assert;
 
 import com.google.common.collect.Lists;
 
-public abstract class KotlinAnalyzerTestCase extends KotlinEditorAutoTestCase {
+public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCase {
     
     private static final String ANALYZER_TEST_DATA_PATH_SEGMENT = "ide_analyzer";
     
