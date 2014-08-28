@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jdt.core.IJavaProject;
@@ -56,20 +55,10 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
     
     private final CompilerOutputData compilerOutput = new CompilerOutputData();
     
-    private boolean buildFailed = false;
-    
     @Override
-    public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
-        String projectName = getJavaProjectName(configuration);
-        
-        if (projectName == null) {
-            abort("Project name is invalid: " + projectName, null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
-            
-            return;
-        }
-        
-        List<IFile> projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(projectName);
-        
+    public boolean buildForLaunch(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
+            throws CoreException {
+        List<IFile> projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(getJavaProjectName(configuration));
         if (!compileKotlinFiles(projectFiles, configuration)) {
             IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 1, "", null);
             IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(status);
@@ -78,10 +67,24 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
                 handler.handleStatus(status, compilerOutput);
             }
             
-            return;
+            abort("Build failed", null, 0);
         }
         
-        super.launch(configuration, mode, launch, monitor);
+        return super.buildForLaunch(configuration, mode, monitor);
+    }
+    
+    @NotNull
+    @Override
+    public String getJavaProjectName(ILaunchConfiguration configuration) throws CoreException {
+        String result = super.getJavaProjectName(configuration);
+        
+        if (result != null) {
+            return result;
+        } else {
+            abort("Project name is invalid: " + result, null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
+        }
+        
+        throw new IllegalStateException();
     }
     
     @Override
@@ -95,6 +98,7 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         return newClasspath;
     }
     
+    @NotNull
     @Override
     public String verifyMainTypeName(ILaunchConfiguration configuration) throws CoreException {
         try {
@@ -103,20 +107,28 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
             abort("File with main method not defined", null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_MAIN_TYPE);
         }
         
-        return null;
+        throw new IllegalStateException();
+    }
+    
+    @NotNull
+    @Override
+    public String getMainTypeName(ILaunchConfiguration configuration) throws CoreException {
+        String result = super.getMainTypeName(configuration);
+        
+        if (result != null) {
+            return result;
+        } else {
+            abort("Main type name is null", null, 0);
+        }
+        
+        throw new IllegalStateException();
     }
     
     @NotNull
     private FqName getPackageClassName(ILaunchConfiguration configuration) {
         try {
-            String projectName = getJavaProjectName(configuration);
-            String mainTypeName = getMainTypeName(configuration);
-            
-            assert projectName != null;
-            assert mainTypeName != null;
-            
-            FqName mainClassName = new FqName(mainTypeName);
-            for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(projectName)) {
+            FqName mainClassName = new FqName(getMainTypeName(configuration));
+            for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getJavaProjectName(configuration))) {
                 if (ProjectUtils.hasMain(file) && ProjectUtils.createPackageClassName(file).equalsTo(mainClassName)) {
                     return mainClassName;
                 }
@@ -128,48 +140,47 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         throw new IllegalArgumentException();
     }
     
-    private void refreshInitData() {
-        buildFailed = false;
-        compilerOutput.clear();
-    }
-    
     private boolean compileKotlinFiles(@NotNull List<IFile> files, @NotNull ILaunchConfiguration configuration)
             throws CoreException {
         String[] command = configureBuildCommand(configuration);
         
-        refreshInitData();
+        boolean result = true;
         try {
             Process buildProcess = Runtime.getRuntime().exec(command);
-            parseCompilerOutput(buildProcess.getErrorStream());
+            result &= parseCompilerOutput(buildProcess.getErrorStream());
             
             buildProcess.waitFor();
-            
-            if (buildFailed) {
-                return false;
-            }
         } catch (IOException | InterruptedException e) {
             KotlinLogger.logError(e);
             
             abort("Build error", null, 0);
         }
         
-        return true;
+        return result;
     }
     
-    private void parseCompilerOutput(InputStream inputStream) {
-        MessageCollector messageCollector = new MessageCollector() {
-            @Override
-            public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message,
-                    @NotNull CompilerMessageLocation messageLocation) {
-                if (CompilerMessageSeverity.ERROR.equals(messageSeverity)
-                        || CompilerMessageSeverity.EXCEPTION.equals(messageSeverity)) {
-                    buildFailed = true;
-                }
-                
-                compilerOutput.add(messageSeverity, message, messageLocation);
+    private boolean parseCompilerOutput(InputStream inputStream) {
+        compilerOutput.clear();
+        
+        final List<CompilerMessageSeverity> severities = new ArrayList<CompilerMessageSeverity>();
+        CompilerOutputParser.parseCompilerMessagesFromReader(
+                new MessageCollector() {
+                    @Override
+                    public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message,
+                            @NotNull CompilerMessageLocation messageLocation) {
+                        severities.add(messageSeverity);
+                        compilerOutput.add(messageSeverity, message, messageLocation);
+                    }
+                },
+                new InputStreamReader(inputStream));
+        
+        for (CompilerMessageSeverity severity : severities) {
+            if (severity.equals(CompilerMessageSeverity.ERROR) || severity.equals(CompilerMessageSeverity.EXCEPTION)) {
+                return false;
             }
-        };
-        CompilerOutputParser.parseCompilerMessagesFromReader(messageCollector, new InputStreamReader(inputStream));
+        }
+        
+        return true;
     }
     
     private String[] configureBuildCommand(ILaunchConfiguration configuration) throws CoreException {
@@ -207,18 +218,6 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         return command.toArray(new String[command.size()]);
     }
     
-    private List<File> excludeKotlinBinFolder(@NotNull List<File> libDirectories) {
-        List<File> libraries = Lists.newArrayList();
-        for (File libDirectory : libDirectories) {
-            if (libDirectory.getName().equals(KotlinJavaManager.KOTLIN_BIN_FOLDER.toString())) {
-                continue;
-            }
-            libraries.add(libDirectory);
-        }
-        
-        return libraries;
-    }
-    
     private String getOutputDir(ILaunchConfiguration configuration) {
         try {
             String[] cp = getClasspath(configuration);
@@ -229,5 +228,17 @@ public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
         }
         
         return ".";
+    }
+    
+    private static List<File> excludeKotlinBinFolder(@NotNull List<File> libDirectories) {
+        List<File> libraries = Lists.newArrayList();
+        for (File libDirectory : libDirectories) {
+            if (libDirectory.getName().equals(KotlinJavaManager.KOTLIN_BIN_FOLDER.toString())) {
+                continue;
+            }
+            libraries.add(libDirectory);
+        }
+        
+        return libraries;
     }
 }

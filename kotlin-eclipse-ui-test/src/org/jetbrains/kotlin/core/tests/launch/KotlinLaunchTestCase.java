@@ -16,14 +16,19 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.tests.launch;
 
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.debug.core.ILaunch;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut;
 import org.junit.Assert;
@@ -43,10 +48,7 @@ public abstract class KotlinLaunchTestCase extends KotlinEditorTestCase {
         }
         
         launchInForeground();
-        
-        IConsole console = findOutputConsole();
-        
-        Assert.assertNotNull(console);
+        Assert.assertNotNull(findOutputConsole());
     }
     
     private IConsole findOutputConsole() {
@@ -64,14 +66,30 @@ public abstract class KotlinLaunchTestCase extends KotlinEditorTestCase {
     }
     
     private void launchInForeground() {
-        ILaunchConfiguration launchConfiguration = KotlinLaunchShortcut.createConfiguration(testEditor.getEditingFile());
+        final ILaunchConfiguration launchConfiguration = KotlinLaunchShortcut.createConfiguration(testEditor.getEditingFile());
+        
         try {
-            ILaunch launch = launchConfiguration.launch("run", new NullProgressMonitor(), true);
-            while (!launch.isTerminated()) {
-                Thread.sleep(100);
-            }
-        } catch (CoreException e) {
-            throw new RuntimeException(e);
+            Job job = new WorkspaceJob("test") {
+                @Override
+                public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+                    monitor.beginTask("test started", 1);
+                    
+                    try {
+                        launchConfiguration.launch("run", new SubProgressMonitor(monitor, 1), true);
+                    } catch (CoreException e) {
+                        KotlinLogger.logAndThrow(e);
+                        return Status.CANCEL_STATUS;
+                    } finally {
+                        monitor.done();
+                    }
+                    
+                    return Status.OK_STATUS;
+                }
+            };
+            
+            joinBuildThread();
+            job.schedule();
+            job.join();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
