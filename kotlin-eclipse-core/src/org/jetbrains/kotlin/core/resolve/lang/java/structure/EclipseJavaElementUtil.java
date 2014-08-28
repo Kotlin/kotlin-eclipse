@@ -23,6 +23,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -30,6 +32,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.core.BinaryType;
+import org.eclipse.jdt.internal.corext.dom.Bindings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.Visibilities;
@@ -40,8 +43,10 @@ import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotation;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 
 import com.google.common.collect.Lists;
+import com.intellij.psi.CommonClassNames;
 
 public class EclipseJavaElementUtil {
     
@@ -58,7 +63,7 @@ public class EclipseJavaElementUtil {
         
         return JavaVisibilities.PACKAGE_VISIBILITY;
     }
-
+    
     static ITypeBinding[] getSuperTypes(@NotNull ITypeBinding typeBinding) {
         List<ITypeBinding> superTypes = Lists.newArrayList();
         for (ITypeBinding superInterface : typeBinding.getInterfaces()) {
@@ -71,6 +76,35 @@ public class EclipseJavaElementUtil {
         }
         
         return superTypes.toArray(new ITypeBinding[superTypes.size()]);
+    }
+    
+    static List<ITypeBinding> getAllSuperTypesWithObject(@NotNull ITypeBinding typeBinding) {
+        List<ITypeBinding> allSuperTypes = Lists.newArrayList();
+        
+        boolean javaLangObjectInSuperTypes = false;
+        for (ITypeBinding superType : Bindings.getAllSuperTypes(typeBinding)) {
+            if (superType.getQualifiedName().equals(CommonClassNames.JAVA_LANG_OBJECT)) {
+                javaLangObjectInSuperTypes = true;
+            }
+            allSuperTypes.add(superType);
+        }
+        
+        if (!javaLangObjectInSuperTypes) {
+            allSuperTypes.add(getJavaLangObjectBinding(typeBinding.getJavaElement().getJavaProject()));
+        }
+        
+        return allSuperTypes;
+    }
+    
+    @NotNull
+    private static ITypeBinding getJavaLangObjectBinding(@NotNull IJavaProject javaProject) {
+        try {
+            IType javaType = javaProject.findType(CommonClassNames.JAVA_LANG_OBJECT);
+            return EclipseJavaClassFinder.createTypeBinding(javaType);
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+            throw new IllegalStateException(e);
+        }
     }
     
     static JavaAnnotation findAnnotation(@NotNull IAnnotationBinding[] annotationBindings, @NotNull FqName fqName) {
