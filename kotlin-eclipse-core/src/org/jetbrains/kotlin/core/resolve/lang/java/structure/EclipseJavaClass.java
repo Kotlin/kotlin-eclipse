@@ -16,15 +16,18 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.annotations;
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.classifierTypes;
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.fields;
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.methods;
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.typeParameters;
+
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.corext.dom.Bindings;
 import org.jetbrains.annotations.NotNull;
@@ -48,17 +51,17 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
     public EclipseJavaClass(ITypeBinding javaElement) {
         super(javaElement);
     }
-
+    
     @Override
     @NotNull
     public Collection<JavaAnnotation> getAnnotations() {
-        return EclipseJavaElementUtil.getAnnotations(getBinding());
+        return annotations(getBinding().getAnnotations());
     }
-
+    
     @Override
     @Nullable
     public JavaAnnotation findAnnotation(@NotNull FqName fqName) {
-        return EclipseJavaElementUtil.findAnnotation(getBinding(), fqName);
+        return EclipseJavaElementUtil.findAnnotation(getBinding().getAnnotations(), fqName);
     }
 
     @Override
@@ -91,12 +94,7 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
     @Override
     @NotNull
     public List<JavaTypeParameter> getTypeParameters() {
-        List<JavaTypeParameter> typeParameters = Lists.newArrayList();
-        for (ITypeBinding typeParameter : getBinding().getTypeParameters()) {
-            typeParameters.add(new EclipseJavaTypeParameter(typeParameter));
-        }
-        
-        return typeParameters;
+        return typeParameters(getBinding().getTypeParameters());
     }
 
     @Override
@@ -141,13 +139,13 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
     @Override
     @NotNull
     public Collection<JavaClassifierType> getSupertypes() {
-        return EclipseJavaElementUtil.getSuperTypes(getBinding());
+        return classifierTypes(EclipseJavaElementUtil.getSuperTypes(getBinding()));
     }
 
     @Override
     @NotNull
     public Collection<JavaMethod> getMethods() {
-        return getMethodsFor(getBinding());
+        return methods(getBinding().getDeclaredMethods());
     }
 
     @Override
@@ -155,40 +153,20 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
     public Collection<JavaMethod> getAllMethods() {
         List<JavaMethod> allMethods = Lists.newArrayList();
         allMethods.addAll(getMethods());
-
+        
         for (ITypeBinding typeBinding : Bindings.getAllSuperTypes(getBinding())) {
-            allMethods.addAll(getMethodsFor(typeBinding));
+            allMethods.addAll(methods(typeBinding.getDeclaredMethods()));
         }
         
         return allMethods;
     }
     
-    @NotNull
-    private static Collection<JavaMethod> getMethodsFor(@NotNull ITypeBinding type) {
-        List<JavaMethod> methods = new ArrayList<JavaMethod>();
-        for (IMethodBinding method : type.getDeclaredMethods()) {
-            methods.add(new EclipseJavaMethod(method));
-        }
-        
-        return methods;
-    }
-
     @Override
     @NotNull
     public Collection<JavaField> getFields() {
-        return getFieldsFor(getBinding());
+        return fields(getBinding().getDeclaredFields());
     }
     
-    @NotNull
-    public static Collection<JavaField> getFieldsFor(@NotNull ITypeBinding type) {
-        List<JavaField> fields = new ArrayList<JavaField>();
-        for (IVariableBinding field : type.getDeclaredFields()) {
-            fields.add(new EclipseJavaField(field));
-        }
-        
-        return fields;
-    }
-
     @Override
     @NotNull
     public Collection<JavaField> getAllFields() {
@@ -196,7 +174,7 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
         allFields.addAll(getFields());
         
         for (ITypeBinding typeBinding : Bindings.getAllSuperTypes(getBinding())) {
-            allFields.addAll(getFieldsFor(typeBinding));
+            allFields.addAll(fields(typeBinding.getDeclaredFields()));
         }
         
         return allFields;

@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -39,7 +37,6 @@ import org.jetbrains.jet.lang.descriptors.Visibility;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.JavaVisibilities;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotation;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClassifierType;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -62,7 +59,7 @@ public class EclipseJavaElementUtil {
         return JavaVisibilities.PACKAGE_VISIBILITY;
     }
 
-    private static List<ITypeBinding> getEclipseSuperTypes(@NotNull ITypeBinding typeBinding) {
+    static ITypeBinding[] getSuperTypes(@NotNull ITypeBinding typeBinding) {
         List<ITypeBinding> superTypes = Lists.newArrayList();
         for (ITypeBinding superInterface : typeBinding.getInterfaces()) {
             superTypes.add(superInterface);
@@ -73,30 +70,10 @@ public class EclipseJavaElementUtil {
             superTypes.add(superClass);
         }
         
-        return superTypes;
+        return superTypes.toArray(new ITypeBinding[superTypes.size()]);
     }
     
-    static List<JavaClassifierType> getSuperTypes(@NotNull ITypeBinding typeBinding) {
-        List<ITypeBinding> eclipseSuperTypes = getEclipseSuperTypes(typeBinding);
-        List<JavaClassifierType> javaSuperTypes = Lists.newArrayList();
-        for (ITypeBinding eclipseSuperType : eclipseSuperTypes) {
-            javaSuperTypes.add(new EclipseJavaClassifierType(eclipseSuperType));
-        }
-        
-        return javaSuperTypes;
-    }
-    
-    @NotNull
-    static Collection<JavaAnnotation> getAnnotations(@NotNull IBinding binding) {
-        return convertAnnotationBindings(binding.getAnnotations());
-    }
-
-    @Nullable
-    static JavaAnnotation findAnnotation(@NotNull IBinding binding, @NotNull FqName fqName) {
-        return findAnnotationIn(binding.getAnnotations(), fqName);
-    }
-    
-    static JavaAnnotation findAnnotationIn(@NotNull IAnnotationBinding[] annotationBindings, @NotNull FqName fqName) {
+    static JavaAnnotation findAnnotation(@NotNull IAnnotationBinding[] annotationBindings, @NotNull FqName fqName) {
         for (IAnnotationBinding annotation : annotationBindings) {
             String annotationFQName = annotation.getAnnotationType().getQualifiedName();
             if (fqName.asString().equals(annotationFQName)) {
@@ -127,14 +104,5 @@ public class EclipseJavaElementUtil {
         }
         
         return null;
-    }
-    
-    static Collection<JavaAnnotation> convertAnnotationBindings(@NotNull IAnnotationBinding[] annotationBindings) {
-        List<JavaAnnotation> annotations = new ArrayList<JavaAnnotation>();
-        for (IAnnotationBinding annotation : annotationBindings) {
-            annotations.add(new EclipseJavaAnnotation(annotation));
-        }
-        
-        return annotations;
     }
 }

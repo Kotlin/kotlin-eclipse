@@ -16,7 +16,9 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
-import java.util.ArrayList;
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.classifierTypes;
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.types;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +72,7 @@ public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> imp
     @Override
     @NotNull
     public Collection<JavaClassifierType> getSupertypes() {
-        return EclipseJavaElementUtil.getSuperTypes(getBinding());
+        return classifierTypes(EclipseJavaElementUtil.getSuperTypes(getBinding()));
     }
 
     @Override
@@ -87,12 +89,7 @@ public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> imp
     @Override
     @NotNull
     public List<JavaType> getTypeArguments() {
-        List<JavaType> typeArguments = new ArrayList<JavaType>();
-        for (ITypeBinding typeArgument : getBinding().getTypeArguments()) {
-            typeArguments.add(EclipseJavaType.create(typeArgument));
-        }
-        
-        return typeArguments;
+        return types(getBinding().getTypeArguments());
     }
 
 }
