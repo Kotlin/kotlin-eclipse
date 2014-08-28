@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.annotations;
+
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 
@@ -37,13 +39,13 @@ public abstract class EclipseJavaMember<T extends IBinding> extends EclipseJavaE
     @Override
     @NotNull
     public Collection<JavaAnnotation> getAnnotations() {
-        return EclipseJavaElementUtil.getAnnotations(getBinding());
+        return annotations(getBinding().getAnnotations());
     }
 
     @Override
     @Nullable
     public JavaAnnotation findAnnotation(@NotNull FqName fqName) {
-        return EclipseJavaElementUtil.findAnnotation(getBinding(), fqName);
+        return EclipseJavaElementUtil.findAnnotation(getBinding().getAnnotations(), fqName);
     }
 
     @Override

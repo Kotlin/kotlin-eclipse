@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.annotations;
+
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -46,13 +48,13 @@ public class EclipseJavaValueParameter extends EclipseJavaElement<ITypeBinding> 
     @Override
     @NotNull
     public Collection<JavaAnnotation> getAnnotations() {
-        return EclipseJavaElementUtil.convertAnnotationBindings(annotationBindings);
+        return annotations(annotationBindings);
     }
 
     @Override
     @Nullable
     public JavaAnnotation findAnnotation(@NotNull FqName fqName) {
-        return EclipseJavaElementUtil.findAnnotationIn(annotationBindings, fqName);
+        return EclipseJavaElementUtil.findAnnotation(annotationBindings, fqName);
     }
 
     @Override

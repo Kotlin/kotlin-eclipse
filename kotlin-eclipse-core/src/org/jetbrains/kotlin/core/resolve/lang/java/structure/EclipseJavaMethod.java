@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.typeParameters;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,12 +40,7 @@ public class EclipseJavaMethod extends EclipseJavaMember<IMethodBinding> impleme
     @Override
     @NotNull
     public List<JavaTypeParameter> getTypeParameters() {
-        List<JavaTypeParameter> typeParameters = new ArrayList<JavaTypeParameter>();
-        for (ITypeBinding typeParameter : getBinding().getTypeParameters()) {
-            typeParameters.add(new EclipseJavaTypeParameter(typeParameter));
-        }
-        
-        return typeParameters;
+        return typeParameters(getBinding().getTypeParameters());
     }
 
     @Override
