@@ -154,7 +154,7 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
         List<JavaMethod> allMethods = Lists.newArrayList();
         allMethods.addAll(getMethods());
         
-        for (ITypeBinding typeBinding : Bindings.getAllSuperTypes(getBinding())) {
+        for (ITypeBinding typeBinding : EclipseJavaElementUtil.getAllSuperTypesWithObject(getBinding())) {
             allMethods.addAll(methods(typeBinding.getDeclaredMethods()));
         }
         
