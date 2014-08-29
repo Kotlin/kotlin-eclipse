@@ -87,7 +87,8 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     }
     
     private String loadEclipseFile(IFile file) {
-        return getText(file.getLocation().toFile());
+        String text = getText(file.getLocation().toFile());
+        return LineEndUtil.replaceAllSeparatorsWithSystemLineSeparators(text);
     }
     
     private String insertTagsForErrors(String text, IMarker[] markers) throws CoreException {
