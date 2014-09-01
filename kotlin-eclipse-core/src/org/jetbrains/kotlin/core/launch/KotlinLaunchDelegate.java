@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.jetbrains.annotations.NotNull;
@@ -48,8 +49,12 @@ public class KotlinLaunchDelegate extends JavaLaunchDelegate {
         List<IFile> projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(getJavaProjectName(configuration));
         
         try {
-            KotlinCompilerResult compilerResult = KotlinCompiler.INSTANCE.compileKotlinFiles(projectFiles, 
-                    getJavaProject(configuration), getOutputDir(configuration));
+            IJavaProject javaProject = getJavaProject(configuration);
+            KotlinCompilerResult compilerResult = KotlinCompiler.INSTANCE.compileKotlinFiles(
+                    projectFiles, 
+                    javaProject, 
+                    ProjectUtils.getOutputFolder(javaProject).getFullPath().toOSString());
+            
             if (!compilerResult.compiledCorrectly()) {
                 IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 1, "", null);
                 IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(status);
@@ -132,17 +137,5 @@ public class KotlinLaunchDelegate extends JavaLaunchDelegate {
         }
         
         throw new IllegalArgumentException();
-    }
-    
-    private String getOutputDir(ILaunchConfiguration configuration) {
-        try {
-            String[] cp = getClasspath(configuration);
-            if (cp.length > 0)
-                return cp[0];
-        } catch (CoreException e) {
-            KotlinLogger.logError(e);
-        }
-        
-        return ".";
     }
 }

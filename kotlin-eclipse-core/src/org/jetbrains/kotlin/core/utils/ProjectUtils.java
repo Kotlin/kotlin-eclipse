@@ -25,9 +25,11 @@ import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
@@ -106,6 +108,16 @@ public class ProjectUtils {
                 }
                 member.delete(true, null);
             }
+        }
+    }
+    
+    @NotNull
+    public static IFolder getOutputFolder(@NotNull IJavaProject javaProject) {
+        try {
+            return (IFolder) ResourcesPlugin.getWorkspace().getRoot().findMember(javaProject.getOutputLocation());
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+            throw new IllegalStateException(e);
         }
     }
     

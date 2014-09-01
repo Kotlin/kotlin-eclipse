@@ -186,8 +186,8 @@ public class TestJavaProject {
         try {
             cleanSourceFolder();
             
-            IResource outputFolder = findResourceInProject(javaProject.getOutputLocation());
-            ProjectUtils.cleanFolder((IContainer) outputFolder);
+            IFolder outputFolder = ProjectUtils.getOutputFolder(getJavaProject());
+            ProjectUtils.cleanFolder(outputFolder);
         } catch (JavaModelException e) {
             throw new RuntimeException(e);
         } catch (CoreException e) {
