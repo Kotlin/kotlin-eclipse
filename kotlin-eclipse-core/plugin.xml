@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate"
+            delegate="org.jetbrains.kotlin.core.launch.KotlinLaunchDelegate"
             id="org.jetbrains.kotlin.core.launch.launchConfigurationType"
             modes="run"
             name="Kotlin Application">

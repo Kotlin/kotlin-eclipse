@@ -38,7 +38,7 @@ import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
-public class LaunchConfigurationDelegate extends JavaLaunchDelegate {
+public class KotlinLaunchDelegate extends JavaLaunchDelegate {
     
     public final static String KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations");
     

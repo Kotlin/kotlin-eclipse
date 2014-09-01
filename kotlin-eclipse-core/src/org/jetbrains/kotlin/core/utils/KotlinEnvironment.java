@@ -48,7 +48,7 @@ import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.jet.utils.PathUtil;
 import org.jetbrains.kotlin.core.Activator;
-import org.jetbrains.kotlin.core.launch.LaunchConfigurationDelegate;
+import org.jetbrains.kotlin.core.launch.KotlinLaunchDelegate;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
 
@@ -108,7 +108,7 @@ public class KotlinEnvironment {
         project.registerService(KotlinLightClassForPackage.FileStubCache.class, new KotlinLightClassForPackage.FileStubCache(project));
         
         VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(
-                LaunchConfigurationDelegate.KT_JDK_ANNOTATIONS_PATH));
+                KotlinLaunchDelegate.KT_JDK_ANNOTATIONS_PATH));
         annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
         
         addJreClasspath();
