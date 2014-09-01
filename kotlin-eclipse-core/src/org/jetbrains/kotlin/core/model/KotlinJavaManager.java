@@ -16,9 +16,13 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.psi.JetClass;
+import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
@@ -59,6 +63,20 @@ public class KotlinJavaManager {
     @NotNull
     public IFolder getKotlinBinFolderFor(@NotNull IProject project) {
         return project.getFolder(KOTLIN_BIN_FOLDER);
+    }
+    
+    @Nullable
+    public IType findEclipseType(@NotNull JetClass jetClass, @NotNull IJavaProject javaProject) {
+        try {
+            FqName fqName = jetClass.getFqName();
+            if (fqName != null) {
+                return javaProject.findType(fqName.asString());
+            }
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return null;
     }
     
     private void addFolderForKotlinClassFiles(@NotNull IJavaProject javaProject) { 

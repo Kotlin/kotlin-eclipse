@@ -45,5 +45,15 @@
             id="org.jetbrains.kotlin.core.KOTLIN_CONTAINER">
       </classpathContainerInitializer>
    </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.jetbrains.kotlin.core.launch.KotlinJUnitLaunchableTester"
+            id="org.jetbrains.kotlin.core.launchableTester"
+            namespace="org.jetbrains.kotlin.core.launching"
+            properties="canLaunchAsJUnit"
+            type="org.eclipse.core.runtime.IAdaptable">
+      </propertyTester>
+   </extension>
 
 </plugin>

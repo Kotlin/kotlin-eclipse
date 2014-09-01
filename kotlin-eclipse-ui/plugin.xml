@@ -338,6 +338,12 @@
                   <count
                         value="1">
                   </count>
+                  <iterate
+                        operator="and">
+                     <test
+                           property="org.jetbrains.kotlin.core.launching.canLaunchAsJUnit">
+                     </test>
+                  </iterate>
                </with>
             </enablement>
          </contextualLaunch>
