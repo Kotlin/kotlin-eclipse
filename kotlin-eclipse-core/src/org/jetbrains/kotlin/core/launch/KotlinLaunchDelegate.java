@@ -17,7 +17,6 @@
 package org.jetbrains.kotlin.core.launch;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -46,14 +45,12 @@ public class KotlinLaunchDelegate extends JavaLaunchDelegate {
     @Override
     public boolean buildForLaunch(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
             throws CoreException {
-        List<IFile> projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(getJavaProjectName(configuration));
-        
         try {
             IJavaProject javaProject = getJavaProject(configuration);
             KotlinCompilerResult compilerResult = KotlinCompiler.INSTANCE.compileKotlinFiles(
-                    projectFiles, 
+                    KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.getProject()), 
                     javaProject, 
-                    ProjectUtils.getOutputFolder(javaProject).getFullPath().toOSString());
+                    ProjectUtils.getOutputFolder(javaProject).getLocation().toOSString());
             
             if (!compilerResult.compiledCorrectly()) {
                 IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 1, "", null);
@@ -74,13 +71,13 @@ public class KotlinLaunchDelegate extends JavaLaunchDelegate {
     
     @NotNull
     @Override
-    public String getJavaProjectName(ILaunchConfiguration configuration) throws CoreException {
-        String result = super.getJavaProjectName(configuration);
+    public IJavaProject getJavaProject(ILaunchConfiguration configuration) throws CoreException {
+        IJavaProject javaProject = super.getJavaProject(configuration);
         
-        if (result != null) {
-            return result;
+        if (javaProject != null) {
+            return javaProject;
         } else {
-            abort("Project name is invalid: " + result, null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
+            abort("JavaProject is null", null, IJavaLaunchConfigurationConstants.ERR_UNSPECIFIED_PROJECT);
         }
         
         throw new IllegalStateException();
@@ -127,7 +124,7 @@ public class KotlinLaunchDelegate extends JavaLaunchDelegate {
     private FqName getPackageClassName(ILaunchConfiguration configuration) {
         try {
             FqName mainClassName = new FqName(getMainTypeName(configuration));
-            for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getJavaProjectName(configuration))) {
+            for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getJavaProject(configuration).getProject())) {
                 if (ProjectUtils.hasMain(file) && ProjectUtils.createPackageClassName(file).equalsTo(mainClassName)) {
                     return mainClassName;
                 }
