@@ -1,6 +1,6 @@
 public class Foo {
     void foo() {
-        String str = Some.object$.func();
-        int bar = Some.object$.getBar();
+        String str = Some.OBJECT$.func();
+        int bar = Some.OBJECT$.getBar();
     }
 }
