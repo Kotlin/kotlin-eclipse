@@ -27,6 +27,7 @@ import org.jetbrains.jet.di.GivenExpression;
 import org.jetbrains.jet.di.InjectorForTopDownAnalyzer;
 import org.jetbrains.jet.di.InjectorGeneratorUtil;
 import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
+import org.jetbrains.jet.lang.resolve.AdditionalCheckerProvider;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.LazyTopDownAnalyzer;
 import org.jetbrains.jet.lang.resolve.MutablePackageFragmentProvider;
@@ -35,6 +36,7 @@ import org.jetbrains.jet.lang.resolve.java.JavaDescriptorResolver;
 import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedErrorReporter;
 import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedExternalSignatureResolver;
 import org.jetbrains.jet.lang.resolve.kotlin.DeserializationGlobalContextForJava;
+import org.jetbrains.jet.lang.resolve.kotlin.JavaDeclarationCheckerProvider;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
@@ -42,8 +44,10 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
+import org.jetbrains.jet.lang.resolve.java.lazy.SingleModuleClassResolver;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.search.GlobalSearchScope;
 
 public class InjectorsGenerator {
     
@@ -68,7 +72,7 @@ public class InjectorsGenerator {
     }
     
     private void configureGeneratorForTopDownAnalyzerForJvm() {
-    	generator.implementInterface(InjectorForTopDownAnalyzer.class);
+        generator.implementInterface(InjectorForTopDownAnalyzer.class);
         
         addParameter(Project.class, false);
         addParameter(GlobalContext.class, true);
@@ -84,19 +88,23 @@ public class InjectorsGenerator {
         addPublicField(JavaDescriptorResolver.class);
         addPublicField(DeserializationGlobalContextForJava.class);
         
-        addFields(
-                EclipseJavaClassFinder.class, 
-                TraceBasedExternalSignatureResolver.class, 
+        addField(AdditionalCheckerProvider.class, 
+                new GivenExpression(JavaDeclarationCheckerProvider.class.getName() + ".INSTANCE$"));
+        
+        addField(GlobalSearchScope.class, new GivenExpression(GlobalSearchScope.class.getName() + ".allScope(project)"));
+        addFields(EclipseJavaClassFinder.class, 
+                TraceBasedExternalSignatureResolver.class,
                 EclipseTraceBasedJavaResolverCache.class, 
                 TraceBasedErrorReporter.class,
-                EclipseMethodSignatureChecker.class,
+                EclipseMethodSignatureChecker.class, 
                 EclipseExternalAnnotationResolver.class,
-                MutablePackageFragmentProvider.class,
+                MutablePackageFragmentProvider.class, 
                 EclipseJavaPropertyInitializerEvaluator.class,
-                EclipseJavaSourceElementFactory.class);
+                EclipseJavaSourceElementFactory.class, 
+                SingleModuleClassResolver.class);
         
-        addField(VirtualFileFinder.class, 
-                new GivenExpression(VirtualFileFinder.class.getName() + ".SERVICE.getInstance(project)"));
+        addField(VirtualFileFinder.class, new GivenExpression(VirtualFileFinder.class.getName()
+                + ".SERVICE.getInstance(project)"));
     }
     
     private void addPublicField(Class<?> fieldType) {

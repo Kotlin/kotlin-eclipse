@@ -12,6 +12,7 @@ Import-Package: com.intellij.openapi.project,
  org.jetbrains.jet.lang.descriptors,
  org.jetbrains.jet.lang.resolve,
  org.jetbrains.jet.lang.resolve.java,
+ org.jetbrains.jet.lang.resolve.java.lazy,
  org.jetbrains.jet.lang.resolve.java.resolver,
  org.jetbrains.jet.lang.resolve.kotlin,
  org.osgi.framework;version="1.7.0"
