@@ -16,21 +16,80 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import kotlin.Function1;
+
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.analyzer.ModuleContent;
+import org.jetbrains.jet.analyzer.ModuleInfo;
+import org.jetbrains.jet.context.ContextPackage;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
+import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
+import org.jetbrains.jet.lang.resolve.java.JvmPlatformParameters;
+import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
+import org.jetbrains.jet.lang.resolve.lazy.ResolveSession;
+import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.GlobalSearchScope;
 
 public class KotlinAnalyzer {
 
+    @NotNull
+    public static ResolveSession getLazyResolveSession(@NotNull IJavaProject javaProject) {
+        Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
+        final TestModule module = new TestModule();
+        return EclipseAnalyzerFacadeForJVM.INSTANCE.createLazyResolveSession(
+                project, 
+                ContextPackage.GlobalContext(), 
+                module, 
+                new ModuleContent(Collections.<JetFile>emptyList(), GlobalSearchScope.allScope(project)), 
+                new JvmPlatformParameters(new Function1<JavaClass, ModuleInfo>() {
+                    @Override
+                    public ModuleInfo invoke(JavaClass javaClass) {
+                        return module;
+                    }
+                }));
+    }
+    
+    private static class TestModule implements ModuleInfo {
+        @Override
+        @NotNull
+        public List<ModuleInfo> dependencies() {
+            return Collections.<ModuleInfo>singletonList(this);
+        }
+        
+        @Override
+        @NotNull
+        public DependencyOnBuiltins dependencyOnBuiltins() {
+            return ModuleInfo.DependenciesOnBuiltins.LAST;
+        }
+        
+        @Override
+        @NotNull
+        public Name getName() {
+            return Name.special("<Module for lazy resolve");
+        }
+        
+        @Override
+        @NotNull
+        public Collection<ModuleInfo> friends() {
+            return Collections.emptyList();
+        }
+    }
+    
     @NotNull
     public static AnalyzeExhaust analyzeDeclarations(@NotNull IJavaProject javaProject) {
         return analyzeProject(javaProject, Predicates.<PsiFile>alwaysFalse());
