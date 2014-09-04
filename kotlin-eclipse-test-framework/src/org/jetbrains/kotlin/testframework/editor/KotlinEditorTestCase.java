@@ -113,6 +113,8 @@ public abstract class KotlinEditorTestCase {
     
     public static void deleteProjectAndCloseEditors() {
         try {
+            joinBuildThread();
+            
             IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
             for (IProject project : projects) {
                 project.delete(true, true, null);
