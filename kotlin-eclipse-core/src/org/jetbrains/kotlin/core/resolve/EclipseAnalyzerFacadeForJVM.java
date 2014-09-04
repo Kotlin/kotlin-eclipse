@@ -35,7 +35,6 @@ import org.jetbrains.jet.analyzer.ResolverForProject;
 import org.jetbrains.jet.analyzer.ResolverForProjectImpl;
 import org.jetbrains.jet.context.ContextPackage;
 import org.jetbrains.jet.context.GlobalContext;
-import org.jetbrains.jet.di.InjectorForLazyResolveWithJava;
 import org.jetbrains.jet.lang.descriptors.PackageFragmentProvider;
 import org.jetbrains.jet.lang.descriptors.impl.CompositePackageFragmentProvider;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
@@ -56,6 +55,7 @@ import org.jetbrains.jet.lang.resolve.lazy.declarations.DeclarationProviderFacto
 import org.jetbrains.jet.lang.resolve.lazy.declarations.DeclarationProviderFactoryService;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
+import org.jetbrains.kotlin.core.injectors.EclipseInjectorForLazyResolveWithJava;
 import org.jetbrains.kotlin.core.injectors.EclipseInjectorForTopDownAnalyzerForJvm;
 
 import com.google.common.base.Predicate;
@@ -80,6 +80,7 @@ public enum EclipseAnalyzerFacadeForJVM {
     }
     
     public <P extends PlatformAnalysisParameters, M extends ModuleInfo> ResolveSession createLazyResolveSession(
+            @NotNull IJavaProject javaProject,
             @NotNull Project project,
             @NotNull GlobalContext globalContext,
             @NotNull M module,
@@ -90,7 +91,7 @@ public enum EclipseAnalyzerFacadeForJVM {
         
         ModuleDescriptorImpl descriptor = resolverForProject.descriptorForModule(module);
         JvmResolverForModule resolverForModule = 
-                createResolverForModule(project, globalContext, descriptor, moduleContent, platformParameters, resolverForProject);
+                createResolverForModule(javaProject, project, globalContext, descriptor, moduleContent, platformParameters, resolverForProject);
         assert descriptor.getIsInitialized() : "ModuleDescriptorImpl#initialize() should be called in createResolverForModule";
         
         resolverForProject.getResolverByModuleDescriptor().put(descriptor, resolverForModule);
@@ -130,6 +131,7 @@ public enum EclipseAnalyzerFacadeForJVM {
     
     @NotNull
     private <M extends ModuleInfo> JvmResolverForModule createResolverForModule(
+            @NotNull IJavaProject javaProject,
             @NotNull Project project,
             @NotNull GlobalContext globalContext,
             @NotNull ModuleDescriptorImpl moduleDescriptor,
@@ -152,14 +154,15 @@ public enum EclipseAnalyzerFacadeForJVM {
             }
         });
         
-        InjectorForLazyResolveWithJava injector = new InjectorForLazyResolveWithJava(
+        EclipseInjectorForLazyResolveWithJava injector = new EclipseInjectorForLazyResolveWithJava(
                 project,
                 globalContext,
                 moduleDescriptor,
                 moduleContent.getModuleContentScope(),
                 new BindingTraceContext(),
                 declarationProviderFactory,
-                moduleClassResolver);
+                moduleClassResolver,
+                javaProject);
         
         ResolveSession resolveSession = injector.getResolveSession();
         JavaDescriptorResolver javaDescriptorResolver = injector.getJavaDescriptorResolver();

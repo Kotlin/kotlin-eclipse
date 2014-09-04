@@ -52,6 +52,7 @@ public class KotlinAnalyzer {
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
         final TestModule module = new TestModule();
         return EclipseAnalyzerFacadeForJVM.INSTANCE.createLazyResolveSession(
+                javaProject,
                 project, 
                 ContextPackage.GlobalContext(), 
                 module, 
