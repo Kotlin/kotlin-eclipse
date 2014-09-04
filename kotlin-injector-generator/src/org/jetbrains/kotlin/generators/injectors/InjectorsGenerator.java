@@ -17,6 +17,8 @@
 package org.jetbrains.kotlin.generators.injectors;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.jet.context.GlobalContext;
@@ -27,6 +29,7 @@ import org.jetbrains.jet.di.GivenExpression;
 import org.jetbrains.jet.di.InjectorForTopDownAnalyzer;
 import org.jetbrains.jet.di.InjectorGeneratorUtil;
 import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
+import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.resolve.AdditionalCheckerProvider;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.LazyTopDownAnalyzer;
@@ -38,12 +41,17 @@ import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedExternalSignatureR
 import org.jetbrains.jet.lang.resolve.kotlin.DeserializationGlobalContextForJava;
 import org.jetbrains.jet.lang.resolve.kotlin.JavaDeclarationCheckerProvider;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
+import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinderFactory;
+import org.jetbrains.jet.lang.resolve.lazy.ResolveSession;
+import org.jetbrains.jet.lang.resolve.lazy.declarations.DeclarationProviderFactory;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseLazyResolveBasedCache;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
+import org.jetbrains.jet.lang.resolve.java.lazy.ModuleClassResolver;
 import org.jetbrains.jet.lang.resolve.java.lazy.SingleModuleClassResolver;
 
 import com.intellij.openapi.project.Project;
@@ -59,16 +67,32 @@ public class InjectorsGenerator {
         generator.configure(targetSourceRoot, injectorPackageName, injectorClassName, "org.jetbrains.kotlin.core.injectors.InjectorsGenerator");
     }
     
+    public static List<InjectorsGenerator> createInjectorGenerators() {
+        List<InjectorsGenerator> injectors = new ArrayList<InjectorsGenerator>();
+        injectors.add(generatorForTopDownAnalyzerForJvm());
+        injectors.add(generatorForLazyResolveWithJava());
+        
+        return injectors;
+    }
+    
     public static InjectorsGenerator generatorForTopDownAnalyzerForJvm() {
-    	InjectorsGenerator injectorsGenerator = new InjectorsGenerator("../kotlin-eclipse-core/src", 
-    			"org.jetbrains.kotlin.core.injectors", "EclipseInjectorForTopDownAnalyzerForJvm");
-    	injectorsGenerator.configureGeneratorForTopDownAnalyzerForJvm();
-    	
-    	return injectorsGenerator;
+        InjectorsGenerator injectorsGenerator = new InjectorsGenerator("../kotlin-eclipse-core/src", 
+                "org.jetbrains.kotlin.core.injectors", "EclipseInjectorForTopDownAnalyzerForJvm");
+        injectorsGenerator.configureGeneratorForTopDownAnalyzerForJvm();
+        
+        return injectorsGenerator;
+    }
+    
+    public static InjectorsGenerator generatorForLazyResolveWithJava() {
+        InjectorsGenerator injectorsGenerator = new InjectorsGenerator("../kotlin-eclipse-core/src",
+                "org.jetbrains.kotlin.core.injectors", "EclipseInjectorForLazyResolveWithJava");
+        injectorsGenerator.configureGeneratorForLazyResolveWithJava();
+        
+        return injectorsGenerator;
     }
     
     public void generate() throws IOException {
-    	generator.generate();
+        generator.generate();
     }
     
     private void configureGeneratorForTopDownAnalyzerForJvm() {
@@ -107,8 +131,38 @@ public class InjectorsGenerator {
                 + ".SERVICE.getInstance(project)"));
     }
     
+    private void configureGeneratorForLazyResolveWithJava() {
+        addParameter(Project.class);
+        addParameter(GlobalContext.class, true);
+        addParameter(ModuleDescriptorImpl.class, "module", true);
+        addParameter(GlobalSearchScope.class, "moduleContentScope", false);
+        
+        addParameter(BindingTrace.class);
+        addParameter(DeclarationProviderFactory.class);
+        addParameter(ModuleClassResolver.class);
+        addParameter(IJavaProject.class);
+        
+        addPublicField(ResolveSession.class);
+        addPublicField(JavaDescriptorResolver.class);
+        
+        addField(VirtualFileFinder.class, new GivenExpression(VirtualFileFinderFactory.class.getName()
+                + ".SERVICE.getInstance(project).create(moduleContentScope)"));
+        addFields(EclipseJavaClassFinder.class, 
+                TraceBasedExternalSignatureResolver.class,
+                EclipseLazyResolveBasedCache.class, 
+                TraceBasedErrorReporter.class, 
+                EclipseMethodSignatureChecker.class,
+                EclipseExternalAnnotationResolver.class, 
+                EclipseJavaPropertyInitializerEvaluator.class,
+                EclipseJavaSourceElementFactory.class);
+    }
+    
+    private void addPublicField(Class<?> fieldType, String name, Expression init, boolean useAsContext) {
+        generator.addField(true, new DiType(fieldType), name, init, useAsContext);
+    }
+    
     private void addPublicField(Class<?> fieldType) {
-        generator.addField(true, new DiType(fieldType), getDefaultName(fieldType), null, false);
+        addPublicField(fieldType, getDefaultName(fieldType), null, false);
     }
     
     private void addField(Class<?> fieldType) {
@@ -125,8 +179,16 @@ public class InjectorsGenerator {
         }
     }
     
+    private void addParameter(Class<?> parameterType) {
+        addParameter(parameterType, false);
+    }
+    
     private void addParameter(Class<?> parameterType, boolean useAsContext) {
-        generator.addParameter(false, new DiType(parameterType), getDefaultName(parameterType), true, useAsContext);
+        addParameter(parameterType, getDefaultName(parameterType), useAsContext);
+    }
+    
+    private void addParameter(Class<?> parameterType, String name, boolean useAsContext) {
+        generator.addParameter(false, new DiType(parameterType), name, true, useAsContext);
     }
     
     private void addPublicParameter(Class<?> parameterType, boolean useAsContext) {

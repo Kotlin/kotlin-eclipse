@@ -20,6 +20,8 @@ import java.io.IOException;
 
 public class GenerateInjectors {
     public static void main(String[] args) throws IOException {
-        InjectorsGenerator.generatorForTopDownAnalyzerForJvm().generate();
+        for (InjectorsGenerator generator : InjectorsGenerator.createInjectorGenerators()) {
+            generator.generate();
+        }
     }
 }
