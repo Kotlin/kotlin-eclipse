@@ -85,7 +85,12 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Override
     public void run(ITextSelection selection) {
-        SourceElement element = getTargetElement(getSelectedExpression(file, selection.getOffset()));
+        JetReferenceExpression selectedExpression = getSelectedExpression(file, selection.getOffset());
+        if (selectedExpression == null) {
+            return;
+        }
+        
+        SourceElement element = getTargetElement(selectedExpression);
         
         if (element == null) {
             return;
@@ -101,10 +106,9 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private SourceElement getTargetElement(@Nullable JetReferenceExpression expression) {
-        BindingContext bindingContext = KotlinAnalyzer
-                .analyzeOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
-                .getBindingContext();
+    private SourceElement getTargetElement(@NotNull JetReferenceExpression expression) {
+        BindingContext bindingContext = KotlinAnalyzer.lazyResolveToElement(expression, javaProject);
+        
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
         if (descriptor != null) {
             List<SourceElement> declarations = EclipseDescriptorUtils.descriptorToDeclarations(descriptor);

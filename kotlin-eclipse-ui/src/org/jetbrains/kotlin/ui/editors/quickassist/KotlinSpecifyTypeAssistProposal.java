@@ -165,9 +165,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         
         IJavaProject javaProject = JavaCore.create(file.getProject());
         
-        BindingContext bindingContext = KotlinAnalyzer
-                .analyzeOneFileCompletely(javaProject, declaration.getContainingFile())
-                .getBindingContext();
+        BindingContext bindingContext = KotlinAnalyzer.lazyResolveToElement(declaration, javaProject);
         for (Diagnostic diagnostic : bindingContext.getDiagnostics()) {
             if (Errors.PUBLIC_MEMBER_SHOULD_SPECIFY_TYPE == diagnostic.getFactory() && declaration == diagnostic.getPsiElement()) {
                 return true;
@@ -212,9 +210,8 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         
         IJavaProject javaProject = JavaCore.create(file.getProject());
         
-        BindingContext bindingContext = KotlinAnalyzer
-                .analyzeOneFileCompletely(javaProject, declaration.getContainingFile())
-                .getBindingContext();
+        BindingContext bindingContext = KotlinAnalyzer.lazyResolveToElement(declaration, javaProject);
+        
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, declaration);
 
         JetType type;

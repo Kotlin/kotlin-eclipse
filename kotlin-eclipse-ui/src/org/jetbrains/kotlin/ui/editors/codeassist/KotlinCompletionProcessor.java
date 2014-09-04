@@ -48,7 +48,6 @@ import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
-import org.jetbrains.kotlin.core.resolve.KotlinLazyElementResolver;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionProvider;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
@@ -140,8 +139,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             @NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         
-        BindingContext context = new KotlinLazyElementResolver(
-                KotlinAnalyzer.getLazyResolveSession(javaProject)).resolveToElement(simpleNameExpression);
+        BindingContext context = KotlinAnalyzer.lazyResolveToElement(simpleNameExpression, javaProject);
         
         return KotlinCompletionProvider.getReferenceVariants(simpleNameExpression, context);
     }

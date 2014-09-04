@@ -29,7 +29,9 @@ import org.jetbrains.jet.analyzer.ModuleContent;
 import org.jetbrains.jet.analyzer.ModuleInfo;
 import org.jetbrains.jet.context.ContextPackage;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
+import org.jetbrains.jet.lang.psi.JetElement;
 import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
 import org.jetbrains.jet.lang.resolve.java.JvmPlatformParameters;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
@@ -47,8 +49,12 @@ import com.intellij.psi.search.GlobalSearchScope;
 
 public class KotlinAnalyzer {
 
+    public static BindingContext lazyResolveToElement(@NotNull JetElement jetElement, @NotNull IJavaProject javaProject) {
+        return new KotlinLazyElementResolver(getLazyResolveSession(javaProject)).resolveToElement(jetElement);
+    }
+    
     @NotNull
-    public static ResolveSession getLazyResolveSession(@NotNull IJavaProject javaProject) {
+    private static ResolveSession getLazyResolveSession(@NotNull IJavaProject javaProject) {
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
         final TestModule module = new TestModule();
         return EclipseAnalyzerFacadeForJVM.INSTANCE.createLazyResolveSession(
