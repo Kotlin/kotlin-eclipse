@@ -48,6 +48,7 @@ import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.core.resolve.KotlinLazyElementResolver;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionProvider;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
@@ -138,9 +139,9 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     private Collection<DeclarationDescriptor> getReferenceVariants(@NotNull JetSimpleNameExpression simpleNameExpression,
             @NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        BindingContext context = KotlinAnalyzer
-                .analyzeOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
-                .getBindingContext();
+        
+        BindingContext context = new KotlinLazyElementResolver(
+                KotlinAnalyzer.getLazyResolveSession(javaProject)).resolveToElement(simpleNameExpression);
         
         return KotlinCompletionProvider.getReferenceVariants(simpleNameExpression, context);
     }

@@ -9,7 +9,8 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/guava-17.0.jar,
  lib/kotlin-compiler.jar,
- lib/kotlin-runtime.jar
+ lib/kotlin-runtime.jar,
+ lib/ide-lazy-resolver.jar
 Export-Package: com.google.common.base,
  com.google.common.collect,
  com.intellij.codeInsight,
@@ -123,4 +124,5 @@ Export-Package: com.google.common.base,
  org.jetbrains.jet.util.slicedmap,
  org.jetbrains.jet.utils,
  org.jetbrains.org.objectweb.asm,
- org.jetbrains.jet.lang.resolve.java.mapping
+ org.jetbrains.jet.lang.resolve.java.mapping,
+ org.jetbrains.jet.lang.resolve.lazy
