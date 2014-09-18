@@ -65,6 +65,7 @@ public class KotlinCompiler {
         command.add("-kotlinHome");
         command.add(ProjectUtils.KT_HOME);
         command.add("-tags");
+        command.add("-noJdkAnnotations"); // TODO: remove this option when external annotation support will be added
         
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
