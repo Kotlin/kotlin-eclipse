@@ -163,7 +163,12 @@ public class ProjectUtils {
                 if (classpathEntry.getPath().segment(0).equals(projectName)) {
                     file = new File(rootDirectory.removeLastSegments(1).toPortableString() + classpath);
                 } else if (!file.isAbsolute()) {
-                    file = new File(rootDirectory.toPortableString() + classpath);
+                    IFile workspaceFile = ResourcesPlugin.getWorkspace().getRoot().getFile(classpathEntry.getPath());
+                    if (workspaceFile.exists()) {
+                        file = workspaceFile.getLocation().toFile();
+                    } else {
+                        file = new File(rootDirectory.toPortableString() + classpath);
+                    }
                 }
                 
                 libDirectories.add(file);
