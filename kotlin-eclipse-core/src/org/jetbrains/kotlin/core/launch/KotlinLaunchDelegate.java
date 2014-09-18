@@ -21,20 +21,15 @@ import java.io.IOException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.resolve.name.FqName;
-import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.compiler.KotlinCompiler;
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
+import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
@@ -46,19 +41,9 @@ public class KotlinLaunchDelegate extends JavaLaunchDelegate {
     public boolean buildForLaunch(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor)
             throws CoreException {
         try {
-            IJavaProject javaProject = getJavaProject(configuration);
-            KotlinCompilerResult compilerResult = KotlinCompiler.INSTANCE.compileKotlinFiles(
-                    KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.getProject()), 
-                    javaProject, 
-                    ProjectUtils.getOutputFolder(javaProject).getLocation().toOSString());
-            
+            KotlinCompilerResult compilerResult = KotlinCompilerUtils.compileWholeProject(getJavaProject(configuration));
             if (!compilerResult.compiledCorrectly()) {
-                IStatus status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, 1, "", null);
-                IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(status);
-                
-                if (handler != null) {
-                    handler.handleStatus(status, compilerResult.getCompilerOutput());
-                }
+                KotlinCompilerUtils.handleCompilerOutput(compilerResult.getCompilerOutput());
                 
                 abort("Build failed", null, 0);
             }

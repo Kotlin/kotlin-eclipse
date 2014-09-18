@@ -43,8 +43,9 @@ public class KotlinCompiler {
     }
     
     @NotNull
-    public KotlinCompilerResult compileKotlinFiles(@NotNull List<IFile> files, @NotNull IJavaProject javaProject, @NotNull String outputDir) 
+    public KotlinCompilerResult compileKotlinFiles(@NotNull List<IFile> files, @NotNull IJavaProject javaProject) 
             throws CoreException, InterruptedException, IOException {
+        String outputDir = ProjectUtils.getOutputFolder(javaProject).getLocation().toOSString();
         String[] command = configureBuildCommand(javaProject, outputDir);
         
         Process buildProcess = Runtime.getRuntime().exec(command);
