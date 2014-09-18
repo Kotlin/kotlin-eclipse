@@ -9,7 +9,10 @@ import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.junit.ui.JUnitMessages;
+import org.eclipse.jdt.internal.junit.ui.JUnitPlugin;
 import org.eclipse.jdt.junit.launcher.JUnitLaunchShortcut;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
@@ -37,6 +40,8 @@ public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
                 if (element instanceof IFile) {
                     launch((IFile) element, mode);
                 }
+            } else {
+                showNoTestsFoundDialog();
             }
         }
     }
@@ -89,5 +94,10 @@ public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
         }
         
         return null;
+    }
+    
+    private void showNoTestsFoundDialog() {
+        MessageDialog.openInformation(JUnitPlugin.getActiveWorkbenchShell(), 
+                JUnitMessages.JUnitLaunchShortcut_dialog_title, JUnitMessages.JUnitLaunchShortcut_message_notests);
     }
 }
