@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
+import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jface.action.IAction;
@@ -24,6 +25,8 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.ui.debug.KotlinToggleBreakpointAdapter;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 
 public class KotlinEditor extends CompilationUnitEditor {
@@ -31,6 +34,7 @@ public class KotlinEditor extends CompilationUnitEditor {
     private final ColorManager colorManager;
     private final BracketInserter bracketInserter;
     private KotlinOutlinePage kotlinOutlinePage = null;
+    private KotlinToggleBreakpointAdapter kotlinToggleBreakpointAdapter = null;
     
     public KotlinEditor() {
         super();
@@ -41,10 +45,9 @@ public class KotlinEditor extends CompilationUnitEditor {
     @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") Class required) {
         if (IContentOutlinePage.class.equals(required)) {
-            if (kotlinOutlinePage == null) {
-                kotlinOutlinePage = new KotlinOutlinePage(this);
-            }
-            return kotlinOutlinePage;
+            return getKotlinOutlinePage();
+        } else if (IToggleBreakpointsTarget.class.equals(required)) {
+            return getKotlinToggleBreakpointAdapter();
         }
         
         return super.getAdapter(required);
@@ -93,5 +96,23 @@ public class KotlinEditor extends CompilationUnitEditor {
         }
         
         super.dispose();
+    }
+    
+    @NotNull
+    private KotlinOutlinePage getKotlinOutlinePage() {
+        if (kotlinOutlinePage == null) {
+            kotlinOutlinePage = new KotlinOutlinePage(this);
+        }
+        
+        return kotlinOutlinePage;
+    }
+    
+    @NotNull
+    private KotlinToggleBreakpointAdapter getKotlinToggleBreakpointAdapter() {
+        if (kotlinToggleBreakpointAdapter == null) {
+            kotlinToggleBreakpointAdapter = new KotlinToggleBreakpointAdapter();
+        }
+        
+        return kotlinToggleBreakpointAdapter;
     }
 }
