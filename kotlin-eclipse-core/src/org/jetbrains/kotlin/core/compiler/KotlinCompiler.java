@@ -72,6 +72,7 @@ public class KotlinCompiler {
             classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
         }
         
+        
         for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
             classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
         }
@@ -83,6 +84,10 @@ public class KotlinCompiler {
         command.add(outputDir);
         
         for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
+            command.add(srcDirectory.getAbsolutePath());
+        }
+        
+        for (File srcDirectory : ProjectUtils.getDependenciesFromProjectsInCP(javaProject)) {
             command.add(srcDirectory.getAbsolutePath());
         }
         

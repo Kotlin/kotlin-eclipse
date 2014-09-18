@@ -48,6 +48,8 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.osgi.framework.Bundle;
 
+import com.google.common.collect.Lists;
+
 public class ProjectUtils {
     
     private static final String LIB_FOLDER = "lib";
@@ -121,13 +123,27 @@ public class ProjectUtils {
         }
     }
     
+    public static List<File> collectDependenciesClasspath(@NotNull IJavaProject javaProject) throws JavaModelException {
+        List<File> dependencies = Lists.newArrayList();
+        for (IClasspathEntry classPathEntry : javaProject.getRawClasspath()) {
+            if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
+                IPath path = classPathEntry.getPath();
+                IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(path.toString());
+                if (project.exists()) {
+                    dependencies.addAll(getSrcDirectories(JavaCore.create(project)));
+                }
+            }
+        }
+        
+        return dependencies;
+    }
+    
     @NotNull
     public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> srcDirectories = new ArrayList<File>();
         
-        IClasspathEntry[] classPathEntries = javaProject.getRawClasspath();
         IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
-        for (IClasspathEntry classPathEntry : classPathEntries) {
+        for (IClasspathEntry classPathEntry : javaProject.getRawClasspath()) {
             if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
                 IPath classPathEntryPath = classPathEntry.getPath();
                 IResource classPathResource = root.findMember(classPathEntryPath);

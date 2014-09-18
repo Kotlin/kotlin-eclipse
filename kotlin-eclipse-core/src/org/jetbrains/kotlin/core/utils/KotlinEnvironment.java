@@ -207,8 +207,11 @@ public class KotlinEnvironment {
     
     private void addSourcesToClasspath() {
         try {
-            List<File> srcDirectories = ProjectUtils.getSrcDirectories(javaProject);
-            for (File srcDirectory : srcDirectories) {
+            for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
+                addToClasspath(srcDirectory);
+            }
+            
+            for (File srcDirectory : ProjectUtils.getDependenciesFromProjectsInCP(javaProject)) {
                 addToClasspath(srcDirectory);
             }
         } catch (JavaModelException e) {
