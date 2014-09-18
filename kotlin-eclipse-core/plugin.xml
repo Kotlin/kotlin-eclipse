@@ -30,5 +30,4 @@
             id="org.jetbrains.kotlin.core.KOTLIN_CONTAINER">
       </classpathContainerInitializer>
    </extension>
-
 </plugin>
