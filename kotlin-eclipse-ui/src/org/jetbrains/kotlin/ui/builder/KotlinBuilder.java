@@ -61,7 +61,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         }
         
         if (needRebuild) {
-            KotlinLightClassGeneration.buildAndSaveLightClasses(analyzeExhaust, javaProject);
+            KotlinLightClassGeneration.buildAndSaveLightClasses(KotlinAnalyzer.analyzeDeclarations(javaProject), javaProject);
             getProject().refreshLocal(0, null);
         }
         

@@ -211,7 +211,7 @@ public class KotlinEnvironment {
                 addToClasspath(srcDirectory);
             }
             
-            for (File srcDirectory : ProjectUtils.getDependenciesFromProjectsInCP(javaProject)) {
+            for (File srcDirectory : ProjectUtils.collectDependenciesClasspath(javaProject)) {
                 addToClasspath(srcDirectory);
             }
         } catch (JavaModelException e) {

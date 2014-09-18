@@ -89,7 +89,7 @@ public class KotlinCompiler {
             command.add(srcDirectory.getAbsolutePath());
         }
         
-        for (File srcDirectory : ProjectUtils.getDependenciesFromProjectsInCP(javaProject)) {
+        for (File srcDirectory : ProjectUtils.collectDependenciesClasspath(javaProject)) {
             command.add(srcDirectory.getAbsolutePath());
         }
         

@@ -123,19 +123,56 @@ public class ProjectUtils {
         }
     }
     
+    @NotNull
+    public static List<JetFile> getSourceFiles(@NotNull IProject project) {
+        List<JetFile> jetFiles = new ArrayList<JetFile>();
+        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
+            JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+            jetFiles.add(jetFile);
+         }
+        
+        return jetFiles;
+    }
+    
+    @NotNull
+    public static List<JetFile> getSourceFilesWithDependencies(@NotNull IJavaProject javaProject) {
+        try {
+            List<JetFile> jetFiles = Lists.newArrayList();
+            for (IProject project : getDependencyProjects(javaProject)) {
+                jetFiles.addAll(getSourceFiles(project));
+            }
+            jetFiles.addAll(getSourceFiles(javaProject.getProject()));
+            
+            return jetFiles;
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+            throw new IllegalStateException(e);
+        }
+    }
+    
     public static List<File> collectDependenciesClasspath(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> dependencies = Lists.newArrayList();
+        for (IProject project : getDependencyProjects(javaProject)) {
+            dependencies.addAll(getSrcDirectories(JavaCore.create(project)));
+        }
+        
+        return dependencies;
+    }
+    
+    public static List<IProject> getDependencyProjects(@NotNull IJavaProject javaProject) throws JavaModelException {
+        List<IProject> projects = Lists.newArrayList();
         for (IClasspathEntry classPathEntry : javaProject.getRawClasspath()) {
             if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
                 IPath path = classPathEntry.getPath();
                 IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(path.toString());
                 if (project.exists()) {
-                    dependencies.addAll(getSrcDirectories(JavaCore.create(project)));
+                    projects.add(project);
+                    getDependencyProjects(JavaCore.create(project));
                 }
             }
         }
         
-        return dependencies;
+        return projects;
     }
     
     @NotNull

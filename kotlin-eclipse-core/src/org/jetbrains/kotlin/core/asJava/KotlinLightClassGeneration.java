@@ -19,7 +19,6 @@ import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
@@ -32,8 +31,8 @@ public class KotlinLightClassGeneration {
         
         GenerationState state = buildLightClasses(
                 analyzeExhaust, 
-                javaProject, 
-                KotlinAnalyzer.getSourceFiles(javaProject.getProject()));
+                javaProject,
+                ProjectUtils.getSourceFiles(javaProject.getProject()));
         
         saveKotlinDeclarationClasses(state, javaProject);
     }

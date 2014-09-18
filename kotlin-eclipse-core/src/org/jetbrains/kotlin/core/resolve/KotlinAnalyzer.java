@@ -16,19 +16,13 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
-import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
 import org.jetbrains.jet.lang.resolve.java.AnalyzerFacadeForJVM;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -62,20 +56,9 @@ public class KotlinAnalyzer {
         return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                 javaProject, 
                 kotlinEnvironment.getProject(), 
-                getSourceFiles(javaProject.getProject()), 
+                ProjectUtils.getSourceFilesWithDependencies(javaProject), 
                 new BindingTraceContext(), 
                 filesToAnalyzeCompletely, 
                 AnalyzerFacadeForJVM.createJavaModule("<module>"));
-    }
-    
-    @NotNull
-    public static List<JetFile> getSourceFiles(@NotNull IProject project) {
-        List<JetFile> jetFiles = new ArrayList<JetFile>();
-        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
-            JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
-            jetFiles.add(jetFile);
-         }
-        
-        return jetFiles;
     }
 }
