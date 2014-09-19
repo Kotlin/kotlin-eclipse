@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.debug.ui,
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.ui,
- org.eclipse.jdt.junit
+ org.eclipse.jdt.junit,
+ org.eclipse.core.expressions
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.navigation,
  org.eclipse.core.resources,
@@ -44,4 +45,5 @@ Export-Package: org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.editors.quickassist,
  org.jetbrains.kotlin.ui.editors.quickfix,
  org.jetbrains.kotlin.ui.launch,
+ org.jetbrains.kotlin.ui.launch.junit,
  org.jetbrains.kotlin.utils

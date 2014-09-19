@@ -326,7 +326,7 @@
          </contextualLaunch>
       </shortcut>
       <shortcut
-            class="org.jetbrains.kotlin.ui.launch.KotlinJUnitLaunchShortcut"
+            class="org.jetbrains.kotlin.ui.launch.junit.KotlinJUnitLaunchShortcut"
             icon="icons/julaunch.gif"
             id="org.jetbrains.kotlin.ui.launch.junit"
             label="Kotlin JUnit Test"
@@ -341,7 +341,7 @@
                   <iterate
                         operator="and">
                      <test
-                           property="org.jetbrains.kotlin.core.launching.canLaunchAsJUnit">
+                           property="org.jetbrains.kotlin.ui.launching.canLaunchAsJUnit">
                      </test>
                   </iterate>
                </with>
@@ -428,5 +428,15 @@
       <startup
             class="org.jetbrains.kotlin.ui.KotlinUiStartupClass">
       </startup>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.jetbrains.kotlin.ui.launch.junit.KotlinJUnitLaunchableTester"
+            id="org.jetbrains.kotlin.ui.launchableTester"
+            namespace="org.jetbrains.kotlin.ui.launching"
+            properties="canLaunchAsJUnit"
+            type="org.eclipse.core.runtime.IAdaptable">
+      </propertyTester>
    </extension>
 </plugin>

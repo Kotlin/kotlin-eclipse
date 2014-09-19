@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.ui.launch;
+package org.jetbrains.kotlin.ui.launch.junit;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;

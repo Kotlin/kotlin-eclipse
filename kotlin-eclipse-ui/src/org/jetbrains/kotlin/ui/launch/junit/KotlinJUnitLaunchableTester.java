@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.core.launch;
+package org.jetbrains.kotlin.ui.launch.junit;
 
 import java.util.List;
 import java.util.Set;
