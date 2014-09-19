@@ -136,18 +136,13 @@ public class ProjectUtils {
     
     @NotNull
     public static List<JetFile> getSourceFilesWithDependencies(@NotNull IJavaProject javaProject) {
-        try {
-            List<JetFile> jetFiles = Lists.newArrayList();
-            for (IProject project : getDependencyProjects(javaProject)) {
-                jetFiles.addAll(getSourceFiles(project));
-            }
-            jetFiles.addAll(getSourceFiles(javaProject.getProject()));
-            
-            return jetFiles;
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-            throw new IllegalStateException(e);
+        List<JetFile> jetFiles = Lists.newArrayList();
+        for (IProject project : getDependencyProjects(javaProject)) {
+            jetFiles.addAll(getSourceFiles(project));
         }
+        jetFiles.addAll(getSourceFiles(javaProject.getProject()));
+        
+        return jetFiles;
     }
     
     public static boolean isPathOnClasspath(@NotNull IJavaProject javaProject, @NotNull IPath path) {
@@ -173,17 +168,21 @@ public class ProjectUtils {
         return dependencies;
     }
     
-    public static List<IProject> getDependencyProjects(@NotNull IJavaProject javaProject) throws JavaModelException {
+    public static List<IProject> getDependencyProjects(@NotNull IJavaProject javaProject) {
         List<IProject> projects = Lists.newArrayList();
-        for (IClasspathEntry classPathEntry : javaProject.getRawClasspath()) {
-            if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
-                IPath path = classPathEntry.getPath();
-                IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(path.toString());
-                if (project.exists()) {
-                    projects.add(project);
-                    getDependencyProjects(JavaCore.create(project));
+        try {
+            for (IClasspathEntry classPathEntry : javaProject.getRawClasspath()) {
+                if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
+                    IPath path = classPathEntry.getPath();
+                    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(path.toString());
+                    if (project.exists()) {
+                        projects.add(project);
+                        getDependencyProjects(JavaCore.create(project));
+                    }
                 }
             }
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
         }
         
         return projects;

@@ -28,7 +28,8 @@ Import-Package: com.google.common.collect,
  org.jetbrains.jet.di,
  org.jetbrains.jet.plugin,
  org.jetbrains.kotlin.core.resolve,
- org.jetbrains.kotlin.core.utils
+ org.jetbrains.kotlin.core.utils,
+ org.jetbrains.jet.lang.resolve.lazy
 Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.asJava,
  org.jetbrains.kotlin.core.builder,

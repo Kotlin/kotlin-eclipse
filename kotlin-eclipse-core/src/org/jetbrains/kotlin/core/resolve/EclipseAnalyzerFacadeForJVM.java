@@ -27,6 +27,7 @@ import kotlin.Function1;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.analyzer.EmptyResolverForProject;
 import org.jetbrains.jet.analyzer.ModuleContent;
 import org.jetbrains.jet.analyzer.ModuleInfo;
 import org.jetbrains.jet.analyzer.PlatformAnalysisParameters;
@@ -88,6 +89,11 @@ public enum EclipseAnalyzerFacadeForJVM {
             @NotNull JvmPlatformParameters platformParameters) {
         ResolverForProjectImpl<M, JvmResolverForModule> resolverForProject = createResolverForProject(module);
         setupModuleDependencies(module, resolverForProject);
+        addFriends(module, resolverForProject);
+        
+        for (ModuleDescriptorImpl moduleDescriptor : resolverForProject.getDescriptorByModule().values()) {
+            moduleDescriptor.seal();
+         }
         
         ModuleDescriptorImpl descriptor = resolverForProject.descriptorForModule(module);
         JvmResolverForModule resolverForModule = 
@@ -97,6 +103,16 @@ public enum EclipseAnalyzerFacadeForJVM {
         resolverForProject.getResolverByModuleDescriptor().put(descriptor, resolverForModule);
         
         return resolverForModule.getLazyResolveSession();
+    }
+    
+    @SuppressWarnings("unchecked")
+    private <A extends ResolverForModule, M extends ModuleInfo> void addFriends (
+            @NotNull M module, 
+            @NotNull ResolverForProjectImpl<M, A> resolverForProject) {
+        ModuleDescriptorImpl descriptor = resolverForProject.descriptorForModule(module);
+        for (ModuleInfo friend : module.friends()) {
+            descriptor.addFriend(resolverForProject.descriptorForModule((M) friend));
+        }
     }
     
     @SuppressWarnings("unchecked")
@@ -114,19 +130,20 @@ public enum EclipseAnalyzerFacadeForJVM {
         for (ModuleDescriptorImpl dependency : dependenciesDescriptors) {
             descriptorForModule.addDependencyOnModule(dependency);
         }
-        
-        for (ModuleDescriptorImpl moduleDescriptor : resolverForProject.getDescriptorByModule().values()) {
-           moduleDescriptor.seal();
-        }
     }
     
     @NotNull
     private <M extends ModuleInfo, A extends ResolverForModule> ResolverForProjectImpl<M, A> createResolverForProject(
             @NotNull M module) {
         Map<M, ModuleDescriptorImpl> descriptorByModule = Maps.newHashMap();
-        descriptorByModule.put(module, new ModuleDescriptorImpl(module.getName(), DEFAULT_IMPORTS, JavaToKotlinClassMap.getInstance()));
+        for (ModuleInfo m : module.dependencies()) {
+            @SuppressWarnings("unchecked")
+            M dependModule = (M) m;
+            descriptorByModule.put(dependModule, 
+                    new ModuleDescriptorImpl(dependModule.getName(), DEFAULT_IMPORTS, JavaToKotlinClassMap.getInstance()));
+        }
         
-        return new ResolverForProjectImpl<>(descriptorByModule);
+        return new ResolverForProjectImpl(descriptorByModule, new EmptyResolverForProject<>());
     }
     
     @NotNull

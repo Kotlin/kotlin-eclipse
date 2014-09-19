@@ -22,7 +22,9 @@ import java.util.List;
 
 import kotlin.Function1;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.analyzer.ModuleContent;
@@ -43,6 +45,7 @@ import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -56,7 +59,8 @@ public class KotlinAnalyzer {
     @NotNull
     private static ResolveSession getLazyResolveSession(@NotNull IJavaProject javaProject) {
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
-        final TestModule module = new TestModule();
+        final KotlinEclipseModule module = new KotlinEclipseModule(javaProject);
+        
         return EclipseAnalyzerFacadeForJVM.INSTANCE.createLazyResolveSession(
                 javaProject,
                 project, 
@@ -71,11 +75,24 @@ public class KotlinAnalyzer {
                 }));
     }
     
-    private static class TestModule implements ModuleInfo {
+    private static class KotlinEclipseModule implements ModuleInfo {
+        private final IJavaProject javaProject;
+        
+        public KotlinEclipseModule(@NotNull IJavaProject javaProject) {
+            this.javaProject = javaProject;
+        }
+        
         @Override
         @NotNull
         public List<ModuleInfo> dependencies() {
-            return Collections.<ModuleInfo>singletonList(this);
+            List<ModuleInfo> dependModules = Lists.newArrayList();
+            dependModules.add(this);
+            
+            for (IProject project : ProjectUtils.getDependencyProjects(javaProject)) {
+                dependModules.add(new KotlinEclipseModule(JavaCore.create(project)));
+            }
+            
+            return dependModules;
         }
         
         @Override
@@ -87,7 +104,7 @@ public class KotlinAnalyzer {
         @Override
         @NotNull
         public Name getName() {
-            return Name.special("<Module for lazy resolve");
+            return Name.special("<" + javaProject.getElementName() + ">");
         }
         
         @Override
