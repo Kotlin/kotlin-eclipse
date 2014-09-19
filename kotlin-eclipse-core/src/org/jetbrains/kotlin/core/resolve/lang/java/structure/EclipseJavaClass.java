@@ -27,15 +27,16 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.core.BinaryType;
-import org.eclipse.jdt.internal.corext.dom.Bindings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.Visibility;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotation;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaClassifierType;
+import org.jetbrains.jet.lang.resolve.java.structure.JavaConstructor;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaField;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaMethod;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaType;
@@ -139,7 +140,7 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
     @Override
     @NotNull
     public Collection<JavaClassifierType> getSupertypes() {
-        return classifierTypes(EclipseJavaElementUtil.getSuperTypes(getBinding()));
+        return classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(getBinding()));
     }
 
     @Override
@@ -150,43 +151,17 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
 
     @Override
     @NotNull
-    public Collection<JavaMethod> getAllMethods() {
-        List<JavaMethod> allMethods = Lists.newArrayList();
-        allMethods.addAll(getMethods());
-        
-        for (ITypeBinding typeBinding : EclipseJavaElementUtil.getAllSuperTypesWithObject(getBinding())) {
-            allMethods.addAll(methods(typeBinding.getDeclaredMethods()));
-        }
-        
-        return allMethods;
-    }
-    
-    @Override
-    @NotNull
     public Collection<JavaField> getFields() {
         return fields(getBinding().getDeclaredFields());
     }
     
     @Override
     @NotNull
-    public Collection<JavaField> getAllFields() {
-        List<JavaField> allFields = Lists.newArrayList();
-        allFields.addAll(getFields());
-        
-        for (ITypeBinding typeBinding : Bindings.getAllSuperTypes(getBinding())) {
-            allFields.addAll(fields(typeBinding.getDeclaredFields()));
-        }
-        
-        return allFields;
-    }
-
-    @Override
-    @NotNull
-    public Collection<JavaMethod> getConstructors() {
-        Collection<JavaMethod> constructors = Lists.newArrayList();
-        for (JavaMethod method : getMethods()) {
+    public Collection<JavaConstructor> getConstructors() {
+        Collection<JavaConstructor> constructors = Lists.newArrayList();
+        for (IMethodBinding method : getBinding().getDeclaredMethods()) {
             if (method.isConstructor()) {
-                constructors.add(method);
+                constructors.add(new EclipseJavaConstructor(method));
             }
         }
         

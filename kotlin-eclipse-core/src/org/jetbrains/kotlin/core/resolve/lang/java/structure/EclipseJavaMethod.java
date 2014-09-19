@@ -18,11 +18,9 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.typeParameters;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
@@ -46,27 +44,7 @@ public class EclipseJavaMethod extends EclipseJavaMember<IMethodBinding> impleme
     @Override
     @NotNull
     public List<JavaValueParameter> getValueParameters() {
-        List<JavaValueParameter> parameters = new ArrayList<JavaValueParameter>();
-        ITypeBinding[] parameterTypes = getBinding().getParameterTypes();
-        
-        int parameterTypesCount = parameterTypes.length;
-        for (int i = 0; i < parameterTypesCount; ++i) {
-            if (i < parameterTypesCount - 1) {
-                parameters.add(new EclipseJavaValueParameter(
-                        parameterTypes[i], 
-                        getBinding().getParameterAnnotations(i),
-                        "arg" + i, 
-                        false));
-            } else {
-                parameters.add(new EclipseJavaValueParameter(
-                        parameterTypes[i],
-                        getBinding().getParameterAnnotations(i),
-                        "arg" + i, 
-                        isVararg()));
-            }
-        }
-        
-        return parameters;
+        return EclipseJavaElementUtil.getValueParameters(getBinding());
     }
 
     @Override
@@ -79,17 +57,7 @@ public class EclipseJavaMethod extends EclipseJavaMember<IMethodBinding> impleme
     public JavaType getReturnType() {
         return EclipseJavaType.create(getBinding().getReturnType());
     }
-
-    @Override
-    public boolean isVararg() {
-        return getBinding().isVarargs();
-    }
-
-    @Override
-    public boolean isConstructor() {
-        return getBinding().isConstructor();
-    }
-
+    
     @Override
     @NotNull
     public JavaClass getContainingClass() {

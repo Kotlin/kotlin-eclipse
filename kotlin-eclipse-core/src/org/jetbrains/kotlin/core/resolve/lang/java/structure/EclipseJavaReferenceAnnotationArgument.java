@@ -18,11 +18,11 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaElement;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaReferenceAnnotationArgument;
+import org.jetbrains.jet.lang.resolve.java.structure.JavaEnumValueAnnotationArgument;
+import org.jetbrains.jet.lang.resolve.java.structure.JavaField;
 
 public class EclipseJavaReferenceAnnotationArgument extends EclipseJavaAnnotationArgument<IVariableBinding>
-        implements JavaReferenceAnnotationArgument {
+        implements JavaEnumValueAnnotationArgument {
 
     protected EclipseJavaReferenceAnnotationArgument(IVariableBinding javaElement) {
         super(javaElement);
@@ -30,7 +30,7 @@ public class EclipseJavaReferenceAnnotationArgument extends EclipseJavaAnnotatio
 
     @Override
     @Nullable
-    public JavaElement resolve() {
+    public JavaField resolve() {
         return new EclipseJavaField(getBinding());
     }
 }

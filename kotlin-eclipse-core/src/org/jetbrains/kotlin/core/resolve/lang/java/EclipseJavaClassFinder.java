@@ -48,6 +48,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.resolve.java.JavaClassFinder;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaPackage;
+import org.jetbrains.jet.lang.resolve.name.ClassId;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClass;
@@ -77,8 +78,8 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
     
     @Override
     @Nullable
-    public JavaClass findClass(@NotNull FqName fqName) {
-        ITypeBinding typeBinding = findType(fqName, javaProject);
+    public JavaClass findClass(@NotNull ClassId classId) {
+        ITypeBinding typeBinding = findType(classId.asSingleFqName().toSafe(), javaProject);
         if (typeBinding != null) {
             return new EclipseJavaClass(typeBinding);
         }

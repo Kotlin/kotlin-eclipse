@@ -72,7 +72,7 @@ public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> imp
     @Override
     @NotNull
     public Collection<JavaClassifierType> getSupertypes() {
-        return classifierTypes(EclipseJavaElementUtil.getSuperTypes(getBinding()));
+        return classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(getBinding()));
     }
 
     @Override

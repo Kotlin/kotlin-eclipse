@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -28,11 +29,11 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.core.BinaryType;
-import org.eclipse.jdt.internal.corext.dom.Bindings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.Visibilities;
@@ -40,6 +41,7 @@ import org.jetbrains.jet.lang.descriptors.Visibility;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.JavaVisibilities;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotation;
+import org.jetbrains.jet.lang.resolve.java.structure.JavaValueParameter;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -64,7 +66,7 @@ public class EclipseJavaElementUtil {
         return JavaVisibilities.PACKAGE_VISIBILITY;
     }
     
-    static ITypeBinding[] getSuperTypes(@NotNull ITypeBinding typeBinding) {
+    private static List<ITypeBinding> getSuperTypes(@NotNull ITypeBinding typeBinding) {
         List<ITypeBinding> superTypes = Lists.newArrayList();
         for (ITypeBinding superInterface : typeBinding.getInterfaces()) {
             superTypes.add(superInterface);
@@ -75,25 +77,25 @@ public class EclipseJavaElementUtil {
             superTypes.add(superClass);
         }
         
-        return superTypes.toArray(new ITypeBinding[superTypes.size()]);
+        return superTypes;
     }
     
-    static List<ITypeBinding> getAllSuperTypesWithObject(@NotNull ITypeBinding typeBinding) {
+    static ITypeBinding[] getSuperTypesWithObject(@NotNull ITypeBinding typeBinding) {
         List<ITypeBinding> allSuperTypes = Lists.newArrayList();
         
         boolean javaLangObjectInSuperTypes = false;
-        for (ITypeBinding superType : Bindings.getAllSuperTypes(typeBinding)) {
+        for (ITypeBinding superType : getSuperTypes(typeBinding)) {
             if (superType.getQualifiedName().equals(CommonClassNames.JAVA_LANG_OBJECT)) {
                 javaLangObjectInSuperTypes = true;
             }
             allSuperTypes.add(superType);
         }
         
-        if (!javaLangObjectInSuperTypes) {
+        if (!javaLangObjectInSuperTypes && !typeBinding.getQualifiedName().equals(CommonClassNames.JAVA_LANG_OBJECT)) {
             allSuperTypes.add(getJavaLangObjectBinding(typeBinding.getJavaElement().getJavaProject()));
         }
         
-        return allSuperTypes;
+        return allSuperTypes.toArray(new ITypeBinding[allSuperTypes.size()]);
     }
     
     @NotNull
@@ -105,6 +107,31 @@ public class EclipseJavaElementUtil {
             KotlinLogger.logAndThrow(e);
             throw new IllegalStateException(e);
         }
+    }
+    
+    @NotNull
+    static List<JavaValueParameter> getValueParameters(@NotNull IMethodBinding method) {
+        List<JavaValueParameter> parameters = new ArrayList<JavaValueParameter>();
+        ITypeBinding[] parameterTypes = method.getParameterTypes();
+        
+        int parameterTypesCount = parameterTypes.length;
+        for (int i = 0; i < parameterTypesCount; ++i) {
+            if (i < parameterTypesCount - 1) {
+                parameters.add(new EclipseJavaValueParameter(
+                        parameterTypes[i], 
+                        method.getParameterAnnotations(i),
+                        "arg" + i, 
+                        false));
+            } else {
+                parameters.add(new EclipseJavaValueParameter(
+                        parameterTypes[i],
+                        method.getParameterAnnotations(i),
+                        "arg" + i, 
+                        method.isVarargs()));
+            }
+        }
+        
+        return parameters;
     }
     
     static JavaAnnotation findAnnotation(@NotNull IAnnotationBinding[] annotationBindings, @NotNull FqName fqName) {

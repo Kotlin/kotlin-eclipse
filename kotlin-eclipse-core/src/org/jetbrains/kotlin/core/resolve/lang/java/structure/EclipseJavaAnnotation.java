@@ -22,11 +22,13 @@ import java.util.List;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotation;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotationArgument;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
+import org.jetbrains.jet.lang.resolve.name.ClassId;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.lang.resolve.name.Name;
 
@@ -68,13 +70,28 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     
     @Override
     @Nullable
-    public FqName getFqName() {
-        return new FqName(getBinding().getName());
+    public JavaClass resolve() {
+        ITypeBinding annotationType = getBinding().getAnnotationType();
+        return annotationType != null ? new EclipseJavaClass(annotationType) : null;
     }
     
     @Override
     @Nullable
-    public JavaClass resolve() {
-        return new EclipseJavaClass(getBinding().getAnnotationType());
+    public ClassId getClassId() {
+        ITypeBinding annotationType = getBinding().getAnnotationType();    
+        return annotationType != null ? computeClassId(annotationType) : null;
     }
+    
+    @Nullable
+    private static ClassId computeClassId(@NotNull ITypeBinding classBinding) {
+        ITypeBinding container = classBinding.getDeclaringClass();
+        if (container != null) {
+            ClassId parentClassId = computeClassId(container);
+            return parentClassId == null ? null : parentClassId.createNestedClassId(Name.identifier(classBinding.getName()));
+        }
+        
+        String fqName = classBinding.getQualifiedName();
+        return fqName == null ? null : ClassId.topLevel(new FqName(fqName));
+    }
+
 }
