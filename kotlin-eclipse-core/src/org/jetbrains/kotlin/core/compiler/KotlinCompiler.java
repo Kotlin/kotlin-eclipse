@@ -15,10 +15,13 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.compiler;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,12 +35,11 @@ import org.jetbrains.jet.cli.common.messages.MessageCollector;
 import org.jetbrains.jet.cli.jvm.K2JVMCompiler;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser;
+import org.jetbrains.kotlin.core.launch.KotlinCLICompiler;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class KotlinCompiler {
     public final static KotlinCompiler INSTANCE = new KotlinCompiler();
-    
-    private final static String KT_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler");
     
     private KotlinCompiler() {
     }
@@ -46,26 +48,26 @@ public class KotlinCompiler {
     public KotlinCompilerResult compileKotlinFiles(@NotNull List<IFile> files, @NotNull IJavaProject javaProject) 
             throws CoreException, InterruptedException, IOException {
         String outputDir = ProjectUtils.getOutputFolder(javaProject).getLocation().toOSString();
-        String[] command = configureBuildCommand(javaProject, outputDir);
+        String[] arguments = configureCompilerArguments(javaProject, outputDir);
         
-        Process buildProcess = Runtime.getRuntime().exec(command);
-        KotlinCompilerResult compilerResult = parseCompilerOutput(buildProcess.getErrorStream());
-        
-        buildProcess.waitFor();
-        
-        return compilerResult;
+        return execKotlinCompiler(arguments);
     }
     
-    private String[] configureBuildCommand(@NotNull IJavaProject javaProject, @NotNull String outputDir) throws CoreException {
+    private KotlinCompilerResult execKotlinCompiler(@NotNull String[] arguments) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(outputStream);
+        
+        KotlinCLICompiler.doMain(new K2JVMCompiler(), out, arguments);
+        
+        BufferedReader reader = new BufferedReader(new StringReader(outputStream.toString()));
+        return parseCompilerOutput(reader);
+    }
+    
+    private String[] configureCompilerArguments(@NotNull IJavaProject javaProject, @NotNull String outputDir) throws CoreException {
         List<String> command = new ArrayList<String>();
-        command.add("java");
-        command.add("-cp");
-        command.add(KT_COMPILER_PATH);
-        command.add(K2JVMCompiler.class.getCanonicalName());
-        command.add("-kotlinHome");
+        command.add("-kotlin-home");
         command.add(ProjectUtils.KT_HOME);
-        command.add("-tags");
-        command.add("-noJdkAnnotations"); // TODO: remove this option when external annotation support will be added
+        command.add("-no-jdk-annotations"); // TODO: remove this option when external annotation support will be added
         
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
@@ -97,7 +99,7 @@ public class KotlinCompiler {
     }
 
     @NotNull
-    private KotlinCompilerResult parseCompilerOutput(InputStream inputStream) {
+    private KotlinCompilerResult parseCompilerOutput(Reader reader) {
         final CompilerOutputData compilerOutput = new CompilerOutputData(); 
         
         final List<CompilerMessageSeverity> severities = new ArrayList<CompilerMessageSeverity>();
@@ -110,7 +112,7 @@ public class KotlinCompiler {
                         compilerOutput.add(messageSeverity, message, messageLocation);
                     }
                 },
-                new InputStreamReader(inputStream));
+                reader);
         
         boolean result = true;
         for (CompilerMessageSeverity severity : severities) {

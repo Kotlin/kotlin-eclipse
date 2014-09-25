@@ -16,7 +16,7 @@ public class EclipseJavaConstructor extends EclipseJavaMember<IMethodBinding> im
     public EclipseJavaConstructor(@NotNull IMethodBinding methodBinding) {
         super(methodBinding);
         assert methodBinding.isConstructor() :
-            "PsiMethod which is not a constructor should not be wrapped in JavaConstructorImpl: " + methodBinding.getName();
+            "Method binding which is not a constructor should not be wrapped in EclipseJavaConstructor: " + methodBinding.getName();
     }
     
     @Override
