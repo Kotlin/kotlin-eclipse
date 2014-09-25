@@ -28,7 +28,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -36,6 +35,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.annotations.NotNull;
@@ -193,20 +193,11 @@ public class ProjectUtils {
     public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> srcDirectories = new ArrayList<File>();
         
-        IWorkspaceRoot root = javaProject.getProject().getWorkspace().getRoot();
         for (IClasspathEntry classPathEntry : javaProject.getRawClasspath()) {
             if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                IPath classPathEntryPath = classPathEntry.getPath();
-                IResource classPathResource = root.findMember(classPathEntryPath);
-                String path;
-                if (classPathResource == null) {
-                    path = classPathEntryPath.toOSString();
-                } else {
-                    path = classPathResource.getLocation().toOSString();
-                }
-                
-                if (!path.isEmpty()) {
-                    srcDirectories.add(new File(path));
+                IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(classPathEntry);
+                if (packageFragmentRoots.length > 0) {
+                    srcDirectories.add(packageFragmentRoots[0].getResource().getLocation().toFile());
                 }
             }
         }
