@@ -150,6 +150,20 @@ public class ProjectUtils {
         }
     }
     
+    public static boolean isPathOnClasspath(@NotNull IJavaProject javaProject, @NotNull IPath path) {
+        try {
+            for (IClasspathEntry cp : javaProject.getRawClasspath()) {
+                if (path.equals(cp.getPath().removeFirstSegments(1))) {
+                    return true;
+                }
+            }
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return false;
+    }
+    
     public static List<File> collectDependenciesClasspath(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> dependencies = Lists.newArrayList();
         for (IProject project : getDependencyProjects(javaProject)) {

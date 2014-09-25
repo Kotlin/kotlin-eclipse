@@ -86,7 +86,9 @@ public class KotlinJavaManager {
                 if (!folder.exists()) {
                     folder.create(true, true, null);
                 }
-                
+            }
+            
+            if (!ProjectUtils.isPathOnClasspath(javaProject, KOTLIN_BIN_FOLDER)) {
                 ProjectUtils.addToClasspath(javaProject, KOTLIN_BIN_CLASSPATH_ENTRY);
             }
         } catch (JavaModelException e) {
@@ -96,22 +98,8 @@ public class KotlinJavaManager {
         }
     }
     
-    private boolean hasKotlinBinFolder(@NotNull final IJavaProject javaProject) {
-        try {
-            if (!javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER).exists()) {
-                return false;
-            }
-            
-            for (IClasspathEntry cp : javaProject.getRawClasspath()) {
-                if (KOTLIN_BIN_FOLDER.equals(cp.getPath().removeFirstSegments(1))) {
-                    return true;
-                }
-            }
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-        
-        return false;
+    private boolean hasKotlinBinFolder(@NotNull IJavaProject javaProject) {
+        return javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER).exists();
     }
     
     private void setKtFileSystemFor(IResource resource) {
