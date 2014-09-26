@@ -112,7 +112,7 @@ public class KotlinCompletionProvider {
                                     new Predicate<CallableDescriptor>() {
                                         @Override
                                         public boolean apply(CallableDescriptor callableDescriptor) {
-                                            return ExpressionTypingUtils.checkIsExtensionCallable(receiverValue, callableDescriptor, context, dataFlowInfo);
+                                            return ExpressionTypingUtils.checkIsExtensionCallable(receiverValue, callableDescriptor, false, context, dataFlowInfo);
                                         }
                                     });
     }
@@ -197,7 +197,7 @@ public class KotlinCompletionProvider {
                             return false;
                         }
                         for (ReceiverParameterDescriptor receiverDescriptor : result) {
-                            if (ExpressionTypingUtils.checkIsExtensionCallable(receiverDescriptor.getValue(), callableDescriptor, context, dataFlowInfo)) {
+                            if (ExpressionTypingUtils.checkIsExtensionCallable(receiverDescriptor.getValue(), callableDescriptor, false, context, dataFlowInfo)) {
                                 return false;
                             }
                         }
