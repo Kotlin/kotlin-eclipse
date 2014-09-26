@@ -36,7 +36,6 @@ public class LaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabG
                 new CommonTab()
         };
         setTabs(tabs);
-        
     }
 
 }

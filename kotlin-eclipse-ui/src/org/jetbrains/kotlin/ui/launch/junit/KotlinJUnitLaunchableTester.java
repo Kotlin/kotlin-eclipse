@@ -1,6 +1,20 @@
+/*******************************************************************************
+ * Copyright 2010-2014 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package org.jetbrains.kotlin.ui.launch.junit;
 
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.expressions.PropertyTester;
@@ -12,6 +26,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.junit.launcher.ITestKind;
 import org.eclipse.jdt.internal.junit.launcher.TestKindRegistry;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.psi.JetClass;
 import org.jetbrains.jet.lang.psi.JetDeclaration;
 import org.jetbrains.jet.lang.psi.JetFile;
@@ -19,7 +34,6 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class KotlinJUnitLaunchableTester extends PropertyTester {
@@ -27,13 +41,8 @@ public class KotlinJUnitLaunchableTester extends PropertyTester {
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (receiver instanceof IFile) {
-            IFile file = (IFile) receiver;
-            JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
-            List<JetClass> jetClasses = getJetClasses(jetFile);
-            if (jetClasses.size() == 1) {
-                IType type = KotlinJavaManager.INSTANCE.findEclipseType(jetClasses.get(0), JavaCore.create(file.getProject()));
-                return type != null ? checkHasTests(type) : false;
-            }
+            IType type = getEclipseTypeForSingleClass((IFile) receiver);
+            return type != null ? checkHasTests(type) : false;
         }
         
         return false;
@@ -54,14 +63,27 @@ public class KotlinJUnitLaunchableTester extends PropertyTester {
         return false;
     }
     
-    private static List<JetClass> getJetClasses(@NotNull JetFile jetFile) {
-        List<JetClass> jetClasses = Lists.newArrayList();
+    @Nullable
+    private static JetClass getSingleJetClass(@NotNull IFile file) {
+        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+        
+        JetClass jetClass = null;
         for (JetDeclaration declaration : jetFile.getDeclarations()) {
             if (declaration instanceof JetClass) {
-                jetClasses.add((JetClass) declaration);
+                if (jetClass != null) {
+                    return null;
+                } else {
+                    jetClass = (JetClass) declaration;
+                }
             }
         }
         
-        return jetClasses;
+        return jetClass;
+    }
+    
+    @Nullable
+    static IType getEclipseTypeForSingleClass(@NotNull IFile file) {
+        JetClass jetClass = getSingleJetClass(file);
+        return jetClass != null ? KotlinJavaManager.INSTANCE.findEclipseType(jetClass, JavaCore.create(file.getProject())) : null;
     }
 }
