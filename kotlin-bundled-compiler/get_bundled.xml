@@ -1,6 +1,6 @@
 <project default="get_bundled">
 	<property name="idea-sources-build-id" value="149643"/>
-	<property name="compiler.tag" value="for_eclipse" />
+	<property name="compiler.tag" value="bootstrap" />
 	
 	<property name="teamcity-base" value="http://teamcity.jetbrains.com"/>
 	<property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/bt345/${compiler.tag}.tcbuildtag" />
