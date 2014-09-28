@@ -19,10 +19,6 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
@@ -35,10 +31,8 @@ import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.internal.compiler.env.IBinaryType;
 import org.eclipse.jdt.internal.core.BinaryType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.Visibilities;
 import org.jetbrains.jet.lang.descriptors.Visibility;
-import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.java.JavaVisibilities;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotation;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaValueParameter;
@@ -134,7 +128,7 @@ public class EclipseJavaElementUtil {
         return parameters;
     }
     
-    static JavaAnnotation findAnnotation(@NotNull IAnnotationBinding[] annotationBindings, @NotNull FqName fqName) {
+    public static JavaAnnotation findAnnotation(@NotNull IAnnotationBinding[] annotationBindings, @NotNull FqName fqName) {
         for (IAnnotationBinding annotation : annotationBindings) {
             String annotationFQName = annotation.getAnnotationType().getQualifiedName();
             if (fqName.asString().equals(annotationFQName)) {
@@ -148,22 +142,11 @@ public class EclipseJavaElementUtil {
     public static boolean isKotlinLightClass(@NotNull BinaryType binaryType) {
         try {
             IBinaryType rawBinaryType = (IBinaryType) ((binaryType).getElementInfo());
-            return getKotlinFileIfExist(binaryType.getSourceFileName(rawBinaryType)) != null;
+            return KotlinPsiManager.getKotlinFileIfExist(binaryType.getSourceFileName(rawBinaryType)) != null;
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
         }
         
         return false;
-    }
-    
-    @Nullable
-    public static JetFile getKotlinFileIfExist(@NotNull String sourceFileName) {
-        IPath sourceFilePath = new Path(sourceFileName);
-        IFile projectFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
-        if (KotlinPsiManager.INSTANCE.exists(projectFile)) {
-            return KotlinPsiManager.INSTANCE.getParsedFile(projectFile);
-        }
-        
-        return null;
     }
 }

@@ -65,7 +65,9 @@ public class KotlinJUnitLaunchableTester extends PropertyTester {
     
     @Nullable
     private static JetClass getSingleJetClass(@NotNull IFile file) {
-        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+        if (!KotlinPsiManager.INSTANCE.exists(file)) return null;
+        
+        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
         JetClass jetClass = null;
         for (JetDeclaration declaration : jetFile.getDeclarations()) {
