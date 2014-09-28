@@ -52,7 +52,7 @@ public abstract class KotlinQuickAssistProposal implements IJavaCompletionPropos
 
         JavaEditor javaEditor = (JavaEditor) editor;
         IFile file = EditorUtil.getFile(javaEditor);
-        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
 
         int caretOffset = LineEndUtil.convertCrToOsOffset(EditorUtil.getSourceCode(javaEditor), getCaretOffset(javaEditor));
 

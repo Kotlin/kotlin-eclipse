@@ -38,7 +38,7 @@ public class KotlinLightClassManager {
             for (File sourceFile : sourceIOFiles) {
                 IFile[] eclipseFile = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(sourceFile.toURI());
                 assert eclipseFile.length == 1 : "By URI found " + eclipseFile.length + " IFiles";
-                jetSourceFiles.add((JetFile) KotlinPsiManager.INSTANCE.getParsedFile(eclipseFile[0]));
+                jetSourceFiles.add(KotlinPsiManager.INSTANCE.getParsedFile(eclipseFile[0]));
             }
             
             return jetSourceFiles;

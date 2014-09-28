@@ -36,6 +36,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.plugin.JetFileType;
 import org.jetbrains.jet.plugin.JetLanguage;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -56,7 +57,7 @@ public class KotlinPsiManager {
     public static final KotlinPsiManager INSTANCE = new KotlinPsiManager();
     
     private final Map<IProject, List<IFile>> projectFiles = new HashMap<>();
-    private final Map<IFile, PsiFile> psiFiles = new HashMap<>();
+    private final Map<IFile, JetFile> psiFiles = new HashMap<>();
     
     private final Object mapOperationLock = new Object();
     
@@ -159,7 +160,7 @@ public class KotlinPsiManager {
     }
     
     @NotNull
-    public PsiFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
+    public JetFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
         synchronized (mapOperationLock) {
             updatePsiFile(file, expectedSourceCode);
             return getParsedFile(file);
@@ -167,14 +168,14 @@ public class KotlinPsiManager {
     }
 
     @NotNull
-    public PsiFile getParsedFile(@NotNull IFile file) {
+    public JetFile getParsedFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
             return psiFiles.get(file);
         }
     }
     
-    public boolean exists(@NotNull IFile psiFile) {
-        return psiFiles.containsKey(psiFile);
+    public boolean exists(@NotNull IFile file) {
+        return psiFiles.containsKey(file);
     }
     
     @NotNull
@@ -221,7 +222,7 @@ public class KotlinPsiManager {
     }
     
     @Nullable
-    private PsiFile parseText(@NotNull String text, IFile file) {
+    private JetFile parseText(@NotNull String text, IFile file) {
         StringUtil.assertValidSeparators(text);
         
         IJavaProject javaProject = JavaCore.create(file.getProject());
@@ -231,6 +232,7 @@ public class KotlinPsiManager {
         LightVirtualFile virtualFile = new LightVirtualFile(path, JetLanguage.INSTANCE, text);
         virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET);
         
-        return ((PsiFileFactoryImpl) PsiFileFactory.getInstance(project)).trySetupPsiForFile(virtualFile, JetLanguage.INSTANCE, true, false);
+        PsiFileFactoryImpl psiFileFactory = (PsiFileFactoryImpl) PsiFileFactory.getInstance(project);
+        return (JetFile) psiFileFactory.trySetupPsiForFile(virtualFile, JetLanguage.INSTANCE, true, false);
     }
 }

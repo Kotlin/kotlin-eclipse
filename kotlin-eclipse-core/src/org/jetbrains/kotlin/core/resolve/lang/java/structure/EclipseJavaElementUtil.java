@@ -161,7 +161,7 @@ public class EclipseJavaElementUtil {
         IPath sourceFilePath = new Path(sourceFileName);
         IFile projectFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
         if (KotlinPsiManager.INSTANCE.exists(projectFile)) {
-            return (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(projectFile);
+            return KotlinPsiManager.INSTANCE.getParsedFile(projectFile);
         }
         
         return null;

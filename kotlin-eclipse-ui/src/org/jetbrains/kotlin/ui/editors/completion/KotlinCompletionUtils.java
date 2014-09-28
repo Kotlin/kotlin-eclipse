@@ -45,7 +45,7 @@ public class KotlinCompletionUtils {
         String sourceCode = EditorUtil.getSourceCode(editor);
         String sourceCodeWithMarker = new StringBuilder(sourceCode).insert(identOffset, "KotlinRulezzz").toString();
         
-        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor), sourceCodeWithMarker);
+        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor), sourceCodeWithMarker);
         
         int offsetWithourCR = LineEndUtil.convertCrToOsOffset(sourceCodeWithMarker, identOffset);
         PsiElement psiElement = jetFile.findElementAt(offsetWithourCR);

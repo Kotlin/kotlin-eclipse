@@ -137,7 +137,7 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
     }
     
     private PsiElement findNodeToNewImport(IFile file) {
-        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         List<JetImportDirective> jetImportDirective = jetFile.getImportDirectives();
         if (jetImportDirective != null && !jetImportDirective.isEmpty()) {
             return jetImportDirective.get(jetImportDirective.size() - 1);

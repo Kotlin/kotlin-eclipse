@@ -59,7 +59,7 @@ public class ProjectUtils {
     
     public static IFile findFilesWithMain(Collection<IFile> files) {
         for (IFile file : files) {
-            JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
             if (JetMainDetector.hasMain(jetFile.getDeclarations())) {
                 return file;
             }
@@ -84,7 +84,7 @@ public class ProjectUtils {
     
     @Nullable
     public static String getPackageByFile(IFile file) {
-        JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
         assert jetFile != null;
         
@@ -127,7 +127,7 @@ public class ProjectUtils {
     public static List<JetFile> getSourceFiles(@NotNull IProject project) {
         List<JetFile> jetFiles = new ArrayList<JetFile>();
         for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
-            JetFile jetFile = (JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file);
+            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
             jetFiles.add(jetFile);
          }
         

@@ -46,7 +46,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.SourceElement;
-import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetReferenceExpression;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
@@ -187,7 +186,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     public static JetReferenceExpression getSelectedExpression(@NotNull JavaEditor editor, @NotNull IFile file, int offset) {
         offset = LineEndUtil.convertCrToOsOffset(editor.getViewer().getDocument().get(), offset);
         
-        PsiElement psiExpression = ((JetFile) KotlinPsiManager.INSTANCE.getParsedFile(file)).findElementAt(offset);
+        PsiElement psiExpression = KotlinPsiManager.INSTANCE.getParsedFile(file).findElementAt(offset);
         if (psiExpression == null) {
             return null;
         }
