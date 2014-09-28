@@ -33,7 +33,7 @@
 		<mkdir dir="${download.dir}" />
 
 		<get 
-			src="${teamcity-kotlin-url}/kotlin-plugin-{build.number}.zip" 
+			src="${teamcity-kotlin-url}/kotlin-plugin-%7Bbuild.number%7D.zip" 
 			dest="${download.dir}/${compiler-artifact-file}" 
 			usetimestamp="true" />
 
