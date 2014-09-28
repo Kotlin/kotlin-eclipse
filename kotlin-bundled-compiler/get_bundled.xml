@@ -60,11 +60,17 @@
 
 		<get 
 			src="${teamcity-kotlin-url}/InjectorGenerator/injector-generator.jar"
-			dest="${target.dir}/${injector-generator-file}" />
+			dest="${target.dir}/${injector-generator-file}"
+			usetimestamp="true" />
+		
+		<get src="${idea-sdk-url}/core/intellij-core.jar" 
+			dest="${target.dir}/intellij-core.jar" 
+			usetimestamp="true"/>
 		
 		<get
 			src="${idea-sdk-url}/core/guava-17.0.jar"
-			dest="${target.dir}/${guava-file}" />
+			dest="${target.dir}/${guava-file}"
+			usetimestamp="true" />
 
 		<!-- Also retrivive sources -->
 		<get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar" 
