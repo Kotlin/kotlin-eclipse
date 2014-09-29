@@ -56,7 +56,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         } else {
             IResourceDelta delta = getDelta(getProject());
             if (delta != null) {
-                needRebuild = delta.getAffectedChildren().length > 0;
+                needRebuild = delta.getKind() != IResourceDelta.NO_CHANGE;
             }
         }
         
