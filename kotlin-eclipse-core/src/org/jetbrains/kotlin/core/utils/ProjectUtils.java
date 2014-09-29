@@ -189,51 +189,34 @@ public class ProjectUtils {
         return projects;
     }
     
-    @NotNull
-    public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
-        List<File> srcDirectories = new ArrayList<File>();
+    private static List<File> getClasspaths(@NotNull IJavaProject javaProject, int kind) throws JavaModelException {
+        List<File> paths = new ArrayList<File>();
         
-        for (IClasspathEntry classPathEntry : javaProject.getRawClasspath()) {
-            if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+        for (IClasspathEntry classPathEntry : javaProject.getResolvedClasspath(true)) {
+            if (classPathEntry.getEntryKind() == kind) {
                 IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(classPathEntry);
                 if (packageFragmentRoots.length > 0) {
-                    srcDirectories.add(packageFragmentRoots[0].getResource().getLocation().toFile());
+                    paths.add(packageFragmentRoots[0].getResource().getLocation().toFile());
+                } else { // If directory not under the project then we assume that the path in cp is absolute
+                    File file = classPathEntry.getPath().toFile();
+                    if (file.exists()) {
+                        paths.add(file);
+                    }
                 }
             }
         }
         
-        return srcDirectories;
+        return paths;
+    }
+    
+    @NotNull
+    public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
+        return getClasspaths(javaProject, IClasspathEntry.CPE_SOURCE);
     }
     
     @NotNull
     public static List<File> getLibDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
-        List<File> libDirectories = new ArrayList<File>();
-        
-        IClasspathEntry[] classpathEntries = javaProject.getResolvedClasspath(false);
-        IPath rootDirectory = javaProject.getProject().getLocation();
-        String projectName = rootDirectory.lastSegment();
-        
-        for (IClasspathEntry classpathEntry : classpathEntries) {
-            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
-                String classpath = classpathEntry.getPath().toPortableString();
-                File file = new File(classpath);
-                
-                if (classpathEntry.getPath().segment(0).equals(projectName)) {
-                    file = new File(rootDirectory.removeLastSegments(1).toPortableString() + classpath);
-                } else if (!file.isAbsolute()) {
-                    IFile workspaceFile = ResourcesPlugin.getWorkspace().getRoot().getFile(classpathEntry.getPath());
-                    if (workspaceFile.exists()) {
-                        file = workspaceFile.getLocation().toFile();
-                    } else {
-                        file = new File(rootDirectory.toPortableString() + classpath);
-                    }
-                }
-                
-                libDirectories.add(file);
-            }
-        }
-        
-        return libDirectories;
+        return getClasspaths(javaProject, IClasspathEntry.CPE_LIBRARY);
     }
     
     public static void addToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry)
