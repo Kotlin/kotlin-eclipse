@@ -20,13 +20,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +34,8 @@ import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
+import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
@@ -47,6 +49,10 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         IJavaProject javaProject = JavaCore.create(getProject());
         KotlinEnvironment.updateKotlinEnvironment(javaProject);
         
+        if (isBuildingForLaunch()) {
+            compileKotlinFiles(javaProject);
+        }
+        
         AnalyzeExhaust analyzeExhaust = KotlinAnalyzer.analyzeWholeProject(javaProject);
         updateLineMarkers(analyzeExhaust.getBindingContext().getDiagnostics());
         
@@ -56,7 +62,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         } else {
             IResourceDelta delta = getDelta(getProject());
             if (delta != null) {
-                needRebuild = delta.getAffectedChildren().length > 0;
+                needRebuild = delta.getKind() != IResourceDelta.NO_CHANGE;
             }
         }
         
@@ -67,7 +73,25 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         
         return null;
     }
-
+    
+    private boolean isBuildingForLaunch() {
+        String launchDelegateFQName = LaunchConfigurationDelegate.class.getCanonicalName();
+        for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
+            if (launchDelegateFQName.equals(stackTraceElement.getClassName())) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private void compileKotlinFiles(@NotNull IJavaProject javaProject) throws CoreException {
+        KotlinCompilerResult compilerResult = KotlinCompilerUtils.compileWholeProject(javaProject);
+        if (!compilerResult.compiledCorrectly()) {
+            KotlinCompilerUtils.handleCompilerOutput(compilerResult.getCompilerOutput());
+        }
+    }
+    
     private void updateLineMarkers(@NotNull Diagnostics diagnostics) throws CoreException {
         addMarkersToProject(DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics), getProject());
     }
@@ -75,7 +99,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     private void addMarkersToProject(Map<IFile, List<DiagnosticAnnotation>> annotations, IProject project) throws CoreException {
         for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
             if (file.exists()) {
-                file.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+                file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
             }
         }
         

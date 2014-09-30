@@ -15,8 +15,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.compiler;
 
-import java.io.IOException;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -31,7 +29,7 @@ import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 
 public class KotlinCompilerUtils {
     @NotNull
-    public static KotlinCompilerResult compileWholeProject(@NotNull IJavaProject javaProject) throws CoreException, InterruptedException, IOException {
+    public static KotlinCompilerResult compileWholeProject(@NotNull IJavaProject javaProject) throws CoreException {
         return KotlinCompiler.INSTANCE.compileKotlinFiles(
                 KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.getProject()), 
                 javaProject);

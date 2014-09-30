@@ -17,11 +17,8 @@ package org.jetbrains.kotlin.ui.launch.junit;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.DebugUITools;
-import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.junit.ui.JUnitMessages;
 import org.eclipse.jdt.internal.junit.ui.JUnitPlugin;
@@ -31,7 +28,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.launch.KotlinJUnitLaunchConfigurationDelegate;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
@@ -64,22 +60,6 @@ public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-    }
-    
-    @Override
-    protected ILaunchConfigurationWorkingCopy createLaunchConfiguration(IJavaElement element) throws CoreException {
-        ILaunchConfigurationWorkingCopy jUnitLaunchConfiguration = super.createLaunchConfiguration(element);
-        
-        ILaunchConfigurationWorkingCopy kotlinLaunchDelegate = getLaunchConfigurationType()
-                .newInstance(null, jUnitLaunchConfiguration.getName());
-        kotlinLaunchDelegate.setAttributes(jUnitLaunchConfiguration.getAttributes());
-        
-        return kotlinLaunchDelegate;
-    }
-    
-    private static ILaunchConfigurationType getLaunchConfigurationType() {
-        return DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurationType(
-                KotlinJUnitLaunchConfigurationDelegate.LAUNCH_CONFIGURATION_TYPE_ID);
     }
     
     private void showNoTestsFoundDialog() {
