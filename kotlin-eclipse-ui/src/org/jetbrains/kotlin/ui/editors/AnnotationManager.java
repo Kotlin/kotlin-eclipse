@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -46,6 +47,8 @@ public class AnnotationManager {
     public static final String ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning";
     public static final String MARKED_TEXT = "markedText";
     public static final String IS_QUICK_FIXABLE = "isQuickFixable";
+    
+    public static final String MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
     
     public static void updateAnnotations(@NotNull AbstractTextEditor editor, @NotNull List<DiagnosticAnnotation> annotations) {
         IDocumentProvider documentProvider = editor.getDocumentProvider();
@@ -92,7 +95,7 @@ public class AnnotationManager {
     
     public static void addProblemMarker(@NotNull DiagnosticAnnotation annotation, @NotNull IFile file) {
         try {
-            IMarker problemMarker = file.createMarker(IMarker.PROBLEM);
+            IMarker problemMarker = file.createMarker(MARKER_PROBLEM_TYPE);
             problemMarker.setAttribute(IMarker.MESSAGE, annotation.getText());
             problemMarker.setAttribute(IMarker.SEVERITY, annotation.getMarkerSeverity());
             problemMarker.setAttribute(IMarker.CHAR_START, annotation.getRange().getStartOffset());

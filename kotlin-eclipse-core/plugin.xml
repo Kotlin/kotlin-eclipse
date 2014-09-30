@@ -2,21 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="org.eclipse.debug.core.launchConfigurationTypes">
-      <launchConfigurationType
-            delegate="org.jetbrains.kotlin.core.launch.KotlinLaunchDelegate"
-            id="org.jetbrains.kotlin.core.launch.launchConfigurationType"
-            modes="run"
-            name="Kotlin Application">
-      </launchConfigurationType>
-      <launchConfigurationType
-            delegate="org.jetbrains.kotlin.core.launch.KotlinJUnitLaunchConfigurationDelegate"
-            id="org.jetbrains.kotlin.core.launch.jUnitLaunchConfigurationDelegate"
-            modes="run"
-            name="Kotlin JUnit Test">
-      </launchConfigurationType>
-   </extension>
-   <extension
          id="org.jetbrains.kotlin.core.kotlinNature"
          name="KotlinNature"
          point="org.eclipse.core.resources.natures">

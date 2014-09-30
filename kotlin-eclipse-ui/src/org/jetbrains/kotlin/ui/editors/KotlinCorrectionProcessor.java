@@ -110,7 +110,7 @@ public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
     private IMarker findMarkerAt(int offset) throws CoreException {
         IFile file = EditorUtil.getFile(editor);
         
-        IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+        IMarker[] markers = file.findMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
         final int defaultOffset = -1;
         for (IMarker marker : markers) {
             int markerStart = marker.getAttribute(IMarker.CHAR_START, defaultOffset);

@@ -18,7 +18,6 @@ package org.jetbrains.kotlin.core.compiler;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -46,7 +45,7 @@ public class KotlinCompiler {
     
     @NotNull
     public KotlinCompilerResult compileKotlinFiles(@NotNull List<IFile> files, @NotNull IJavaProject javaProject) 
-            throws CoreException, InterruptedException, IOException {
+            throws CoreException {
         String outputDir = ProjectUtils.getOutputFolder(javaProject).getLocation().toOSString();
         String[] arguments = configureCompilerArguments(javaProject, outputDir);
         

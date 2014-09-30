@@ -368,7 +368,7 @@
          id="org.jetbrains.kotlin.ui.kotlinBuilder"
          name="KotlinBuilder"
          point="org.eclipse.core.resources.builders">
-      <builder>
+      <builder callOnEmptyDelta="true">
          <run
                class="org.jetbrains.kotlin.ui.builder.KotlinBuilder">
          </run>
@@ -378,7 +378,7 @@
          point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
             class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinAutoImportMarkerResolutionGenerator"
-            markerType="org.eclipse.core.resources.problemmarker">
+            markerType="org.eclipse.jdt.core.problem">
       </markerResolutionGenerator>
    </extension>
    <extension

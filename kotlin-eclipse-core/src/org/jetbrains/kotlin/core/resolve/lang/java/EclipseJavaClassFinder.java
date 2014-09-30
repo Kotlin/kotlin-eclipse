@@ -56,8 +56,6 @@ import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPackage;
 
 public class EclipseJavaClassFinder implements JavaClassFinder {
 
-    private static ASTParser parser = ASTParser.newParser(AST.JLS4);
-    
     private IJavaProject javaProject = null;
     
     @Inject
@@ -117,6 +115,7 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
     }
     
     public static ITypeBinding createTypeBinding(IType type) {
+        ASTParser parser = ASTParser.newParser(AST.JLS4);
         parser.setCompilerOptions(type.getJavaProject().getOptions(true));
         parser.setIgnoreMethodBodies(true);
         

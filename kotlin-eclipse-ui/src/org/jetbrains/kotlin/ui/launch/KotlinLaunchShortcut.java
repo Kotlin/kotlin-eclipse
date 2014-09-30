@@ -45,9 +45,6 @@ import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 public class KotlinLaunchShortcut implements ILaunchShortcut {
-
-    private static final String launchConfigurationTypeId = "org.jetbrains.kotlin.core.launch.launchConfigurationType";
-    
     @Override
     public void launch(ISelection selection, String mode) {
         if (!(selection instanceof IStructuredSelection)) {
@@ -175,6 +172,6 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
     }
 
     private static ILaunchConfigurationType getLaunchConfigurationType() {
-        return DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurationType(launchConfigurationTypeId);
+        return DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
     }
 }
