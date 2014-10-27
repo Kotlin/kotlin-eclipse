@@ -36,8 +36,8 @@ import org.jetbrains.jet.lang.psi.JetQualifiedExpression;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
 import org.jetbrains.jet.lang.psi.psiUtil.PsiUtilPackage;
 import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.resolve.calls.autocasts.AutoCastUtils;
-import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowInfo;
+import org.jetbrains.jet.lang.resolve.calls.smartcasts.DataFlowInfo;
+import org.jetbrains.jet.lang.resolve.calls.smartcasts.SmartCastUtils;
 import org.jetbrains.jet.lang.resolve.scopes.JetScope;
 import org.jetbrains.jet.lang.resolve.scopes.JetScopeUtils;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
@@ -81,7 +81,7 @@ public class KotlinCompletionProvider {
 
                 DataFlowInfo info = getDataFlowInfo(context, expression);
 
-                List<JetType> variantsForExplicitReceiver = AutoCastUtils.getAutoCastVariants(receiverValue, context, info);
+                List<JetType> variantsForExplicitReceiver = SmartCastUtils.getSmartCastVariants(receiverValue, context, info);
 
                 for (JetType variant : variantsForExplicitReceiver) {
                     descriptors.addAll(excludePrivateDescriptors(variant.getMemberScope().getAllDescriptors()));
@@ -193,7 +193,7 @@ public class KotlinCompletionProvider {
                 Collections2.filter(JetScopeUtils.getAllExtensions(scope), new Predicate<CallableDescriptor>() {
                     @Override
                     public boolean apply(CallableDescriptor callableDescriptor) {
-                        if (callableDescriptor.getReceiverParameter() == null) {
+                        if (callableDescriptor.getExtensionReceiverParameter() == null) {
                             return false;
                         }
                         for (ReceiverParameterDescriptor receiverDescriptor : result) {

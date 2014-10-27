@@ -24,13 +24,16 @@ import org.jetbrains.jet.lang.resolve.java.structure.JavaField;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaPropertyInitializerEvaluator;
 
 public class EclipseJavaPropertyInitializerEvaluator implements JavaPropertyInitializerEvaluator {
-
     @Override
     @Nullable
-    public CompileTimeConstant<?> getInitializerConstant(@NotNull JavaField field,
-            @NotNull PropertyDescriptor descriptor) {
+    public CompileTimeConstant<?> getInitializerConstant(@NotNull JavaField field, @NotNull PropertyDescriptor descriptor) {
         // TODO Auto-generated method stub
         return null;
     }
 
+    @Override
+    public boolean isNotNullCompileTimeConstant(@NotNull JavaField field) {
+        // TODO Auto-generated method stub
+        return false;
+    }
 }

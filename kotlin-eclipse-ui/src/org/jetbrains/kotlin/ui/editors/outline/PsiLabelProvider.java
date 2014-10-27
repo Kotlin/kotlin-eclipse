@@ -78,7 +78,7 @@ public class PsiLabelProvider extends LabelProvider {
                 text = CLASS_INITIALIZER;
             } else if (declaration instanceof JetProperty) {
                 JetProperty property = (JetProperty) declaration;
-                JetTypeReference ref = property.getTypeRef();
+                JetTypeReference ref = property.getTypeReference();
                 if (ref != null) {
                     text += " ";
                     text += ":";
@@ -87,7 +87,7 @@ public class PsiLabelProvider extends LabelProvider {
                 }
             } else if (declaration instanceof JetFunction) {
                 JetFunction function = (JetFunction) declaration;
-                JetTypeReference receiverTypeRef = function.getReceiverTypeRef();
+                JetTypeReference receiverTypeRef = function.getReceiverTypeReference();
                 if (receiverTypeRef != null) {
                     text = receiverTypeRef.getText() + "." + text;
                 }
@@ -108,7 +108,7 @@ public class PsiLabelProvider extends LabelProvider {
                 }
                 if (parameters.size() > 0) text = text.substring(0, text.length() - 2);
                 text += ")";
-                JetTypeReference typeReference = function.getReturnTypeRef();
+                JetTypeReference typeReference = function.getTypeReference();
                 if (typeReference != null) {
                     text += " ";
                     text += ":";

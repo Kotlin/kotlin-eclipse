@@ -48,7 +48,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         JetType type = getTypeForDeclaration((JetNamedDeclaration) parent);
         if (parent instanceof JetProperty) {
             JetProperty property = (JetProperty) parent;
-            if (property.getTypeRef() == null) {
+            if (property.getTypeReference() == null) {
                 addTypeAnnotation(document, property, type);
             } else {
                 removeTypeAnnotation(document, property);
@@ -64,7 +64,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         }
         else if (parent instanceof JetNamedFunction) {
             JetNamedFunction function = (JetNamedFunction) parent;
-            assert function.getReturnTypeRef() == null;
+            assert function.getTypeReference() == null;
             addTypeAnnotation(document, function, type);
         } else {
             throw new IllegalStateException("Unexpected parent " + parent);
@@ -96,7 +96,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
     }
     
     private void removeTypeAnnotation(@NotNull IDocument document, @NotNull JetProperty property) {
-        removeTypeAnnotation(document, property.getNameIdentifier(), property.getTypeRef());
+        removeTypeAnnotation(document, property.getNameIdentifier(), property.getTypeReference());
     }
     
     private void removeTypeAnnotation(@NotNull IDocument document, @NotNull JetParameter parameter) {
@@ -129,14 +129,14 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         JetNamedDeclaration declaration = (JetNamedDeclaration) parent;
 
         if (declaration instanceof JetProperty && !PsiTreeUtil.isAncestor(((JetProperty) declaration).getInitializer(), element, false)) {
-            if (((JetProperty) declaration).getTypeRef() != null) {
+            if (((JetProperty) declaration).getTypeReference() != null) {
                 setDisplayString(REMOVE_TYPE_MESSAGE);
                 return true;
             } else {
                 setDisplayString(SPECIFY_TYPE_EXPLICITLY_MESSAGE);
             }
         }
-        else if (declaration instanceof JetNamedFunction && ((JetNamedFunction) declaration).getReturnTypeRef() == null
+        else if (declaration instanceof JetNamedFunction && ((JetNamedFunction) declaration).getTypeReference() == null
                 && !((JetNamedFunction) declaration).hasBlockBody()) {
             setDisplayString(SPECIFY_TYPE_EXPLICITLY_MESSAGE);
         }
@@ -188,7 +188,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
     }
     
     private void addTypeAnnotation(@NotNull IDocument document, @NotNull JetProperty property, @NotNull JetType exprType) {
-        if (property.getTypeRef() != null) {
+        if (property.getTypeReference() != null) {
             return;
         }
         
