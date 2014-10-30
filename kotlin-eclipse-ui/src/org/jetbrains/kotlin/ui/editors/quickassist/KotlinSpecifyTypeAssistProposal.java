@@ -22,7 +22,7 @@ import org.jetbrains.jet.lang.psi.JetTypeReference;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.types.ErrorUtils;
 import org.jetbrains.jet.lang.types.JetType;
-import org.jetbrains.jet.renderer.DescriptorRenderer;
+import org.jetbrains.jet.plugin.util.IdeDescriptorRenderers;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
@@ -76,7 +76,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         if (editor == null) return;
         
         try {
-            document.replace(getEndOffset(anchor, editor), 0, ": " + DescriptorRenderer.SHORT_NAMES_IN_TYPES.renderType(exprType)); 
+            document.replace(getEndOffset(anchor, editor), 0, ": " + IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.renderType(exprType)); 
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }

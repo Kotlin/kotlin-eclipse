@@ -6,5 +6,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-runtime.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/injector-generator.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-ide-common.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
