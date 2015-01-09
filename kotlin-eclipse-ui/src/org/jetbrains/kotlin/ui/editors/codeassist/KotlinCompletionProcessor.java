@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import kotlin.Function1;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.core.IJavaProject;
@@ -45,11 +47,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.psi.JetSimpleNameExpression;
 import org.jetbrains.jet.lang.resolve.BindingContext;
+import org.jetbrains.jet.lang.resolve.name.Name;
+import org.jetbrains.jet.lang.resolve.scopes.DescriptorKindFilter;
+import org.jetbrains.jet.plugin.codeInsight.ReferenceVariantsHelper;
 import org.jetbrains.jet.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
-import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionProvider;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinDescriptorUtils;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext;
@@ -135,14 +139,30 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     }
     
     @NotNull
-    private Collection<DeclarationDescriptor> getReferenceVariants(@NotNull JetSimpleNameExpression simpleNameExpression,
+    private Collection<DeclarationDescriptor> getReferenceVariants(
+            @NotNull JetSimpleNameExpression simpleNameExpression,
             @NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         BindingContext context = KotlinAnalyzer
                 .analyzeOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
                 .getBindingContext();
         
-        return KotlinCompletionProvider.getReferenceVariants(simpleNameExpression, context);
+        Function1<DeclarationDescriptor, Boolean> visibilityFilter = new Function1<DeclarationDescriptor, Boolean>() {
+            @Override
+            public Boolean invoke(DeclarationDescriptor descriptor) {
+                return true;
+            }
+        };
+        
+        Function1<Name, Boolean> nameFilter = new Function1<Name, Boolean>() {
+            @Override
+            public Boolean invoke(Name name) {
+                return true;
+            }
+        };
+        
+        return new ReferenceVariantsHelper(context, visibilityFilter).getReferenceVariants(
+                simpleNameExpression, DescriptorKindFilter.ALL, nameFilter);
     }
     
     private List<ICompletionProposal> collectCompletionProposals(

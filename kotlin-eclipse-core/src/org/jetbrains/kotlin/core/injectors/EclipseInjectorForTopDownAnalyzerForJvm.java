@@ -15,74 +15,78 @@
  */
 package org.jetbrains.kotlin.core.injectors;
 
-import org.jetbrains.jet.di.InjectorForTopDownAnalyzer;
-import com.intellij.openapi.project.Project;
-import org.jetbrains.jet.context.GlobalContext;
-import org.jetbrains.jet.storage.StorageManager;
-import org.jetbrains.jet.lang.resolve.BindingTrace;
-import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
-import org.jetbrains.jet.lang.PlatformToKotlinClassMap;
+import javax.annotation.PreDestroy;
+
 import org.eclipse.jdt.core.IJavaProject;
-import org.jetbrains.jet.lang.resolve.TopDownAnalyzer;
-import org.jetbrains.jet.lang.resolve.LazyTopDownAnalyzer;
-import org.jetbrains.jet.lang.resolve.MutablePackageFragmentProvider;
-import org.jetbrains.jet.lang.resolve.java.JavaDescriptorResolver;
-import org.jetbrains.jet.lang.resolve.kotlin.DeserializationGlobalContextForJava;
-import org.jetbrains.jet.lang.resolve.AdditionalCheckerProvider;
-import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
-import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedExternalSignatureResolver;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
-import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedErrorReporter;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
-import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory;
-import org.jetbrains.jet.lang.resolve.java.lazy.SingleModuleClassResolver;
-import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
-import org.jetbrains.jet.lang.resolve.BodyResolver;
-import org.jetbrains.jet.lang.resolve.AnnotationResolver;
-import org.jetbrains.jet.lang.resolve.calls.CallResolver;
-import org.jetbrains.jet.lang.resolve.calls.ArgumentTypeResolver;
-import org.jetbrains.jet.lang.types.expressions.ExpressionTypingServices;
-import org.jetbrains.jet.lang.types.expressions.ExpressionTypingComponents;
-import org.jetbrains.jet.lang.types.expressions.ControlStructureTypingUtils;
-import org.jetbrains.jet.lang.types.expressions.ExpressionTypingUtils;
-import org.jetbrains.jet.lang.types.expressions.ForLoopConventionsChecker;
-import org.jetbrains.jet.lang.reflect.ReflectionTypes;
-import org.jetbrains.jet.lang.resolve.calls.CallExpressionResolver;
-import org.jetbrains.jet.lang.resolve.DescriptorResolver;
-import org.jetbrains.jet.lang.resolve.DelegatedPropertyResolver;
-import org.jetbrains.jet.lang.resolve.TypeResolver;
-import org.jetbrains.jet.lang.resolve.TypeResolver.FlexibleTypeCapabilitiesProvider;
-import org.jetbrains.jet.lang.resolve.QualifiedExpressionResolver;
-import org.jetbrains.jet.lang.resolve.calls.CallResolverExtensionProvider;
-import org.jetbrains.jet.lang.resolve.calls.CallCompleter;
-import org.jetbrains.jet.lang.resolve.calls.CandidateResolver;
-import org.jetbrains.jet.lang.resolve.ControlFlowAnalyzer;
-import org.jetbrains.jet.lang.resolve.DeclarationsChecker;
-import org.jetbrains.jet.lang.resolve.ModifiersChecker;
-import org.jetbrains.jet.lang.resolve.FunctionAnalyzerExtension;
-import org.jetbrains.jet.lang.resolve.ScriptBodyResolver;
-import org.jetbrains.jet.lang.resolve.DeclarationResolver;
-import org.jetbrains.jet.lang.resolve.ImportsResolver;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.context.GlobalContext;
+import org.jetbrains.jet.context.LazinessToken;
+import org.jetbrains.jet.lang.PlatformToKotlinClassMap;
+import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
 import org.jetbrains.jet.lang.psi.JetImportsFactory;
+import org.jetbrains.jet.lang.reflect.ReflectionTypes;
+import org.jetbrains.jet.lang.resolve.AdditionalCheckerProvider;
+import org.jetbrains.jet.lang.resolve.AnnotationResolver;
+import org.jetbrains.jet.lang.resolve.BindingTrace;
+import org.jetbrains.jet.lang.resolve.BodyResolver;
+import org.jetbrains.jet.lang.resolve.ControlFlowAnalyzer;
+import org.jetbrains.jet.lang.resolve.DeclarationResolver;
+import org.jetbrains.jet.lang.resolve.DeclarationsChecker;
+import org.jetbrains.jet.lang.resolve.DelegatedPropertyResolver;
+import org.jetbrains.jet.lang.resolve.DescriptorResolver;
+import org.jetbrains.jet.lang.resolve.FunctionAnalyzerExtension;
+import org.jetbrains.jet.lang.resolve.ImportsResolver;
+import org.jetbrains.jet.lang.resolve.LazyTopDownAnalyzer;
+import org.jetbrains.jet.lang.resolve.ModifiersChecker;
+import org.jetbrains.jet.lang.resolve.MutablePackageFragmentProvider;
 import org.jetbrains.jet.lang.resolve.OverloadResolver;
 import org.jetbrains.jet.lang.resolve.OverrideResolver;
-import org.jetbrains.jet.lang.resolve.TypeHierarchyResolver;
+import org.jetbrains.jet.lang.resolve.QualifiedExpressionResolver;
+import org.jetbrains.jet.lang.resolve.ScriptBodyResolver;
 import org.jetbrains.jet.lang.resolve.ScriptHeaderResolver;
-import org.jetbrains.jet.lang.resolve.java.lazy.LazyJavaPackageFragmentProvider;
+import org.jetbrains.jet.lang.resolve.TopDownAnalyzer;
+import org.jetbrains.jet.lang.resolve.TypeHierarchyResolver;
+import org.jetbrains.jet.lang.resolve.TypeResolver;
+import org.jetbrains.jet.lang.resolve.TypeResolver.FlexibleTypeCapabilitiesProvider;
+import org.jetbrains.jet.lang.resolve.calls.ArgumentTypeResolver;
+import org.jetbrains.jet.lang.resolve.calls.CallCompleter;
+import org.jetbrains.jet.lang.resolve.calls.CallExpressionResolver;
+import org.jetbrains.jet.lang.resolve.calls.CallResolver;
+import org.jetbrains.jet.lang.resolve.calls.CallResolverExtensionProvider;
+import org.jetbrains.jet.lang.resolve.calls.CandidateResolver;
+import org.jetbrains.jet.lang.resolve.calls.tasks.TaskPrioritizer;
+import org.jetbrains.jet.lang.resolve.java.JavaDescriptorResolver;
 import org.jetbrains.jet.lang.resolve.java.lazy.GlobalJavaResolverContext;
+import org.jetbrains.jet.lang.resolve.java.lazy.LazyJavaPackageFragmentProvider;
+import org.jetbrains.jet.lang.resolve.java.lazy.SingleModuleClassResolver;
+import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedErrorReporter;
+import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedExternalSignatureResolver;
+import org.jetbrains.jet.lang.resolve.java.sam.SamConversionResolverImpl;
+import org.jetbrains.jet.lang.resolve.kotlin.AnnotationDescriptorLoader;
+import org.jetbrains.jet.lang.resolve.kotlin.ConstantDescriptorLoader;
+import org.jetbrains.jet.lang.resolve.kotlin.DescriptorLoadersStorage;
+import org.jetbrains.jet.lang.resolve.kotlin.DeserializationGlobalContextForJava;
 import org.jetbrains.jet.lang.resolve.kotlin.DeserializedDescriptorResolver;
 import org.jetbrains.jet.lang.resolve.kotlin.JavaClassDataFinder;
-import org.jetbrains.jet.lang.resolve.kotlin.AnnotationDescriptorLoader;
-import org.jetbrains.jet.lang.resolve.kotlin.DescriptorLoadersStorage;
-import org.jetbrains.jet.lang.resolve.kotlin.ConstantDescriptorLoader;
-import org.jetbrains.annotations.NotNull;
-import javax.annotation.PreDestroy;
+import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
+import org.jetbrains.jet.lang.types.expressions.ControlStructureTypingUtils;
+import org.jetbrains.jet.lang.types.expressions.ExpressionTypingComponents;
+import org.jetbrains.jet.lang.types.expressions.ExpressionTypingServices;
+import org.jetbrains.jet.lang.types.expressions.ExpressionTypingUtils;
+import org.jetbrains.jet.lang.types.expressions.ForLoopConventionsChecker;
+import org.jetbrains.jet.storage.StorageManager;
+import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
+
+import com.intellij.openapi.project.Project;
 
 /* This file is generated by org.jetbrains.kotlin.core.injectors.InjectorsGenerator. DO NOT EDIT! */
 @SuppressWarnings("all")
-public class EclipseInjectorForTopDownAnalyzerForJvm implements InjectorForTopDownAnalyzer {
+public class EclipseInjectorForTopDownAnalyzerForJvm {
 
     private final Project project;
     private final GlobalContext globalContext;
@@ -103,6 +107,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm implements InjectorForTopDo
     private final TraceBasedErrorReporter traceBasedErrorReporter;
     private final EclipseMethodSignatureChecker eclipseMethodSignatureChecker;
     private final EclipseExternalAnnotationResolver eclipseExternalAnnotationResolver;
+    private final SamConversionResolverImpl samConversionResolver;
     private final EclipseJavaPropertyInitializerEvaluator eclipseJavaPropertyInitializerEvaluator;
     private final EclipseJavaSourceElementFactory eclipseJavaSourceElementFactory;
     private final SingleModuleClassResolver singleModuleClassResolver;
@@ -121,11 +126,13 @@ public class EclipseInjectorForTopDownAnalyzerForJvm implements InjectorForTopDo
     private final DescriptorResolver descriptorResolver;
     private final DelegatedPropertyResolver delegatedPropertyResolver;
     private final TypeResolver typeResolver;
-    private final FlexibleTypeCapabilitiesProvider flexibleTypeCapabilitiesProvider;
     private final QualifiedExpressionResolver qualifiedExpressionResolver;
+    private final FlexibleTypeCapabilitiesProvider flexibleTypeCapabilitiesProvider;
+    private final LazinessToken lazinessToken;
     private final CallResolverExtensionProvider callResolverExtensionProvider;
     private final CallCompleter callCompleter;
     private final CandidateResolver candidateResolver;
+    private final TaskPrioritizer taskPrioritizer;
     private final ControlFlowAnalyzer controlFlowAnalyzer;
     private final DeclarationsChecker declarationsChecker;
     private final ModifiersChecker modifiersChecker;
@@ -172,9 +179,10 @@ public class EclipseInjectorForTopDownAnalyzerForJvm implements InjectorForTopDo
         this.eclipseMethodSignatureChecker = new EclipseMethodSignatureChecker();
         this.eclipseTraceBasedJavaResolverCache = new EclipseTraceBasedJavaResolverCache();
         this.eclipseJavaPropertyInitializerEvaluator = new EclipseJavaPropertyInitializerEvaluator();
+        this.samConversionResolver = SamConversionResolverImpl.INSTANCE$;
         this.eclipseJavaSourceElementFactory = new EclipseJavaSourceElementFactory();
         this.singleModuleClassResolver = new SingleModuleClassResolver();
-        this.globalJavaResolverContext = new GlobalJavaResolverContext(storageManager, eclipseJavaClassFinder, virtualFileFinder, deserializedDescriptorResolver, eclipseExternalAnnotationResolver, traceBasedExternalSignatureResolver, traceBasedErrorReporter, eclipseMethodSignatureChecker, eclipseTraceBasedJavaResolverCache, eclipseJavaPropertyInitializerEvaluator, eclipseJavaSourceElementFactory, singleModuleClassResolver);
+        this.globalJavaResolverContext = new GlobalJavaResolverContext(storageManager, eclipseJavaClassFinder, virtualFileFinder, deserializedDescriptorResolver, eclipseExternalAnnotationResolver, traceBasedExternalSignatureResolver, traceBasedErrorReporter, eclipseMethodSignatureChecker, eclipseTraceBasedJavaResolverCache, eclipseJavaPropertyInitializerEvaluator, samConversionResolver, eclipseJavaSourceElementFactory, singleModuleClassResolver);
         this.lazyJavaPackageFragmentProvider = new LazyJavaPackageFragmentProvider(globalJavaResolverContext, getModuleDescriptor());
         this.javaDescriptorResolver = new JavaDescriptorResolver(lazyJavaPackageFragmentProvider, getModuleDescriptor());
         this.javaClassDataFinder = new JavaClassDataFinder(virtualFileFinder, deserializedDescriptorResolver);
@@ -195,12 +203,14 @@ public class EclipseInjectorForTopDownAnalyzerForJvm implements InjectorForTopDo
         this.callExpressionResolver = new CallExpressionResolver();
         this.descriptorResolver = new DescriptorResolver();
         this.delegatedPropertyResolver = new DelegatedPropertyResolver();
-        this.typeResolver = new TypeResolver();
-        this.flexibleTypeCapabilitiesProvider = new FlexibleTypeCapabilitiesProvider();
         this.qualifiedExpressionResolver = new QualifiedExpressionResolver();
+        this.flexibleTypeCapabilitiesProvider = new FlexibleTypeCapabilitiesProvider();
+        this.lazinessToken = new LazinessToken();
+        this.typeResolver = new TypeResolver(annotationResolver, qualifiedExpressionResolver, getModuleDescriptor(), flexibleTypeCapabilitiesProvider, storageManager, lazinessToken);
         this.callResolverExtensionProvider = new CallResolverExtensionProvider();
         this.candidateResolver = new CandidateResolver();
         this.callCompleter = new CallCompleter(argumentTypeResolver, candidateResolver);
+        this.taskPrioritizer = new TaskPrioritizer(storageManager);
         this.controlFlowAnalyzer = new ControlFlowAnalyzer();
         this.declarationsChecker = new DeclarationsChecker();
         this.modifiersChecker = new ModifiersChecker(bindingTrace, additionalCheckerProvider);
@@ -264,6 +274,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm implements InjectorForTopDo
         callResolver.setCallCompleter(callCompleter);
         callResolver.setCandidateResolver(candidateResolver);
         callResolver.setExpressionTypingServices(expressionTypingServices);
+        callResolver.setTaskPrioritizer(taskPrioritizer);
         callResolver.setTypeResolver(typeResolver);
 
         argumentTypeResolver.setExpressionTypingServices(expressionTypingServices);
@@ -301,11 +312,6 @@ public class EclipseInjectorForTopDownAnalyzerForJvm implements InjectorForTopDo
 
         delegatedPropertyResolver.setCallResolver(callResolver);
         delegatedPropertyResolver.setExpressionTypingServices(expressionTypingServices);
-
-        typeResolver.setAnnotationResolver(annotationResolver);
-        typeResolver.setFlexibleTypeCapabilitiesProvider(flexibleTypeCapabilitiesProvider);
-        typeResolver.setModuleDescriptor(moduleDescriptor);
-        typeResolver.setQualifiedExpressionResolver(qualifiedExpressionResolver);
 
         candidateResolver.setArgumentTypeResolver(argumentTypeResolver);
 

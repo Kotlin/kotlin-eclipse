@@ -24,7 +24,6 @@ import org.jetbrains.jet.di.DependencyInjectorGenerator;
 import org.jetbrains.jet.di.DiType;
 import org.jetbrains.jet.di.Expression;
 import org.jetbrains.jet.di.GivenExpression;
-import org.jetbrains.jet.di.InjectorForTopDownAnalyzer;
 import org.jetbrains.jet.di.InjectorGeneratorUtil;
 import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
 import org.jetbrains.jet.lang.resolve.AdditionalCheckerProvider;
@@ -44,6 +43,7 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
+import org.jetbrains.jet.lang.resolve.java.sam.SamConversionResolverImpl;
 import org.jetbrains.jet.lang.resolve.java.lazy.SingleModuleClassResolver;
 
 import com.intellij.openapi.project.Project;
@@ -72,8 +72,6 @@ public class InjectorsGenerator {
     }
     
     private void configureGeneratorForTopDownAnalyzerForJvm() {
-        generator.implementInterface(InjectorForTopDownAnalyzer.class);
-        
         addParameter(Project.class, false);
         addParameter(GlobalContext.class, true);
         addParameter(BindingTrace.class, false);
@@ -98,6 +96,7 @@ public class InjectorsGenerator {
                 TraceBasedErrorReporter.class,
                 EclipseMethodSignatureChecker.class, 
                 EclipseExternalAnnotationResolver.class,
+                SamConversionResolverImpl.class,
                 MutablePackageFragmentProvider.class, 
                 EclipseJavaPropertyInitializerEvaluator.class,
                 EclipseJavaSourceElementFactory.class, 

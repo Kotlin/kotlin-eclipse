@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import kotlin.Function1;
+
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -32,6 +34,7 @@ import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaElement;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaPackage;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 
@@ -50,13 +53,13 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
     public EclipseJavaPackage(IPackageFragment pckg) {
         this(Collections.singletonList(pckg));
     }
-
+    
     @Override
     @NotNull
-    public Collection<JavaClass> getClasses() {
+    public Collection<JavaClass> getClasses(@NotNull Function1<? super Name, ? extends Boolean> nameFilter) {
         List<JavaClass> javaClasses = Lists.newArrayList();
         for (IPackageFragment pckg : packages) {
-            javaClasses.addAll(getClassesInPackage(pckg));
+            javaClasses.addAll(getClassesInPackage(pckg, nameFilter));
         }
         
         return javaClasses;
@@ -93,24 +96,30 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
         return new FqName(packages.get(0).getElementName()); // They all should have same names
     }
     
-    private List<JavaClass> getClassesInPackage(IPackageFragment javaPackage) {
+    private List<JavaClass> getClassesInPackage(IPackageFragment javaPackage, Function1<? super Name, ? extends Boolean> nameFilter) {
         try {
             List<JavaClass> javaClasses = Lists.newArrayList();
             for (IClassFile classFile : javaPackage.getClassFiles()) {
                 IType type = classFile.getType();
                 if (isOuterClass(classFile)) {
-                    ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(type);
-                    if (typeBinding != null) {
-                        javaClasses.add(new EclipseJavaClass(typeBinding));
+                    String elementName = classFile.getElementName();
+                    if (Name.isValidIdentifier(elementName) && nameFilter.invoke(Name.identifier(elementName))) {
+                        ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(type);
+                        if (typeBinding != null) {
+                            javaClasses.add(new EclipseJavaClass(typeBinding));
+                        }
                     }
                 }
             }
             
             for (ICompilationUnit cu : javaPackage.getCompilationUnits()) {
                 for (IType javaClass : cu.getAllTypes()) {
-                    ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(javaClass);
-                    if (typeBinding != null) {
-                        javaClasses.add(new EclipseJavaClass(typeBinding));
+                    String elementName = javaClass.getElementName();
+                    if (Name.isValidIdentifier(elementName) && nameFilter.invoke(Name.identifier(elementName))) {
+                        ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(javaClass);
+                        if (typeBinding != null) {
+                            javaClasses.add(new EclipseJavaClass(typeBinding));
+                        }
                     }
                 }
             }

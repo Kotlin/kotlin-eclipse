@@ -1,7 +1,7 @@
 <project default="get_bundled">
 	<property name="idea-sources-build-id" value="377195"/>
 	<property name="compiler.tag" value="bootstrap" />
-	<property name="compiler.query" value="180861:id" />
+	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
 	
 	<property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
 	<property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/bt345/${compiler.query}" />
