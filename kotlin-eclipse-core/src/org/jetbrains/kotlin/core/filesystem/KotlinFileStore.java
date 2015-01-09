@@ -19,7 +19,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.OutputFile;
-import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.analyzer.AnalysisResult;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
@@ -39,8 +39,8 @@ public class KotlinFileStore extends LocalFile {
             IJavaProject javaProject = getJavaProject();
             assert javaProject != null;
             
-            AnalyzeExhaust analyzeExhaust = KotlinAnalyzer.analyzeDeclarations(javaProject);
-            GenerationState state = KotlinLightClassGeneration.buildLightClasses(analyzeExhaust, javaProject, jetFiles);
+            AnalysisResult analysisResult = KotlinAnalyzer.analyzeDeclarations(javaProject);
+            GenerationState state = KotlinLightClassGeneration.buildLightClasses(analysisResult, javaProject, jetFiles);
             
             IPath absolutePath = new Path(file.getAbsolutePath());
             for (OutputFile outputFile : state.getFactory().asList()) {

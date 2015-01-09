@@ -30,7 +30,7 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.analyzer.AnalysisResult;
 import org.jetbrains.jet.lang.resolve.Diagnostics;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
@@ -53,8 +53,8 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             compileKotlinFiles(javaProject);
         }
         
-        AnalyzeExhaust analyzeExhaust = KotlinAnalyzer.analyzeWholeProject(javaProject);
-        updateLineMarkers(analyzeExhaust.getBindingContext().getDiagnostics());
+        AnalysisResult analysisResult = KotlinAnalyzer.analyzeWholeProject(javaProject);
+        updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
         
         boolean needRebuild = false;
         if (kind == FULL_BUILD) {

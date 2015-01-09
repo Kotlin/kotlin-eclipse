@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.analyzer.AnalysisResult;
 import org.jetbrains.jet.context.ContextPackage;
 import org.jetbrains.jet.context.GlobalContext;
 import org.jetbrains.jet.lang.descriptors.PackageFragmentProvider;
@@ -56,7 +56,7 @@ public enum EclipseAnalyzerFacadeForJVM {
     }
 
     @NotNull
-    public static AnalyzeExhaust analyzeFilesWithJavaIntegration(
+    public static AnalysisResult analyzeFilesWithJavaIntegration(
             IJavaProject javaProject, 
             Project project,
             Collection<JetFile> files,
@@ -80,7 +80,7 @@ public enum EclipseAnalyzerFacadeForJVM {
             additionalProviders.add(injector.getJavaDescriptorResolver().getPackageFragmentProvider());
             
             injector.getTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, files, additionalProviders);
-            return AnalyzeExhaust.success(trace.getBindingContext(), module);
+            return AnalysisResult.success(trace.getBindingContext(), module);
         }
         finally {
             injector.destroy();

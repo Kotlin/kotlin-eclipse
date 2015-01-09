@@ -18,7 +18,7 @@ package org.jetbrains.kotlin.core.resolve;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.analyzer.AnalysisResult;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
@@ -32,27 +32,27 @@ import com.intellij.psi.PsiFile;
 public class KotlinAnalyzer {
 
     @NotNull
-    public static AnalyzeExhaust analyzeDeclarations(@NotNull IJavaProject javaProject) {
+    public static AnalysisResult analyzeDeclarations(@NotNull IJavaProject javaProject) {
         return analyzeProject(javaProject, Predicates.<PsiFile>alwaysFalse());
     }
     
     @NotNull
-    public static AnalyzeExhaust analyzeWholeProject(@NotNull IJavaProject javaProject) {
+    public static AnalysisResult analyzeWholeProject(@NotNull IJavaProject javaProject) {
         return analyzeProject(javaProject, Predicates.<PsiFile>alwaysTrue());
     }
 
     @NotNull
-    public static AnalyzeExhaust analyzeOneFileCompletely(@NotNull IJavaProject javaProject, @NotNull PsiFile psiFile) {
+    public static AnalysisResult analyzeOneFileCompletely(@NotNull IJavaProject javaProject, @NotNull PsiFile psiFile) {
         return analyzeProject(javaProject, Predicates.equalTo(psiFile));
     }
     
-    private static AnalyzeExhaust analyzeProject(@NotNull IJavaProject javaProject, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
+    private static AnalysisResult analyzeProject(@NotNull IJavaProject javaProject, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
         KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
-        return analyzeExhaustProject(javaProject, kotlinEnvironment, filesToAnalyzeCompletely);
+        return analysisResultProject(javaProject, kotlinEnvironment, filesToAnalyzeCompletely);
     }
     
     @NotNull
-    private static AnalyzeExhaust analyzeExhaustProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
+    private static AnalysisResult analysisResultProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
             @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
         ModuleDescriptorImpl module = EclipseAnalyzerFacadeForJVM.createJavaModule("<module>");
         module.addDependencyOnModule(module);

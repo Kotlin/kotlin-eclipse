@@ -11,7 +11,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.OutputFile;
-import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.analyzer.AnalysisResult;
 import org.jetbrains.jet.codegen.CompilationErrorHandler;
 import org.jetbrains.jet.codegen.KotlinCodegenFacade;
 import org.jetbrains.jet.codegen.state.GenerationState;
@@ -26,23 +26,23 @@ import com.intellij.openapi.project.Project;
 
 public class KotlinLightClassGeneration {
     
-    public static void buildAndSaveLightClasses(@NotNull AnalyzeExhaust analyzeExhaust, @NotNull IJavaProject javaProject) throws CoreException {
+    public static void buildAndSaveLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject) throws CoreException {
         KotlinJavaManager.INSTANCE.registerKtExternalBinFolder(javaProject);
         
         GenerationState state = buildLightClasses(
-                analyzeExhaust, 
+                analysisResult, 
                 javaProject,
                 ProjectUtils.getSourceFiles(javaProject.getProject()));
         
         saveKotlinDeclarationClasses(state, javaProject);
     }
     
-    public static GenerationState buildLightClasses(@NotNull AnalyzeExhaust analyzeExhaust, @NotNull IJavaProject javaProject, 
+    public static GenerationState buildLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject, 
             @NotNull List<JetFile> jetFiles) {
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
         
-        GenerationState state = new GenerationState(project, new LightClassBuilderFactory(), analyzeExhaust.getModuleDescriptor(),
-                analyzeExhaust.getBindingContext(), jetFiles);
+        GenerationState state = new GenerationState(project, new LightClassBuilderFactory(), analysisResult.getModuleDescriptor(),
+                analysisResult.getBindingContext(), jetFiles);
         
         KotlinCodegenFacade.compileCorrectFiles(state, new CompilationErrorHandler() {
             @Override
