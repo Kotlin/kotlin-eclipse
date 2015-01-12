@@ -26,17 +26,19 @@ import org.jetbrains.jet.di.Expression;
 import org.jetbrains.jet.di.GivenExpression;
 import org.jetbrains.jet.di.InjectorGeneratorUtil;
 import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
+import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.resolve.AdditionalCheckerProvider;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.LazyTopDownAnalyzer;
 import org.jetbrains.jet.lang.resolve.MutablePackageFragmentProvider;
-import org.jetbrains.jet.lang.resolve.TopDownAnalyzer;
 import org.jetbrains.jet.lang.resolve.java.JavaDescriptorResolver;
 import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedErrorReporter;
 import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedExternalSignatureResolver;
-import org.jetbrains.jet.lang.resolve.kotlin.DeserializationGlobalContextForJava;
+import org.jetbrains.jet.lang.resolve.kotlin.DeserializationComponentsForJava;
 import org.jetbrains.jet.lang.resolve.kotlin.JavaDeclarationCheckerProvider;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
+import org.jetbrains.jet.lang.resolve.lazy.ResolveSession;
+import org.jetbrains.jet.lang.resolve.lazy.declarations.DeclarationProviderFactory;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory;
@@ -72,25 +74,25 @@ public class InjectorsGenerator {
     }
     
     private void configureGeneratorForTopDownAnalyzerForJvm() {
-        addParameter(Project.class, false);
-        addParameter(GlobalContext.class, true);
-        addParameter(BindingTrace.class, false);
-        addPublicParameter(ModuleDescriptor.class, true);
-        addParameter(IJavaProject.class, false);
-        
-        addPublicField(TopDownAnalyzer.class);
-        addPublicField(LazyTopDownAnalyzer.class);
-        
-        addField(MutablePackageFragmentProvider.class);
-        
+    	addParameter(Project.class, false);
+    	addParameter(IJavaProject.class, false);
+    	addParameter(GlobalContext.class, true);
+    	addParameter(BindingTrace.class, false);
+    	addPublicParameter(ModuleDescriptorImpl.class, true);
+    	addParameter(DeclarationProviderFactory.class, false);
+    	
+    	addPublicField(ResolveSession.class);
+
+    	addPublicField(LazyTopDownAnalyzer.class);
         addPublicField(JavaDescriptorResolver.class);
-        addPublicField(DeserializationGlobalContextForJava.class);
+        addPublicField(DeserializationComponentsForJava.class);
         
         addField(AdditionalCheckerProvider.class, 
                 new GivenExpression(JavaDeclarationCheckerProvider.class.getName() + ".INSTANCE$"));
         
         addField(GlobalSearchScope.class, new GivenExpression(GlobalSearchScope.class.getName() + ".allScope(project)"));
-        addFields(EclipseJavaClassFinder.class, 
+        addFields(
+        		EclipseJavaClassFinder.class, 
                 TraceBasedExternalSignatureResolver.class,
                 EclipseTraceBasedJavaResolverCache.class, 
                 TraceBasedErrorReporter.class,

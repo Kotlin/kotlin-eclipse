@@ -162,7 +162,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         };
         
         return new ReferenceVariantsHelper(context, visibilityFilter).getReferenceVariants(
-                simpleNameExpression, DescriptorKindFilter.ALL, nameFilter);
+                simpleNameExpression, DescriptorKindFilter.ALL, false, nameFilter);
     }
     
     private List<ICompletionProposal> collectCompletionProposals(

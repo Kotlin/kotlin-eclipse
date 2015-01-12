@@ -35,7 +35,7 @@ import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.Errors;
 import org.jetbrains.jet.lang.diagnostics.Severity;
 import org.jetbrains.jet.lang.diagnostics.rendering.DefaultErrorMessages;
-import org.jetbrains.jet.lang.resolve.Diagnostics;
+import org.jetbrains.jet.lang.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.utils.EditorUtil;
 import org.jetbrains.kotlin.utils.LineEndUtil;
@@ -147,7 +147,7 @@ public class DiagnosticAnnotationUtil {
                 getOffset(diagnostic.getPsiFile(), range.getStartOffset()),
                 range.getLength(),
                 getAnnotationType(diagnostic.getSeverity()), 
-                DefaultErrorMessages.RENDERER.render(diagnostic),
+                DefaultErrorMessages.render(diagnostic),
                 diagnostic.getPsiElement().getText(),
                 Errors.UNRESOLVED_REFERENCE.equals(diagnostic.getFactory()));
     }

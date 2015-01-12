@@ -32,6 +32,7 @@ import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.ImportPath;
 import org.jetbrains.jet.lang.resolve.TopDownAnalysisParameters;
 import org.jetbrains.jet.lang.resolve.java.mapping.JavaToKotlinClassMap;
+import org.jetbrains.jet.lang.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.kotlin.core.injectors.EclipseInjectorForTopDownAnalyzerForJvm;
 
@@ -65,6 +66,10 @@ public enum EclipseAnalyzerFacadeForJVM {
             ModuleDescriptorImpl module
     ) {
         GlobalContext globalContext = ContextPackage.GlobalContext();
+        
+        FileBasedDeclarationProviderFactory providerFactory =
+                new FileBasedDeclarationProviderFactory(globalContext.getStorageManager(), files);
+        
         TopDownAnalysisParameters topDownAnalysisParameters = TopDownAnalysisParameters.create(
                 globalContext.getStorageManager(),
                 globalContext.getExceptionTracker(),
@@ -73,13 +78,13 @@ public enum EclipseAnalyzerFacadeForJVM {
                 false
         );
 
-        EclipseInjectorForTopDownAnalyzerForJvm injector = new EclipseInjectorForTopDownAnalyzerForJvm(project, 
-                topDownAnalysisParameters, trace, module, javaProject);
+        EclipseInjectorForTopDownAnalyzerForJvm injector = new EclipseInjectorForTopDownAnalyzerForJvm(
+               project, javaProject, globalContext, trace, module, providerFactory);
         try {
             List<PackageFragmentProvider> additionalProviders = Lists.newArrayList();
             additionalProviders.add(injector.getJavaDescriptorResolver().getPackageFragmentProvider());
             
-            injector.getTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, files, additionalProviders);
+            injector.getLazyTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, files, additionalProviders);
             return AnalysisResult.success(trace.getBindingContext(), module);
         }
         finally {
@@ -89,6 +94,6 @@ public enum EclipseAnalyzerFacadeForJVM {
 
     @NotNull
     public static ModuleDescriptorImpl createJavaModule(@NotNull String name) {
-        return new ModuleDescriptorImpl(Name.special(name), DEFAULT_IMPORTS, JavaToKotlinClassMap.getInstance());
+        return new ModuleDescriptorImpl(Name.special(name), DEFAULT_IMPORTS, JavaToKotlinClassMap.INSTANCE);
     }
 }

@@ -36,7 +36,7 @@ public class KotlinCLICompiler {
             @NotNull PrintStream errorStream, 
             @NotNull String[] args) {
         try {
-            return compiler.execAndOutputHtml(errorStream, Services.EMPTY, args);
+            return compiler.execAndOutputXml(errorStream, Services.EMPTY, args);
         } catch (CompileEnvironmentException e) {
             errorStream.println(e.getMessage());
             return ExitCode.INTERNAL_ERROR;

@@ -35,6 +35,7 @@ import org.jetbrains.jet.asJava.AsJavaPackage;
 import org.jetbrains.jet.checkers.CheckerTestUtil;
 import org.jetbrains.jet.checkers.CheckerTestUtil.TextDiagnostic;
 import org.jetbrains.jet.cli.jvm.compiler.CliLightClassGenerationSupport;
+import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.DiagnosticFactory;
@@ -51,8 +52,8 @@ import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.AnalyzingUtils;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
-import org.jetbrains.jet.lang.resolve.DelegatingBindingTrace;
-import org.jetbrains.jet.lang.resolve.Diagnostics;
+import org.jetbrains.jet.lang.resolve.diagnostics.Diagnostics;
+import org.jetbrains.jet.lang.resolve.java.TopDownAnalyzerFacadeForJVM;
 import org.jetbrains.jet.lang.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
@@ -98,6 +99,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     public static final String CHECK_TYPE_DIRECTIVE = "CHECK_TYPE";
     private static final String CHECK_TYPE_DECLARATIONS = "\nclass _<T>" +
             "\nfun <T> T.checkType(f: (_<T>) -> Unit) = f";
+    
+    public static final String MARK_DYNAMIC_CALLS_DIRECTIVE = "MARK_DYNAMIC_CALLS";
     
     @Before
     public void configure() {
@@ -173,10 +176,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 }
         );
         
-        CliLightClassGenerationSupport support = CliLightClassGenerationSupport.getInstanceForCli(getProject());
-        support.newBindingTrace();
-        BindingTrace supportTrace = support.getTrace();
-
         List<JetFile> allJetFiles = new ArrayList<JetFile>();
         Map<TestModule, ModuleDescriptorImpl> modules = createModules(groupedByModule);
         Map<TestModule, BindingContext> moduleBindings = new HashMap<TestModule, BindingContext>();
@@ -189,18 +188,9 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             allJetFiles.addAll(jetFiles);
 
             ModuleDescriptorImpl module = modules.get(testModule);
-            BindingTrace moduleTrace = groupedByModule.size() > 1
-                                           ? new DelegatingBindingTrace(supportTrace.getBindingContext(), "Trace for module " + module)
-                                           : supportTrace;
-            moduleBindings.put(testModule, moduleTrace.getBindingContext());
+            BindingTrace moduleTrace = new CliLightClassGenerationSupport.NoScopeRecordCliBindingTrace();
             
-            if (module == null) {
-                module = support.newModule();
-            }
-            else {
-                module.addDependencyOnModule(KotlinBuiltIns.getInstance().getBuiltInsModule());
-                module.seal();
-            }
+            moduleBindings.put(testModule, moduleTrace.getBindingContext());
             
             EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                     getTestProject().getJavaProject(), getProject(),
@@ -208,7 +198,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     moduleTrace,
                     Predicates.<PsiFile>alwaysTrue(),
                     module
-                    );
+            );
+            
             checkAllResolvedCallsAreCompleted(jetFiles, moduleTrace.getBindingContext());
         }
 
@@ -222,8 +213,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         JetTestUtils.assertEqualsToFile(testDataFile, actualText.toString());
 
         TestCase.assertTrue("Diagnostics mismatch. See the output above", ok);
-
-        checkAllResolvedCallsAreCompleted(allJetFiles, supportTrace.getBindingContext());
     }
     
     private static void checkAllResolvedCallsAreCompleted(@NotNull List<JetFile> jetFiles, @NotNull BindingContext bindingContext) {
@@ -361,11 +350,14 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     }
     
     private Map<TestModule, ModuleDescriptorImpl> createModules(Map<TestModule, List<TestFile>> groupedByModule) {
-        Map<TestModule, ModuleDescriptorImpl> modules = new HashMap<TestModule, ModuleDescriptorImpl>();
+    	Map<TestModule, ModuleDescriptorImpl> modules = new HashMap<TestModule, ModuleDescriptorImpl>();
 
         for (TestModule testModule : groupedByModule.keySet()) {
-            if (testModule == null) continue;
-            ModuleDescriptorImpl module = EclipseAnalyzerFacadeForJVM.createJavaModule("<" + testModule.getName() + ">");
+            ModuleDescriptorImpl module =
+                    testModule == null ?
+                    TopDownAnalyzerFacadeForJVM.createSealedJavaModule() :
+                    TopDownAnalyzerFacadeForJVM.createJavaModule("<" + testModule.getName() + ">");
+
             modules.put(testModule, module);
         }
 
@@ -377,7 +369,11 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             for (TestModule dependency : testModule.getDependencies()) {
                 module.addDependencyOnModule(modules.get(dependency));
             }
+
+            module.addDependencyOnModule(KotlinBuiltIns.getInstance().getBuiltInsModule());
+            module.seal();
         }
+
         return modules;
     }
     
@@ -432,7 +428,9 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         private final String clearText;
         private final JetFile jetFile;
         private final Condition<Diagnostic> whatDiagnosticsToConsider;
+        private final boolean markDynamicCalls;
         private final boolean declareCheckType;
+        private final List<DeclarationDescriptor> dynamicCallDescriptors = new ArrayList<DeclarationDescriptor>();
 
         public TestFile(
                 TestModule module,
@@ -443,6 +441,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             this.module = module;
             this.whatDiagnosticsToConsider = parseDiagnosticFilterDirective(directives);
             this.declareCheckType = directives.containsKey(CHECK_TYPE_DIRECTIVE);
+            this.markDynamicCalls = directives.containsKey(MARK_DYNAMIC_CALLS_DIRECTIVE);
             if (fileName.endsWith(".java")) {
                 PsiFileFactory.getInstance(getProject()).createFileFromText(fileName, JavaLanguage.INSTANCE, textWithMarkers);
                 // TODO: check there's not syntax errors
@@ -481,8 +480,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
             final boolean[] ok = { true };
             List<Diagnostic> diagnostics = ContainerUtil.filter(
-                    KotlinPackage.plus(CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(bindingContext, jetFile),
-                                       jvmSignatureDiagnostics),
+                    KotlinPackage.plus(
+                    		CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(bindingContext, jetFile, markDynamicCalls, dynamicCallDescriptors), jvmSignatureDiagnostics),
                     whatDiagnosticsToConsider
             );
             
