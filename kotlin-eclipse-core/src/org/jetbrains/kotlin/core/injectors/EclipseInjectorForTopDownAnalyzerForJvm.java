@@ -39,6 +39,7 @@ import org.jetbrains.jet.lang.resolve.java.sam.SamConversionResolverImpl;
 import org.jetbrains.jet.lang.resolve.MutablePackageFragmentProvider;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory;
+import org.jetbrains.jet.lang.resolve.java.JavaLazyAnalyzerPostConstruct;
 import org.jetbrains.jet.lang.resolve.java.lazy.SingleModuleClassResolver;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
 import org.jetbrains.jet.lang.resolve.AnnotationResolver;
@@ -116,6 +117,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
     private final MutablePackageFragmentProvider mutablePackageFragmentProvider;
     private final EclipseJavaPropertyInitializerEvaluator eclipseJavaPropertyInitializerEvaluator;
     private final EclipseJavaSourceElementFactory eclipseJavaSourceElementFactory;
+    private final JavaLazyAnalyzerPostConstruct javaLazyAnalyzerPostConstruct;
     private final SingleModuleClassResolver singleModuleClassResolver;
     private final VirtualFileFinder virtualFileFinder;
     private final AnnotationResolver annotationResolver;
@@ -202,6 +204,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         this.deserializationComponentsForJava = new DeserializationComponentsForJava(storageManager, getModuleDescriptor(), javaClassDataFinder, binaryClassAnnotationAndConstantLoader, lazyJavaPackageFragmentProvider);
         this.additionalCheckerProvider = org.jetbrains.jet.lang.resolve.kotlin.JavaDeclarationCheckerProvider.INSTANCE$;
         this.mutablePackageFragmentProvider = new MutablePackageFragmentProvider(getModuleDescriptor());
+        this.javaLazyAnalyzerPostConstruct = new JavaLazyAnalyzerPostConstruct();
         this.annotationResolver = new AnnotationResolver();
         this.callResolver = new CallResolver();
         this.argumentTypeResolver = new ArgumentTypeResolver();
@@ -260,6 +263,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         this.lazyTopDownAnalyzer.setTrace(bindingTrace);
         this.lazyTopDownAnalyzer.setVarianceChecker(varianceChecker);
 
+        eclipseJavaClassFinder.setComponentPostConstruct(javaLazyAnalyzerPostConstruct);
         eclipseJavaClassFinder.setProjectScope(IJavaProject);
 
         traceBasedExternalSignatureResolver.setExternalAnnotationResolver(eclipseExternalAnnotationResolver);
@@ -269,6 +273,10 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         eclipseTraceBasedJavaResolverCache.setTrace(bindingTrace);
 
         traceBasedErrorReporter.setTrace(bindingTrace);
+
+        javaLazyAnalyzerPostConstruct.setCodeAnalyzer(resolveSession);
+        javaLazyAnalyzerPostConstruct.setProject(project);
+        javaLazyAnalyzerPostConstruct.setTrace(bindingTrace);
 
         singleModuleClassResolver.setResolver(javaDescriptorResolver);
 
@@ -386,6 +394,8 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         scriptHeaderResolver.setTrace(bindingTrace);
 
         deserializedDescriptorResolver.setComponents(deserializationComponentsForJava);
+
+        javaLazyAnalyzerPostConstruct.postCreate();
 
     }
 

@@ -43,6 +43,8 @@ import org.jetbrains.jet.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.jet.lang.resolve.CodeAnalyzerInitializer;
+import org.jetbrains.jet.lang.resolve.diagnostics.DiagnosticsWithSuppression;
 import org.jetbrains.jet.lang.resolve.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinderFactory;
 import org.jetbrains.jet.plugin.JetFileType;
@@ -107,6 +109,7 @@ public class KotlinEnvironment {
         project.registerService(LightClassGenerationSupport.class, cliLightClassGenerationSupport);
         project.registerService(CliLightClassGenerationSupport.class, cliLightClassGenerationSupport);
         project.registerService(KotlinLightClassForPackage.FileStubCache.class, new KotlinLightClassForPackage.FileStubCache(project));
+        project.registerService(CodeAnalyzerInitializer.class, cliLightClassGenerationSupport);
         
         VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(KT_JDK_ANNOTATIONS_PATH));
         annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
@@ -121,6 +124,12 @@ public class KotlinEnvironment {
                 ClsCustomNavigationPolicy.class);
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
                 ClassFileDecompilers.Decompiler.class);
+        
+        CoreApplicationEnvironment.registerApplicationExtensionPoint(DiagnosticsWithSuppression.SuppressStringProvider.EP_NAME,
+                DiagnosticsWithSuppression.SuppressStringProvider.class);
+
+        CoreApplicationEnvironment.registerApplicationExtensionPoint(DiagnosticsWithSuppression.DiagnosticSuppressor.EP_NAME,
+                DiagnosticsWithSuppression.DiagnosticSuppressor.class);
         
         cachedEnvironment.put(javaProject, this);
     }

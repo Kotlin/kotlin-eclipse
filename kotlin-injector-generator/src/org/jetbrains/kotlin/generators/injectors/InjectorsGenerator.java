@@ -25,13 +25,13 @@ import org.jetbrains.jet.di.DiType;
 import org.jetbrains.jet.di.Expression;
 import org.jetbrains.jet.di.GivenExpression;
 import org.jetbrains.jet.di.InjectorGeneratorUtil;
-import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.resolve.AdditionalCheckerProvider;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.LazyTopDownAnalyzer;
 import org.jetbrains.jet.lang.resolve.MutablePackageFragmentProvider;
 import org.jetbrains.jet.lang.resolve.java.JavaDescriptorResolver;
+import org.jetbrains.jet.lang.resolve.java.JavaLazyAnalyzerPostConstruct;
 import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedErrorReporter;
 import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedExternalSignatureResolver;
 import org.jetbrains.jet.lang.resolve.kotlin.DeserializationComponentsForJava;
@@ -102,6 +102,7 @@ public class InjectorsGenerator {
                 MutablePackageFragmentProvider.class, 
                 EclipseJavaPropertyInitializerEvaluator.class,
                 EclipseJavaSourceElementFactory.class, 
+                JavaLazyAnalyzerPostConstruct.class,
                 SingleModuleClassResolver.class);
         
         addField(VirtualFileFinder.class, new GivenExpression(VirtualFileFinder.class.getName()

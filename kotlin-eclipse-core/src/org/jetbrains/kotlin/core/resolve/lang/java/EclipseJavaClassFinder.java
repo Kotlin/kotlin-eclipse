@@ -46,6 +46,7 @@ import org.eclipse.jdt.internal.core.NameLookup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.resolve.java.JavaClassFinder;
+import org.jetbrains.jet.lang.resolve.java.JavaClassFinderPostConstruct;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
 import org.jetbrains.jet.lang.resolve.java.structure.JavaPackage;
 import org.jetbrains.jet.lang.resolve.name.ClassId;
@@ -61,6 +62,11 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
     @Inject
     public void setProjectScope(@NotNull IJavaProject project) {
         javaProject = project;
+    }
+    
+    @Inject
+    public void setComponentPostConstruct(@NotNull JavaClassFinderPostConstruct finderPostConstruct) {
+        // Only activate post create
     }
     
     @Override
