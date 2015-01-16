@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.tests.editors.completion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,9 @@ import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.junit.Assert;
 import org.junit.Before;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
 public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCase {
 	@Before
@@ -78,33 +82,54 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 	}
 
 	private void assertExists(List<String> itemsShouldExist, Set<String> actualItems) {
-		String errorMessage = getErrorMessage(itemsShouldExist, actualItems);
+		Set<String> missing = new HashSet<String>();
 		for (String itemShouldExist : itemsShouldExist) {
-			Assert.assertTrue(errorMessage, actualItems.contains(itemShouldExist.trim()));
+			if (!actualItems.contains(itemShouldExist.trim())) {
+				missing.add(itemShouldExist);
+			}
+		}
+		
+		if (!missing.isEmpty()) {
+			Assert.fail(getErrorMessage("Items not found.", itemsShouldExist, actualItems, missing, Collections.<String>emptySet()));
 		}
 	}
 	
 	private void assertNotExists(List<String> itemsShouldAbsent, Set<String> actualItems) {
-		String errorMessage = getErrorMessage(itemsShouldAbsent, actualItems);
+		Set<String> added = new HashSet<String>();
 		for (String itemShouldAbsent : itemsShouldAbsent) {
-			Assert.assertFalse(errorMessage, actualItems.contains(itemShouldAbsent));
+			if (actualItems.contains(itemShouldAbsent)) {
+				added.add(itemShouldAbsent);
+			}
+		}
+		
+		if (!added.isEmpty()) {
+			Assert.fail(getErrorMessage("Items must be absent.", itemsShouldAbsent, actualItems, Collections.<String>emptySet(), added));
 		}
 	}
 	
-	private String getErrorMessage(List<String> expected, Set<String> actual) {
+	private String getErrorMessage(String message, List<String> expected, Set<String> actual, Set<String> missing, Set<String> added) {
 		StringBuilder errorMessage = new StringBuilder();
 		
-		errorMessage.append("Expected: <");
-		for (String proposal : expected) {
+		errorMessage.append(message).append("\n");
+		errorMessage.append("Expected: <\n");
+		for (String proposal : Ordering.natural().sortedCopy(expected)) {
+			if (missing.contains(proposal)) {
+				errorMessage.append("-");
+			}
+			
 			errorMessage.append(proposal);
-			errorMessage.append(" ");
+			errorMessage.append("\n");
 		}
 		errorMessage.append("> ");
 		
-		errorMessage.append("but was:<");
-		for (String proposal : actual) {
+		errorMessage.append("but was:<\n");
+		for (String proposal : Ordering.natural().sortedCopy(actual)) {
+			if (added.contains(proposal)) {
+				errorMessage.append("+");
+			}
+			
 			errorMessage.append(proposal);
-			errorMessage.append(" ");
+			errorMessage.append("\n");
 		}
 		errorMessage.append(">");
 		
