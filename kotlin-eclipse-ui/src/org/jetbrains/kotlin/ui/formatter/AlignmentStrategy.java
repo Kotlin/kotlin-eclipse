@@ -20,9 +20,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jetbrains.jet.lexer.JetTokens;
-import org.jetbrains.kotlin.utils.IndenterUtil;
-import org.jetbrains.kotlin.utils.LineEndUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.lexer.JetTokens;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;

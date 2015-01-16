@@ -27,13 +27,13 @@ import java.util.Map;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClassifier;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClassifierType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaTypeParameter;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaTypeSubstitutor;
-import org.jetbrains.jet.lang.resolve.java.structure.impl.JavaTypeSubstitutorImpl;
+import org.jetbrains.kotlin.load.java.structure.JavaClass;
+import org.jetbrains.kotlin.load.java.structure.JavaClassifier;
+import org.jetbrains.kotlin.load.java.structure.JavaClassifierType;
+import org.jetbrains.kotlin.load.java.structure.JavaType;
+import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter;
+import org.jetbrains.kotlin.load.java.structure.JavaTypeSubstitutor;
+import org.jetbrains.kotlin.load.java.structure.impl.JavaTypeSubstitutorImpl;
 
 public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> implements JavaClassifierType {
 

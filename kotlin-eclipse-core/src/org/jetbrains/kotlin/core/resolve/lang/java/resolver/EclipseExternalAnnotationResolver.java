@@ -21,10 +21,10 @@ import java.util.Collections;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.resolver.ExternalAnnotationResolver;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotation;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotationOwner;
-import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.kotlin.load.java.components.ExternalAnnotationResolver;
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotationOwner;
+import org.jetbrains.kotlin.name.FqName;
 
 public class EclipseExternalAnnotationResolver implements ExternalAnnotationResolver {
 

@@ -38,7 +38,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.plugin.JetFileType;
+import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;

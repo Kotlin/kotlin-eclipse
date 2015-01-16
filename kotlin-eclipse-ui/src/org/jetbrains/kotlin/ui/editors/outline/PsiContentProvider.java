@@ -18,7 +18,7 @@ package org.jetbrains.kotlin.ui.editors.outline;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.jetbrains.jet.lang.psi.JetDeclarationContainer;
+import org.jetbrains.kotlin.psi.JetDeclarationContainer;
 
 public class PsiContentProvider implements ITreeContentProvider {
 

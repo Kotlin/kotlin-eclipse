@@ -24,7 +24,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.utils.EditorUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;

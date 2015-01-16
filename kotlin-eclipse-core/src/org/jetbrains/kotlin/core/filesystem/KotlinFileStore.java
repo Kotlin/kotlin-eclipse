@@ -18,12 +18,12 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.OutputFile;
-import org.jetbrains.jet.analyzer.AnalysisResult;
-import org.jetbrains.jet.codegen.state.GenerationState;
-import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.kotlin.analyzer.AnalysisResult;
+import org.jetbrains.kotlin.backend.common.output.OutputFile;
+import org.jetbrains.kotlin.codegen.state.GenerationState;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.psi.JetFile;
 
 
 public class KotlinFileStore extends LocalFile {

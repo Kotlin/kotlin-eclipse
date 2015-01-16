@@ -18,8 +18,8 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaLiteralAnnotationArgument;
-import org.jetbrains.jet.lang.resolve.name.Name;
+import org.jetbrains.kotlin.load.java.structure.JavaLiteralAnnotationArgument;
+import org.jetbrains.kotlin.name.Name;
 
 public class EclipseJavaLiteralAnnotationArgument implements JavaLiteralAnnotationArgument {
 

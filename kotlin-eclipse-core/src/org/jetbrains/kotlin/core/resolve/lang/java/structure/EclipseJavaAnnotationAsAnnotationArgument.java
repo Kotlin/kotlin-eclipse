@@ -19,9 +19,9 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotation;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotationAsAnnotationArgument;
-import org.jetbrains.jet.lang.resolve.name.Name;
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotationAsAnnotationArgument;
+import org.jetbrains.kotlin.name.Name;
 
 public class EclipseJavaAnnotationAsAnnotationArgument implements JavaAnnotationAsAnnotationArgument {
 

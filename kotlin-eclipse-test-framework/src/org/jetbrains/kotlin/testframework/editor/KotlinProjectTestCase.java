@@ -2,9 +2,9 @@ package org.jetbrains.kotlin.testframework.editor;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
-import org.jetbrains.kotlin.utils.LineEndUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

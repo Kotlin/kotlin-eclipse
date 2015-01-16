@@ -23,8 +23,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
-import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class PsiVisualization extends AbstractHandler {
 

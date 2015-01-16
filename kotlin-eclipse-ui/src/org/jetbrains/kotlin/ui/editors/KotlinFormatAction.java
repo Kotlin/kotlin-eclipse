@@ -22,8 +22,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
-import org.jetbrains.kotlin.utils.EditorUtil;
 
 import com.intellij.psi.PsiFile;
 

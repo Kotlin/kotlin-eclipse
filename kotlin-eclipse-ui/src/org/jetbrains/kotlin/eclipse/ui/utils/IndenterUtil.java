@@ -14,11 +14,11 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.utils;
+package org.jetbrains.kotlin.eclipse.ui.utils;
 
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
-import org.jetbrains.jet.lexer.JetTokens;
+import org.jetbrains.kotlin.lexer.JetTokens;
 
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 

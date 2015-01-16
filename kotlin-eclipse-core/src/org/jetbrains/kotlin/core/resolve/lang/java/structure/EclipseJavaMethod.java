@@ -23,11 +23,11 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaMethod;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaTypeParameter;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaValueParameter;
+import org.jetbrains.kotlin.load.java.structure.JavaClass;
+import org.jetbrains.kotlin.load.java.structure.JavaMethod;
+import org.jetbrains.kotlin.load.java.structure.JavaType;
+import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter;
+import org.jetbrains.kotlin.load.java.structure.JavaValueParameter;
 
 public class EclipseJavaMethod extends EclipseJavaMember<IMethodBinding> implements JavaMethod  {
 

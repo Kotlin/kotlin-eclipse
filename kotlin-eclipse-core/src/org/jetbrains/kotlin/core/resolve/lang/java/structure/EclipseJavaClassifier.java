@@ -18,7 +18,7 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClassifier;
+import org.jetbrains.kotlin.load.java.structure.JavaClassifier;
 
 public abstract class EclipseJavaClassifier<T extends ITypeBinding> extends EclipseJavaElement<T> implements JavaClassifier {
     public EclipseJavaClassifier(@NotNull T javaType) {

@@ -16,8 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.launch;
 
-import org.jetbrains.jet.cli.common.messages.CompilerMessageLocation;
-import org.jetbrains.jet.cli.common.messages.CompilerMessageSeverity;
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity;
 
 
 public class CompilerOutputElement {

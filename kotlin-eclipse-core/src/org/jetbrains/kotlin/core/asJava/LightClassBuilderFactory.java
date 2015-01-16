@@ -1,11 +1,11 @@
 package org.jetbrains.kotlin.core.asJava;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.codegen.AbstractClassBuilder;
-import org.jetbrains.jet.codegen.ClassBuilder;
-import org.jetbrains.jet.codegen.ClassBuilderFactory;
-import org.jetbrains.jet.codegen.ClassBuilderMode;
-import org.jetbrains.jet.lang.resolve.java.diagnostics.JvmDeclarationOrigin;
+import org.jetbrains.kotlin.codegen.AbstractClassBuilder;
+import org.jetbrains.kotlin.codegen.ClassBuilder;
+import org.jetbrains.kotlin.codegen.ClassBuilderFactory;
+import org.jetbrains.kotlin.codegen.ClassBuilderMode;
+import org.jetbrains.kotlin.resolve.jvm.diagnostics.JvmDeclarationOrigin;
 import org.jetbrains.org.objectweb.asm.ClassWriter;
 
 public class LightClassBuilderFactory implements ClassBuilderFactory {

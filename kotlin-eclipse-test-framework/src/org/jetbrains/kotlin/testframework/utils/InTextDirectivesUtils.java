@@ -10,7 +10,7 @@ import java.util.List;
 
 import com.intellij.openapi.util.text.StringUtil;
 
-//	Source code is taken from org.jetbrains.jet.InTextDirectivesUtils
+//	Source code is taken from org.jetbrains.kotlin.InTextDirectivesUtils
 public class InTextDirectivesUtils {
 
 	public static String findStringWithPrefixes(String fileText, String... prefixes) {

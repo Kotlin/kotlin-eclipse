@@ -15,11 +15,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
-import org.jetbrains.kotlin.utils.EditorUtil;
-import org.jetbrains.kotlin.utils.LineEndUtil;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;

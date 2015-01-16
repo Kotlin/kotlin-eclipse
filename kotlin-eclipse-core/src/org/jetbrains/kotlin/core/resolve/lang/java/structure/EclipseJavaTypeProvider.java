@@ -21,9 +21,9 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaTypeProvider;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaWildcardType;
+import org.jetbrains.kotlin.load.java.structure.JavaType;
+import org.jetbrains.kotlin.load.java.structure.JavaTypeProvider;
+import org.jetbrains.kotlin.load.java.structure.JavaWildcardType;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 

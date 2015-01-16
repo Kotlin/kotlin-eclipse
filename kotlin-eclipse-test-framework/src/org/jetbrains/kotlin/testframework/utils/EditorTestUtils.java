@@ -25,9 +25,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
-import org.jetbrains.kotlin.utils.EditorUtil;
-import org.jetbrains.kotlin.utils.LineEndUtil;
 import org.junit.Assert;
 import org.junit.ComparisonFailure;
 

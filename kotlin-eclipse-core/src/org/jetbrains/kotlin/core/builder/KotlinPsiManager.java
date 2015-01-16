@@ -38,9 +38,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.plugin.JetFileType;
-import org.jetbrains.jet.plugin.JetLanguage;
+import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.idea.JetFileType;
+import org.jetbrains.kotlin.idea.JetLanguage;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.utils;
+package org.jetbrains.kotlin.eclipse.ui.utils;
 
 public class LineEndUtil {
     

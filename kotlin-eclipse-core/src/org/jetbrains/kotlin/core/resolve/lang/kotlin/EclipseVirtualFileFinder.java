@@ -20,15 +20,15 @@ import java.io.File;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.cli.jvm.compiler.ClassPath;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
-import org.jetbrains.jet.lang.resolve.kotlin.KotlinBinaryClassCache;
-import org.jetbrains.jet.lang.resolve.kotlin.KotlinJvmBinaryClass;
-import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
-import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinderFactory;
-import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileKotlinClassFinder;
-import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.kotlin.cli.jvm.compiler.ClassPath;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
+import org.jetbrains.kotlin.load.java.structure.JavaClass;
+import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
+import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinder;
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory;
+import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClassFinder;
+import org.jetbrains.kotlin.name.FqName;
 
 import com.intellij.ide.highlighter.JavaClassFileType;
 import com.intellij.openapi.vfs.VirtualFile;

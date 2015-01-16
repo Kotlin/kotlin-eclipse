@@ -18,8 +18,8 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaArrayType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaType;
+import org.jetbrains.kotlin.load.java.structure.JavaArrayType;
+import org.jetbrains.kotlin.load.java.structure.JavaType;
 
 public class EclipseJavaType<T extends ITypeBinding> implements JavaType {
 

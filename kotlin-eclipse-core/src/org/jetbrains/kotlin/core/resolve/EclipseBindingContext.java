@@ -17,12 +17,12 @@
 package org.jetbrains.kotlin.core.resolve;
 
 import org.eclipse.jdt.core.dom.IBinding;
-import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
-import org.jetbrains.jet.lang.descriptors.ConstructorDescriptor;
-import org.jetbrains.jet.lang.descriptors.SimpleFunctionDescriptor;
-import org.jetbrains.jet.lang.descriptors.VariableDescriptor;
-import org.jetbrains.jet.util.slicedmap.Slices;
-import org.jetbrains.jet.util.slicedmap.WritableSlice;
+import org.jetbrains.kotlin.descriptors.ClassDescriptor;
+import org.jetbrains.kotlin.descriptors.ConstructorDescriptor;
+import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor;
+import org.jetbrains.kotlin.descriptors.VariableDescriptor;
+import org.jetbrains.kotlin.util.slicedMap.Slices;
+import org.jetbrains.kotlin.util.slicedMap.WritableSlice;
 
 public class EclipseBindingContext {
     public static WritableSlice<IBinding, ConstructorDescriptor> ECLIPSE_CONSTRUCTOR = 

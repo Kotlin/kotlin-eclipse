@@ -23,12 +23,12 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClassifierType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaTypeParameter;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaTypeParameterListOwner;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaTypeProvider;
-import org.jetbrains.jet.lang.resolve.name.Name;
+import org.jetbrains.kotlin.load.java.structure.JavaClassifierType;
+import org.jetbrains.kotlin.load.java.structure.JavaType;
+import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter;
+import org.jetbrains.kotlin.load.java.structure.JavaTypeParameterListOwner;
+import org.jetbrains.kotlin.load.java.structure.JavaTypeProvider;
+import org.jetbrains.kotlin.name.Name;
 
 import com.google.common.collect.Lists;
 

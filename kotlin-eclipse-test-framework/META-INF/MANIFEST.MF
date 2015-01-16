@@ -6,7 +6,8 @@ Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: org.jetbrains.kotlin.testframework.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.jetbrains.kotlin.core;bundle-version="0.1.0",
+ org.jetbrains.kotlin.core,
+ org.jetbrains.kotlin.ui,
  org.eclipse.ui.editors;bundle-version="3.8.0",
  org.eclipse.jface.text;bundle-version="3.8.1"
 Bundle-ActivationPolicy: lazy

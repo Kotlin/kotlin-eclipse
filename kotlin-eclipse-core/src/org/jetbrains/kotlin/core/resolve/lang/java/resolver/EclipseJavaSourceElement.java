@@ -17,8 +17,8 @@
 package org.jetbrains.kotlin.core.resolve.lang.java.resolver;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.resolve.java.sources.JavaSourceElement;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaElement;
+import org.jetbrains.kotlin.load.java.sources.JavaSourceElement;
+import org.jetbrains.kotlin.load.java.structure.JavaElement;
 
 public class EclipseJavaSourceElement implements JavaSourceElement {
     private final JavaElement javaElement;

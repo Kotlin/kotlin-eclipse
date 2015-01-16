@@ -18,8 +18,8 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaEnumValueAnnotationArgument;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaField;
+import org.jetbrains.kotlin.load.java.structure.JavaEnumValueAnnotationArgument;
+import org.jetbrains.kotlin.load.java.structure.JavaField;
 
 public class EclipseJavaReferenceAnnotationArgument extends EclipseJavaAnnotationArgument<IVariableBinding>
         implements JavaEnumValueAnnotationArgument {

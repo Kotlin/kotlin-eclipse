@@ -27,7 +27,7 @@ import java.util.TreeMap;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
-import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 

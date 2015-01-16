@@ -18,10 +18,10 @@ package org.jetbrains.kotlin.core.launch;
 import java.io.PrintStream;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.cli.common.CLICompiler;
-import org.jetbrains.jet.cli.common.ExitCode;
-import org.jetbrains.jet.cli.jvm.compiler.CompileEnvironmentException;
-import org.jetbrains.jet.config.Services;
+import org.jetbrains.kotlin.cli.common.CLICompiler;
+import org.jetbrains.kotlin.cli.common.ExitCode;
+import org.jetbrains.kotlin.cli.jvm.compiler.CompileEnvironmentException;
+import org.jetbrains.kotlin.config.Services;
 
 public class KotlinCLICompiler {
     public static int doMain(@NotNull CLICompiler<?> compiler, @NotNull PrintStream errorStream, @NotNull String[] args) {

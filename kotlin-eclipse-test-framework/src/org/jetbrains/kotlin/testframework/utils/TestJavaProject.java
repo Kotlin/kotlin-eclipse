@@ -41,7 +41,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.utils.LineEndUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 
 public class TestJavaProject {
     

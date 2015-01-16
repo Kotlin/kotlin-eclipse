@@ -57,9 +57,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePopup;
-import org.jetbrains.kotlin.utils.EditorUtil;
 
 public class Configuration extends JavaSourceViewerConfiguration {
     private DoubleClickStrategy doubleClickStrategy;

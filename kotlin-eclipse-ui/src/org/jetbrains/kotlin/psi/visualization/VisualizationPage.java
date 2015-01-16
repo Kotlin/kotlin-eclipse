@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.utils.LineEndUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.util.TextRange;

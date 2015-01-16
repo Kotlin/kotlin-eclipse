@@ -19,34 +19,34 @@ package org.jetbrains.kotlin.generators.injectors;
 import java.io.IOException;
 
 import org.eclipse.jdt.core.IJavaProject;
-import org.jetbrains.jet.context.GlobalContext;
-import org.jetbrains.jet.di.DependencyInjectorGenerator;
-import org.jetbrains.jet.di.DiType;
-import org.jetbrains.jet.di.Expression;
-import org.jetbrains.jet.di.GivenExpression;
-import org.jetbrains.jet.di.InjectorGeneratorUtil;
-import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
-import org.jetbrains.jet.lang.resolve.AdditionalCheckerProvider;
-import org.jetbrains.jet.lang.resolve.BindingTrace;
-import org.jetbrains.jet.lang.resolve.LazyTopDownAnalyzer;
-import org.jetbrains.jet.lang.resolve.MutablePackageFragmentProvider;
-import org.jetbrains.jet.lang.resolve.java.JavaDescriptorResolver;
-import org.jetbrains.jet.lang.resolve.java.JavaLazyAnalyzerPostConstruct;
-import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedErrorReporter;
-import org.jetbrains.jet.lang.resolve.java.resolver.TraceBasedExternalSignatureResolver;
-import org.jetbrains.jet.lang.resolve.kotlin.DeserializationComponentsForJava;
-import org.jetbrains.jet.lang.resolve.kotlin.JavaDeclarationCheckerProvider;
-import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinder;
-import org.jetbrains.jet.lang.resolve.lazy.ResolveSession;
-import org.jetbrains.jet.lang.resolve.lazy.declarations.DeclarationProviderFactory;
+import org.jetbrains.kotlin.context.GlobalContext;
+import org.jetbrains.kotlin.generators.di.DependencyInjectorGenerator;
+import org.jetbrains.kotlin.generators.di.DiType;
+import org.jetbrains.kotlin.generators.di.Expression;
+import org.jetbrains.kotlin.generators.di.GivenExpression;
+import org.jetbrains.kotlin.generators.di.InjectorGeneratorUtil;
+import org.jetbrains.kotlin.load.kotlin.DeserializationComponentsForJava;
+import org.jetbrains.kotlin.load.kotlin.KotlinJvmCheckerProvider;
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinder;
+import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
+import org.jetbrains.kotlin.resolve.AdditionalCheckerProvider;
+import org.jetbrains.kotlin.resolve.BindingTrace;
+import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzer;
+import org.jetbrains.kotlin.resolve.MutablePackageFragmentProvider;
+import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver;
+import org.jetbrains.kotlin.resolve.jvm.JavaLazyAnalyzerPostConstruct;
+import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
+import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
-import org.jetbrains.jet.lang.resolve.java.sam.SamConversionResolverImpl;
-import org.jetbrains.jet.lang.resolve.java.lazy.SingleModuleClassResolver;
+import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver;
+import org.jetbrains.kotlin.load.java.components.TraceBasedExternalSignatureResolver;
+import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter;
+import org.jetbrains.kotlin.load.java.sam.SamConversionResolverImpl;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -88,7 +88,7 @@ public class InjectorsGenerator {
         addPublicField(DeserializationComponentsForJava.class);
         
         addField(AdditionalCheckerProvider.class, 
-                new GivenExpression(JavaDeclarationCheckerProvider.class.getName() + ".INSTANCE$"));
+                new GivenExpression(KotlinJvmCheckerProvider.class.getName() + ".INSTANCE$"));
         
         addField(GlobalSearchScope.class, new GivenExpression(GlobalSearchScope.class.getName() + ".allScope(project)"));
         addFields(

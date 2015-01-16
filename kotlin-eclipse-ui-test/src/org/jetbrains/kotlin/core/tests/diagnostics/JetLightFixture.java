@@ -3,7 +3,7 @@ package org.jetbrains.kotlin.core.tests.diagnostics;
 import junit.framework.TestCase;
 
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.psi.JetFile;
+import org.jetbrains.kotlin.psi.JetFile;
 import org.junit.Assert;
 
 import com.intellij.openapi.project.Project;

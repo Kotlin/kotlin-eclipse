@@ -18,10 +18,10 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaArrayType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaType;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaTypeProvider;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaWildcardType;
+import org.jetbrains.kotlin.load.java.structure.JavaArrayType;
+import org.jetbrains.kotlin.load.java.structure.JavaType;
+import org.jetbrains.kotlin.load.java.structure.JavaTypeProvider;
+import org.jetbrains.kotlin.load.java.structure.JavaWildcardType;
 
 
 public class EclipseJavaImmediateWildcardType implements JavaWildcardType {

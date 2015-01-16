@@ -18,9 +18,9 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaField;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaType;
+import org.jetbrains.kotlin.load.java.structure.JavaClass;
+import org.jetbrains.kotlin.load.java.structure.JavaField;
+import org.jetbrains.kotlin.load.java.structure.JavaType;
 
 public class EclipseJavaField extends EclipseJavaMember<IVariableBinding> implements JavaField {
 

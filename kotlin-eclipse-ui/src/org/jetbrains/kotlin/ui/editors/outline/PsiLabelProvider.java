@@ -22,14 +22,14 @@ import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
-import org.jetbrains.jet.lang.psi.JetClass;
-import org.jetbrains.jet.lang.psi.JetClassInitializer;
-import org.jetbrains.jet.lang.psi.JetElement;
-import org.jetbrains.jet.lang.psi.JetFunction;
-import org.jetbrains.jet.lang.psi.JetPackageDirective;
-import org.jetbrains.jet.lang.psi.JetParameter;
-import org.jetbrains.jet.lang.psi.JetProperty;
-import org.jetbrains.jet.lang.psi.JetTypeReference;
+import org.jetbrains.kotlin.psi.JetClass;
+import org.jetbrains.kotlin.psi.JetClassInitializer;
+import org.jetbrains.kotlin.psi.JetElement;
+import org.jetbrains.kotlin.psi.JetFunction;
+import org.jetbrains.kotlin.psi.JetPackageDirective;
+import org.jetbrains.kotlin.psi.JetParameter;
+import org.jetbrains.kotlin.psi.JetProperty;
+import org.jetbrains.kotlin.psi.JetTypeReference;
 
 public class PsiLabelProvider extends LabelProvider {
     
@@ -68,7 +68,7 @@ public class PsiLabelProvider extends LabelProvider {
         return null;
     }
     
-    // Source code is taken from org.jetbrains.jet.plugin.projectView.JetDeclarationTreeNode, updateImple()
+    // Source code is taken from org.jetbrains.kotlin.idea.projectView.JetDeclarationTreeNode, updateImple()
     private String getPresentableElement(JetElement declaration) {
         String text = "";
         if (declaration != null) {

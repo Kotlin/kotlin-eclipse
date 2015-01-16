@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Display;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.utils.ProjectScopedPreferenceUtils;
+import org.jetbrains.kotlin.eclipse.ui.utils.ProjectScopedPreferenceUtils;
 import org.osgi.service.prefs.BackingStoreException;
 
 public class KotlinRuntimeConfigurationSuggestor implements Runnable {

@@ -12,9 +12,9 @@ import java.util.regex.Pattern;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.plugin.JetLanguage;
-import org.jetbrains.jet.utils.UtilsPackage;
+import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.idea.JetLanguage;
+import org.jetbrains.kotlin.utils.UtilsPackage;
 import org.junit.Assert;
 
 import com.google.common.collect.Lists;

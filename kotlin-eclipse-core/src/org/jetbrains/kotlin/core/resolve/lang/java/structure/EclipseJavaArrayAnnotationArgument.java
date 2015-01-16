@@ -21,9 +21,9 @@ import java.util.List;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaAnnotationArgument;
-import org.jetbrains.jet.lang.resolve.java.structure.JavaArrayAnnotationArgument;
-import org.jetbrains.jet.lang.resolve.name.Name;
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotationArgument;
+import org.jetbrains.kotlin.load.java.structure.JavaArrayAnnotationArgument;
+import org.jetbrains.kotlin.name.Name;
 
 import com.google.common.collect.Lists;
 
