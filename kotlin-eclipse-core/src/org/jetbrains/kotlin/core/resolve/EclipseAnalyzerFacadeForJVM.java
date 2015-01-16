@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.analyzer.AnalysisResult;
+import org.jetbrains.jet.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.jet.context.ContextPackage;
 import org.jetbrains.jet.context.GlobalContext;
 import org.jetbrains.jet.lang.descriptors.PackageFragmentProvider;
@@ -35,6 +36,7 @@ import org.jetbrains.jet.lang.resolve.java.mapping.JavaToKotlinClassMap;
 import org.jetbrains.jet.lang.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.kotlin.core.injectors.EclipseInjectorForTopDownAnalyzerForJvm;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -60,24 +62,29 @@ public enum EclipseAnalyzerFacadeForJVM {
     public static AnalysisResult analyzeFilesWithJavaIntegration(
             IJavaProject javaProject, 
             Project project,
-            Collection<JetFile> files,
-            BindingTrace trace,
-            Predicate<PsiFile> filesToAnalyzeCompletely,
+            final Collection<JetFile> files,
             ModuleDescriptorImpl module
     ) {
         GlobalContext globalContext = ContextPackage.GlobalContext();
         
-        FileBasedDeclarationProviderFactory providerFactory =
-                new FileBasedDeclarationProviderFactory(globalContext.getStorageManager(), files);
-        
+        FileBasedDeclarationProviderFactory providerFactory = new FileBasedDeclarationProviderFactory(
+                globalContext.getStorageManager(), ProjectUtils.getSourceFilesWithDependencies(javaProject));
+
         TopDownAnalysisParameters topDownAnalysisParameters = TopDownAnalysisParameters.create(
                 globalContext.getStorageManager(),
                 globalContext.getExceptionTracker(),
-                filesToAnalyzeCompletely,
+                new Predicate<PsiFile>() {
+                    @Override
+                    public boolean apply(PsiFile file) {
+                        return files.contains(file);
+                    }
+                },
                 false,
                 false
         );
 
+        BindingTrace trace = new CliLightClassGenerationSupport.CliBindingTrace();
+        
         EclipseInjectorForTopDownAnalyzerForJvm injector = new EclipseInjectorForTopDownAnalyzerForJvm(
                project, javaProject, globalContext, trace, module, providerFactory);
         try {

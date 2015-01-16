@@ -41,10 +41,10 @@ import org.jetbrains.jet.asJava.LightClassGenerationSupport;
 import org.jetbrains.jet.cli.jvm.compiler.ClassPath;
 import org.jetbrains.jet.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.jet.cli.jvm.compiler.CoreExternalAnnotationsManager;
+import org.jetbrains.jet.cli.jvm.compiler.EnvironmentConfigFiles;
 import org.jetbrains.jet.lang.parsing.JetParserDefinition;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.CodeAnalyzerInitializer;
-import org.jetbrains.jet.lang.resolve.diagnostics.DiagnosticsWithSuppression;
 import org.jetbrains.jet.lang.resolve.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.jet.lang.resolve.kotlin.VirtualFileFinderFactory;
 import org.jetbrains.jet.plugin.JetFileType;
@@ -53,11 +53,14 @@ import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
 
+import com.google.common.collect.Lists;
 import com.intellij.codeInsight.ExternalAnnotationsManager;
 import com.intellij.core.CoreApplicationEnvironment;
 import com.intellij.core.CoreJavaFileManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
+import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
+import com.intellij.ide.plugins.PluginManagerCoreProxy;
 import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
@@ -71,9 +74,11 @@ import com.intellij.psi.compiled.ClassFileDecompilers;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 import com.intellij.psi.impl.file.impl.JavaFileManager;
 
+@SuppressWarnings("deprecation")
 public class KotlinEnvironment {
     
     public final static String KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations");
+    public final static String KOTLIN_RUNTIME_PATH = ProjectUtils.buildLibPath("kotlin-compiler");
     
     private static final Disposable DISPOSABLE = new Disposable() {
         @Override
@@ -125,13 +130,20 @@ public class KotlinEnvironment {
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
                 ClassFileDecompilers.Decompiler.class);
         
-        CoreApplicationEnvironment.registerApplicationExtensionPoint(DiagnosticsWithSuppression.SuppressStringProvider.EP_NAME,
-                DiagnosticsWithSuppression.SuppressStringProvider.class);
-
-        CoreApplicationEnvironment.registerApplicationExtensionPoint(DiagnosticsWithSuppression.DiagnosticSuppressor.EP_NAME,
-                DiagnosticsWithSuppression.DiagnosticSuppressor.class);
+        for (String config : EnvironmentConfigFiles.JVM_CONFIG_FILES) {
+            registerApplicationExtensionPointsAndExtensionsFrom(config);
+        }
         
         cachedEnvironment.put(javaProject, this);
+    }
+    
+    private static void registerApplicationExtensionPointsAndExtensionsFrom(String configFilePath) {
+        File jar = new File(KOTLIN_RUNTIME_PATH);
+        
+        IdeaPluginDescriptorImpl descriptor = PluginManagerCoreProxy.loadDescriptorFromJar(jar, configFilePath);
+        assert descriptor != null : "Can not load descriptor from " + configFilePath + " relative to " + jar;
+
+        PluginManagerCoreProxy.registerExtensionPointsAndExtensions(Extensions.getRootArea(), Lists.newArrayList(descriptor));
     }
     
     @NotNull

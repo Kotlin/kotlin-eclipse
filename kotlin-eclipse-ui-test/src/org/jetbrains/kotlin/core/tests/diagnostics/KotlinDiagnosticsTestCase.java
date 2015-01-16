@@ -31,10 +31,10 @@ import kotlin.KotlinPackage;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.analyzer.AnalysisResult;
 import org.jetbrains.jet.asJava.AsJavaPackage;
 import org.jetbrains.jet.checkers.CheckerTestUtil;
 import org.jetbrains.jet.checkers.CheckerTestUtil.TextDiagnostic;
-import org.jetbrains.jet.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
@@ -51,18 +51,16 @@ import org.jetbrains.jet.lang.psi.JetExpression;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.AnalyzingUtils;
 import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.resolve.BindingTrace;
-import org.jetbrains.jet.lang.resolve.diagnostics.Diagnostics;
-import org.jetbrains.jet.lang.resolve.java.TopDownAnalyzerFacadeForJVM;
 import org.jetbrains.jet.lang.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.jet.lang.resolve.calls.model.ResolvedCall;
+import org.jetbrains.jet.lang.resolve.diagnostics.Diagnostics;
+import org.jetbrains.jet.lang.resolve.java.TopDownAnalyzerFacadeForJVM;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.junit.Assert;
 import org.junit.Before;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -76,11 +74,11 @@ import com.intellij.openapi.util.text.StringUtilRt;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
 import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
-import com.intellij.psi.search.GlobalSearchScope;
 
 public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     
@@ -188,19 +186,16 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             allJetFiles.addAll(jetFiles);
 
             ModuleDescriptorImpl module = modules.get(testModule);
-            BindingTrace moduleTrace = new CliLightClassGenerationSupport.NoScopeRecordCliBindingTrace();
             
-            moduleBindings.put(testModule, moduleTrace.getBindingContext());
-            
-            EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+            AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                     getTestProject().getJavaProject(), getProject(),
                     jetFiles,
-                    moduleTrace,
-                    Predicates.<PsiFile>alwaysTrue(),
                     module
             );
             
-            checkAllResolvedCallsAreCompleted(jetFiles, moduleTrace.getBindingContext());
+            moduleBindings.put(testModule, analysisResult.getBindingContext());
+            
+            checkAllResolvedCallsAreCompleted(jetFiles, analysisResult.getBindingContext());
         }
 
         boolean ok = true;

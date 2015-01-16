@@ -32,13 +32,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 import org.jetbrains.kotlin.utils.EditorUtil;
-
-import com.intellij.psi.PsiFile;
 
 public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
@@ -69,9 +68,9 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     
     private static void updateLineAnnotations(IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        PsiFile psiFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
-        Diagnostics diagnostics = KotlinAnalyzer.analyzeOneFileCompletely(javaProject, psiFile).getBindingContext().getDiagnostics();        
+        Diagnostics diagnostics = KotlinAnalyzer.analyzeOneFileCompletely(javaProject, jetFile).getBindingContext().getDiagnostics();        
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);
