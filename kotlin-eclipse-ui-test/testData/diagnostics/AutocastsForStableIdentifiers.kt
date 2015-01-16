@@ -19,14 +19,14 @@ val x : Any? = 1
 
 fun Any?.vars(<!UNUSED_PARAMETER!>a<!>: Any?) : Int {
     var <!ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE!>b<!>: Int = 0
-    if (ns.y is Int) {
-        b = <!UNUSED_VALUE, DEBUG_INFO_SMARTCAST!>ns.y<!>
-    }
-    if (ns.y is Int) {
+    if (example.ns.y is Int) {
         b = <!UNUSED_VALUE, DEBUG_INFO_SMARTCAST!>example.ns.y<!>
     }
     if (example.ns.y is Int) {
-        b = <!UNUSED_VALUE, DEBUG_INFO_SMARTCAST!>ns.y<!>
+        b = <!UNUSED_VALUE, DEBUG_INFO_SMARTCAST!>example.ns.y<!>
+    }
+    if (example.ns.y is Int) {
+        b = <!UNUSED_VALUE, DEBUG_INFO_SMARTCAST!>example.ns.y<!>
     }
     if (example.ns.y is Int) {
         b = <!UNUSED_VALUE, DEBUG_INFO_SMARTCAST!>example.ns.y<!>

@@ -1,3 +1,3 @@
-fun f(c: Array<Int>): Int {
-    return c.<!FUNCTION_EXPECTED!>size<!>()
+fun f(c: LongRange): Int {
+    return c.<!FUNCTION_EXPECTED!>start<!>()
 }

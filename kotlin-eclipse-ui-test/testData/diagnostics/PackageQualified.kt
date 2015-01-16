@@ -4,14 +4,15 @@
 package foobar.a
     import java.*
 
-    val a : <!PLATFORM_CLASS_MAPPED_TO_KOTLIN!>util.List<Int><!>? = null
-    val a1 : <!UNRESOLVED_REFERENCE!>ArrayList<!><Int>? = null
+    val a : <!PLATFORM_CLASS_MAPPED_TO_KOTLIN!>java.util.List<Int><!>? = null
+    val a2 : <!UNRESOLVED_REFERENCE!>util<!>.<!DEBUG_INFO_MISSING_UNRESOLVED!>List<!><Int>? = null
+    val a3 : <!UNRESOLVED_REFERENCE!>ArrayList<!><Int>? = null
 
 // FILE: b.kt
 package foobar
 
 abstract class Foo<T>() {
-    abstract val x : T<Int>
+    abstract val x : T<!WRONG_NUMBER_OF_TYPE_ARGUMENTS!><Int><!>
 }
 
 // FILE: b.kt
@@ -23,9 +24,10 @@ package foobar.a
 
 // FILE: b.kt
 package foobar
-val x1 = a.a
+val x1 = <!UNRESOLVED_REFERENCE!>a<!>.<!DEBUG_INFO_ELEMENT_WITH_ERROR_TYPE!>a<!>
+val x2 = foobar.a.a
 
-val y1 = a.b
+val y1 = foobar.a.b
 
 
 /////////////////////////////////////////////////////////////////////////
