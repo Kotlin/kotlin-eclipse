@@ -30,13 +30,13 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.load.java.structure.JavaElement;
 import org.jetbrains.kotlin.load.java.structure.JavaPackage;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 
 import com.google.common.collect.Lists;
 
@@ -102,7 +102,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
             for (IClassFile classFile : javaPackage.getClassFiles()) {
                 IType type = classFile.getType();
                 if (isOuterClass(classFile)) {
-                    String elementName = classFile.getElementName();
+                    String elementName = type.getElementName();
                     if (Name.isValidIdentifier(elementName) && nameFilter.invoke(Name.identifier(elementName))) {
                         ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(type);
                         if (typeBinding != null) {
