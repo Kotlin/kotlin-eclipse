@@ -18,6 +18,7 @@
 package org.jetbrains.kotlin.core.resolve;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.eclipse.jdt.core.IJavaProject;
@@ -62,13 +63,17 @@ public enum EclipseAnalyzerFacadeForJVM {
     public static AnalysisResult analyzeFilesWithJavaIntegration(
             IJavaProject javaProject, 
             Project project,
-            final Collection<JetFile> files,
+            final Collection<JetFile> filesToAnalyzeCompletely,
             ModuleDescriptorImpl module
     ) {
         GlobalContext globalContext = ContextPackage.GlobalContext();
         
+        LinkedHashSet<JetFile> allFiles = new LinkedHashSet<JetFile>();
+        allFiles.addAll(ProjectUtils.getSourceFilesWithDependencies(javaProject));
+        allFiles.addAll(filesToAnalyzeCompletely);
+        
         FileBasedDeclarationProviderFactory providerFactory = new FileBasedDeclarationProviderFactory(
-                globalContext.getStorageManager(), ProjectUtils.getSourceFilesWithDependencies(javaProject));
+                globalContext.getStorageManager(), allFiles);
 
         TopDownAnalysisParameters topDownAnalysisParameters = TopDownAnalysisParameters.create(
                 globalContext.getStorageManager(),
@@ -76,7 +81,7 @@ public enum EclipseAnalyzerFacadeForJVM {
                 new Predicate<PsiFile>() {
                     @Override
                     public boolean apply(PsiFile file) {
-                        return files.contains(file);
+                        return filesToAnalyzeCompletely.contains(file);
                     }
                 },
                 false,
@@ -91,7 +96,7 @@ public enum EclipseAnalyzerFacadeForJVM {
             List<PackageFragmentProvider> additionalProviders = Lists.newArrayList();
             additionalProviders.add(injector.getJavaDescriptorResolver().getPackageFragmentProvider());
             
-            injector.getLazyTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, files, additionalProviders);
+            injector.getLazyTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, filesToAnalyzeCompletely, additionalProviders);
             return AnalysisResult.success(trace.getBindingContext(), module);
         }
         finally {
