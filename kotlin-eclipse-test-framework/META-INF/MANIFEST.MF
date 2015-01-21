@@ -4,15 +4,16 @@ Bundle-Name: kotlin-eclipse-testframework
 Bundle-SymbolicName: org.jetbrains.kotlin.testframework
 Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: org.jetbrains.kotlin.testframework.Activator
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.jetbrains.kotlin.core,
+Require-Bundle: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.ui,
+ org.eclipse.ui,
+ org.eclipse.core.runtime,
  org.eclipse.ui.editors;bundle-version="3.8.0",
  org.eclipse.jface.text;bundle-version="3.8.1"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Import-Package: com.intellij.openapi.util,
+Import-Package: com.google.common.base,
+ com.intellij.openapi.util,
  com.intellij.openapi.util.io,
  com.intellij.openapi.util.text,
  com.intellij.util.containers,
