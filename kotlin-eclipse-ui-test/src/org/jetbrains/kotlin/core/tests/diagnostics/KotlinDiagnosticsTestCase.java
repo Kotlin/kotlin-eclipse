@@ -61,6 +61,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.junit.Assert;
 import org.junit.Before;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -190,6 +191,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                     getTestProject().getJavaProject(), getProject(),
                     jetFiles,
+                    Predicates.<PsiFile>alwaysTrue(),
                     module
             );
             

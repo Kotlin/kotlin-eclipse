@@ -41,8 +41,12 @@ public class KotlinLightClassGeneration {
             @NotNull List<JetFile> jetFiles) {
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
         
-        GenerationState state = new GenerationState(project, new LightClassBuilderFactory(), analysisResult.getModuleDescriptor(),
-                analysisResult.getBindingContext(), jetFiles);
+        GenerationState state = new GenerationState(
+                project, 
+                new LightClassBuilderFactory(), 
+                analysisResult.getModuleDescriptor(),
+                analysisResult.getBindingContext(), 
+                jetFiles);
         
         KotlinCodegenFacade.compileCorrectFiles(state, new CompilationErrorHandler() {
             @Override

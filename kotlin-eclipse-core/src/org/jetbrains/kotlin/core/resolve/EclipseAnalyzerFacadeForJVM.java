@@ -63,14 +63,15 @@ public enum EclipseAnalyzerFacadeForJVM {
     public static AnalysisResult analyzeFilesWithJavaIntegration(
             IJavaProject javaProject, 
             Project project,
-            final Collection<JetFile> filesToAnalyzeCompletely,
+            @NotNull final Collection<JetFile> filesToAnalyze, 
+            @NotNull Predicate<PsiFile> filesToAnalyzeCompletely,
             ModuleDescriptorImpl module
     ) {
         GlobalContext globalContext = ContextPackage.GlobalContext();
         
         LinkedHashSet<JetFile> allFiles = new LinkedHashSet<JetFile>();
         allFiles.addAll(ProjectUtils.getSourceFilesWithDependencies(javaProject));
-        allFiles.addAll(filesToAnalyzeCompletely);
+        allFiles.addAll(filesToAnalyze);
         
         FileBasedDeclarationProviderFactory providerFactory = new FileBasedDeclarationProviderFactory(
                 globalContext.getStorageManager(), allFiles);
@@ -78,12 +79,7 @@ public enum EclipseAnalyzerFacadeForJVM {
         TopDownAnalysisParameters topDownAnalysisParameters = TopDownAnalysisParameters.create(
                 globalContext.getStorageManager(),
                 globalContext.getExceptionTracker(),
-                new Predicate<PsiFile>() {
-                    @Override
-                    public boolean apply(PsiFile file) {
-                        return filesToAnalyzeCompletely.contains(file);
-                    }
-                },
+                filesToAnalyzeCompletely,
                 false,
                 false
         );
@@ -96,7 +92,7 @@ public enum EclipseAnalyzerFacadeForJVM {
             List<PackageFragmentProvider> additionalProviders = Lists.newArrayList();
             additionalProviders.add(injector.getJavaDescriptorResolver().getPackageFragmentProvider());
             
-            injector.getLazyTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, filesToAnalyzeCompletely, additionalProviders);
+            injector.getLazyTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, filesToAnalyze, additionalProviders);
             return AnalysisResult.success(trace.getBindingContext(), module);
         }
         finally {
