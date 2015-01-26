@@ -34,8 +34,6 @@ import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.CompilerModeProvider;
-import org.jetbrains.kotlin.OperationModeProvider;
 import org.jetbrains.kotlin.asJava.KotlinLightClassForPackage;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.ClassPath;
@@ -205,8 +203,6 @@ public class KotlinEnvironment {
         
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
         
-        javaApplicationEnvironment.getApplication().registerService(OperationModeProvider.class,
-                new CompilerModeProvider());
         javaApplicationEnvironment.getApplication().registerService(KotlinBinaryClassCache.class,
                 new KotlinBinaryClassCache());
         
