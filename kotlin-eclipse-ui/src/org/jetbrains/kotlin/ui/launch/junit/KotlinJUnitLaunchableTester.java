@@ -25,14 +25,15 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.junit.launcher.ITestKind;
 import org.eclipse.jdt.internal.junit.launcher.TestKindRegistry;
+import org.eclipse.ui.IFileEditorInput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.JetClass;
-import org.jetbrains.kotlin.psi.JetDeclaration;
-import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
+import org.jetbrains.kotlin.psi.JetClass;
+import org.jetbrains.kotlin.psi.JetDeclaration;
+import org.jetbrains.kotlin.psi.JetFile;
 
 import com.google.common.collect.Sets;
 
@@ -41,14 +42,21 @@ public class KotlinJUnitLaunchableTester extends PropertyTester {
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (receiver instanceof IFile) {
-            IType type = getEclipseTypeForSingleClass((IFile) receiver);
-            return type != null ? checkHasTests(type) : false;
+            return checkFileHasTests((IFile) receiver);
+        } else if (receiver instanceof IFileEditorInput) {
+            IFile file = ((IFileEditorInput) receiver).getFile();
+            return checkFileHasTests(file);
         }
         
         return false;
     }
     
-    private boolean checkHasTests(@NotNull IJavaElement element) {
+    private boolean checkFileHasTests(@NotNull IFile file) {
+        IType type = getEclipseTypeForSingleClass(file);
+        return type != null ? checkElementHasTests(type) : false;
+    }
+    
+    private boolean checkElementHasTests(@NotNull IJavaElement element) {
         try {
             ITestKind testKind = TestKindRegistry.getDefault().getKind(TestKindRegistry.getContainerTestKindId(element));
             

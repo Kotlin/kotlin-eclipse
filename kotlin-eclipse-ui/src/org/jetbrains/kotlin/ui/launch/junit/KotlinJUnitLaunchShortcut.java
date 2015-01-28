@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.DebugUITools;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.junit.ui.JUnitMessages;
 import org.eclipse.jdt.internal.junit.ui.JUnitPlugin;
@@ -27,12 +28,16 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 
 public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
     @Override
     public void launch(IEditorPart editor, String mode) {
+        IFile file = EditorUtil.getFile((AbstractTextEditor) editor);
+        launch(file, mode);
     }
     
     @Override
@@ -50,13 +55,19 @@ public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
         }
     }
     
-    private void launch(@NotNull IFile file, String mode) {
+    private void launch(@NotNull IFile file, @NotNull String mode) {
+        IType eclipseType = KotlinJUnitLaunchableTester.getEclipseTypeForSingleClass(file);
+        if (eclipseType != null) {
+            launch(eclipseType, mode);
+        } else {
+            showNoTestsFoundDialog();
+        }
+    }
+    
+    private void launch(@NotNull IJavaElement eclipseElement, @NotNull String mode) {
         try {
-            IType eclipseType = KotlinJUnitLaunchableTester.getEclipseTypeForSingleClass(file);
-            if (eclipseType != null) {
-                ILaunchConfigurationWorkingCopy temporary = createLaunchConfiguration(eclipseType);
-                DebugUITools.launch(temporary, mode);
-            }
+            ILaunchConfigurationWorkingCopy temporary = createLaunchConfiguration(eclipseElement);
+            DebugUITools.launch(temporary, mode);
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
