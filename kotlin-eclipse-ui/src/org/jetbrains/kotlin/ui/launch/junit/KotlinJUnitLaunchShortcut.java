@@ -17,6 +17,7 @@ package org.jetbrains.kotlin.ui.launch.junit;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jdt.core.IJavaElement;
@@ -30,38 +31,58 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 
 public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
+    public static final String KOTLIN_JUNIT_LAUNCH_ID = "org.jetbrains.kotlin.ui.launch.junit";
+    
     @Override
     public void launch(IEditorPart editor, String mode) {
-        IFile file = EditorUtil.getFile((AbstractTextEditor) editor);
-        launch(file, mode);
+        IJavaElement eclipseElement = resolveToEclipseElement(editor);
+        if (eclipseElement != null) {
+            launch(eclipseElement, mode);
+        } else {
+            showNoTestsFoundDialog();
+        }
     }
     
     @Override
     public void launch(ISelection selection, String mode) {
+        IJavaElement eclipseElement = resolveToEclipseElement(selection);
+        if (eclipseElement != null) {
+            launch(eclipseElement, mode);
+        } else {
+            showNoTestsFoundDialog();
+        }
+    }
+    
+    @Nullable
+    private IJavaElement resolveToEclipseElement(@NotNull IEditorPart editor) {
+        IFile file = EditorUtil.getFile((AbstractTextEditor) editor);
+        IType eclipseType = KotlinJUnitLaunchableTester.getEclipseTypeForSingleClass(file);
+        if (eclipseType != null) {
+            return eclipseType;
+        } else {
+            return null;
+        }
+    }
+    
+    @Nullable
+    private IJavaElement resolveToEclipseElement(@NotNull ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             Object[] elements = ((IStructuredSelection) selection).toArray();
             if (elements.length == 1) {
                 Object element = elements[0];
                 if (element instanceof IFile) {
-                    launch((IFile) element, mode);
+                    IFile file = (IFile) element;
+                    return KotlinJUnitLaunchableTester.getEclipseTypeForSingleClass(file);
                 }
-            } else {
-                showNoTestsFoundDialog();
             }
         }
-    }
-    
-    private void launch(@NotNull IFile file, @NotNull String mode) {
-        IType eclipseType = KotlinJUnitLaunchableTester.getEclipseTypeForSingleClass(file);
-        if (eclipseType != null) {
-            launch(eclipseType, mode);
-        } else {
-            showNoTestsFoundDialog();
-        }
+        
+        return null;
     }
     
     private void launch(@NotNull IJavaElement eclipseElement, @NotNull String mode) {
@@ -71,6 +92,20 @@ public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
+    }
+    
+    @Override
+    public ILaunchConfiguration[] getLaunchConfigurations(final IEditorPart editor) {
+        try {
+            IJavaElement eclipseType = resolveToEclipseElement(editor);
+            if (eclipseType != null) {
+                return new ILaunchConfiguration[] { createLaunchConfiguration(eclipseType) };
+            } 
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return null;
     }
     
     private void showNoTestsFoundDialog() {
