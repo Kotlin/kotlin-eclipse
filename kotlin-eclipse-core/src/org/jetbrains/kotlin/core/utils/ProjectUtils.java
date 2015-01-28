@@ -196,7 +196,13 @@ public class ProjectUtils {
             if (classPathEntry.getEntryKind() == kind) {
                 IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(classPathEntry);
                 if (packageFragmentRoots.length > 0) {
-                    paths.add(packageFragmentRoots[0].getResource().getLocation().toFile());
+                    IPackageFragmentRoot pckgFragmentRoot = packageFragmentRoots[0];
+                    IResource resource = pckgFragmentRoot.getResource();
+                    if (resource != null) {
+                        paths.add(resource.getLocation().toFile());
+                    } else { // This can be if resource is external
+                        paths.add(pckgFragmentRoot.getPath().toFile());
+                    }
                 } else { // If directory not under the project then we assume that the path in cp is absolute
                     File file = classPathEntry.getPath().toFile();
                     if (file.exists()) {
