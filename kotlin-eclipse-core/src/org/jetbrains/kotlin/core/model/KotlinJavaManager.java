@@ -21,11 +21,11 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.JetClass;
-import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.name.FqName;
+import org.jetbrains.kotlin.psi.JetClass;
 
 public class KotlinJavaManager {
     public static final KotlinJavaManager INSTANCE = new KotlinJavaManager();

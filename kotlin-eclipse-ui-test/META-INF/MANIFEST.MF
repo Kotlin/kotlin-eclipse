@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-ui-test
-Bundle-SymbolicName: org.jetbrains.kotlin.ui.tests
+Bundle-SymbolicName: org.jetbrains.kotlin.ui.tests;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
@@ -19,10 +19,20 @@ Import-Package: com.intellij.openapi.util,
  org.eclipse.core.runtime.jobs,
  org.eclipse.debug.core,
  org.eclipse.debug.core.model,
+ org.eclipse.debug.internal.core,
+ org.eclipse.debug.internal.ui,
+ org.eclipse.debug.internal.ui.launchConfigurations,
  org.eclipse.debug.internal.ui.views.console,
  org.eclipse.debug.ui,
  org.eclipse.jdt.core,
+ org.eclipse.jdt.internal.junit,
+ org.eclipse.jdt.internal.junit.buildpath,
+ org.eclipse.jdt.internal.junit.launcher,
+ org.eclipse.jdt.internal.junit.model,
  org.eclipse.jdt.internal.ui.text,
+ org.eclipse.jdt.junit,
+ org.eclipse.jdt.junit.model,
+ org.eclipse.jdt.launching,
  org.eclipse.jface.preference,
  org.eclipse.jface.text,
  org.eclipse.jface.text.contentassist,

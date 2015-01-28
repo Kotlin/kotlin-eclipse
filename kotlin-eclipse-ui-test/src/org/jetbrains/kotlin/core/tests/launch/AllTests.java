@@ -21,7 +21,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( {
-	KotlinLaunchTest.class
+	KotlinLaunchTest.class,
+	KotlinJUnitLaunchTest.class
 } )
 public class AllTests {
 
