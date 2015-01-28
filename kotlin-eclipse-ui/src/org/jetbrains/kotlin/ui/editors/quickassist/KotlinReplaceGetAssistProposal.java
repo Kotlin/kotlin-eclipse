@@ -10,6 +10,11 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.psi.JetCallExpression;
 import org.jetbrains.kotlin.psi.JetExpression;
 import org.jetbrains.kotlin.psi.JetQualifiedExpression;
@@ -20,11 +25,6 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilPackage;
 import org.jetbrains.kotlin.resolve.calls.model.DefaultValueArgument;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedValueArgument;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.google.common.collect.Lists;
@@ -45,7 +45,12 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             return;
         }
         
-        IFile file = EditorUtil.getFile(getActiveEditor());
+        KotlinEditor activeEditor = getActiveEditor();
+        if (activeEditor == null) {
+            return;
+        }
+        
+        IFile file = EditorUtil.getFile(activeEditor);
         String arguments = getArguments(qualifiedExpression, file);
         if (arguments == null) {
             return;

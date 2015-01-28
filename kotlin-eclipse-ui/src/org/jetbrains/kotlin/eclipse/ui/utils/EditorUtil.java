@@ -19,18 +19,21 @@ package org.jetbrains.kotlin.eclipse.ui.utils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.jetbrains.annotations.NotNull;
 
 public class EditorUtil {
     
-    public static IFile getFile(AbstractTextEditor editor) {
+    @NotNull
+    public static IFile getFile(@NotNull AbstractTextEditor editor) {
         return (IFile) editor.getEditorInput().getAdapter(IFile.class);
     }
     
-    public static String getSourceCode(JavaEditor editor) {
+    @NotNull
+    public static String getSourceCode(@NotNull JavaEditor editor) {
         return editor.getViewer().getDocument().get();
     }
     
-    public static int getOffsetInEditor(JavaEditor editor, int offset) {
+    public static int getOffsetInEditor(@NotNull JavaEditor editor, int offset) {
         return LineEndUtil.convertLfToOsOffset(LineEndUtil.removeAllCarriageReturns(getSourceCode(editor)), offset);
     }
 }
