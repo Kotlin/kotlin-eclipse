@@ -22,18 +22,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.junit.launcher.ITestKind;
 import org.eclipse.jdt.internal.junit.launcher.TestKindRegistry;
 import org.eclipse.ui.IFileEditorInput;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.model.KotlinJavaManager;
-import org.jetbrains.kotlin.psi.JetClass;
-import org.jetbrains.kotlin.psi.JetDeclaration;
-import org.jetbrains.kotlin.psi.JetFile;
 
 import com.google.common.collect.Sets;
 
@@ -52,7 +45,7 @@ public class KotlinJUnitLaunchableTester extends PropertyTester {
     }
     
     private boolean checkFileHasTests(@NotNull IFile file) {
-        IType type = getEclipseTypeForSingleClass(file);
+        IType type = KotlinJUnitLaunchUtils.getEclipseTypeForSingleClass(file);
         return type != null ? checkElementHasTests(type) : false;
     }
     
@@ -69,31 +62,5 @@ public class KotlinJUnitLaunchableTester extends PropertyTester {
         }
         
         return false;
-    }
-    
-    @Nullable
-    private static JetClass getSingleJetClass(@NotNull IFile file) {
-        if (!KotlinPsiManager.INSTANCE.exists(file)) return null;
-        
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-        
-        JetClass jetClass = null;
-        for (JetDeclaration declaration : jetFile.getDeclarations()) {
-            if (declaration instanceof JetClass) {
-                if (jetClass != null) {
-                    return null;
-                } else {
-                    jetClass = (JetClass) declaration;
-                }
-            }
-        }
-        
-        return jetClass;
-    }
-    
-    @Nullable
-    static IType getEclipseTypeForSingleClass(@NotNull IFile file) {
-        JetClass jetClass = getSingleJetClass(file);
-        return jetClass != null ? KotlinJavaManager.INSTANCE.findEclipseType(jetClass, JavaCore.create(file.getProject())) : null;
     }
 }
