@@ -313,7 +313,7 @@
             icon="icons/kotlin-file.gif"
             id="org.jetbrains.kotlin.ui.launch.launchShortcut"
             label="Kotlin Application"
-            modes="run">
+            modes="run,debug">
          <contextualLaunch>
             <enablement>
                <with
@@ -336,7 +336,7 @@
             icon="icons/julaunch.gif"
             id="org.jetbrains.kotlin.ui.launch.junit"
             label="Kotlin JUnit Test"
-            modes="run">
+            modes="run,debug">
          <contextualLaunch>
             <enablement>
                <with
