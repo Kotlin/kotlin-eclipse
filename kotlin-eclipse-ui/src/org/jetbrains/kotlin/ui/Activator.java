@@ -17,8 +17,10 @@
 package org.jetbrains.kotlin.ui;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.model.KotlinModelUtils;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinFilesCollector;
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
@@ -46,6 +48,7 @@ public class Activator extends AbstractUIPlugin {
         for (IProject project : KotlinPsiManager.INSTANCE.getProjects()) {
             KotlinNature.addNature(project);
             KotlinNature.addBuilder(project);
+            KotlinModelUtils.excludeKotlinFilesFromOutput(JavaCore.create(project));
             
             KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
         }
