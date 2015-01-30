@@ -50,11 +50,12 @@ public class KotlinJUnitLaunchTestCase extends KotlinProjectTestCase {
 			ILaunchConfiguration launchConfiguration = launchConfigurations[0];
 			
 			String actualTestRunnerKind = launchConfiguration.getAttribute(JUnitLaunchConfigurationConstants.ATTR_TEST_RUNNER_KIND, (String) null);
-			assertEquals(actualTestRunnerKind, TestKindRegistry.JUNIT4_TEST_KIND_ID);
+			String expectedTestRunnerKind = TestKindRegistry.getContainerTestKindId(KotlinJUnitLaunchUtils.getEclipseTypeForSingleClass(testEditor.getEditingFile()));
+			assertEquals(expectedTestRunnerKind, actualTestRunnerKind);
 			
 			String actualFQName = launchConfiguration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, (String) null);
 			JetClass singleJetClass = KotlinJUnitLaunchUtils.getSingleJetClass(testEditor.getEditingFile());
-			assertEquals(actualFQName, singleJetClass.getFqName().asString());
+			assertEquals(singleJetClass.getFqName().asString(), actualFQName);
 		} catch (CoreException e) {
 			throw new RuntimeException(e);
 		}
