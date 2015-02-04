@@ -19,7 +19,11 @@ package org.jetbrains.kotlin.ui.tests.editors.completion;
 import org.junit.Test;
 
 public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
-
+	@Test
+	public void testJavaConstructorsComletion() {
+		doTest("testData/completion/basic/java/JavaConstructorsCompletion.kt");
+	}
+	
 	@Test
 	public void testAfterFloatOnNewLine() {
 		doTest("testData/completion/basic/common/AfterFloatOnNewLine.kt");

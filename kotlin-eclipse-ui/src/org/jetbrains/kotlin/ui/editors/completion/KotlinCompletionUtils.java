@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 
@@ -32,7 +33,12 @@ public class KotlinCompletionUtils {
         return Collections2.filter(descriptors, new Predicate<DeclarationDescriptor>() {
             @Override
             public boolean apply(DeclarationDescriptor descriptor) {
-                String identifier = descriptor.getName().getIdentifier();
+                Name name = descriptor.getName();
+                if (name.isSpecial()) {
+                    return false;
+                }
+                
+                String identifier = name.getIdentifier();
                 return identifier.startsWith(prefix) || 
                        identifier.toLowerCase().startsWith(prefix) || 
                        SearchPattern.camelCaseMatch(prefix, identifier);
