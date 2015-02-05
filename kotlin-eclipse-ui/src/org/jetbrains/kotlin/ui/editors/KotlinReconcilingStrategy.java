@@ -32,11 +32,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 
 public class KotlinReconcilingStrategy implements IReconcilingStrategy {
@@ -66,7 +66,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         updateActiveOutlinePage();
     }
     
-    private static void updateLineAnnotations(IFile file) {
+    private void updateLineAnnotations(IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
@@ -74,7 +74,8 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);
-        DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
+//        DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
+        DiagnosticAnnotationUtil.INSTANCE.updateAnnotations(editor, annotations);
     }
     
     private static void updateActiveOutlinePage() {

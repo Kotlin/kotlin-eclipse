@@ -25,12 +25,10 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.diagnostics.Diagnostic;
 import org.jetbrains.kotlin.diagnostics.Errors;
 import org.jetbrains.kotlin.diagnostics.Severity;
@@ -38,7 +36,6 @@ import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -173,25 +170,7 @@ public class DiagnosticAnnotationUtil {
         return annotationType;
     }
     
-    public void updateActiveEditorAnnotations(@NotNull final Map<IFile, List<DiagnosticAnnotation>> annotations) {
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-                
-                if (workbenchWindow == null) {
-                    return;
-                }
-                
-                AbstractTextEditor editor = (AbstractTextEditor) workbenchWindow.getActivePage().getActiveEditor();
-                if (editor != null) {
-                    updateAnnotations(editor, annotations);
-                }
-            }
-        });
-    }
-    
-    private void updateAnnotations(@NotNull AbstractTextEditor editor, 
+    public void updateAnnotations(@NotNull AbstractTextEditor editor, 
             @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations) {
         IFile file = EditorUtil.getFile(editor);
 
