@@ -7,6 +7,7 @@
 
 	<modules>
 		<module>kotlin-bundled-compiler</module>
+		<module>kotlin-eclipse-aspects</module>
 		<module>kotlin-eclipse-core</module>
 		<module>kotlin-eclipse-ui</module>
 		<module>kotlin-eclipse-ui-test</module>
@@ -21,12 +22,28 @@
 
 		<juno-repo.url>http://download.eclipse.org/releases/juno</juno-repo.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		
+		<ajdt-juno-repo.url>http://download.eclipse.org/tools/ajdt/42/dev/update</ajdt-juno-repo.url>
+		<equinox-launcher.url>http://www.chuusai.com/eclipse/equinox-weaving-launcher/</equinox-launcher.url>
+		
+		<aspectj.version>1.8.2</aspectj.version>
+		<aspectj.plugin.version>1.7</aspectj.plugin.version>
 	</properties>
 
 	<repositories>
 		<repository>
 			<id>juno</id>
 			<url>${juno-repo.url}</url>
+			<layout>p2</layout>
+		</repository>
+		<repository>
+			<id>ajdt</id>
+			<url>${ajdt-juno-repo.url}</url>
+			<layout>p2</layout>
+		</repository>
+		<repository>
+			<id>equinox.launcher</id>
+			<url>${equinox-launcher.url}</url>
 			<layout>p2</layout>
 		</repository>
 	</repositories>
@@ -93,6 +110,18 @@
 						</compilerArguments>
 						<compilerArgument>-err:-forbidden</compilerArgument>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>aspectj-maven-plugin</artifactId>
+					<version>${aspectj.plugin.version}</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.aspectj</groupId>
+							<artifactId>aspectjtools</artifactId>
+							<version>${aspectj.version}</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
