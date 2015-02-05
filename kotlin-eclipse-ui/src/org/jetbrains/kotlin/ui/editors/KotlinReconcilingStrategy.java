@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
@@ -27,17 +29,23 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
+
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
@@ -74,8 +82,27 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);
-//        DiagnosticAnnotationUtil.INSTANCE.updateActiveEditorAnnotations(annotations);
-        DiagnosticAnnotationUtil.INSTANCE.updateAnnotations(editor, annotations);
+        DiagnosticAnnotationUtil.INSTANCE.updateAnnotations(editor, annotations, Predicates.not(markerBreakpointAnnotationPredicate()));
+    }
+    
+    private static Predicate<Annotation> markerBreakpointAnnotationPredicate() {
+        return new Predicate<Annotation>() {
+            @Override
+            public boolean apply(Annotation annotation) {
+                try {
+                    if (annotation instanceof MarkerAnnotation) {
+                        MarkerAnnotation markerAnnotation = (MarkerAnnotation) annotation;
+                        if (markerAnnotation.getMarker().isSubtypeOf(IBreakpoint.BREAKPOINT_MARKER)) {
+                            return true;
+                        }
+                    }
+                } catch (CoreException e) {
+                    KotlinLogger.logAndThrow(e);
+                }
+                
+                return false;
+            }
+        };
     }
     
     private static void updateActiveOutlinePage() {
