@@ -24,11 +24,14 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.diagnostics.Diagnostic;
 import org.jetbrains.kotlin.diagnostics.Errors;
 import org.jetbrains.kotlin.diagnostics.Severity;
@@ -37,6 +40,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 
+import com.google.common.base.Predicate;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -170,14 +174,21 @@ public class DiagnosticAnnotationUtil {
         return annotationType;
     }
     
-    public void updateAnnotations(@NotNull AbstractTextEditor editor, 
-            @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations) {
-        IFile file = EditorUtil.getFile(editor);
-
-        List<DiagnosticAnnotation> newAnnotations = annotations.get(file);
-        if (newAnnotations == null) {
-            newAnnotations = Collections.emptyList();
+    public void updateAnnotations(
+            @NotNull AbstractTextEditor editor, 
+            @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations,
+            @NotNull Predicate<Annotation> replacementAnnotationsPredicate) {
+        try {
+            IFile file = EditorUtil.getFile(editor);
+            
+            List<DiagnosticAnnotation> newAnnotations = annotations.get(file);
+            if (newAnnotations == null) {
+                newAnnotations = Collections.emptyList();
+            }
+            
+            AnnotationManager.updateAnnotations(editor, newAnnotations, replacementAnnotationsPredicate);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
         }
-        AnnotationManager.updateAnnotations(editor, newAnnotations);
     }
 }

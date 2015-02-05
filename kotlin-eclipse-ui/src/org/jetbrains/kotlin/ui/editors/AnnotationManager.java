@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,16 +28,17 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 
 public class AnnotationManager {
     
@@ -50,36 +50,24 @@ public class AnnotationManager {
     
     public static final String MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
     
-    public static void updateAnnotations(@NotNull AbstractTextEditor editor, @NotNull List<DiagnosticAnnotation> annotations) {
-        IDocumentProvider documentProvider = editor.getDocumentProvider();
-        IDocument document = documentProvider.getDocument(editor.getEditorInput());
-        
-        IAnnotationModel annotationModel = documentProvider.getAnnotationModel(editor.getEditorInput());
-        
-        if (annotationModel instanceof IAnnotationModelExtension) {
-            IAnnotationModelExtension modelExtension = (IAnnotationModelExtension) annotationModel;
-            Map<Annotation, Position> newAnnotations = new HashMap<Annotation, Position>();
-            for (DiagnosticAnnotation annotation : annotations) {
-                newAnnotations.put(annotation, annotation.getPosition());
-            }
-            List<Annotation> oldAnnotations = new ArrayList<Annotation>();
-            for (Iterator<?> i = annotationModel.getAnnotationIterator(); i.hasNext();) {
-                oldAnnotations.add((Annotation) i.next());
-            }
-            
-            modelExtension.replaceAnnotations(oldAnnotations.toArray(new Annotation[oldAnnotations.size()]), newAnnotations);
-            
-            return;
+    public static void updateAnnotations(
+            @NotNull AbstractTextEditor editor, 
+            @NotNull List<DiagnosticAnnotation> annotations,
+            @NotNull Predicate<Annotation> replacementAnnotationsPredicate) throws CoreException {
+        IAnnotationModel annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput());
+        if (!(annotationModel instanceof IAnnotationModelExtension)) {
+            return; 
         }
         
-        annotationModel.connect(document);
-        for (Iterator<?> i = annotationModel.getAnnotationIterator(); i.hasNext();) {
-            annotationModel.removeAnnotation((Annotation) i.next());
-        }
+        Map<Annotation, Position> newAnnotations = new HashMap<Annotation, Position>();
         for (DiagnosticAnnotation annotation : annotations) {
-            annotationModel.addAnnotation(annotation, annotation.getPosition());
+            newAnnotations.put(annotation, annotation.getPosition());
         }
-        annotationModel.disconnect(document);
+        
+        List<Annotation> oldAnnotations = getAnnotations(annotationModel, replacementAnnotationsPredicate);
+        
+        IAnnotationModelExtension modelExtension = (IAnnotationModelExtension) annotationModel;
+        modelExtension.replaceAnnotations(oldAnnotations.toArray(new Annotation[oldAnnotations.size()]), newAnnotations);
     }
     
     public static void clearAllMarkersFromProject(@NotNull IJavaProject javaProject) {
@@ -105,5 +93,18 @@ public class AnnotationManager {
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
+    }
+    
+    private static List<Annotation> getAnnotations(@NotNull IAnnotationModel model, Predicate<Annotation> predicate) {
+        Iterator<?> annotationIterator = model.getAnnotationIterator();
+        List<Annotation> oldAnnotations = Lists.newArrayList();
+        while (annotationIterator.hasNext()) {
+            Annotation annotation = (Annotation) annotationIterator.next();
+            if (predicate.apply(annotation)) {
+                oldAnnotations.add(annotation);
+            }
+        }
+        
+        return oldAnnotations;
     }
 }
