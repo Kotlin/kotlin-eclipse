@@ -23,16 +23,12 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
@@ -48,9 +44,9 @@ import com.google.common.base.Predicates;
 
 public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
-    private final JavaEditor editor;
+    private final KotlinEditor editor;
     
-    public KotlinReconcilingStrategy(JavaEditor editor) {
+    public KotlinReconcilingStrategy(KotlinEditor editor) {
         this.editor = editor;
     }
     
@@ -70,7 +66,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         KotlinPsiManager.INSTANCE.updatePsiFile(file, sourceCode);
         
         updateLineAnnotations(file);
-        updateActiveOutlinePage();
+        updateOutlinePage();
     }
     
     @SuppressWarnings("unchecked")
@@ -108,22 +104,13 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         };
     }
     
-    private static void updateActiveOutlinePage() {
+    private void updateOutlinePage() {
         Display.getDefault().asyncExec(new Runnable() {
             @Override
             public void run() {
-                IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-                
-                if (workbenchWindow == null) {
-                    return;
-                }
-                
-                AbstractTextEditor editor = (AbstractTextEditor) workbenchWindow.getActivePage().getActiveEditor();
-                if (editor != null) {
-                    IContentOutlinePage outlinePage = (IContentOutlinePage) editor.getAdapter(IContentOutlinePage.class);
-                    if (outlinePage instanceof KotlinOutlinePage) {
-                        ((KotlinOutlinePage) outlinePage).refresh();
-                    }
+                IContentOutlinePage outlinePage = (IContentOutlinePage) editor.getAdapter(IContentOutlinePage.class);
+                if (outlinePage instanceof KotlinOutlinePage) {
+                    ((KotlinOutlinePage) outlinePage).refresh();
                 }
             }
         });

@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.ui.editors;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
 import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
@@ -65,9 +64,9 @@ public class Configuration extends JavaSourceViewerConfiguration {
     private DoubleClickStrategy doubleClickStrategy;
     private Scanner scanner;
     private final ColorManager colorManager;
-    private final JavaEditor editor;
+    private final KotlinEditor editor;
 
-    public Configuration(@NotNull ColorManager colorManager, @NotNull JavaEditor editor, IPreferenceStore preferenceStore) {
+    public Configuration(@NotNull ColorManager colorManager, @NotNull KotlinEditor editor, IPreferenceStore preferenceStore) {
         super(colorManager, preferenceStore, editor, IJavaPartitions.JAVA_PARTITIONING);
         this.colorManager = colorManager;
         this.editor = editor;
