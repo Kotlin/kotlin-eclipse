@@ -11,10 +11,23 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
-Import-Package: org.eclipse.core.resources,
+Import-Package: com.intellij.navigation,
+ org.eclipse.core.resources,
+ org.eclipse.debug.core,
+ org.eclipse.debug.core.sourcelookup,
+ org.eclipse.jdt.core,
+ org.eclipse.jdt.debug.core,
+ org.eclipse.jdt.internal.debug.core,
  org.eclipse.jdt.internal.debug.ui,
+ org.eclipse.jdt.launching,
+ org.eclipse.jdt.launching.sourcelookup.containers,
  org.eclipse.jface.text,
- org.jetbrains.kotlin.idea
+ org.jetbrains.annotations,
+ org.jetbrains.kotlin.idea,
+ org.jetbrains.kotlin.name,
+ org.jetbrains.kotlin.psi
 Eclipse-SupplementBundle: 
- org.eclipse.jdt.debug.ui
-Export-Package: org.jetbrains.kotlin.aspects.debug.ui
+ org.eclipse.jdt.debug.ui,
+ org.eclipse.jdt.launching
+Export-Package: org.jetbrains.kotlin.aspects.debug.ui,
+ org.jetbrains.kotlin.aspects.debug.core

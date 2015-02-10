@@ -1,5 +1,6 @@
 <aspectj>
 	<aspects>
 		<aspect name="org.jetbrains.kotlin.aspects.debug.ui.SuppressBreakpointMarkerUpdaterAspect"/>
+		<aspect name="org.jetbrains.kotlin.aspects.debug.core.KotlinSourceLookupAspect"/>
 	</aspects>
 </aspectj>
