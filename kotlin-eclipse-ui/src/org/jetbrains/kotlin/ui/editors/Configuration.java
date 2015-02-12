@@ -29,7 +29,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextDoubleClickStrategy;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -61,7 +60,6 @@ import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePopup;
 
 public class Configuration extends JavaSourceViewerConfiguration {
-    private DoubleClickStrategy doubleClickStrategy;
     private Scanner scanner;
     private final ColorManager colorManager;
     private final KotlinEditor editor;
@@ -123,13 +121,6 @@ public class Configuration extends JavaSourceViewerConfiguration {
     public IReconciler getReconciler(ISourceViewer sourceViewer) {
         KotlinReconcilingStrategy ktReconcilingStrategy = new KotlinReconcilingStrategy(editor);
         return new MonoReconciler(ktReconcilingStrategy, false);
-    }
-
-    @Override
-    public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
-        if (doubleClickStrategy == null)
-            doubleClickStrategy = new DoubleClickStrategy();
-        return doubleClickStrategy;
     }
 
     protected Scanner getScanner() {
