@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.perspective;
 
+import org.eclipse.debug.ui.IDebugUIConstants;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
@@ -23,7 +25,7 @@ public class KotlinPerspectiveFactory implements IPerspectiveFactory {
 
     @Override
     public void createInitialLayout(IPageLayout layout) {
-
+        layout.addActionSet(IDebugUIConstants.LAUNCH_ACTION_SET);
+        layout.addActionSet(JavaUI.ID_ACTION_SET);
     }
-
 }
