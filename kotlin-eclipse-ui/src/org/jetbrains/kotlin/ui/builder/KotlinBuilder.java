@@ -31,13 +31,13 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
-import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
+import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
@@ -67,7 +67,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         }
         
         if (needRebuild) {
-            KotlinLightClassGeneration.buildAndSaveLightClasses(KotlinAnalyzer.analyzeDeclarations(javaProject), javaProject);
+            KotlinLightClassGeneration.buildAndSaveLightClasses(analysisResult, javaProject);
             getProject().refreshLocal(0, null);
         }
         
