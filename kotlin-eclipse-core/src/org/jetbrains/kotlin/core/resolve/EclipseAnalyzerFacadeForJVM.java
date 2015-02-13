@@ -47,6 +47,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.GlobalSearchScope;
 
 public enum EclipseAnalyzerFacadeForJVM {
 
@@ -101,12 +102,12 @@ public enum EclipseAnalyzerFacadeForJVM {
         BindingTrace trace = new CliLightClassGenerationSupport.CliBindingTrace();
         
         EclipseInjectorForTopDownAnalyzerForJvm injector = new EclipseInjectorForTopDownAnalyzerForJvm(
-               project, javaProject, globalContext, trace, module, providerFactory);
+               project, javaProject, globalContext, trace, module, providerFactory, GlobalSearchScope.allScope(project));
         try {
             List<PackageFragmentProvider> additionalProviders = Lists.newArrayList();
             additionalProviders.add(injector.getJavaDescriptorResolver().getPackageFragmentProvider());
             
-            injector.getLazyTopDownAnalyzer().analyzeFiles(topDownAnalysisParameters, filesToAnalyze, additionalProviders);
+            injector.getLazyTopDownAnalyzerForTopLevel().analyzeFiles(topDownAnalysisParameters, filesToAnalyze, additionalProviders);
             return AnalysisResult.success(trace.getBindingContext(), module);
         }
         finally {

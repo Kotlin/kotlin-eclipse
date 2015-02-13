@@ -28,14 +28,17 @@ import org.jetbrains.kotlin.generators.di.InjectorGeneratorUtil;
 import org.jetbrains.kotlin.load.kotlin.DeserializationComponentsForJava;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmCheckerProvider;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinder;
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory;
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.kotlin.resolve.AdditionalCheckerProvider;
 import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzer;
+import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzerForTopLevel;
 import org.jetbrains.kotlin.resolve.MutablePackageFragmentProvider;
 import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver;
 import org.jetbrains.kotlin.resolve.jvm.JavaLazyAnalyzerPostConstruct;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
+import org.jetbrains.kotlin.resolve.lazy.ScopeProvider;
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
@@ -82,15 +85,18 @@ public class InjectorsGenerator {
     	addParameter(DeclarationProviderFactory.class, false);
     	
     	addPublicField(ResolveSession.class);
+    	addField(ScopeProvider.class);
+    	
+    	addParameter(GlobalSearchScope.class, "moduleContentScope");
 
     	addPublicField(LazyTopDownAnalyzer.class);
+    	addPublicField(LazyTopDownAnalyzerForTopLevel.class);
         addPublicField(JavaDescriptorResolver.class);
         addPublicField(DeserializationComponentsForJava.class);
         
         addField(AdditionalCheckerProvider.class, 
                 new GivenExpression(KotlinJvmCheckerProvider.class.getName() + ".INSTANCE$"));
         
-        addField(GlobalSearchScope.class, new GivenExpression(GlobalSearchScope.class.getName() + ".allScope(project)"));
         addFields(
         		EclipseJavaClassFinder.class, 
                 TraceBasedExternalSignatureResolver.class,
@@ -105,8 +111,8 @@ public class InjectorsGenerator {
                 JavaLazyAnalyzerPostConstruct.class,
                 SingleModuleClassResolver.class);
         
-        addField(VirtualFileFinder.class, new GivenExpression(VirtualFileFinder.class.getName()
-                + ".SERVICE.getInstance(project)"));
+        addField(VirtualFileFinder.class, new GivenExpression(VirtualFileFinderFactory.class.getName()
+                + ".SERVICE.getInstance(project).create(moduleContentScope)"));
     }
     
     private void addPublicField(Class<?> fieldType) {
@@ -129,6 +135,10 @@ public class InjectorsGenerator {
     
     private void addParameter(Class<?> parameterType, boolean useAsContext) {
         generator.addParameter(false, new DiType(parameterType), getDefaultName(parameterType), true, useAsContext);
+    }
+    
+    private void addParameter(Class<?> parameterType, String name) {
+        generator.addParameter(false, new DiType(parameterType), name, true, false);
     }
     
     private void addPublicParameter(Class<?> parameterType, boolean useAsContext) {

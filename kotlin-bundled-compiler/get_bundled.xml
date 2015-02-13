@@ -1,6 +1,6 @@
 <project default="get_bundled">
 	<property name="idea-sources-build-id" value="377195"/>
-	<property name="compiler.tag" value="bootstrap" />
+	<property name="compiler.tag" value="for_eclipse" />
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
 	
 	<property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
