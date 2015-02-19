@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2015 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
-import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
@@ -47,8 +46,6 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     @Override
     protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
         IJavaProject javaProject = JavaCore.create(getProject());
-        KotlinEnvironment.updateKotlinEnvironment(javaProject);
-        
         if (isBuildingForLaunch()) {
             compileKotlinFiles(javaProject);
         }
