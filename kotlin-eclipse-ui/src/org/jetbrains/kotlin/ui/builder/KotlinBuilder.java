@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
@@ -52,6 +53,8 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         
         AnalysisResult analysisResult = KotlinAnalyzer.analyzeWholeProject(javaProject);
         updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
+        
+        KotlinAnalysisProjectCache.getInstance(javaProject).cacheAnalysisResult(analysisResult);
         
         boolean needRebuild = false;
         if (kind == FULL_BUILD) {

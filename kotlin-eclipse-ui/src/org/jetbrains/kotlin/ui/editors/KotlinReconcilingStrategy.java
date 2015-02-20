@@ -32,7 +32,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.psi.JetFile;
@@ -63,10 +65,17 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         String sourceCode = EditorUtil.getSourceCode(editor);
         IFile file = EditorUtil.getFile(editor);
         
+        resetCache(file);
+        
         KotlinPsiManager.INSTANCE.updatePsiFile(file, sourceCode);
         
         updateLineAnnotations(file);
         updateOutlinePage();
+    }
+    
+    private void resetCache(@NotNull IFile file) {
+        IJavaProject javaProject = JavaCore.create(file.getProject());
+        KotlinAnalysisProjectCache.getInstance(javaProject).resetCache();
     }
     
     @SuppressWarnings("unchecked")
