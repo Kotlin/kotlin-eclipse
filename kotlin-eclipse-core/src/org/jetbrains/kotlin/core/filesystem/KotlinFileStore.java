@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.backend.common.output.OutputFile;
 import org.jetbrains.kotlin.codegen.state.GenerationState;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.psi.JetFile;
 
@@ -39,7 +40,11 @@ public class KotlinFileStore extends LocalFile {
             IJavaProject javaProject = getJavaProject();
             assert javaProject != null;
             
-            AnalysisResult analysisResult = KotlinAnalyzer.analyzeDeclarations(javaProject);
+            AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getCachedAnalysisResult();
+            if (analysisResult == null) {
+                analysisResult = KotlinAnalyzer.analyzeDeclarations(javaProject);
+            }
+            
             GenerationState state = KotlinLightClassGeneration.buildLightClasses(analysisResult, javaProject, jetFiles);
             
             IPath absolutePath = new Path(file.getAbsolutePath());
