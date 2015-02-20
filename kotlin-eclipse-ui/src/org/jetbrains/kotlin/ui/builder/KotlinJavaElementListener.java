@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElementDelta;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 
 public class KotlinJavaElementListener implements IElementChangedListener {
     @Override

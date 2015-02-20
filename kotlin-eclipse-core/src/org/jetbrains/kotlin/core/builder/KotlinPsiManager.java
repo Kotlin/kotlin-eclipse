@@ -42,7 +42,7 @@ import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.idea.JetLanguage;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;

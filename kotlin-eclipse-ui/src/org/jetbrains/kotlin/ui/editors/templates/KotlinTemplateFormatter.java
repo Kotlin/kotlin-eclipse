@@ -28,7 +28,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
 import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.core.utils.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 
 public class KotlinTemplateFormatter {

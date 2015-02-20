@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.core.utils;
+package org.jetbrains.kotlin.core.model;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -43,6 +43,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
 import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory;
