@@ -21,6 +21,12 @@
 	<property name="download.name" value="downloads" />
 	<property name="download.dir" value="${target.dir}/${download.name}" />
 	
+	<condition property="no_eclipse">
+		<not>
+			<typefound name="eclipse.refreshLocal" />
+		</not>
+	</condition>
+
 	<target name="refresh_eclipse" unless="no_eclipse">
 		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
 	</target>
