@@ -30,15 +30,15 @@ import org.eclipse.ui.IMarkerResolution2;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.psi.JetImportDirective;
-import org.jetbrains.kotlin.psi.JetPackageDirective;
-import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.lexer.JetTokens;
+import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.JetImportDirective;
+import org.jetbrains.kotlin.psi.JetPackageDirective;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.lang.ASTNode;
@@ -88,7 +88,7 @@ public class AutoImportMarkerResolution implements IMarkerResolution2 {
         int offset = 0;
         if (element != null) {
             PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
-            offset = LineEndUtil.convertLfToOsOffset(parsedFile.getText(), element.getTextRange().getEndOffset());
+            offset = LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), element.getTextRange().getEndOffset(), EditorUtil.getDocument(editor));
         }
         
         return offset;

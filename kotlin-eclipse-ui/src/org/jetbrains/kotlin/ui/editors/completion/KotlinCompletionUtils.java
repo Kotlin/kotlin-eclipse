@@ -53,7 +53,7 @@ public class KotlinCompletionUtils {
         
         JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor), sourceCodeWithMarker);
         
-        int offsetWithourCR = LineEndUtil.convertCrToOsOffset(sourceCodeWithMarker, identOffset);
+        int offsetWithourCR = LineEndUtil.convertCrToDocumentOffset(sourceCodeWithMarker, identOffset, EditorUtil.getDocument(editor));
         PsiElement psiElement = jetFile.findElementAt(offsetWithourCR);
         
         return PsiTreeUtil.getParentOfType(psiElement, JetSimpleNameExpression.class);

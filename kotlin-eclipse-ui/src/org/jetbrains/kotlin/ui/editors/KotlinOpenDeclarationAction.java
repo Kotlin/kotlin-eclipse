@@ -34,6 +34,7 @@ import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.util.OpenStrategy;
 import org.eclipse.ui.IEditorPart;
@@ -44,6 +45,12 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement;
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.SourceElement;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -52,12 +59,6 @@ import org.jetbrains.kotlin.psi.JetReferenceExpression;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement;
-import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
@@ -129,7 +130,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         }
     }
     
-    private static void gotoKotlinDeclaration(@NotNull PsiElement element, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
+    private void gotoKotlinDeclaration(@NotNull PsiElement element, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
         VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
         assert virtualFile != null;
         
@@ -141,7 +142,8 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         
         AbstractTextEditor targetEditor = (AbstractTextEditor) editorPart;
         
-        int start = LineEndUtil.convertLfToOsOffset(element.getContainingFile().getText(), element.getTextOffset());
+        int start = LineEndUtil.convertLfToDocumentOffset(element.getContainingFile().getText(), 
+                element.getTextOffset(), EditorUtil.getDocument(editor));
         targetEditor.selectAndReveal(start, 0);
     }
     
@@ -184,7 +186,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Nullable
     public static JetReferenceExpression getSelectedExpression(@NotNull JavaEditor editor, @NotNull IFile file, int offset) {
-        offset = LineEndUtil.convertCrToOsOffset(editor.getViewer().getDocument().get(), offset);
+        offset = LineEndUtil.convertCrToDocumentOffset(editor.getViewer().getDocument(), offset);
         
         PsiElement psiExpression = KotlinPsiManager.INSTANCE.getParsedFile(file).findElementAt(offset);
         if (psiExpression == null) {
