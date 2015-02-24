@@ -47,10 +47,10 @@ public class KotlinFileStore extends LocalFile {
             
             GenerationState state = KotlinLightClassGeneration.buildLightClasses(analysisResult, javaProject, jetFiles);
             
-            IPath absolutePath = new Path(file.getAbsolutePath());
+            String requestedClassName = new Path(file.getAbsolutePath()).lastSegment();
             for (OutputFile outputFile : state.getFactory().asList()) {
-                IPath relativePath = new Path(outputFile.getRelativePath());
-                if (absolutePath.toOSString().endsWith(relativePath.toOSString())) {
+                String generatedClassName = new Path(outputFile.getRelativePath()).lastSegment();
+                if (requestedClassName.equals(generatedClassName)) {
                     return new ByteArrayInputStream(outputFile.asByteArray());
                 }
             }
