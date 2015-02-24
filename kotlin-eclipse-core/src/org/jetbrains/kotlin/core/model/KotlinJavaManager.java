@@ -7,7 +7,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -44,14 +43,17 @@ public class KotlinJavaManager {
     }
     
     public void registerKtExternalBinFolder(@NotNull IJavaProject javaProject) {
-        if (!hasKotlinBinFolder(javaProject)) {
-            addFolderForKotlinClassFiles(javaProject);
+        try {
+            if (!hasKotlinBinFolder(javaProject)) {
+                addFolderForKotlinClassFiles(javaProject);
+            }
+            
+            if (!ProjectUtils.isPathInClasspath(javaProject, KOTLIN_BIN_FOLDER)) {
+                ProjectUtils.addToClasspath(javaProject, KOTLIN_BIN_CLASSPATH_ENTRY);
+            }
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
         }
-    }
-    
-    @NotNull
-    public IPath getKotlinBinFullPath(@NotNull IProject project) {
-        return project.getLocation().append(KOTLIN_BIN_FOLDER);
     }
     
     @NotNull
@@ -73,31 +75,6 @@ public class KotlinJavaManager {
         return null;
     }
     
-    private void addFolderForKotlinClassFiles(@NotNull IJavaProject javaProject) { 
-        try {
-            if (!hasKotlinBinFolder(javaProject)) {
-                IFolder folder = javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER);
-                if (!folder.exists()) {
-                    folder.create(true, true, null);
-                    folder.createLink(setKotlinFileSystemScheme(folder.getLocationURI()), 
-                            IResource.REPLACE | IResource.ALLOW_MISSING_LOCAL, null);
-                }
-            }
-            
-            if (!ProjectUtils.isPathOnClasspath(javaProject, KOTLIN_BIN_FOLDER)) {
-                ProjectUtils.addToClasspath(javaProject, KOTLIN_BIN_CLASSPATH_ENTRY);
-            }
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
-    
-    private boolean hasKotlinBinFolder(@NotNull IJavaProject javaProject) {
-        return javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER).exists();
-    }
-    
     public URI setKotlinFileSystemScheme(URI locationURI) {
         try {
             return new URI(
@@ -113,4 +90,16 @@ public class KotlinJavaManager {
             throw new IllegalStateException(e);
         }
     }
+    
+    private void addFolderForKotlinClassFiles(@NotNull IJavaProject javaProject) throws CoreException { 
+        IFolder folder = javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER);
+        folder.create(true, true, null); // We need to create folder because it is on the classpath
+        folder.createLink(setKotlinFileSystemScheme(folder.getLocationURI()), 
+                IResource.REPLACE | IResource.ALLOW_MISSING_LOCAL, null);
+    }
+    
+    private boolean hasKotlinBinFolder(@NotNull IJavaProject javaProject) {
+        return javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER).exists();
+    }
+    
 }
