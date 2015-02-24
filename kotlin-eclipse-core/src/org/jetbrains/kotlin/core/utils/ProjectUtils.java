@@ -150,7 +150,7 @@ public class ProjectUtils {
         }
     }
     
-    public static boolean isPathOnClasspath(@NotNull IJavaProject javaProject, @NotNull IPath path) {
+    public static boolean isPathInClasspath(@NotNull IJavaProject javaProject, @NotNull IPath path) {
         try {
             for (IClasspathEntry cp : javaProject.getRawClasspath()) {
                 if (path.equals(cp.getPath().removeFirstSegments(1))) {
