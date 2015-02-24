@@ -30,10 +30,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.lexer.JetTokens;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -100,7 +100,7 @@ public class KotlinDefaultDamagerRepairer extends DefaultDamagerRepairer {
     
     @Nullable
     private TextAttribute getAttributeForElementAt(PsiFile psiFile, int offset, IColorManager colorManager) {
-        offset = LineEndUtil.convertCrToOsOffset(fDocument.get(), fScanner.getTokenOffset());
+        offset = LineEndUtil.convertCrToDocumentOffset(fDocument, fScanner.getTokenOffset());
         PsiElement psiElement = psiFile.findElementAt(offset);
         if (psiElement != null) {
             return getTextAttributeFor(psiElement, colorManager);

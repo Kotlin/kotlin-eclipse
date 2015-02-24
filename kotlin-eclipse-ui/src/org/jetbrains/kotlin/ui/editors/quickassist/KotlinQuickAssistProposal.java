@@ -15,10 +15,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
@@ -54,7 +54,7 @@ public abstract class KotlinQuickAssistProposal implements IJavaCompletionPropos
         IFile file = EditorUtil.getFile(javaEditor);
         JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
 
-        int caretOffset = LineEndUtil.convertCrToOsOffset(EditorUtil.getSourceCode(javaEditor), getCaretOffset(javaEditor));
+        int caretOffset = LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(javaEditor), getCaretOffset(javaEditor));
 
         return jetFile.findElementAt(caretOffset);
     }
@@ -91,12 +91,14 @@ public abstract class KotlinQuickAssistProposal implements IJavaCompletionPropos
     
     public int getStartOffset(@NotNull PsiElement element, @NotNull AbstractTextEditor editor) {
         PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
-        return LineEndUtil.convertLfToOsOffset(parsedFile.getText(), element.getTextRange().getStartOffset());
+        return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), 
+                element.getTextRange().getStartOffset(), EditorUtil.getDocument(editor));
     }
     
     public int getEndOffset(@NotNull PsiElement element, @NotNull AbstractTextEditor editor) {
         PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
-        return LineEndUtil.convertLfToOsOffset(parsedFile.getText(), element.getTextRange().getEndOffset());
+        return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), 
+                element.getTextRange().getEndOffset(), EditorUtil.getDocument(editor));
     }
     
     public abstract boolean isApplicable(@NotNull PsiElement psiElement);

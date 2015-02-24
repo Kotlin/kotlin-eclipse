@@ -26,9 +26,9 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.templates.Template;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.psi.JetFile;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -50,7 +50,7 @@ public class KotlinApplicableTemplateContext {
     
     @NotNull
     public static List<String> getApplicableContextTypeIds(@NotNull ITextViewer viewer, @NotNull IFile file, int offset) {
-        int offsetWithoutCr = LineEndUtil.convertCrToOsOffset(viewer.getDocument().get(), offset);
+        int offsetWithoutCr = LineEndUtil.convertCrToDocumentOffset(viewer.getDocument(), offset);
         PsiFile psiFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
         List<String> contextTypeIds = new ArrayList<String>();

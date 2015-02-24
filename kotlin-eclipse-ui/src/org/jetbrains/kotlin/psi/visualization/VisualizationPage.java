@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.psi.visualization;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -36,6 +37,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 
 import com.intellij.lang.ASTNode;
@@ -86,6 +88,8 @@ public final class VisualizationPage extends Dialog {
         
         final String parsedText = parsedAst.getText();
         
+        final IDocument document = EditorUtil.getDocument(file);
+        
         psiTreeViewer.addDoubleClickListener(new IDoubleClickListener() {            
             @Override
             public void doubleClick(DoubleClickEvent event) {
@@ -93,8 +97,8 @@ public final class VisualizationPage extends Dialog {
                 ASTNode selectedNode = (ASTNode) thisSelection.getFirstElement();
                 TextRange selectedNodeRange = selectedNode.getTextRange();
                 
-                int start = LineEndUtil.convertLfToOsOffset(parsedText, selectedNodeRange.getStartOffset());
-                int end = LineEndUtil.convertLfToOsOffset(parsedText, selectedNodeRange.getEndOffset());
+                int start = LineEndUtil.convertLfToDocumentOffset(parsedText, selectedNodeRange.getStartOffset(), document);
+                int end = LineEndUtil.convertLfToDocumentOffset(parsedText, selectedNodeRange.getEndOffset(), document);
                 
                 programText.setSelection(start, end);
                 programText.showSelection();

@@ -17,9 +17,13 @@
 package org.jetbrains.kotlin.eclipse.ui.utils;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class EditorUtil {
     
@@ -34,6 +38,27 @@ public class EditorUtil {
     }
     
     public static int getOffsetInEditor(@NotNull JavaEditor editor, int offset) {
-        return LineEndUtil.convertLfToOsOffset(LineEndUtil.removeAllCarriageReturns(getSourceCode(editor)), offset);
+        IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+        return LineEndUtil.convertLfToDocumentOffset(LineEndUtil.removeAllCarriageReturns(getSourceCode(editor)), offset, document);
+    }
+    
+    @NotNull
+    public static IDocument getDocument(@NotNull AbstractTextEditor editor) {
+        return editor.getDocumentProvider().getDocument(editor.getEditorInput());
+    }
+    
+    @NotNull
+    public static IDocument getDocument(@NotNull IFile file) {
+        TextFileDocumentProvider provider = new TextFileDocumentProvider();
+        try {
+            provider.connect(file);
+            return provider.getDocument(file);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        } finally {
+            provider.disconnect(file);
+        }
+        
+        throw new RuntimeException();
     }
 }

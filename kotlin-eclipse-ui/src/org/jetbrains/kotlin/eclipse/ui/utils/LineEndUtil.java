@@ -16,6 +16,10 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.eclipse.ui.utils;
 
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextUtilities;
+import org.jetbrains.annotations.NotNull;
+
 public class LineEndUtil {
     
     public static final char CARRIAGE_RETURN_CHAR = '\r';
@@ -23,13 +27,13 @@ public class LineEndUtil {
     public static final char NEW_LINE_CHAR = '\n';
     public static final String NEW_LINE_STRING = Character.toString(NEW_LINE_CHAR);
     
-    public static int convertLfToOsOffset(String lfText, int lfOffset) {
-        String osLineSeparator = System.lineSeparator();
-        if (osLineSeparator.length() == 1) {
+    public static int convertLfToDocumentOffset(@NotNull String lfText, int lfOffset, @NotNull IDocument document) {
+        String documentLineDelimiter = TextUtilities.getDefaultLineDelimiter(document);
+        if (documentLineDelimiter.length() == 1) {
             return lfOffset;
         }
         
-        assertLineSeparator(osLineSeparator);
+        assertLineSeparator(documentLineDelimiter);
         
         // In CrLf move to new line takes 2 char instead of 1 in Lf
         return lfOffset + offsetToLineNumber(lfText, lfOffset);
@@ -57,13 +61,17 @@ public class LineEndUtil {
         return line;
     }
     
-    public static int convertCrToOsOffset(String crText, int crOffset) {
-        String osLineSeparator = System.lineSeparator();
-        if (osLineSeparator.length() == 1) {
+    public static int convertCrToDocumentOffset(@NotNull IDocument document, int crOffset) {
+        return convertCrToDocumentOffset(document.get(), crOffset, document);
+    }
+    
+    public static int convertCrToDocumentOffset(@NotNull String crText, int crOffset, @NotNull IDocument document) {
+        String defaultLineDelimiter = TextUtilities.getDefaultLineDelimiter(document);
+        if (defaultLineDelimiter.length() == 1) {
             return crOffset;
         }
         
-        assertLineSeparator(osLineSeparator);
+        assertLineSeparator(defaultLineDelimiter);
         
         return crOffset - countCrToLineNumber(crText, crOffset);
     }
