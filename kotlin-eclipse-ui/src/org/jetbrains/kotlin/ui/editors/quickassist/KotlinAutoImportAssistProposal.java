@@ -69,6 +69,11 @@ public class KotlinAutoImportAssistProposal extends KotlinQuickAssistProposal {
         return "Import '" + proposalType.getElementName() + "' (" + proposalType.getPackageFragment().getElementName() + ")";
     }
     
+    @NotNull
+    public String getFqName() {
+        return proposalType.getFullyQualifiedName('.');
+    }
+    
     private int getOffset(PsiElement element, AbstractTextEditor editor) {
         int offset = 0;
         if (element != null) {

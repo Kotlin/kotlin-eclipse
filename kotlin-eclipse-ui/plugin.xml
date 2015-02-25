@@ -375,13 +375,6 @@
       </builder>
    </extension>
    <extension
-         point="org.eclipse.ui.ide.markerResolution">
-      <markerResolutionGenerator
-            class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinAutoImportMarkerResolutionGenerator"
-            markerType="org.eclipse.jdt.core.problem">
-      </markerResolutionGenerator>
-   </extension>
-   <extension
          point="org.eclipse.ui.editors.templates">
       <include
             file="templates/default-templates.xml"

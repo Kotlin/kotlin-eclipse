@@ -19,17 +19,15 @@ package org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.eclipse.jdt.core.IType;
+
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.TextInvocationContext;
-import org.eclipse.ui.IMarkerResolution;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinCorrectionProcessor;
-import org.jetbrains.kotlin.ui.editors.quickfix.AutoImportMarkerResolution;
-import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
+import org.jetbrains.kotlin.ui.editors.quickassist.KotlinAutoImportAssistProposal;
 import org.junit.Assert;
 
 public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFileTestCase {
@@ -85,10 +83,10 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
         List<String> result = new ArrayList<String>();
         
         for (ICompletionProposal proposal : proposals) {
-            IMarkerResolution resolution = ((KotlinMarkerResolutionProposal) proposal).getMarkerResolution();
-            IType type = ((AutoImportMarkerResolution) resolution).getType();
-            
-            result.add(type.getFullyQualifiedName('.'));
+        	if (proposal instanceof KotlinAutoImportAssistProposal) {
+				KotlinAutoImportAssistProposal autoImportProposal = (KotlinAutoImportAssistProposal) proposal;
+				result.add(autoImportProposal.getFqName());
+        	}
         }
         
         return result;
