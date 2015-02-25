@@ -159,7 +159,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         return !hasPublicMemberDiagnostic(declaration);
     }
     
-    private static boolean hasPublicMemberDiagnostic(@NotNull JetNamedDeclaration declaration) {
+    private boolean hasPublicMemberDiagnostic(@NotNull JetNamedDeclaration declaration) {
         IFile file = getActiveFile();
         assert file != null;
         

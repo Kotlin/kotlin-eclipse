@@ -36,6 +36,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -46,7 +47,7 @@ public class AnnotationManager {
     public static final String ANNOTATION_ERROR_TYPE = "org.jetbrains.kotlin.ui.annotation.error";
     public static final String ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning";
     public static final String MARKED_TEXT = "markedText";
-    public static final String IS_QUICK_FIXABLE = "isQuickFixable";
+    public static final String IS_UNRESOLVED_REFERENCE = "isUnresolvedReference";
     
     public static final String MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER;
     
@@ -89,7 +90,10 @@ public class AnnotationManager {
             problemMarker.setAttribute(IMarker.CHAR_START, annotation.getRange().getStartOffset());
             problemMarker.setAttribute(IMarker.CHAR_END, annotation.getRange().getEndOffset());
             problemMarker.setAttribute(MARKED_TEXT, annotation.getMarkedText());
-            problemMarker.setAttribute(IS_QUICK_FIXABLE, annotation.quickFixable());
+            
+            DiagnosticFactory<?> diagnostic = annotation.getDiagnostic();
+            boolean isUnresolvedReference = diagnostic != null ? DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic) : false;
+            problemMarker.setAttribute(IS_UNRESOLVED_REFERENCE, isUnresolvedReference); 
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
