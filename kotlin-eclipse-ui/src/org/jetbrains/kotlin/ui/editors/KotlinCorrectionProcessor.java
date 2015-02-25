@@ -19,9 +19,7 @@ package org.jetbrains.kotlin.ui.editors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -33,7 +31,6 @@ import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProcessor;
@@ -62,18 +59,9 @@ public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
         IAnnotationModel annotationModel = documentProvider.getAnnotationModel(editor.getEditorInput());
         
         Position position = annotationModel.getPosition(annotation);
-        try {
-            IMarker marker = findMarkerAt(position.getOffset());
-            if (marker != null) {
-                return IDE.getMarkerHelpRegistry().hasResolutions(marker);
-            }
-            
-            return false;
-        } catch (CoreException e) {
-            KotlinLogger.logError(e);
-        }
+        IMarker marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(EditorUtil.getFile(editor), position.getOffset());
         
-        return false;
+        return marker != null ? IDE.getMarkerHelpRegistry().hasResolutions(marker) : false;
     }
 
     @Override
@@ -87,7 +75,7 @@ public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
         
         try {
             int caretOffset = invocationContext.getOffset();
-            IMarker marker = findMarkerAt(caretOffset);
+            IMarker marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(EditorUtil.getFile(editor), caretOffset);
             if (marker != null) {
                 for (IMarkerResolution markerResolution : IDE.getMarkerHelpRegistry().getResolutions(marker)) {
                     completionProposals.add(new KotlinMarkerResolutionProposal(marker, markerResolution));
@@ -110,22 +98,5 @@ public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
         }
         
         return proposals;
-    }
-    
-    @Nullable
-    private IMarker findMarkerAt(int offset) throws CoreException {
-        IFile file = EditorUtil.getFile(editor);
-        
-        IMarker[] markers = file.findMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
-        final int defaultOffset = -1;
-        for (IMarker marker : markers) {
-            int markerStart = marker.getAttribute(IMarker.CHAR_START, defaultOffset);
-            int markerEnd = marker.getAttribute(IMarker.CHAR_END, defaultOffset);
-            if (markerStart <= offset && markerEnd >= offset) {
-                return marker;
-            }
-        }
-        
-        return null;
     }
 }
