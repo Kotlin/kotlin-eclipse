@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -131,5 +132,9 @@ public class TextEditorTest {
     
     public JavaEditor getEditor() {
         return editor;
+    }
+    
+    public IDocument getDocument() {
+    	return editor.getDocumentProvider().getDocument(editor.getEditorInput());
     }
 }

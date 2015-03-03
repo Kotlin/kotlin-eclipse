@@ -1,0 +1,5 @@
+package testing
+
+import java.util.HashSet
+
+fun test() = HashSet

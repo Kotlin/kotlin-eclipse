@@ -1,0 +1,5 @@
+// NUMBER: 1
+
+import java.util.HashSet
+
+fun test() = HashSet

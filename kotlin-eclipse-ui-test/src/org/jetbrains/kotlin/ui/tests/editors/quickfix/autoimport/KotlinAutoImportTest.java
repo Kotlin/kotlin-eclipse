@@ -34,5 +34,44 @@ public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
 	public void sameProjectJavaClassAutoImport() {
 		doAutoTest();
 	}
-
+	
+	@Test
+	public void localJavaEnumAutoImport() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void localJavaClassAutoImport() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void localJavaInterfaceAutoImport() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void importClassWithExistingPackageKeyword() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void importOnlyUnresolvedReferenceExpressions() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void importWithExtraBreakline() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void importWithExtraBreaklineWithoutPackage() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void oneStandardHashSetAutoImport() {
+		doAutoTest();
+	}
 }

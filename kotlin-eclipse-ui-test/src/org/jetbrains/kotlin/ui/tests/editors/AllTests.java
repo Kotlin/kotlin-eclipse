@@ -28,7 +28,6 @@ import org.junit.runners.Suite;
     KotlinBracketInserterTest.class,
     KotlinOpenDeclarationTest.class,
     KotlinFormatActionTest.class,
-    KotlinUnresolvedClassFixTest.class,
     KotlinCustomLocationBugTest.class
 } )
 public class AllTests {
