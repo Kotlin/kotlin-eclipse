@@ -46,7 +46,9 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
+import org.jetbrains.kotlin.load.java.JavaFlexibleTypeCapabilitiesProvider;
 import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver;
+import org.jetbrains.kotlin.load.java.components.LazyResolveBasedCache;
 import org.jetbrains.kotlin.load.java.components.TraceBasedExternalSignatureResolver;
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter;
 import org.jetbrains.kotlin.load.java.sam.SamConversionResolverImpl;
@@ -94,8 +96,9 @@ public class InjectorsGenerator {
         addPublicField(JavaDescriptorResolver.class);
         addPublicField(DeserializationComponentsForJava.class);
         
-        addField(AdditionalCheckerProvider.class, 
-                new GivenExpression(KotlinJvmCheckerProvider.class.getName() + ".INSTANCE$"));
+        addField(VirtualFileFinder.class, 
+                new GivenExpression(VirtualFileFinderFactory.class.getName() 
+                		+ ".SERVICE.getInstance(project).create(moduleContentScope)"));
         
         addFields(
         		EclipseJavaClassFinder.class, 
@@ -109,10 +112,13 @@ public class InjectorsGenerator {
                 EclipseJavaPropertyInitializerEvaluator.class,
                 EclipseJavaSourceElementFactory.class, 
                 JavaLazyAnalyzerPostConstruct.class,
-                SingleModuleClassResolver.class);
+                SingleModuleClassResolver.class,
+                JavaFlexibleTypeCapabilitiesProvider.class,
+                KotlinJvmCheckerProvider.class);
         
-        addField(VirtualFileFinder.class, new GivenExpression(VirtualFileFinderFactory.class.getName()
-                + ".SERVICE.getInstance(project).create(moduleContentScope)"));
+        
+        addField(VirtualFileFinder.class, new GivenExpression(VirtualFileFinder.class.getName()
+                + ".SERVICE.getInstance(project)"));
     }
     
     private void addPublicField(Class<?> fieldType) {
