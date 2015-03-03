@@ -53,6 +53,7 @@ import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
 import org.jetbrains.kotlin.utils.PathUtil;
 
 import com.google.common.collect.Lists;
+import com.intellij.codeInsight.ContainerProvider;
 import com.intellij.codeInsight.ExternalAnnotationsManager;
 import com.intellij.core.CoreApplicationEnvironment;
 import com.intellij.core.CoreJavaFileManager;
@@ -64,13 +65,16 @@ import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.Extensions;
+import com.intellij.openapi.extensions.ExtensionsArea;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElementFinder;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.compiled.ClassFileDecompilers;
+import com.intellij.psi.impl.PsiTreeChangePreprocessor;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 import com.intellij.psi.impl.file.impl.JavaFileManager;
 
@@ -95,7 +99,12 @@ public class KotlinEnvironment {
         
         applicationEnvironment = createJavaCoreApplicationEnvironment(disposable);
         
-        projectEnvironment = new JavaCoreProjectEnvironment(disposable, applicationEnvironment);
+        projectEnvironment = new JavaCoreProjectEnvironment(disposable, applicationEnvironment) {
+            @Override
+            protected void preregisterServices() {
+                registerProjectExtensionPoints(Extensions.getArea(getProject()));
+            }
+        };
         
         project = projectEnvironment.getProject();
         
@@ -121,16 +130,16 @@ public class KotlinEnvironment {
         
         project.registerService(VirtualFileFinderFactory.class, new EclipseVirtualFileFinder(classPath));
         
-        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME,
-                ClsCustomNavigationPolicy.class);
-        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
-                ClassFileDecompilers.Decompiler.class);
-        
         for (String config : EnvironmentConfigFiles.JVM_CONFIG_FILES) {
             registerApplicationExtensionPointsAndExtensionsFrom(config);
         }
         
         cachedEnvironment.put(javaProject, this);
+    }
+    
+    private static void registerProjectExtensionPoints(ExtensionsArea area) {
+        CoreApplicationEnvironment.registerExtensionPoint(area, PsiTreeChangePreprocessor.EP_NAME, PsiTreeChangePreprocessor.class);
+        CoreApplicationEnvironment.registerExtensionPoint(area, PsiElementFinder.EP_NAME, PsiElementFinder.class);
     }
     
     private static void registerApplicationExtensionPointsAndExtensionsFrom(String configFilePath) {
@@ -198,6 +207,8 @@ public class KotlinEnvironment {
     }
     
     private JavaCoreApplicationEnvironment createJavaCoreApplicationEnvironment(@NotNull Disposable disposable) {
+        Extensions.cleanRootArea(disposable);
+        registerAppExtensionPoints();
         JavaCoreApplicationEnvironment javaApplicationEnvironment = new JavaCoreApplicationEnvironment(disposable);
         
         // ability to get text from annotations xml files
@@ -213,6 +224,15 @@ public class KotlinEnvironment {
                 new KotlinBinaryClassCache());
         
         return javaApplicationEnvironment;
+    }
+    
+    private static void registerAppExtensionPoints() {
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ContainerProvider.EP_NAME,
+                ContainerProvider.class);
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClsCustomNavigationPolicy.EP_NAME,
+                ClsCustomNavigationPolicy.class);
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
+                ClassFileDecompilers.Decompiler.class);
     }
     
     private void addLibsToClasspath() {
