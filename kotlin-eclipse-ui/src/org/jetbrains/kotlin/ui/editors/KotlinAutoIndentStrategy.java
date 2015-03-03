@@ -23,12 +23,13 @@ import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.jetbrains.kotlin.lexer.JetTokens;
+import org.eclipse.jface.text.TextUtilities;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 
 import com.intellij.lang.ASTNode;
@@ -118,7 +119,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             buf.append(lineSpaces);
             
             if (isAfterOpenBrace(document, command.offset - 1, start)) {
-                buf.append(IndenterUtil.createWhiteSpace(1, 0));
+                buf.append(IndenterUtil.createWhiteSpace(1, 0, TextUtilities.getDefaultLineDelimiter(document)));
                 
                 if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
                     command.shiftsCaret = false;
@@ -133,7 +134,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
                     indent--;
                 }
-                command.text += IndenterUtil.createWhiteSpace(indent, 0);
+                command.text += IndenterUtil.createWhiteSpace(indent, 0, TextUtilities.getDefaultLineDelimiter(document));
            }
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
@@ -145,7 +146,8 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             try {
                 int spaceLength = command.offset - findEndOfWhiteSpaceBefore(document, command.offset - 1, 0) - 1;
                 
-                command.text = IndenterUtil.createWhiteSpace(computeIndentCount(document, command.offset) - 1, 0) + CLOSING_BRACE_STRING;
+                command.text = IndenterUtil.createWhiteSpace(computeIndentCount(document, command.offset) - 1, 0, 
+                        TextUtilities.getDefaultLineDelimiter(document)) + CLOSING_BRACE_STRING;
                 command.offset -= spaceLength;
                 document.replace(command.offset, spaceLength, "");
             } catch (BadLocationException e) {

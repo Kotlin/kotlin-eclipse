@@ -27,10 +27,6 @@ public class IndenterUtil {
     public static final char SPACE_CHAR = ' ';
     public static final char TAB_CHAR = '\t';
     
-    public static String createWhiteSpace(int indent, int countBreakLines) {
-        return createWhiteSpace(indent, countBreakLines, System.lineSeparator());
-    }
-    
     public static String createWhiteSpace(int curIndent, int countBreakLines, String lineSeparator) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < countBreakLines; i++) {
