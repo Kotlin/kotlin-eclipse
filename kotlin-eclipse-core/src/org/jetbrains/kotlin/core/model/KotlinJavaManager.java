@@ -3,13 +3,9 @@ package org.jetbrains.kotlin.core.model;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.eclipse.core.internal.resources.Resource;
-import org.eclipse.core.internal.resources.ResourceInfo;
-import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -51,8 +47,6 @@ public class KotlinJavaManager {
         if (!hasKotlinBinFolder(javaProject)) {
             addFolderForKotlinClassFiles(javaProject);
         }
-        
-        setKtFileSystemFor(getKotlinBinFolderFor(javaProject.getProject()));
     }
     
     @NotNull
@@ -85,6 +79,8 @@ public class KotlinJavaManager {
                 IFolder folder = javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER);
                 if (!folder.exists()) {
                     folder.create(true, true, null);
+                    folder.createLink(setKotlinFileSystemScheme(folder.getLocationURI()), 
+                            IResource.REPLACE | IResource.ALLOW_MISSING_LOCAL, null);
                 }
             }
             
@@ -102,16 +98,7 @@ public class KotlinJavaManager {
         return javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER).exists();
     }
     
-    private void setKtFileSystemFor(IResource resource) {
-        ResourceInfo resourceInfo = ((Resource) resource).getResourceInfo(true, false);
-        Workspace workspace = (Workspace) ResourcesPlugin.getWorkspace();
-        workspace.getFileSystemManager().setLocation(
-                resource, 
-                resourceInfo, 
-                setKtURIFor(resource.getLocationURI()));
-    }
-    
-    private URI setKtURIFor(URI locationURI) {
+    public URI setKotlinFileSystemScheme(URI locationURI) {
         try {
             return new URI(
                     KotlinFileSystem.SCHEME, 
