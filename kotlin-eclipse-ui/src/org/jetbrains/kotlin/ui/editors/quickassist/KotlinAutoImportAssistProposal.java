@@ -8,6 +8,7 @@ import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +46,9 @@ public class KotlinAutoImportAssistProposal extends KotlinQuickAssistProposal {
         int breakLineAfter = computeBreakLineAfterImport(placeElement);
         
         String newImport = "import " + proposalType.getFullyQualifiedName('.');
-        newImport = IndenterUtil.createWhiteSpace(0, breakLineBefore) + newImport + IndenterUtil.createWhiteSpace(0, breakLineAfter);
+        String lineDelimiter = TextUtilities.getDefaultLineDelimiter(document);
+        newImport = IndenterUtil.createWhiteSpace(0, breakLineBefore, lineDelimiter) + newImport + 
+                IndenterUtil.createWhiteSpace(0, breakLineAfter, lineDelimiter);
         try {
             document.replace(getOffset(placeElement, editor), 0, newImport);
         } catch (BadLocationException e) {
