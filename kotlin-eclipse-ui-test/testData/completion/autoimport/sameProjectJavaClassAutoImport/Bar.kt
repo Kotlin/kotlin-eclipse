@@ -1,3 +1,3 @@
 package second
 
-public class Bar : Foo<caret>()
+public class Bar : Fo<caret>o()
