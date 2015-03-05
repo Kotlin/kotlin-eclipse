@@ -26,13 +26,13 @@ import kotlin.Pair;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
+import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
-import org.junit.Assert;
 
 import com.google.common.collect.Lists;
 
@@ -45,10 +45,13 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
             configureProjectWithStdLibAndBuilder();
             file.touch(null);
             
+            testEditor.getEclipseProject().build(IncrementalProjectBuilder.FULL_BUILD, null);
+            KotlinTestUtils.joinBuildThread();
+            
             IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             String actual = insertTagsForErrors(loadEclipseFile(file), markers);
             
-            Assert.assertEquals(LineEndUtil.replaceAllSeparatorsWithSystemLineSeparators(expectedFileText), actual);
+            EditorTestUtils.assertByStringWithOffset(actual, expectedFileText);
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
@@ -75,8 +78,6 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
         List<Pair<IFile, String>> filesWithExpectedData = Lists.newArrayList(); 
         for (File file : files) {
             String input = getText(file);
-            input = LineEndUtil.replaceAllSeparatorsWithSystemLineSeparators(input);
-            
             String resolvedInput = resolveTestTags(input);
             filesWithExpectedData.add(new Pair<IFile, String>(
                     createSourceFile(SourceFileData.getPackageFromContent(resolvedInput), file.getName(), 
@@ -119,7 +120,6 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
         try {
             KotlinTestUtils.addKotlinBuilder(testEditor.getEclipseProject());
             testEditor.getTestJavaProject().addKotlinRuntime();
-            KotlinTestUtils.joinBuildThread();
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
