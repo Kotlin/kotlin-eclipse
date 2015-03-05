@@ -99,7 +99,11 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestC
     }
     
     private static int insertTagByOffset(StringBuilder builder, String tag, int tagStartOffset, int offset) {
-        builder.insert(tagStartOffset + offset, tag);
+    	int tagOffset = tagStartOffset + offset;
+    	if (tagOffset > builder.length()) {
+    		tagOffset--;
+    	}
+		builder.insert(tagOffset, tag);
         return tag.length();
     }
 }
