@@ -39,6 +39,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
@@ -188,6 +189,9 @@ public class TestJavaProject {
             
             IFolder outputFolder = ProjectUtils.getOutputFolder(getJavaProject());
             ProjectUtils.cleanFolder(outputFolder);
+            ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project));
+            
+            KotlinTestUtils.removeKotlinBuilder(project);
         } catch (JavaModelException e) {
             throw new RuntimeException(e);
         } catch (CoreException e) {
