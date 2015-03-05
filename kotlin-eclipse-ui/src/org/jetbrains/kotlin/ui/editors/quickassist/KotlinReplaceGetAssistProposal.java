@@ -8,6 +8,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
@@ -42,7 +43,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         
         JetQualifiedExpression qualifiedExpression = PsiTreeUtil.getParentOfType(psiElement, JetQualifiedExpression.class);
         if (qualifiedExpression == null) {
-            return;
+            return; 
         }
         
         KotlinEditor activeEditor = getActiveEditor();
@@ -71,9 +72,13 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             JetExpression indexExpression = PsiPackage.JetPsiFactory(element).createExpression(
                     element.getReceiverExpression().getText() + "[" + arguments + "]");
             
+            int textLength = element.getTextLength();
+            if (TextUtilities.getDefaultLineDelimiter(document).length() > 1) {
+                textLength += IndenterUtil.getLineSeparatorsOccurences(element.getText());
+            }
             document.replace(
                     getStartOffset(element, editor), 
-                    element.getTextLength() + IndenterUtil.getLineSeparatorsOccurences(element.getText()), 
+                    textLength, 
                     indexExpression.getText());
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
