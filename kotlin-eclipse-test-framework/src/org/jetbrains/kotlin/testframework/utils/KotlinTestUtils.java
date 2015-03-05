@@ -3,7 +3,9 @@ package org.jetbrains.kotlin.testframework.utils;
 import java.io.File;
 import java.io.IOException;
 
+import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -63,6 +65,29 @@ public class KotlinTestUtils {
 	public static void addKotlinBuilder(IProject project) {
 		try {
 			KotlinNature.addBuilder(project);
+		} catch (CoreException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static void removeKotlinBuilder(IProject project) {
+		try {
+			if (KotlinNature.hasKotlinBuilder(project)) {
+				IProjectDescription description = project.getDescription();
+				ICommand[] buildCommands = description.getBuildSpec();
+				ICommand[] newBuildCommands = new ICommand[buildCommands.length - 1];
+				int i = 0;
+		        for (ICommand buildCommand : buildCommands) {
+		            if (KotlinNature.KOTLIN_BUILDER.equals(buildCommand.getBuilderName())) {
+		            	continue;
+		            }
+		            newBuildCommands[i] = buildCommand;
+		            i++;
+		        }
+		        
+		        description.setBuildSpec(newBuildCommands);
+	            project.setDescription(description, null);
+			}
 		} catch (CoreException e) {
 			throw new RuntimeException(e);
 		}
