@@ -1,5 +1,5 @@
 package parsingMarkers
 
-fun foo() = 
+fun foo() =
 
 class Foo
