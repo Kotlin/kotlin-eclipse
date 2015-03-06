@@ -20,19 +20,24 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import kotlin.Pair;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
+import org.jetbrains.kotlin.ui.editors.AnnotationManager;
+import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
+import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
 
 import com.google.common.collect.Lists;
 
@@ -40,14 +45,13 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     
     private static final String ANALYZER_TEST_DATA_PATH_SEGMENT = "ide_analyzer";
     
-    private void performTest(IFile file, String expectedFileText) {
+    private void performTest(IFile file, String expectedFileText, List<DiagnosticAnnotation> annotations) {
         try {
-            configureProjectWithStdLibAndBuilder();
-            file.touch(null);
-            
-            testEditor.getEclipseProject().build(IncrementalProjectBuilder.FULL_BUILD, null);
-            KotlinTestUtils.joinBuildThread();
-            
+        	file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
+        	for (DiagnosticAnnotation annotation : annotations) {
+        		AnnotationManager.addProblemMarker(annotation, file);
+        	}
+        	
             IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             String actual = insertTagsForErrors(loadEclipseFile(file), markers);
             
@@ -68,10 +72,24 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     }
     
     private void loadFilesToProjectAndDoTest(@NotNull List<File> files) {
-        List<Pair<IFile, String>> filesWithExpectedData = loadFilesToProject(files);
-        for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {
-            performTest(fileAndExpectedData.getFirst(), fileAndExpectedData.getSecond());
-        }
+		List<Pair<IFile, String>> filesWithExpectedData = loadFilesToProject(files);
+		configureProjectWithStdLibAndBuilder();
+		
+		KotlinTestUtils.joinBuildThread();
+		
+		BindingContext bindingContext = KotlinAnalyzer.analyzeProject(
+				testEditor.getTestJavaProject().getJavaProject()).getBindingContext();
+		Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(bindingContext.getDiagnostics());
+		
+		for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {
+			IFile file = fileAndExpectedData.getFirst();
+			if (annotations.containsKey(file)) {
+				performTest(
+						file, 
+						fileAndExpectedData.getSecond(), 
+						annotations.get(file));
+			}
+		}
     }
     
     private List<Pair<IFile, String>> loadFilesToProject(@NotNull List<File> files) {
@@ -92,29 +110,36 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
         return getText(file.getLocation().toFile());
     }
     
-    private String insertTagsForErrors(String text, IMarker[] markers) throws CoreException {
-        StringBuilder editorInput = new StringBuilder(text);
-        int tagShift = 0;
+    private static String insertTagsForErrors(String fileText, IMarker[] markers) throws CoreException {
+        StringBuilder result = new StringBuilder(fileText);
+        
+        Integer offset = 0;
         for (IMarker marker : markers) {
-            if (marker.getAttribute(IMarker.SEVERITY, 0) == IMarker.SEVERITY_ERROR) {
-                editorInput.insert((int) marker.getAttribute(IMarker.CHAR_START) + tagShift,
-                        KotlinTestUtils.ERROR_TAG_OPEN);
-                tagShift += KotlinTestUtils.ERROR_TAG_OPEN.length();
-                
-                editorInput.insert((int) marker.getAttribute(IMarker.CHAR_END) + tagShift,
-                        KotlinTestUtils.ERROR_TAG_CLOSE);
-                tagShift += KotlinTestUtils.ERROR_TAG_CLOSE.length();
-            }
+        	if (!(marker.getAttribute(IMarker.SEVERITY, 0) == IMarker.SEVERITY_ERROR)) {
+        		continue;
+        	}
+        	
+        	offset += insertTagByOffset(result, ERROR_TAG_OPEN, getTagStartOffset(marker, IMarker.CHAR_START), offset);
+        	offset += insertTagByOffset(result, ERROR_TAG_CLOSE, getTagStartOffset(marker, IMarker.CHAR_END), offset);
         }
         
-        return editorInput.toString();
+        return result.toString();
+    }
+    
+    private static int getTagStartOffset(IMarker marker, String type) throws CoreException {
+        return (int) marker.getAttribute(type);
+    }
+    
+    private static int insertTagByOffset(StringBuilder builder, String tag, int tagStartOffset, int offset) {
+    	int tagOffset = tagStartOffset + offset;
+		builder.insert(tagOffset, tag);
+        return tag.length();
     }
     
     @Override
     protected String getTestDataRelativePath() {
         return ANALYZER_TEST_DATA_PATH_SEGMENT;
     }
-    
     
     private void configureProjectWithStdLibAndBuilder() {
         try {
