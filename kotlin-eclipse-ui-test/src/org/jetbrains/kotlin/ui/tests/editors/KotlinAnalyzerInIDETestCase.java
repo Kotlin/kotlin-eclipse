@@ -42,12 +42,6 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     
     private void performTest(IFile file, String expectedFileText) {
         try {
-            configureProjectWithStdLibAndBuilder();
-            file.touch(null);
-            
-            testEditor.getEclipseProject().build(IncrementalProjectBuilder.FULL_BUILD, null);
-            KotlinTestUtils.joinBuildThread();
-            
             IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             String actual = insertTagsForErrors(loadEclipseFile(file), markers);
             
@@ -68,10 +62,20 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     }
     
     private void loadFilesToProjectAndDoTest(@NotNull List<File> files) {
-        List<Pair<IFile, String>> filesWithExpectedData = loadFilesToProject(files);
-        for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {
-            performTest(fileAndExpectedData.getFirst(), fileAndExpectedData.getSecond());
-        }
+        try {
+        	List<Pair<IFile, String>> filesWithExpectedData = loadFilesToProject(files);
+        	configureProjectWithStdLibAndBuilder();
+        	
+			testEditor.getEclipseProject().build(IncrementalProjectBuilder.FULL_BUILD, null);
+			KotlinTestUtils.joinBuildThread();
+			KotlinTestUtils.refreshWorkspace();
+			
+			for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {
+				performTest(fileAndExpectedData.getFirst(), fileAndExpectedData.getSecond());
+			}
+		} catch (CoreException e) {
+			throw new RuntimeException(e);
+		}
     }
     
     private List<Pair<IFile, String>> loadFilesToProject(@NotNull List<File> files) {
