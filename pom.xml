@@ -26,6 +26,8 @@
 		<ajdt-luna-repo.url>http://download.eclipse.org/tools/ajdt/44/dev/update</ajdt-luna-repo.url>
 		<equinox-launcher.url>http://www.chuusai.com/eclipse/equinox-weaving-launcher/</equinox-launcher.url>
 		
+		<kotlin.version>0.10.195</kotlin.version>
+		
 		<aspectj.version>1.8.2</aspectj.version>
 		<aspectj.plugin.version>1.7</aspectj.plugin.version>
 	</properties>
@@ -47,6 +49,20 @@
 			<layout>p2</layout>
 		</repository>
 	</repositories>
+	
+	<pluginRepositories>
+		<pluginRepository>
+			<id>sonatype-nexus-staging</id>
+			<name>Sonatype OSS Snapshot Repository</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<build>
 		<plugins>
