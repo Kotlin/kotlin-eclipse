@@ -17,13 +17,13 @@
 	</modules>
 
 	<properties>
-		<tycho.version>0.18.0</tycho.version>
+		<tycho.version>0.22.0</tycho.version>
 		<tycho-extras.version>0.18.0</tycho-extras.version>
 
-		<juno-repo.url>http://download.eclipse.org/releases/juno</juno-repo.url>
+		<luna-repo.url>http://download.eclipse.org/releases/luna</luna-repo.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		
-		<ajdt-juno-repo.url>http://download.eclipse.org/tools/ajdt/42/dev/update</ajdt-juno-repo.url>
+		<ajdt-luna-repo.url>http://download.eclipse.org/tools/ajdt/44/dev/update</ajdt-luna-repo.url>
 		<equinox-launcher.url>http://www.chuusai.com/eclipse/equinox-weaving-launcher/</equinox-launcher.url>
 		
 		<aspectj.version>1.8.2</aspectj.version>
@@ -33,12 +33,12 @@
 	<repositories>
 		<repository>
 			<id>juno</id>
-			<url>${juno-repo.url}</url>
+			<url>${luna-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
 		<repository>
 			<id>ajdt</id>
-			<url>${ajdt-juno-repo.url}</url>
+			<url>${ajdt-luna-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
 		<repository>
@@ -187,7 +187,7 @@
 						<baselineReplace>none</baselineReplace>
 						<baselineRepositories>
 							<repository>
-								<url>http://download.eclipse.org/eclipse/updates/4.2</url>
+								<url>http://download.eclipse.org/eclipse/updates/4.4</url>
 							</repository>
 						</baselineRepositories>
 					</configuration>

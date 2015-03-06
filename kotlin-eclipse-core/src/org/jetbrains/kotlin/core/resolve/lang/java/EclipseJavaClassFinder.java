@@ -121,7 +121,7 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
     }
     
     public static ITypeBinding createTypeBinding(IType type) {
-        ASTParser parser = ASTParser.newParser(AST.JLS4);
+        ASTParser parser = ASTParser.newParser(AST.JLS8);
         parser.setCompilerOptions(type.getJavaProject().getOptions(true));
         parser.setIgnoreMethodBodies(true);
         

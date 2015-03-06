@@ -24,6 +24,13 @@
 				<configuration>
 					<useUIHarness>true</useUIHarness>
 					<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+					<dependencies>
+						<dependency>
+							<type>eclipse-feature</type>
+							<artifactId>org.eclipse.rcp</artifactId>
+							<version>0.0.0</version>
+						</dependency>
+					</dependencies>
 				</configuration>
 			</plugin>
 		</plugins>
