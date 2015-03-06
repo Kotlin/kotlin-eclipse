@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -48,7 +49,9 @@ import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.osgi.framework.Bundle;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class ProjectUtils {
     
@@ -164,7 +167,23 @@ public class ProjectUtils {
         return false;
     }
     
-    public static List<File> collectDependenciesClasspath(@NotNull IJavaProject javaProject) throws JavaModelException {
+    public static Set<File> collectExportedLibsFromDependencies(@NotNull IJavaProject javaProject) throws JavaModelException {
+        Set<File> dependencyLibs = Sets.newHashSet();
+        for(IProject project : getDependencyProjects(javaProject)) {
+            Set<File> projectLibs = getClasspaths(JavaCore.create(project), new Predicate<IClasspathEntry>() {
+                @Override
+                public boolean apply(IClasspathEntry classpathEntry) {
+                    return classpathEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY && classpathEntry.isExported();
+                }
+            });
+            
+            dependencyLibs.addAll(projectLibs);
+        }
+        
+        return dependencyLibs;
+    }
+    
+    public static List<File> collectDependenciesSourcesPaths(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<File> dependencies = Lists.newArrayList();
         for (IProject project : getDependencyProjects(javaProject)) {
             dependencies.addAll(getSrcDirectories(JavaCore.create(project)));
@@ -175,7 +194,7 @@ public class ProjectUtils {
     
     public static List<IProject> getDependencyProjects(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<IProject> projects = Lists.newArrayList();
-        for (IClasspathEntry classPathEntry : javaProject.getRawClasspath()) {
+        for (IClasspathEntry classPathEntry : javaProject.getResolvedClasspath(true)) {
             if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
                 IPath path = classPathEntry.getPath();
                 IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(path.toString());
@@ -189,40 +208,59 @@ public class ProjectUtils {
         return projects;
     }
     
-    private static List<File> getClasspaths(@NotNull IJavaProject javaProject, int kind) throws JavaModelException {
-        List<File> paths = new ArrayList<File>();
+    private static Set<File> getClasspaths(@NotNull IJavaProject javaProject, @NotNull Predicate<IClasspathEntry> cpEntryPredicate) throws JavaModelException {
+        Set<File> files = Sets.newHashSet();
         
         for (IClasspathEntry classPathEntry : javaProject.getResolvedClasspath(true)) {
-            if (classPathEntry.getEntryKind() == kind) {
+            if (cpEntryPredicate.apply(classPathEntry)) {
                 IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(classPathEntry);
                 if (packageFragmentRoots.length > 0) {
-                    IPackageFragmentRoot pckgFragmentRoot = packageFragmentRoots[0];
-                    IResource resource = pckgFragmentRoot.getResource();
-                    if (resource != null) {
-                        paths.add(resource.getLocation().toFile());
-                    } else { // This can be if resource is external
-                        paths.add(pckgFragmentRoot.getPath().toFile());
-                    }
-                } else { // If directory not under the project then we assume that the path in cp is absolute
-                    File file = classPathEntry.getPath().toFile();
+                    files.addAll(getFileByEntry(packageFragmentRoots));
+                } else  { // If directory not under the project then we assume that the path in cp is absolute
+                    File file = classPathEntry.getPath().toFile(); 
                     if (file.exists()) {
-                        paths.add(file);
+                        files.add(file);
                     }
                 }
             }
         }
         
-        return paths;
+        return files;
     }
     
     @NotNull
-    public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
-        return getClasspaths(javaProject, IClasspathEntry.CPE_SOURCE);
+    private static Set<File> getFileByEntry(@NotNull IPackageFragmentRoot[] packageFragmentRoots) {
+        Set<File> files = Sets.newHashSet();
+        for (IPackageFragmentRoot pckgFragmentRoot : packageFragmentRoots) {
+            IResource resource = pckgFragmentRoot.getResource();
+            if (resource != null) {
+                files.add(resource.getLocation().toFile());
+            } else { // This can be if resource is external
+                files.add(pckgFragmentRoot.getPath().toFile());
+            }
+        }
+        
+        return files;
     }
     
     @NotNull
-    public static List<File> getLibDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
-        return getClasspaths(javaProject, IClasspathEntry.CPE_LIBRARY);
+    public static Set<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
+        return getClasspaths(javaProject, new Predicate<IClasspathEntry>() {
+            @Override
+            public boolean apply(IClasspathEntry classpathEntry) {
+                return classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE;
+            }
+        });
+    }
+    
+    @NotNull
+    public static Set<File> getLibDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
+        return getClasspaths(javaProject, new Predicate<IClasspathEntry>() {
+            @Override
+            public boolean apply(IClasspathEntry classpathEntry) {
+                return classpathEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY;
+            }
+        });
     }
     
     public static void addToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry)

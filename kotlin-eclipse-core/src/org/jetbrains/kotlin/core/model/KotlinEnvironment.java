@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -237,8 +236,11 @@ public class KotlinEnvironment {
     
     private void addLibsToClasspath() {
         try {
-            List<File> libDirectories = ProjectUtils.getLibDirectories(javaProject);
-            for (File libDirectory : libDirectories) {
+            for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
+                addToClasspath(libDirectory);
+            }
+            
+            for (File libDirectory : ProjectUtils.collectExportedLibsFromDependencies(javaProject)) {
                 addToClasspath(libDirectory);
             }
         } catch (JavaModelException e) {
@@ -254,7 +256,7 @@ public class KotlinEnvironment {
                 addToClasspath(srcDirectory);
             }
             
-            for (File srcDirectory : ProjectUtils.collectDependenciesClasspath(javaProject)) {
+            for (File srcDirectory : ProjectUtils.collectDependenciesSourcesPaths(javaProject)) {
                 addToClasspath(srcDirectory);
             }
         } catch (JavaModelException e) {
