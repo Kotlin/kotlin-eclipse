@@ -23,7 +23,7 @@ public class KotlinLaunchableTester extends PropertyTester {
                 }
                 
                 IJavaProject javaProject = JavaCore.create(file.getProject()); 
-                BindingContext bindingContext = KotlinAnalyzer.analyzeDeclarations(javaProject).getBindingContext();
+                BindingContext bindingContext = KotlinAnalyzer.analyzeProject(javaProject).getBindingContext();
                 return new MainFunctionDetector(bindingContext).hasMain(jetFile.getDeclarations());
             }
         }

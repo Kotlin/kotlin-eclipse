@@ -43,10 +43,8 @@ import org.jetbrains.kotlin.resolve.ImportPath;
 import org.jetbrains.kotlin.resolve.TopDownAnalysisParameters;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 
 public enum EclipseAnalyzerFacadeForJVM {
@@ -79,7 +77,6 @@ public enum EclipseAnalyzerFacadeForJVM {
             IJavaProject javaProject, 
             Project project,
             @NotNull final Collection<JetFile> filesToAnalyze, 
-            @NotNull Predicate<PsiFile> filesToAnalyzeCompletely,
             ModuleDescriptorImpl module
     ) {
         GlobalContext globalContext = ContextPackage.GlobalContext();

@@ -42,7 +42,7 @@ public class KotlinFileStore extends LocalFile {
             
             AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getCachedAnalysisResult();
             if (analysisResult == null) {
-                analysisResult = KotlinAnalyzer.analyzeDeclarations(javaProject);
+                analysisResult = KotlinAnalyzer.analyzeProject(javaProject);
             }
             
             GenerationState state = KotlinLightClassGeneration.buildLightClasses(analysisResult, javaProject, jetFiles);

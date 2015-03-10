@@ -27,37 +27,29 @@ import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.kotlin.psi.JetFile;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
-import com.intellij.psi.PsiFile;
 
 public class KotlinAnalyzer {
 
     @NotNull
-    public static AnalysisResult analyzeDeclarations(@NotNull IJavaProject javaProject) {
-        return analyzeProject(javaProject, ProjectUtils.getSourceFiles(javaProject.getProject()), Predicates.<PsiFile>alwaysFalse());
+    public static AnalysisResult analyzeProject(@NotNull IJavaProject javaProject) {
+        return analyzeProject(javaProject, ProjectUtils.getSourceFiles(javaProject.getProject()));
     }
     
     @NotNull
-    public static AnalysisResult analyzeWholeProject(@NotNull IJavaProject javaProject) {
-        return analyzeProject(javaProject, ProjectUtils.getSourceFiles(javaProject.getProject()),  Predicates.<PsiFile>alwaysTrue());
-    }
-
-    @NotNull
-    public static AnalysisResult analyzeOneFileCompletely(@NotNull IJavaProject javaProject, @NotNull JetFile jetFile) {
-        return analyzeProject(javaProject, Lists.newArrayList(jetFile), Predicates.<PsiFile>equalTo(jetFile));
+    public static AnalysisResult analyzeFile(@NotNull IJavaProject javaProject, @NotNull JetFile jetFile) {
+        return analyzeProject(javaProject, Lists.newArrayList(jetFile));
     }
     
     private static AnalysisResult analyzeProject(@NotNull IJavaProject javaProject, 
-            @NotNull Collection<JetFile> filesToAnalyze, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
+            @NotNull Collection<JetFile> filesToAnalyze) {
         KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
-        return analysisResultProject(javaProject, kotlinEnvironment, filesToAnalyze, filesToAnalyzeCompletely);
+        return analysisResultProject(javaProject, kotlinEnvironment, filesToAnalyze);
     }
     
     @NotNull
     private static AnalysisResult analysisResultProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
-            @NotNull Collection<JetFile> filesToAnalyze, @NotNull Predicate<PsiFile> filesToAnalyzeCompletely) {
+            @NotNull Collection<JetFile> filesToAnalyze) {
         ModuleDescriptorImpl module = EclipseAnalyzerFacadeForJVM.createJavaModule("<module>");
         module.addDependencyOnModule(module);
         module.addDependencyOnModule(KotlinBuiltIns.getInstance().getBuiltInsModule());
@@ -67,7 +59,6 @@ public class KotlinAnalyzer {
                 javaProject, 
                 kotlinEnvironment.getProject(), 
                 filesToAnalyze,
-                filesToAnalyzeCompletely, 
                 module);
     }
 }

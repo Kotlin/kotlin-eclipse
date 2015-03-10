@@ -144,7 +144,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             @NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         BindingContext context = KotlinAnalyzer
-                .analyzeOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
+                .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
                 .getBindingContext();
         
         Function1<DeclarationDescriptor, Boolean> visibilityFilter = new Function1<DeclarationDescriptor, Boolean>() {
