@@ -8,10 +8,16 @@ trait B {
   fun bar() : Double = 1.0;
 }
 
+trait G<X> {
+    val <X : A> boo: Double  where X : B
+    val <A> bal: Double  where A : B
+    val <Y : B> bas: Double where <!NAME_IN_CONSTRAINT_IS_NOT_A_TYPE_PARAMETER!>X<!> : B
+}
+
 class C() : A(), B
 
 class D() {
-  class object : A(), B {}
+  default object : A(), B {}
 }
 
 class Test1<T : A>()
@@ -66,7 +72,7 @@ val t3 = test2<C>(C())
 
 class Test<T>
   where
-    <!UNSUPPORTED!>class object T : <!FINAL_CLASS_OBJECT_UPPER_BOUND!>Foo<!><!>,
+    <!UNSUPPORTED!>class object T : <!FINAL_DEFAULT_OBJECT_UPPER_BOUND!>Foo<!><!>,
     <!UNSUPPORTED!>class object T : A<!> {}
 
 val <T, B : T> x : Int = 0
