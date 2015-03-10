@@ -94,7 +94,6 @@ public enum EclipseAnalyzerFacadeForJVM {
         TopDownAnalysisParameters topDownAnalysisParameters = TopDownAnalysisParameters.create(
                 globalContext.getStorageManager(),
                 globalContext.getExceptionTracker(),
-                filesToAnalyzeCompletely,
                 false,
                 false
         );
