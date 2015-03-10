@@ -33,8 +33,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.asJava.AsJavaPackage;
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.TextDiagnostic;
+import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.kotlin.diagnostics.Diagnostic;
@@ -55,13 +57,10 @@ import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM;
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
-import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.junit.Assert;
 import org.junit.Before;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -191,7 +190,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                     getTestProject().getJavaProject(), getProject(),
                     jetFiles,
-                    Predicates.<PsiFile>alwaysTrue(),
                     module
             );
             

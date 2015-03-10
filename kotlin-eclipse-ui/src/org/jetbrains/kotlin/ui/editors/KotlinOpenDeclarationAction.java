@@ -103,7 +103,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     @Nullable
     private SourceElement getTargetElement(@Nullable JetReferenceExpression expression) {
         BindingContext bindingContext = KotlinAnalyzer
-                .analyzeOneFileCompletely(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
+                .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
                 .getBindingContext();
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
         if (descriptor != null) {

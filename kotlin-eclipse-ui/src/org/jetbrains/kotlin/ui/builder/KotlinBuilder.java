@@ -51,7 +51,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             compileKotlinFiles(javaProject);
         }
         
-        AnalysisResult analysisResult = KotlinAnalyzer.analyzeWholeProject(javaProject);
+        AnalysisResult analysisResult = KotlinAnalyzer.analyzeProject(javaProject);
         updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
         
         KotlinAnalysisProjectCache.getInstance(javaProject).cacheAnalysisResult(analysisResult);
