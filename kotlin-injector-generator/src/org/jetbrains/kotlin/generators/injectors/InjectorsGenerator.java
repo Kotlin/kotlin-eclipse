@@ -20,17 +20,27 @@ import java.io.IOException;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.kotlin.context.GlobalContext;
+import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
+import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.kotlin.generators.di.DependencyInjectorGenerator;
 import org.jetbrains.kotlin.generators.di.DiType;
 import org.jetbrains.kotlin.generators.di.Expression;
 import org.jetbrains.kotlin.generators.di.GivenExpression;
 import org.jetbrains.kotlin.generators.di.InjectorGeneratorUtil;
+import org.jetbrains.kotlin.load.java.JavaFlexibleTypeCapabilitiesProvider;
+import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter;
+import org.jetbrains.kotlin.load.java.components.TraceBasedExternalSignatureResolver;
+import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver;
+import org.jetbrains.kotlin.load.java.sam.SamConversionResolverImpl;
 import org.jetbrains.kotlin.load.kotlin.DeserializationComponentsForJava;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmCheckerProvider;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinder;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory;
-import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
-import org.jetbrains.kotlin.resolve.AdditionalCheckerProvider;
 import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzer;
 import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzerForTopLevel;
@@ -40,18 +50,6 @@ import org.jetbrains.kotlin.resolve.jvm.JavaLazyAnalyzerPostConstruct;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
 import org.jetbrains.kotlin.resolve.lazy.ScopeProvider;
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory;
-import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatureChecker;
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache;
-import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator;
-import org.jetbrains.kotlin.load.java.JavaFlexibleTypeCapabilitiesProvider;
-import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver;
-import org.jetbrains.kotlin.load.java.components.LazyResolveBasedCache;
-import org.jetbrains.kotlin.load.java.components.TraceBasedExternalSignatureResolver;
-import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter;
-import org.jetbrains.kotlin.load.java.sam.SamConversionResolverImpl;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -83,7 +81,7 @@ public class InjectorsGenerator {
     	addParameter(IJavaProject.class, false);
     	addParameter(GlobalContext.class, true);
     	addParameter(BindingTrace.class, false);
-    	addPublicParameter(ModuleDescriptorImpl.class, true);
+    	addPublicParameter(ModuleDescriptorImpl.class, "module", true);
     	addParameter(DeclarationProviderFactory.class, false);
     	
     	addPublicField(ResolveSession.class);
@@ -116,7 +114,6 @@ public class InjectorsGenerator {
                 JavaFlexibleTypeCapabilitiesProvider.class,
                 KotlinJvmCheckerProvider.class);
         
-        
         addField(VirtualFileFinder.class, new GivenExpression(VirtualFileFinder.class.getName()
                 + ".SERVICE.getInstance(project)"));
     }
@@ -147,8 +144,8 @@ public class InjectorsGenerator {
         generator.addParameter(false, new DiType(parameterType), name, true, false);
     }
     
-    private void addPublicParameter(Class<?> parameterType, boolean useAsContext) {
-        generator.addParameter(true, new DiType(parameterType), getDefaultName(parameterType), true, useAsContext);
+    private void addPublicParameter(Class<?> parameterType, String name, boolean useAsContext) {
+    	generator.addParameter(true, new DiType(parameterType), name, true, useAsContext);
     }
     
     private String getDefaultName(Class<?> entityType) {

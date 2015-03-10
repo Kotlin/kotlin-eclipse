@@ -45,24 +45,6 @@ public class EclipseJavaTypeParameter extends EclipseJavaClassifier<ITypeBinding
     }
 
     @Override
-    public int getIndex() {
-        JavaTypeParameterListOwner owner = getOwner();
-        if (owner == null) {
-            return 0;
-        }
-        
-        int typeParameterNum = 0;
-        for (JavaTypeParameter ownerParameter : owner.getTypeParameters()) {
-            if (ownerParameter.equals(this)) {
-                return typeParameterNum;
-            }
-            typeParameterNum++;
-        }
-        
-        return -1;
-    }
-
-    @Override
     @NotNull
     public Collection<JavaClassifierType> getUpperBounds() {
         List<JavaClassifierType> bounds = Lists.newArrayList();

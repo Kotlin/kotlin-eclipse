@@ -59,7 +59,7 @@ import org.jetbrains.kotlin.resolve.DescriptorResolver;
 import org.jetbrains.kotlin.resolve.DelegatedPropertyResolver;
 import org.jetbrains.kotlin.resolve.TypeResolver;
 import org.jetbrains.kotlin.resolve.QualifiedExpressionResolver;
-import org.jetbrains.kotlin.context.LazinessToken;
+import org.jetbrains.kotlin.context.TypeLazinessToken;
 import org.jetbrains.kotlin.types.reflect.ReflectionTypes;
 import org.jetbrains.kotlin.resolve.calls.CallExpressionResolver;
 import org.jetbrains.kotlin.resolve.StatementFilter;
@@ -98,7 +98,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
     private final GlobalContext globalContext;
     private final StorageManager storageManager;
     private final BindingTrace bindingTrace;
-    private final ModuleDescriptorImpl moduleDescriptor;
+    private final ModuleDescriptorImpl module;
     private final KotlinBuiltIns kotlinBuiltIns;
     private final PlatformToKotlinClassMap platformToKotlinClassMap;
     private final DeclarationProviderFactory declarationProviderFactory;
@@ -136,7 +136,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
     private final DelegatedPropertyResolver delegatedPropertyResolver;
     private final TypeResolver typeResolver;
     private final QualifiedExpressionResolver qualifiedExpressionResolver;
-    private final LazinessToken lazinessToken;
+    private final TypeLazinessToken typeLazinessToken;
     private final ReflectionTypes reflectionTypes;
     private final CallExpressionResolver callExpressionResolver;
     private final StatementFilter statementFilter;
@@ -168,7 +168,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         @NotNull IJavaProject IJavaProject,
         @NotNull GlobalContext globalContext,
         @NotNull BindingTrace bindingTrace,
-        @NotNull ModuleDescriptorImpl moduleDescriptor,
+        @NotNull ModuleDescriptorImpl module,
         @NotNull DeclarationProviderFactory declarationProviderFactory,
         @NotNull GlobalSearchScope moduleContentScope
     ) {
@@ -177,11 +177,11 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         this.globalContext = globalContext;
         this.storageManager = globalContext.getStorageManager();
         this.bindingTrace = bindingTrace;
-        this.moduleDescriptor = moduleDescriptor;
-        this.kotlinBuiltIns = moduleDescriptor.getBuiltIns();
-        this.platformToKotlinClassMap = moduleDescriptor.getPlatformToKotlinClassMap();
+        this.module = module;
+        this.kotlinBuiltIns = module.getBuiltIns();
+        this.platformToKotlinClassMap = module.getPlatformToKotlinClassMap();
         this.declarationProviderFactory = declarationProviderFactory;
-        this.resolveSession = new ResolveSession(project, globalContext, getModuleDescriptor(), declarationProviderFactory, bindingTrace);
+        this.resolveSession = new ResolveSession(project, globalContext, getModule(), declarationProviderFactory, bindingTrace);
         this.scopeProvider = new ScopeProvider(getResolveSession());
         this.lazyTopDownAnalyzer = new LazyTopDownAnalyzer();
         this.lazyTopDownAnalyzerForTopLevel = new LazyTopDownAnalyzerForTopLevel();
@@ -198,11 +198,11 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         this.eclipseJavaSourceElementFactory = new EclipseJavaSourceElementFactory();
         this.singleModuleClassResolver = new SingleModuleClassResolver();
         this.globalJavaResolverContext = new GlobalJavaResolverContext(storageManager, eclipseJavaClassFinder, virtualFileFinder, deserializedDescriptorResolver, eclipseExternalAnnotationResolver, traceBasedExternalSignatureResolver, traceBasedErrorReporter, eclipseMethodSignatureChecker, eclipseTraceBasedJavaResolverCache, eclipseJavaPropertyInitializerEvaluator, samConversionResolver, eclipseJavaSourceElementFactory, singleModuleClassResolver);
-        this.lazyJavaPackageFragmentProvider = new LazyJavaPackageFragmentProvider(globalJavaResolverContext, getModuleDescriptor());
-        this.javaDescriptorResolver = new JavaDescriptorResolver(lazyJavaPackageFragmentProvider, getModuleDescriptor());
+        this.lazyJavaPackageFragmentProvider = new LazyJavaPackageFragmentProvider(globalJavaResolverContext, getModule());
+        this.javaDescriptorResolver = new JavaDescriptorResolver(lazyJavaPackageFragmentProvider, getModule());
         this.javaClassDataFinder = new JavaClassDataFinder(virtualFileFinder, deserializedDescriptorResolver);
-        this.binaryClassAnnotationAndConstantLoader = new BinaryClassAnnotationAndConstantLoaderImpl(getModuleDescriptor(), storageManager, virtualFileFinder, traceBasedErrorReporter);
-        this.deserializationComponentsForJava = new DeserializationComponentsForJava(storageManager, getModuleDescriptor(), javaClassDataFinder, binaryClassAnnotationAndConstantLoader, lazyJavaPackageFragmentProvider);
+        this.binaryClassAnnotationAndConstantLoader = new BinaryClassAnnotationAndConstantLoaderImpl(getModule(), storageManager, virtualFileFinder, traceBasedErrorReporter);
+        this.deserializationComponentsForJava = new DeserializationComponentsForJava(storageManager, getModule(), javaClassDataFinder, binaryClassAnnotationAndConstantLoader, lazyJavaPackageFragmentProvider);
         this.javaLazyAnalyzerPostConstruct = new JavaLazyAnalyzerPostConstruct();
         this.javaFlexibleTypeCapabilitiesProvider = new JavaFlexibleTypeCapabilitiesProvider();
         this.kotlinJvmCheckerProvider = KotlinJvmCheckerProvider.INSTANCE$;
@@ -217,11 +217,11 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         this.forLoopConventionsChecker = new ForLoopConventionsChecker();
         this.descriptorResolver = new DescriptorResolver();
         this.qualifiedExpressionResolver = new QualifiedExpressionResolver();
-        this.lazinessToken = new LazinessToken();
-        this.typeResolver = new TypeResolver(annotationResolver, qualifiedExpressionResolver, getModuleDescriptor(), javaFlexibleTypeCapabilitiesProvider, storageManager, lazinessToken, dynamicTypesSettings);
+        this.typeLazinessToken = new TypeLazinessToken();
+        this.typeResolver = new TypeResolver(annotationResolver, qualifiedExpressionResolver, getModule(), javaFlexibleTypeCapabilitiesProvider, storageManager, typeLazinessToken, dynamicTypesSettings);
         this.localClassifierAnalyzer = new LocalClassifierAnalyzer(descriptorResolver, typeResolver, annotationResolver);
         this.delegatedPropertyResolver = new DelegatedPropertyResolver();
-        this.reflectionTypes = new ReflectionTypes(getModuleDescriptor());
+        this.reflectionTypes = new ReflectionTypes(getModule());
         this.callExpressionResolver = new CallExpressionResolver();
         this.statementFilter = new StatementFilter();
         this.candidateResolver = new CandidateResolver();
@@ -259,7 +259,7 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
         this.lazyTopDownAnalyzer.setDeclarationScopeProvider(declarationScopeProvider);
         this.lazyTopDownAnalyzer.setFileScopeProvider(scopeProvider);
         this.lazyTopDownAnalyzer.setLazyDeclarationResolver(lazyDeclarationResolver);
-        this.lazyTopDownAnalyzer.setModuleDescriptor(moduleDescriptor);
+        this.lazyTopDownAnalyzer.setModuleDescriptor(module);
         this.lazyTopDownAnalyzer.setOverloadResolver(overloadResolver);
         this.lazyTopDownAnalyzer.setOverrideResolver(overrideResolver);
         this.lazyTopDownAnalyzer.setTopLevelDescriptorProvider(resolveSession);
@@ -387,8 +387,8 @@ public class EclipseInjectorForTopDownAnalyzerForJvm {
     public void destroy() {
     }
 
-    public ModuleDescriptorImpl getModuleDescriptor() {
-        return this.moduleDescriptor;
+    public ModuleDescriptorImpl getModule() {
+        return this.module;
     }
 
     public ResolveSession getResolveSession() {
