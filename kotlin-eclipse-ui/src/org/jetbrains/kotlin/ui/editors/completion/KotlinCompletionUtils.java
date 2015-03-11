@@ -51,7 +51,10 @@ public class KotlinCompletionUtils {
         String sourceCode = EditorUtil.getSourceCode(editor);
         String sourceCodeWithMarker = new StringBuilder(sourceCode).insert(identOffset, KOTLIN_DUMMY_IDENTIFIER).toString();
         
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor), sourceCodeWithMarker);
+        JetFile jetFile = KotlinPsiManager.getKotlinFileIfExist(EditorUtil.getFile(editor), sourceCodeWithMarker);
+        if (jetFile == null) {
+            return null;
+        }
         
         int offsetWithourCR = LineEndUtil.convertCrToDocumentOffset(sourceCodeWithMarker, identOffset, EditorUtil.getDocument(editor));
         PsiElement psiElement = jetFile.findElementAt(offsetWithourCR);

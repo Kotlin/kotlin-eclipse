@@ -68,9 +68,13 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             }
             
             IFile file = EditorUtil.getFile(editor);
-            PsiFile parsedDocument = KotlinPsiManager.INSTANCE.getParsedFile(file, document.get());
             if (document.get().contains(LineEndUtil.CARRIAGE_RETURN_STRING)) {
                 offset -= document.getLineOfOffset(offset);
+            }
+            
+            PsiFile parsedDocument = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
+            if (parsedDocument == null) {
+                return 0;
             }
             
             PsiElement leaf = parsedDocument.findElementAt(offset);

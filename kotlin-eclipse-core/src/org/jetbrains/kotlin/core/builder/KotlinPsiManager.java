@@ -38,11 +38,11 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.idea.JetFileType;
-import org.jetbrains.kotlin.idea.JetLanguage;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.idea.JetFileType;
+import org.jetbrains.kotlin.idea.JetLanguage;
+import org.jetbrains.kotlin.psi.JetFile;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -138,18 +138,6 @@ public class KotlinPsiManager {
         }
     }
     
-    public void updatePsiFile(@NotNull IFile file, @NotNull String sourceCode) {
-        String sourceCodeWithouCR = StringUtilRt.convertLineSeparators(sourceCode);
-        synchronized (mapOperationLock) {
-            assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
-            
-            PsiFile currentParsedFile = getParsedFile(file);
-            if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
-                psiFiles.put(file, parseText(sourceCodeWithouCR, file));
-            }
-        }
-    }
-    
     @NotNull
     public List<IFile> getFilesByProject(@Nullable IProject project) {
         synchronized (mapOperationLock) {
@@ -161,14 +149,6 @@ public class KotlinPsiManager {
         }
     }
     
-    @NotNull
-    public JetFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
-        synchronized (mapOperationLock) {
-            updatePsiFile(file, expectedSourceCode);
-            return getParsedFile(file);
-        }
-    }
-
     @NotNull
     public JetFile getParsedFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
@@ -223,6 +203,26 @@ public class KotlinPsiManager {
         return false;
     }
     
+    @NotNull
+    private JetFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
+        synchronized (mapOperationLock) {
+            updatePsiFile(file, expectedSourceCode);
+            return getParsedFile(file);
+        }
+    }
+    
+    private void updatePsiFile(@NotNull IFile file, @NotNull String sourceCode) {
+        String sourceCodeWithouCR = StringUtilRt.convertLineSeparators(sourceCode);
+        synchronized (mapOperationLock) {
+            assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
+            
+            PsiFile currentParsedFile = getParsedFile(file);
+            if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
+                psiFiles.put(file, parseText(sourceCodeWithouCR, file));
+            }
+        }
+    }
+    
     @Nullable
     private JetFile parseText(@NotNull String text, IFile file) {
         StringUtil.assertValidSeparators(text);
@@ -248,5 +248,10 @@ public class KotlinPsiManager {
         IPath sourceFilePath = new Path(sourceFileName);
         IFile projectFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
         return KotlinPsiManager.getKotlinParsedFile(projectFile);
+    }
+    
+    @Nullable
+    public static JetFile getKotlinFileIfExist(@NotNull IFile file, @NotNull String sourceCode) {
+        return INSTANCE.exists(file) ? INSTANCE.getParsedFile(file, sourceCode) : null;
     }
 }

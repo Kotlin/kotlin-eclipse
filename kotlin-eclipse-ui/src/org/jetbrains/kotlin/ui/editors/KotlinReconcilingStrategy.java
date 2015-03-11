@@ -62,12 +62,8 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
     @Override
     public void reconcile(IRegion partition) {
-        String sourceCode = EditorUtil.getSourceCode(editor);
         IFile file = EditorUtil.getFile(editor);
-        
         resetCache(file);
-        
-        KotlinPsiManager.INSTANCE.updatePsiFile(file, sourceCode);
         
         updateLineAnnotations(file);
         updateOutlinePage();
@@ -81,7 +77,10 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     @SuppressWarnings("unchecked")
     private void updateLineAnnotations(IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        JetFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor));
+        if (jetFile == null) {
+            return;
+        }
         
         Diagnostics diagnostics = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getBindingContext().getDiagnostics();        
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
