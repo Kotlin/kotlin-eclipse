@@ -413,4 +413,6 @@ Export-Package: com.google.common.base,
  org.picocontainer.monitors,
  src.org.jetbrains.kotlin.idea.codeInsight,
  src.org.jetbrains.kotlin.idea.util,
- src.org.jetbrains.kotlin.resolve.lazy
+ src.org.jetbrains.kotlin.resolve.lazy,
+ org.jetbrains.kotlin.extensions,
+ org.jetbrains.kotlin.codegen.extensions
