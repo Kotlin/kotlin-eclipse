@@ -205,6 +205,11 @@ public class KotlinEnvironment {
         }
     }
     
+    @NotNull
+    public ClassPath getClasspath() {
+        return classPath;
+    }
+    
     private JavaCoreApplicationEnvironment createJavaCoreApplicationEnvironment(@NotNull Disposable disposable) {
         Extensions.cleanRootArea(disposable);
         registerAppExtensionPoints();
