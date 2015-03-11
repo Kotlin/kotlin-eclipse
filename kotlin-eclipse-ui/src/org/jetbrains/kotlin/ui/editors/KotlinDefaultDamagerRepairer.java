@@ -29,6 +29,7 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -66,8 +67,10 @@ public class KotlinDefaultDamagerRepairer extends DefaultDamagerRepairer {
         ColorManager colorManager = new ColorManager();
         
         IFile file = EditorUtil.getFile(editor);
-        KotlinPsiManager.INSTANCE.updatePsiFile(file, fDocument.get());
-        PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        PsiFile parsedFile = KotlinPsiManager.getKotlinFileIfExist(file, fDocument.get());
+        if (parsedFile == null) {
+            return;
+        }
         
         while (true) {
             IToken token = fScanner.nextToken();
@@ -99,7 +102,7 @@ public class KotlinDefaultDamagerRepairer extends DefaultDamagerRepairer {
     }
     
     @Nullable
-    private TextAttribute getAttributeForElementAt(PsiFile psiFile, int offset, IColorManager colorManager) {
+    private TextAttribute getAttributeForElementAt(@NotNull PsiFile psiFile, int offset, @NotNull IColorManager colorManager) {
         offset = LineEndUtil.convertCrToDocumentOffset(fDocument, fScanner.getTokenOffset());
         PsiElement psiElement = psiFile.findElementAt(offset);
         if (psiElement != null) {
@@ -123,6 +126,10 @@ public class KotlinDefaultDamagerRepairer extends DefaultDamagerRepairer {
             } else if (JetTokens.COMMENTS.contains(elementType)) {
                 tokenColor = IColorConstants.COMMENT;
             } else {
+                tokenColor = IColorConstants.DEFAULT;
+            }
+            
+            if (JetTokens.IDENTIFIER.equals(elementType)) {
                 tokenColor = IColorConstants.DEFAULT;
             }
         }

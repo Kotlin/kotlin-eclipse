@@ -46,7 +46,10 @@ public class KotlinFormatAction extends Action {
         String sourceCode = EditorUtil.getSourceCode(editor);
         IFile file = EditorUtil.getFile(editor);
         
-        PsiFile parsedCode = KotlinPsiManager.INSTANCE.getParsedFile(file, sourceCode);
+        PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(file, sourceCode);
+        if (parsedCode == null) {
+            return;
+        }
         
         IDocument document = editor.getViewer().getDocument(); 
         document.set(AlignmentStrategy.alignCode(parsedCode.getNode()));

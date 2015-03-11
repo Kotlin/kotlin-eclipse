@@ -44,16 +44,16 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
-import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
-import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
-import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
+import org.jetbrains.kotlin.name.Name;
+import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
+import org.jetbrains.kotlin.renderer.DescriptorRenderer;
+import org.jetbrains.kotlin.resolve.BindingContext;
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinDescriptorUtils;
@@ -100,8 +100,6 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         String fileText = viewer.getDocument().get();
-        
-        KotlinPsiManager.INSTANCE.updatePsiFile(EditorUtil.getFile(editor), fileText);
         
         int identOffset = getIdentifierStartOffset(fileText, offset);
         Assert.isTrue(identOffset <= offset);
