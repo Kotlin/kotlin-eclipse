@@ -45,7 +45,7 @@ public class EclipseJavaArrayAnnotationArgument implements JavaArrayAnnotationAr
     public List<JavaAnnotationArgument> getElements() {
         List<JavaAnnotationArgument> annotationArguments = Lists.newArrayList();
         for (Object argument : arguments) {
-            annotationArguments.add(EclipseJavaAnnotationArgument.create(argument, name, javaProject));
+            annotationArguments.add(EclipseJavaAnnotationArgument.Default.create(argument, name, javaProject));
         }
         
         return annotationArguments;
