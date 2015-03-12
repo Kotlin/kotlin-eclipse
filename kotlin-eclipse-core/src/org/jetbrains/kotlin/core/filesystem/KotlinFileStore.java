@@ -84,6 +84,12 @@ public class KotlinFileStore extends LocalFile {
         return new KotlinFileStore(new Path(file.getPath()).append(path).toFile());
     }
     
+    @Override
+    public IFileStore getParent() {
+        File parent = file.getParentFile();
+        return parent != null ? new KotlinFileStore(parent) : null;
+    }
+    
     @Nullable
     private IJavaProject getJavaProject() {
         IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toURI());

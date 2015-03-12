@@ -29,7 +29,7 @@ public class LightClassFile {
     
     @NotNull
     public File asFile() {
-        return new File(file.getLocationURI().getSchemeSpecificPart());
+        return file.getFullPath().toFile();
     }
     
     @NotNull

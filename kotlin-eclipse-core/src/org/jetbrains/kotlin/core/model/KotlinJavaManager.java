@@ -7,6 +7,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
@@ -75,14 +76,16 @@ public class KotlinJavaManager {
         return null;
     }
     
-    public URI setKotlinFileSystemScheme(URI locationURI) {
+    public URI setKotlinFileSystemScheme(@NotNull IFolder folder) {
+        URI locationURI = folder.getLocationURI();
         try {
+            IPath path = new Path(folder.getProject().getName()).append(folder.getProjectRelativePath()).makeAbsolute();
             return new URI(
                     KotlinFileSystem.SCHEME, 
                     locationURI.getUserInfo(), 
                     locationURI.getHost(), 
                     locationURI.getPort(), 
-                    locationURI.getPath(), 
+                    path.toPortableString(), 
                     locationURI.getQuery(), 
                     locationURI.getFragment());
         } catch (URISyntaxException e) {
@@ -93,8 +96,7 @@ public class KotlinJavaManager {
     
     private void addFolderForKotlinClassFiles(@NotNull IJavaProject javaProject) throws CoreException { 
         IFolder folder = javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER);
-        folder.createLink(setKotlinFileSystemScheme(folder.getLocationURI()), 
-                IResource.REPLACE | IResource.ALLOW_MISSING_LOCAL, null);
+        folder.createLink(setKotlinFileSystemScheme(folder), IResource.REPLACE | IResource.ALLOW_MISSING_LOCAL, null);
     }
     
     private boolean hasLinkedKotlinBinFolder(@NotNull IJavaProject javaProject) {
