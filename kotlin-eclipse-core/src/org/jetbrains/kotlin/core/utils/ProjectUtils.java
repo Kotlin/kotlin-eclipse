@@ -44,6 +44,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.KotlinClasspathContainer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.JetFile;
@@ -234,6 +235,10 @@ public class ProjectUtils {
         for (IPackageFragmentRoot pckgFragmentRoot : packageFragmentRoots) {
             IResource resource = pckgFragmentRoot.getResource();
             if (resource != null) {
+                // We need to filter out kotlin_bin folder because it is not created on disk
+                if (KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(resource.getProject()).equals(resource)) {
+                    continue;
+                }
                 files.add(resource.getLocation().toFile());
             } else { // This can be if resource is external
                 files.add(pckgFragmentRoot.getPath().toFile());

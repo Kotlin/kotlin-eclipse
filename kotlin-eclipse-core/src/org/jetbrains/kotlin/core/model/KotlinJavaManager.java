@@ -93,10 +93,6 @@ public class KotlinJavaManager {
     
     private void addFolderForKotlinClassFiles(@NotNull IJavaProject javaProject) throws CoreException { 
         IFolder folder = javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER);
-        if (!folder.exists()) {
-            folder.create(true, true, null); // We need to create folder because it is on the classpath
-        }
-        
         folder.createLink(setKotlinFileSystemScheme(folder.getLocationURI()), 
                 IResource.REPLACE | IResource.ALLOW_MISSING_LOCAL, null);
     }
