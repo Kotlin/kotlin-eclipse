@@ -44,7 +44,7 @@ public class KotlinJavaManager {
     
     public void registerKtExternalBinFolder(@NotNull IJavaProject javaProject) {
         try {
-            if (!hasKotlinBinFolder(javaProject)) {
+            if (!hasLinkedKotlinBinFolder(javaProject)) {
                 addFolderForKotlinClassFiles(javaProject);
             }
             
@@ -93,13 +93,21 @@ public class KotlinJavaManager {
     
     private void addFolderForKotlinClassFiles(@NotNull IJavaProject javaProject) throws CoreException { 
         IFolder folder = javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER);
-        folder.create(true, true, null); // We need to create folder because it is on the classpath
+        if (!folder.exists()) {
+            folder.create(true, true, null); // We need to create folder because it is on the classpath
+        }
+        
         folder.createLink(setKotlinFileSystemScheme(folder.getLocationURI()), 
                 IResource.REPLACE | IResource.ALLOW_MISSING_LOCAL, null);
     }
     
-    private boolean hasKotlinBinFolder(@NotNull IJavaProject javaProject) {
-        return javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER).exists();
+    private boolean hasLinkedKotlinBinFolder(@NotNull IJavaProject javaProject) {
+        IFolder folder = javaProject.getProject().getFolder(KOTLIN_BIN_FOLDER);
+        if (folder.isLinked()) {
+            return KotlinFileSystem.SCHEME.equals(folder.getLocationURI().getScheme());
+        }
+        
+        return false;
     }
     
 }
