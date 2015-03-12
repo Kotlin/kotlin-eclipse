@@ -82,7 +82,7 @@ public class KotlinJavaManager {
                     locationURI.getUserInfo(), 
                     locationURI.getHost(), 
                     locationURI.getPort(), 
-                    locationURI.getPath(), 
+                    "/kotlin", 
                     locationURI.getQuery(), 
                     locationURI.getFragment());
         } catch (URISyntaxException e) {
