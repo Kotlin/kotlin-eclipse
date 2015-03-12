@@ -51,6 +51,7 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void kotlinJavaKotlin() {
         doAutoTest();
