@@ -60,6 +60,11 @@ public class KotlinFileStore extends LocalFile {
     }
     
     @Override
+    public IFileStore mkdir(int options, IProgressMonitor monitor) throws CoreException {
+        return this;
+    }
+    
+    @Override
     public OutputStream openOutputStream(int options, IProgressMonitor monitor) throws CoreException {
         return new ByteArrayOutputStream();
     }
