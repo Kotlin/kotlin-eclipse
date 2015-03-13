@@ -235,6 +235,7 @@ public class ProjectUtils {
         for (IPackageFragmentRoot pckgFragmentRoot : packageFragmentRoots) {
             IResource resource = pckgFragmentRoot.getResource();
             if (resource != null) {
+                // We need to filter out kotlin_bin folder because it is not created on disk
                 if (KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(resource.getProject()).equals(resource)) {
                     continue;
                 }
