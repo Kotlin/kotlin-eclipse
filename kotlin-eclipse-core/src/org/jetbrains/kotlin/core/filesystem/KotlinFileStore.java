@@ -35,7 +35,7 @@ public class KotlinFileStore extends LocalFile {
 
     @Override
     public InputStream openInputStream(int options, IProgressMonitor monitor) throws CoreException {
-        List<JetFile> jetFiles = KotlinLightClassManager.INSTANCE.getSourceFiles(file);
+        List<JetFile> jetFiles = KotlinLightClassManager.INSTANCE.getSourceFiles(file.getAbsoluteFile());
         if (!jetFiles.isEmpty()) {
             IJavaProject javaProject = getJavaProject();
             assert javaProject != null;
