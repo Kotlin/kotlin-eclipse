@@ -47,7 +47,7 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     public JavaAnnotationArgument findArgument(@NotNull Name name) {
         for (IMemberValuePairBinding member : getBinding().getDeclaredMemberValuePairs()) {
             if (name.equals(member.getName())) {
-                return EclipseJavaAnnotationArgument.create(member.getValue(), name, javaProject);
+                return EclipseJavaAnnotationArgument.Default.create(member.getValue(), name, javaProject);
             }
         }
         
@@ -59,7 +59,7 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     public Collection<JavaAnnotationArgument> getArguments() {
         List<JavaAnnotationArgument> arguments = Lists.newArrayList();
         for (IMemberValuePairBinding memberValuePair : getBinding().getDeclaredMemberValuePairs()) {
-            arguments.add(EclipseJavaAnnotationArgument.create(
+            arguments.add(EclipseJavaAnnotationArgument.Default.create(
                     memberValuePair.getValue(), 
                     Name.identifier(memberValuePair.getName()), 
                     javaProject));
