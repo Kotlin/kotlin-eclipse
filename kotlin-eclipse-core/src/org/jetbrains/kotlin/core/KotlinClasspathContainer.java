@@ -20,27 +20,37 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathContainer;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class KotlinClasspathContainer implements IClasspathContainer {
+    private final IJavaProject javaProject;
+    
+    public KotlinClasspathContainer(IJavaProject javaProject) {
+        this.javaProject = javaProject;
+    }
     
     public static final IPath CONTAINER_ID = new Path("org.jetbrains.kotlin.core.KOTLIN_CONTAINER");
     private static final String DESCRIPTION = "Kotlin Runtime Library";
     private static final String LIB_NAME = "kotlin-runtime";
     
     private static final IClasspathEntry KT_RUNTIME_CONTAINER_ENTRY = JavaCore.newContainerEntry(CONTAINER_ID);
-    private static final IClasspathEntry[] ENTRIES = new IClasspathEntry[] {
-        JavaCore.newLibraryEntry(
-            new Path(ProjectUtils.buildLibPath(LIB_NAME)),
-            null,
-            null,
-            true)
-    };
     
     @Override
     public IClasspathEntry[] getClasspathEntries() {
-        return ENTRIES;
+        IClasspathEntry kotlinRuntimeEntry = JavaCore.newLibraryEntry(
+                new Path(ProjectUtils.buildLibPath(LIB_NAME)),
+                null,
+                null,
+                true);
+        
+        IClasspathEntry kotlinBinFolderEntry = JavaCore.newLibraryEntry(
+                new Path(javaProject.getProject().getName()).append(KotlinJavaManager.KOTLIN_BIN_FOLDER).makeAbsolute(), 
+                null, null);
+        
+        return new IClasspathEntry[] { kotlinRuntimeEntry, kotlinBinFolderEntry };
     }
     
     @Override

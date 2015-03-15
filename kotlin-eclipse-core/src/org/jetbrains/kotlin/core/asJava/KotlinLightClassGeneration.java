@@ -27,7 +27,9 @@ import com.intellij.openapi.project.Project;
 public class KotlinLightClassGeneration {
     
     public static void buildAndSaveLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject) throws CoreException {
-        KotlinJavaManager.INSTANCE.registerKtExternalBinFolder(javaProject);
+        if (!KotlinJavaManager.INSTANCE.hasLinkedKotlinBinFolder(javaProject)) {
+            return;
+        }
         
         GenerationState state = buildLightClasses(
                 analysisResult, 
@@ -60,7 +62,6 @@ public class KotlinLightClassGeneration {
     
     private static void saveKotlinDeclarationClasses(@NotNull GenerationState state, @NotNull IJavaProject javaProject) throws CoreException {
         IProject project = javaProject.getProject();
-        
         ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project));
         
         for (OutputFile outputFile : state.getFactory().asList()) {
