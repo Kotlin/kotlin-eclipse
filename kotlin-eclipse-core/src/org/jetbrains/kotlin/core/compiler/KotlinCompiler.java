@@ -67,20 +67,13 @@ public class KotlinCompiler {
         command.add("-kotlin-home");
         command.add(ProjectUtils.KT_HOME);
         command.add("-no-jdk-annotations"); // TODO: remove this option when external annotation support will be added
+        command.add("-no-jdk");
         
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
         
-        for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-            classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
-        }
-        
-        for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
-            classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
-        }
-        
-        for (File libDirectory : ProjectUtils.collectExportedLibsFromDependencies(javaProject)) {
-            classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
+        for (File file : ProjectUtils.collectClasspathWithDependencies(javaProject)) {
+            classPath.append(file.getAbsolutePath()).append(pathSeparator);
         }
         
         command.add("-classpath");
@@ -90,10 +83,6 @@ public class KotlinCompiler {
         command.add(outputDir);
         
         for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-            command.add(srcDirectory.getAbsolutePath());
-        }
-        
-        for (File srcDirectory : ProjectUtils.collectDependenciesSourcesPaths(javaProject)) {
             command.add(srcDirectory.getAbsolutePath());
         }
         

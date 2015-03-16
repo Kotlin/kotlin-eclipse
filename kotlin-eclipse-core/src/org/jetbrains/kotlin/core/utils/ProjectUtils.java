@@ -44,13 +44,13 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.KotlinClasspathContainer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -154,45 +154,6 @@ public class ProjectUtils {
         }
     }
     
-    public static boolean isPathInClasspath(@NotNull IJavaProject javaProject, @NotNull IPath path) {
-        try {
-            for (IClasspathEntry cp : javaProject.getRawClasspath()) {
-                if (path.equals(cp.getPath().removeFirstSegments(1))) {
-                    return true;
-                }
-            }
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-        
-        return false;
-    }
-    
-    public static Set<File> collectExportedLibsFromDependencies(@NotNull IJavaProject javaProject) throws JavaModelException {
-        Set<File> dependencyLibs = Sets.newHashSet();
-        for(IProject project : getDependencyProjects(javaProject)) {
-            Set<File> projectLibs = getClasspaths(JavaCore.create(project), new Predicate<IClasspathEntry>() {
-                @Override
-                public boolean apply(IClasspathEntry classpathEntry) {
-                    return classpathEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY && classpathEntry.isExported();
-                }
-            });
-            
-            dependencyLibs.addAll(projectLibs);
-        }
-        
-        return dependencyLibs;
-    }
-    
-    public static List<File> collectDependenciesSourcesPaths(@NotNull IJavaProject javaProject) throws JavaModelException {
-        List<File> dependencies = Lists.newArrayList();
-        for (IProject project : getDependencyProjects(javaProject)) {
-            dependencies.addAll(getSrcDirectories(JavaCore.create(project)));
-        }
-        
-        return dependencies;
-    }
-    
     public static List<IProject> getDependencyProjects(@NotNull IJavaProject javaProject) throws JavaModelException {
         List<IProject> projects = Lists.newArrayList();
         for (IClasspathEntry classPathEntry : javaProject.getResolvedClasspath(true)) {
@@ -209,20 +170,46 @@ public class ProjectUtils {
         return projects;
     }
     
-    private static Set<File> getClasspaths(@NotNull IJavaProject javaProject, @NotNull Predicate<IClasspathEntry> cpEntryPredicate) throws JavaModelException {
-        Set<File> files = Sets.newHashSet();
+    public static List<File> collectClasspathWithDependencies(@NotNull IJavaProject javaProject) throws JavaModelException {
+        return expandClasspath(javaProject, true, Predicates.<IClasspathEntry>alwaysTrue());
+    }
+    
+    @NotNull
+    private static List<File> expandClasspath(@NotNull IJavaProject javaProject, 
+            boolean includeDependencies, @NotNull Predicate<IClasspathEntry> entryPredicate) throws JavaModelException {
+        Set<File> orderedFiles = Sets.newLinkedHashSet();
         
-        for (IClasspathEntry classPathEntry : javaProject.getResolvedClasspath(true)) {
-            if (cpEntryPredicate.apply(classPathEntry)) {
-                IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(classPathEntry);
-                if (packageFragmentRoots.length > 0) {
-                    files.addAll(getFileByEntry(packageFragmentRoots));
-                } else  { // If directory not under the project then we assume that the path in cp is absolute
-                    File file = classPathEntry.getPath().toFile(); 
-                    if (file.exists()) {
-                        files.add(file);
-                    }
+        for (IClasspathEntry classpathEntry : javaProject.getResolvedClasspath(true)) {
+            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT && includeDependencies) {
+                orderedFiles.addAll(expandDependentProjectClasspath(classpathEntry, entryPredicate));
+            } else { // Source folder or library
+                if (entryPredicate.apply(classpathEntry)) {
+                    orderedFiles.addAll(getFileByEntry(classpathEntry, javaProject));
                 }
+            }
+        }
+        
+        return Lists.newArrayList(orderedFiles);
+    }
+    
+    @NotNull
+    private static List<File> getFileByEntry(@NotNull IClasspathEntry entry, @NotNull IJavaProject javaProject) {
+        List<File> files = Lists.newArrayList();
+        
+        IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
+        if (packageFragmentRoots.length > 0) {
+            for (IPackageFragmentRoot packageFragmentRoot : packageFragmentRoots) {
+                IResource resource = packageFragmentRoot.getResource();
+                if (resource != null) {
+                    files.add(resource.getLocation().toFile());
+                } else { // This can be if resource is external
+                    files.add(packageFragmentRoot.getPath().toFile());
+                }
+            }
+        } else {
+            File file = entry.getPath().toFile(); 
+            if (file.exists()) {
+                files.add(file);
             }
         }
         
@@ -230,40 +217,37 @@ public class ProjectUtils {
     }
     
     @NotNull
-    private static Set<File> getFileByEntry(@NotNull IPackageFragmentRoot[] packageFragmentRoots) {
-        Set<File> files = Sets.newHashSet();
-        for (IPackageFragmentRoot pckgFragmentRoot : packageFragmentRoots) {
-            IResource resource = pckgFragmentRoot.getResource();
-            if (resource != null) {
-                // We need to filter out kotlin_bin folder because it is not created on disk
-                if (KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(resource.getProject()).equals(resource)) {
-                    continue;
+    private static List<File> expandDependentProjectClasspath(@NotNull IClasspathEntry projectEntry,
+            @NotNull Predicate<IClasspathEntry> entryPredicate) throws JavaModelException {
+        IPath projectPath = projectEntry.getPath();
+        IProject dependentProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectPath.toString());
+        IJavaProject javaProject = JavaCore.create(dependentProject);
+        
+        Set<File> orderedFiles = Sets.newLinkedHashSet();
+        
+        for (IClasspathEntry classpathEntry : javaProject.getResolvedClasspath(true)) {
+            if (!(classpathEntry.isExported() || classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE)) {
+                continue;
+            }
+            
+            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
+                orderedFiles.addAll(expandDependentProjectClasspath(classpathEntry, entryPredicate));
+            } else {
+                if (entryPredicate.apply(classpathEntry)) {
+                    orderedFiles.addAll(getFileByEntry(classpathEntry, javaProject));
                 }
-                files.add(resource.getLocation().toFile());
-            } else { // This can be if resource is external
-                files.add(pckgFragmentRoot.getPath().toFile());
             }
         }
         
-        return files;
+        return Lists.newArrayList(orderedFiles);
     }
     
     @NotNull
-    public static Set<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
-        return getClasspaths(javaProject, new Predicate<IClasspathEntry>() {
+    public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
+        return expandClasspath(javaProject, false, new Predicate<IClasspathEntry>() {
             @Override
-            public boolean apply(IClasspathEntry classpathEntry) {
-                return classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE;
-            }
-        });
-    }
-    
-    @NotNull
-    public static Set<File> getLibDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
-        return getClasspaths(javaProject, new Predicate<IClasspathEntry>() {
-            @Override
-            public boolean apply(IClasspathEntry classpathEntry) {
-                return classpathEntry.getEntryKind() == IClasspathEntry.CPE_LIBRARY;
+            public boolean apply(IClasspathEntry entry) {
+                return entry.getEntryKind() == IClasspathEntry.CPE_SOURCE;
             }
         });
     }
