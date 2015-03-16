@@ -27,10 +27,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
-import org.eclipse.jdt.launching.JavaRuntime;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.asJava.KotlinLightClassForPackage;
@@ -53,6 +51,7 @@ import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
 import org.jetbrains.kotlin.utils.PathUtil;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.intellij.codeInsight.ContainerProvider;
 import com.intellij.codeInsight.ExternalAnnotationsManager;
@@ -124,10 +123,8 @@ public class KotlinEnvironment {
         
         VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(KT_JDK_ANNOTATIONS_PATH));
         annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
-        
-        addJreClasspath();
-        addSourcesToClasspath();
-        addLibsToClasspath();
+
+        configureClasspath();
         
         project.registerService(VirtualFileFinderFactory.class, new EclipseVirtualFileFinder(classPath));
         
@@ -210,6 +207,16 @@ public class KotlinEnvironment {
         }
     }
     
+    private void configureClasspath() {
+        try {
+            for (File file : ProjectUtils.expandClasspath(javaProject, true, Predicates.<IClasspathEntry>alwaysTrue())) {
+                addToClasspath(file);
+            }
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+    }
+    
     private JavaCoreApplicationEnvironment createJavaCoreApplicationEnvironment(@NotNull Disposable disposable) {
         Extensions.cleanRootArea(disposable);
         registerAppExtensionPoints();
@@ -237,61 +244,6 @@ public class KotlinEnvironment {
                 ClsCustomNavigationPolicy.class);
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
                 ClassFileDecompilers.Decompiler.class);
-    }
-    
-    private void addLibsToClasspath() {
-        try {
-            for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
-                addToClasspath(libDirectory);
-            }
-            
-            for (File libDirectory : ProjectUtils.collectExportedLibsFromDependencies(javaProject)) {
-                addToClasspath(libDirectory);
-            }
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
-    
-    private void addSourcesToClasspath() {
-        try {
-            for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-                addToClasspath(srcDirectory);
-            }
-            
-            for (File srcDirectory : ProjectUtils.collectDependenciesSourcesPaths(javaProject)) {
-                addToClasspath(srcDirectory);
-            }
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
-    
-    private void addJreClasspath() {
-        try {
-            IRuntimeClasspathEntry computeJREEntry = JavaRuntime.computeJREEntry(javaProject);
-            if (computeJREEntry == null) {
-                return;
-            }
-            
-            IRuntimeClasspathEntry[] jreEntries = JavaRuntime.resolveRuntimeClasspathEntry(computeJREEntry, javaProject);
-            
-            if (jreEntries.length != 0) {
-                for (IRuntimeClasspathEntry jreEntry : jreEntries) {
-                    addToClasspath(jreEntry.getClasspathEntry().getPath().toFile());
-                }
-                
-                return;
-            }
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
     }
     
     @NotNull

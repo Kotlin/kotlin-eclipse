@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
@@ -36,6 +37,8 @@ import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser;
 import org.jetbrains.kotlin.core.launch.KotlinCLICompiler;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
+
+import com.google.common.base.Predicates;
 
 public class KotlinCompiler {
     public final static KotlinCompiler INSTANCE = new KotlinCompiler();
@@ -67,20 +70,13 @@ public class KotlinCompiler {
         command.add("-kotlin-home");
         command.add(ProjectUtils.KT_HOME);
         command.add("-no-jdk-annotations"); // TODO: remove this option when external annotation support will be added
+        command.add("-no-jdk");
         
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
         
-        for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-            classPath.append(srcDirectory.getAbsolutePath()).append(pathSeparator);
-        }
-        
-        for (File libDirectory : ProjectUtils.getLibDirectories(javaProject)) {
-            classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
-        }
-        
-        for (File libDirectory : ProjectUtils.collectExportedLibsFromDependencies(javaProject)) {
-            classPath.append(libDirectory.getAbsolutePath()).append(pathSeparator);
+        for (File file : ProjectUtils.expandClasspath(javaProject, true, Predicates.<IClasspathEntry>alwaysTrue())) {
+            classPath.append(file.getAbsolutePath()).append(pathSeparator);
         }
         
         command.add("-classpath");
@@ -90,10 +86,6 @@ public class KotlinCompiler {
         command.add(outputDir);
         
         for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
-            command.add(srcDirectory.getAbsolutePath());
-        }
-        
-        for (File srcDirectory : ProjectUtils.collectDependenciesSourcesPaths(javaProject)) {
             command.add(srcDirectory.getAbsolutePath());
         }
         

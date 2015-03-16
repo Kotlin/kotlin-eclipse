@@ -17,7 +17,7 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
 import java.io.File;
-import java.util.Set;
+import java.util.List;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -39,7 +39,7 @@ public class KotlinCustomLocationBugTest extends KotlinEditorTestCase {
 		TestJavaProject testProject = new TestJavaProject(CUSTOM_LOCATION_TEST_PROJECT_NAME, CUSTOM_LOCATION_TEST_PROJECT_LOCATION);
 		
 		IJavaProject javaProject = testProject.getJavaProject();
-		Set<File> files =  ProjectUtils.getSrcDirectories(javaProject);
+		List<File> files =  ProjectUtils.getSrcDirectories(javaProject);
 	
 		IPath workspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation();
 		IPath expectedSourcePath = workspaceRootPath.append(CUSTOM_LOCATION_TEST_PROJECT_LOCATION).append(TestJavaProject.SRC_FOLDER);
