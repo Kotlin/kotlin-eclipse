@@ -19,6 +19,8 @@ package org.jetbrains.kotlin.ui.editors;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
+import org.eclipse.jdt.internal.ui.text.JavaColorManager;
+import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -31,14 +33,14 @@ import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 
 public class KotlinEditor extends CompilationUnitEditor {
     
-    private final ColorManager colorManager;
+    private final IColorManager colorManager;
     private final BracketInserter bracketInserter;
     private KotlinOutlinePage kotlinOutlinePage = null;
     private KotlinToggleBreakpointAdapter kotlinToggleBreakpointAdapter = null;
     
     public KotlinEditor() {
         super();
-        colorManager = new ColorManager();
+        colorManager = new JavaColorManager();
         bracketInserter = new BracketInserter();
     }
     

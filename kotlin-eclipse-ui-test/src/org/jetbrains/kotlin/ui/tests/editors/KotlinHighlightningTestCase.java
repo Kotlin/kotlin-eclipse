@@ -16,22 +16,27 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.internal.ui.text.JavaColorManager;
+import org.eclipse.jdt.ui.PreferenceConstants;
+import org.eclipse.jdt.ui.text.IColorManager;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
-import org.jetbrains.kotlin.ui.editors.ColorManager;
-import org.jetbrains.kotlin.ui.editors.IColorConstants;
 import org.junit.Assert;
 import org.junit.Before;
 
 public abstract class KotlinHighlightningTestCase extends KotlinProjectTestCase {
 	
-	private static final ColorManager COLOR_MANAGER = new ColorManager();
-	private static final Color KEYWORD = COLOR_MANAGER.getColor(IColorConstants.KEYWORD);
-	private static final Color STRING = COLOR_MANAGER.getColor(IColorConstants.STRING);
-	private static final Color COMMENT = COLOR_MANAGER.getColor(IColorConstants.COMMENT);
+	private static final IColorManager COLOR_MANAGER = new JavaColorManager();
+	private static final IPreferenceStore preferenceStore = JavaPlugin.getDefault().getPreferenceStore();
+	private static final Color KEYWORD = COLOR_MANAGER.getColor(PreferenceConverter.getColor(preferenceStore, PreferenceConstants.EDITOR_JAVA_KEYWORD_COLOR));
+	private static final Color STRING = COLOR_MANAGER.getColor(PreferenceConverter.getColor(preferenceStore, PreferenceConstants.EDITOR_STRING_COLOR));
+	private static final Color COMMENT = COLOR_MANAGER.getColor(PreferenceConverter.getColor(preferenceStore, PreferenceConstants.EDITOR_SINGLE_LINE_COMMENT_COLOR));
 	
 	private static final String KEYWORD_OPEN = "<keyword>";
 	private static final String KEYWORD_CLOSE = "</keyword>";
