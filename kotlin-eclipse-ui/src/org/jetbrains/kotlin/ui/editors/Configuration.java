@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
+import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
 import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -32,7 +33,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.information.IInformationPresenter;
@@ -46,7 +46,6 @@ import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
-import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -57,16 +56,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
+import org.jetbrains.kotlin.ui.editors.highlighting.KotlinTokenScanner;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePopup;
 
 public class Configuration extends JavaSourceViewerConfiguration {
-    private Scanner scanner;
-    private final ColorManager colorManager;
+    private KotlinTokenScanner scanner;
     private final KotlinEditor editor;
 
-    public Configuration(@NotNull ColorManager colorManager, @NotNull KotlinEditor editor, IPreferenceStore preferenceStore) {
+    public Configuration(@NotNull IColorManager colorManager, @NotNull KotlinEditor editor, IPreferenceStore preferenceStore) {
         super(colorManager, preferenceStore, editor, IJavaPartitions.JAVA_PARTITIONING);
-        this.colorManager = colorManager;
         this.editor = editor;
     }
     
@@ -123,11 +121,11 @@ public class Configuration extends JavaSourceViewerConfiguration {
         return new MonoReconciler(ktReconcilingStrategy, false);
     }
 
-    protected Scanner getScanner() {
+    protected KotlinTokenScanner getScanner() {
         if (scanner == null) {
-            scanner = new Scanner(colorManager);
-            scanner.setDefaultReturnToken(new Token(new TextAttribute(colorManager.getColor(IColorConstants.DEFAULT))));
+            scanner = new KotlinTokenScanner(EditorUtil.getFile(editor), fPreferenceStore, getColorManager());
         }
+        
         return scanner;
     }
     
@@ -148,25 +146,11 @@ public class Configuration extends JavaSourceViewerConfiguration {
     
     @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-        PresentationReconciler reconciler = (PresentationReconciler) super.getPresentationReconciler(sourceViewer);
+        PresentationReconciler reconciler = new PresentationReconciler();
         
-        DefaultDamagerRepairer dr = new KotlinDefaultDamagerRepairer(getScanner(), editor);
-        reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
-        reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
-        
-        reconciler.setDamager(dr, IJavaPartitions.JAVA_STRING);
-        reconciler.setRepairer(dr, IJavaPartitions.JAVA_STRING);
-        
-        NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(
-                colorManager.getColor(IColorConstants.COMMENT)));
-        reconciler.setDamager(ndr, IJavaPartitions.JAVA_MULTI_LINE_COMMENT);
-        reconciler.setRepairer(ndr, IJavaPartitions.JAVA_MULTI_LINE_COMMENT);
-        
-        reconciler.setDamager(ndr, IJavaPartitions.JAVA_SINGLE_LINE_COMMENT);
-        reconciler.setRepairer(ndr, IJavaPartitions.JAVA_SINGLE_LINE_COMMENT);
-        
-        reconciler.setDamager(ndr, IJavaPartitions.JAVA_DOC);
-        reconciler.setRepairer(ndr, IJavaPartitions.JAVA_DOC);
+        DefaultDamagerRepairer kotlinDamagerRepairer = new DefaultDamagerRepairer(getScanner());
+        reconciler.setDamager(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
+        reconciler.setRepairer(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
         
         return reconciler;
     }
