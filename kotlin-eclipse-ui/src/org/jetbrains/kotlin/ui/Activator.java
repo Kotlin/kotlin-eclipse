@@ -16,14 +16,10 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinFilesCollector;
 import org.jetbrains.kotlin.ui.builder.KotlinJavaElementListener;
-import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -37,7 +33,6 @@ public class Activator extends AbstractUIPlugin {
     private static Activator plugin;
     
     public Activator() {
-        KotlinFilesCollector.collectForParsing();
     }
     
     @Override
@@ -45,13 +40,7 @@ public class Activator extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         
-        for (IProject project : KotlinPsiManager.INSTANCE.getProjects()) {
-            KotlinNature.addNature(project);
-            KotlinNature.addBuilder(project);
-            
-            KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
-        }
-        
+        KotlinFilesCollector.collectForParsing();
         JavaCore.addElementChangedListener(new KotlinJavaElementListener());
     }
     

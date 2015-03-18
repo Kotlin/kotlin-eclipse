@@ -24,7 +24,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +43,7 @@ public class KotlinCompiler {
     }
     
     @NotNull
-    public KotlinCompilerResult compileKotlinFiles(@NotNull List<IFile> files, @NotNull IJavaProject javaProject) 
+    public KotlinCompilerResult compileKotlinFiles(@NotNull IJavaProject javaProject) 
             throws CoreException {
         String outputDir = ProjectUtils.getOutputFolder(javaProject).getLocation().toOSString();
         String[] arguments = configureCompilerArguments(javaProject, outputDir);
