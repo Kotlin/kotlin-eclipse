@@ -50,15 +50,12 @@ import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
 import org.jetbrains.kotlin.utils.PathUtil;
 
-import com.google.common.collect.Lists;
 import com.intellij.codeInsight.ContainerProvider;
 import com.intellij.codeInsight.ExternalAnnotationsManager;
 import com.intellij.core.CoreApplicationEnvironment;
 import com.intellij.core.CoreJavaFileManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
-import com.intellij.ide.plugins.IdeaPluginDescriptorImpl;
-import com.intellij.ide.plugins.PluginManagerCoreProxy;
 import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
@@ -80,7 +77,7 @@ import com.intellij.psi.impl.file.impl.JavaFileManager;
 public class KotlinEnvironment {
     
     public final static String KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations");
-    public final static String KOTLIN_RUNTIME_PATH = ProjectUtils.buildLibPath("kotlin-compiler");
+    public final static String KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler");
     
     private static final Map<IJavaProject, KotlinEnvironment> cachedEnvironment = new HashMap<>();
     private static final Object environmentLock = new Object();
@@ -142,12 +139,8 @@ public class KotlinEnvironment {
     }
     
     private static void registerApplicationExtensionPointsAndExtensionsFrom(String configFilePath) {
-        File jar = new File(KOTLIN_RUNTIME_PATH);
-        
-        IdeaPluginDescriptorImpl descriptor = PluginManagerCoreProxy.loadDescriptorFromJar(jar, configFilePath);
-        assert descriptor != null : "Can not load descriptor from " + configFilePath + " relative to " + jar;
-
-        PluginManagerCoreProxy.registerExtensionPointsAndExtensions(Extensions.getRootArea(), Lists.newArrayList(descriptor));
+        File pluginRoot = new File(KOTLIN_COMPILER_PATH);
+        CoreApplicationEnvironment.registerExtensionPointAndExtensions(pluginRoot, configFilePath, Extensions.getRootArea());
     }
     
     @NotNull

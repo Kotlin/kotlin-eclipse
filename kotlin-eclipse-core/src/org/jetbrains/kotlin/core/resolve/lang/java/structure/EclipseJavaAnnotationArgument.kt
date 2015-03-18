@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotationArgument
 import org.eclipse.jdt.core.dom.IAnnotationBinding
 import org.eclipse.jdt.core.dom.IVariableBinding
+import kotlin.platform.platformStatic
 	
 public abstract class EclipseJavaAnnotationArgument<T : IBinding>(javaElement: T) : 
 	EclipseJavaElement<T>(javaElement), JavaAnnotationArgument {
@@ -29,8 +30,8 @@ public abstract class EclipseJavaAnnotationArgument<T : IBinding>(javaElement: T
 	override val name: Name?
 		get() = Name.identifier(getBinding().getName())
 	
-	default object {
-		fun create(value: Any, name: Name, javaProject: IJavaProject): JavaAnnotationArgument {
+	companion object {
+		platformStatic fun create(value: Any, name: Name, javaProject: IJavaProject): JavaAnnotationArgument {
 			return when (value) {
 				is IAnnotationBinding -> EclipseJavaAnnotationAsAnnotationArgument(value, name)
 				is IVariableBinding -> EclipseJavaReferenceAnnotationArgument(value)
