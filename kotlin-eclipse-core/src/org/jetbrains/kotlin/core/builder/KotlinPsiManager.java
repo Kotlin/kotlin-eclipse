@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -58,8 +60,8 @@ public class KotlinPsiManager {
     
     public static final KotlinPsiManager INSTANCE = new KotlinPsiManager();
     
-    private final Map<IProject, List<IFile>> projectFiles = new HashMap<>();
-    private final Map<IFile, JetFile> psiFiles = new HashMap<>();
+    private final Map<IProject, Set<IFile>> projectFiles = new HashMap<>();
+    private final Map<IFile, JetFile> cachedJetFiles = new HashMap<>();
     
     private final Object mapOperationLock = new Object();
     
@@ -98,70 +100,77 @@ public class KotlinPsiManager {
     
     public void removeProject(@NotNull IProject project) {
         synchronized (mapOperationLock) {
-            List<IFile> files = getFilesByProject(project);
+            Set<IFile> files = getFilesByProject(project);
             projectFiles.remove(project);
             for (IFile file : files) {
-                psiFiles.remove(file);
+                cachedJetFiles.remove(file);
             }
         }
     }
     
     public void addFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
-            assert !psiFiles.containsKey(file) : "File(" + file.getName() + ") is already added";
+            assert !exists(file) : "File(" + file.getName() + ") is already added";
             
             IProject project = file.getProject();
-            
             if (!projectFiles.containsKey(project)) {
-                projectFiles.put(project, new ArrayList<IFile>());
+                projectFiles.put(project, new HashSet<IFile>());
             }
             
             projectFiles.get(project).add(file);
-            try {
-                File ioFile = new File(file.getRawLocation().toOSString());
-                psiFiles.put(file, parseText(FileUtil.loadFile(ioFile, null, true), file));
-            } catch (IOException e) {
-                KotlinLogger.logAndThrow(e);
-            }
         }
     }
     
     public void removeFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
-            assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
+            assert exists(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
             IProject project = file.getProject();
             
-            psiFiles.remove(file);
-            List<IFile> files = projectFiles.get(project);
+            cachedJetFiles.remove(file);
+            Set<IFile> files = projectFiles.get(project);
             files.remove(file);
         }
     }
     
     @NotNull
-    public List<IFile> getFilesByProject(@Nullable IProject project) {
+    public Set<IFile> getFilesByProject(@Nullable IProject project) {
         synchronized (mapOperationLock) {
             if (projectFiles.containsKey(project)) {
-                return Collections.unmodifiableList(projectFiles.get(project));
+                return Collections.unmodifiableSet(projectFiles.get(project));
             }
             
-            return new ArrayList<IFile>();
+            return Collections.emptySet();
         }
     }
     
     @NotNull
     public JetFile getParsedFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
-            return psiFiles.get(file);
+            assert exists(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
+            
+            if (!cachedJetFiles.containsKey(file)) {
+                cacheFile(file);
+            }
+            
+            return cachedJetFiles.get(file);
         }
     }
     
     public boolean exists(@NotNull IFile file) {
-        return psiFiles.containsKey(file);
+        synchronized (mapOperationLock) {
+            IProject project = file.getProject();
+            if (project == null) return false;
+            
+            if (projectFiles.containsKey(project)) {
+                return projectFiles.get(project).contains(file);
+            }
+            return false;
+        }
     }
     
     @NotNull
-    public List<IFile> getFilesByProject(@NotNull String projectName) {
+    public Set<IFile> getFilesByProject(@NotNull String projectName) {
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
         return getFilesByProject(project);
     }
@@ -169,7 +178,7 @@ public class KotlinPsiManager {
     @NotNull
     public Collection<IFile> getAllFiles() {
         synchronized (mapOperationLock) {
-            return Collections.unmodifiableCollection(psiFiles.keySet());
+            return Collections.unmodifiableCollection(cachedJetFiles.keySet());
         }
     }
     
@@ -203,6 +212,17 @@ public class KotlinPsiManager {
         return false;
     }
     
+    private void cacheFile(@NotNull IFile file) {
+        synchronized (mapOperationLock) {
+            try {
+                File ioFile = new File(file.getRawLocation().toOSString());
+                cachedJetFiles.put(file, parseText(FileUtil.loadFile(ioFile, null, true), file));
+            } catch (IOException e) {
+                KotlinLogger.logAndThrow(e);
+            }
+        }
+    }
+    
     @NotNull
     private JetFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
         synchronized (mapOperationLock) {
@@ -214,11 +234,11 @@ public class KotlinPsiManager {
     private void updatePsiFile(@NotNull IFile file, @NotNull String sourceCode) {
         String sourceCodeWithouCR = StringUtilRt.convertLineSeparators(sourceCode);
         synchronized (mapOperationLock) {
-            assert psiFiles.containsKey(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
+            assert exists(file): "File(" + file.getName() + ") does not contain in the psiFiles";
             
             PsiFile currentParsedFile = getParsedFile(file);
             if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
-                psiFiles.put(file, parseText(sourceCodeWithouCR, file));
+                cachedJetFiles.put(file, parseText(sourceCodeWithouCR, file));
             }
         }
     }
@@ -247,7 +267,11 @@ public class KotlinPsiManager {
     public static JetFile getKotlinFileIfExist(@NotNull String sourceFileName) {
         IPath sourceFilePath = new Path(sourceFileName);
         IFile projectFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
-        return KotlinPsiManager.getKotlinParsedFile(projectFile);
+        if (projectFile != null) {
+            return KotlinPsiManager.getKotlinParsedFile(projectFile);
+        }
+        
+        return null;
     }
     
     @Nullable

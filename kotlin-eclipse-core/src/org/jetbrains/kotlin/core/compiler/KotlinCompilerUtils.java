@@ -23,16 +23,13 @@ import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.Activator;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 
 public class KotlinCompilerUtils {
     @NotNull
     public static KotlinCompilerResult compileWholeProject(@NotNull IJavaProject javaProject) throws CoreException {
-        return KotlinCompiler.INSTANCE.compileKotlinFiles(
-                KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.getProject()), 
-                javaProject);
+        return KotlinCompiler.INSTANCE.compileKotlinFiles(javaProject);
     }
     
     public static void handleCompilerOutput(@NotNull CompilerOutputData compilerOutput) throws CoreException {
