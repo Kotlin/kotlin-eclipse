@@ -1,0 +1,5 @@
+<comment>/* test
+
+test
+
+*/</comment>

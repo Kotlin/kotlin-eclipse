@@ -24,7 +24,7 @@ import org.junit.runners.Suite;
     KotlinEditorBaseTest.class, 
     KotlinAutoIndenterTest.class,
     KotlinAnalyzerInIDETest.class,
-    KotlinHighlightningTest.class,
+    KotlinHighlightingTest.class,
     KotlinBracketInserterTest.class,
     KotlinOpenDeclarationTest.class,
     KotlinFormatActionTest.class,

@@ -1,0 +1,3 @@
+<keyword>trait</keyword> Some {
+	
+}
