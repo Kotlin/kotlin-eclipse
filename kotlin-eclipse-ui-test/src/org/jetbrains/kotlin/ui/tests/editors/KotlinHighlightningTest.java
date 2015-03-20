@@ -19,79 +19,69 @@ package org.jetbrains.kotlin.ui.tests.editors;
 import org.junit.Test;
 
 public class KotlinHighlightningTest extends KotlinHighlightningTestCase {
+	
+	@Test
+	public void blockComment() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void forKeyword() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void importKeyword() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void inKeyword() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void keywordWithText() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void openKeyword() {
+		doAutoTest();
+	}
 
 	@Test
-	public void oneKeywordWithoutTextIn() {
-		doTest("<keyword>in</keyword>");
+	public void singleLineComment() {
+		doAutoTest();
 	}
 	
 	@Test
-	public void oneKeywordWithoutTextFor() {
-		doTest("<keyword>for</keyword>");
+	public void softImportKeyword() {
+		doAutoTest();
 	}
 	
 	@Test
-	public void oneKeywordWithText() {
-		doTest("<keyword>in</keyword> sdfsd");
+	public void softKeywords() {
+		doAutoTest();
 	}
 	
 	@Test
-	public void defaultTokenBeforeKeyword() {
-		doTest("abcd <keyword>for</keyword>");
+	public void stringInterpolation() {
+		doAutoTest();
 	}
 	
 	@Test
-	public void defaultTokenWithKeywordInSuffix() {
-		doTest("main");
+	public void textWithTokenBetween() {
+		doAutoTest();
 	}
 	
 	@Test
-	public void defaultTokenWithKeywordInPrefix() {
-		doTest("inprefix");
+	public void textWithTokenInPrefix() {
+		doAutoTest();
 	}
 	
 	@Test
-	public void defaultTokenWithKeywordInMiddle() {
-		doTest("sinus");
-	}
-	
-	@Test
-	public void stringToken() {
-		doTest("<string>\"Hello\"</string>");
-	}
-	
-	@Test
-	public void blockCommentToken() {
-		doTest(
-				"<comment>/*test<br>" +
-				"test<br>" +
-				"*/</comment>");
-	}
-	
-	@Test
-	public void singleLineCommentToken() {
-		doTest("<comment>// for main</comment>");
-	}
-	
-	@Test
-	public void highlightImportKeyword() {
-		doTest("<keyword>import</keyword> some");
-	}
-	
-	@Test
-	public void highlightOpenKeyword() {
-		doTest("<keyword>open</keyword> <keyword>class</keyword> T");
-	}
-	
-	@Test
-	public void doNotHightlightImportKeywordInBody() {
-		doTest("<keyword>class</keyword> T { import }");
-	}
-	
-	@Test
-	public void highlightSoftKeywords() {
-		doTest(
-				"<keyword>import</keyword> some<br>" +
-				"<keyword>open</keyword> <keyword>abstract</keyword> <keyword>class</keyword> T { import }");
+	public void textWithTokenInSuffix() {
+		doAutoTest();
 	}
 }

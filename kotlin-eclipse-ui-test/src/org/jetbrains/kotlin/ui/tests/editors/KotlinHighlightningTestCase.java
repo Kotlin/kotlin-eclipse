@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import java.io.File;
+
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.text.JavaColorManager;
 import org.eclipse.jdt.ui.PreferenceConstants;
@@ -24,13 +26,10 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
-import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
-import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
-import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.junit.Assert;
-import org.junit.Before;
 
-public abstract class KotlinHighlightningTestCase extends KotlinProjectTestCase {
+public abstract class KotlinHighlightningTestCase extends KotlinEditorAutoTestCase {
 	
 	private static final IColorManager COLOR_MANAGER = new JavaColorManager();
 	private static final IPreferenceStore preferenceStore = JavaPlugin.getDefault().getPreferenceStore();
@@ -45,21 +44,29 @@ public abstract class KotlinHighlightningTestCase extends KotlinProjectTestCase 
 	private static final String COMMENT_OPEN = "<comment>";
 	private static final String COMMENT_CLOSE = "</comment>";
 
-	@Before
-	public void configure() {
-		configureProject();
-	}
-
-	protected void doTest(String input) {
-		String resolvedInput = KotlinTestUtils.resolveTestTags(input);
-		TextEditorTest testEditor = configureEditor("Test.kt", removeColorTags(resolvedInput));
-		
-		StyleRange[] styleRanges = testEditor.getEditor().getViewer().getTextWidget().getStyleRanges();
+    protected void performTest(String expected) {
+        StyleRange[] styleRanges = testEditor.getEditor().getViewer().getTextWidget().getStyleRanges();
 		String actualText = insertTokenTags(testEditor.getEditorInput(), styleRanges);
 		
-		Assert.assertEquals(resolvedInput, actualText);
+		Assert.assertEquals(expected, actualText);
+    }
+    
+    @Override
+    protected void doSingleFileAutoTest(String testPath) {
+    	String fileText = getText(testPath);
+        testEditor = configureEditor(
+                getNameByPath(testPath),
+                removeColorTags(fileText));
+        
+        performTest(fileText);
+    }
+    
+	@Override
+	protected void doMultiFileAutoTest(File testFolder) {
+		// skip
 	}
-	
+
+
 	private String insertTokenTags(String text, StyleRange[] styleRanges) {
 		int tokenShift = 0;
 		StringBuilder input = new StringBuilder(text);
@@ -88,6 +95,11 @@ public abstract class KotlinHighlightningTestCase extends KotlinProjectTestCase 
 		input.insert(offset + shift, insertText);
 		return shift + insertText.length();
 	}
+	
+	@Override
+    protected String getTestDataRelativePath() {
+        return "highlighting/basic";
+    }
 	
 	private String removeColorTags(String text) {
 		return text
