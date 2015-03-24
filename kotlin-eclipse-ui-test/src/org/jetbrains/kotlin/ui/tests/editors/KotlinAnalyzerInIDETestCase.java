@@ -32,12 +32,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
-import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+import org.junit.Assert;
 
 import com.google.common.collect.Lists;
 
@@ -55,7 +55,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
             IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             String actual = insertTagsForErrors(loadEclipseFile(file), markers);
             
-            EditorTestUtils.assertByStringWithOffset(actual, expectedFileText);
+            Assert.assertEquals(actual, expectedFileText);
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }

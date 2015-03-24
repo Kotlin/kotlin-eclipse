@@ -23,11 +23,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
-import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TypingUtils;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+import org.junit.Assert;
 
 public class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestCase {
     
@@ -50,7 +50,7 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestC
             IMarker[] markers = testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             String actual = insertTagsForErrors(EditorUtil.getSourceCode(getEditor()), markers);
             
-            EditorTestUtils.assertByStringWithOffset(actual, expected);
+            Assert.assertEquals(expected, actual);
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }

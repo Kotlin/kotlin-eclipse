@@ -1,3 +1,3 @@
 package parsingMarkers
 
-fun foo() {<error></error>
+fun foo() <error>{</error>
