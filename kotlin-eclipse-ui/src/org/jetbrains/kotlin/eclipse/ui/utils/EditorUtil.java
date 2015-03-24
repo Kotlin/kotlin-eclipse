@@ -38,8 +38,7 @@ public class EditorUtil {
     }
     
     public static int getOffsetInEditor(@NotNull JavaEditor editor, int offset) {
-        IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-        return LineEndUtil.convertLfToDocumentOffset(LineEndUtil.removeAllCarriageReturns(getSourceCode(editor)), offset, document);
+        return LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(editor), offset);
     }
     
     @NotNull

@@ -42,7 +42,6 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 
 public class TestJavaProject {
     
@@ -127,8 +126,7 @@ public class TestJavaProject {
     
     public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
         IPackageFragment fragment = createPackage(pkg);
-        String contentWithoutCR = LineEndUtil.replaceAllSeparatorsWithSystemLineSeparators(content);
-        IFile file = createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(contentWithoutCR.getBytes()));
+        IFile file = createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(content.getBytes()));
         
         return file;
     }
