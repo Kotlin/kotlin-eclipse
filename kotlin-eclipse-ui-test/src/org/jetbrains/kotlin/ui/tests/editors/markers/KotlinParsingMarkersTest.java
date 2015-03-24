@@ -19,6 +19,10 @@ package org.jetbrains.kotlin.ui.tests.editors.markers;
 import org.junit.Test;
 
 public class KotlinParsingMarkersTest extends KotlinParsingMarkersTestCase {
+	@Override
+    protected String getTestDataRelativePath() {
+        return "markers/parsing";
+    }
     
     @Test
     public void missingClosingBraceErrorTest() {

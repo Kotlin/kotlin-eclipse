@@ -127,16 +127,12 @@ public class DiagnosticAnnotationUtil {
         
         if (range.isEmpty()) {
             startOffset--;
-            length++;
+            length = 1;
             markedText = psiFile.getText().substring(startOffset, startOffset + length);
         }
         
-        if (range.isEmpty()) {
-            startOffset--;
-        }
-        
         return new DiagnosticAnnotation(
-                LineEndUtil.convertLfToDocumentOffset(psiFile.getText(), range.getStartOffset(), EditorUtil.getDocument(file)),
+                LineEndUtil.convertLfToDocumentOffset(psiFile.getText(), startOffset, EditorUtil.getDocument(file)),
                 length,
                 AnnotationManager.ANNOTATION_ERROR_TYPE,
                 psiErrorElement.getErrorDescription(),

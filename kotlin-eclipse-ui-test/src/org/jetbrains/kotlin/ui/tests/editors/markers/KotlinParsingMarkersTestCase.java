@@ -23,15 +23,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
-import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TypingUtils;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+import org.junit.Assert;
 
-public class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestCase {
-    
-    private static final String PARSING_MARKERS_TEST_DATA_PATH_SEGMENTS = "markers/parsing";
+public abstract class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestCase {
     
     @Override
     protected void performTest(String fileText, String expected) {
@@ -50,15 +48,10 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestC
             IMarker[] markers = testEditor.getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             String actual = insertTagsForErrors(EditorUtil.getSourceCode(getEditor()), markers);
             
-            EditorTestUtils.assertByStringWithOffset(actual, expected);
+            Assert.assertEquals(expected, actual);
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-    }
-    
-    @Override
-    protected String getTestDataRelativePath() {
-        return PARSING_MARKERS_TEST_DATA_PATH_SEGMENTS;
     }
     
     private static String insertTagsForErrors(String fileText, IMarker[] markers) throws CoreException {
@@ -99,11 +92,7 @@ public class KotlinParsingMarkersTestCase extends KotlinEditorWithAfterFileTestC
     }
     
     private static int insertTagByOffset(StringBuilder builder, String tag, int tagStartOffset, int offset) {
-    	int tagOffset = tagStartOffset + offset;
-    	if (tagOffset > builder.length()) {
-    		tagOffset--;
-    	}
-		builder.insert(tagOffset, tag);
+    	builder.insert(tagStartOffset + offset, tag);
         return tag.length();
     }
 }

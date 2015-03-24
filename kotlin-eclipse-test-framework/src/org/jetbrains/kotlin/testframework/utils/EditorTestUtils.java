@@ -47,10 +47,6 @@ public class EditorTestUtils {
         assertByStringWithOffset(EditorUtil.getSourceCode(activeEditor), expected, activeEditor.getViewer().getTextWidget().getCaretOffset());
     }
     
-    public static void assertByStringWithOffset(String actual, String expected) {
-        assertByStringWithOffset(actual, expected, -1);
-    }
-    
     private static void assertByStringWithOffset(String actual, String expected, int caretOffset) {
         expected = expected.replaceAll(KotlinEditorTestCase.BREAK_TAG, System.lineSeparator());
         if (expected.contains(KotlinEditorTestCase.CARET_TAG) && caretOffset != -1) {
