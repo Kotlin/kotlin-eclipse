@@ -12,7 +12,9 @@ In order to start development in Eclipse:
 
  - Since Kotlin plugin contains code written in Kotlin itself, you will also need a Kotlin plugin to build the project in Eclipse. That is why you should install the Kotlin plugin. To install the Kotlin Eclipse plugin use the following update site:
 
- - Since Kotlin plugin uses weaving, you need to launch the project with weaving enabled. Install the Equinox Weaving Launcher which is adds launch configuration: Eclipse Application with Equinox Weaving, and JUnit plug-in test with Equinox Weaving. To install the Equinox Weaving Launcher you can use the following update site: 
+ 		https://teamcity.jetbrains.com/guestAuth/repository/download/Kotlin_EclipsePlugin/bootstrap.tcbuildtag/
+
+ - Since Kotlin plugin uses weaving, you need to launch the project with weaving enabled. Installation of Equinox Weaving Launcher will add two additional launch configurations types for running plugin and for testing. To install the Equinox Weaving Launcher you can use the following update site: 
 
  		http://download.scala-ide.org/plugins/equinox-weaving-launcher/releases/site/
 
@@ -20,7 +22,7 @@ In order to start development in Eclipse:
  
         File->Import->Existing Projects into Workspace
 
- - Run launch configuration for downloading Kotlin compiler. It will be used as a bundled compiler in built plugin and as a library during development. Make sure that you are running script with "for_eclipse" compiler.tag value which is defined in the get_bundled.xml
+ - Run launch configuration for downloading Kotlin compiler. It will be used as a bundled compiler in built plugin and as a library during development.
  
         kotlin-bundled-compiler/Get Bundled Kotlin.launch -> Run As -> Get Bundled Kotlin
 
