@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +45,7 @@ import org.jetbrains.kotlin.resolve.TopDownAnalysisParameters;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
 
@@ -82,8 +84,18 @@ public enum EclipseAnalyzerFacadeForJVM {
         GlobalContext globalContext = ContextPackage.GlobalContext();
         
         LinkedHashSet<JetFile> allFiles = new LinkedHashSet<JetFile>();
-        allFiles.addAll(ProjectUtils.getSourceFilesWithDependencies(javaProject));
         allFiles.addAll(filesToAnalyze);
+        
+        Set<String> addedFiles = Sets.newHashSet();
+        for (JetFile jetFile : filesToAnalyze) {
+            addedFiles.add(jetFile.getVirtualFile().getPath());
+        }
+        
+        for (JetFile jetFile : ProjectUtils.getSourceFilesWithDependencies(javaProject)) {
+            if (!addedFiles.contains(jetFile.getVirtualFile().getPath())) {
+                allFiles.add(jetFile);
+            }
+        }
         
         FileBasedDeclarationProviderFactory providerFactory = new FileBasedDeclarationProviderFactory(
                 globalContext.getStorageManager(), allFiles);

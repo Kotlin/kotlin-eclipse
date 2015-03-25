@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.intellij.openapi.util.text.StringUtilRt;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 
@@ -51,7 +52,7 @@ public class KotlinCompletionUtils {
         String sourceCode = EditorUtil.getSourceCode(editor);
         String sourceCodeWithMarker = new StringBuilder(sourceCode).insert(identOffset, KOTLIN_DUMMY_IDENTIFIER).toString();
         
-        JetFile jetFile = KotlinPsiManager.getKotlinFileIfExist(EditorUtil.getFile(editor), sourceCodeWithMarker);
+        JetFile jetFile = KotlinPsiManager.INSTANCE.parseText(StringUtilRt.convertLineSeparators(sourceCodeWithMarker), EditorUtil.getFile(editor));
         if (jetFile == null) {
             return null;
         }

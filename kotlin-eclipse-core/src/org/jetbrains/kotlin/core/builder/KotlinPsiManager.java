@@ -229,7 +229,7 @@ public class KotlinPsiManager {
     }
     
     @Nullable
-    private JetFile parseText(@NotNull String text, IFile file) {
+    public JetFile parseText(@NotNull String text, IFile file) {
         StringUtil.assertValidSeparators(text);
         
         IJavaProject javaProject = JavaCore.create(file.getProject());

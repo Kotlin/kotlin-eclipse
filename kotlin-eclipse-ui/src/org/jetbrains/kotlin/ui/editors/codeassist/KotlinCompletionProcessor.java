@@ -44,7 +44,6 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -142,7 +141,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             @NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         BindingContext context = KotlinAnalyzer
-                .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
+                .analyzeFile(javaProject, simpleNameExpression.getContainingJetFile())
                 .getBindingContext();
         
         Function1<DeclarationDescriptor, Boolean> visibilityFilter = new Function1<DeclarationDescriptor, Boolean>() {
