@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
@@ -108,24 +109,41 @@ public class EclipseJavaElementUtil {
         List<JavaValueParameter> parameters = new ArrayList<JavaValueParameter>();
         ITypeBinding[] parameterTypes = method.getParameterTypes();
         
+        String[] parameterNames = getParameterNames(method);
         int parameterTypesCount = parameterTypes.length;
         for (int i = 0; i < parameterTypesCount; ++i) {
-            if (i < parameterTypesCount - 1) {
-                parameters.add(new EclipseJavaValueParameter(
-                        parameterTypes[i], 
-                        method.getParameterAnnotations(i),
-                        "arg" + i, 
-                        false));
-            } else {
-                parameters.add(new EclipseJavaValueParameter(
-                        parameterTypes[i],
-                        method.getParameterAnnotations(i),
-                        "arg" + i, 
-                        method.isVarargs()));
-            }
+            boolean isLastParameter = i == parameterTypesCount - 1;
+            parameters.add(new EclipseJavaValueParameter(
+                    parameterTypes[i], 
+                    method.getParameterAnnotations(i),
+                    parameterNames[i], 
+                    isLastParameter ? method.isVarargs() : false));
         }
         
         return parameters;
+    }
+    
+    @NotNull
+    private static String[] getParameterNames(@NotNull IMethodBinding methodBinding) {
+        try {
+            IMethod methodElement = (IMethod) methodBinding.getJavaElement();
+            String[] parameterNames;
+            if (methodElement != null) {
+                parameterNames = methodElement.getParameterNames();
+            } else {
+                int parametersCount = methodBinding.getParameterTypes().length;
+                parameterNames = new String[parametersCount];
+                for (int i = 0; i < parametersCount; ++i) {
+                    parameterNames[i] = "arg" + i;
+                }
+            }
+            
+            return parameterNames;
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        throw new RuntimeException();
     }
     
     public static JavaAnnotation findAnnotation(@NotNull IAnnotationBinding[] annotationBindings, @NotNull FqName fqName) {
