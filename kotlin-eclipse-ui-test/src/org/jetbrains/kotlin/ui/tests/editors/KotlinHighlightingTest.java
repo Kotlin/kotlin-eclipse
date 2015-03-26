@@ -26,6 +26,46 @@ public class KotlinHighlightingTest extends KotlinHighlightingTestCase {
     }
 	
 	@Test
+	public void kdocBasic() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void kdocWithParam() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void kdocWithProperty() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void kdocWithSee() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void kdocWithThrows() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void kdocWithEmptyLines() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void kdocWithMyTag() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void kdocWithoutLeadingAsterisk() {
+		doAutoTest();
+	}
+	
+	@Test
 	public void function() {
 		doAutoTest();
 	}

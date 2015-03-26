@@ -22,6 +22,7 @@ public class KotlinTokenScanner implements ITokenScanner {
     
     private JetFile jetFile = null;
     private int offset = 0;
+    private int rangeEnd = 0;
     private PsiElement lastElement = null;
     private IDocument document;
     
@@ -35,13 +36,21 @@ public class KotlinTokenScanner implements ITokenScanner {
         this.document = document;
         jetFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
         this.offset = LineEndUtil.convertCrToDocumentOffset(document, offset);
+        this.rangeEnd = this.offset + length;
+        this.lastElement = null;
     }
 
     @Override
     public IToken nextToken() {
+        if (lastElement != null) {
+            if (lastElement.getTextOffset() > rangeEnd) {
+                return Token.EOF;
+            }
+        }
+        
         lastElement = jetFile.findElementAt(offset);
         if (lastElement != null) {
-            offset += lastElement.getTextLength();
+            offset = lastElement.getTextRange().getEndOffset();
             return kotlinTokensFactory.getToken(lastElement);
         }
         

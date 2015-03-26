@@ -12,12 +12,15 @@ import org.eclipse.jface.preference.PreferenceConverter
 import org.eclipse.jface.preference.IPreferenceStore
 import org.eclipse.jdt.ui.PreferenceConstants
 import org.eclipse.jface.text.rules.Token
+import org.jetbrains.kotlin.psi.JetPsiUtil
+import org.jetbrains.kotlin.kdoc.lexer.KDocTokens
 
 class KotlinTokensFactory(val preferenceStore: IPreferenceStore, val colorManager: IColorManager) {
 	val keywordToken = createToken(PreferenceConstants.EDITOR_JAVA_KEYWORD_COLOR)
 	val identifierToken = createToken(PreferenceConstants.EDITOR_JAVA_DEFAULT_COLOR)
 	val stringToken = createToken(PreferenceConstants.EDITOR_STRING_COLOR)
 	val commentToken = createToken(PreferenceConstants.EDITOR_SINGLE_LINE_COMMENT_COLOR)
+	val kdocTagNameToken = createToken(style = SWT.BOLD)
 	val whitespaceToken = createToken()
 	
 	fun getToken(leafElement: PsiElement): IToken {
@@ -25,19 +28,22 @@ class KotlinTokensFactory(val preferenceStore: IPreferenceStore, val colorManage
 		
 		val elementType = leafElement.getElementType()
 		return when {
-			JetTokens.KEYWORDS.contains(elementType), 
-				JetTokens.SOFT_KEYWORDS.contains(elementType), 
-				JetTokens.MODIFIER_KEYWORDS.contains(elementType) -> keywordToken
+			elementType in JetTokens.KEYWORDS, 
+				elementType in JetTokens.SOFT_KEYWORDS, 
+				elementType in JetTokens.MODIFIER_KEYWORDS -> keywordToken
 			
 			JetTokens.IDENTIFIER.equals(elementType) -> identifierToken
 			
-			JetTokens.STRINGS.contains(elementType),
+			elementType in JetTokens.STRINGS,
 				JetTokens.OPEN_QUOTE.equals(elementType),
 				JetTokens.CLOSING_QUOTE.equals(elementType) -> stringToken
 			
-			JetTokens.WHITESPACES.contains(elementType) -> whitespaceToken
+			elementType in JetTokens.WHITESPACES -> whitespaceToken
 			
-			JetTokens.COMMENTS.contains(elementType) -> commentToken
+			elementType in JetTokens.COMMENTS,
+				elementType in KDocTokens.KDOC_HIGHLIGHT_TOKENS -> commentToken
+			
+			KDocTokens.TAG_NAME.equals(elementType) -> kdocTagNameToken
 			
 			else -> Token.UNDEFINED
 		}
