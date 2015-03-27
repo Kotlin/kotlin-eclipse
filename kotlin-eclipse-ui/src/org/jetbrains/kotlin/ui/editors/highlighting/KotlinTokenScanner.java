@@ -48,6 +48,8 @@ public class KotlinTokenScanner implements ITokenScanner {
             }
         }
         
+        if (jetFile == null) return Token.EOF;
+        
         lastElement = jetFile.findElementAt(offset);
         if (lastElement != null) {
             offset = lastElement.getTextRange().getEndOffset();
