@@ -25,7 +25,7 @@ public open class KotlinCompletionProposal(val proposal: ICompletionProposal): I
 	
 	override fun getImage(): Image = proposal.getImage()
 	
-	override fun getContextInformation(): IContextInformation = proposal.getContextInformation()
+	override fun getContextInformation(): IContextInformation? = proposal.getContextInformation()
 	
 	companion object {
 		platformStatic public fun getDefaultInsertHandler(
