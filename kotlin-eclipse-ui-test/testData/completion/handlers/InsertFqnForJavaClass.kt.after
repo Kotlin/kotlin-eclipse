@@ -1,0 +1,7 @@
+import java.util
+
+class SortedSet
+
+fun test() {
+  val a = util.SortedSet<caret>
+}

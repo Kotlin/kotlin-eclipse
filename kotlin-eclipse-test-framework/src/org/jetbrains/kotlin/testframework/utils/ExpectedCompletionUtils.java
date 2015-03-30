@@ -10,6 +10,7 @@ public class ExpectedCompletionUtils {
 	private static final String ABSENT_LINE_PREFIX = "ABSENT:";
 	private static final String NUMBER_LINE_PREFIX = "NUMBER:";
 	private static final String EXIST_JAVA_ONLY_LINE_PREFIX = "EXIST_JAVA_ONLY:";
+	private static final String ELEMENT_PREFIX = "ELEMENT:";
 
 	public static List<String> itemsShouldAbsent(String fileText) {
 		return getItems(fileText, ABSENT_LINE_PREFIX);
@@ -17,6 +18,13 @@ public class ExpectedCompletionUtils {
 
 	public static List<String> itemsShouldExist(String fileText) {
 		return getItems(fileText, EXIST_LINE_PREFIX);
+	}
+	
+	public static String itemToComplete(String fileText) {
+		List<String> items = getItems(fileText, ELEMENT_PREFIX);
+		assert items.size() == 1 : "There should be one item to complete";
+		
+		return items.get(0);
 	}
 	
 	public static List<String> itemsJavaOnlyShouldExists(String fileText) {
