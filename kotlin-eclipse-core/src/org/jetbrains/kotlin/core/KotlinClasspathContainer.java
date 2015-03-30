@@ -48,7 +48,7 @@ public class KotlinClasspathContainer implements IClasspathContainer {
         
         IClasspathEntry kotlinBinFolderEntry = JavaCore.newLibraryEntry(
                 new Path(javaProject.getProject().getName()).append(KotlinJavaManager.KOTLIN_BIN_FOLDER).makeAbsolute(), 
-                null, null);
+                null, null, true);
         
         return new IClasspathEntry[] { kotlinRuntimeEntry, kotlinBinFolderEntry };
     }
