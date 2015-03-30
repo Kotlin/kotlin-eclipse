@@ -30,14 +30,12 @@ public open class KotlinCompletionProposal(val proposal: ICompletionProposal): I
 	companion object {
 		platformStatic public fun getDefaultInsertHandler(
 				descriptor: DeclarationDescriptor,
-				proposal: ICompletionProposal,
-				jetFile: JetFile,
-				editor: KotlinEditor): KotlinCompletionProposal {
+				proposal: ICompletionProposal): KotlinCompletionProposal {
 			return when (descriptor) {
 				is FunctionDescriptor -> {
 					val parameters = descriptor.getValueParameters()
-							when (parameters.size()) {
-						0 -> KotlinFunctionCompletionProposal(proposal, jetFile, editor, CaretPosition.AFTER_BRACKETS, null)
+					when (parameters.size()) {
+						0 -> KotlinFunctionCompletionProposal(proposal, CaretPosition.AFTER_BRACKETS, null)
 						
 						1 -> {
 							val parameterType = parameters.single().getType()
@@ -45,13 +43,13 @@ public open class KotlinCompletionProposal(val proposal: ICompletionProposal): I
 								val parameterCount = KotlinBuiltIns.getParameterTypeProjectionsFromFunctionType(parameterType).size()
 									if (parameterCount <= 1) {
 										// otherwise additional item with lambda template is to be added
-										return KotlinFunctionCompletionProposal(proposal, jetFile, editor, CaretPosition.IN_BRACKETS, GenerateLambdaInfo(parameterType, false))
+										return KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, GenerateLambdaInfo(parameterType, false))
 									}
 							}
-							KotlinFunctionCompletionProposal(proposal, jetFile, editor, CaretPosition.IN_BRACKETS, null)
+							KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, null)
 						}
 						
-						else -> KotlinFunctionCompletionProposal(proposal, jetFile, editor, CaretPosition.IN_BRACKETS, null)
+						else -> KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, null)
 					}
 				}
 				

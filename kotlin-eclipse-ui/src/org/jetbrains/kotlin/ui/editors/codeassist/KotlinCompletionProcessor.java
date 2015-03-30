@@ -43,13 +43,11 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.BindingContext;
@@ -184,9 +182,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
                     null, 
                     completion);
             
-            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
-            
-            proposals.add(KotlinCompletionProposal.getDefaultInsertHandler(descriptor, proposal, jetFile, editor));
+            proposals.add(KotlinCompletionProposal.getDefaultInsertHandler(descriptor, proposal));
         }
         
         return proposals;

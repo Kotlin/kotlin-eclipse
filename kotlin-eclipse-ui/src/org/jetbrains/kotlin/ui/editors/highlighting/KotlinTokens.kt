@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.psi.JetPsiUtil
 import org.jetbrains.kotlin.kdoc.lexer.KDocTokens
 
 class KotlinTokensFactory(val preferenceStore: IPreferenceStore, val colorManager: IColorManager) {
-	val keywordToken = createToken(PreferenceConstants.EDITOR_JAVA_KEYWORD_COLOR)
+	val keywordToken = createToken(PreferenceConstants.EDITOR_JAVA_KEYWORD_COLOR, style = SWT.BOLD)
 	val identifierToken = createToken(PreferenceConstants.EDITOR_JAVA_DEFAULT_COLOR)
 	val stringToken = createToken(PreferenceConstants.EDITOR_STRING_COLOR)
 	val commentToken = createToken(PreferenceConstants.EDITOR_SINGLE_LINE_COMMENT_COLOR)
