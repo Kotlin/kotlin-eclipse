@@ -1,7 +1,16 @@
 Kotlin for Eclipse
 ==============
+Welcome to Kotlin for Eclipse project! Some handy links:
 
-##Building and Development
+ * [Kotlin Site](http://kotlinlang.org/)
+ * [Getting Started Guide](http://kotlinlang.org/docs/tutorials/getting-started-eclipse.html)
+ * Issue Tracker: [File New Issue](https://youtrack.jetbrains.com/newIssue?project=KT&clearDraft=true&c=Subsystems+Eclipse+Plugin), [All Open Issues](https://youtrack.jetbrains.com/search/Kotlin%20Eclipse-19206?q=%23Unresolved)
+ * [Kotlin Blog](http://blog.jetbrains.com/kotlin/)
+ * [Forum](http://devnet.jetbrains.net/community/kotlin?view=discussions)
+ * [TeamCity CI build](https://teamcity.jetbrains.com/viewType.html?buildTypeId=Kotlin_EclipsePlugin)
+ * [Follow Kotlin on Twitter](http://twitter.com/#!/project_kotlin)
+
+###Building and Development
 
 Eclipse Luna SR2 (4.4.2) is the recomended way to build and develop the `kotlin-eclipse` project so far. We recommend the [Eclipse SDK](http://download.eclipse.org/eclipse/downloads/drops4/R-4.4.2-201502041700/) version because of bundled sources for Eclipse core and JDT plugins.
 
