@@ -2,7 +2,7 @@ package org.jetbrains.kotlin.ui.tests.editors.completion.handlers;
 
 import org.junit.Test;
 
-public class KotlinFunctionCompletionTest extends KotlinFunctionCompletionTestCase {
+public class KotlinCompletionHandlerInsertTest extends KotlinCompletionHandlerInsertTestCase {
 	@Override
 	protected String getTestDataRelativePath() {
 		return "completion/handlers";

@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 
-public abstract class KotlinFunctionCompletionTestCase extends KotlinEditorWithAfterFileTestCase {
+public abstract class KotlinCompletionHandlerInsertTestCase extends KotlinEditorWithAfterFileTestCase {
 
 	@Override
 	protected void performTest(String fileText, String expectedFileText) {
@@ -21,18 +21,19 @@ public abstract class KotlinFunctionCompletionTestCase extends KotlinEditorWithA
 		}
 
 		char completionChar = ' ';
-		String completionString = ExpectedCompletionUtils.getCompletionChar(fileText);
-		if (completionString != null) {
-			completionChar = completionString.charAt(0);
+		Character completionCharacter = ExpectedCompletionUtils.getCompletionChar(fileText);
+		if (completionCharacter != null) {
+			completionChar = completionCharacter;
 		}
 		
 		for (ICompletionProposal proposal : proposals) {
 			if (proposal.getDisplayString().startsWith(itemToComplete)) {
-				if (!(proposal instanceof ICompletionProposalExtension2)) {
-					throw new IllegalStateException("Completion with handler proposal should implement ICompletionProposalExtension2");
+				if (proposal instanceof ICompletionProposalExtension2) {
+					ICompletionProposalExtension2 proposalExtension = (ICompletionProposalExtension2) proposal;
+					proposalExtension.apply(getEditor().getViewer(), completionChar, 0, getCaret());
+				} else {
+					proposal.apply(getEditor().getViewer().getDocument());
 				}
-				ICompletionProposalExtension2 proposalExtension = (ICompletionProposalExtension2) proposal;
-				proposalExtension.apply(getEditor().getViewer(), completionChar, 0, getCaret());
 				break;
 			}
 		}

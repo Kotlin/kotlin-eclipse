@@ -28,9 +28,9 @@ public class ExpectedCompletionUtils {
 		return items.get(0);
 	}
 	
-	public static String getCompletionChar(String fileText) {
+	public static Character getCompletionChar(String fileText) {
 		List<String> items = getItems(fileText, COMPLETION_CHAR_PREFIX);
-		return !items.isEmpty() ? items.get(0) : null;
+		return !items.isEmpty() ? items.get(0).charAt(0) : null;
 	}
 	
 	public static List<String> itemsJavaOnlyShouldExists(String fileText) {
