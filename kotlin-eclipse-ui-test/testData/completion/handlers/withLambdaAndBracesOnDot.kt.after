@@ -1,0 +1,9 @@
+fun someFun(f: () -> Unit) {
+	f()
+}
+
+fun main(args : Array<String>) {
+	someFun {}.
+}
+
+// COMPLETION_CHAR: .

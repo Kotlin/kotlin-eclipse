@@ -35,7 +35,7 @@ public class TextEditorTest {
     public static final String TEST_PROJECT_NAME = "test_project";
     public static final String TEST_PACKAGE_NAME = "testing";
     private TestJavaProject testProject;
-    private JavaEditor editor = null;
+    private KotlinEditor editor = null;
     
     public TextEditorTest() {
         this(TEST_PROJECT_NAME);
@@ -68,7 +68,7 @@ public class TextEditorTest {
                 content = content.replaceAll(KotlinEditorTestCase.CARET_TAG, "");
                 
                 IFile file = testProject.createSourceFile(packageName, name, content);
-                editor = (JavaEditor) EditorTestUtils.openInEditor(file);
+                editor = (KotlinEditor) EditorTestUtils.openInEditor(file);
                 setCaret(cursor);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -130,7 +130,7 @@ public class TextEditorTest {
         }
     }
     
-    public JavaEditor getEditor() {
+    public KotlinEditor getEditor() {
         return editor;
     }
     

@@ -1,0 +1,9 @@
+fun myFoo() {
+	
+}
+
+fun main(args: Array<String>) {
+    myFoo().<caret>
+}
+
+// COMPLETION_CHAR: .
