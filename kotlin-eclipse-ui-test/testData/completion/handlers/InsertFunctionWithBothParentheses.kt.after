@@ -4,4 +4,6 @@ package some
 fun test() = 12
 fun test1()
 
-val a = test()<caret>
+val a = test1()<caret>
+
+// ELEMENT: test1

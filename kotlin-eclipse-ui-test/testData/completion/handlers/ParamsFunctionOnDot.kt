@@ -1,5 +1,7 @@
 fun myfoo(p : (String, Char) -> Boolean){}
 
 fun main(args: Array<String>) {
-    myfoo(<caret>)
+    myfo<caret>
 }
+
+// COMPLETION_CHAR: .

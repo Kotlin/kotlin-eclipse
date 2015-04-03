@@ -15,3 +15,5 @@ class A {
 fun testMy() {
     A.testOther<caret>
 }
+
+// ELEMENT: testOther

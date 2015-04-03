@@ -4,5 +4,5 @@ fun test(a: Int) {
 }
 
 fun other() {
-    te<caret>
+    tes<caret>
 }

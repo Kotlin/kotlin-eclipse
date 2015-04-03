@@ -5,3 +5,5 @@ fun test() = 12
 fun test1()
 
 val a = <caret>
+
+// ELEMENT: test1

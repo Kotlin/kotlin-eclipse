@@ -3,5 +3,7 @@ class Some {
 }
 
 fun main(args: Array<String>) {
-    Some().filter { <caret> }
+    Some().fil<caret>
 }
+
+// COMPLETION_CHAR: .

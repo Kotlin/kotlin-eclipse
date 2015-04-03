@@ -9,36 +9,6 @@ public class KotlinFunctionCompletionTest extends KotlinFunctionCompletionTestCa
 	}
 	
 	@Test
-	public void ClassCompletionInImport() {
-		doAutoTest();
-	}
-	
-	@Test
-	public void ClassCompletionInLambda() {
-		doAutoTest();
-	}
-	
-	@Test
-	public void ClassCompletionInMiddle() {
-		doAutoTest();
-	}
-	
-	@Test
-	public void ClassFromClassObject() {
-		doAutoTest();
-	}
-	
-	@Test
-	public void ClassFromClassObjectInPackage() {
-		doAutoTest();
-	}
-	
-	@Test
-	public void DoNotInsertImportForAlreadyImported() {
-		doAutoTest();
-	}
-	
-	@Test
 	public void ExistingSingleBrackets() {
 		doAutoTest();
 	}
@@ -59,17 +29,72 @@ public class KotlinFunctionCompletionTest extends KotlinFunctionCompletionTestCa
 	}
 	
 	@Test
-	public void HigherOrderFunctionWithArgs2() {
+ 	public void InsertFunctionWithBothParentheses() {
+ 		doAutoTest();
+ 	}
+	
+	@Test
+	public void InsertFunctionWithSingleParameterWithBrace() {
 		doAutoTest();
 	}
 	
 	@Test
-	public void HigherOrderFunctionWithArgs3() {
+	public void InsertVoidJavaMethod() {
 		doAutoTest();
 	}
 	
 	@Test
-	public void ImportedEnumMember() {
+	public void NoParamsFunction() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void ParamsFunction() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void SingleBrackets() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void InsertJavaMethodWithParam() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void FunctionWithParamOnBracket() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void ParamFunctionOnBracket() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void UnitFunctionOnBracket() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void UnitFunctionOnDot() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void FunctionWithParamOnDot() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void ParamFunctionOnDot() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void ParamsFunctionOnDot() {
 		doAutoTest();
 	}
 }

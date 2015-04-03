@@ -19,6 +19,12 @@ public abstract class KotlinFunctionCompletionTestCase extends KotlinEditorWithA
 		if (proposals.length > 1) {
 			itemToComplete = ExpectedCompletionUtils.itemToComplete(fileText);
 		}
+
+		char completionChar = ' ';
+		String completionString = ExpectedCompletionUtils.getCompletionChar(fileText);
+		if (completionString != null) {
+			completionChar = completionString.charAt(0);
+		}
 		
 		for (ICompletionProposal proposal : proposals) {
 			if (proposal.getDisplayString().startsWith(itemToComplete)) {
@@ -26,7 +32,8 @@ public abstract class KotlinFunctionCompletionTestCase extends KotlinEditorWithA
 					throw new IllegalStateException("Completion with handler proposal should implement ICompletionProposalExtension2");
 				}
 				ICompletionProposalExtension2 proposalExtension = (ICompletionProposalExtension2) proposal;
-				proposalExtension.apply(getEditor().getViewer(), ' ', 0, getCaret());
+				proposalExtension.apply(getEditor().getViewer(), completionChar, 0, getCaret());
+				break;
 			}
 		}
 		

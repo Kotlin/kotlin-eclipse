@@ -53,10 +53,7 @@ public class KotlinFunctionCompletionProposal(
 	
 	private fun addBrackets(viewer: ITextViewer, completionChar: Char, completionOffset: Int) {
 		val document = viewer.getDocument()
-        val chars = document.get()
-
-        val forceParenthesis = hasLambda && chars.charAt(completionOffset) == '('
-        val braces = hasLambda && completionChar != '(' && !forceParenthesis
+        val braces = hasLambda && completionChar != '('
 
         val openingBracket = if (braces) '{' else '('
         val closingBracket = if (braces) '}' else ')'
