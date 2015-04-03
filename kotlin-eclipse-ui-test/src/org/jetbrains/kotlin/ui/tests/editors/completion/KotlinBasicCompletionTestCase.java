@@ -22,12 +22,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,7 +63,7 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 		assertNotExists(unexpectedProposals, proposalSet);
 	}
 	
-	private List<String> getActualProposals(JavaEditor javaEditor) {
+	private List<String> getActualProposals(KotlinEditor javaEditor) {
 		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(javaEditor);
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(
 				javaEditor.getViewer(), 

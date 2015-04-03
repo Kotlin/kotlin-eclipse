@@ -1,0 +1,6 @@
+fun withoutParam() {	
+}
+
+fun main(args : Array<String>) {
+	withoutParam()<caret>
+}
