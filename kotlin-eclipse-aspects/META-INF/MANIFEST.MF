@@ -7,7 +7,7 @@ Bundle-Activator: org.jetbrains.kotlin.aspects.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.aspectj.runtime,
- org.jetbrains.kotlin.core;bundle-version="0.1.1"
+ org.jetbrains.kotlin.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
