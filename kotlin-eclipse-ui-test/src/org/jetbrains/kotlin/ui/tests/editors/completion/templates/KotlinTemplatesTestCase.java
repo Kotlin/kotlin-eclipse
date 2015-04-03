@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils.Separator;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,7 +53,7 @@ public abstract class KotlinTemplatesTestCase extends KotlinProjectTestCase {
 		expected = KotlinTestUtils.resolveTestTags(expected);
 		TextEditorTest testEditor = configureEditor("Test.kt", input);
 		
-		JavaEditor editor = testEditor.getEditor();
+		KotlinEditor editor = testEditor.getEditor();
 		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(editor);
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(editor.getViewer(), 
 				KotlinTestUtils.getCaret(editor));

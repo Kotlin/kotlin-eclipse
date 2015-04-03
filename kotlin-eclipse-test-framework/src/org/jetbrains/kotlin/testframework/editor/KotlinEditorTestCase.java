@@ -32,6 +32,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -74,7 +75,7 @@ public abstract class KotlinEditorTestCase {
         initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
     }
     
-    protected JavaEditor getEditor() {
+    protected KotlinEditor getEditor() {
         return testEditor.getEditor();
     }
     
