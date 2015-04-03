@@ -182,7 +182,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
                     null, 
                     completion);
             
-            KotlinCompletionProposal handler = KotlinCompletionProposal.getDefaultInsertHandler(descriptor, proposal);
+            KotlinCompletionProposal handler = CodeassistPackage.withKotlinInsertHandler(descriptor, proposal);
             proposals.add(handler);
         }
         

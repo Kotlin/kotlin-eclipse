@@ -58,20 +58,19 @@ public class KotlinFunctionCompletionProposal(
         val openingBracket = if (braces) '{' else '('
         val closingBracket = if (braces) '}' else ')'
 
-		var tailOffset = completionOffset
-        var openingBracketOffset = indexOfSkippingSpace(document, openingBracket, tailOffset)
+		var openingBracketOffset = indexOfSkippingSpace(document, openingBracket, completionOffset)
         var inBracketsShift = 0
         if (openingBracketOffset == -1) {
             if (braces) {
-            	document.replace(tailOffset, 0, " {  }")
+            	document.replace(completionOffset, 0, " {  }")
                 inBracketsShift = 1
             }
             else {
-            	document.replace(tailOffset, 0, "()")
+            	document.replace(completionOffset, 0, "()")
             }
         }
 
-        openingBracketOffset = indexOfSkippingSpace(document, openingBracket, tailOffset)
+        openingBracketOffset = indexOfSkippingSpace(document, openingBracket, completionOffset)
         assert(openingBracketOffset != -1, "If there wasn't open bracket it should already have been inserted")
 
         val closeBracketOffset = indexOfSkippingSpace(document, closingBracket, openingBracketOffset + 1)
