@@ -17,7 +17,7 @@ public open class KotlinCompletionProposal(val proposal: ICompletionProposal): I
 		proposal.apply(document)
 	}
 	
-	override fun getSelection(document: IDocument): Point = proposal.getSelection(document)
+	override fun getSelection(document: IDocument): Point? = null
 	
 	override fun getAdditionalProposalInfo(): String = proposal.getAdditionalProposalInfo()
 	

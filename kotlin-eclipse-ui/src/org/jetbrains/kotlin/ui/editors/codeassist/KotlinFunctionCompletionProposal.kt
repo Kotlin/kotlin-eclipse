@@ -36,7 +36,6 @@ public class KotlinFunctionCompletionProposal(
         if (caretPosition == CaretPosition.AFTER_BRACKETS && lambdaInfo != null) {
             throw IllegalArgumentException("CaretPosition.AFTER_BRACKETS with lambdaInfo != null combination is not supported")
         }
-	
     }
 	
 	override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
@@ -53,8 +52,6 @@ public class KotlinFunctionCompletionProposal(
 	override fun validate(document: IDocument, offset: Int, event: DocumentEvent): Boolean {
 		return true
 	}
-	
-	override fun getSelection(document: IDocument): Point = Point(caretOffset, 0)
 	
 	private fun addBrackets(viewer: ITextViewer, completionChar: Char, completionOffset: Int) {
 		val document = viewer.getDocument()
@@ -86,9 +83,11 @@ public class KotlinFunctionCompletionProposal(
 
         if (shouldPlaceCaretInBrackets(completionChar) || closeBracketOffset == -1) {
 			caretOffset = openingBracketOffset + 1 + inBracketsShift
+			viewer.getTextWidget().setCaretOffset(caretOffset)
         }
         else {
         	caretOffset = closeBracketOffset + 1
+			viewer.getTextWidget().setCaretOffset(caretOffset)
         }
     }
 	
