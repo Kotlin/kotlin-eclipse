@@ -24,41 +24,39 @@ public enum class CaretPosition {
     AFTER_BRACKETS
 }
 
-public data class GenerateLambdaInfo(val lambdaType: JetType, val explicitParameters: Boolean)
-
 public class KotlinFunctionCompletionProposal(
 		proposal: ICompletionProposal,
 		val caretPosition : CaretPosition,
-		val lambdaInfo: GenerateLambdaInfo?): KotlinCompletionProposal(proposal), ICompletionProposalExtension2 {
+		val hasLambda: Boolean): KotlinHandlerCompletionProposal(proposal) {
 	
-	var caretOffset = -1
 	init {
-        if (caretPosition == CaretPosition.AFTER_BRACKETS && lambdaInfo != null) {
+        if (caretPosition == CaretPosition.AFTER_BRACKETS && hasLambda) {
             throw IllegalArgumentException("CaretPosition.AFTER_BRACKETS with lambdaInfo != null combination is not supported")
         }
     }
 	
 	override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
-		super<KotlinCompletionProposal>.apply(viewer.getDocument())
-        addBrackets(viewer, trigger, viewer.getTextWidget().getCaretOffset())
+		super.apply(viewer.getDocument())
+        addBrackets(viewer, trigger, super.getSelection(viewer.getDocument())!!.x)
+		if (trigger == '.') {
+			val closeBracketOffset = viewer.getTextWidget().getCaretOffset()
+			viewer.getDocument().replace(closeBracketOffset, 0, trigger.toString())
+			viewer.getTextWidget().setCaretOffset(closeBracketOffset + 1)
+		}
 	}
 	
-	override fun selected(viewer: ITextViewer, smartToggle: Boolean) {
-	}
+	override fun getSelection(document: IDocument): Point? = null
 	
-	override fun unselected(viewer: ITextViewer) {
-	}
-	
-	override fun validate(document: IDocument, offset: Int, event: DocumentEvent): Boolean {
-		return true
+	override fun getTriggerCharacters(): CharArray {
+		return charArray('(', '.')
 	}
 	
 	private fun addBrackets(viewer: ITextViewer, completionChar: Char, completionOffset: Int) {
 		val document = viewer.getDocument()
         val chars = document.get()
 
-        val forceParenthesis = lambdaInfo != null && completionChar == '\t' && chars.charAt(completionOffset) == '('
-        val braces = lambdaInfo != null && completionChar != '(' && !forceParenthesis
+        val forceParenthesis = hasLambda && chars.charAt(completionOffset) == '('
+        val braces = hasLambda && completionChar != '(' && !forceParenthesis
 
         val openingBracket = if (braces) '{' else '('
         val closingBracket = if (braces) '}' else ')'
@@ -82,12 +80,10 @@ public class KotlinFunctionCompletionProposal(
         val closeBracketOffset = indexOfSkippingSpace(document, closingBracket, openingBracketOffset + 1)
 
         if (shouldPlaceCaretInBrackets(completionChar) || closeBracketOffset == -1) {
-			caretOffset = openingBracketOffset + 1 + inBracketsShift
-			viewer.getTextWidget().setCaretOffset(caretOffset)
+			viewer.getTextWidget().setCaretOffset(openingBracketOffset + 1 + inBracketsShift)
         }
         else {
-        	caretOffset = closeBracketOffset + 1
-			viewer.getTextWidget().setCaretOffset(caretOffset)
+			viewer.getTextWidget().setCaretOffset(closeBracketOffset + 1)
         }
     }
 	
@@ -102,9 +98,10 @@ public class KotlinFunctionCompletionProposal(
     }
 	
 	private fun shouldPlaceCaretInBrackets(completionChar: Char): Boolean {
-        if (completionChar == ',' || completionChar == '.' || completionChar == '=') return false
-        if (completionChar == '(') return true
-        return caretPosition == CaretPosition.IN_BRACKETS
+		return when {
+			completionChar == '.' -> false
+			completionChar == '(' -> true
+			else -> caretPosition == CaretPosition.IN_BRACKETS
+		}
     }
-
 }

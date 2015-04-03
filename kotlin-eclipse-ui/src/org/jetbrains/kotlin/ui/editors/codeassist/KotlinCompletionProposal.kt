@@ -17,7 +17,7 @@ public open class KotlinCompletionProposal(val proposal: ICompletionProposal): I
 		proposal.apply(document)
 	}
 	
-	override fun getSelection(document: IDocument): Point? = null
+	override fun getSelection(document: IDocument): Point? = proposal.getSelection(document)
 	
 	override fun getAdditionalProposalInfo(): String = proposal.getAdditionalProposalInfo()
 	
@@ -35,7 +35,7 @@ public open class KotlinCompletionProposal(val proposal: ICompletionProposal): I
 				is FunctionDescriptor -> {
 					val parameters = descriptor.getValueParameters()
 					when (parameters.size()) {
-						0 -> KotlinFunctionCompletionProposal(proposal, CaretPosition.AFTER_BRACKETS, null)
+						0 -> KotlinFunctionCompletionProposal(proposal, CaretPosition.AFTER_BRACKETS, false)
 						
 						1 -> {
 							val parameterType = parameters.single().getType()
@@ -43,13 +43,13 @@ public open class KotlinCompletionProposal(val proposal: ICompletionProposal): I
 								val parameterCount = KotlinBuiltIns.getParameterTypeProjectionsFromFunctionType(parameterType).size()
 									if (parameterCount <= 1) {
 										// otherwise additional item with lambda template is to be added
-										return KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, GenerateLambdaInfo(parameterType, false))
+										return KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, true)
 									}
 							}
-							KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, null)
+							KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, false)
 						}
 						
-						else -> KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, null)
+						else -> KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, false)
 					}
 				}
 				
