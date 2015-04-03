@@ -8,4 +8,11 @@
 	</buildSpec>
 	<natures>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>pom.xml</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/pom.xml</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
