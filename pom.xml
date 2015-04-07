@@ -24,7 +24,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		
 		<ajdt-luna-repo.url>http://download.eclipse.org/tools/ajdt/44/dev/update</ajdt-luna-repo.url>
-		<equinox-launcher.url>http://www.chuusai.com/eclipse/equinox-weaving-launcher/</equinox-launcher.url>
 		
 		<kotlin.version>0.10.195</kotlin.version>
 		
@@ -41,11 +40,6 @@
 		<repository>
 			<id>ajdt</id>
 			<url>${ajdt-luna-repo.url}</url>
-			<layout>p2</layout>
-		</repository>
-		<repository>
-			<id>equinox.launcher</id>
-			<url>${equinox-launcher.url}</url>
 			<layout>p2</layout>
 		</repository>
 	</repositories>
