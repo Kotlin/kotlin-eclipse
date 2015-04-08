@@ -59,7 +59,7 @@ public abstract class KotlinQuickAssist {
             ITextSelection textSelection = (ITextSelection) selection;
             return textSelection.getOffset();
         }
-
+        
         return activeEditor.getViewer().getTextWidget().getCaretOffset();
     }
 }

@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -54,6 +53,7 @@ import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinDescriptorUtils;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext;
@@ -70,11 +70,11 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     private static final char[] VALID_PROPOSALS_CHARS = new char[] { '.' };
     private static final char[] VALID_INFO_CHARS = new char[] { '(', ',' };
     
-    private final JavaEditor editor;
+    private final KotlinEditor editor;
     private final List<DeclarationDescriptor> cachedDescriptors = Lists.newArrayList();
     private boolean isNewSession = true;
     
-    public KotlinCompletionProcessor(JavaEditor editor) {
+    public KotlinCompletionProcessor(KotlinEditor editor) {
         this.editor = editor;
     }
     
@@ -171,16 +171,20 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             String completion = descriptor.getName().getIdentifier();
             Image image = KotlinDescriptorUtils.INSTANCE.getImage(descriptor);
             String presentableString = DescriptorRenderer.STARTS_FROM_NAME.render(descriptor);
+            assert image != null : "Image for completion must not be null";
             
-            proposals.add(new CompletionProposal(
-                    completion, 
+            KotlinCompletionProposal proposal = new KotlinCompletionProposal(
+                    completion,
                     replacementOffset, 
                     replacementLength, 
                     completion.length(), 
                     image, 
                     presentableString, 
                     null, 
-                    completion));
+                    completion);
+            
+            ICompletionProposal handler = CodeassistPackage.withKotlinInsertHandler(descriptor, proposal);
+            proposals.add(handler);
         }
         
         return proposals;
