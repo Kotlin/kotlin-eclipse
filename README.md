@@ -4,11 +4,22 @@ Welcome to Kotlin for Eclipse project! Some handy links:
 
  * [Kotlin Site](http://kotlinlang.org/)
  * [Getting Started Guide](http://kotlinlang.org/docs/tutorials/getting-started-eclipse.html)
+ * [Kotlin on Eclipse Marketplace](https://marketplace.eclipse.org/content/kotlin-plugin-eclipse)
  * Issue Tracker: [File New Issue](https://youtrack.jetbrains.com/newIssue?project=KT&clearDraft=true&c=Subsystems+Eclipse+Plugin), [All Open Issues](https://youtrack.jetbrains.com/search/Kotlin%20Eclipse-19206?q=%23Unresolved)
  * [Kotlin Blog](http://blog.jetbrains.com/kotlin/)
  * [Forum](http://devnet.jetbrains.net/community/kotlin?view=discussions)
  * [TeamCity CI build](https://teamcity.jetbrains.com/viewType.html?buildTypeId=Kotlin_EclipsePlugin)
  * [Follow Kotlin on Twitter](http://twitter.com/#!/project_kotlin)
+
+### Installation
+
+To give it a try you will need a clean installation of Eclipse Luna. The Kotlin plugin is available from the Eclipse Marketplace. The easiest way to install the Kotlin plugin is to **drag-and-drop this button into a running Eclipse window**:
+
+<a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2257536" class="drag" title="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse"><img src="https://marketplace.eclipse.org/sites/all/themes/solstice/_themes/solstice_marketplace/public/images/btn-install.png" alt="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse" /></a>
+
+Alternatively, you can use *Help -> Eclipse Marketplace…* menu, or the following update site:
+
+    https://dl.bintray.com/jetbrains/kotlin/eclipse-plugin/last/
 
 ###Building and Development
 
@@ -46,4 +57,18 @@ Building from the command line is also available (Note that Maven **3.0.5** is r
 
     cd {repository}
     mvn install
+
+### Eclipse update sites
+
+Latest stable release:
+
+    https://dl.bintray.com/jetbrains/kotlin/eclipse-plugin/last/
+
+Any previously released version (replace *:version* with the version number):
+
+    https://dl.bintray.com/jetbrains/kotlin/eclipse-plugin/:version/
+
+Nightly build:
+
+    https://teamcity.jetbrains.com/guestAuth/repository/download/Kotlin_EclipsePlugin/.lastSuccessful/
 
