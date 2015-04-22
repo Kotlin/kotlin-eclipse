@@ -23,11 +23,12 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class EditorUtil {
     
-    @NotNull
+    @Nullable
     public static IFile getFile(@NotNull AbstractTextEditor editor) {
         return (IFile) editor.getEditorInput().getAdapter(IFile.class);
     }

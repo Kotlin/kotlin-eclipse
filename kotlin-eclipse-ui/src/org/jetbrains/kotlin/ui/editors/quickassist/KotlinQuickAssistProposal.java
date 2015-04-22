@@ -40,15 +40,23 @@ public abstract class KotlinQuickAssistProposal extends KotlinQuickAssist implem
     }
     
     public int getStartOffset(@NotNull PsiElement element, @NotNull AbstractTextEditor editor) {
-        PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
-        return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), 
-                element.getTextRange().getStartOffset(), EditorUtil.getDocument(editor));
+        int offset = element.getTextRange().getStartOffset();
+        IFile file = EditorUtil.getFile(editor);
+
+        assert file != null : "Failed to retrieve IFile from editor " + editor;
+
+        PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), offset, EditorUtil.getDocument(editor));
     }
     
     public int getEndOffset(@NotNull PsiElement element, @NotNull AbstractTextEditor editor) {
-        PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
-        return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), 
-                element.getTextRange().getEndOffset(), EditorUtil.getDocument(editor));
+        int offset = element.getTextRange().getEndOffset();
+        IFile file = EditorUtil.getFile(editor);
+
+        assert file != null : "Failed to retrieve IFile from editor " + editor;
+
+        PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), offset, EditorUtil.getDocument(editor));
     }
     
     @Override

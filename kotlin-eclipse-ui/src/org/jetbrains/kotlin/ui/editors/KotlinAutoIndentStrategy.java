@@ -68,6 +68,11 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             }
             
             IFile file = EditorUtil.getFile(editor);
+            if (file == null) {
+                KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+                return 0;
+            }
+
             if (document.get().contains(LineEndUtil.CARRIAGE_RETURN_STRING)) {
                 offset -= document.getLineOfOffset(offset);
             }

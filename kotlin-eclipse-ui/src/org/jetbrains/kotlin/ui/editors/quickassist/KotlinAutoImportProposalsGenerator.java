@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.ui.editors.quickassist;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.Flags;
@@ -52,6 +53,12 @@ public class KotlinAutoImportProposalsGenerator extends KotlinQuickAssistProposa
             return false;
         }
         
+        IFile file = EditorUtil.getFile(editor);
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return false;
+        }
+
         int caretOffset = getCaretOffset(editor);
         DiagnosticAnnotation annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, caretOffset);
         if (annotation != null) {
@@ -59,7 +66,7 @@ public class KotlinAutoImportProposalsGenerator extends KotlinQuickAssistProposa
             return diagnostic != null ? DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic) : false;
         }
         
-        IMarker marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(EditorUtil.getFile(editor), caretOffset);
+        IMarker marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, caretOffset);
         return marker != null ? marker.getAttribute(AnnotationManager.IS_UNRESOLVED_REFERENCE, false) : false;
     }
     

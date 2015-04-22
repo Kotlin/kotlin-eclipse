@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.templates;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
@@ -44,7 +45,11 @@ public class KotlinDocumentTemplateContext extends DocumentTemplateContext {
         
         KotlinTemplateFormatter templateFormatter = new KotlinTemplateFormatter();
         
-        IJavaProject javaProject = JavaCore.create(EditorUtil.getFile(editor).getProject());
+        IFile file = EditorUtil.getFile(editor);
+
+        assert file != null : "Failed to retrieve IFile from editor " + editor;
+
+        IJavaProject javaProject = JavaCore.create(file.getProject());
         templateFormatter.format(templateBuffer, getLineIndentation(), javaProject);
         
         return templateBuffer;

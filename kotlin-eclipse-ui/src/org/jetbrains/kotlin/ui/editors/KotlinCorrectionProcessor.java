@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.ui.editors;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.Position;
@@ -58,9 +59,16 @@ public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
         IDocumentProvider documentProvider = editor.getDocumentProvider();
         IAnnotationModel annotationModel = documentProvider.getAnnotationModel(editor.getEditorInput());
         
-        Position position = annotationModel.getPosition(annotation);
-        IMarker marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(EditorUtil.getFile(editor), position.getOffset());
-        
+        IMarker marker;
+        IFile file = EditorUtil.getFile(editor);
+        if (file != null) {
+            Position position = annotationModel.getPosition(annotation);
+            marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, position.getOffset());
+        } else {
+            marker = null;
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+        }
+
         return marker != null ? IDE.getMarkerHelpRegistry().hasResolutions(marker) : false;
     }
 
@@ -74,20 +82,27 @@ public class KotlinCorrectionProcessor implements IQuickAssistProcessor {
         List<ICompletionProposal> completionProposals = new ArrayList<ICompletionProposal>();
         
         try {
-            int caretOffset = invocationContext.getOffset();
-            IMarker marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(EditorUtil.getFile(editor), caretOffset);
+            IMarker marker;
+            IFile file = EditorUtil.getFile(editor);
+            if (file != null) {
+                int caretOffset = invocationContext.getOffset();
+                marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, caretOffset);
+            } else {
+                marker = null;
+                KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            }
+
             if (marker != null) {
                 for (IMarkerResolution markerResolution : IDE.getMarkerHelpRegistry().getResolutions(marker)) {
                     completionProposals.add(new KotlinMarkerResolutionProposal(marker, markerResolution));
                 }
             } 
-            
+
             completionProposals.addAll(collectQuickAssistProposals());
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
-        
+
         return completionProposals.toArray(new ICompletionProposal[completionProposals.size()]);
     }
     

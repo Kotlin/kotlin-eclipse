@@ -34,6 +34,7 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -63,10 +64,15 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     @Override
     public void reconcile(IRegion partition) {
         IFile file = EditorUtil.getFile(editor);
-        resetCache(file);
         
-        updateLineAnnotations(file);
-        updateOutlinePage();
+        if (file != null) {
+            resetCache(file);
+
+            updateLineAnnotations(file);
+            updateOutlinePage();
+        } else {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+        }
     }
     
     private void resetCache(@NotNull IFile file) {
