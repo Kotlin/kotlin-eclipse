@@ -22,6 +22,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 
@@ -46,12 +47,16 @@ public class KotlinFormatAction extends Action {
         String sourceCode = EditorUtil.getSourceCode(editor);
         IFile file = EditorUtil.getFile(editor);
         
-        PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(file, sourceCode);
-        if (parsedCode == null) {
-            return;
+        if (file != null) {
+            PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(file, sourceCode);
+            if (parsedCode == null) {
+                return;
+            }
+
+            IDocument document = editor.getViewer().getDocument(); 
+            document.set(AlignmentStrategy.alignCode(parsedCode.getNode()));
+        } else {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
         }
-        
-        IDocument document = editor.getViewer().getDocument(); 
-        document.set(AlignmentStrategy.alignCode(parsedCode.getNode()));
     }
 }

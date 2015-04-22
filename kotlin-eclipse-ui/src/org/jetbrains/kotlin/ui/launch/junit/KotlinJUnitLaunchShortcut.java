@@ -61,12 +61,15 @@ public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
     @Nullable
     private IJavaElement resolveToEclipseElement(@NotNull IEditorPart editor) {
         IFile file = EditorUtil.getFile((AbstractTextEditor) editor);
-        IType eclipseType = KotlinJUnitLaunchUtils.getEclipseTypeForSingleClass(file);
-        if (eclipseType != null) {
-            return eclipseType;
+
+        if (file != null) {
+            IType eclipseType = KotlinJUnitLaunchUtils.getEclipseTypeForSingleClass(file);
+            return eclipseType != null ? eclipseType : null;
         } else {
-            return null;
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
         }
+
+        return null;
     }
     
     @Nullable

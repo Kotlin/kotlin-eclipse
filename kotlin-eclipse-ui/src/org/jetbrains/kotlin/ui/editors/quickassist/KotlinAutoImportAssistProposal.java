@@ -41,7 +41,13 @@ public class KotlinAutoImportAssistProposal extends KotlinQuickAssistProposal {
             return;
         }
         
-        PsiElement placeElement = findNodeToNewImport(EditorUtil.getFile(editor));
+        IFile file = EditorUtil.getFile(editor);
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return;
+        }
+
+        PsiElement placeElement = findNodeToNewImport(file);
         int breakLineBefore = computeBreakLineBeforeImport(placeElement);
         int breakLineAfter = computeBreakLineAfterImport(placeElement);
         
@@ -80,8 +86,13 @@ public class KotlinAutoImportAssistProposal extends KotlinQuickAssistProposal {
     private int getOffset(PsiElement element, AbstractTextEditor editor) {
         int offset = 0;
         if (element != null) {
-            PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
-            offset = LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), element.getTextRange().getEndOffset(), EditorUtil.getDocument(editor));
+            IFile file = EditorUtil.getFile(editor);
+            if (file != null) {
+                PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+                offset = LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), element.getTextRange().getEndOffset(), EditorUtil.getDocument(editor));
+            } else {
+                KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            }
         }
         
         return offset;

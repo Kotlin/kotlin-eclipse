@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.ui.editors;
 
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
 import org.eclipse.jdt.ui.text.IColorManager;
@@ -53,7 +54,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.jetbrains.kotlin.ui.editors.highlighting.KotlinTokenScanner;
@@ -121,11 +124,17 @@ public class Configuration extends JavaSourceViewerConfiguration {
         return new MonoReconciler(ktReconcilingStrategy, false);
     }
 
+    @Nullable
     protected KotlinTokenScanner getScanner() {
         if (scanner == null) {
-            scanner = new KotlinTokenScanner(EditorUtil.getFile(editor), fPreferenceStore, getColorManager());
+            IFile file = EditorUtil.getFile(editor);
+            if (file != null) {
+                scanner = new KotlinTokenScanner(file, fPreferenceStore, getColorManager());
+            } else {
+                KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            }
         }
-        
+
         return scanner;
     }
     
@@ -146,13 +155,18 @@ public class Configuration extends JavaSourceViewerConfiguration {
     
     @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
-        PresentationReconciler reconciler = new PresentationReconciler();
+        KotlinTokenScanner scanner = getScanner();
         
-        DefaultDamagerRepairer kotlinDamagerRepairer = new DefaultDamagerRepairer(getScanner());
-        reconciler.setDamager(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
-        reconciler.setRepairer(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
-        
-        return reconciler;
+        if (scanner != null) {
+            PresentationReconciler reconciler = new PresentationReconciler();
+
+            DefaultDamagerRepairer kotlinDamagerRepairer = new DefaultDamagerRepairer(scanner);
+            reconciler.setDamager(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
+            reconciler.setRepairer(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
+
+            return reconciler;
+        }
+        return null;
     }
 
     @Override
@@ -185,12 +199,19 @@ public class Configuration extends JavaSourceViewerConfiguration {
         
         @Override
         public String getInformation(ITextViewer textViewer, IRegion subject) {
-            return getInformation2(textViewer, subject).toString();
+            Object result = getInformation2(textViewer, subject);
+            return result != null ? result.toString() : null;
         }
         
         @Override
         public Object getInformation2(ITextViewer textViewer, IRegion subject) {
-            return KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
+            IFile file = EditorUtil.getFile(editor);
+            if (file != null) {
+                return KotlinPsiManager.INSTANCE.getParsedFile(file);
+            } 
+            
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return null;
         }
     }
     

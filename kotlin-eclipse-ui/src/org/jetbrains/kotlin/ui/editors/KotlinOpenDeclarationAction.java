@@ -70,14 +70,10 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @NotNull
     private final KotlinEditor editor;
-    private final IJavaProject javaProject;
-    private final IFile file;
     
     public KotlinOpenDeclarationAction(@NotNull KotlinEditor editor) {
         super(editor.getSite());
         this.editor = editor;
-        file = EditorUtil.getFile(editor);
-        javaProject = JavaCore.create(file.getProject());
         
         setText(ActionMessages.OpenAction_declaration_label);
         setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_EDITOR);
@@ -85,14 +81,23 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Override
     public void run(ITextSelection selection) {
-        SourceElement element = getTargetElement(getSelectedExpression(file, selection.getOffset()));
+        IFile file = EditorUtil.getFile(editor);
+        if (file == null) {
+            return;
+        }
         
+        IJavaProject javaProject = JavaCore.create(file.getProject());
+        if (javaProject == null) {
+            return;
+        }
+        
+        SourceElement element = getTargetElement(getSelectedExpression(file, selection.getOffset()), file, javaProject);
         if (element == null) {
             return;
         }
         
         try {
-            gotoElement(element);
+            gotoElement(element, javaProject);
         } catch (JavaModelException e) {
             KotlinLogger.logError(e);
         } catch (PartInitException e) {
@@ -101,25 +106,25 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private SourceElement getTargetElement(@Nullable JetReferenceExpression expression) {
+    private SourceElement getTargetElement(@Nullable JetReferenceExpression expression, @NotNull IFile file, @NotNull IJavaProject javaProject) {
         BindingContext bindingContext = KotlinAnalyzer
                 .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
                 .getBindingContext();
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
         if (descriptor != null) {
             List<SourceElement> declarations = EclipseDescriptorUtils.descriptorToDeclarations(descriptor);
-            
+
             if (declarations.size() > 1 || declarations.isEmpty()) {
                 return null;
             }
-            
+
             return declarations.get(0);
         }
         
         return null;
     }
     
-    private void gotoElement(@NotNull SourceElement element) throws JavaModelException, PartInitException {
+    private void gotoElement(@NotNull SourceElement element, @NotNull IJavaProject javaProject) throws JavaModelException, PartInitException {
         if (element instanceof EclipseJavaSourceElement) {
             IBinding binding = ((EclipseJavaElement<?>) ((EclipseJavaSourceElement) element).getJavaElement()).getBinding();
             gotoJavaDeclaration(binding, javaProject);
