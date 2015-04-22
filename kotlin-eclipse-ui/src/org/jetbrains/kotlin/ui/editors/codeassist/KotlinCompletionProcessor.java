@@ -43,6 +43,7 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -128,11 +129,18 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     @NotNull
     private Collection<DeclarationDescriptor> generateBasicCompletionProposals(@NotNull ITextViewer viewer, int identOffset) {
         JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE.getSimpleNameExpression(editor, identOffset);
-        if (simpleNameExpression == null) {
+
+        IFile file = EditorUtil.getFile(editor);
+
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+        }
+        
+        if (simpleNameExpression == null || file == null) {
             return Collections.emptyList();
         }
         
-        return getReferenceVariants(simpleNameExpression, EditorUtil.getFile(editor));
+        return getReferenceVariants(simpleNameExpression, file);
     }
     
     @NotNull
@@ -191,13 +199,18 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     }
     
     private Collection<ICompletionProposal> generateTemplateProposals(ITextViewer viewer, int offset, String identifierPart) {
-        List<String> contextTypeIds = KotlinApplicableTemplateContext.getApplicableContextTypeIds(viewer, 
-                EditorUtil.getFile(editor), offset - identifierPart.length());
-        
+        IFile file = EditorUtil.getFile(editor);
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return Collections.emptyList();
+        }
+
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+        List<String> contextTypeIds = KotlinApplicableTemplateContext.getApplicableContextTypeIds(viewer, file, offset - identifierPart.length());
+
         IRegion region = new Region(offset - identifierPart.length(), identifierPart.length());
         Image templateIcon = JavaPluginImages.get(JavaPluginImages.IMG_OBJS_TEMPLATE);
-        
+
         List<Template> templates = KotlinApplicableTemplateContext.getTemplatesByContextTypeIds(contextTypeIds);
         for (Template template : templates) {
             if (template.getName().startsWith(identifierPart)) {

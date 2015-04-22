@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 
 import com.intellij.psi.PsiElement;
@@ -64,8 +65,13 @@ public class KotlinOutlinePage extends ContentOutlinePage {
     }
     
     private void setInputAndExpand() {
+        PsiFile psiFile = null;
         IFile file = EditorUtil.getFile(editor);
-        PsiFile psiFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        if (file != null) {
+            psiFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        } else {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+        }
         viewer.setInput(psiFile);
         viewer.expandAll();
     }

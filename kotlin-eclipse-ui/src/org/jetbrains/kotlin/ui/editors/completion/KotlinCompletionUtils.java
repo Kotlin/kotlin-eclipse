@@ -3,11 +3,13 @@ package org.jetbrains.kotlin.ui.editors.completion;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
@@ -52,7 +54,15 @@ public class KotlinCompletionUtils {
         String sourceCode = EditorUtil.getSourceCode(editor);
         String sourceCodeWithMarker = new StringBuilder(sourceCode).insert(identOffset, KOTLIN_DUMMY_IDENTIFIER).toString();
         
-        JetFile jetFile = KotlinPsiManager.INSTANCE.parseText(StringUtilRt.convertLineSeparators(sourceCodeWithMarker), EditorUtil.getFile(editor));
+        JetFile jetFile;
+        IFile file = EditorUtil.getFile(editor);
+        if (file != null) {
+            jetFile = KotlinPsiManager.INSTANCE.parseText(StringUtilRt.convertLineSeparators(sourceCodeWithMarker), file);
+        } else {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return null;
+        }
+
         if (jetFile == null) {
             return null;
         }
