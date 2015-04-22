@@ -52,6 +52,11 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         }
         
         IFile file = EditorUtil.getFile(activeEditor);
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + activeEditor, null);
+            return;
+        }
+
         String arguments = getArguments(qualifiedExpression, file);
         if (arguments == null) {
             return;

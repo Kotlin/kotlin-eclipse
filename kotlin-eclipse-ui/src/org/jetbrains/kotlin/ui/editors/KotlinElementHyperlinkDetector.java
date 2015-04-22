@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.text.JavaWordFinder;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IRegion;
@@ -23,6 +24,7 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 
 public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
@@ -46,7 +48,13 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         
-        if (KotlinOpenDeclarationAction.getSelectedExpression(kotlinEditor, EditorUtil.getFile(kotlinEditor), offset) == null) {
+        IFile file = EditorUtil.getFile(kotlinEditor);
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + kotlinEditor, null);
+            return null;
+        }
+
+        if (KotlinOpenDeclarationAction.getSelectedExpression(kotlinEditor, file, offset) == null) {
             return null;
         }
         

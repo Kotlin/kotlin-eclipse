@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.outline;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.text.IInformationControl;
@@ -43,6 +44,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 
 import com.intellij.psi.PsiElement;
@@ -194,7 +196,13 @@ public class KotlinOutlinePopup extends PopupDialog implements IInformationContr
 
     @Override
     public void setInput(Object input) {
-        PsiElement element = KotlinPsiManager.INSTANCE.getParsedFile(EditorUtil.getFile(editor));
+        PsiElement element = null;
+        IFile file = EditorUtil.getFile(editor);
+        if (file != null) {
+            element = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        } else {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+        }
         treeViewer.setInput(element);
     }
 

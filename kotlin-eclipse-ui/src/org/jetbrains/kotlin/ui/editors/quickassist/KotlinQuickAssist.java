@@ -9,6 +9,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.JetFile;
@@ -46,11 +47,16 @@ public abstract class KotlinQuickAssist {
 
         KotlinEditor javaEditor = (KotlinEditor) editor;
         IFile file = EditorUtil.getFile(javaEditor);
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        
+        if (file != null) {
+            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+            int caretOffset = LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(javaEditor), getCaretOffset(javaEditor));
+            return jetFile.findElementAt(caretOffset);
+        } else {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+        }
 
-        int caretOffset = LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(javaEditor), getCaretOffset(javaEditor));
-
-        return jetFile.findElementAt(caretOffset);
+        return null;
     }
     
     protected int getCaretOffset(@NotNull KotlinEditor activeEditor) {

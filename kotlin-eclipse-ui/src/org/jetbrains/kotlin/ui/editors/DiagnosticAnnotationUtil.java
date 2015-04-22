@@ -178,9 +178,15 @@ public class DiagnosticAnnotationUtil {
             @NotNull Predicate<Annotation> replacementAnnotationsPredicate) {
         try {
             IFile file = EditorUtil.getFile(editor);
+            if (file == null) {
+                KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            }
             
-            List<DiagnosticAnnotation> newAnnotations = annotations.get(file);
-            if (newAnnotations == null) {
+            List<DiagnosticAnnotation> newAnnotations;
+            if (file != null && annotations.containsKey(file)) {
+                newAnnotations = annotations.get(file);
+                assert newAnnotations != null : "Null element in annotations map for file " + file.getName();
+            } else {
                 newAnnotations = Collections.emptyList();
             }
             
