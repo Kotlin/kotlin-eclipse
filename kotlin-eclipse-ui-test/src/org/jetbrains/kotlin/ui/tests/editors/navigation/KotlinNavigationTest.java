@@ -19,7 +19,11 @@ package org.jetbrains.kotlin.ui.tests.editors.navigation;
 import org.junit.Test;
 
 public class KotlinNavigationTest extends KotlinNavigationTestCase {
-    
+	@Override
+    protected String getTestDataRelativePath() {
+        return "navigation";
+    }
+	
     @Test
     public void withinFileToClassNavigation() {
         doAutoTest();

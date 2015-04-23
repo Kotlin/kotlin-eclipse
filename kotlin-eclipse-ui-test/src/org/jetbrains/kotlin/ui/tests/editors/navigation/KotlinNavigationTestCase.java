@@ -34,7 +34,7 @@ import com.intellij.util.containers.ContainerUtil;
 
 public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase {
     
-    private static class NavigationSourceFileData extends SourceFileData {
+    public static class NavigationSourceFileData extends SourceFileData {
         
         public static final Condition<NavigationSourceFileData> IS_BEFORE_PREDICATE = new Condition<NavigationSourceFileData>() {
             @Override
@@ -91,9 +91,7 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         }
     }
     
-    private static final String NAVIGATION_TEST_DATA_PATH_SEGMENT = "navigation";
-    
-    private void performTest(String contentAfter) {
+    protected void performTest(String contentAfter) {
         testEditor.runOpenDeclarationAction();
         
         JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -140,10 +138,5 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         }
         
         performTest(targetAfter.getContent());
-    }
-    
-    @Override
-    protected String getTestDataRelativePath() {
-        return NAVIGATION_TEST_DATA_PATH_SEGMENT;
     }
 }

@@ -1,0 +1,9 @@
+import pckg.navigation.SomeKotlin;
+import pckg.navigation.SomeKotlin.NestedKotlin;
+
+public class Foo {
+	public void some() {
+		NestedKotlin some = new SomeKotlin().some();
+		some.nes<caret>tedSome();
+	}
+}

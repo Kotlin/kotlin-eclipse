@@ -1,0 +1,8 @@
+package pckg.navigation
+
+class SomeKotlin {
+	companion object <caret>Factory {
+		fun asStatic() {
+		}
+	}
+}

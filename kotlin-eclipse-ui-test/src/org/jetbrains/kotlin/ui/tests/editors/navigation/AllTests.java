@@ -21,7 +21,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( { 
-	KotlinNavigationTest.class
+	KotlinNavigationTest.class,
+	JavaToKotlinNavigationTest.class
 } )
 public class AllTests {
 

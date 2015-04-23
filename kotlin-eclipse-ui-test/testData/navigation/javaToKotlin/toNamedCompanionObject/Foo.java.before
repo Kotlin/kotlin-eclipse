@@ -1,0 +1,7 @@
+import pckg.navigation.SomeKotlin;
+
+public class Foo {
+	public void some() {
+		SomeKotlin.Fa<caret>ctory.asStatic();
+	}
+}
