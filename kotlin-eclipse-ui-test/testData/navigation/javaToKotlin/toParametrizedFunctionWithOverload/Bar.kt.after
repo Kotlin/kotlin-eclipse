@@ -1,0 +1,5 @@
+package pckg.navigation
+
+fun <T> withType(id: T): T = id
+
+fun <caret>withType(some: Int): Int = 3 

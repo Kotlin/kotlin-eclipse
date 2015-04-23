@@ -1,0 +1,7 @@
+import pckg.navigation.KotlinEnum;
+
+public class Foo {
+	public void some() {
+		Kotlin<caret>Enum.valueOf("ABC");
+	}
+}

@@ -29,7 +29,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -60,7 +59,7 @@ public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
     
     @Nullable
     private IJavaElement resolveToEclipseElement(@NotNull IEditorPart editor) {
-        IFile file = EditorUtil.getFile((AbstractTextEditor) editor);
+        IFile file = EditorUtil.getFile(editor);
 
         if (file != null) {
             IType eclipseType = KotlinJUnitLaunchUtils.getEclipseTypeForSingleClass(file);

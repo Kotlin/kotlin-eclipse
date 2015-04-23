@@ -1,0 +1,7 @@
+import pckg.navigation.SomeKotlin;
+
+public class Foo {
+	public void some() {
+		new SomeKotlin().meth<caret>odWithDefaultArgs(1);
+	}
+}

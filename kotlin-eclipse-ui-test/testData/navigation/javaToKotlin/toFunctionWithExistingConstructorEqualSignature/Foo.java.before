@@ -1,0 +1,7 @@
+import pckg.navigation.KotlinObject;
+
+public class Foo {
+	public void some() {
+		new KtCl<caret>ass().ktFun();
+	}
+}

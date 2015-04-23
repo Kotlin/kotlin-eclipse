@@ -1,0 +1,8 @@
+import pckg.navigation.ForEnum;
+import pckg.navigation.KotlinEnum;
+
+public class Foo {
+	public void some() {
+		ForEnum.KotlinE<caret>num;
+	}
+}

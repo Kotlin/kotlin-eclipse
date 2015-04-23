@@ -75,7 +75,7 @@ public abstract class KotlinEditorTestCase {
     }
     
     protected KotlinEditor getEditor() {
-        return testEditor.getEditor();
+        return (KotlinEditor) testEditor.getEditor();
     }
     
     protected int getCaret() {

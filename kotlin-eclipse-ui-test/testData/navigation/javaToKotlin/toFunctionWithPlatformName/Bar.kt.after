@@ -1,0 +1,7 @@
+package pckg.navigation
+
+import kotlin.platform.platformName
+
+[platformName("doGetX")]
+fun <caret>getSome() {
+}

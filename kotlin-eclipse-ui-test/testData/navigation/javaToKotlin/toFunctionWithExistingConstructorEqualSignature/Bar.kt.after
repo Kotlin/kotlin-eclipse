@@ -1,0 +1,7 @@
+package pckg.navigation
+
+class <caret>KtClass { 
+	fun ktFun() {
+		
+	}
+}

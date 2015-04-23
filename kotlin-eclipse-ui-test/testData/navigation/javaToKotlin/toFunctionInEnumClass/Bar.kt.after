@@ -1,0 +1,12 @@
+package pckg.navigation
+
+class ForEnum {
+	enum class KotlinEnum {
+		ABC
+		ABD
+		
+		fun <caret>inEnumEntry() {
+			
+		}
+	}
+}
