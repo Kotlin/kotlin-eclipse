@@ -53,7 +53,7 @@ public abstract class KotlinTemplatesTestCase extends KotlinProjectTestCase {
 		expected = KotlinTestUtils.resolveTestTags(expected);
 		TextEditorTest testEditor = configureEditor("Test.kt", input);
 		
-		KotlinEditor editor = testEditor.getEditor();
+		KotlinEditor editor = (KotlinEditor) testEditor.getEditor();
 		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(editor);
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(editor.getViewer(), 
 				KotlinTestUtils.getCaret(editor));

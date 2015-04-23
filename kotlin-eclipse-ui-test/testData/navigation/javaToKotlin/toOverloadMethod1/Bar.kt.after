@@ -1,0 +1,11 @@
+package pckg.navigation
+
+class SomeKotlin() {
+	fun <caret>overloadMethod(x: Int) {
+		
+	}
+	
+	fun overloadMethod(x: String) {
+		
+	}
+}

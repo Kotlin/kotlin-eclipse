@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
 import org.eclipse.jdt.internal.ui.text.JavaColorManager;
@@ -30,6 +31,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.ui.debug.KotlinToggleBreakpointAdapter;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
+import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor;
 
 public class KotlinEditor extends CompilationUnitEditor {
     
@@ -99,6 +101,12 @@ public class KotlinEditor extends CompilationUnitEditor {
         super.dispose();
     }
     
+    
+    @Override
+    public void setSelection(IJavaElement element) {
+        KotlinOpenEditor.revealKotlinElement(this, element);
+    }
+
     @NotNull
     private KotlinOutlinePage getKotlinOutlinePage() {
         if (kotlinOutlinePage == null) {

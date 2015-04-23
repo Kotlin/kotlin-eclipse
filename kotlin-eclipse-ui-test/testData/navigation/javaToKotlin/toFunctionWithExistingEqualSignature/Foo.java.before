@@ -1,0 +1,7 @@
+import pckg.navigation.NavigationPackage;
+
+public class Foo {
+	public void some() {
+		NavigationPackage.s<caret>ome2(3);
+	}
+}

@@ -1,0 +1,8 @@
+import pckg.navigation.SomeKotlin;
+
+public class Foo {
+	public void some() {
+		new SomeKotlin().getMutableProp();
+		new SomeKotlin().setMutabl<caret>eProp(3);
+	}
+}

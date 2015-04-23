@@ -1,0 +1,5 @@
+package pckg.navigation
+
+class SomeKotlin {
+	var <caret>mutableProp: Int = 1
+}

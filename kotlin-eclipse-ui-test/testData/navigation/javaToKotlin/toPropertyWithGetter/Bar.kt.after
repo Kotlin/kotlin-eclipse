@@ -1,0 +1,6 @@
+package pckg.navigation
+
+class SomeKotlin {
+	val basicProp: Int
+		<caret>get() = 20
+}

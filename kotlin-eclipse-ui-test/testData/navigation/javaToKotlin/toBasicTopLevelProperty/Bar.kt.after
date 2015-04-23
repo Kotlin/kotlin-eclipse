@@ -1,0 +1,3 @@
+package pckg.navigation
+
+val <caret>topLevelProp = 20

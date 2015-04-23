@@ -1,0 +1,9 @@
+package pckg.navigation
+
+class SomeKotlin : BaseKotlin() {
+	override val <caret>ovProp: Int = 20
+}
+
+open class BaseKotlin {
+	open val ovProp: Int = 10 
+}

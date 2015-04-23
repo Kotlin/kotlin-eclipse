@@ -1,0 +1,6 @@
+package pckg.navigation
+
+class SomeKotlin {
+	fun <caret>some() {
+	}
+}

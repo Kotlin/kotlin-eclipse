@@ -1,0 +1,19 @@
+package org.jet.kot
+
+public open class SomeKotlin {
+	companion object {
+		fun asStatic() {
+			
+		}
+	}
+
+	fun getNested(): NestedInSome = NestedInSome()
+	
+	public class NestedInSome {
+		companion <caret>object {
+			fun staticInNested() {
+				
+			}
+		}
+	}
+}

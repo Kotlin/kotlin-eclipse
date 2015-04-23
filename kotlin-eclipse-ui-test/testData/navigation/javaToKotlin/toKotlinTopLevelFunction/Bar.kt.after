@@ -1,0 +1,4 @@
+package pckg.navigation
+
+fun <caret>topLevelFun() {
+}

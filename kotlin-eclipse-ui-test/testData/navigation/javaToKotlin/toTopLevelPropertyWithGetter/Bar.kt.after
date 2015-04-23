@@ -1,0 +1,4 @@
+package pckg.navigation
+
+val withGetter: Int
+	<caret>get() = 10

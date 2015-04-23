@@ -1,0 +1,7 @@
+package pckg.navigation
+
+var withSetter: Int
+	get() = 20
+	<caret>set(x: Int) {
+		withSetter = x
+	} 
