@@ -21,8 +21,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
@@ -33,11 +33,15 @@ public class PsiVisualization extends AbstractHandler {
         Shell shell = HandlerUtil.getActiveShell(event);
         KotlinEditor editor = (KotlinEditor) HandlerUtil.getActiveEditor(event);
         
-        IFile file = ((IFileEditorInput) editor.getEditorInput()).getFile();
+        IFile file = EditorUtil.getFile(editor);
         
-        String sourceCode = EditorUtil.getSourceCode(editor);
-        
-        new VisualizationPage(shell, sourceCode, file).open();
+        if (file != null) {
+            String sourceCode = EditorUtil.getSourceCode(editor);
+
+            new VisualizationPage(shell, sourceCode, file).open();
+        } else {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+        }
         
         return null;
     }
