@@ -1,0 +1,9 @@
+package org.jet;
+
+import org.jet.kot.SomeKotlin;
+
+public class SomeJava {
+	public void callKotlin() {
+		new SomeKotlin().inBas<caret>eFun();
+	}
+}

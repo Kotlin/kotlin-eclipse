@@ -1,0 +1,9 @@
+package org.jet.kot
+
+public open class BaseClass {
+	fun <caret>inBaseFun() {
+	}
+}
+
+public open class SomeKotlin : BaseClass() {
+}

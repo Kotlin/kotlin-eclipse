@@ -44,7 +44,7 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 		String fileText = KotlinTestUtils.getText(testPath);
 		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
 
-		List<String> actualProposals = getActualProposals(testEditor.getEditor());
+		List<String> actualProposals = getActualProposals((KotlinEditor) testEditor.getEditor());
 
 		Integer expectedNumber = ExpectedCompletionUtils.numberOfItemsShouldPresent(fileText);
 		if (expectedNumber != null) {
