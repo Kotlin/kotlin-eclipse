@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +30,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 public class EditorUtil {
     
     @Nullable
-    public static IFile getFile(@NotNull AbstractTextEditor editor) {
+    public static IFile getFile(@NotNull IEditorPart editor) {
         return (IFile) editor.getEditorInput().getAdapter(IFile.class);
     }
     

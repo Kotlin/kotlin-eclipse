@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.ui.debug;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
@@ -16,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.JetClass;
@@ -31,17 +31,22 @@ public class KotlinToggleBreakpointAdapter implements IToggleBreakpointsTarget {
         if (editor == null) {
             return;
         }
-        
-        IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
+
+        IFile file = EditorUtil.getFile(editor);
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return;
+        }
+
         int lineNumber = ((ITextSelection) selection).getStartLine() + 1;
         IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-        String typeName = getTypeName(document, lineNumber, (IFile) resource);
-        
-        IJavaLineBreakpoint existingBreakpoint = JDIDebugModel.lineBreakpointExists(resource, typeName, lineNumber);
+        String typeName = getTypeName(document, lineNumber, file);
+
+        IJavaLineBreakpoint existingBreakpoint = JDIDebugModel.lineBreakpointExists(file, typeName, lineNumber);
         if (existingBreakpoint != null) {
             existingBreakpoint.delete();
         } else {
-            JDIDebugModel.createLineBreakpoint(resource, typeName, lineNumber, -1, -1, 0, true, null);
+            JDIDebugModel.createLineBreakpoint(file, typeName, lineNumber, -1, -1, 0, true, null);
         }
     }
     

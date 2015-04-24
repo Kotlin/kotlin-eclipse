@@ -34,14 +34,13 @@ import org.eclipse.debug.ui.ILaunchShortcut;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 public class KotlinLaunchShortcut implements ILaunchShortcut {
@@ -74,12 +73,12 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
     @Override
     public void launch(IEditorPart editor, String mode) {
         if (editor instanceof KotlinEditor) {
-            IEditorInput editorInput = editor.getEditorInput();
-            if (!(editorInput instanceof IFileEditorInput)) {
-                return;
-            } 
+            IFile file = EditorUtil.getFile(editor);
             
-            IFile file = ((IFileEditorInput) editorInput).getFile();
+            if (file == null) {
+                KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+                return;
+            }
             
             if (ProjectUtils.hasMain(file)) {
                 launchWithMainClass(file, mode);
