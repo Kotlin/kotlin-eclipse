@@ -56,7 +56,7 @@ public class KotlinFileStore extends LocalFile {
             }
         }
         
-        return super.openInputStream(options, monitor);
+        return new ByteArrayInputStream(new byte[] {});
     }
     
     @Override
