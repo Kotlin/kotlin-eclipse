@@ -20,6 +20,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
+	@Test
+    public void unresolvedPackageType() {
+        doAutoTest();
+    }
+	
     @Test
     public void analyzerHasKotlinRuntime() {
         doAutoTest();

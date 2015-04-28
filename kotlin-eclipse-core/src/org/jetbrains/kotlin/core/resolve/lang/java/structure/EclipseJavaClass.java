@@ -178,11 +178,11 @@ public class EclipseJavaClass extends EclipseJavaClassifier<ITypeBinding> implem
     @NotNull
     public OriginKind getOriginKind() {
         IType javaType = (IType) getBinding().getJavaElement();
+        if (EclipseJavaElementUtil.isKotlinLightClass(javaType)) {
+            return OriginKind.KOTLIN_LIGHT_CLASS;
+        }
+        
         if (javaType instanceof BinaryType) {
-            if (EclipseJavaElementUtil.isKotlinLightClass((BinaryType) javaType)) {
-                return OriginKind.KOTLIN_LIGHT_CLASS;
-            }
-            
             return OriginKind.COMPILED;
         } else {
             return OriginKind.SOURCE;

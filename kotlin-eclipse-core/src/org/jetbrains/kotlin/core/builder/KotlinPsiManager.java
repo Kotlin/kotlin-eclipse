@@ -29,8 +29,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -246,13 +244,6 @@ public class KotlinPsiManager {
     @Nullable
     public static JetFile getKotlinParsedFile(@NotNull IFile file) {
         return INSTANCE.exists(file) ? INSTANCE.getParsedFile(file) : null;
-    }
-    
-    @Nullable
-    public static JetFile getKotlinFileIfExist(@NotNull String sourceFileName) {
-        IPath sourceFilePath = new Path(sourceFileName);
-        IFile projectFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
-        return projectFile != null ? KotlinPsiManager.getKotlinParsedFile(projectFile) : null; 
     }
     
     @Nullable
