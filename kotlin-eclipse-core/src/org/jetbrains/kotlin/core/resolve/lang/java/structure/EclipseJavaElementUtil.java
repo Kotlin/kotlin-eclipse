@@ -19,7 +19,11 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -29,10 +33,8 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.internal.compiler.env.IBinaryType;
-import org.eclipse.jdt.internal.core.BinaryType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.descriptors.Visibilities;
@@ -157,12 +159,18 @@ public class EclipseJavaElementUtil {
         return null;
     }
     
-    public static boolean isKotlinLightClass(@NotNull BinaryType binaryType) {
-        try {
-            IBinaryType rawBinaryType = (IBinaryType) ((binaryType).getElementInfo());
-            return KotlinPsiManager.getKotlinFileIfExist(binaryType.getSourceFileName(rawBinaryType)) != null;
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
+    public static boolean isKotlinLightClass(@NotNull IJavaElement element) {
+        IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(element.getPath());
+        if (resource == null) {
+            return false;
+        }
+        
+        IContainer parent = resource.getParent();
+        while (parent != null) {
+            if (KotlinFileSystem.SCHEME.equals(parent.getLocationURI().getScheme())) {
+                return true;
+            }
+            parent = parent.getParent();
         }
         
         return false;
