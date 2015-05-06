@@ -29,6 +29,21 @@
 							<version>0.0.0</version>
 						</dependency>
 					</dependencies>
+					
+					<frameworkExtensions>
+			            <frameworkExtension>
+			              <groupId>p2.osgi.bundle</groupId>
+			              <artifactId>org.eclipse.equinox.weaving.hook</artifactId>
+			              <version>${weaving-hook.version}</version>
+			            </frameworkExtension>
+		          	</frameworkExtensions>
+		          	<bundleStartLevel>
+		            	<bundle>
+		           			<id>org.eclipse.equinox.weaving.aspectj</id>
+		              		<level>2</level>
+		              		<autoStart>true</autoStart>
+		            	</bundle>
+		          	</bundleStartLevel>
 				</configuration>
 			</plugin>
 		</plugins>
