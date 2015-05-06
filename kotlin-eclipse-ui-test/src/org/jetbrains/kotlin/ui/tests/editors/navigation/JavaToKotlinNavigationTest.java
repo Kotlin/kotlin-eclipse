@@ -77,4 +77,9 @@ public class JavaToKotlinNavigationTest extends JavaToKotlinNavigationTestCase {
 	public void toNestedCompanionObject() {
 		doAutoTest();
 	}
+
+	@Test
+	public void toKotlinSuperClass() {
+		doAutoTest();
+	}
 }

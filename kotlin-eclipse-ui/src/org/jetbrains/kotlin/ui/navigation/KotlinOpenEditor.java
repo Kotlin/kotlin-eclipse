@@ -26,32 +26,33 @@ import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 public class KotlinOpenEditor {
 	@Nullable
 	public static IEditorPart openKotlinEditor(@NotNull IJavaElement element, boolean activate) {
-		try {
-			File lightClass = element.getResource().getFullPath().toFile();
-			List<JetFile> sourceFiles = KotlinLightClassManager.INSTANCE.getSourceFiles(lightClass);
-			JetFile referenceFile = null;
-			for (JetFile sourceFile : sourceFiles) {
-			    JetElement referenceElement = findKotlinElement(element, sourceFile);
-			    if (referenceElement != null) {
-			        referenceFile = sourceFile;
-			        break;
-			    }
-			}
-			
-			if (referenceFile == null) {
-			    return null;
-			}
-			
-			IPath sourceFilePath = new Path(referenceFile.getVirtualFile().getPath());
-	        IFile kotlinFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
-	        if (kotlinFile.exists()) {
-	        	return EditorUtility.openInEditor(kotlinFile, activate);
+	    File lightClass = element.getResource().getFullPath().toFile();
+	    List<JetFile> sourceFiles = KotlinLightClassManager.INSTANCE.getSourceFiles(lightClass);
+	    JetFile referenceFile = null;
+	    for (JetFile sourceFile : sourceFiles) {
+	        JetElement referenceElement = findKotlinElement(element, sourceFile);
+	        if (referenceElement != null) {
+	            referenceFile = sourceFile;
+	            break;
 	        }
-		} catch (PartInitException e) {
-			KotlinLogger.logAndThrow(e);
-		}
-		
-		return null;
+	    }
+	    
+	    if (referenceFile == null) {
+	        return null;
+	    }
+	    
+	    IPath sourceFilePath = new Path(referenceFile.getVirtualFile().getPath());
+	    IFile kotlinFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
+	    
+	    try {
+	        if (kotlinFile.exists()) {
+	            return EditorUtility.openInEditor(kotlinFile, activate);
+	        }
+	    } catch (PartInitException e) {
+	        KotlinLogger.logAndThrow(e);
+	    }
+	    
+	    return null;
 	}
 	
 	public static void revealKotlinElement(@NotNull KotlinEditor kotlinEditor, @NotNull IJavaElement javaElement) {
@@ -68,7 +69,7 @@ public class KotlinOpenEditor {
 
 	@Nullable
 	private static JetElement findKotlinElement(@NotNull final IJavaElement javaElement, @NotNull JetFile jetFile) {
-	    List<JetElement> result = NavigationPackage.visitFile(javaElement, jetFile);
+	    List<JetElement> result = NavigationPackage.findKotlinDeclarations(javaElement, jetFile);
 	    if (result.size() == 1) {
 	        return result.get(0);
 	    }

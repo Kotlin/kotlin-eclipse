@@ -1,0 +1,3 @@
+package pckg.navigation
+
+open class <caret>SomeKotlin

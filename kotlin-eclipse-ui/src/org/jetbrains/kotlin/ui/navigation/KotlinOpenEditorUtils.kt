@@ -18,16 +18,9 @@ import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.name.FqName
 import org.eclipse.jdt.core.IField
 
-fun visitFile(element: IJavaElement, jetFile: JetFile): List<JetElement> {
-	val referenceElement: IJavaElement
-	if (element is IMethod && element.isConstructor()) {
-		referenceElement = element.getDeclaringType()
-	} else {
-		referenceElement = element
-	}
-
+fun findKotlinDeclarations(element: IJavaElement, jetFile: JetFile): List<JetElement> {
 	val result = ArrayList<JetElement>()
-	val visitor = makeVisitor(referenceElement, result)
+	val visitor = makeVisitor(element, result)
 	if (visitor != null) {
 		jetFile.acceptChildren(visitor)
 	}
@@ -40,9 +33,9 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 		is IType -> object : JetAllVisitor() {
 			override fun visitClass(jetClass: JetClass) {
 				val fqName = jetClass.getFqName()
-				val javaFqName = FqName(element.getFullyQualifiedName('.'))
 				if (fqName != null) {
-					if (fqName.equalsTo(javaFqName)) {
+					val javaFqName = FqName(element.getFullyQualifiedName('.'))
+					if (fqName == javaFqName) {
 						result.add(jetClass)
 						return
 					}
@@ -53,7 +46,7 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 		is IField -> object: JetAllVisitor() {
 			override fun visitObjectDeclaration(declaration: JetObjectDeclaration) {
 				val fqName = declaration.getName()
-				if (fqName != null && fqName.equals(element.getElementName())) {
+				if (fqName != null && fqName == element.getElementName()) {
 					if (equalsDeclaringTypes(declaration, element)) {
 						result.add(declaration)
 						return
@@ -63,18 +56,23 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 				declaration.acceptChildren(this)
 			}
 		}
-		is IMethod -> object : JetAllVisitor() {
-			override fun visitNamedFunction(function: JetNamedFunction) {
-				if (function.getName().equals(element.getElementName())) {
-					if (equalsDeclaringTypes(function, element)) {
-						result.add(function)
-						return
+		is IMethod -> 
+			if (element.isConstructor()) {
+				return makeVisitor(element.getDeclaringType(), result)
+			} else {
+				object : JetAllVisitor() {
+					override fun visitNamedFunction(function: JetNamedFunction) {
+						if (function.getName() == element.getElementName()) {
+							if (equalsDeclaringTypes(function, element)) {
+								result.add(function)
+								return
+							}
+						}
+						
+						function.acceptChildren(this)
 					}
 				}
-
-				function.acceptChildren(this)
 			}
-		}
 		else -> null
 	}
 }
@@ -82,9 +80,11 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 fun equalsDeclaringTypes(declaration: JetObjectDeclaration, javaField: IField): Boolean {
 	val parent = declaration.getParent()
 	val classFqName = (parent.getParent() as JetClass).getFqName()
-	val javaFqName = FqName(javaField.getDeclaringType().getFullyQualifiedName('.'))
-	if (classFqName != null && classFqName.equalsTo(javaFqName)) {
-		return true
+	if (classFqName != null) {
+		val javaFqName = FqName(javaField.getDeclaringType().getFullyQualifiedName('.'))
+		if (classFqName == javaFqName) {
+			return true
+		}
 	}
 	
 	return false
@@ -105,9 +105,11 @@ fun equalsDeclaringTypes(function: JetNamedFunction, javaElement: IMethod): Bool
 			else -> null
 		}
 
-	val javaFqName = FqName(javaElement.getDeclaringType().getFullyQualifiedName('.'))
-	if (fqName != null && fqName.equalsTo(javaFqName)) {
-		return true
+	if (fqName != null) {
+		val javaFqName = FqName(javaElement.getDeclaringType().getFullyQualifiedName('.'))
+		if (fqName == javaFqName) {
+			return true
+		}
 	}
 	
 	return false
