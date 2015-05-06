@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
