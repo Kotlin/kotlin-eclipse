@@ -2,7 +2,7 @@ package org.jetbrains.kotlin.ui.tests.editors.navigation;
 
 import org.junit.Test;
 
-public class JavaToKotlinNavigation extends JavaToKotlinNavigationTestCase {
+public class JavaToKotlinNavigationTest extends JavaToKotlinNavigationTestCase {
 	@Override
 	protected String getTestDataRelativePath() {
 		return "navigation/javaToKotlin";
