@@ -36,7 +36,6 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
     }
     
     @Test
-    @Ignore
     public void analyzerHasKotlinAnnotations() {
         doAutoTest();
     }
@@ -56,7 +55,6 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
         doAutoTest();
     }
     
-    @Ignore
     @Test
     public void kotlinJavaKotlin() {
         doAutoTest();
