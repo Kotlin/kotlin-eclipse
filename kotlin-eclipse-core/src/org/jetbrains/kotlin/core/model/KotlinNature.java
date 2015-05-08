@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 public class KotlinNature implements IProjectNature {
     private IProject project;
@@ -49,8 +50,14 @@ public class KotlinNature implements IProjectNature {
         
     }
 
-    public static boolean hasKotlinNature(@NotNull final IProject project) throws CoreException {
-        return project.hasNature(KOTLIN_NATURE);
+    public static boolean hasKotlinNature(@NotNull final IProject project) {
+        try {
+            return project.hasNature(KOTLIN_NATURE);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return false;
     }
     
     public static boolean hasKotlinBuilder(@NotNull final IProject project) throws CoreException {

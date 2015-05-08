@@ -144,7 +144,7 @@ public class KotlinEnvironment {
     }
     
     @NotNull
-    public static KotlinEnvironment getEnvironment(IJavaProject javaProject) {
+    public static KotlinEnvironment getEnvironment(@NotNull IJavaProject javaProject) {
         synchronized (environmentLock) {
             if (!cachedEnvironment.containsKey(javaProject)) {
                 cachedEnvironment.put(javaProject, new KotlinEnvironment(javaProject, Disposer.newDisposable()));
@@ -154,7 +154,7 @@ public class KotlinEnvironment {
         }
     }
     
-    public static void updateKotlinEnvironment(IJavaProject javaProject) {
+    public static void updateKotlinEnvironment(@NotNull IJavaProject javaProject) {
         synchronized (environmentLock) {
             if (cachedEnvironment.containsKey(javaProject)) {
                 KotlinEnvironment environment = cachedEnvironment.get(javaProject);
@@ -169,7 +169,6 @@ public class KotlinEnvironment {
         return getJetFile(new File(file.getRawLocation().toOSString()));
     }
     
-    @Nullable
     public JetFile getJetFile(@NotNull File file) {
         String path = file.getAbsolutePath();
         VirtualFile virtualFile = applicationEnvironment.getLocalFileSystem().findFileByPath(path);

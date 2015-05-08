@@ -127,12 +127,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     @Nullable
     protected KotlinTokenScanner getScanner() {
         if (scanner == null) {
-            IFile file = EditorUtil.getFile(editor);
-            if (file != null) {
-                scanner = new KotlinTokenScanner(file, fPreferenceStore, getColorManager());
-            } else {
-                KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-            }
+            scanner = new KotlinTokenScanner(fPreferenceStore, getColorManager());
         }
 
         return scanner;
@@ -156,17 +151,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
         KotlinTokenScanner scanner = getScanner();
-        
-        if (scanner != null) {
-            PresentationReconciler reconciler = new PresentationReconciler();
-
-            DefaultDamagerRepairer kotlinDamagerRepairer = new DefaultDamagerRepairer(scanner);
-            reconciler.setDamager(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
-            reconciler.setRepairer(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
-
-            return reconciler;
-        }
-        return null;
+        return scanner != null ? getKotlinPresentaionReconciler(scanner) : null;
     }
 
     @Override
@@ -222,5 +207,15 @@ public class Configuration extends JavaSourceViewerConfiguration {
         targets.put("org.jetbrains.kotlin.ui.editors.kotlinCode", getEditor());
         
         return targets;
+    }
+    
+    public static IPresentationReconciler getKotlinPresentaionReconciler(@NotNull KotlinTokenScanner scanner) {
+        DefaultDamagerRepairer kotlinDamagerRepairer = new DefaultDamagerRepairer(scanner);
+        
+        PresentationReconciler reconciler = new PresentationReconciler();
+        reconciler.setDamager(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
+        reconciler.setRepairer(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
+        
+        return reconciler;
     }
 }
