@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
@@ -40,6 +41,7 @@ public abstract class KotlinParsingMarkersTestCase extends KotlinEditorWithAfter
             testEditor.type(typedCharacter);
         }
         
+        KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(testEditor.getEditor())); // We should update file because problem markers are adding manually
         for (DiagnosticAnnotation annotation : DiagnosticAnnotationUtil.INSTANCE.createParsingDiagnosticAnnotations(file)) {
             AnnotationManager.addProblemMarker(annotation, file);
         }
