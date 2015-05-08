@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.ui,
  org.eclipse.jdt.junit,
- org.eclipse.jdt.debug
+ org.eclipse.jdt.debug,
+ org.eclipse.compare
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.navigation,
  org.eclipse.core.expressions,

@@ -60,7 +60,6 @@ public class KotlinEditor extends CompilationUnitEditor {
         setSourceViewerConfiguration(new Configuration(colorManager, this, getPreferenceStore()));
         
         super.createPartControl(parent);
-        
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer instanceof ITextViewerExtension) {
             bracketInserter.setSourceViewer(sourceViewer);
