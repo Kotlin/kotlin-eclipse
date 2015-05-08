@@ -16,20 +16,15 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.model;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.asJava.KotlinLightClassForPackage;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.ClassPath;
@@ -46,7 +41,6 @@ import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory;
 import org.jetbrains.kotlin.parsing.JetParserDefinition;
-import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
 import org.jetbrains.kotlin.utils.PathUtil;
 
@@ -66,7 +60,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElementFinder;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.compiled.ClassFileDecompilers;
 import com.intellij.psi.impl.PsiTreeChangePreprocessor;
@@ -161,39 +154,6 @@ public class KotlinEnvironment {
                 Disposer.dispose(environment.getJavaApplicationEnvironment().getParentDisposable());
             }
             cachedEnvironment.put(javaProject, new KotlinEnvironment(javaProject, Disposer.newDisposable()));
-        }
-    }
-    
-    @Nullable
-    public JetFile getJetFile(@NotNull IFile file) {
-        return getJetFile(new File(file.getRawLocation().toOSString()));
-    }
-    
-    public JetFile getJetFile(@NotNull File file) {
-        String path = file.getAbsolutePath();
-        VirtualFile virtualFile = applicationEnvironment.getLocalFileSystem().findFileByPath(path);
-        
-        PsiFile psiFile = PsiManager.getInstance(project).findFile(virtualFile);
-        if (psiFile != null && psiFile instanceof JetFile) {
-            return (JetFile) psiFile;
-        }
-        
-        return null;
-    }
-    
-    @Nullable
-    public JetFile parseTopLevelDeclaration(@NotNull String text) {
-        try {
-            File tempFile;
-            tempFile = File.createTempFile("temp", "." + JetFileType.INSTANCE.getDefaultExtension());
-            BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile));
-            bw.write(text);
-            bw.close();
-            
-            return getJetFile(tempFile);
-        } catch (IOException e) {
-            KotlinLogger.logError(e);
-            throw new IllegalStateException(e);
         }
     }
     

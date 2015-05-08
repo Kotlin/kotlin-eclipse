@@ -27,9 +27,12 @@ import java.util.TreeMap;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
-import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.JetPsiFactory;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
+
+import com.intellij.openapi.project.Project;
 
 public class KotlinTemplateFormatter {
     
@@ -154,7 +157,8 @@ public class KotlinTemplateFormatter {
     
     public void format(TemplateBuffer buffer, int lineIndentation, IJavaProject javaProject) { 
         VariableOffsetsTracker offsetsTracker = new VariableOffsetsTracker(buffer.getString(), buffer.getVariables());
-        JetFile parsedFile = KotlinEnvironment.getEnvironment(javaProject).parseTopLevelDeclaration(offsetsTracker.getMarkedString());
+        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
+        JetFile parsedFile = new JetPsiFactory(ideaProject).createFile(offsetsTracker.getMarkedString());
         
         assert parsedFile != null;
 
