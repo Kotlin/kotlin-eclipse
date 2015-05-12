@@ -30,7 +30,7 @@ public class KotlinOpenEditor {
 	    List<JetFile> sourceFiles = KotlinLightClassManager.INSTANCE.getSourceFiles(lightClass);
 	    JetFile referenceFile = null;
 	    for (JetFile sourceFile : sourceFiles) {
-	        JetElement referenceElement = findKotlinElement(element, sourceFile);
+	        JetElement referenceElement = NavigationPackage.findKotlinDeclaration(element, sourceFile);
 	        if (referenceElement != null) {
 	            referenceFile = sourceFile;
 	            break;
@@ -59,21 +59,11 @@ public class KotlinOpenEditor {
 	    IFile file = EditorUtil.getFile(kotlinEditor);
 	    if (file != null) {
 	        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-	        JetElement jetElement = findKotlinElement(javaElement, jetFile);
+            JetElement jetElement = NavigationPackage.findKotlinDeclaration(javaElement, jetFile);
 	        if (jetElement != null) {
 	            int offset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), jetElement.getTextOffset(), EditorUtil.getDocument(file));
 	            kotlinEditor.selectAndReveal(offset, 0);
 	        }
 	    }
-	}
-
-	@Nullable
-	private static JetElement findKotlinElement(@NotNull final IJavaElement javaElement, @NotNull JetFile jetFile) {
-	    List<JetElement> result = NavigationPackage.findKotlinDeclarations(javaElement, jetFile);
-	    if (result.size() == 1) {
-	        return result.get(0);
-	    }
-	    
-	    return null;
 	}
 }

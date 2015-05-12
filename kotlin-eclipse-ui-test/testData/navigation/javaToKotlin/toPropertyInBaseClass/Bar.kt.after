@@ -1,0 +1,7 @@
+package pckg.navigation
+
+class SomeKotlin : BaseKotlin() 
+
+open class BaseKotlin {
+	open val <caret>ovProp: Int = 10 
+}

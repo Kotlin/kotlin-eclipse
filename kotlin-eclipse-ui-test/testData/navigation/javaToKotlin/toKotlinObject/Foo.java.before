@@ -1,0 +1,7 @@
+import pckg.navigation.KotlinObject;
+
+public class Foo {
+	public void some() {
+		Ko<caret>tlinObject k;
+	}
+}

@@ -1,0 +1,6 @@
+package pckg.navigation
+
+enum class <caret>KotlinEnum {
+	ABC
+	ABD
+}

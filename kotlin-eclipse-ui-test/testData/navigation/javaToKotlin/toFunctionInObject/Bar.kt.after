@@ -1,0 +1,7 @@
+package pckg.navigation
+
+object KotlinObject { 
+	fun <caret>inObject() {
+		
+	}
+}

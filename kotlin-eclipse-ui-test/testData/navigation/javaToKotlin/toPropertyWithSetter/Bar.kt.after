@@ -1,0 +1,9 @@
+package pckg.navigation
+
+class SomeKotlin {
+	var basicProp: Int
+		get() = 20
+		<caret>set(x: Int) {
+			basicProp = 10
+		}
+}

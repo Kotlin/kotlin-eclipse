@@ -1,0 +1,4 @@
+package pckg.navigation
+
+fun some1(x: Int): String = ""
+fun <caret>some2(x: Int): String = ""
