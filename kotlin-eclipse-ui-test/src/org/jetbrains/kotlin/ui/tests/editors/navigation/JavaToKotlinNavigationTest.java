@@ -187,4 +187,49 @@ public class JavaToKotlinNavigationTest extends JavaToKotlinNavigationTestCase {
 	public void toFunctionWithExistingEqualSignature() {
 		doAutoTest();
 	}
+	
+	@Test
+	public void toFunctionWithExistingConstructorEqualSignature() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void toKotlinEnumEntry() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void toInnerKotlinEnumClass() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void toInnerKotlinEnumEntry() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void toFunctionInEnumClass() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void toObjectInstance() {
+		doAutoTest();
+	}
+
+	@Test
+	public void toParametrizedFunction() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void toParametrizedFunctionWithOverload() {
+		doAutoTest();
+	}
+	
+	@Test
+	public void toParametrizedClass() {
+		doAutoTest();
+	}
 }

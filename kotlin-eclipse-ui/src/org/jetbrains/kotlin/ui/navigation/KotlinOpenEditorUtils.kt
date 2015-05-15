@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.psi.JetClassOrObject
 import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.eclipse.jdt.core.IMember
 import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.psi.JetEnumEntry
 
 fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? {
 	val result = ArrayList<JetElement>()
@@ -34,13 +35,13 @@ fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? 
 		jetFile.acceptChildren(visitor)
 	}
 
-	return if (result.size == 1) result[0] else null
+	return result.firstOrNull()
 }
 
 fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisitorVoid? {
 	return when (element) {
 		is IType -> object : JetAllVisitor() {
-			override fun visitClass(jetClass: JetClass){
+			override fun visitClass(jetClass: JetClass) {
 				visitClassOrObject(jetClass)
 			}
 			
@@ -59,61 +60,53 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 		}
 		is IField -> object: JetAllVisitor() {
 			override fun visitObjectDeclaration(declaration: JetObjectDeclaration) {
-				val objectName = declaration.getName()
-				if (objectName != null && objectName == element.getElementName()) {
-					if (equalsDeclaringTypes(declaration, element)) {
-						result.add(declaration)
-						return
-					}
-				}
-
+				visitObjectOrEnum(declaration)
 				declaration.acceptChildren(this)
+			}
+			
+			override fun visitEnumEntry(enumEntry: JetEnumEntry) {
+				visitObjectOrEnum(enumEntry)
+			}
+			
+			fun visitObjectOrEnum(declaration: JetClassOrObject) {
+				if (equalsJvmSignature(declaration, element)) {
+					result.add(declaration)
+				}
 			}
 		}
 		is IMethod -> 
 			object : JetAllVisitor() {
 				override fun visitNamedFunction(function: JetNamedFunction) {
-					visitPropertyOrFunction(function)
+					visitExplicitDeclaration(function)
 				}
 			
 				override fun visitProperty(property: JetProperty) {
-					visitPropertyOrFunction(property)
+					visitExplicitDeclaration(property)
+					property.acceptChildren(this)
 				}
 			
 				override fun visitPropertyAccessor(accessor: JetPropertyAccessor) {
-					visitPropertyOrFunction(accessor)
+					visitExplicitDeclaration(accessor)
 				}
 			
-//				Check primary constructors 
+				override fun visitSecondaryConstructor(constructor: JetSecondaryConstructor) {
+					visitExplicitDeclaration(constructor)
+				}
+			
+//				Check primary constructor 
 				override fun visitClass(jetClass: JetClass) {
-					if (element.isConstructor()) {
-						if (equalsJvmSignature(jetClass, element, false) && equalsFqNames(jetClass, element.getDeclaringType())) {
-							result.add(jetClass)
-							return
-						}
+					if (equalsJvmSignature(jetClass, element) && equalsFqNames(jetClass, element.getDeclaringType())) {
+						result.add(jetClass)
+						return
 					}
 					
 					jetClass.acceptChildren(this)
 				}
 			
-				override fun visitSecondaryConstructor(constructor: JetSecondaryConstructor) {
-					if (element.isConstructor()) {
-						if (equalsJvmSignature(constructor, element, false) && equalsDeclaringTypes(constructor, element)) {
-							result.add(constructor)
-							return
-						}
-					}
-				
-					constructor.acceptChildren(this)
-				}
-			
-				fun visitPropertyOrFunction(declaration: JetDeclaration) {
+				fun visitExplicitDeclaration(declaration: JetDeclaration) {
 					if (equalsJvmSignature(declaration, element) && equalsDeclaringTypes(declaration, element)) {
 						result.add(declaration)
-						return
 					}
-				
-					declaration.acceptChildren(this)
 				}
 			}
 		else -> null
@@ -130,17 +123,21 @@ fun equalsFqNames(jetClass: JetClassOrObject, javaClass: IType): Boolean {
 	return if (fqName != null) checkFqName(fqName, javaClass) else false
 }
 
-fun equalsJvmSignature(jetElement: JetElement, javaMethod: IMethod, checkPlatformName: Boolean = true): Boolean {
+fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
 	val jetSignatures = jetElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)
 	if (jetSignatures == null) return false
 	
-	val methodSignature = javaMethod.getSignature()
+	val memberSignature = when (javaMember) {
+		is IField -> javaMember.getTypeSignature().replaceAll("\\.", "/") // Hack
+		is IMethod -> javaMember.getSignature()
+		else -> null
+	}
 	
-	return jetSignatures.any { 
-		if (it.first == methodSignature) {
-			return when {
-				checkPlatformName -> it.second == javaMethod.getElementName()
-				else -> true 
+	return jetSignatures.any @any { 
+		if (it.first == memberSignature) {
+			return@any when {
+				javaMember is IMethod && javaMember.isConstructor() -> jetElement is JetClass || jetElement is JetSecondaryConstructor
+				else -> it.second == javaMember.getElementName()
 			}
 		}
 		
@@ -152,8 +149,6 @@ fun equalsDeclaringTypes(jetElement: JetElement, javaMember: IMember): Boolean  
 	val parent = PsiTreeUtil.getParentOfType(
 			jetElement, 
 			javaClass<JetClassOrObject>(), 
-			javaClass<JetObjectDeclaration>(),
-			javaClass<JetClass>(),
 			javaClass<JetFile>())
 	
 	val jetFqName = when (parent) {

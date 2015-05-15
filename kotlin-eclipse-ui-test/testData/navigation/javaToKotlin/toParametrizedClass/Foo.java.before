@@ -1,0 +1,7 @@
+import pckg.navigation.KtWithTypes;
+
+public class Foo {
+	public void some() {
+		new KtWithTy<caret>pes<String, String>();
+	}
+}

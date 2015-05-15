@@ -1,0 +1,3 @@
+package pckg.navigation
+
+class <caret>KtWithTypes<T, R: Comparable<T>> 

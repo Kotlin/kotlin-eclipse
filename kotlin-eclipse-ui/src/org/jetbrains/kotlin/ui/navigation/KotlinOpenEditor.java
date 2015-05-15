@@ -60,10 +60,12 @@ public class KotlinOpenEditor {
 	    if (file != null) {
 	        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
             JetElement jetElement = NavigationPackage.findKotlinDeclaration(javaElement, jetFile);
-	        if (jetElement != null) {
-	            int offset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), jetElement.getTextOffset(), EditorUtil.getDocument(file));
-	            kotlinEditor.selectAndReveal(offset, 0);
-	        }
+            if (jetElement == null) {
+                jetElement = jetFile;
+            }
+            
+            int offset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), jetElement.getTextOffset(), EditorUtil.getDocument(file));
+            kotlinEditor.selectAndReveal(offset, 0);
 	    }
 	}
 }
