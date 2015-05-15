@@ -50,7 +50,7 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 			}
 			
 			fun visitClassOrObject(jetClassOrObject: JetClassOrObject) {
-				if (equalsFqNames(jetClassOrObject, element)) {
+				if (jetClassOrObject.getFqName() == element.getFqName()) {
 					result.add(jetClassOrObject)
 					return
 				}
@@ -95,7 +95,7 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 			
 //				Check primary constructor 
 				override fun visitClass(jetClass: JetClass) {
-					if (equalsJvmSignature(jetClass, element) && equalsFqNames(jetClass, element.getDeclaringType())) {
+					if (equalsJvmSignature(jetClass, element) && (jetClass.getFqName() == element.getDeclaringType().getFqName())) {
 						result.add(jetClass)
 						return
 					}
@@ -113,14 +113,8 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 	}
 }
 
-fun checkFqName(fqName: FqName, javaClass: IType): Boolean {
-	val javaFqName = FqName(javaClass.getFullyQualifiedName('.'))
-	return fqName == javaFqName
-}
-
-fun equalsFqNames(jetClass: JetClassOrObject, javaClass: IType): Boolean {
-	val fqName = jetClass.getFqName()
-	return if (fqName != null) checkFqName(fqName, javaClass) else false
+fun IType.getFqName(): FqName {
+	return FqName(this.getFullyQualifiedName('.'))
 }
 
 fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
@@ -146,10 +140,7 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
 }
 
 fun equalsDeclaringTypes(jetElement: JetElement, javaMember: IMember): Boolean  {
-	val parent = PsiTreeUtil.getParentOfType(
-			jetElement, 
-			javaClass<JetClassOrObject>(), 
-			javaClass<JetFile>())
+	val parent = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetClassOrObject>(), javaClass<JetFile>())
 	
 	val jetFqName = when (parent) {
 		is JetClassOrObject -> parent.getFqName()
@@ -157,7 +148,7 @@ fun equalsDeclaringTypes(jetElement: JetElement, javaMember: IMember): Boolean  
 		else -> null
 	}
 	
-	return if (jetFqName != null) checkFqName(jetFqName, javaMember.getDeclaringType()) else false
+	return jetFqName == javaMember.getDeclaringType().getFqName()
 }
 
 open class JetAllVisitor() : JetVisitorVoid() {
