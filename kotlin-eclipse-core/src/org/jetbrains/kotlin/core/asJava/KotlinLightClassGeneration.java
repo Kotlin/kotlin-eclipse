@@ -1,6 +1,8 @@
 package org.jetbrains.kotlin.core.asJava;
 
+import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
@@ -26,7 +28,10 @@ import com.intellij.openapi.project.Project;
 
 public class KotlinLightClassGeneration {
     
-    public static void buildAndSaveLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject) throws CoreException {
+    public static void buildAndSaveLightClasses(
+            @NotNull AnalysisResult analysisResult, 
+            @NotNull IJavaProject javaProject,
+            @NotNull Set<JetFile> jetFiles) throws CoreException {
         if (!KotlinJavaManager.INSTANCE.hasLinkedKotlinBinFolder(javaProject)) {
             return;
         }
@@ -36,7 +41,7 @@ public class KotlinLightClassGeneration {
                 javaProject,
                 ProjectUtils.getSourceFiles(javaProject.getProject()));
         
-        saveKotlinDeclarationClasses(state, javaProject);
+        saveKotlinDeclarationClasses(state, javaProject, jetFiles);
     }
     
     public static GenerationState buildLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject, 
@@ -60,19 +65,36 @@ public class KotlinLightClassGeneration {
         return state;
     }
     
-    private static void saveKotlinDeclarationClasses(@NotNull GenerationState state, @NotNull IJavaProject javaProject) throws CoreException {
+    private static void saveKotlinDeclarationClasses(
+            @NotNull GenerationState state, 
+            @NotNull IJavaProject javaProject,
+            @NotNull Set<JetFile> affectedFiles) throws CoreException {
         IProject project = javaProject.getProject();
-        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project));
         
         for (OutputFile outputFile : state.getFactory().asList()) {
             IPath path = KotlinJavaManager.KOTLIN_BIN_FOLDER.append(new Path(outputFile.getRelativePath()));
             LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
             
             createParentDirsFor(lightClassFile);
-            lightClassFile.createNewFile();
+            lightClassFile.createIfNotExists();
             
-            KotlinLightClassManager.INSTANCE.putClass(lightClassFile.asFile(), outputFile.getSourceFiles());
+            List<File> sourceFiles = outputFile.getSourceFiles();
+            if (containsAffectedFile(sourceFiles, affectedFiles)) {
+                lightClassFile.touchFile();
+            }
+            
+            KotlinLightClassManager.INSTANCE.putClass(lightClassFile.asFile(), sourceFiles);
         }
+    }
+    
+    private static boolean containsAffectedFile(@NotNull List<File> sourceFiles, @NotNull Set<JetFile> jetFiles) {
+        for (File sourceFile : sourceFiles) {
+            if (jetFiles.contains(KotlinLightClassManager.getJetFileBySourceFile(sourceFile))) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private static void createParentDirsFor(@NotNull LightClassFile lightClassFile) {

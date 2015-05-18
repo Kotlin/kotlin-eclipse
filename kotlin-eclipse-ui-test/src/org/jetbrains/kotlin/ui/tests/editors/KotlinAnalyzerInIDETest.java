@@ -86,4 +86,9 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
     public void packageLevelPropertiesFromJava() {
         doAutoTest();
     }
+    
+    @Test
+    public void checkExistancePackageLevelFunctions() {
+    	doAutoTest();
+    }
 }
