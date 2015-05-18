@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.psi.JetFile;
 
 import com.google.common.collect.Lists;
 
@@ -36,14 +36,19 @@ public class KotlinLightClassManager {
         if (sourceIOFiles != null) {
             List<JetFile> jetSourceFiles = Lists.newArrayList();
             for (File sourceFile : sourceIOFiles) {
-                IFile[] eclipseFile = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(sourceFile.toURI());
-                assert eclipseFile.length == 1 : "By URI found " + eclipseFile.length + " IFiles";
-                jetSourceFiles.add(KotlinPsiManager.INSTANCE.getParsedFile(eclipseFile[0]));
+                jetSourceFiles.add(getJetFileBySourceFile(sourceFile));
             }
             
             return jetSourceFiles;
         }
         
         return Collections.<JetFile>emptyList();
+    }
+    
+    @NotNull
+    public static JetFile getJetFileBySourceFile(@NotNull File sourceFile) {
+        IFile[] eclipseFile = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(sourceFile.toURI());
+        assert eclipseFile.length == 1 : "By URI found " + eclipseFile.length + " IFiles";
+        return KotlinPsiManager.INSTANCE.getParsedFile(eclipseFile[0]);
     }
 }

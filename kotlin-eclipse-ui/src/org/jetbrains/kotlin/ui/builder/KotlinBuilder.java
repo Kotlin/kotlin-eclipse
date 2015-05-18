@@ -18,11 +18,13 @@ package org.jetbrains.kotlin.ui.builder;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,10 +39,14 @@ import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+
+import com.google.common.collect.Sets;
 
 public class KotlinBuilder extends IncrementalProjectBuilder {
 
@@ -56,22 +62,46 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         
         KotlinAnalysisProjectCache.getInstance(javaProject).cacheAnalysisResult(analysisResult);
         
-        boolean needRebuild = false;
+        final Set<JetFile> affectedFiles = Sets.newHashSet();
         if (kind == FULL_BUILD) {
-            needRebuild = true;
+            affectedFiles.addAll(ProjectUtils.getSourceFiles(getProject()));
         } else {
             IResourceDelta delta = getDelta(getProject());
             if (delta != null) {
-                needRebuild = delta.getKind() != IResourceDelta.NO_CHANGE;
+                affectedFiles.addAll(getAffectedFiles(delta));
             }
         }
         
-        if (needRebuild) {
-            KotlinLightClassGeneration.buildAndSaveLightClasses(analysisResult, javaProject);
-            getProject().refreshLocal(0, null);
+        if (!affectedFiles.isEmpty()) {
+            KotlinLightClassGeneration.buildAndSaveLightClasses(analysisResult, javaProject, affectedFiles);
         }
         
         return null;
+    }
+    
+    private Set<JetFile> getAffectedFiles(@NotNull IResourceDelta delta) throws CoreException {
+        final Set<JetFile> affectedFiles = Sets.newHashSet();
+        delta.accept(new IResourceDeltaVisitor() {
+            @Override
+            public boolean visit(IResourceDelta delta) throws CoreException {
+                if (delta.getKind() != IResourceDelta.NO_CHANGE) {
+                    IResource resource = delta.getResource();
+                    if (resource instanceof IFile) {
+                        JetFile jetFile = KotlinPsiManager.getKotlinParsedFile((IFile) resource);
+                        if (jetFile != null) {
+                            affectedFiles.add(jetFile);
+                            return false;
+                        }
+                    }
+                    
+                    return true;
+                }
+                
+                return false;
+            }
+        }); 
+        
+        return affectedFiles;
     }
     
     private boolean isBuildingForLaunch() {
