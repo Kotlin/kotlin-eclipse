@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2015 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,21 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.eclipse.core.commands.Command;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
+import org.junit.Assert;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses( { 
-    KotlinEditorBaseTest.class, 
-    KotlinAutoIndenterTest.class,
-    KotlinAnalyzerInIDETest.class,
-    KotlinHighlightingTest.class,
-    KotlinBracketInserterTest.class,
-    KotlinOpenDeclarationTest.class,
-    KotlinFormatActionTest.class,
-    KotlinCustomLocationBugTest.class,
-    PsiVisualizationCommandTest.class
-} )
-public class AllTests {
+public class CommandTestCase extends KotlinEditorTestCase {
+
+	public static void assertCommandEnabled(String commandId, boolean isEnabled) {
+		IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		ICommandService commandService = (ICommandService) workbenchWindow.getService(ICommandService.class);
+		Command command = commandService.getCommand(commandId);		
+
+		Assert.assertEquals(isEnabled, command.isEnabled());
+	}
 
 }

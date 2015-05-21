@@ -14,7 +14,9 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.aspectj.runtime,
  org.aspectj.weaver,
  org.eclipse.equinox.weaving.aspectj,
- org.jetbrains.kotlin.aspects
+ org.jetbrains.kotlin.aspects,
+ org.eclipse.core.commands,
+ org.eclipse.ui.workbench
 Import-Package: com.intellij.openapi.util,
  com.intellij.openapi.util.io,
  com.intellij.util.containers,
