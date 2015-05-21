@@ -31,6 +31,10 @@ public class KotlinLightClassManager {
         return sourceFiles.get(file) != null;
     }
     
+    public void clear() {
+        sourceFiles.clear();
+    }
+    
     @NotNull
     public List<JetFile> getSourceFiles(@NotNull File lightClass) {
         List<File> sourceIOFiles = sourceFiles.get(lightClass);
@@ -49,10 +53,21 @@ public class KotlinLightClassManager {
         return Collections.<JetFile>emptyList();
     }
     
+    @NotNull
+    public List<File> getIOSourceFiles(@NotNull File lightClass) {
+        List<File> sourceIOFiles = sourceFiles.get(lightClass);
+        return sourceIOFiles != null ? sourceIOFiles : Collections.<File>emptyList();
+    }
+    
+    @Nullable
+    public static IFile getEclipseFile(@NotNull File sourceFile) {
+        IFile[] eclipseFile = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(sourceFile.toURI());
+        return eclipseFile.length == 1 ? eclipseFile[0] : null;
+    }
+    
     @Nullable
     public static JetFile getJetFileBySourceFile(@NotNull File sourceFile) {
-        IFile[] eclipseFile = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(sourceFile.toURI());
-        assert eclipseFile.length == 1 : "By URI found " + eclipseFile.length + " IFiles";
-        return KotlinPsiManager.getKotlinParsedFile(eclipseFile[0]);
+        IFile file = getEclipseFile(sourceFile);
+        return file != null ? KotlinPsiManager.getKotlinParsedFile(file) : null;
     }
 }

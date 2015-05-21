@@ -103,21 +103,26 @@ public class ProjectUtils {
         return PackageClassUtils.getPackageClassFqName(new FqName(filePackage));
     }
     
-    public static void cleanFolder(IContainer container) throws CoreException {
+    public static void cleanFolder(IContainer container, @NotNull Predicate<IResource> predicate) throws CoreException {
         if (container == null) {
             return;
         }
         if (container.exists()) {
             for (IResource member : container.members()) {
                 if (member instanceof IContainer) {
-                    cleanFolder((IContainer) member);
+                    cleanFolder((IContainer) member, predicate);
                 }
-                member.delete(true, null);
+                if (predicate.apply(member)) {
+                    member.delete(true, null);
+                }
             }
         }
     }
     
-    @Nullable
+    public static void cleanFolder(IContainer container) throws CoreException {
+        cleanFolder(container, Predicates.<IResource>alwaysTrue());
+    }
+    
     public static IFolder getOutputFolder(@NotNull IJavaProject javaProject) {
         try {
             return (IFolder) ResourcesPlugin.getWorkspace().getRoot().findMember(javaProject.getOutputLocation());
