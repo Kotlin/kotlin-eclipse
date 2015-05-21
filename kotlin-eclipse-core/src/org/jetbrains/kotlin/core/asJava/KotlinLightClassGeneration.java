@@ -89,7 +89,10 @@ public class KotlinLightClassGeneration {
     
     private static boolean containsAffectedFile(@NotNull List<File> sourceFiles, @NotNull Set<JetFile> jetFiles) {
         for (File sourceFile : sourceFiles) {
-            if (jetFiles.contains(KotlinLightClassManager.getJetFileBySourceFile(sourceFile))) {
+            JetFile jetFile = KotlinLightClassManager.getJetFileBySourceFile(sourceFile);
+            assert jetFile != null : "JetFile for source file: " + sourceFile.getName() + " is null";
+            
+            if (jetFiles.contains(jetFile)) {
                 return true;
             }
         }
