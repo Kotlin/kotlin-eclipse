@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.annotations.Nullable;
@@ -56,7 +57,7 @@ public class KotlinFileStore extends LocalFile {
             }
         }
         
-        return super.openInputStream(options, monitor);
+        throw new CoreException(Status.CANCEL_STATUS);
     }
     
     @Override

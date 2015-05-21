@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -24,6 +26,7 @@ import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.psi.JetFile;
 
+import com.google.common.base.Predicate;
 import com.intellij.openapi.project.Project;
 
 public class KotlinLightClassGeneration {
@@ -31,7 +34,7 @@ public class KotlinLightClassGeneration {
     public static void buildAndSaveLightClasses(
             @NotNull AnalysisResult analysisResult, 
             @NotNull IJavaProject javaProject,
-            @NotNull Set<JetFile> jetFiles) throws CoreException {
+            @NotNull Set<IFile> affectedFiles) throws CoreException {
         if (!KotlinJavaManager.INSTANCE.hasLinkedKotlinBinFolder(javaProject)) {
             return;
         }
@@ -41,7 +44,7 @@ public class KotlinLightClassGeneration {
                 javaProject,
                 ProjectUtils.getSourceFiles(javaProject.getProject()));
         
-        saveKotlinDeclarationClasses(state, javaProject, jetFiles);
+        saveKotlinDeclarationClasses(state, javaProject, affectedFiles);
     }
     
     public static GenerationState buildLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject, 
@@ -68,9 +71,9 @@ public class KotlinLightClassGeneration {
     private static void saveKotlinDeclarationClasses(
             @NotNull GenerationState state, 
             @NotNull IJavaProject javaProject,
-            @NotNull Set<JetFile> affectedFiles) throws CoreException {
+            @NotNull Set<IFile> affectedFiles) throws CoreException {
         IProject project = javaProject.getProject();
-        
+        KotlinLightClassManager.INSTANCE.clear();
         for (OutputFile outputFile : state.getFactory().asList()) {
             IPath path = KotlinJavaManager.KOTLIN_BIN_FOLDER.append(new Path(outputFile.getRelativePath()));
             LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
@@ -78,21 +81,39 @@ public class KotlinLightClassGeneration {
             createParentDirsFor(lightClassFile);
             lightClassFile.createIfNotExists();
             
-            List<File> sourceFiles = outputFile.getSourceFiles();
-            if (containsAffectedFile(sourceFiles, affectedFiles)) {
+            List<File> newSourceFiles = outputFile.getSourceFiles();
+            List<File> oldSourceFiles = KotlinLightClassManager.INSTANCE.getIOSourceFiles(lightClassFile.asFile());
+            if (containsAffectedFile(newSourceFiles, affectedFiles) || containsAffectedFile(oldSourceFiles, affectedFiles)) {
                 lightClassFile.touchFile();
             }
             
-            KotlinLightClassManager.INSTANCE.putClass(lightClassFile.asFile(), sourceFiles);
+            KotlinLightClassManager.INSTANCE.putClass(lightClassFile.asFile(), newSourceFiles);
         }
+        
+        cleanDeprectedLightClasses(project);
+    }
+
+    private static void cleanDeprectedLightClasses(IProject project) throws CoreException {
+        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), new Predicate<IResource>() {
+            @Override
+            public boolean apply(IResource resource) {
+                if (resource instanceof IFile) {
+                    IFile file = (IFile) resource;
+                    LightClassFile lightClass = new LightClassFile(file);
+                    return KotlinLightClassManager.INSTANCE.getIOSourceFiles(lightClass.asFile()).isEmpty();
+                }
+                
+                return false;
+            }
+        });
     }
     
-    private static boolean containsAffectedFile(@NotNull List<File> sourceFiles, @NotNull Set<JetFile> jetFiles) {
+    private static boolean containsAffectedFile(@NotNull List<File> sourceFiles, @NotNull Set<IFile> affectedFiles) {
         for (File sourceFile : sourceFiles) {
-            JetFile jetFile = KotlinLightClassManager.getJetFileBySourceFile(sourceFile);
-            assert jetFile != null : "JetFile for source file: " + sourceFile.getName() + " is null";
+            IFile file = KotlinLightClassManager.getEclipseFile(sourceFile);
+            assert file != null : "IFile for source file: " + sourceFile.getName() + " is null";
             
-            if (jetFiles.contains(jetFile)) {
+            if (affectedFiles.contains(file)) {
                 return true;
             }
         }
