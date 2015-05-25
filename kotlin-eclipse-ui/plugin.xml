@@ -208,7 +208,7 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            defaultHandler="org.jetbrains.kotlin.psi.visualization.PsiVisualization"
+            defaultHandler="org.jetbrains.kotlin.ui.commands.psiVisualization.PsiVisualization"
             id="org.jetbrains.kotlin.psi.visualization"
             name="Psi Visualization">
       </command>
