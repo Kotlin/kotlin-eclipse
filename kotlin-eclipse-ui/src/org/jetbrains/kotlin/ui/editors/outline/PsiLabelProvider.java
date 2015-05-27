@@ -48,7 +48,7 @@ public class PsiLabelProvider extends LabelProvider {
     public Image getImage(Object element) {
         String imageName = null;
         if (element instanceof JetClass) {
-            if (((JetClass) element).isTrait()) {
+            if (((JetClass) element).isInterface()) {
                 imageName = ISharedImages.IMG_OBJS_INTERFACE;
             } else {
                 imageName = ISharedImages.IMG_OBJS_CLASS;

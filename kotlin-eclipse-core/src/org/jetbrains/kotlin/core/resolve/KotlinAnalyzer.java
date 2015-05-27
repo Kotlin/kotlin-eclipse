@@ -21,10 +21,8 @@ import java.util.Collection;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.kotlin.psi.JetFile;
 
 import com.google.common.collect.Lists;
@@ -50,15 +48,9 @@ public class KotlinAnalyzer {
     @NotNull
     private static AnalysisResult analysisResultProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
             @NotNull Collection<JetFile> filesToAnalyze) {
-        ModuleDescriptorImpl module = EclipseAnalyzerFacadeForJVM.createJavaModule("<module>");
-        module.addDependencyOnModule(module);
-        module.addDependencyOnModule(KotlinBuiltIns.getInstance().getBuiltInsModule());
-        module.seal();
-        
         return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                 javaProject, 
                 kotlinEnvironment.getProject(), 
-                filesToAnalyze,
-                module);
+                filesToAnalyze);
     }
 }

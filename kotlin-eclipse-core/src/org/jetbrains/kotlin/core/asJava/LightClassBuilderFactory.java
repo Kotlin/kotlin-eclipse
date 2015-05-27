@@ -73,5 +73,8 @@ public class LightClassBuilderFactory implements ClassBuilderFactory {
         ClassWriter visitor = (ClassWriter) builder.getVisitor();
         return visitor.toByteArray();
     }
-    
+
+    @Override
+    public void close() {
+    }
 }

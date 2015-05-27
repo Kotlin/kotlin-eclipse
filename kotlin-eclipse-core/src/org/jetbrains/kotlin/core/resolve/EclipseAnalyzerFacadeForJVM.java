@@ -29,19 +29,19 @@ import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.context.ContextPackage;
 import org.jetbrains.kotlin.context.GlobalContext;
+import org.jetbrains.kotlin.context.ModuleContext;
 import org.jetbrains.kotlin.core.injectors.EclipseInjectorForTopDownAnalyzerForJvm;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.descriptors.PackageFragmentProvider;
-import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.kotlin.name.FqName;
-import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.platform.JavaToKotlinClassMap;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.kotlin.resolve.ImportPath;
-import org.jetbrains.kotlin.resolve.TopDownAnalysisParameters;
+import org.jetbrains.kotlin.resolve.TopDownAnalysisMode;
+import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 
 import com.google.common.collect.Lists;
@@ -78,10 +78,8 @@ public enum EclipseAnalyzerFacadeForJVM {
     public static AnalysisResult analyzeFilesWithJavaIntegration(
             IJavaProject javaProject, 
             Project project,
-            @NotNull final Collection<JetFile> filesToAnalyze, 
-            ModuleDescriptorImpl module
+            @NotNull final Collection<JetFile> filesToAnalyze 
     ) {
-        GlobalContext globalContext = ContextPackage.GlobalContext();
         
         LinkedHashSet<JetFile> allFiles = new LinkedHashSet<JetFile>();
         allFiles.addAll(filesToAnalyze);
@@ -97,34 +95,24 @@ public enum EclipseAnalyzerFacadeForJVM {
             }
         }
         
+        GlobalContext globalContext = ContextPackage.GlobalContext();
         FileBasedDeclarationProviderFactory providerFactory = new FileBasedDeclarationProviderFactory(
                 globalContext.getStorageManager(), allFiles);
 
-        TopDownAnalysisParameters topDownAnalysisParameters = TopDownAnalysisParameters.create(
-                globalContext.getStorageManager(),
-                globalContext.getExceptionTracker(),
-                false,
-                false
-        );
-
+        ModuleContext moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project);
         BindingTrace trace = new CliLightClassGenerationSupport.CliBindingTrace();
         
         EclipseInjectorForTopDownAnalyzerForJvm injector = new EclipseInjectorForTopDownAnalyzerForJvm(
-               project, javaProject, globalContext, trace, module, providerFactory, GlobalSearchScope.allScope(project));
+                moduleContext, javaProject, trace, providerFactory, GlobalSearchScope.allScope(project));
         try {
             List<PackageFragmentProvider> additionalProviders = Lists.newArrayList();
             additionalProviders.add(injector.getJavaDescriptorResolver().getPackageFragmentProvider());
             
-            injector.getLazyTopDownAnalyzerForTopLevel().analyzeFiles(topDownAnalysisParameters, filesToAnalyze, additionalProviders);
-            return AnalysisResult.success(trace.getBindingContext(), module);
+            injector.getLazyTopDownAnalyzerForTopLevel().analyzeFiles(TopDownAnalysisMode.TopLevelDeclarations, filesToAnalyze, additionalProviders);
+            return AnalysisResult.success(trace.getBindingContext(), moduleContext.getModule());
         }
         finally {
             injector.destroy();
         }
-    }
-
-    @NotNull
-    public static ModuleDescriptorImpl createJavaModule(@NotNull String name) {
-        return new ModuleDescriptorImpl(Name.special(name), DEFAULT_IMPORTS, JavaToKotlinClassMap.INSTANCE);
     }
 }

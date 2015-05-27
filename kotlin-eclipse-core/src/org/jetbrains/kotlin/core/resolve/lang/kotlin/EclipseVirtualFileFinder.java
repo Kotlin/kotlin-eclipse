@@ -16,45 +16,47 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.kotlin;
 
-import java.io.File;
+
+
+import kotlin.jvm.functions.Function2;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.cli.jvm.compiler.ClassPath;
-import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
+import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot;
+import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot.RootType;
+import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex;
 import org.jetbrains.kotlin.load.java.structure.JavaClass;
+import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinder;
+import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
-import org.jetbrains.kotlin.load.kotlin.VirtualFileFinder;
-import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClassFinder;
+import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
 
-import com.intellij.ide.highlighter.JavaClassFileType;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
 
-public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder implements VirtualFileFinderFactory {
+public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder implements JvmVirtualFileFinderFactory {
     @NotNull
-    private final ClassPath classPath;
+    private final JvmDependenciesIndex index;
 
-    public EclipseVirtualFileFinder(@NotNull ClassPath path) {
-        classPath = path;
+    public EclipseVirtualFileFinder(@NotNull JvmDependenciesIndex index) {
+        this.index = index;
     }
 
     @Nullable
     @Override
-    public VirtualFile findVirtualFileWithHeader(@NotNull FqName className) {
-        for (VirtualFile root : classPath) {
-            VirtualFile fileInRoot = findFileInRoot(className.asString(), root, '.');
-            //NOTE: currently we use VirtualFileFinder to find Kotlin binaries only
-            if (fileInRoot != null) {
-                if (!isKotlinLightClass(fileInRoot.getPath()) && KotlinBinaryClassCache.getKotlinBinaryClass(fileInRoot) != null) {
-                    return fileInRoot;
-                }
+    public VirtualFile findVirtualFileWithHeader(@NotNull ClassId classId) {
+        // Copied from JvmCliVirtualFileFinder
+        final String classFileName = classId.getRelativeClassName().asString().replace('.', '$');
+        return index.findClass(classId, JavaRoot.OnlyBinary, new Function2<VirtualFile, JavaRoot.RootType, VirtualFile>() {
+            @Override
+            public VirtualFile invoke(VirtualFile dir, RootType rootType) {
+                VirtualFile child = dir.findChild(classFileName + ".class");
+                return (child != null && child.isValid()) ? child : null;
             }
-        }
-        return null;
+        });
     }
     
     @NotNull
@@ -71,7 +73,7 @@ public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder imple
         if (fqName == null) {
             return null;
         }
-        VirtualFile file = findVirtualFileWithHeader(fqName);
+        VirtualFile file = findVirtualFileWithHeader(ClassId.topLevel(fqName));
         if (file == null) {
             return null;
         }
@@ -82,60 +84,13 @@ public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder imple
             assert file != null : "Virtual file not found for " + javaClass;
         }
 
-        if (file.getFileType() != JavaClassFileType.INSTANCE) return null;
-
         return KotlinBinaryClassCache.getKotlinBinaryClass(file);
     }
 
     @Override
-    public VirtualFile findVirtualFile(@NotNull String internalName) {
-        for (VirtualFile root : classPath) {
-            VirtualFile fileInRoot = findFileInRoot(internalName, root, '/');
-            if (fileInRoot != null) {
-                return fileInRoot;
-            }
-        }
-        return null;
-    }
-    
-    private static boolean isKotlinLightClass(@NotNull String fullPath) {
-        return KotlinLightClassManager.INSTANCE.isLightClass(new File(fullPath));
-    }
-
-    //NOTE: copied with some changes from CoreJavaFileManager
-    @Nullable
-    private static VirtualFile findFileInRoot(@NotNull String qName, @NotNull VirtualFile root, char separator) {
-        String pathRest = qName;
-        VirtualFile cur = root;
-
-        while (true) {
-            int dot = pathRest.indexOf(separator);
-            if (dot < 0) break;
-
-            String pathComponent = pathRest.substring(0, dot);
-            VirtualFile child = cur.findChild(pathComponent);
-
-            if (child == null) break;
-            pathRest = pathRest.substring(dot + 1);
-            cur = child;
-        }
-
-        String className = pathRest.replace('.', '$');
-        VirtualFile vFile = cur.findChild(className + ".class");
-        if (vFile != null) {
-            if (!vFile.isValid()) {
-                //TODO: log
-                return null;
-            }
-            return vFile;
-        }
-        return null;
-    }
-
-    @Override
     @NotNull
-    public VirtualFileFinder create(@NotNull GlobalSearchScope scope) {
-        return new EclipseVirtualFileFinder(classPath);
+    public JvmVirtualFileFinder create(@NotNull GlobalSearchScope scope) {
+        return new EclipseVirtualFileFinder(index);
     }
 
 }

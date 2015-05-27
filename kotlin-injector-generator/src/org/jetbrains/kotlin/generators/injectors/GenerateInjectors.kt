@@ -12,8 +12,6 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.load.java.components.TraceBasedExternalSignatureResolver
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
 import org.jetbrains.kotlin.load.java.sam.SamConversionResolverImpl
-import org.jetbrains.kotlin.resolve.MutablePackageFragmentProvider
-import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver
 import org.jetbrains.kotlin.resolve.jvm.JavaLazyAnalyzerPostConstruct
 import org.jetbrains.kotlin.load.java.JavaFlexibleTypeCapabilitiesProvider
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmCheckerProvider
@@ -31,6 +29,8 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseMethodSignatu
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory
+import org.jetbrains.kotlin.context.ModuleContext
+import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver
 
 
 // Copied from org.jetbrains.kotlin.generators.injectors.GenerateInjectors
@@ -61,11 +61,9 @@ private fun generatorForTopDownAnalyzerForJvm() =
 
 
 private fun DependencyInjectorGenerator.commonForResolveSessionBased() {
-    parameter<Project>()
+	publicParameter<ModuleContext>(useAsContext = true)
 	parameter<IJavaProject>()
-    parameter<GlobalContext>(useAsContext = true)
     parameter<BindingTrace>()
-    publicParameter<ModuleDescriptorImpl>(name = "module", useAsContext = true)
     parameter<DeclarationProviderFactory>()
 
     publicField<ResolveSession>()
@@ -96,12 +94,11 @@ private fun DependencyInjectorGenerator.commonForJavaTopDownAnalyzer() {
     field<EclipseJavaPropertyInitializerEvaluator>()
     field<SamConversionResolverImpl>()
     field<EclipseJavaSourceElementFactory>()
-    field<MutablePackageFragmentProvider>()
-    field<SingleModuleClassResolver>()
+	field<SingleModuleClassResolver>()
     field<JavaLazyAnalyzerPostConstruct>()
     field<JavaFlexibleTypeCapabilitiesProvider>()
 
-    field<KotlinJvmCheckerProvider>()
+    field<KotlinJvmCheckerProvider>(useAsContext = true)
 
     field<VirtualFileFinder>(init = GivenExpression(javaClass<VirtualFileFinder>().getName() + ".SERVICE.getInstance(project)"))
 }

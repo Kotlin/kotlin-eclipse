@@ -14,24 +14,12 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.core.resolve.lang.java.structure;
+package org.jetbrains.kotlin.jv;
 
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.builtins.PrimitiveType;
-import org.jetbrains.kotlin.load.java.structure.JavaPrimitiveType;
-import org.jetbrains.kotlin.resolve.jvm.JvmPrimitiveType;
+import java.io.IOException;
 
-public class EclipseJavaPrimitiveType extends EclipseJavaType<ITypeBinding> implements JavaPrimitiveType {
-
-    public EclipseJavaPrimitiveType(ITypeBinding typeBinding) {
-        super(typeBinding);
-    }
-
-    @Override
-    @Nullable
-    public PrimitiveType getType() {
-        String text = getBinding().getName();
-        return "void".equals(text) ? null : JvmPrimitiveType.get(text).getPrimitiveType();
+public class GenerateInjectors {
+    public static void main(String[] args) throws IOException {
+        InjectorsGenerator.generatorForTopDownAnalyzerForJvm().generate();
     }
 }
