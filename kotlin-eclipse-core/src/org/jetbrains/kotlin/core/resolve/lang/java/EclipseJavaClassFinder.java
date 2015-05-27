@@ -83,7 +83,7 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
     @Override
     @Nullable
     public JavaClass findClass(@NotNull ClassId classId) {
-        ITypeBinding typeBinding = findType(classId.asSingleFqName().toSafe(), javaProject);
+        ITypeBinding typeBinding = findType(classId.asSingleFqName(), javaProject);
         if (typeBinding != null) {
             return new EclipseJavaClass(typeBinding);
         }

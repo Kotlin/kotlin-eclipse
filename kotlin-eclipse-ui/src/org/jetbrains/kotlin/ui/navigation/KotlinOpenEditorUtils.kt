@@ -122,12 +122,12 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
 	if (jetSignatures == null) return false
 	
 	val memberSignature = when (javaMember) {
-		is IField -> javaMember.getTypeSignature().replaceAll("\\.", "/") // Hack
+		is IField -> javaMember.getTypeSignature().replace("\\.".toRegex(), "/") // Hack
 		is IMethod -> javaMember.getSignature()
 		else -> null
 	}
 	
-	return jetSignatures.any @any { 
+	return jetSignatures.any { 
 		if (it.first == memberSignature) {
 			return@any when {
 				javaMember is IMethod && javaMember.isConstructor() -> jetElement is JetClass || jetElement is JetSecondaryConstructor

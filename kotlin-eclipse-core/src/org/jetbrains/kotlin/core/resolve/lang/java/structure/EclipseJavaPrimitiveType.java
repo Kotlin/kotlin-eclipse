@@ -17,8 +17,10 @@
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.builtins.PrimitiveType;
 import org.jetbrains.kotlin.load.java.structure.JavaPrimitiveType;
+import org.jetbrains.kotlin.resolve.jvm.JvmPrimitiveType;
 
 public class EclipseJavaPrimitiveType extends EclipseJavaType<ITypeBinding> implements JavaPrimitiveType {
 
@@ -27,8 +29,9 @@ public class EclipseJavaPrimitiveType extends EclipseJavaType<ITypeBinding> impl
     }
 
     @Override
-    @NotNull
-    public String getCanonicalText() {
-        return getBinding().getName();
+    @Nullable
+    public PrimitiveType getType() {
+        String text = getBinding().getName();
+        return "void".equals(text) ? null : JvmPrimitiveType.get(text).getPrimitiveType();
     }
 }

@@ -26,8 +26,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
-import kotlin.Function1;
 import kotlin.KotlinPackage;
+import kotlin.jvm.functions.Function1;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -189,8 +189,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                     getTestProject().getJavaProject(), getProject(),
-                    jetFiles,
-                    module
+                    jetFiles
             );
             
             moduleBindings.put(testModule, analysisResult.getBindingContext());
@@ -348,11 +347,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     	Map<TestModule, ModuleDescriptorImpl> modules = new HashMap<TestModule, ModuleDescriptorImpl>();
 
         for (TestModule testModule : groupedByModule.keySet()) {
-            ModuleDescriptorImpl module =
-                    testModule == null ?
-                    TopDownAnalyzerFacadeForJVM.createSealedJavaModule() :
-                    TopDownAnalyzerFacadeForJVM.createJavaModule("<" + testModule.getName() + ">");
-
+            ModuleDescriptorImpl module = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(getProject()).getModule();
             modules.put(testModule, module);
         }
 

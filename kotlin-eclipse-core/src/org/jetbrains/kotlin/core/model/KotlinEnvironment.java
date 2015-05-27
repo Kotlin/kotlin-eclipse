@@ -17,7 +17,9 @@
 package org.jetbrains.kotlin.core.model;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
@@ -27,10 +29,11 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.asJava.KotlinLightClassForPackage;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
-import org.jetbrains.kotlin.cli.jvm.compiler.ClassPath;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
+import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot;
+import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex;
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension;
 import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -38,8 +41,8 @@ import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider;
 import org.jetbrains.kotlin.idea.JetFileType;
+import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
-import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory;
 import org.jetbrains.kotlin.parsing.JetParserDefinition;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
 import org.jetbrains.kotlin.utils.PathUtil;
@@ -80,7 +83,7 @@ public class KotlinEnvironment {
     private final MockProject project;
     private final IJavaProject javaProject;
     
-    private final ClassPath classPath = new ClassPath();
+    private final List<JavaRoot> javaRoots = new ArrayList<>();
     
     private KotlinEnvironment(@NotNull IJavaProject javaProject, @NotNull Disposable disposable) {
         this.javaProject = javaProject;
@@ -114,7 +117,9 @@ public class KotlinEnvironment {
 
         configureClasspath();
         
-        project.registerService(VirtualFileFinderFactory.class, new EclipseVirtualFileFinder(classPath));
+        JvmDependenciesIndex index = new JvmDependenciesIndex(javaRoots);
+        
+        project.registerService(JvmVirtualFileFinderFactory.class, new EclipseVirtualFileFinder(index));
         
         ExternalDeclarationsProvider.OBJECT$.registerExtensionPoint(project);
         ExpressionCodegenExtension.OBJECT$.registerExtensionPoint(project);
@@ -213,14 +218,14 @@ public class KotlinEnvironment {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
             }
             projectEnvironment.addJarToClassPath(path);
-            classPath.add(jarFile);
+            javaRoots.add(new JavaRoot(jarFile, JavaRoot.RootType.BINARY));
         } else {
             VirtualFile root = applicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath());
             if (root == null) {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
             }
             projectEnvironment.addSourcesToClasspath(root);
-            classPath.add(root);
+            javaRoots.add(new JavaRoot(root, JavaRoot.RootType.SOURCE));
         }
     }
 }

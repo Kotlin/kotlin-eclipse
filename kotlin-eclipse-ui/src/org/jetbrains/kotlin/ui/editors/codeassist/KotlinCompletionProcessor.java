@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import kotlin.Function1;
+import kotlin.jvm.functions.Function1;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;

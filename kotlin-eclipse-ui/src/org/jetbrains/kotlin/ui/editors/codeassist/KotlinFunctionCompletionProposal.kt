@@ -20,7 +20,7 @@ import org.eclipse.jface.text.Position
 import org.eclipse.swt.graphics.Point
 
 public enum class CaretPosition {
-    IN_BRACKETS
+    IN_BRACKETS,
     AFTER_BRACKETS
 }
 
@@ -50,7 +50,7 @@ public class KotlinFunctionCompletionProposal(
 	override fun getSelection(document: IDocument): Point? = null
 	
 	override fun getTriggerCharacters(): CharArray {
-		return charArray('(', '.')
+		return charArrayOf('(', '.')
 	}
 	
 	private fun addBrackets(viewer: ITextViewer, completionChar: Char, completionOffset: Int) {
