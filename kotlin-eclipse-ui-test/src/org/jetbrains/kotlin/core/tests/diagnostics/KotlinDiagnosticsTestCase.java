@@ -33,12 +33,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.asJava.AsJavaPackage;
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.TextDiagnostic;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
-import org.jetbrains.kotlin.descriptors.impl.ModuleDescriptorImpl;
 import org.jetbrains.kotlin.diagnostics.Diagnostic;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1;
@@ -56,7 +54,6 @@ import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
-import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.junit.Assert;
 import org.junit.Before;
@@ -95,8 +92,14 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 CheckerTestUtil.DebugInfoDiagnosticFactory.UNRESOLVED_WITH_TARGET
         );
     public static final String CHECK_TYPE_DIRECTIVE = "CHECK_TYPE";
-    private static final String CHECK_TYPE_DECLARATIONS = "\nclass _<T>" +
-            "\nfun <T> T.checkType(f: (_<T>) -> Unit) = f";
+    public static final String CHECK_TYPE_PACKAGE = "tests._checkType";
+    private static final String CHECK_TYPE_DECLARATIONS = "\npackage " + CHECK_TYPE_PACKAGE +
+            "\nfun <T> checkSubtype(t: T) = t" +
+            "\nclass Inv<T>" +
+            "\nfun <E> Inv<E>._() {}" +
+            "\nfun <T> T.checkType(f: Inv<T>.() -> Unit) {}";
+    
+    public static final String CHECK_TYPE_IMPORT = "import " + CHECK_TYPE_PACKAGE + ".*";
     
     public static final String MARK_DYNAMIC_CALLS_DIRECTIVE = "MARK_DYNAMIC_CALLS";
     
@@ -175,18 +178,15 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         );
         
         List<JetFile> allJetFiles = new ArrayList<JetFile>();
-        Map<TestModule, ModuleDescriptorImpl> modules = createModules(groupedByModule);
         Map<TestModule, BindingContext> moduleBindings = new HashMap<TestModule, BindingContext>();
 
         for (Map.Entry<TestModule, List<TestFile>> entry : groupedByModule.entrySet()) {
             TestModule testModule = entry.getKey();
             List<? extends TestFile> testFilesInModule = entry.getValue();
 
-            List<JetFile> jetFiles = getJetFiles(testFilesInModule);
+            List<JetFile> jetFiles = getJetFiles(testFilesInModule, true);
             allJetFiles.addAll(jetFiles);
 
-            ModuleDescriptorImpl module = modules.get(testModule);
-            
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                     getTestProject().getJavaProject(), getProject(),
                     jetFiles
@@ -343,37 +343,23 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                    allCallsAreCompleted);
     }
     
-    private Map<TestModule, ModuleDescriptorImpl> createModules(Map<TestModule, List<TestFile>> groupedByModule) {
-    	Map<TestModule, ModuleDescriptorImpl> modules = new HashMap<TestModule, ModuleDescriptorImpl>();
-
-        for (TestModule testModule : groupedByModule.keySet()) {
-            ModuleDescriptorImpl module = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(getProject()).getModule();
-            modules.put(testModule, module);
-        }
-
-        for (TestModule testModule : groupedByModule.keySet()) {
-            if (testModule == null) continue;
-
-            ModuleDescriptorImpl module = modules.get(testModule);
-            module.addDependencyOnModule(module);
-            for (TestModule dependency : testModule.getDependencies()) {
-                module.addDependencyOnModule(modules.get(dependency));
-            }
-
-            module.addDependencyOnModule(KotlinBuiltIns.getInstance().getBuiltInsModule());
-            module.seal();
-        }
-
-        return modules;
-    }
-    
-    protected static List<JetFile> getJetFiles(List<? extends TestFile> testFiles) {
+    protected List<JetFile> getJetFiles(List<? extends TestFile> testFiles, boolean includeExtras) {
+        boolean declareCheckType = false;
         List<JetFile> jetFiles = Lists.newArrayList();
         for (TestFile testFile : testFiles) {
             if (testFile.getJetFile() != null) {
                 jetFiles.add(testFile.getJetFile());
             }
+            declareCheckType |= testFile.declareCheckType;
         }
+        
+        if (includeExtras) {
+            if (declareCheckType) {
+                jetFiles.add(JetLightFixture.createPsiFile(null, "CHECK_TYPE.kt", CHECK_TYPE_DECLARATIONS, getProject()));
+            }
+        }
+
+
         return jetFiles;
     }
     
@@ -428,7 +414,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 String textWithMarkers,
                 Map<String, String> directives
         ) {
-            this.module = module;
+        	this.module = module;
             this.whatDiagnosticsToConsider = parseDiagnosticFilterDirective(directives);
             this.declareCheckType = directives.containsKey(CHECK_TYPE_DIRECTIVE);
             this.markDynamicCalls = directives.containsKey(MARK_DYNAMIC_CALLS_DIRECTIVE);
@@ -439,14 +425,45 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 this.expectedText = this.clearText = textWithMarkers;
             }
             else {
-                expectedText = textWithMarkers;
-                clearText = CheckerTestUtil.parseDiagnosedRanges(expectedText, diagnosedRanges);
-                this.jetFile = JetLightFixture.createCheckAndReturnPsiFile(
-                        null, fileName, declareCheckType ? clearText + CHECK_TYPE_DECLARATIONS : clearText, getProject());
+                this.expectedText = textWithMarkers;
+                String textWithExtras = addExtras(expectedText);
+                this.clearText = CheckerTestUtil.parseDiagnosedRanges(textWithExtras, diagnosedRanges);
+                this.jetFile = JetLightFixture.createCheckAndReturnPsiFile(null, fileName, clearText, getProject());
                 for (CheckerTestUtil.DiagnosedRange diagnosedRange : diagnosedRanges) {
                     diagnosedRange.setFile(jetFile);
                 }
             }
+        }
+        
+        private String addExtras(String text) {
+            return addImports(text, getExtras());
+        }
+        
+        private String getExtras() {
+            return "/*extras*/\n" + getImports() + "/*extras*/\n\n";
+        }
+        
+        @NotNull
+        private String getImports() {
+            String imports = "";
+            if (declareCheckType) {
+                imports += CHECK_TYPE_IMPORT + "\n";
+            }
+            return imports;
+        }
+        
+        private String addImports(String text, String imports) {
+            Pattern pattern = Pattern.compile("^package [\\.\\w\\d]*\n", Pattern.MULTILINE);
+            Matcher matcher = pattern.matcher(text);
+            if (matcher.find()) {
+                // add imports after the package directive
+                text = text.substring(0, matcher.end()) + imports + text.substring(matcher.end());
+            }
+            else {
+                // add imports at the beginning
+                text = imports + text;
+            }
+            return text;
         }
 
         public TestModule getModule() {
@@ -455,6 +472,14 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         public JetFile getJetFile() {
             return jetFile;
+        }
+        
+        private void stripExtras(StringBuilder actualText) {
+            String extras = getExtras();
+            int start = actualText.indexOf(extras);
+            if (start >= 0) {
+                actualText.delete(start, start + extras.length());
+            }
         }
         
         public boolean getActualText(BindingContext bindingContext, StringBuilder actualText, boolean skipJvmSignatureDiagnostics) {
@@ -510,6 +535,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     return declareCheckType ? StringUtil.trimEnd(text, CHECK_TYPE_DECLARATIONS) : text;
                 }
             }));
+            
+            stripExtras(actualText);
             
             return ok[0];
         }

@@ -53,18 +53,16 @@ fun cannotBe() {
 
 fun canBe(i0: Int, j: Int) {
     var <!ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE!>i<!> = i0
-    (i: Int) = <!UNUSED_VALUE!>36<!>
-    (@label i) = <!UNUSED_VALUE!>34<!>
+    <!UNUSED_VALUE!>(label@ i) =<!> 34
 
-    (<!VAL_REASSIGNMENT!>j<!>: Int) = <!UNUSED_VALUE!>36<!>
-    (@label j) = <!UNUSED_VALUE!>34<!> //repeat for j
+    <!UNUSED_VALUE!>(label@ <!VAL_REASSIGNMENT!>j<!>) =<!> 34 //repeat for j
 
     val a = A()
-    (@l a.a) = 3894
+    (l@ a.a) = 3894
 }
 
 fun canBe2(j: Int) {
-    (@label <!VAL_REASSIGNMENT!>j<!>) = <!UNUSED_VALUE!>34<!>
+    <!UNUSED_VALUE!>(label@ <!VAL_REASSIGNMENT!>j<!>) =<!> 34
 }
 
 class A() {
@@ -74,27 +72,23 @@ class A() {
 class Test() {
     fun testIllegalValues() {
         <!VARIABLE_EXPECTED!>1<!> += 23
-        (<!VARIABLE_EXPECTED!>1<!> : Int) += 43
-        (@l <!VARIABLE_EXPECTED!>1<!>) += 23
+        (l@ <!VARIABLE_EXPECTED!>1<!>) += 23
 
         <!VARIABLE_EXPECTED!>getInt()<!> += 343
-        (@f <!VARIABLE_EXPECTED!>getInt()<!>) += 343
-        (<!VARIABLE_EXPECTED!>getInt()<!> : Int) += 343
+        (f@ <!VARIABLE_EXPECTED!>getInt()<!>) += 343
 
         <!VARIABLE_EXPECTED!>1<!>++
-        (@r <!VARIABLE_EXPECTED!>1<!>)++
-        (<!VARIABLE_EXPECTED!>1<!> : Int)++
+        (r@ <!VARIABLE_EXPECTED!>1<!>)++
 
         <!VARIABLE_EXPECTED!>getInt()<!>++
-        (@m <!VARIABLE_EXPECTED!>getInt()<!>)++
-        (<!VARIABLE_EXPECTED!>getInt()<!> : Int)++
+        (m@ <!VARIABLE_EXPECTED!>getInt()<!>)++
 
         this<!UNRESOLVED_REFERENCE!>++<!>
 
         var s : String = "r"
         s += "ss"
         s += this
-        s += (@a 2)
+        s += (a@ 2)
     }
 
     fun testVariables() {
@@ -102,23 +96,20 @@ class Test() {
         val b: Int = 34
 
         a += 34
-        (@l a) += 34
-        (a : Int) += 34
+        (l@ a) += 34
 
         <!VAL_REASSIGNMENT!>b<!> += 34
 
         a++
-        (@l a)++
-        (a : Int)++
+        (l@ a)++
         <!UNUSED_CHANGED_VALUE!>(a)++<!>
     }
 
     fun testVariables1() {
         val b: Int = 34
 
-        (@l <!VAL_REASSIGNMENT!>b<!>) += 34
+        (l@ <!VAL_REASSIGNMENT!>b<!>) += 34
         //repeat for b
-        (b : Int) += 34
         (b) += 3
     }
 
@@ -127,12 +118,10 @@ class Test() {
         a[4]++
         a[6] += 43
 
-        <!VARIABLE_EXPECTED!>ab.getArray()<!>[54] = 23
-        <!VARIABLE_EXPECTED!>ab.getArray()<!>[54]++
+        ab.getArray()[54] = 23
+        ab.getArray()[54]++
 
-        (@f a)[3] = 4
-        (a : Array<Int>)[4]++
-        (<!VARIABLE_EXPECTED!>ab.getArray()<!> : Array<Int>)[54] += 43
+        (f@ a)[3] = 4
 
         this<!NO_SET_METHOD!><!UNRESOLVED_REFERENCE!>[<!>54<!UNRESOLVED_REFERENCE!>]<!><!> = 34
     }

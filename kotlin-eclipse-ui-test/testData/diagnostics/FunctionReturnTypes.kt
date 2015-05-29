@@ -8,10 +8,10 @@ fun unitEmptyReturn() : Unit {return}
 fun unitIntReturn() : Unit {return <!CONSTANT_EXPECTED_TYPE_MISMATCH!>1<!>}
 fun unitUnitReturn() : Unit {return Unit}
 fun test1() : Any = {<!RETURN_NOT_ALLOWED, RETURN_TYPE_MISMATCH!>return<!>}
-fun test2() : Any = @a {return@a 1}
+fun test2() : Any = a@ {return@a 1}
 fun test3() : Any { <!RETURN_TYPE_MISMATCH!>return<!> }
 fun test4(): ()-> Unit = { <!RETURN_NOT_ALLOWED, RETURN_TYPE_MISMATCH!>return@test4<!> }
-fun test5(): Any = @l{ return@l }
+fun test5(): Any = l@{ return@l }
 fun test6(): Any = {<!RETURN_NOT_ALLOWED!>return 1<!>}
 
 fun bbb() {
@@ -176,7 +176,7 @@ fun testFunctionLiterals() {
 
     val <!UNUSED_VARIABLE!>endsWithAssignment<!>: () -> Int = {
         var <!ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE!>x<!> = 1
-        <!EXPECTED_TYPE_MISMATCH!>x = <!UNUSED_VALUE!>333<!><!>
+        <!EXPECTED_TYPE_MISMATCH!><!UNUSED_VALUE!>x =<!> 333<!>
     }
 
     val <!UNUSED_VARIABLE!>endsWithReAssignment<!>: () -> Int = {
@@ -186,13 +186,13 @@ fun testFunctionLiterals() {
 
     val <!UNUSED_VARIABLE!>endsWithFunDeclaration<!> : () -> String = {
         var <!ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE!>x<!> = 1
-        x = <!UNUSED_VALUE!>333<!>
+        <!UNUSED_VALUE!>x =<!> 333
         <!EXPECTED_TYPE_MISMATCH!>fun meow() : Unit {}<!>
     }
 
     val <!UNUSED_VARIABLE!>endsWithObjectDeclaration<!> : () -> Int = {
         var <!ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE!>x<!> = 1
-        x = <!UNUSED_VALUE!>333<!>
+        <!UNUSED_VALUE!>x =<!> 333
         <!LOCAL_OBJECT_NOT_ALLOWED, EXPECTED_TYPE_MISMATCH!>object A<!> {}
     }
 

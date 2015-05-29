@@ -1,5 +1,5 @@
 class Some {
-    class object {
+    companion object {
         val bar = 1
         fun func() = ""
     }

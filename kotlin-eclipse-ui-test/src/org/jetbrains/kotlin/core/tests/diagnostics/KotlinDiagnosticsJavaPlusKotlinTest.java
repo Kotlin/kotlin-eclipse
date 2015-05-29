@@ -154,8 +154,57 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
 	}
 
 	@Test
+	public void testGenericsInSupertypes() throws Exception {
+		doTest("testData/diagnostics/j+k/GenericsInSupertypes.kt");
+	}
+	
+	@Test
+	public void testInheritedGenericFunction() throws Exception {
+		doTest("testData/diagnostics/j+k/InheritedGenericFunction.kt");
+	}
+	
+	@Test
+	public void testInnerClassFromJava() throws Exception {
+		doTest("testData/diagnostics/j+k/InnerClassFromJava.kt");
+	}
+	
+	@Test
+	public void testkt1730_implementCharSequence() throws Exception {
+		doTest("testData/diagnostics/j+k/kt1730_implementCharSequence.kt");
+	}
+	
+	@Test
+	public void testkt3311() throws Exception {
+		doTest("testData/diagnostics/j+k/kt3311.kt");
+	}
+	
+	@Test
 	public void testUnboxingNulls() throws Exception {
 		doTest("testData/diagnostics/j+k/UnboxingNulls.kt");
 	}
-
+	
+	@Test
+	public void testpackagePrivateClassStaticMember() throws Exception {
+		doTest("testData/diagnostics/j+k/packagePrivateClassStaticMember.kt");
+	}
+	
+	@Test
+	public void testprivateNestedClassStaticMember() throws Exception {
+		doTest("testData/diagnostics/j+k/privateNestedClassStaticMember.kt");
+	}
+	
+	@Test
+	public void testprotectedStaticSamePackage() throws Exception {
+		doTest("testData/diagnostics/j+k/protectedStaticSamePackage.kt");
+	}
+	
+	@Test
+	public void testsamInConstructorWithGenerics() throws Exception {
+		doTest("testData/diagnostics/j+k/samInConstructorWithGenerics.kt");
+	}
+	
+	@Test
+	public void testtraitDefaultCall() throws Exception {
+		doTest("testData/diagnostics/j+k/traitDefaultCall.kt");
+	}
 }

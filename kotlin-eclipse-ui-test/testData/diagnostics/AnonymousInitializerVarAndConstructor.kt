@@ -7,3 +7,4 @@ class A(w: Int) {
         c = 81
     }
 }
+
