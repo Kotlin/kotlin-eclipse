@@ -40,11 +40,6 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
-    public void testAutocastsForStableIdentifiers() throws Exception {
-        doTest("testData/diagnostics/AutocastsForStableIdentifiers.kt");
-    }
-    
-    @Test
     public void testAutoCreatedIt() throws Exception {
         doTest("testData/diagnostics/AutoCreatedIt.kt");
     }
@@ -177,11 +172,6 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     @Test
     public void testDollar() throws Exception {
         doTest("testData/diagnostics/Dollar.kt");
-    }
-    
-    @Test
-    public void testFinalClassObjectBound() throws Exception {
-        doTest("testData/diagnostics/FinalClassObjectBound.kt");
     }
     
     @Test
@@ -340,11 +330,6 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
-    public void testReflectionTypesNotLoaded() throws Exception {
-        doTest("testData/diagnostics/ReflectionTypesNotLoaded.kt");
-    }
-    
-    @Test
     public void testResolveOfJavaGenerics() throws Exception {
         doTest("testData/diagnostics/ResolveOfJavaGenerics.kt");
     }
@@ -468,4 +453,129 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     public void testImplementInterfaceAndOverrideMethodFromAny() throws Exception {
         doTest("testData/diagnostics/ImplementInterfaceAndOverrideMethodFromAny.kt");
     }
+    
+    @Test
+    public void testabstractClass() throws Exception {
+    	doTest("testData/diagnostics/abstractClass.kt");
+    }
+    
+    @Test
+    public void testanonymousObjectExtendsTraitWithRequired() throws Exception {
+    	doTest("testData/diagnostics/anonymousObjectExtendsTraitWithRequired.kt");
+    }
+    
+    @Test
+    public void testdefaultModifier() throws Exception {
+    	doTest("testData/diagnostics/defaultModifier.kt");
+    }
+    
+    @Test
+    public void testdifferentGenericArguments() throws Exception {
+    	doTest("testData/diagnostics/differentGenericArguments.kt");
+    }
+    
+    @Test
+    public void testincompatibleVarianceModifiers() throws Exception {
+    	doTest("testData/diagnostics/incompatibleVarianceModifiers.kt");
+    }
+    
+    @Test
+    public void testkt3006() throws Exception {
+    	doTest("testData/diagnostics/kt3006.kt");
+    }
+    
+    @Test
+    public void testmanyRequirementsDisallowed() throws Exception {
+    	doTest("testData/diagnostics/manyRequirementsDisallowed.kt");
+    }
+    
+    @Test
+    public void testmanyTraitsRequireSameClass() throws Exception {
+    	doTest("testData/diagnostics/manyTraitsRequireSameClass.kt");
+    }
+    
+    @Test
+    public void testprimaryConstructorMissingKeyword() throws Exception {
+    	doTest("testData/diagnostics/primaryConstructorMissingKeyword.kt");
+    }
+    
+    @Test
+    public void testrepeatedModifiers() throws Exception {
+    	doTest("testData/diagnostics/repeatedModifiers.kt");
+    }
+    
+    @Test
+    public void testrequirementFulfilledBySubclass() throws Exception {
+    	doTest("testData/diagnostics/requirementFulfilledBySubclass.kt");
+    }
+    
+    @Test
+    public void testtraitExtendsTraitWithRequired() throws Exception {
+    	doTest("testData/diagnostics/traitExtendsTraitWithRequired.kt");
+    }
+    
+    @Test
+    public void testtraitRequiresAny() throws Exception {
+    	doTest("testData/diagnostics/traitRequiresAny.kt");
+    }
+    
+    @Test
+    public void testuninheritableTraitDifferentGenericArguments() throws Exception {
+    	doTest("testData/diagnostics/uninheritableTraitDifferentGenericArguments.kt");
+    }
+    
+    @Test
+	public void testUnusedParameters() throws Exception {
+		doTest("testData/diagnostics/UnusedParameters.kt");
+	}
+    
+	@Test
+	public void testTraitWithConstructor() throws Exception {
+		doTest("testData/diagnostics/TraitWithConstructor.kt");
+	}
+	
+	@Test
+	public void testSelfTypesUnsupported() throws Exception {
+		doTest("testData/diagnostics/SelfTypesUnsupported.kt");
+	}
+	
+	@Test
+	public void testPackageInTypePosition() throws Exception {
+		doTest("testData/diagnostics/PackageInTypePosition.kt");
+	}
+	
+	@Test
+	public void testRecursiveResolve() throws Exception {
+		doTest("testData/diagnostics/RecursiveResolve.kt");
+	}
+	
+	@Test
+	public void testLocalClassAndShortSubpackageNames() throws Exception {
+		doTest("testData/diagnostics/LocalClassAndShortSubpackageNames.kt");
+	}
+	
+	@Test
+	public void testFunctionParameterWithoutType() throws Exception {
+		doTest("testData/diagnostics/FunctionParameterWithoutType.kt");
+	}
+	
+	@Test
+	public void testDeprecatedTraitKeyword() throws Exception {
+		doTest("testData/diagnostics/DeprecatedTraitKeyword.kt");
+	}
+	
+	@Test
+	public void testDelegationExpectedType() throws Exception {
+		doTest("testData/diagnostics/DelegationExpectedType.kt");
+	}
+	
+	@Test
+	public void testBreakContinueInWhen() throws Exception {
+		doTest("testData/diagnostics/BreakContinueInWhen.kt");
+	}
+	
+	@Test
+	public void testAssignToArrayElement() throws Exception {
+		doTest("testData/diagnostics/AssignToArrayElement.kt");
+	}
 }
