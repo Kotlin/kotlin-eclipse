@@ -24,6 +24,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -34,6 +35,7 @@ import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser;
 import org.jetbrains.kotlin.core.launch.KotlinCLICompiler;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class KotlinCompiler {
@@ -45,8 +47,13 @@ public class KotlinCompiler {
     @NotNull
     public KotlinCompilerResult compileKotlinFiles(@NotNull IJavaProject javaProject) 
             throws CoreException {
-        String outputDir = ProjectUtils.getOutputFolder(javaProject).getLocation().toOSString();
-        String[] arguments = configureCompilerArguments(javaProject, outputDir);
+        IFolder outputFolder = ProjectUtils.getOutputFolder(javaProject);
+        if (outputFolder == null) {
+            KotlinLogger.logError("There is no output folder for project: " + javaProject, null);
+            return KotlinCompilerResult.EMPTY;
+        }
+        
+        String[] arguments = configureCompilerArguments(javaProject, outputFolder.getLocation().toOSString());
         
         return execKotlinCompiler(arguments);
     }
@@ -72,7 +79,7 @@ public class KotlinCompiler {
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
         
-        for (File file : ProjectUtils.collectClasspathWithDependencies(javaProject)) {
+        for (File file : ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject)) {
             classPath.append(file.getAbsolutePath()).append(pathSeparator);
         }
         
@@ -117,6 +124,8 @@ public class KotlinCompiler {
     }
     
     public static class KotlinCompilerResult {
+        public static KotlinCompilerResult EMPTY = new KotlinCompilerResult(false, new CompilerOutputData());
+        
         private final boolean result;
         private final CompilerOutputData compilerOutput;
         

@@ -164,7 +164,7 @@ public class KotlinEnvironment {
     
     private void configureClasspath() {
         try {
-            for (File file : ProjectUtils.collectClasspathWithDependencies(javaProject)) {
+            for (File file : ProjectUtils.collectClasspathWithDependenciesForBuild(javaProject)) {
                 addToClasspath(file);
             }
         } catch (CoreException e) {
