@@ -84,7 +84,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             public boolean visit(IResourceDelta delta) throws CoreException {
                 if (delta.getKind() != IResourceDelta.NO_CHANGE) {
                     IResource resource = delta.getResource();
-                    if (KotlinPsiManager.INSTANCE.isCompatibleResource(resource)) {
+                    if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
                         affectedFiles.add((IFile) resource);
                         return false;
                     }

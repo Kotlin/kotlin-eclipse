@@ -30,7 +30,7 @@ public class ProjectChangeListener implements IResourceDeltaVisitor {
         IResource resource = delta.getResource();
         if (resource instanceof IFile) {
             IFile file = (IFile) resource;
-            if (KotlinPsiManager.INSTANCE.isCompatibleResource(file)) {
+            if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(file)) {
                 if (delta.getKind() != IResourceDelta.CHANGED) {
                     KotlinPsiManager.INSTANCE.updateProjectPsiSources(file, delta.getKind());
                 }
