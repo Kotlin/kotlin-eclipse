@@ -1,6 +1,7 @@
 <project default="get_bundled">
-	<property name="idea-sources-build-id" value="377195"/>
+	<property name="idea-sources-build-id" value="474470"/>
 	<property name="compiler.tag" value="for_eclipse" />
+	<property name="bootstrap_branch" value="M12%2Fbootstrap"/>
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
 	
 	<property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
@@ -11,6 +12,7 @@
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
 	<property name="injector-generator-file" value="injector-generator.jar"/>
 	<property name="guava-file" value="guava-17.0.jar"/>
+	<property name="branch" value="?branch=${bootstrap_branch}" />
 	
 	<property name="project.name" value="kotlin-bundled-compiler" />
 		
@@ -40,7 +42,7 @@
 		<mkdir dir="${download.dir}" />
 
 		<get 
-			src="${teamcity-kotlin-url}/kotlin-plugin-%7Bbuild.number%7D.zip" 
+			src="${teamcity-kotlin-url}/kotlin-plugin-%7Bbuild.number%7D.zip${branch}" 
 			dest="${download.dir}/${compiler-artifact-file}" 
 			usetimestamp="true" />
 
@@ -66,12 +68,12 @@
 		</unzip>
 
 		<get 
-			src="${teamcity-kotlin-url}/internal/injector-generator.jar"
+			src="${teamcity-kotlin-url}/internal/injector-generator.jar${branch}"
 			dest="${target.dir}/${injector-generator-file}"
 			usetimestamp="true" />
 		
 		<get 
-			src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar"
+			src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
 			dest="${target.dir}/kotlin-ide-common.jar"
 			usetimestamp="true" />
 		
@@ -85,7 +87,7 @@
 			usetimestamp="true" />
 
 		<!-- Also retrivive sources -->
-		<get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar" 
+		<get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 
 					dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
 		
 		<!-- Get idea sources -->
