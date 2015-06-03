@@ -212,6 +212,11 @@
             id="org.jetbrains.kotlin.psi.visualization"
             name="Psi Visualization">
       </command>
+      <command
+            defaultHandler="org.jetbrains.kotlin.ui.commands.j2k.JavaToKotlinActionHandler"
+            id="org.jetbrains.kotlin.ui.commands.j2k"
+            name="Convert Java to Kotlin">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -221,6 +226,14 @@
          <command
                commandId="org.jetbrains.kotlin.psi.visualization"
                label="View Psi Structure of current file"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.popup.any">
+         <command
+               commandId="org.jetbrains.kotlin.ui.commands.j2k"
                style="push">
          </command>
       </menuContribution>

@@ -16,28 +16,21 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 
 public abstract class AbstractWizard<WP extends AbstractWizardPage> extends Wizard implements INewWizard {
 
-    private static final String ERROR_MESSAGE = "Error";
+    public static final String ERROR_MESSAGE = "Error";
 
     private IWorkbench workbench;
     private IStructuredSelection selection;
@@ -80,22 +73,6 @@ public abstract class AbstractWizard<WP extends AbstractWizardPage> extends Wiza
 
     protected static void selectAndRevealResource(IResource resource) {
         BasicNewResourceWizard.selectAndReveal(resource, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-    }
-
-    protected static boolean performOperation(
-            @NotNull IRunnableWithProgress operation, 
-            @NotNull IRunnableContext runnableContext,
-            @NotNull Shell shell) {
-        try {
-            runnableContext.run(true, true, operation);
-        } catch (InvocationTargetException e) {
-            MessageDialog.openError(shell, ERROR_MESSAGE, e.getMessage());
-            return false;
-        } catch (InterruptedException e) {
-            return false;
-        }
-
-        return true;
     }
 
     protected static void addKotlinNatureToProject(IProject project) {

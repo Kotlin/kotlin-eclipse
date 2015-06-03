@@ -201,8 +201,14 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    public static IEditorPart openInEditor(IFile file) throws PartInitException {
-        IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        return IDE.openEditor(page, file, false);
+    public static IEditorPart openInEditor(IFile file) {
+        try {
+            IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+            return IDE.openEditor(page, file, false);
+        } catch (PartInitException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return null;
     }
 }

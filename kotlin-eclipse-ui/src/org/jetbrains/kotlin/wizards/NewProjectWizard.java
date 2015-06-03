@@ -16,6 +16,10 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+
 
 public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
 
@@ -27,7 +31,14 @@ public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
         NewProjectWizardPage page = getWizardPage();
         
         ProjectCreationOp op = new ProjectCreationOp(page.getProjectName(), page.getProjectLocation(), getShell());
-        performOperation(op, getContainer(), getShell());
+        try {
+            getContainer().run(true, true, op);
+        } catch (InvocationTargetException e) {
+            MessageDialog.openError(getShell(), AbstractWizard.ERROR_MESSAGE, e.getMessage());
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
         
         addKotlinNatureToProject(op.getResult());
         addKotlinBuilderToProject(op.getResult());

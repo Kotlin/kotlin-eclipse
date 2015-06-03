@@ -16,10 +16,13 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -53,13 +56,21 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         NewUnitWizardPage wizardPage = getWizardPage();
         String contents = createPackageHeader() + createTypeBody();
         
-        IFile kotlinSourceFile = createKotlinSourceFile(
-                wizardPage.getSourceDir(), 
-                wizardPage.getPackageFragment(), 
-                wizardPage.getUnitName(), 
-                contents, 
-                getShell(), 
-                getContainer());
+        IFile kotlinSourceFile;
+        try {
+            kotlinSourceFile = createKotlinSourceFile(
+                    wizardPage.getSourceDir(), 
+                    wizardPage.getPackageFragment(), 
+                    wizardPage.getUnitName(), 
+                    contents, 
+                    getShell(), 
+                    getContainer());
+        } catch (InvocationTargetException e) {
+            MessageDialog.openError(getShell(), AbstractWizard.ERROR_MESSAGE, e.getMessage());
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
         
         if (kotlinSourceFile != null) {
             selectAndRevealResource(kotlinSourceFile);
@@ -102,16 +113,16 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
             @NotNull String fileName,
             @NotNull String contents,
             @NotNull Shell shell,
-            @NotNull IRunnableContext runnableContext) {
-        FileCreationOp op = new FileCreationOp(root, packageFragment, fileName, contents, shell);
-        performOperation(op, runnableContext, shell);
+            @NotNull IRunnableContext runnableContext) throws InvocationTargetException, InterruptedException {
+        FileCreationOp operation = new FileCreationOp(root, packageFragment, fileName, contents, shell);
+        runnableContext.run(true, true, operation);
         
         IProject project = root.getJavaProject().getProject();
         addKotlinNatureToProject(project);
         addKotlinBuilderToProject(project);
         KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
         
-        return op.getResult();
+        return operation.getResult();
     }
     
     private String createTypeBody() {

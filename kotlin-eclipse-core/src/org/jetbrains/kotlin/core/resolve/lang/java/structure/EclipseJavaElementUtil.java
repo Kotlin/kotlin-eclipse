@@ -22,10 +22,13 @@ import java.util.List;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
@@ -174,5 +177,26 @@ public class EclipseJavaElementUtil {
         }
         
         return false;
+    }
+    
+    public static List<IPackageFragment> getSubPackages(@NotNull IPackageFragment packageFragment) {
+        List<IPackageFragment> subPackages = new ArrayList<>();
+        try {
+            IJavaElement[] packages = ((IPackageFragmentRoot) packageFragment.getParent()).getChildren();
+            IPath rootPackagePath = packageFragment.getPath();
+            for (IJavaElement element : packages) {
+                if (element instanceof IPackageFragment) {
+                    IPackageFragment fragment = (IPackageFragment) element;
+                    IPath otherPackagePath = fragment.getPath();
+                    if (rootPackagePath.isPrefixOf(otherPackagePath) && !rootPackagePath.equals(otherPackagePath)) {
+                        subPackages.add(fragment);
+                    }
+                }
+            }
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return subPackages;
     }
 }
