@@ -27,7 +27,7 @@ public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
         NewProjectWizardPage page = getWizardPage();
         
         ProjectCreationOp op = new ProjectCreationOp(page.getProjectName(), page.getProjectLocation(), getShell());
-        performOperation(op);
+        performOperation(op, getContainer(), getShell());
         
         addKotlinNatureToProject(op.getResult());
         addKotlinBuilderToProject(op.getResult());

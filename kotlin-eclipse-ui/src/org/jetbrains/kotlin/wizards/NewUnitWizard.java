@@ -18,10 +18,16 @@ package org.jetbrains.kotlin.wizards;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
 
@@ -46,24 +52,22 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         NewUnitWizardPage wizardPage = getWizardPage();
         String contents = createPackageHeader() + createTypeBody();
         
-        FileCreationOp op = new FileCreationOp(wizardPage.getSourceDir(), wizardPage.getPackageFragment(),
-                wizardPage.getUnitName(), contents, getShell());
-        performOperation(op);
+        IFile kotlinSourceFile = createKotlinSourceFile(
+                wizardPage.getSourceDir(), 
+                wizardPage.getPackageFragment(), 
+                wizardPage.getUnitName(), 
+                contents, 
+                getShell(), 
+                getContainer());
         
-        IProject project = wizardPage.getProject();
-        addKotlinNatureToProject(project);
-        addKotlinBuilderToProject(project);
-        KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
-        
-        selectAndRevealResource(op.getResult());
-        openFile(op.getResult());
+        selectAndRevealResource(kotlinSourceFile);
+        openFile(kotlinSourceFile);
         
         return true;
     }
     
-    protected void openFile(IFile file) {
-        IWorkbenchWindow window = getWorkbench().getActiveWorkbenchWindow();
-        
+    protected static void openFile(IFile file) {
+        IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         try {
             if (window != null) {
                 IWorkbenchPage page = window.getActivePage();
@@ -86,6 +90,24 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     protected NewUnitWizardPage createWizardPage() {
         return new NewUnitWizardPage(getPageTitle(), String.format(DESCRIPTION_FORMAT,
                 type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, getStructuredSelection());
+    }
+    
+    public static IFile createKotlinSourceFile(
+            @NotNull IPackageFragmentRoot root,
+            @NotNull IPackageFragment packageFragment,
+            @NotNull String fileName,
+            @NotNull String contents,
+            @NotNull Shell shell,
+            @NotNull IRunnableContext runnableContext) {
+        FileCreationOp op = new FileCreationOp(root, packageFragment, fileName, contents, shell);
+        performOperation(op, runnableContext, shell);
+        
+        IProject project = root.getJavaProject().getProject();
+        addKotlinNatureToProject(project);
+        addKotlinBuilderToProject(project);
+        KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
+        
+        return op.getResult();
     }
     
     private String createTypeBody() {
