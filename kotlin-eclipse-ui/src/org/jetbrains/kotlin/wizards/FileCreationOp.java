@@ -34,10 +34,10 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
-import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.idea.JetFileType;
 
-class FileCreationOp implements IRunnableWithProgress {
+public class FileCreationOp implements IRunnableWithProgress {
     
     private final static String EXT = "." + JetFileType.INSTANCE.getDefaultExtension();
     
@@ -49,7 +49,7 @@ class FileCreationOp implements IRunnableWithProgress {
     
     private IFile result;
     
-    FileCreationOp(IPackageFragmentRoot sourceDir, IPackageFragment packageFragment, String unitName, String contents,
+    public FileCreationOp(IPackageFragmentRoot sourceDir, IPackageFragment packageFragment, String unitName, String contents,
             Shell shell) {
         this.sourceDir = sourceDir;
         this.packageFragment = packageFragment;

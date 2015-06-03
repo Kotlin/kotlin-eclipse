@@ -22,12 +22,16 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 
@@ -74,15 +78,18 @@ public abstract class AbstractWizard<WP extends AbstractWizardPage> extends Wiza
         addPage(page);
     }
 
-    protected void selectAndRevealResource(IResource resource) {
-        BasicNewResourceWizard.selectAndReveal(resource, getWorkbench().getActiveWorkbenchWindow());
+    protected static void selectAndRevealResource(IResource resource) {
+        BasicNewResourceWizard.selectAndReveal(resource, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
     }
 
-    protected boolean performOperation(IRunnableWithProgress operation) {
+    protected static boolean performOperation(
+            @NotNull IRunnableWithProgress operation, 
+            @NotNull IRunnableContext runnableContext,
+            @NotNull Shell shell) {
         try {
-            getContainer().run(true, true, operation);
+            runnableContext.run(true, true, operation);
         } catch (InvocationTargetException e) {
-            MessageDialog.openError(getShell(), ERROR_MESSAGE, e.getMessage());
+            MessageDialog.openError(shell, ERROR_MESSAGE, e.getMessage());
             return false;
         } catch (InterruptedException e) {
             return false;
