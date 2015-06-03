@@ -46,7 +46,7 @@ public class KotlinFilesCollector {
     }
     
     private void scanForFiles(IResource parentResource) throws CoreException {
-        if (KotlinPsiManager.INSTANCE.isCompatibleResource(parentResource)) {
+        if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(parentResource)) {
             KotlinPsiManager.INSTANCE.updateProjectPsiSources((IFile) parentResource, IResourceDelta.ADDED);
             return; 
         }

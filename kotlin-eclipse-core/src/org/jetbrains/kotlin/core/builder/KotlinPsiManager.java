@@ -167,7 +167,7 @@ public class KotlinPsiManager {
                 (delta.getKind() == IResourceDelta.ADDED);
     }
     
-    public boolean isCompatibleResource(@NotNull IResource resource) throws JavaModelException {
+    public boolean isKotlinSourceFile(@NotNull IResource resource) throws JavaModelException {
         if (!(resource instanceof IFile) || !JetFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
             return false;
         }
