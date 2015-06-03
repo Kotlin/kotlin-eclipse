@@ -168,12 +168,14 @@ public class KotlinPsiManager {
     }
     
     public boolean isKotlinSourceFile(@NotNull IResource resource) throws JavaModelException {
+        return isKotlinSourceFile(resource, JavaCore.create(resource.getProject()));
+    }
+    
+    public boolean isKotlinSourceFile(@NotNull IResource resource, @NotNull IJavaProject javaProject) throws JavaModelException {
         if (!(resource instanceof IFile) || !JetFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
             return false;
         }
 
-        IJavaProject javaProject = JavaCore.create(resource.getProject());
-        
         if (!javaProject.exists()) {
             return false;
         }
