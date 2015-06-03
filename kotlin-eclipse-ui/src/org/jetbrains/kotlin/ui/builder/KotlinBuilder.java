@@ -66,7 +66,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         } else {
             IResourceDelta delta = getDelta(getProject());
             if (delta != null) {
-                affectedFiles.addAll(getAffectedFiles(delta));
+                affectedFiles.addAll(getAffectedFiles(delta, javaProject));
             }
         }
         
@@ -77,14 +77,14 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         return null;
     }
     
-    private Set<IFile> getAffectedFiles(@NotNull IResourceDelta delta) throws CoreException {
+    private Set<IFile> getAffectedFiles(@NotNull IResourceDelta delta, @NotNull final IJavaProject javaProject) throws CoreException {
         final Set<IFile> affectedFiles = Sets.newHashSet();
         delta.accept(new IResourceDeltaVisitor() {
             @Override
             public boolean visit(IResourceDelta delta) throws CoreException {
                 if (delta.getKind() != IResourceDelta.NO_CHANGE) {
                     IResource resource = delta.getResource();
-                    if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
+                    if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource, javaProject)) {
                         affectedFiles.add((IFile) resource);
                         return false;
                     }

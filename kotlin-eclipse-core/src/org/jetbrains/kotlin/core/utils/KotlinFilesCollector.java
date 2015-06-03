@@ -24,6 +24,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
@@ -39,14 +42,15 @@ public class KotlinFilesCollector {
     
     private void addFilesToParse() throws CoreException {
         for (IProject project : getWorkspace().getRoot().getProjects()) {
+            IJavaProject javaProject = JavaCore.create(project);
             for (IResource resource : project.members(false)) {
-                scanForFiles(resource);
+                scanForFiles(resource, javaProject);
             }
         }
     }
     
-    private void scanForFiles(IResource parentResource) throws CoreException {
-        if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(parentResource)) {
+    private void scanForFiles(@NotNull IResource parentResource, @NotNull IJavaProject javaProject) throws CoreException {
+        if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(parentResource, javaProject)) {
             KotlinPsiManager.INSTANCE.updateProjectPsiSources((IFile) parentResource, IResourceDelta.ADDED);
             return; 
         }
@@ -55,7 +59,7 @@ public class KotlinFilesCollector {
         }
         IResource[] resources = ((IFolder) parentResource).members();
         for (IResource resource : resources) {
-            scanForFiles(resource);
+            scanForFiles(resource, javaProject);
         }
     }
 
