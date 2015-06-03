@@ -71,6 +71,8 @@ public class FileCreationOp implements IRunnableWithProgress {
                 PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(op, monitor,
                         getUIInfoAdapter(shell));
                 result.appendContents(new ByteArrayInputStream(contents.getBytes()), false, false, monitor);
+            } else {
+                result = null;
             }
         } catch (ExecutionException e) {
             KotlinLogger.logAndThrow(e);

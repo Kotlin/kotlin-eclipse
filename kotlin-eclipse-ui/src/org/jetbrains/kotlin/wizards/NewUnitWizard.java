@@ -28,6 +28,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
 
@@ -60,8 +61,10 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
                 getShell(), 
                 getContainer());
         
-        selectAndRevealResource(kotlinSourceFile);
-        openFile(kotlinSourceFile);
+        if (kotlinSourceFile != null) {
+            selectAndRevealResource(kotlinSourceFile);
+            openFile(kotlinSourceFile);
+        }
         
         return true;
     }
@@ -92,6 +95,7 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
                 type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, getStructuredSelection());
     }
     
+    @Nullable
     public static IFile createKotlinSourceFile(
             @NotNull IPackageFragmentRoot root,
             @NotNull IPackageFragment packageFragment,
