@@ -240,6 +240,7 @@ public class KotlinPsiManager {
         virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET);
         
         PsiFileFactoryImpl psiFileFactory = (PsiFileFactoryImpl) PsiFileFactory.getInstance(project);
+        
         return (JetFile) psiFileFactory.trySetupPsiForFile(virtualFile, JetLanguage.INSTANCE, true, false);
     }
     

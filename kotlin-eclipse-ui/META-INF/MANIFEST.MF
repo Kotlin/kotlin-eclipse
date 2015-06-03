@@ -40,7 +40,8 @@ Import-Package: com.intellij.navigation,
  org.eclipse.ui.part,
  org.eclipse.ui.texteditor.templates,
  org.eclipse.ui.views.contentoutline,
- org.eclipse.ui.wizards.newresource
+ org.eclipse.ui.wizards.newresource,
+ org.jetbrains.kotlin.j2k
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,

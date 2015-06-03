@@ -101,7 +101,7 @@ public class FileCreationOp implements IRunnableWithProgress {
         return "(\\" + EXT + ")?";
     }
     
-    static IFile makeFile(IPackageFragment packageFragment, IPackageFragmentRoot sourceDir, String unitName) {
+    public static IFile makeFile(IPackageFragment packageFragment, IPackageFragmentRoot sourceDir, String unitName) {
         IPath path = packageFragment.getPath().append(getCompilationUnitName(unitName));
         IProject project = sourceDir.getJavaProject().getProject();
         
