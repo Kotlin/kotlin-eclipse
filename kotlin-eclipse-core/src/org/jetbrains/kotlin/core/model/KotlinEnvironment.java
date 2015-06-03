@@ -50,6 +50,8 @@ import org.jetbrains.kotlin.utils.PathUtil;
 
 import com.intellij.codeInsight.ContainerProvider;
 import com.intellij.codeInsight.ExternalAnnotationsManager;
+import com.intellij.codeInsight.NullableNotNullManager;
+import com.intellij.codeInsight.runner.JavaMainMethodProvider;
 import com.intellij.core.CoreApplicationEnvironment;
 import com.intellij.core.CoreJavaFileManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
@@ -63,8 +65,11 @@ import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFinder;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiModifierListOwner;
+import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.compiled.ClassFileDecompilers;
 import com.intellij.psi.impl.PsiTreeChangePreprocessor;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
@@ -99,6 +104,25 @@ public class KotlinEnvironment {
         };
         
         project = projectEnvironment.getProject();
+
+//        For j2k converter
+        project.registerService(NullableNotNullManager.class, new NullableNotNullManager() {
+            @Override
+            protected boolean hasHardcodedContracts(PsiElement element) {
+                return false;
+            }
+
+            @Override
+            public boolean isNotNull(@NotNull PsiModifierListOwner owner, boolean checkBases) {
+                return true;
+            }
+
+            @Override
+            public boolean isNullable(@NotNull PsiModifierListOwner owner, boolean checkBases) {
+                return !isNotNull(owner, checkBases);
+            }
+            
+        }); 
         
         CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(
                 project.getComponent(PsiManager.class));
@@ -201,6 +225,10 @@ public class KotlinEnvironment {
                 ClsCustomNavigationPolicy.class);
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), ClassFileDecompilers.EP_NAME,
                 ClassFileDecompilers.Decompiler.class);
+        
+        // For j2k converter 
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), PsiAugmentProvider.EP_NAME, PsiAugmentProvider.class);
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), JavaMainMethodProvider.EP_NAME, JavaMainMethodProvider.class);
     }
     
     @NotNull
