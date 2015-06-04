@@ -22,9 +22,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.backend.common.output.OutputFile;
 import org.jetbrains.kotlin.codegen.ClassBuilderMode;
-import org.jetbrains.kotlin.codegen.state.GenerationState;
 import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
 import org.jetbrains.kotlin.core.asJava.LightClassFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
@@ -72,35 +70,6 @@ public class KotlinLightClassManager {
         return Collections.<JetFile>emptyList();
     }
     
-    
-//    Calls after project build
-    public void saveKotlinDeclarationClasses(
-            @NotNull GenerationState state, 
-            @NotNull IJavaProject javaProject,
-            @NotNull Set<IFile> affectedFiles) throws CoreException {
-        IProject project = javaProject.getProject();
-        Map<File, List<File>> newSourceFilesMap = new HashMap<>();
-        for (OutputFile outputFile : state.getFactory().asList()) {
-            IPath path = KotlinJavaManager.KOTLIN_BIN_FOLDER.append(new Path(outputFile.getRelativePath()));
-            LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
-            createParentDirsFor(lightClassFile);
-            
-            lightClassFile.createIfNotExists();
-            
-            List<File> newSourceFiles = outputFile.getSourceFiles();
-            List<File> oldSourceFiles = getIOSourceFiles(lightClassFile.asFile()); // Affected files also contains removed files
-            if (containsAffectedFile(newSourceFiles, affectedFiles) || containsAffectedFile(oldSourceFiles, affectedFiles)) {
-                lightClassFile.touchFile();
-            }
-            
-            newSourceFilesMap.put(lightClassFile.asFile(), newSourceFiles);
-        }
-        
-        sourceFiles.clear();
-        sourceFiles.putAll(newSourceFilesMap);
-        
-        cleanDeprectedLightClasses(project);
-    }
     
     public void updateLighClasses(
             @NotNull IJavaProject javaProject,
@@ -177,19 +146,6 @@ public class KotlinLightClassManager {
                 return false;
             }
         });
-    }
-    
-    private boolean containsAffectedFile(@NotNull List<File> sourceFiles, @NotNull Set<IFile> affectedFiles) {
-        for (File sourceFile : sourceFiles) {
-            IFile file = KotlinLightClassManager.getEclipseFile(sourceFile);
-            assert file != null : "IFile for source file: " + sourceFile.getName() + " is null";
-            
-            if (affectedFiles.contains(file)) {
-                return true;
-            }
-        }
-        
-        return false;
     }
     
     private void createParentDirsFor(@NotNull LightClassFile lightClassFile) {
