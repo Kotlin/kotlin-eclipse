@@ -14,14 +14,13 @@ import org.jetbrains.kotlin.codegen.state.GenerationState;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
-import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.psi.JetFile;
 
 import com.intellij.openapi.project.Project;
 
 public class KotlinLightClassGeneration {
     
-    public static void buildAndSaveLightClasses(
+    public static void updateLightClasses(
             @NotNull AnalysisResult analysisResult, 
             @NotNull IJavaProject javaProject,
             @NotNull Set<IFile> affectedFiles) throws CoreException {
@@ -29,12 +28,7 @@ public class KotlinLightClassGeneration {
             return;
         }
         
-        GenerationState state = buildLightClasses(
-                analysisResult, 
-                javaProject,
-                ProjectUtils.getSourceFiles(javaProject.getProject()));
-        
-        KotlinLightClassManager.INSTANCE.saveKotlinDeclarationClasses(state, javaProject, affectedFiles);
+        KotlinLightClassManager.getInstance(javaProject).updateLightClasses(javaProject, analysisResult.getBindingContext(), affectedFiles);
     }
     
     public static GenerationState buildLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject, 

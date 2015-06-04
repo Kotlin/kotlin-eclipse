@@ -27,7 +27,7 @@ public class KotlinOpenEditor {
 	@Nullable
 	public static IEditorPart openKotlinEditor(@NotNull IJavaElement element, boolean activate) {
 	    File lightClass = element.getResource().getFullPath().toFile();
-	    List<JetFile> sourceFiles = KotlinLightClassManager.INSTANCE.getSourceFiles(lightClass);
+	    List<JetFile> sourceFiles = KotlinLightClassManager.getInstance(element.getJavaProject()).getSourceFiles(lightClass);
 	    JetFile referenceFile = null;
 	    for (JetFile sourceFile : sourceFiles) {
 	        JetElement referenceElement = NavigationPackage.findKotlinDeclaration(element, sourceFile);

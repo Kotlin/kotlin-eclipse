@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.core.filesystem;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -21,24 +22,36 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.backend.common.output.OutputFile;
-import org.jetbrains.kotlin.codegen.state.GenerationState;
+import org.jetbrains.kotlin.codegen.ClassBuilderMode;
+import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
 import org.jetbrains.kotlin.core.asJava.LightClassFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.descriptors.ClassDescriptor;
+import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
+import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
+import org.jetbrains.kotlin.name.FqName;
+import org.jetbrains.kotlin.psi.JetClassOrObject;
 import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.resolve.BindingContext;
+import org.jetbrains.org.objectweb.asm.Type;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.util.PsiTreeUtil;
 
 public class KotlinLightClassManager {
-    public static final KotlinLightClassManager INSTANCE = new KotlinLightClassManager();
-    
     private final ConcurrentMap<File, List<File>> sourceFiles = new ConcurrentHashMap<>();
     
-    private KotlinLightClassManager() {
+    @NotNull
+    public static KotlinLightClassManager getInstance(@NotNull IJavaProject javaProject) {
+        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
+        return ServiceManager.getService(ideaProject, KotlinLightClassManager.class);
     }
     
     @NotNull
@@ -59,61 +72,86 @@ public class KotlinLightClassManager {
         return Collections.<JetFile>emptyList();
     }
     
-//    Calls after project build
-    public void saveKotlinDeclarationClasses(
-            @NotNull GenerationState state, 
+    
+    public void updateLightClasses(
             @NotNull IJavaProject javaProject,
+            @NotNull BindingContext context,
             @NotNull Set<IFile> affectedFiles) throws CoreException {
+        JetTypeMapper typeMapper = new JetTypeMapper(context, ClassBuilderMode.LIGHT_CLASSES);
         IProject project = javaProject.getProject();
         Map<File, List<File>> newSourceFilesMap = new HashMap<>();
-        for (OutputFile outputFile : state.getFactory().asList()) {
-            IPath path = KotlinJavaManager.KOTLIN_BIN_FOLDER.append(new Path(outputFile.getRelativePath()));
-            LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
-            createParentDirsFor(lightClassFile);
+        for (IFile sourceFile : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
+            List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
             
-            lightClassFile.createIfNotExists();
-            
-            List<File> newSourceFiles = outputFile.getSourceFiles();
-            List<File> oldSourceFiles = getIOSourceFiles(lightClassFile.asFile()); // Affected files also contains removed files
-            if (containsAffectedFile(newSourceFiles, affectedFiles) || containsAffectedFile(oldSourceFiles, affectedFiles)) {
-                lightClassFile.touchFile();
+            for (IPath path : lightClassesPaths) {
+                LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
+                createParentDirsFor(lightClassFile);
+                
+                if (!lightClassFile.createIfNotExists() && affectedFiles.contains(sourceFile)) {
+                    lightClassFile.touchFile();
+                }
+                
+                List<File> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
+                if (newSourceFiles == null) {
+                    newSourceFiles = new ArrayList<>();
+                    newSourceFilesMap.put(lightClassFile.asFile(), newSourceFiles);
+                }
+                newSourceFiles.add(sourceFile.getLocation().toFile());
             }
-            
-            newSourceFilesMap.put(lightClassFile.asFile(), newSourceFiles);
         }
         
         sourceFiles.clear();
         sourceFiles.putAll(newSourceFilesMap);
         
-        cleanDeprectedLightClasses(project);
+        cleanOutdatedLightClasses(project);
     }
 
-    private void cleanDeprectedLightClasses(IProject project) throws CoreException {
+    @NotNull
+    private List<IPath> getLightClassesPaths(
+            @NotNull IFile sourceFile, 
+            @NotNull BindingContext context,
+            @NotNull JetTypeMapper typeMapper) {
+        List<IPath> lightClasses = new ArrayList<IPath>();
+        
+        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
+        for (JetClassOrObject classOrObject : PsiTreeUtil.findChildrenOfType(jetFile, JetClassOrObject.class)) {
+            FqName fqName = classOrObject.getFqName();
+            if (fqName == null) continue;
+            
+            ClassDescriptor descriptor = context.get(BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, 
+                    fqName.toUnsafe());
+            if (descriptor != null) {
+                Type asmType = typeMapper.mapClass(descriptor);
+                lightClasses.add(computePathByInternalName(asmType.getInternalName()));
+            }
+        }
+        
+        if (PackagePartClassUtils.fileHasCallables(jetFile)) {
+            String internalName = PackageClassUtils.getPackageClassInternalName(jetFile.getPackageFqName());
+            lightClasses.add(computePathByInternalName(internalName));
+        }
+        
+        return lightClasses;
+    }
+    
+    private IPath computePathByInternalName(String internalName) {
+        Path relativePath = new Path(internalName + ".class");
+        return KotlinJavaManager.KOTLIN_BIN_FOLDER.append(relativePath);
+    }
+    
+    private void cleanOutdatedLightClasses(IProject project) throws CoreException {
         ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), new Predicate<IResource>() {
             @Override
             public boolean apply(IResource resource) {
                 if (resource instanceof IFile) {
                     IFile file = (IFile) resource;
                     LightClassFile lightClass = new LightClassFile(file);
-                    return KotlinLightClassManager.INSTANCE.getIOSourceFiles(lightClass.asFile()).isEmpty();
+                    return getIOSourceFiles(lightClass.asFile()).isEmpty();
                 }
                 
                 return false;
             }
         });
-    }
-    
-    private boolean containsAffectedFile(@NotNull List<File> sourceFiles, @NotNull Set<IFile> affectedFiles) {
-        for (File sourceFile : sourceFiles) {
-            IFile file = KotlinLightClassManager.getEclipseFile(sourceFile);
-            assert file != null : "IFile for source file: " + sourceFile.getName() + " is null";
-            
-            if (affectedFiles.contains(file)) {
-                return true;
-            }
-        }
-        
-        return false;
     }
     
     private void createParentDirsFor(@NotNull LightClassFile lightClassFile) {

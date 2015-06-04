@@ -36,6 +36,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot;
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex;
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension;
 import org.jetbrains.kotlin.core.Activator;
+import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
@@ -111,6 +112,7 @@ public class KotlinEnvironment {
         project.registerService(KotlinLightClassForPackage.FileStubCache.class, new KotlinLightClassForPackage.FileStubCache(project));
         project.registerService(CodeAnalyzerInitializer.class, cliLightClassGenerationSupport);
         project.registerService(KotlinAnalysisProjectCache.class, new KotlinAnalysisProjectCache());
+        project.registerService(KotlinLightClassManager.class, new KotlinLightClassManager());
         
         VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(KT_JDK_ANNOTATIONS_PATH));
         annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
