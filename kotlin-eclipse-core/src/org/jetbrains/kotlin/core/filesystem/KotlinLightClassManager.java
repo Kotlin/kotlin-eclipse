@@ -116,9 +116,7 @@ public class KotlinLightClassManager {
         List<IPath> lightClasses = new ArrayList<IPath>();
         
         JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
-        for (JetClassOrObject classOrObject : PsiTreeUtil.getChildrenOfTypeAsList(jetFile, JetClassOrObject.class)) {
-            if (!classOrObject.isTopLevel()) continue;
-            
+        for (JetClassOrObject classOrObject : PsiTreeUtil.findChildrenOfType(jetFile, JetClassOrObject.class)) {
             FqName fqName = classOrObject.getFqName();
             if (fqName == null) continue;
             
