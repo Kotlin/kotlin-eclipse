@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
 import org.jetbrains.kotlin.core.asJava.LightClassFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.ClassDescriptor;
@@ -40,14 +41,17 @@ import org.jetbrains.org.objectweb.asm.Type;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.util.PsiTreeUtil;
 
 public class KotlinLightClassManager {
-    public static final KotlinLightClassManager INSTANCE = new KotlinLightClassManager();
-    
     private final ConcurrentMap<File, List<File>> sourceFiles = new ConcurrentHashMap<>();
     
-    private KotlinLightClassManager() {
+    @NotNull
+    public static KotlinLightClassManager getInstance(@NotNull IJavaProject javaProject) {
+        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
+        return ServiceManager.getService(ideaProject, KotlinLightClassManager.class);
     }
     
     @NotNull
@@ -67,6 +71,7 @@ public class KotlinLightClassManager {
         
         return Collections.<JetFile>emptyList();
     }
+    
     
 //    Calls after project build
     public void saveKotlinDeclarationClasses(
@@ -166,7 +171,7 @@ public class KotlinLightClassManager {
                 if (resource instanceof IFile) {
                     IFile file = (IFile) resource;
                     LightClassFile lightClass = new LightClassFile(file);
-                    return KotlinLightClassManager.INSTANCE.getIOSourceFiles(lightClass.asFile()).isEmpty();
+                    return getIOSourceFiles(lightClass.asFile()).isEmpty();
                 }
                 
                 return false;
