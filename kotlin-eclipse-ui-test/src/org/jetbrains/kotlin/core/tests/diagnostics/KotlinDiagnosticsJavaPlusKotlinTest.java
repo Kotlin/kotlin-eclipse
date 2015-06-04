@@ -207,9 +207,4 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
 	public void testtraitDefaultCall() throws Exception {
 		doTest("testData/diagnostics/j+k/traitDefaultCall.kt");
 	}
-	
-	@Test
-	public void testfileDependencyRecursion() throws Exception {
-		doTest("testData/diagnostics/j+k/fileDependencyRecursion.kt");
-	}
 }
