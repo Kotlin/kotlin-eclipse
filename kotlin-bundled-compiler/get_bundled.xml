@@ -40,6 +40,10 @@
 		</delete>
 
 		<mkdir dir="${download.dir}" />
+		
+		<sequential>
+			
+		</sequential>
 
 		<sequential>
 			<get 
@@ -49,7 +53,7 @@
 			
 			<unzip src="${download.dir}/${compiler-artifact-file}" dest="${download.dir}">
 				<patternset>
-					<include name="/Kotlin/lib/kotlin-plugin.jar" />
+					<include name="Kotlin/lib/kotlin-plugin.jar" />
 				</patternset>
 				<mapper type="merge" to="kotlin-plugin.jar" />
 			</unzip>
@@ -58,7 +62,6 @@
 				<patternset>
 					<include name="org/jetbrains/kotlin/j2k/**/*.class" />
 				</patternset>
-				<mapper type="merge" to="kotlin-converter.jar" />
 			</unzip>
 
             <jar jarfile="${target.dir}/kotlin-converter.jar">
@@ -69,11 +72,12 @@
 
                     <attribute name="Implementation-Vendor" value="JetBrains"/>
                     <attribute name="Implementation-Title" value="Java to Kotlin Converter"/>
-                    <attribute name="Implementation-Version" value="0.12.147"/>
+                    <attribute name="Implementation-Version" value="0.12.200"/>
 
                     <attribute name="Main-Class" value="org.jetbrains.kotlin.j2k.JavaToKotlinTranslator"/>
                 </manifest>
             </jar>
+			
             <delete dir="${download.dir}/j2k"/>
         </sequential>
 
