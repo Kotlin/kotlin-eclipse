@@ -31,9 +31,13 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.ClassDescriptor;
+import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.JetClassOrObject;
+import org.jetbrains.kotlin.psi.JetDeclaration;
 import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.JetNamedFunction;
+import org.jetbrains.kotlin.psi.JetProperty;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.org.objectweb.asm.Type;
 
@@ -79,24 +83,22 @@ public class KotlinLightClassManager {
         IProject project = javaProject.getProject();
         Map<File, List<File>> newSourceFilesMap = new HashMap<>();
         for (IFile sourceFile : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
-            if (affectedFiles.contains(sourceFile)) {
-                List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
+            List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
+            
+            for (IPath path : lightClassesPaths) {
+                LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
+                createParentDirsFor(lightClassFile);
                 
-                for (IPath path : lightClassesPaths) {
-                    LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
-                    createParentDirsFor(lightClassFile);
-                    
-                    if (!lightClassFile.createIfNotExists()) {
-                        lightClassFile.touchFile();
-                    }
-                    
-                    List<File> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
-                    if (newSourceFiles == null) {
-                        newSourceFiles = new ArrayList<>();
-                        newSourceFilesMap.put(lightClassFile.asFile(), newSourceFiles);
-                    }
-                    newSourceFiles.add(sourceFile.getLocation().toFile());
+                if (!lightClassFile.createIfNotExists() && affectedFiles.contains(sourceFile)) {
+                    lightClassFile.touchFile();
                 }
+                
+                List<File> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
+                if (newSourceFiles == null) {
+                    newSourceFiles = new ArrayList<>();
+                    newSourceFilesMap.put(lightClassFile.asFile(), newSourceFiles);
+                }
+                newSourceFiles.add(sourceFile.getLocation().toFile());
             }
         }
         
@@ -124,13 +126,31 @@ public class KotlinLightClassManager {
                     fqName.toUnsafe());
             if (descriptor != null) {
                 Type asmType = typeMapper.mapClass(descriptor);
-                Path relativePath = new Path(asmType.getInternalName() + ".class");
-                lightClasses.add(KotlinJavaManager.KOTLIN_BIN_FOLDER.append(relativePath));
+                lightClasses.add(computePathByInternalName(asmType.getInternalName()));
             }
-            
+        }
+        
+        if (hasTopLeveldDeclaration(jetFile)) {
+            String internalName = PackageClassUtils.getPackageClassInternalName(jetFile.getPackageFqName());
+            lightClasses.add(computePathByInternalName(internalName));
         }
         
         return lightClasses;
+    }
+    
+    private IPath computePathByInternalName(String internalName) {
+        Path relativePath = new Path(internalName + ".class");
+        return KotlinJavaManager.KOTLIN_BIN_FOLDER.append(relativePath);
+    }
+    
+    private boolean hasTopLeveldDeclaration(@NotNull JetFile jetFile) {
+        for (JetDeclaration declaration : jetFile.getDeclarations()) {
+            if (declaration instanceof JetProperty || declaration instanceof JetNamedFunction) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private void cleanOutdatedLightClasses(IProject project) throws CoreException {
