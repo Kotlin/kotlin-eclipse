@@ -103,7 +103,7 @@ public class KotlinLightClassManager {
         sourceFiles.clear();
         sourceFiles.putAll(newSourceFilesMap);
         
-        cleanDeprectedLightClasses(project);
+        cleanOutdatedLightClasses(project);
     }
 
     @NotNull
@@ -133,7 +133,7 @@ public class KotlinLightClassManager {
         return lightClasses;
     }
     
-    private void cleanDeprectedLightClasses(IProject project) throws CoreException {
+    private void cleanOutdatedLightClasses(IProject project) throws CoreException {
         ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), new Predicate<IResource>() {
             @Override
             public boolean apply(IResource resource) {
