@@ -20,7 +20,7 @@ import com.intellij.openapi.project.Project;
 
 public class KotlinLightClassGeneration {
     
-    public static void buildAndSaveLightClasses(
+    public static void updateLightClasses(
             @NotNull AnalysisResult analysisResult, 
             @NotNull IJavaProject javaProject,
             @NotNull Set<IFile> affectedFiles) throws CoreException {
@@ -28,14 +28,7 @@ public class KotlinLightClassGeneration {
             return;
         }
         
-//        GenerationState state = buildLightClasses(
-//                analysisResult, 
-//                javaProject,
-//                ProjectUtils.getSourceFiles(javaProject.getProject()));
-//        
-//        KotlinLightClassManager.INSTANCE.saveKotlinDeclarationClasses(state, javaProject, affectedFiles);
-//        
-        KotlinLightClassManager.INSTANCE.updateLighClasses(javaProject, analysisResult.getBindingContext(), affectedFiles);
+        KotlinLightClassManager.getInstance(javaProject).updateLighClasses(javaProject, analysisResult.getBindingContext(), affectedFiles);
     }
     
     public static GenerationState buildLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject, 
