@@ -19,14 +19,17 @@ public class LightClassFile {
         return file.exists();
     }
     
-    public void createIfNotExists() {
+    public boolean createIfNotExists() {
         try {
             if (!file.exists()) {
                 file.create(new ByteArrayInputStream(new byte[0]), true, null);
+                return true;
             }
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
+        
+        return false;
     }
     
     public void touchFile() {
