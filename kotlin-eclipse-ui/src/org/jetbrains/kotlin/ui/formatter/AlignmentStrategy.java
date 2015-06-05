@@ -23,6 +23,8 @@ import java.util.Set;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.lexer.JetTokens;
+import org.jetbrains.kotlin.psi.JetClass;
+import org.jetbrains.kotlin.psi.JetFunction;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -36,8 +38,7 @@ public class AlignmentStrategy {
     private final int lineIndentation;
     
     private static final Set<String> BLOCK_ELEMENT_TYPES = new HashSet<String>(Arrays.asList(
-            "IF", "FOR", "WHILE", "FUN", "CLASS", "OBJECT_DECLARATION",
-            "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", "WHEN"));
+            "IF", "FOR", "WHILE", "CLASS_BODY", "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", "WHEN"));
     
     public AlignmentStrategy(ASTNode parsedFile, int lineIndentation) {
         this.parsedFile = parsedFile;
@@ -109,7 +110,13 @@ public class AlignmentStrategy {
     }
     
     public static int updateIndent(ASTNode node, int indent) {
-        if (BLOCK_ELEMENT_TYPES.contains(node.getElementType().toString())) {
+        IElementType elementType = node.getElementType();
+        if ("BLOCK".equals(elementType.toString())) {
+            PsiElement parent = node.getPsi().getParent();
+            if (parent instanceof JetFunction || parent instanceof JetClass) {
+                return indent + 1;
+            } 
+        } else if (BLOCK_ELEMENT_TYPES.contains(elementType.toString())) {
             return indent + 1;
         }
         
