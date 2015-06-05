@@ -2,9 +2,11 @@ package org.jetbrains.kotlin.ui.commands.j2k;
 
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
-import java.lang.reflect.InvocationTargetException;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -26,6 +28,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.ide.undo.CreateFileOperation;
 import org.eclipse.ui.ide.undo.DeleteResourcesOperation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -37,7 +40,7 @@ import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetPsiFactory;
 import org.jetbrains.kotlin.ui.Activator;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
-import org.jetbrains.kotlin.wizards.NewUnitWizard;
+import org.jetbrains.kotlin.wizards.FileCreationOp;
 
 import com.intellij.openapi.project.Project;
 
@@ -59,7 +62,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     }
     
     private List<CompilationUnit> collectCompilationUnits(@NotNull Object[] selectedElements) {
-        List<CompilationUnit> elementsToKotlin = new ArrayList<>();
+        Set<CompilationUnit> elementsToKotlin = new HashSet<>();
         for (Object element : selectedElements) {
             if (element instanceof CompilationUnit) {
                 elementsToKotlin.add((CompilationUnit) element);
@@ -70,7 +73,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
             }
         }
         
-        return elementsToKotlin;
+        return new ArrayList<>(elementsToKotlin);
     }
     
     private List<CompilationUnit> collectCompilationUnits(@NotNull IPackageFragmentRoot packageFragmentRoot) {
@@ -78,7 +81,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         try {
             for (IJavaElement element : packageFragmentRoot.getChildren()) {
                 if (element instanceof IPackageFragment) {
-                    compilationUnits.addAll(collectCompilationUnits((IPackageFragmentRoot) element));
+                    compilationUnits.addAll(collectCompilationUnits((IPackageFragment) element));
                 }
             }
         } catch (JavaModelException e) {
@@ -110,45 +113,50 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     
     private IStatus convertToKotlin(@NotNull List<CompilationUnit> compilationUnits, @NotNull Shell shell) {
         try {
+            CompositeCreationOperation compositeOperation = new CompositeCreationOperation("Convert Java to Kotlin");
             for (CompilationUnit compilationUnit : compilationUnits) {
-                convertToKotlin(compilationUnit, shell);
+                CreateFileOperation creationOperation = getConvertedFileCreationOperation(compilationUnit, shell);
+                compositeOperation.add(creationOperation);
             }
+                
+            DeleteResourcesOperation deleteCompilationUnits = getDeleteOperation(compilationUnits, shell);
+            compositeOperation.add(deleteCompilationUnits);
             
-            deleteCompilationUnits(compilationUnits, shell);
-        } catch (ExecutionException | InvocationTargetException | InterruptedException e) {
-            KotlinLogger.logError("Could not delete java files after convertion", null);
+            PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(
+                    compositeOperation, null, getUIInfoAdapter(shell));
+        } catch (ExecutionException e) {
+            KotlinLogger.logError(e.getMessage(), null);
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage());
         }
         
         return Status.OK_STATUS;
     }
     
-    private IStatus deleteCompilationUnits(@NotNull List<CompilationUnit> compilationUnits, @NotNull Shell shell) throws ExecutionException {
+    private DeleteResourcesOperation getDeleteOperation(@NotNull List<CompilationUnit> compilationUnits, @NotNull Shell shell) throws ExecutionException {
         IResource[] resources = new IResource[compilationUnits.size()];
         for (int i = 0; i < resources.length; ++i) {
             resources[i] = compilationUnits.get(i).getResource();
         }
-        DeleteResourcesOperation deleteResourcesOperation = new DeleteResourcesOperation(resources, "Conversion files", true);
-        return PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(
-                deleteResourcesOperation, null, getUIInfoAdapter(shell));
+        return new DeleteResourcesOperation(resources, "Conversion files", true);
     }
     
-    private IFile convertToKotlin(@NotNull CompilationUnit compilationUnit, @NotNull Shell shell) throws InvocationTargetException, InterruptedException {
+    private CreateFileOperation getConvertedFileCreationOperation(@NotNull CompilationUnit compilationUnit, @NotNull Shell shell) throws ExecutionException {
         String contents = new String(compilationUnit.getContents());
         Project ideaProject = KotlinEnvironment.getEnvironment(compilationUnit.getJavaProject()).getProject();
         
         String translatedCode = JavaToKotlinTranslator.INSTANCE$.prettify(
                 J2kPackage.translateToKotlin(contents, ideaProject));
         JetFile jetFile = getJetFile(translatedCode, compilationUnit.getJavaProject());
+        String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode());
         
         String elementName = compilationUnit.getElementName();
-        return NewUnitWizard.createKotlinSourceFile(
-                compilationUnit.getPackageFragmentRoot(), 
-                (IPackageFragment) compilationUnit.getParent(),
-                elementName.substring(0, elementName.length() - compilationUnit.getResource().getFileExtension().length() - 1),
-                AlignmentStrategy.alignCode(jetFile.getNode()), 
-                shell, 
-                PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+        String fileName = elementName.substring(0, elementName.length() - compilationUnit.getResource().getFileExtension().length() - 1);
+        IFile file = FileCreationOp.makeFile((IPackageFragment) compilationUnit.getParent(), compilationUnit.getPackageFragmentRoot(), fileName);
+        if (file.exists()) {
+            throw new ExecutionException("Could not convert file: " + elementName + ". Because of existing file: " + file.getName());
+        }
+        
+        return new CreateFileOperation(file, null, new ByteArrayInputStream(formattedCode.getBytes()), "Create Kotlin File");
     }
     
     private JetFile getJetFile(@NotNull String sourceCode, @NotNull IJavaProject javaProject) {
