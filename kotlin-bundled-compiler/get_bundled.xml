@@ -45,6 +45,37 @@
 			src="${teamcity-kotlin-url}/kotlin-plugin-%7Bbuild.number%7D.zip${branch}" 
 			dest="${download.dir}/${compiler-artifact-file}" 
 			usetimestamp="true" />
+		
+		<sequential>
+			<unzip src="${download.dir}/${compiler-artifact-file}" dest="${download.dir}">
+				<patternset>
+					<include name="Kotlin/lib/kotlin-plugin.jar" />
+				</patternset>
+				<mapper type="merge" to="kotlin-plugin.jar" />
+			</unzip>
+			
+			<unzip src="${download.dir}/kotlin-plugin.jar" dest="${download.dir}/j2k">
+				<patternset>
+					<include name="org/jetbrains/kotlin/j2k/**/*.class" />
+				</patternset>
+			</unzip>
+
+            <jar jarfile="${target.dir}/kotlin-converter.jar">
+                <fileset dir="${download.dir}/j2k"/>
+
+                <manifest>
+                    <attribute name="Built-By" value="JetBrains"/>
+
+                    <attribute name="Implementation-Vendor" value="JetBrains"/>
+                    <attribute name="Implementation-Title" value="Java to Kotlin Converter"/>
+                    <attribute name="Implementation-Version" value="0.12.200"/>
+
+                    <attribute name="Main-Class" value="org.jetbrains.kotlin.j2k.JavaToKotlinTranslator"/>
+                </manifest>
+            </jar>
+			
+            <delete dir="${download.dir}/j2k"/>
+        </sequential>
 
 		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
 			<patternset>
