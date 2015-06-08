@@ -49,24 +49,13 @@
 		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
 			<patternset>
 				<include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
-			</patternset>
-			<mapper type="merge" to="kotlin-compiler.jar" />
-		</unzip>
-		
-		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
-			<patternset>
 				<include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
-			</patternset>
-			<mapper type="merge" to="kotlin-runtime.jar" />
-		</unzip>
-		
-		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
-			<patternset>
+				<include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
 				<include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
 			</patternset>
-			<mapper type="merge" to="kotlin-jdk-annotations.jar" />
+			<mapper type="flatten"/>
 		</unzip>
-
+		
 		<get 
 			src="${teamcity-kotlin-url}/internal/injector-generator.jar${branch}"
 			dest="${target.dir}/${injector-generator-file}"

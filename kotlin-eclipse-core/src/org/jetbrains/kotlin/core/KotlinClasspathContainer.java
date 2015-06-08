@@ -34,14 +34,21 @@ public class KotlinClasspathContainer implements IClasspathContainer {
     
     public static final IPath CONTAINER_ID = new Path("org.jetbrains.kotlin.core.KOTLIN_CONTAINER");
     private static final String DESCRIPTION = "Kotlin Runtime Library";
-    private static final String LIB_NAME = "kotlin-runtime";
+    private static final String LIB_RUNTIME_NAME = "kotlin-runtime";
+    private static final String LIB_REFLECT_NAME = "kotlin-reflect";
     
     private static final IClasspathEntry KT_RUNTIME_CONTAINER_ENTRY = JavaCore.newContainerEntry(CONTAINER_ID);
     
     @Override
     public IClasspathEntry[] getClasspathEntries() {
         IClasspathEntry kotlinRuntimeEntry = JavaCore.newLibraryEntry(
-                new Path(ProjectUtils.buildLibPath(LIB_NAME)),
+                new Path(ProjectUtils.buildLibPath(LIB_RUNTIME_NAME)),
+                null,
+                null,
+                true);
+        
+        IClasspathEntry kotlinReflectEntry = JavaCore.newLibraryEntry(
+                new Path(ProjectUtils.buildLibPath(LIB_REFLECT_NAME)),
                 null,
                 null,
                 true);
@@ -50,7 +57,7 @@ public class KotlinClasspathContainer implements IClasspathContainer {
                 new Path(javaProject.getProject().getName()).append(KotlinJavaManager.KOTLIN_BIN_FOLDER).makeAbsolute(), 
                 null, null, true);
         
-        return new IClasspathEntry[] { kotlinRuntimeEntry, kotlinBinFolderEntry };
+        return new IClasspathEntry[] { kotlinRuntimeEntry, kotlinReflectEntry, kotlinBinFolderEntry };
     }
     
     @Override
