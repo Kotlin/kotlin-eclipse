@@ -26,7 +26,6 @@ import org.eclipse.jdt.internal.junit.launcher.ITestKind;
 import org.eclipse.jdt.internal.junit.launcher.TestKindRegistry;
 import org.eclipse.ui.IFileEditorInput;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
 
 import com.google.common.collect.Sets;
 
@@ -50,17 +49,16 @@ public class KotlinJUnitLaunchableTester extends PropertyTester {
     }
     
     private boolean checkElementHasTests(@NotNull IJavaElement element) {
-        try {
-            ITestKind testKind = TestKindRegistry.getDefault().getKind(TestKindRegistry.getContainerTestKindId(element));
-            
-            Set<IType> tests = Sets.newHashSet();
-            testKind.getFinder().findTestsInContainer(element, tests, null);
-            
-            return !tests.isEmpty();
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
+        ITestKind testKind = TestKindRegistry.getDefault().getKind(TestKindRegistry.getContainerTestKindId(element));
         
-        return false;
+        Set<IType> tests = Sets.newHashSet();
+        try {
+            testKind.getFinder().findTestsInContainer(element, tests, null);
+        } catch (CoreException e) {
+//            Exception throws when tests can not be found
+            return false;
+        }
+            
+        return !tests.isEmpty();
     }
 }
