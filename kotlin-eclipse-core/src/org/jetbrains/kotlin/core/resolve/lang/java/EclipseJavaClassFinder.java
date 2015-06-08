@@ -20,12 +20,14 @@ import java.util.Arrays;
 
 import javax.inject.Inject;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
@@ -46,6 +48,7 @@ import org.eclipse.jdt.internal.core.NameLookup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClass;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPackage;
 import org.jetbrains.kotlin.load.java.JavaClassFinder;
@@ -112,12 +115,17 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
         if (eclipseType != null) {
-            return createTypeBinding(eclipseType);
+            return !isInKotlinBinFolder(eclipseType) ? createTypeBinding(eclipseType) : null;
         }
         
         return null;
+    }
+    
+    private static boolean isInKotlinBinFolder(@NotNull IType eclipseType) {
+        IFolder kotlinBinFolder = KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(eclipseType.getJavaProject().getProject());
+        IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) eclipseType.getPackageFragment().getParent();
+        return kotlinBinFolder.equals(packageFragmentRoot.getResource());
     }
     
     public static ITypeBinding createTypeBinding(IType type) {

@@ -24,7 +24,6 @@ import org.jetbrains.kotlin.backend.common.output.OutputFile;
 import org.jetbrains.kotlin.codegen.state.GenerationState;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.psi.JetFile;
 
 
@@ -43,11 +42,7 @@ public class KotlinFileStore extends LocalFile {
         
         List<JetFile> jetFiles = KotlinLightClassManager.getInstance(javaProject).getSourceFiles(file);
         if (!jetFiles.isEmpty()) {
-            AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getCachedAnalysisResult();
-            if (analysisResult == null) {
-                analysisResult = KotlinAnalyzer.analyzeProject(javaProject);
-            }
-            
+            AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
             GenerationState state = KotlinLightClassGeneration.buildLightClasses(analysisResult, javaProject, jetFiles);
             
             String requestedClassName = new Path(file.getAbsolutePath()).lastSegment();

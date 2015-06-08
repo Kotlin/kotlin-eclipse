@@ -5,11 +5,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
+import org.jetbrains.kotlin.idea.MainFunctionDetector;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.idea.MainFunctionDetector;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 
 public class KotlinLaunchableTester extends PropertyTester {
     @Override
@@ -23,7 +23,7 @@ public class KotlinLaunchableTester extends PropertyTester {
                 }
                 
                 IJavaProject javaProject = JavaCore.create(file.getProject()); 
-                BindingContext bindingContext = KotlinAnalyzer.analyzeProject(javaProject).getBindingContext();
+                BindingContext bindingContext = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult().getBindingContext();
                 return new MainFunctionDetector(bindingContext).hasMain(jetFile.getDeclarations());
             }
         }

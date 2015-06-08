@@ -22,35 +22,27 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
-import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.psi.JetFile;
 
 import com.google.common.collect.Lists;
 
 public class KotlinAnalyzer {
-
-    @NotNull
-    public static AnalysisResult analyzeProject(@NotNull IJavaProject javaProject) {
-        return analyzeProject(javaProject, ProjectUtils.getSourceFiles(javaProject.getProject()));
-    }
-    
     @NotNull
     public static AnalysisResult analyzeFile(@NotNull IJavaProject javaProject, @NotNull JetFile jetFile) {
-        return analyzeProject(javaProject, Lists.newArrayList(jetFile));
-    }
-    
-    private static AnalysisResult analyzeProject(@NotNull IJavaProject javaProject, 
-            @NotNull Collection<JetFile> filesToAnalyze) {
-        KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
-        return analysisResultProject(javaProject, kotlinEnvironment, filesToAnalyze);
+        return analyzeFiles(javaProject, Lists.newArrayList(jetFile));
     }
     
     @NotNull
-    private static AnalysisResult analysisResultProject(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
+    public static AnalysisResult analyzeFiles(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
             @NotNull Collection<JetFile> filesToAnalyze) {
         return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                 javaProject, 
                 kotlinEnvironment.getProject(), 
                 filesToAnalyze);
+    }
+    
+    private static AnalysisResult analyzeFiles(@NotNull IJavaProject javaProject, @NotNull Collection<JetFile> filesToAnalyze) {
+        KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
+        return analyzeFiles(javaProject, kotlinEnvironment, filesToAnalyze);
     }
 }

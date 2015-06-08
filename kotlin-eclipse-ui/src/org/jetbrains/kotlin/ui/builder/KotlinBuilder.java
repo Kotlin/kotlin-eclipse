@@ -38,7 +38,6 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
@@ -55,10 +54,10 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             compileKotlinFiles(javaProject);
         }
         
-        AnalysisResult analysisResult = KotlinAnalyzer.analyzeProject(javaProject);
-        updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
+        KotlinAnalysisProjectCache.getInstance(javaProject).resetCache();
         
-        KotlinAnalysisProjectCache.getInstance(javaProject).cacheAnalysisResult(analysisResult);
+        AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
+        updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
         
         final Set<IFile> affectedFiles = Sets.newHashSet();
         if (kind == FULL_BUILD) {

@@ -103,19 +103,23 @@ public class ProjectUtils {
         return PackageClassUtils.getPackageClassFqName(new FqName(filePackage));
     }
     
-    public static void cleanFolder(IContainer container, @NotNull Predicate<IResource> predicate) throws CoreException {
-        if (container == null) {
-            return;
-        }
-        if (container.exists()) {
-            for (IResource member : container.members()) {
-                if (member instanceof IContainer) {
-                    cleanFolder((IContainer) member, predicate);
-                }
-                if (predicate.apply(member)) {
-                    member.delete(true, null);
+    public static void cleanFolder(IContainer container, @NotNull Predicate<IResource> predicate) {
+        try {
+            if (container == null) {
+                return;
+            }
+            if (container.exists()) {
+                for (IResource member : container.members()) {
+                    if (member instanceof IContainer) {
+                        cleanFolder((IContainer) member, predicate);
+                    }
+                    if (predicate.apply(member)) {
+                        member.delete(true, null);
+                    }
                 }
             }
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
         }
     }
     

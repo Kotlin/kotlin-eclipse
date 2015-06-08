@@ -22,11 +22,13 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.codegen.ClassBuilderMode;
 import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
 import org.jetbrains.kotlin.core.asJava.LightClassFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
@@ -46,6 +48,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.util.PsiTreeUtil;
 
 public class KotlinLightClassManager {
+    private final IJavaProject javaProject;
+    
     private final ConcurrentMap<File, List<File>> sourceFiles = new ConcurrentHashMap<>();
     
     @NotNull
@@ -54,29 +58,13 @@ public class KotlinLightClassManager {
         return ServiceManager.getService(ideaProject, KotlinLightClassManager.class);
     }
     
-    @NotNull
-    public List<JetFile> getSourceFiles(@NotNull File lightClass) {
-        List<File> sourceIOFiles = sourceFiles.get(lightClass);
-        if (sourceIOFiles != null) {
-            List<JetFile> jetSourceFiles = Lists.newArrayList();
-            for (File sourceFile : sourceIOFiles) {
-                JetFile jetFile = getJetFileBySourceFile(sourceFile);
-                if (jetFile != null) {
-                    jetSourceFiles.add(jetFile);
-                }
-            }
-            
-            return jetSourceFiles;
-        }
-        
-        return Collections.<JetFile>emptyList();
+    public KotlinLightClassManager(@NotNull IJavaProject javaProject) {
+        this.javaProject = javaProject;
     }
     
-    
     public void updateLightClasses(
-            @NotNull IJavaProject javaProject,
             @NotNull BindingContext context,
-            @NotNull Set<IFile> affectedFiles) throws CoreException {
+            @NotNull Set<IFile> affectedFiles) {
         JetTypeMapper typeMapper = new JetTypeMapper(context, ClassBuilderMode.LIGHT_CLASSES);
         IProject project = javaProject.getProject();
         Map<File, List<File>> newSourceFilesMap = new HashMap<>();
@@ -85,11 +73,8 @@ public class KotlinLightClassManager {
             
             for (IPath path : lightClassesPaths) {
                 LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
-                createParentDirsFor(lightClassFile);
                 
-                if (!lightClassFile.createIfNotExists() && affectedFiles.contains(sourceFile)) {
-                    lightClassFile.touchFile();
-                }
+                createVirtualLightClass(lightClassFile, affectedFiles, sourceFile);
                 
                 List<File> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
                 if (newSourceFiles == null) {
@@ -105,6 +90,44 @@ public class KotlinLightClassManager {
         
         cleanOutdatedLightClasses(project);
     }
+    
+    public List<JetFile> getSourceFiles(@NotNull File file) {
+        List<JetFile> jetFiles = getSourceJetFiles(file);
+        if (jetFiles.isEmpty()) {
+            AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
+            updateLightClasses(analysisResult.getBindingContext(), Collections.<IFile>emptySet());
+        }
+        
+        return getSourceJetFiles(file);
+    }
+    
+    @NotNull
+    private List<JetFile> getSourceJetFiles(@NotNull File lightClass) {
+        List<File> sourceIOFiles = sourceFiles.get(lightClass);
+        if (sourceIOFiles != null) {
+            List<JetFile> jetSourceFiles = Lists.newArrayList();
+            for (File sourceFile : sourceIOFiles) {
+                JetFile jetFile = getJetFileBySourceFile(sourceFile);
+                if (jetFile != null) {
+                    jetSourceFiles.add(jetFile);
+                }
+            }
+            
+            return jetSourceFiles;
+        }
+        
+        return Collections.<JetFile>emptyList();
+    }
+
+    private void createVirtualLightClass(@NotNull LightClassFile lightClassFile, @NotNull Set<IFile> affectedFiles, @NotNull IFile sourceFile) {
+        createParentDirsFor(lightClassFile);
+        
+        lightClassFile.createIfNotExists();
+        if (affectedFiles.contains(sourceFile)) {
+            lightClassFile.touchFile();
+        }
+    }
+    
 
     @NotNull
     private List<IPath> getLightClassesPaths(
@@ -139,7 +162,7 @@ public class KotlinLightClassManager {
         return KotlinJavaManager.KOTLIN_BIN_FOLDER.append(relativePath);
     }
     
-    private void cleanOutdatedLightClasses(IProject project) throws CoreException {
+    private void cleanOutdatedLightClasses(IProject project) {
         ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), new Predicate<IResource>() {
             @Override
             public boolean apply(IResource resource) {

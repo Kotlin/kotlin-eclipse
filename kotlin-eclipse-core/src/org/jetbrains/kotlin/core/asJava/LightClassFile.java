@@ -22,7 +22,7 @@ public class LightClassFile {
     public boolean createIfNotExists() {
         try {
             if (!file.exists()) {
-                file.create(new ByteArrayInputStream(new byte[0]), true, null);
+                file.create(new ByteArrayInputStream(new byte[0]), false, null);
                 return true;
             }
         } catch (CoreException e) {

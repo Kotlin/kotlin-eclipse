@@ -28,7 +28,7 @@ public class KotlinLightClassGeneration {
             return;
         }
         
-        KotlinLightClassManager.getInstance(javaProject).updateLightClasses(javaProject, analysisResult.getBindingContext(), affectedFiles);
+        KotlinLightClassManager.getInstance(javaProject).updateLightClasses(analysisResult.getBindingContext(), affectedFiles);
     }
     
     public static GenerationState buildLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject, 

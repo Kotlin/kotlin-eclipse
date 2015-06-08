@@ -28,8 +28,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
@@ -77,8 +78,8 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
 		
 		KotlinTestUtils.joinBuildThread();
 		
-		BindingContext bindingContext = KotlinAnalyzer.analyzeProject(
-				testEditor.getTestJavaProject().getJavaProject()).getBindingContext();
+		IJavaProject javaProject = testEditor.getTestJavaProject().getJavaProject();
+		BindingContext bindingContext = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult().getBindingContext();
 		Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(bindingContext.getDiagnostics());
 		
 		for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {
