@@ -231,9 +231,10 @@
       </menuContribution>
       <menuContribution
             allPopups="false"
-            locationURI="popup:org.eclipse.ui.popup.any">
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
          <command
                commandId="org.jetbrains.kotlin.ui.commands.j2k"
+               label="Convert Java to Kotlin"
                style="push">
          </command>
       </menuContribution>

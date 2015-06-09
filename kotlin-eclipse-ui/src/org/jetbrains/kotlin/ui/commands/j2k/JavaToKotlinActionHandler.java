@@ -21,12 +21,14 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.ISources;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
@@ -67,6 +69,18 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         return null;
     }
     
+    @Override
+    public void setEnabled(Object evaluationContext) {
+        Object selection = HandlerUtil.getVariable(evaluationContext, ISources.ACTIVE_CURRENT_SELECTION_NAME);
+        if (selection instanceof IStructuredSelection) {
+            Object[] elements = ((IStructuredSelection) selection).toArray();
+            List<CompilationUnit> elementsToKotlin = collectCompilationUnits(elements);
+            super.setBaseEnabled(!elementsToKotlin.isEmpty());
+        } else {
+            super.setBaseEnabled(false);
+        }
+    }
+
     private void configureProjectsWithKotlin(@NotNull Set<IProject> projects) {
         for (IProject project : projects) {
             NewUnitWizard.addKotlinModelSpecificConfiguration(project);
@@ -78,7 +92,10 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         Set<CompilationUnit> elementsToKotlin = new HashSet<>();
         for (Object element : selectedElements) {
             if (element instanceof CompilationUnit) {
-                elementsToKotlin.add((CompilationUnit) element);
+                CompilationUnit unit = (CompilationUnit) element;
+                if (JavaCore.isJavaLikeFileName(unit.getElementName())) {
+                    elementsToKotlin.add(unit);
+                }
             } else if (element instanceof IPackageFragment) {
                 elementsToKotlin.addAll(collectCompilationUnits((IPackageFragment) element));
             } else if (element instanceof IPackageFragmentRoot) {
