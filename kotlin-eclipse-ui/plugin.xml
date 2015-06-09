@@ -217,6 +217,11 @@
             id="org.jetbrains.kotlin.ui.commands.j2k"
             name="Convert Java to Kotlin">
       </command>
+      <command
+            defaultHandler="org.jetbrains.kotlin.ui.commands.DeconfigureKotlinActionHandler"
+            id="org.jetbrains.kotlin.ui.commands.deconfiguration"
+            name="Deconfigure Kotlin">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -235,6 +240,15 @@
          <command
                commandId="org.jetbrains.kotlin.ui.commands.j2k"
                label="Convert Java to Kotlin"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <command
+               commandId="org.jetbrains.kotlin.ui.commands.deconfiguration"
+               label="Remove Kotlin Nature"
                style="push">
          </command>
       </menuContribution>
