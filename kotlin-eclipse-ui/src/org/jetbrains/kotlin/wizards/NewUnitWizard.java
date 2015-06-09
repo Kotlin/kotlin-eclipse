@@ -118,11 +118,16 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         runnableContext.run(true, true, operation);
         
         IProject project = root.getJavaProject().getProject();
-        addKotlinNatureToProject(project);
-        addKotlinBuilderToProject(project);
+        addKotlinModelSpecificConfiguration(project);
+        
         KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
         
         return operation.getResult();
+    }
+    
+    public static void addKotlinModelSpecificConfiguration(@NotNull IProject project) {
+        addKotlinNatureToProject(project);
+        addKotlinBuilderToProject(project);
     }
     
     private String createTypeBody() {

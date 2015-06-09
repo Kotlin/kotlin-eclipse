@@ -12,6 +12,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -39,7 +40,9 @@ import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetPsiFactory;
 import org.jetbrains.kotlin.ui.Activator;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
+import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
 import org.jetbrains.kotlin.wizards.FileCreationOp;
+import org.jetbrains.kotlin.wizards.NewUnitWizard;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -51,14 +54,24 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         if (selection instanceof IStructuredSelection) {
             Object[] elements = ((IStructuredSelection) selection).toArray();
             List<CompilationUnit> elementsToKotlin = collectCompilationUnits(elements);
+            Set<IProject> projects = getCorrespondingProjects(elementsToKotlin);
             
             IStatus status = convertToKotlin(elementsToKotlin, HandlerUtil.getActiveShell(event));
-            if (!status.isOK()) {
+            if (status.isOK()) {
+                configureProjectsWithKotlin(projects);
+            } else {
                 MessageDialog.openError(HandlerUtil.getActiveShell(event), "Conversion error", status.getMessage());
             }
         }
         
         return null;
+    }
+    
+    private void configureProjectsWithKotlin(@NotNull Set<IProject> projects) {
+        for (IProject project : projects) {
+            NewUnitWizard.addKotlinModelSpecificConfiguration(project);
+            KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
+        }
     }
     
     private List<CompilationUnit> collectCompilationUnits(@NotNull Object[] selectedElements) {
@@ -74,6 +87,15 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         }
         
         return new ArrayList<>(elementsToKotlin);
+    }
+    
+    private Set<IProject> getCorrespondingProjects(@NotNull List<CompilationUnit> compilationUnits) {
+        Set<IProject> projects = new HashSet<>();
+        for (CompilationUnit compilationUnit : compilationUnits) {
+            projects.add(compilationUnit.getJavaProject().getProject());
+        }
+        
+        return projects;
     }
     
     private List<CompilationUnit> collectCompilationUnits(@NotNull IPackageFragmentRoot packageFragmentRoot) {

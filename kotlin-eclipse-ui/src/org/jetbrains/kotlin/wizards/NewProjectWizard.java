@@ -40,8 +40,7 @@ public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
             return false;
         }
         
-        addKotlinNatureToProject(op.getResult());
-        addKotlinBuilderToProject(op.getResult());
+        NewUnitWizard.addKotlinModelSpecificConfiguration(op.getResult());
         
         selectAndRevealResource(op.getResult());
 
