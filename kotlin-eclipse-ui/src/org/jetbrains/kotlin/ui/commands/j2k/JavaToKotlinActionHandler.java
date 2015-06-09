@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -50,6 +51,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 
 public class JavaToKotlinActionHandler extends AbstractHandler {
+    private final static String DOC_START = "/**";
+    private final static String DOC_ESCAPE_START = "/*%";
+            
+    
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         ISelection selection = HandlerUtil.getActiveMenuSelection(event);
@@ -173,13 +178,13 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     }
     
     private CreateFileOperation getConvertedFileCreationOperation(@NotNull CompilationUnit compilationUnit, @NotNull Shell shell) throws ExecutionException {
-        String contents = new String(compilationUnit.getContents());
+        String contents = new String(compilationUnit.getContents()).replaceAll(Pattern.quote(DOC_START), DOC_ESCAPE_START);
         Project ideaProject = KotlinEnvironment.getEnvironment(compilationUnit.getJavaProject()).getProject();
         
         String translatedCode = JavaToKotlinTranslator.INSTANCE$.prettify(
                 J2kPackage.translateToKotlin(contents, ideaProject));
         JetFile jetFile = getJetFile(translatedCode, compilationUnit.getJavaProject());
-        String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode());
+        String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode()).replaceAll(Pattern.quote(DOC_ESCAPE_START), DOC_START);
         
         String fileName = FileUtil.getNameWithoutExtension(compilationUnit.getElementName());
         IFile file = FileCreationOp.makeFile((IPackageFragment) compilationUnit.getParent(), compilationUnit.getPackageFragmentRoot(), fileName);
