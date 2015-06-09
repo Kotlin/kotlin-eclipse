@@ -59,3 +59,10 @@ fun canBeDeconfigured(project: IProject): Boolean {
 		else -> false
 	}
 }
+
+fun isConfigurationMissing(project: IProject): Boolean {
+	return when {
+		!KotlinNature.hasKotlinBuilder(project), !KotlinNature.hasKotlinNature(project), !ProjectUtils.hasKotlinRuntime(project) -> true
+		else -> false
+	}
+}

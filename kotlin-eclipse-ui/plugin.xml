@@ -222,6 +222,11 @@
             id="org.jetbrains.kotlin.ui.commands.deconfiguration"
             name="Deconfigure Kotlin">
       </command>
+      <command
+            defaultHandler="org.jetbrains.kotlin.ui.commands.ConfigureKotlinActionHandler"
+            id="org.jetbrains.kotlin.ui.commands.configuration"
+            name="Configure Kotlin">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -246,11 +251,19 @@
       <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
-         <command
-               commandId="org.jetbrains.kotlin.ui.commands.deconfiguration"
-               label="Remove Kotlin Nature"
-               style="push">
-         </command>
+         <menu
+               label="Configure Kotlin">
+            <command
+                  commandId="org.jetbrains.kotlin.ui.commands.deconfiguration"
+                  label="Remove Kotlin Nature"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.jetbrains.kotlin.ui.commands.configuration"
+                  label="Add Kotlin Nature"
+                  style="push">
+            </command>
+         </menu>
       </menuContribution>
    </extension>
    <extension
