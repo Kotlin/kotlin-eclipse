@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.psi.JetClass;
 import org.jetbrains.kotlin.psi.JetFunction;
@@ -36,20 +35,22 @@ public class AlignmentStrategy {
     private final ASTNode parsedFile;
     private StringBuilder edit;
     private final int lineIndentation;
+    private final String lineDelimiter;
     
     private static final Set<String> BLOCK_ELEMENT_TYPES = new HashSet<String>(Arrays.asList(
             "IF", "FOR", "WHILE", "CLASS_BODY", "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", "WHEN"));
     
-    public AlignmentStrategy(ASTNode parsedFile, int lineIndentation) {
+    public AlignmentStrategy(ASTNode parsedFile, int lineIndentation, String lineDelimiter) {
         this.parsedFile = parsedFile;
         this.lineIndentation = lineIndentation;
+        this.lineDelimiter = lineDelimiter;
     }
     
     public String placeSpaces() {
         edit = new StringBuilder();
         buildFormattedCode(parsedFile, lineIndentation);
         
-        return LineEndUtil.replaceAllNewLinesWithSystemLineSeparators(edit.toString());
+        return edit.toString();
     }
     
     private void buildFormattedCode(ASTNode node, int indent) {
@@ -66,7 +67,7 @@ public class AlignmentStrategy {
                     }
                     
                     int lineSeparatorsOccurences = IndenterUtil.getLineSeparatorsOccurences(psiElement.getText());
-                    edit.append(IndenterUtil.createWhiteSpace(shift, lineSeparatorsOccurences, LineEndUtil.NEW_LINE_STRING));
+                    edit.append(IndenterUtil.createWhiteSpace(shift, lineSeparatorsOccurences, lineDelimiter));
                 } else {
                     edit.append(psiElement.getText());
                 }
@@ -101,12 +102,12 @@ public class AlignmentStrategy {
         }
     }
     
-    public static String alignCode(ASTNode parsedFile) {
-        return alignCode(parsedFile, 0);
+    public static String alignCode(ASTNode parsedFile, String lineDelimiter) {
+        return alignCode(parsedFile, 0, lineDelimiter);
     }
     
-    public static String alignCode(ASTNode parsedFile, int lineIndentation) {
-        return new AlignmentStrategy(parsedFile, lineIndentation).placeSpaces();
+    public static String alignCode(ASTNode parsedFile, int lineIndentation, String lineDelimiter) {
+        return new AlignmentStrategy(parsedFile, lineIndentation, lineDelimiter).placeSpaces();
     }
     
     public static int updateIndent(ASTNode node, int indent) {

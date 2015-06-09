@@ -103,8 +103,4 @@ public class LineEndUtil {
     public static String removeAllCarriageReturns(String s) {
         return s.replaceAll(CARRIAGE_RETURN_STRING, "");
     }
-    
-    public static String replaceAllNewLinesWithSystemLineSeparators(String s) {
-        return s.replaceAll(NEW_LINE_STRING, System.lineSeparator());
-    }
 }

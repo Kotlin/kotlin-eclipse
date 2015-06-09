@@ -17,6 +17,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -25,7 +26,10 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.CompilationUnit;
+import org.eclipse.jdt.internal.core.DocumentAdapter;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
@@ -184,7 +188,8 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         String translatedCode = JavaToKotlinTranslator.INSTANCE$.prettify(
                 J2kPackage.translateToKotlin(contents, ideaProject));
         JetFile jetFile = getJetFile(translatedCode, compilationUnit.getJavaProject());
-        String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode()).replaceAll(Pattern.quote(DOC_ESCAPE_START), DOC_START);
+        String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode(), getDefaultLineDelimiter(compilationUnit))
+                .replaceAll(Pattern.quote(DOC_ESCAPE_START), DOC_START);
         
         String fileName = FileUtil.getNameWithoutExtension(compilationUnit.getElementName());
         IFile file = FileCreationOp.makeFile((IPackageFragment) compilationUnit.getParent(), compilationUnit.getPackageFragmentRoot(), fileName);
@@ -193,6 +198,24 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         }
         
         return new CreateFileOperation(file, null, new ByteArrayInputStream(formattedCode.getBytes()), "Create Kotlin File");
+    }
+    
+    private String getDefaultLineDelimiter(CompilationUnit unit) {
+        try {
+            IBuffer buffer = unit.getBuffer();
+            IDocument document;
+            if (buffer instanceof IDocument) {
+                document = (IDocument) buffer;
+            } else {
+                document = new DocumentAdapter(buffer);
+            }
+            
+            return TextUtilities.getDefaultLineDelimiter(document);
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return null;
     }
     
     private JetFile getJetFile(@NotNull String sourceCode, @NotNull IJavaProject javaProject) {

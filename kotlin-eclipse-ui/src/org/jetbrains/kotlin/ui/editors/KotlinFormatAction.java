@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -54,7 +55,7 @@ public class KotlinFormatAction extends Action {
             }
 
             IDocument document = editor.getViewer().getDocument(); 
-            document.set(AlignmentStrategy.alignCode(parsedCode.getNode()));
+            document.set(AlignmentStrategy.alignCode(parsedCode.getNode(), TextUtilities.getDefaultLineDelimiter(document)));
         } else {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
         }

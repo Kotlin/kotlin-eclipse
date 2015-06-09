@@ -23,6 +23,7 @@ import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.templates.DocumentTemplateContext;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateBuffer;
@@ -50,7 +51,8 @@ public class KotlinDocumentTemplateContext extends DocumentTemplateContext {
         assert file != null : "Failed to retrieve IFile from editor " + editor;
 
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        templateFormatter.format(templateBuffer, getLineIndentation(), javaProject);
+        String lineDelimiter = TextUtilities.getDefaultLineDelimiter(getDocument());
+        templateFormatter.format(templateBuffer, getLineIndentation(), lineDelimiter, javaProject);
         
         return templateBuffer;
     }
