@@ -26,6 +26,7 @@ public class IndenterUtil {
     
     public static final char SPACE_CHAR = ' ';
     public static final char TAB_CHAR = '\t';
+    public static final String TAB_STRING = Character.toString(TAB_CHAR);
     
     public static String createWhiteSpace(int curIndent, int countBreakLines, String lineSeparator) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -41,7 +42,7 @@ public class IndenterUtil {
         return stringBuilder.toString();
     }
     
-    private static String getIndentString() {
+    public static String getIndentString() {
         if (isSpacesForTabs()) {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < getDefaultIndent(); i++) {

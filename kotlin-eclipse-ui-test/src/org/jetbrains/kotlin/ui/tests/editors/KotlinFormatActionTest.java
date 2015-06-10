@@ -34,4 +34,24 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void packageFunctionsFormatTest() {
         doAutoTest();
     }
+    
+    @Test
+    public void withBlockComments() {
+    	doAutoTest();
+    }
+    
+    @Test
+    public void withJavaDoc() {
+    	doAutoTest();
+    }
+    
+    @Test
+    public void withLineComments() {
+    	doAutoTest();
+    }
+    
+    @Test
+    public void withoutComments() {
+    	doAutoTest();
+    }
 }

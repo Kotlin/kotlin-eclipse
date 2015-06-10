@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.psi.JetClass;
 import org.jetbrains.kotlin.psi.JetFunction;
@@ -60,16 +61,21 @@ public class AlignmentStrategy {
             PsiElement psiElement = child.getPsi();
             
             if (psiElement instanceof LeafPsiElement) {
+                String text = psiElement.getText();
                 if (IndenterUtil.isNewLine((LeafPsiElement) psiElement)) {
                     int shift = indent;
                     if (isBrace(psiElement.getNextSibling())) {
                         shift--;
                     }
                     
-                    int lineSeparatorsOccurences = IndenterUtil.getLineSeparatorsOccurences(psiElement.getText());
+                    int lineSeparatorsOccurences = IndenterUtil.getLineSeparatorsOccurences(text);
                     edit.append(IndenterUtil.createWhiteSpace(shift, lineSeparatorsOccurences, lineDelimiter));
                 } else {
-                    edit.append(psiElement.getText());
+                    String textWithDefaultIndents = text.replaceAll(LineEndUtil.NEW_LINE_STRING, lineDelimiter);
+                    if (IndenterUtil.isSpacesForTabs()) {
+                        textWithDefaultIndents = textWithDefaultIndents.replaceAll(IndenterUtil.TAB_STRING, IndenterUtil.getIndentString());
+                    }
+                    edit.append(textWithDefaultIndents);
                 }
             }
             

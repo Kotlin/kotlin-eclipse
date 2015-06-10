@@ -35,7 +35,7 @@ public class KotlinTokenScanner implements ITokenScanner {
     public KotlinTokenScanner(@NotNull IPreferenceStore preferenceStore, @NotNull IColorManager colorManager) {
         kotlinTokensFactory = new KotlinTokensFactory(preferenceStore, colorManager);
     }
-
+    
     @Override
     public void setRange(IDocument document, int offset, int length) {
         this.document = document;
