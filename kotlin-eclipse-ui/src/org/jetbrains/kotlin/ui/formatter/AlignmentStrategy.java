@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.psi.JetClass;
+import org.jetbrains.kotlin.psi.JetClassInitializer;
 import org.jetbrains.kotlin.psi.JetFunction;
 
 import com.intellij.lang.ASTNode;
@@ -120,7 +121,7 @@ public class AlignmentStrategy {
         IElementType elementType = node.getElementType();
         if ("BLOCK".equals(elementType.toString())) {
             PsiElement parent = node.getPsi().getParent();
-            if (parent instanceof JetFunction || parent instanceof JetClass) {
+            if (parent instanceof JetFunction || parent instanceof JetClass || parent instanceof JetClassInitializer) {
                 return indent + 1;
             } 
         } else if (BLOCK_ELEMENT_TYPES.contains(elementType.toString())) {

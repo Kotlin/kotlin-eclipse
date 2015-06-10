@@ -54,4 +54,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void withoutComments() {
     	doAutoTest();
     }
+        
+    @Test
+    public void initIndent() {
+    	doAutoTest();
+    }
 }
