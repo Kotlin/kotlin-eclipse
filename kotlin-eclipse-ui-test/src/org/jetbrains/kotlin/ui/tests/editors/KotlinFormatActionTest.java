@@ -59,4 +59,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void initIndent() {
     	doAutoTest();
     }
+    
+    @Test
+    public void newLineAfterImportsAndPackage() {
+    	doAutoTest();
+    }
 }

@@ -26,6 +26,8 @@ import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.psi.JetClass;
 import org.jetbrains.kotlin.psi.JetClassInitializer;
 import org.jetbrains.kotlin.psi.JetFunction;
+import org.jetbrains.kotlin.psi.JetImportList;
+import org.jetbrains.kotlin.psi.JetPackageDirective;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -67,6 +69,10 @@ public class AlignmentStrategy {
                     int shift = indent;
                     if (isBrace(psiElement.getNextSibling())) {
                         shift--;
+                    }
+                    
+                    if (isEmptyLineNeeded(psiElement)) {
+                        edit.append(IndenterUtil.createWhiteSpace(shift, 1, lineDelimiter));
                     }
                     
                     int lineSeparatorsOccurences = IndenterUtil.getLineSeparatorsOccurences(text);
@@ -115,6 +121,27 @@ public class AlignmentStrategy {
     
     public static String alignCode(ASTNode parsedFile, int lineIndentation, String lineDelimiter) {
         return new AlignmentStrategy(parsedFile, lineIndentation, lineDelimiter).placeSpaces();
+    }
+    
+    private boolean isEmptyLineNeeded(PsiElement psiElement) {
+        if (IndenterUtil.getLineSeparatorsOccurences(psiElement.getText()) > 1) {
+            return false;
+        }
+        
+        PsiElement prevSibling = psiElement.getPrevSibling();
+        PsiElement nextSibling = psiElement.getNextSibling();
+        
+        if (prevSibling == null || nextSibling == null) return false;
+        
+        if (prevSibling instanceof JetPackageDirective) {
+            return !prevSibling.getText().isEmpty();
+        }
+        
+        if (prevSibling instanceof JetImportList) {
+            return !prevSibling.getText().isEmpty();
+        }
+        
+        return false;
     }
     
     public static int updateIndent(ASTNode node, int indent) {
