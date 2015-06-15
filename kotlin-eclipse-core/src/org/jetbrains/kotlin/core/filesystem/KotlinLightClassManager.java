@@ -15,13 +15,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.codegen.ClassBuilderMode;
 import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
@@ -50,7 +48,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 public class KotlinLightClassManager {
     private final IJavaProject javaProject;
     
-    private final ConcurrentMap<File, List<File>> sourceFiles = new ConcurrentHashMap<>();
+    private final ConcurrentMap<File, List<IFile>> sourceFiles = new ConcurrentHashMap<>();
     
     @NotNull
     public static KotlinLightClassManager getInstance(@NotNull IJavaProject javaProject) {
@@ -67,7 +65,7 @@ public class KotlinLightClassManager {
             @NotNull Set<IFile> affectedFiles) {
         JetTypeMapper typeMapper = new JetTypeMapper(context, ClassBuilderMode.LIGHT_CLASSES);
         IProject project = javaProject.getProject();
-        Map<File, List<File>> newSourceFilesMap = new HashMap<>();
+        Map<File, List<IFile>> newSourceFilesMap = new HashMap<>();
         for (IFile sourceFile : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
             List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
             
@@ -76,12 +74,12 @@ public class KotlinLightClassManager {
                 
                 createVirtualLightClass(lightClassFile, affectedFiles, sourceFile);
                 
-                List<File> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
+                List<IFile> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
                 if (newSourceFiles == null) {
                     newSourceFiles = new ArrayList<>();
                     newSourceFilesMap.put(lightClassFile.asFile(), newSourceFiles);
                 }
-                newSourceFiles.add(sourceFile.getLocation().toFile());
+                newSourceFiles.add(sourceFile);
             }
         }
         
@@ -103,11 +101,11 @@ public class KotlinLightClassManager {
     
     @NotNull
     private List<JetFile> getSourceJetFiles(@NotNull File lightClass) {
-        List<File> sourceIOFiles = sourceFiles.get(lightClass);
+        List<IFile> sourceIOFiles = sourceFiles.get(lightClass);
         if (sourceIOFiles != null) {
             List<JetFile> jetSourceFiles = Lists.newArrayList();
-            for (File sourceFile : sourceIOFiles) {
-                JetFile jetFile = getJetFileBySourceFile(sourceFile);
+            for (IFile sourceFile : sourceIOFiles) {
+                JetFile jetFile = KotlinPsiManager.getKotlinParsedFile(sourceFile);
                 if (jetFile != null) {
                     jetSourceFiles.add(jetFile);
                 }
@@ -167,9 +165,8 @@ public class KotlinLightClassManager {
             @Override
             public boolean apply(IResource resource) {
                 if (resource instanceof IFile) {
-                    IFile file = (IFile) resource;
-                    LightClassFile lightClass = new LightClassFile(file);
-                    return getIOSourceFiles(lightClass.asFile()).isEmpty();
+                    List<IFile> sources = sourceFiles.get(resource);
+                    return sources != null ? sources.isEmpty() : true;
                 }
                 
                 return false;
@@ -195,23 +192,5 @@ public class KotlinLightClassManager {
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
-    }
-    
-    @NotNull
-    private List<File> getIOSourceFiles(@NotNull File lightClass) {
-        List<File> sourceIOFiles = sourceFiles.get(lightClass);
-        return sourceIOFiles != null ? sourceIOFiles : Collections.<File>emptyList();
-    }
-    
-    @Nullable
-    private static IFile getEclipseFile(@NotNull File sourceFile) {
-        IFile[] eclipseFile = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(sourceFile.toURI());
-        return eclipseFile.length == 1 ? eclipseFile[0] : null;
-    }
-    
-    @Nullable
-    private static JetFile getJetFileBySourceFile(@NotNull File sourceFile) {
-        IFile file = getEclipseFile(sourceFile);
-        return file != null ? KotlinPsiManager.getKotlinParsedFile(file) : null;
     }
 }
