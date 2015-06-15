@@ -33,8 +33,10 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.idea.JetFileType;
@@ -76,6 +78,8 @@ public class KotlinPsiManager {
             default:
                 throw new IllegalArgumentException();
         }
+        
+        addAffectedFileToRecomputeLightClasses(file);
     }
     
     public void updateProjectPsiSources(@NotNull IProject project, int flag) {
@@ -225,6 +229,8 @@ public class KotlinPsiManager {
                 JetFile jetFile = parseText(sourceCodeWithouCR, file);
                 cachedJetFiles.put(file, jetFile);
             }
+            
+            addAffectedFileToRecomputeLightClasses(file);
         }
     }
     
@@ -252,5 +258,10 @@ public class KotlinPsiManager {
     @Nullable
     public static JetFile getKotlinFileIfExist(@NotNull IFile file, @NotNull String sourceCode) {
         return INSTANCE.exists(file) ? INSTANCE.getParsedFile(file, sourceCode) : null;
+    }
+    
+    private void addAffectedFileToRecomputeLightClasses(@NotNull IFile file) {
+        IJavaProject javaProject = JavaModelManager.getJavaModelManager().getJavaModel().getJavaProject(file);
+        KotlinLightClassManager.getInstance(javaProject).addAffectedFileToRecomputeLightClasses(file);
     }
 }

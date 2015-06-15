@@ -50,6 +50,7 @@ public class KotlinLightClassManager {
     private final IJavaProject javaProject;
     
     private final ConcurrentMap<File, List<IFile>> sourceFiles = new ConcurrentHashMap<>();
+    private final Set<IFile> sourcesToRecomputeLightClasses = Collections.newSetFromMap(new ConcurrentHashMap<IFile, Boolean>());
     
     @NotNull
     public static KotlinLightClassManager getInstance(@NotNull IJavaProject javaProject) {
@@ -61,31 +62,14 @@ public class KotlinLightClassManager {
         this.javaProject = javaProject;
     }
     
-    public void computeLightClassesSources(
-            @NotNull BindingContext context) {
-        JetTypeMapper typeMapper = new JetTypeMapper(context, ClassBuilderMode.LIGHT_CLASSES);
-        IProject project = javaProject.getProject();
-        Map<File, List<IFile>> newSourceFilesMap = new HashMap<>();
-        for (IFile sourceFile : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
-            List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
-            
-            for (IPath path : lightClassesPaths) {
-                LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
-                
-                List<IFile> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
-                if (newSourceFiles == null) {
-                    newSourceFiles = new ArrayList<>();
-                    newSourceFilesMap.put(lightClassFile.asFile(), newSourceFiles);
-                }
-                newSourceFiles.add(sourceFile);
-            }
-        }
-        
-        sourceFiles.clear();
-        sourceFiles.putAll(newSourceFilesMap);
+    public void addAffectedFileToRecomputeLightClasses(@NotNull IFile affectedFile) {
+        sourcesToRecomputeLightClasses.add(affectedFile);
     }
     
+    
     public void updateLightClasses(@NotNull Set<IFile> affectedFiles) {
+        recomputeLightClassesPaths();
+        
         IProject project = javaProject.getProject();
         for (Map.Entry<File, List<IFile>> entry : sourceFiles.entrySet()) {
             IFile lightClassIFile = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(entry.getKey().getPath()));
@@ -107,13 +91,85 @@ public class KotlinLightClassManager {
         cleanOutdatedLightClasses(project);
     }
     
-    public List<JetFile> getSourceFiles(@NotNull File file) {
-        if (sourceFiles.isEmpty()) {
-            AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
-            computeLightClassesSources(analysisResult.getBindingContext());
+    public List<JetFile> getSourceFiles(@NotNull File lightClass) {
+        recomputeLightClassesPaths();
+        return getSourceJetFiles(lightClass);
+    }
+    
+    private void recomputeAllLightClassesSources(@NotNull BindingContext context, @NotNull JetTypeMapper typeMapper) {
+        IProject project = javaProject.getProject();
+        Map<File, List<IFile>> newSourceFilesMap = new HashMap<>();
+        for (IFile sourceFile : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
+            List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
+            
+            for (IPath path : lightClassesPaths) {
+                LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
+                
+                List<IFile> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
+                if (newSourceFiles == null) {
+                    newSourceFiles = new ArrayList<>();
+                    newSourceFilesMap.put(lightClassFile.asFile(), newSourceFiles);
+                }
+                newSourceFiles.add(sourceFile);
+            }
         }
         
-        return getSourceJetFiles(file);
+        sourceFiles.clear();
+        sourceFiles.putAll(newSourceFilesMap);
+    }
+    
+    private void recomputeLightClassesPaths() {
+        if (sourcesToRecomputeLightClasses.isEmpty()) {
+            return;
+        }
+        
+        AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
+        BindingContext bindingContext = analysisResult.getBindingContext();
+        JetTypeMapper typeMapper = new JetTypeMapper(bindingContext, ClassBuilderMode.LIGHT_CLASSES);
+        
+        for (IFile affectedFile : sourcesToRecomputeLightClasses) {
+            if (affectedFile.exists()) {
+                removeLightClassesSources(affectedFile, bindingContext, typeMapper);
+                addLightClassesSources(affectedFile, bindingContext, typeMapper);
+            } else {
+                recomputeAllLightClassesSources(bindingContext, typeMapper);
+            }
+        }
+        
+        sourcesToRecomputeLightClasses.clear();
+    }
+    
+    private void removeLightClassesSources(
+            @NotNull IFile sourceFile, 
+            @NotNull BindingContext context, 
+            @NotNull JetTypeMapper typeMapper) {
+        List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
+        for (IPath lightClassPath : lightClassesPaths) {
+            LightClassFile lightClass = new LightClassFile(javaProject.getProject().getFile(lightClassPath));
+            List<IFile> sources = sourceFiles.get(lightClass.asFile());
+            if (sources != null) {
+                sources.remove(sourceFile);
+            }
+        }
+    }
+    
+    private void addLightClassesSources(
+            @NotNull IFile sourceFile, 
+            @NotNull BindingContext context, 
+            @NotNull JetTypeMapper typeMapper) {
+        List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
+        for (IPath lightClassPath : lightClassesPaths) {
+            LightClassFile lightClass = new LightClassFile(javaProject.getProject().getFile(lightClassPath));
+            List<IFile> sources = sourceFiles.get(lightClass.asFile());
+            if (sources == null) {
+                sources = new ArrayList<IFile>();
+                sourceFiles.put(lightClass.asFile(), sources);
+            }
+            
+            if (!sources.contains(sourceFile)) {
+                sources.add(sourceFile);
+            }
+        }
     }
     
     @NotNull

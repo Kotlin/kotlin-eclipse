@@ -28,7 +28,6 @@ public class KotlinLightClassGeneration {
             return;
         }
         
-        KotlinLightClassManager.getInstance(javaProject).computeLightClassesSources(analysisResult.getBindingContext());
         KotlinLightClassManager.getInstance(javaProject).updateLightClasses(affectedFiles);
     }
     
