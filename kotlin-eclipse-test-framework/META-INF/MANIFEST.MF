@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-testframework
 Bundle-SymbolicName: org.jetbrains.kotlin.testframework
-Bundle-Version: 0.2.0.qualifier
+Bundle-Version: 0.2.1.qualifier
 Bundle-Activator: org.jetbrains.kotlin.testframework.Activator
 Require-Bundle: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.ui,
