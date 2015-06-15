@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -60,9 +61,8 @@ public class KotlinLightClassManager {
         this.javaProject = javaProject;
     }
     
-    public void updateLightClasses(
-            @NotNull BindingContext context,
-            @NotNull Set<IFile> affectedFiles) {
+    public void computeLightClassesSources(
+            @NotNull BindingContext context) {
         JetTypeMapper typeMapper = new JetTypeMapper(context, ClassBuilderMode.LIGHT_CLASSES);
         IProject project = javaProject.getProject();
         Map<File, List<IFile>> newSourceFilesMap = new HashMap<>();
@@ -71,8 +71,6 @@ public class KotlinLightClassManager {
             
             for (IPath path : lightClassesPaths) {
                 LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
-                
-                createVirtualLightClass(lightClassFile, affectedFiles, sourceFile);
                 
                 List<IFile> newSourceFiles = newSourceFilesMap.get(lightClassFile.asFile());
                 if (newSourceFiles == null) {
@@ -85,15 +83,34 @@ public class KotlinLightClassManager {
         
         sourceFiles.clear();
         sourceFiles.putAll(newSourceFilesMap);
+    }
+    
+    public void updateLightClasses(@NotNull Set<IFile> affectedFiles) {
+        IProject project = javaProject.getProject();
+        for (Map.Entry<File, List<IFile>> entry : sourceFiles.entrySet()) {
+            IFile lightClassIFile = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(entry.getKey().getPath()));
+            if (lightClassIFile == null) continue;
+            
+            LightClassFile lightClassFile = new LightClassFile(lightClassIFile);
+            
+            createParentDirsFor(lightClassFile);
+            lightClassFile.createIfNotExists();
+            
+            for (IFile sourceFile : entry.getValue()) {
+                if (affectedFiles.contains(sourceFile)) {
+                    lightClassFile.touchFile();
+                    break;
+                }
+            }
+        }
         
         cleanOutdatedLightClasses(project);
     }
     
     public List<JetFile> getSourceFiles(@NotNull File file) {
-        List<JetFile> jetFiles = getSourceJetFiles(file);
-        if (jetFiles.isEmpty()) {
+        if (sourceFiles.isEmpty()) {
             AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
-            updateLightClasses(analysisResult.getBindingContext(), Collections.<IFile>emptySet());
+            computeLightClassesSources(analysisResult.getBindingContext());
         }
         
         return getSourceJetFiles(file);
@@ -116,16 +133,6 @@ public class KotlinLightClassManager {
         
         return Collections.<JetFile>emptyList();
     }
-
-    private void createVirtualLightClass(@NotNull LightClassFile lightClassFile, @NotNull Set<IFile> affectedFiles, @NotNull IFile sourceFile) {
-        createParentDirsFor(lightClassFile);
-        
-        lightClassFile.createIfNotExists();
-        if (affectedFiles.contains(sourceFile)) {
-            lightClassFile.touchFile();
-        }
-    }
-    
 
     @NotNull
     private List<IPath> getLightClassesPaths(
@@ -165,7 +172,9 @@ public class KotlinLightClassManager {
             @Override
             public boolean apply(IResource resource) {
                 if (resource instanceof IFile) {
-                    List<IFile> sources = sourceFiles.get(resource);
+                    IFile eclipseFile = (IFile) resource;
+                    LightClassFile lightClass = new LightClassFile(eclipseFile);
+                    List<IFile> sources = sourceFiles.get(lightClass.asFile());
                     return sources != null ? sources.isEmpty() : true;
                 }
                 
