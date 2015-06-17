@@ -78,10 +78,10 @@ public class KotlinFunctionCompletionProposal(
         val closeBracketOffset = indexOfSkippingSpace(document, closingBracket, openingBracketOffset + 1)
 
         if (shouldPlaceCaretInBrackets(completionChar) || closeBracketOffset == -1) {
-			viewer.getTextWidget().setCaretOffset(openingBracketOffset + 1 + inBracketsShift)
+			viewer.setSelectedRange(openingBracketOffset + 1 + inBracketsShift, 0)
         }
         else {
-			viewer.getTextWidget().setCaretOffset(closeBracketOffset + 1)
+			viewer.setSelectedRange(closeBracketOffset + 1, 0)
         }
     }
 	
