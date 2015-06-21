@@ -18,7 +18,6 @@ package org.jetbrains.kotlin.core.debug;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.core.sourcelookup.ISourceLookupDirector;
@@ -38,25 +37,19 @@ public class KotlinSourceLookupNavigator {
 	
 //	From JDI model we obtain path to file as "some/pckg/File.kt" and Java seeks file in folder some/pckg what might be wrong
 	@Nullable
-	public IPath findKotlinSourceFile(@NotNull IJavaStackFrame frame) {
-		try {
-			IFile kotlinSourceFile = findKotlinFile(frame);
-			return kotlinSourceFile != null ? kotlinSourceFile.getProjectRelativePath() : null;
-		} catch (CoreException e) {
-			KotlinLogger.logAndThrow(e);
-		}
-		
-		return null;
-	}
-	
-	@Nullable
-	private IFile findKotlinFile(@NotNull IJavaStackFrame frame) throws CoreException {
+	public IFile findKotlinSourceFile(@NotNull IJavaStackFrame frame) {
 	    ISourceLocator sourceLocator = frame.getLaunch().getSourceLocator();
 	    if (!(sourceLocator instanceof ISourceLookupDirector)) {
 	    	return null;
 	    }
 	    
-	    return findKotlinSourceFile(frame, (ISourceLookupDirector) sourceLocator);
+	    try {
+            return findKotlinSourceFile(frame, (ISourceLookupDirector) sourceLocator);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+	    
+	    return null;
 	}
 
     private IFile findKotlinSourceFile(IJavaStackFrame frame, ISourceLookupDirector lookupDirector) throws CoreException {

@@ -8,7 +8,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.aspectj.runtime,
  org.jetbrains.kotlin.core,
- org.eclipse.jdt.ui
+ org.eclipse.jdt.ui,
+ org.eclipse.pde.launching;bundle-version="3.6.200"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
@@ -33,7 +34,9 @@ Import-Package: com.intellij.navigation,
 Eclipse-SupplementBundle: 
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.launching,
- org.eclipse.jdt.ui
+ org.eclipse.jdt.ui,
+ org.eclipse.debug.core,
+ org.eclipse.pde.launching
 Export-Package: org.jetbrains.kotlin.aspects.debug.ui,
  org.jetbrains.kotlin.aspects.debug.core,
  org.jetbrains.kotlin.aspects.navigation
