@@ -19,8 +19,10 @@ package org.jetbrains.kotlin.ui.builder;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElementDelta;
+import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 
 public class KotlinJavaElementListener implements IElementChangedListener {
     @Override
@@ -29,13 +31,15 @@ public class KotlinJavaElementListener implements IElementChangedListener {
     }
     
     public void updateEnvironmentIfClasspathChanged(@NotNull IJavaElementDelta delta) {
-        if ((delta.getFlags() & IJavaElementDelta.F_CLASSPATH_CHANGED) != 0) {
-            KotlinEnvironment.updateKotlinEnvironment(delta.getElement().getJavaProject());
-        } 
-        
         for (IJavaElementDelta affectedChild : delta.getAffectedChildren()) {
             updateEnvironmentIfClasspathChanged(affectedChild);
         }
+        
+        IJavaProject javaProject = delta.getElement().getJavaProject();
+        if (javaProject != null && javaProject.exists() && KotlinNature.hasKotlinNature(javaProject.getProject())) {
+            if ((delta.getFlags() & IJavaElementDelta.F_CLASSPATH_CHANGED) != 0) {
+                KotlinEnvironment.updateKotlinEnvironment(javaProject);
+            } 
+        }
     }
-    
 }
