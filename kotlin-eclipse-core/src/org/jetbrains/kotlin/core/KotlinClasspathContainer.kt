@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import kotlin.platform.platformStatic
+import java.util.ArrayList
 
 val runtimeContainerId: IPath = Path("org.jetbrains.kotlin.core.KOTLIN_CONTAINER")
 
@@ -43,10 +44,20 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
     }
     
     override public fun getClasspathEntries() : Array<IClasspathEntry> {
-        val kotlinRuntimeEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_RUNTIME_NAME)))
-        val kotlinReflectEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_REFLECT_NAME)))
-        val kotlinBinFolderEntry = newExportedLibraryEntry(getPathToLightClassesFolder(javaProject))
-        return arrayOf(kotlinRuntimeEntry, kotlinReflectEntry, kotlinBinFolderEntry)
+    	val entries = ArrayList<IClasspathEntry>()
+		
+		val kotlinBinFolderEntry = newExportedLibraryEntry(getPathToLightClassesFolder(javaProject))
+		entries.add(kotlinBinFolderEntry)
+		
+		if (!ProjectUtils.isMavenProject(javaProject.getProject())) {
+			val kotlinRuntimeEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_RUNTIME_NAME)))
+			val kotlinReflectEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_REFLECT_NAME)))
+			
+			entries.add(kotlinRuntimeEntry)
+			entries.add(kotlinReflectEntry)
+		}
+		
+        return entries.toTypedArray()
     }
 	
 	override public fun getDescription() : String = "Kotlin Runtime Library"

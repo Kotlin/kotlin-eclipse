@@ -59,7 +59,10 @@ public class ProjectUtils {
     private static final String LIB_FOLDER = "lib";
     private static final String LIB_EXTENSION = "jar";
     
+    private static final String MAVEN_NATURE_ID = "org.eclipse.m2e.core.maven2Nature";
+    
     public static final String KT_HOME = getKtHome();
+    
     
     public static IFile findFilesWithMain(Collection<IFile> files) {
         for (IFile file : files) {
@@ -314,6 +317,16 @@ public class ProjectUtils {
     
     public static void addKotlinRuntime(@NotNull IJavaProject javaProject) throws CoreException {
         addContainerEntryToClasspath(javaProject, KotlinClasspathContainer.CONTAINER_ENTRY);
+    }
+    
+    public static boolean isMavenProject(@NotNull IProject project) {
+        try {
+            return project.hasNature(MAVEN_NATURE_ID);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return false;
     }
     
     public static String buildLibPath(String libName) {
