@@ -16,10 +16,15 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui;
 
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jetbrains.kotlin.core.utils.KotlinFilesCollector;
 import org.jetbrains.kotlin.ui.builder.KotlinJavaElementListener;
+import org.jetbrains.kotlin.ui.builder.ResourceChangeListener;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -32,6 +37,9 @@ public class Activator extends AbstractUIPlugin {
     // The shared instance
     private static Activator plugin;
     
+    private final IResourceChangeListener resourceChangeListener = new ResourceChangeListener();
+    private final IElementChangedListener kotlinJavaElementChangedListener = new KotlinJavaElementListener();
+    
     public Activator() {
     }
     
@@ -41,11 +49,16 @@ public class Activator extends AbstractUIPlugin {
         plugin = this;
         
         KotlinFilesCollector.collectForParsing();
-        JavaCore.addElementChangedListener(new KotlinJavaElementListener());
+        
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener, IResourceChangeEvent.POST_CHANGE);
+        JavaCore.addElementChangedListener(kotlinJavaElementChangedListener);
     }
     
     @Override
     public void stop(BundleContext context) throws Exception {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceChangeListener);
+        JavaCore.removeElementChangedListener(kotlinJavaElementChangedListener);
+        
         plugin = null;
         super.stop(context);
     }
