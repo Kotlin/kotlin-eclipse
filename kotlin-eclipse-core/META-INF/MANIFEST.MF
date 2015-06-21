@@ -12,7 +12,7 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.debug.core,
  org.eclipse.core.filesystem,
  org.eclipse.core.expressions,
- org.eclipse.jdt.junit;bundle-version="3.7.100"
+ org.eclipse.jdt.junit
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.openapi.vfs,
  javax.inject;version="1.0.0",
