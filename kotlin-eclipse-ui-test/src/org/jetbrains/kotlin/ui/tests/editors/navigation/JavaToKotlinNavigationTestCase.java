@@ -23,7 +23,6 @@ public abstract class JavaToKotlinNavigationTestCase extends KotlinNavigationTes
 			throw new RuntimeException(e);
 		}
 		
-		KotlinTestUtils.addKotlinBuilder(testEditor.getEclipseProject());
 		KotlinTestUtils.joinBuildThread();
 		
 		JavaEditor editor = testEditor.getEditor();

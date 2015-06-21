@@ -9,13 +9,14 @@ import org.jetbrains.kotlin.eclipse.ui.utils.isConfigurationMissing
 import org.eclipse.ui.handlers.HandlerUtil
 import org.jetbrains.kotlin.wizards.NewUnitWizard
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor
+import org.jetbrains.kotlin.core.model.KotlinNature
 
 public class ConfigureKotlinActionHandler : AbstractHandler() {
 	override fun execute(event: ExecutionEvent): Any? {
 		val selection = HandlerUtil.getActiveMenuSelection(event)
 		val project = getFirstOrNullJavaProject(selection as IStructuredSelection)!!.getProject()
 		
-		NewUnitWizard.addKotlinModelSpecificConfiguration(project);
+		KotlinNature.addNature(project)
         KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
 		
 		return null

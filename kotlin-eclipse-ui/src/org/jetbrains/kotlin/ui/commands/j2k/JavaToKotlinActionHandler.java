@@ -47,6 +47,7 @@ import org.eclipse.ui.ide.undo.DeleteResourcesOperation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.j2k.J2kPackage;
 import org.jetbrains.kotlin.j2k.JavaToKotlinTranslator;
 import org.jetbrains.kotlin.psi.JetFile;
@@ -57,7 +58,6 @@ import org.jetbrains.kotlin.ui.commands.ConvertedKotlinData;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
 import org.jetbrains.kotlin.wizards.FileCreationOp;
-import org.jetbrains.kotlin.wizards.NewUnitWizard;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -120,7 +120,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
 
     private void configureProjectsWithKotlin(@NotNull Set<IProject> projects) {
         for (IProject project : projects) {
-            NewUnitWizard.addKotlinModelSpecificConfiguration(project);
+            KotlinNature.addNature(project);
             KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
         }
     }

@@ -16,17 +16,13 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.model.KotlinNature;
 
 public abstract class AbstractWizard<WP extends AbstractWizardPage> extends Wizard implements INewWizard {
 
@@ -74,21 +70,4 @@ public abstract class AbstractWizard<WP extends AbstractWizardPage> extends Wiza
     protected static void selectAndRevealResource(IResource resource) {
         BasicNewResourceWizard.selectAndReveal(resource, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
     }
-
-    protected static void addKotlinNatureToProject(IProject project) {
-        try {
-            KotlinNature.addNature(project);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
-
-    protected static void addKotlinBuilderToProject(IProject project) {
-        try {
-            KotlinNature.addBuilder(project);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-    }
-
 }

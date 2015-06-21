@@ -144,7 +144,6 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     
     private void configureProjectWithStdLibAndBuilder() {
         try {
-            KotlinTestUtils.addKotlinBuilder(testEditor.getEclipseProject());
             testEditor.getTestJavaProject().addKotlinRuntime();
         } catch (CoreException e) {
             throw new RuntimeException(e);
