@@ -55,6 +55,7 @@ import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -187,6 +188,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             List<JetFile> jetFiles = getJetFiles(testFilesInModule, true);
             allJetFiles.addAll(jetFiles);
 
+            KotlinTestUtils.joinBuildThread(); // Because analyze might be triggered by eclipse we should wait for the end 
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                     getTestProject().getJavaProject(), getProject(),
                     jetFiles

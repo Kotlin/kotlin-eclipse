@@ -29,7 +29,6 @@ public class KotlinJUnitLaunchTestCase extends KotlinProjectTestCase {
 	@Before
     public void configure() throws CoreException {
 		configureProject();
-		KotlinTestUtils.addKotlinBuilder(getTestProject().getJavaProject().getProject());
 		addJUnitToClasspath();
 		getTestProject().addKotlinRuntime();
     }

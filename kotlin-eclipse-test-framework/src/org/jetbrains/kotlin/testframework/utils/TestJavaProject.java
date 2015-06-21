@@ -188,8 +188,6 @@ public class TestJavaProject {
             IFolder outputFolder = ProjectUtils.getOutputFolder(getJavaProject());
             ProjectUtils.cleanFolder(outputFolder);
             ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project));
-            
-            KotlinTestUtils.removeKotlinBuilder(project);
         } catch (JavaModelException e) {
             throw new RuntimeException(e);
         } catch (CoreException e) {

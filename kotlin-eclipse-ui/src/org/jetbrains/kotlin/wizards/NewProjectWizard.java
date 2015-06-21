@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.wizards;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 
 
 public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
@@ -40,7 +41,7 @@ public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
             return false;
         }
         
-        NewUnitWizard.addKotlinModelSpecificConfiguration(op.getResult());
+        KotlinNature.addNature(op.getResult());
         
         selectAndRevealResource(op.getResult());
 

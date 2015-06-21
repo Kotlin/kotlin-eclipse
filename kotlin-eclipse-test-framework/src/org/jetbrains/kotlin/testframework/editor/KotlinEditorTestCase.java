@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.junit.After;
@@ -117,6 +118,13 @@ public abstract class KotlinEditorTestCase {
         try {
             joinBuildThread();
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
+            
+            if (testEditor != null) {
+            	TestJavaProject testJavaProject = testEditor.getTestJavaProject();
+            	if (testJavaProject != null) {
+            		testJavaProject.clean();
+            	}
+            }
             
             IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
             for (IProject project : projects) {

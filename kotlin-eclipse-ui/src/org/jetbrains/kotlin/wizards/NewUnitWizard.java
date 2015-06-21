@@ -33,6 +33,7 @@ import org.eclipse.ui.ide.IDE;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
 
 public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
@@ -118,16 +119,11 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         runnableContext.run(true, true, operation);
         
         IProject project = root.getJavaProject().getProject();
-        addKotlinModelSpecificConfiguration(project);
         
+        KotlinNature.addNature(project);
         KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
         
         return operation.getResult();
-    }
-    
-    public static void addKotlinModelSpecificConfiguration(@NotNull IProject project) {
-        addKotlinNatureToProject(project);
-        addKotlinBuilderToProject(project);
     }
     
     private String createTypeBody() {

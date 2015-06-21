@@ -43,7 +43,6 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
     
     @Override
     protected void performTest(String fileText, String content) {
-        KotlinTestUtils.addKotlinBuilder(testEditor.getEclipseProject());
         KotlinTestUtils.joinBuildThread();
         
         List<ICompletionProposal> proposals = createProposals();

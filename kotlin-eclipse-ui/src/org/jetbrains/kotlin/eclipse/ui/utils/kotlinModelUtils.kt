@@ -13,7 +13,6 @@ fun unconfigureKotlinProject(javaProject: IJavaProject) {
 	val project = javaProject.getProject()
 	
 	unconfigureKotlinNature(project)
-	unconfigureKotlinBuilder(project)
 	unconfigureKotlinRuntime(javaProject)
 	removeKotlinBinFolder(project)
 }
@@ -24,16 +23,6 @@ fun unconfigureKotlinNature(project: IProject) {
 		val newNatures = description.getNatureIds().filter { it != KotlinNature.KOTLIN_NATURE }
 		
 		description.setNatureIds(newNatures.toTypedArray())
-		project.setDescription(description, null)
-	}
-}
-
-fun unconfigureKotlinBuilder(project: IProject) {
-	if (KotlinNature.hasKotlinBuilder(project)) {
-		val description = project.getDescription()
-		val newBuildCommands = description.getBuildSpec().filter { it.getBuilderName() != KotlinNature.KOTLIN_BUILDER }
-		
-		description.setBuildSpec(newBuildCommands.toTypedArray())
 		project.setDescription(description, null)
 	}
 }
@@ -55,14 +44,14 @@ fun removeKotlinBinFolder(project: IProject) {
 
 fun canBeDeconfigured(project: IProject): Boolean {
 	return when {
-		KotlinNature.hasKotlinBuilder(project), KotlinNature.hasKotlinNature(project), ProjectUtils.hasKotlinRuntime(project) -> true
+		KotlinNature.hasKotlinNature(project), ProjectUtils.hasKotlinRuntime(project) -> true
 		else -> false
 	}
 }
 
 fun isConfigurationMissing(project: IProject): Boolean {
 	return when {
-		!KotlinNature.hasKotlinBuilder(project), !KotlinNature.hasKotlinNature(project), !ProjectUtils.hasKotlinRuntime(project) -> true
+		!KotlinNature.hasKotlinNature(project), !ProjectUtils.hasKotlinRuntime(project) -> true
 		else -> false
 	}
 }
