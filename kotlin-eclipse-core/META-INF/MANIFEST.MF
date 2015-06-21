@@ -15,7 +15,7 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.jdt.junit
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.openapi.vfs,
- javax.inject;version="1.0.0",
+ javax.inject,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.debug.internal.ui.viewers,
