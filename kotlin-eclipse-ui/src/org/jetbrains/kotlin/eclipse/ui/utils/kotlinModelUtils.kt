@@ -30,7 +30,7 @@ fun unconfigureKotlinNature(project: IProject) {
 fun unconfigureKotlinRuntime(javaProject: IJavaProject) {
 	if (ProjectUtils.hasKotlinRuntime(javaProject.getProject())) {
 		val newEntries = javaProject.getRawClasspath().filter {
-			it != KotlinClasspathContainer.CONTAINER_ENTRY
+		    ProjectUtils.equalsEntriesPaths(it, KotlinClasspathContainer.CONTAINER_ENTRY)
 		}
 		
 		javaProject.setRawClasspath(newEntries.toTypedArray(), null)

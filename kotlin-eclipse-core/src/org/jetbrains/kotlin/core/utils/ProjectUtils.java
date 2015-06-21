@@ -24,6 +24,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import kotlin.KotlinPackage;
+import kotlin.jvm.functions.Function1;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -301,9 +304,18 @@ public class ProjectUtils {
         }
     }
     
+    public static boolean equalsEntriesPaths(@NotNull IClasspathEntry entry, @NotNull IClasspathEntry otherEntry) {
+        return entry.getPath().equals(otherEntry.getPath());
+    }
+    
     private static boolean classpathContainsContainerEntry(@NotNull IClasspathEntry[] entries,
-            @NotNull IClasspathEntry entry) {
-        return Arrays.asList(entries).contains(entry);
+            @NotNull final IClasspathEntry entry) {
+        return KotlinPackage.<IClasspathEntry>any(entries, new Function1<IClasspathEntry, Boolean>() {
+            @Override
+            public Boolean invoke(IClasspathEntry classpathEntry) {
+                return equalsEntriesPaths(classpathEntry, entry);
+            }
+        });
     }
     
     public static boolean hasKotlinRuntime(@NotNull IProject project) throws CoreException {
