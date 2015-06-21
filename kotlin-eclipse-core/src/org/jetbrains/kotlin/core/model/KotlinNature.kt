@@ -55,10 +55,12 @@ public class KotlinNature: IProjectNature {
     
     override public fun configure() {
         addKotlinBuilder(eclipseProject)
+		KotlinPsiManager.INSTANCE.updateProjectPsiSources(eclipseProject, IResourceDelta.ADDED)
     }
     
     override public fun deconfigure() {
         removeKotlinBuilder(eclipseProject)
+		KotlinPsiManager.INSTANCE.updateProjectPsiSources(eclipseProject, IResourceDelta.REMOVED)
     }
     
     override public fun setProject(project: IProject) {

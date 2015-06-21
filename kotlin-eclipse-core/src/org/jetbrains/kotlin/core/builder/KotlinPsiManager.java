@@ -37,6 +37,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinNature;
+import org.jetbrains.kotlin.core.utils.UtilsPackage;
 import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.idea.JetLanguage;
 import org.jetbrains.kotlin.psi.JetFile;
@@ -80,13 +82,25 @@ public class KotlinPsiManager {
     
     public void updateProjectPsiSources(@NotNull IProject project, int flag) {
         switch (flag) {
+            case IResourceDelta.ADDED:
+                addProject(project);
+                break;
+        
             case IResourceDelta.REMOVED:
                 removeProject(project);
                 break;
         }
     }
     
-    public void removeProject(@NotNull IProject project) {
+    private void addProject(@NotNull IProject project) {
+        synchronized (mapOperationLock) {
+            if (project.isAccessible() && KotlinNature.hasKotlinNature(project)) {
+                UtilsPackage.addFilesToParse(JavaCore.create(project));
+            }
+        }
+    }
+    
+    private void removeProject(@NotNull IProject project) {
         synchronized (mapOperationLock) {
             Set<IFile> files = getFilesByProject(project);
             projectFiles.remove(project);
@@ -96,8 +110,9 @@ public class KotlinPsiManager {
         }
     }
     
-    public void addFile(@NotNull IFile file) {
+    private void addFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
+            assert KotlinNature.hasKotlinNature(file.getProject()) : "Project (" + file.getProject().getName() + ") does not have Kotlin nature";
             assert !exists(file) : "File(" + file.getName() + ") is already added";
             
             IProject project = file.getProject();
@@ -109,7 +124,7 @@ public class KotlinPsiManager {
         }
     }
     
-    public void removeFile(@NotNull IFile file) {
+    private void removeFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
             assert exists(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
@@ -161,12 +176,6 @@ public class KotlinPsiManager {
         return getFilesByProject(project);
     }
     
-    public boolean isProjectChangedState(@NotNull IResourceDelta delta) {
-        return (delta.getFlags() & IResourceDelta.CONTENT) != 0 ||
-                (delta.getKind() == IResourceDelta.REMOVED) ||
-                (delta.getKind() == IResourceDelta.ADDED);
-    }
-    
     public boolean isKotlinSourceFile(@NotNull IResource resource) throws JavaModelException {
         return isKotlinSourceFile(resource, JavaCore.create(resource.getProject()));
     }
@@ -177,6 +186,10 @@ public class KotlinPsiManager {
         }
 
         if (!javaProject.exists()) {
+            return false;
+        }
+        
+        if (!KotlinNature.hasKotlinNature(javaProject.getProject())) {
             return false;
         }
         
@@ -191,6 +204,10 @@ public class KotlinPsiManager {
         }
         
         return false;
+    }
+    
+    public static boolean isKotlinFile(@NotNull IFile file) {
+        return JetFileType.INSTANCE.getDefaultExtension().equals(file.getFileExtension());
     }
     
     @Nullable

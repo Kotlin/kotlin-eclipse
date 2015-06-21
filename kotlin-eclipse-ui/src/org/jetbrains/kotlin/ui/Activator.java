@@ -22,7 +22,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jetbrains.kotlin.core.utils.KotlinFilesCollector;
+import org.jetbrains.kotlin.core.utils.UtilsPackage;
 import org.jetbrains.kotlin.ui.builder.KotlinJavaElementListener;
 import org.jetbrains.kotlin.ui.builder.ResourceChangeListener;
 import org.osgi.framework.BundleContext;
@@ -48,7 +48,7 @@ public class Activator extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         
-        KotlinFilesCollector.collectForParsing();
+        UtilsPackage.addFilesToParseFromKotlinProjectsInWorkspace();
         
         ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener, IResourceChangeEvent.POST_CHANGE);
         JavaCore.addElementChangedListener(kotlinJavaElementChangedListener);
