@@ -305,7 +305,7 @@ public class ProjectUtils {
     
     public static boolean hasKotlinRuntime(@NotNull IProject project) throws CoreException {
         return classpathContainsContainerEntry(JavaCore.create(project).getRawClasspath(),
-                KotlinClasspathContainer.getKotlinRuntimeContainerEntry());
+                KotlinClasspathContainer.CONTAINER_ENTRY);
     }
     
     public static void addKotlinRuntime(@NotNull IProject project) throws CoreException {
@@ -313,7 +313,7 @@ public class ProjectUtils {
     }
     
     public static void addKotlinRuntime(@NotNull IJavaProject javaProject) throws CoreException {
-        addContainerEntryToClasspath(javaProject, KotlinClasspathContainer.getKotlinRuntimeContainerEntry());
+        addContainerEntryToClasspath(javaProject, KotlinClasspathContainer.CONTAINER_ENTRY);
     }
     
     public static String buildLibPath(String libName) {
