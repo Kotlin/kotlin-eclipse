@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
@@ -12,8 +13,10 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -57,6 +60,17 @@ public abstract class KotlinQuickAssistProposal extends KotlinQuickAssist implem
 
         PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), offset, EditorUtil.getDocument(editor));
+    }
+    
+    public void insertAfter(@NotNull PsiElement element, @NotNull String text) {
+        KotlinEditor kotlinEditor = getActiveEditor();
+        assert kotlinEditor != null : "Active editor cannot be null";
+        
+        try {
+            kotlinEditor.getViewer().getDocument().replace(getEndOffset(element, kotlinEditor), 0, text);
+        } catch (BadLocationException e) {
+            KotlinLogger.logAndThrow(e);
+        }
     }
     
     @Override
