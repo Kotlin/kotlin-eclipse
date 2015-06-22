@@ -60,32 +60,31 @@ public class AlignmentStrategy {
     private void buildFormattedCode(ASTNode node, int indent) {
         indent = updateIndent(node, indent);
         
-        for (ASTNode child : node.getChildren(null)) {
-            PsiElement psiElement = child.getPsi();
-            
-            if (psiElement instanceof LeafPsiElement) {
-                String text = psiElement.getText();
-                if (IndenterUtil.isNewLine((LeafPsiElement) psiElement)) {
-                    int shift = indent;
-                    if (isBrace(psiElement.getNextSibling())) {
-                        shift--;
-                    }
-                    
-                    if (isEmptyLineNeeded(psiElement)) {
-                        edit.append(IndenterUtil.createWhiteSpace(shift, 1, lineDelimiter));
-                    }
-                    
-                    int lineSeparatorsOccurences = IndenterUtil.getLineSeparatorsOccurences(text);
-                    edit.append(IndenterUtil.createWhiteSpace(shift, lineSeparatorsOccurences, lineDelimiter));
-                } else {
-                    String textWithDefaultIndents = text.replaceAll(LineEndUtil.NEW_LINE_STRING, lineDelimiter);
-                    if (IndenterUtil.isSpacesForTabs()) {
-                        textWithDefaultIndents = textWithDefaultIndents.replaceAll(IndenterUtil.TAB_STRING, IndenterUtil.getIndentString());
-                    }
-                    edit.append(textWithDefaultIndents);
+        PsiElement psiElement = node.getPsi();
+        if (psiElement instanceof LeafPsiElement) {
+            String text = psiElement.getText();
+            if (IndenterUtil.isNewLine((LeafPsiElement) psiElement)) {
+                int shift = indent;
+                if (isBrace(psiElement.getNextSibling())) {
+                    shift--;
                 }
+                
+                if (isEmptyLineNeeded(psiElement)) {
+                    edit.append(IndenterUtil.createWhiteSpace(shift, 1, lineDelimiter));
+                }
+                
+                int lineSeparatorsOccurences = IndenterUtil.getLineSeparatorsOccurences(text);
+                edit.append(IndenterUtil.createWhiteSpace(shift, lineSeparatorsOccurences, lineDelimiter));
+            } else {
+                String textWithDefaultIndents = text.replaceAll(LineEndUtil.NEW_LINE_STRING, lineDelimiter);
+                if (IndenterUtil.isSpacesForTabs()) {
+                    textWithDefaultIndents = textWithDefaultIndents.replaceAll(IndenterUtil.TAB_STRING, IndenterUtil.getIndentString());
+                }
+                edit.append(textWithDefaultIndents);
             }
-            
+        }
+        
+        for (ASTNode child : node.getChildren(null)) {
             buildFormattedCode(child, indent);
         }
     }
@@ -121,6 +120,16 @@ public class AlignmentStrategy {
     
     public static String alignCode(ASTNode parsedFile, int lineIndentation, String lineDelimiter) {
         return new AlignmentStrategy(parsedFile, lineIndentation, lineDelimiter).placeSpaces();
+    }
+    
+    public static int computeIndent(ASTNode node) {
+        int indent = 0;
+        while(node != null) {
+            indent = AlignmentStrategy.updateIndent(node, indent);
+            node = node.getTreeParent();
+        }
+        
+        return indent;
     }
     
     private boolean isEmptyLineNeeded(PsiElement psiElement) {
