@@ -40,16 +40,14 @@ class ProjectChangeListener : IResourceDeltaVisitor {
 			return true
 		}
 		
-		delta.getResource().let { 
-			when (it) {
-				is IFile -> {
-					if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(it)) {
-						KotlinPsiManager.INSTANCE.updateProjectPsiSources(it, delta.getKind())
-					}
+        val resource = delta.getResource()
+		when (resource) {
+			is IFile -> {
+				if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
+					KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
 				}
-				is IProject -> KotlinPsiManager.INSTANCE.updateProjectPsiSources(it, delta.getKind())
-                else -> Unit
 			}
+			is IProject -> if (resource.isOpen()) KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
 		}
 		
 		return true
