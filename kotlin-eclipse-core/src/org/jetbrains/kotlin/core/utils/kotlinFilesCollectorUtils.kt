@@ -32,7 +32,7 @@ import org.eclipse.jdt.core.JavaCore
 
 fun addFilesToParseFromKotlinProjectsInWorkspace() {
     ResourcesPlugin.getWorkspace().getRoot().getProjects().forEach { 
-    	if (KotlinNature.hasKotlinNature(it)) {
+    	if (it.isAccessible() && KotlinNature.hasKotlinNature(it)) {
     	    addFilesToParse(JavaCore.create(it))
     	}
     }
