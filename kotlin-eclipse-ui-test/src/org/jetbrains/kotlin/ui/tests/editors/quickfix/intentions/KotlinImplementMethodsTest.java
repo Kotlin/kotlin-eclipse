@@ -5,6 +5,6 @@ import org.junit.Test;
 public class KotlinImplementMethodsTest extends KotlinImplementMethodsTestCase {
 	@Test
 	public void testAcceptableVararg() {
-		doTest("testData/intentions/implementMethods/complexMultiOverride.kt");
+		doTest("common_testData/ide/codeInsight/overrideImplement/defaultValues.kt");
 	}
 }

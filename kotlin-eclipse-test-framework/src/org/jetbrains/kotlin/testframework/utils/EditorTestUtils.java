@@ -56,7 +56,7 @@ public class EditorTestUtils {
         try {
             Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected), LineEndUtil.removeAllCarriageReturns(actual));
         } catch (ComparisonFailure e) {
-            throw new ComparisonFailure("", escapeNewLines(e.getExpected()), escapeNewLines(e.getActual()));
+            throw new ComparisonFailure("", e.getExpected(), e.getActual());
         }
     }
     

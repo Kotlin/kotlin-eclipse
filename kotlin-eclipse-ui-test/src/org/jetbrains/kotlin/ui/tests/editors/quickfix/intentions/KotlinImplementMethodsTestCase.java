@@ -1,5 +1,7 @@
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
@@ -14,6 +16,7 @@ public class KotlinImplementMethodsTestCase extends KotlinProjectTestCase {
 	@Before
 	public void configure() {
 		configureProject();
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
 	}
 	
 	protected void doTest(String testPath) {
@@ -35,7 +38,16 @@ public class KotlinImplementMethodsTestCase extends KotlinProjectTestCase {
 			proposal.apply(testEditor.getEditor().getViewer().getDocument());
 	
 			String pathToExpectedFile = testPath + ".after";
-			EditorTestUtils.assertByEditor(testEditor.getEditor(), KotlinTestUtils.getText(pathToExpectedFile));
+			String expectedText = removeSelectionAndCaretTags(KotlinTestUtils.getText(pathToExpectedFile));
+			EditorTestUtils.assertByEditor(testEditor.getEditor(), expectedText);
 		}
+	}
+	
+	private String removeSelectionAndCaretTags(String text) {
+		return text
+				.replaceAll("<selection>", "")
+				.replaceAll("</selection>", "")
+				.replaceAll("<caret>", "")
+				.replaceAll("</caret>", "");
 	}
 }
