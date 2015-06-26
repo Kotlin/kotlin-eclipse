@@ -29,7 +29,8 @@ import org.junit.runners.Suite;
     KotlinOpenDeclarationTest.class,
     KotlinFormatActionTest.class,
     KotlinCustomLocationBugTest.class,
-    PsiVisualizationCommandTest.class
+    PsiVisualizationCommandTest.class,
+    KotlinEditorClosedProjectInfluenceTest.class
 } )
 public class AllTests {
 
