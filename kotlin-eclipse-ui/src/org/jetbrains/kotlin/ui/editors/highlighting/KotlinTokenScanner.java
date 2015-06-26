@@ -93,7 +93,7 @@ public class KotlinTokenScanner implements ITokenScanner {
     private static KotlinEnvironment getAnyKotlinEnvironment() {
         IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
         for (IProject project : projects) {
-            if (KotlinNature.hasKotlinNature(project)) {
+            if (project.isAccessible() && KotlinNature.hasKotlinNature(project)) {
                 return KotlinEnvironment.getEnvironment(JavaCore.create(project));
             }
         }
