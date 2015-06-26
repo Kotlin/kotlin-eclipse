@@ -81,4 +81,8 @@ public class IndenterUtil {
     public static boolean isWhiteSpaceChar(char c) {
         return c == SPACE_CHAR || c == TAB_CHAR;
     }
+    
+    public static boolean isWhiteSpaceOrNewLine(char c) {
+        return c == SPACE_CHAR || c == TAB_CHAR || c == LineEndUtil.NEW_LINE_CHAR;
+    }
 }
