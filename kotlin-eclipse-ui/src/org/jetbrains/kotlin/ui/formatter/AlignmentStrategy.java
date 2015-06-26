@@ -76,6 +76,10 @@ public class AlignmentStrategy {
                 int lineSeparatorsOccurences = IndenterUtil.getLineSeparatorsOccurences(text);
                 edit.append(IndenterUtil.createWhiteSpace(shift, lineSeparatorsOccurences, lineDelimiter));
             } else {
+                if (isWhiteSpaceNeeded(psiElement)) {
+                    edit.append(" ");
+                }
+                
                 String textWithDefaultIndents = text.replaceAll(LineEndUtil.NEW_LINE_STRING, lineDelimiter);
                 if (IndenterUtil.isSpacesForTabs()) {
                     textWithDefaultIndents = textWithDefaultIndents.replaceAll(IndenterUtil.TAB_STRING, IndenterUtil.getIndentString());
@@ -89,12 +93,35 @@ public class AlignmentStrategy {
         }
     }
     
+    private boolean isWhiteSpaceNeeded(PsiElement psiElement) {
+        if (isLBrace(psiElement)) {
+            if (edit.length() > 1) {
+                return !IndenterUtil.isWhiteSpaceOrNewLine(edit.charAt(edit.length() - 1));
+            }
+        }
+        
+        return false;
+    }
+    
     private static boolean isBrace(PsiElement psiElement) {
         LeafPsiElement leafPsiElement = getFirstLeaf(psiElement);
         
         if (leafPsiElement != null) {
             IElementType elementType = leafPsiElement.getElementType();
             if (elementType == JetTokens.LBRACE || elementType == JetTokens.RBRACE) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    private static boolean isLBrace(PsiElement psiElement) {
+        LeafPsiElement leafPsiElement = getFirstLeaf(psiElement);
+        
+        if (leafPsiElement != null) {
+            IElementType elementType = leafPsiElement.getElementType();
+            if (elementType == JetTokens.LBRACE) {
                 return true;
             }
         }

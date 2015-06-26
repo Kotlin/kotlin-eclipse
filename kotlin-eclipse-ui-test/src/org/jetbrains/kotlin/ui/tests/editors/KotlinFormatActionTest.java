@@ -64,4 +64,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void newLineAfterImportsAndPackage() {
     	doAutoTest();
     }
+    
+    @Test
+    public void withWhitespaceBeforeBrace() {
+    	doAutoTest();
+    }
 }
