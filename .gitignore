@@ -4,3 +4,4 @@ target
 .recommenders
 *.orig
 .DS_Store
+common_testData
