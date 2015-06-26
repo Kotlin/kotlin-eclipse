@@ -1,0 +1,9 @@
+interface Some {
+    fun foo(some : Int?) : Int
+}
+
+class SomeOther : Some {
+    override fun foo(some: Int?): Int {
+        <selection><caret>throw UnsupportedOperationException()</selection>
+    }
+}

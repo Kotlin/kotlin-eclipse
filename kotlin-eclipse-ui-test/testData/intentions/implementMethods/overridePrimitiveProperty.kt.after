@@ -1,0 +1,29 @@
+interface T {
+    val a1: Byte
+    val a2: Short
+    val a3: Int
+    val a4: Long
+    val a5: Float
+    val a6: Double
+    val a7: Char
+    val a8: Boolean
+}
+
+class C : T {
+    override val a1: Byte
+        get() = <selection><caret>throw UnsupportedOperationException()</selection>
+    override val a2: Short
+        get() = throw UnsupportedOperationException()
+    override val a3: Int
+        get() = throw UnsupportedOperationException()
+    override val a4: Long
+        get() = throw UnsupportedOperationException()
+    override val a5: Float
+        get() = throw UnsupportedOperationException()
+    override val a6: Double
+        get() = throw UnsupportedOperationException()
+    override val a7: Char
+        get() = throw UnsupportedOperationException()
+    override val a8: Boolean
+        get() = throw UnsupportedOperationException()
+}

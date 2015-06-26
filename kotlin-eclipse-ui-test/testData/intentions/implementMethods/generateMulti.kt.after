@@ -1,0 +1,21 @@
+package something
+
+interface Some<T> {
+    fun someFoo()
+    fun someOtherFoo() : Int
+    fun someGenericFoo() : T
+}
+
+class SomeOther<S> : Some<S> {
+    override fun someFoo() {
+        throw UnsupportedOperationException()
+    }
+
+    override fun someGenericFoo(): S {
+        throw UnsupportedOperationException()
+    }
+
+    override fun someOtherFoo(): Int {
+        throw UnsupportedOperationException()
+    }
+}

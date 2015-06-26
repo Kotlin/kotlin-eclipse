@@ -1,0 +1,21 @@
+interface Test {
+    public open fun test()
+    protected open val testProp : Int
+}
+
+class SomeTest : Test {
+    val hello = 12
+    override fun test() {
+        <selection><caret>throw UnsupportedOperationException()</selection>
+    }
+
+    override val testProp: Int
+        get() = throw UnsupportedOperationException()
+
+    /**
+     * test
+     */
+    fun some() {
+
+    }
+}

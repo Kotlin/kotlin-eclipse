@@ -1,0 +1,9 @@
+interface A {
+    fun String.foo()
+}
+
+class B : A {
+    override fun String.foo() {
+        <selection><caret>throw UnsupportedOperationException()</selection>
+    }
+}

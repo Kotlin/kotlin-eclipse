@@ -1,0 +1,30 @@
+interface Base<A, B, C>() {
+    open val method : (A?) -> A
+    open fun foo(value : B) : B
+    open fun bar(value : () -> C) : (String) -> C
+}
+
+class C : Base<String, C, Unit>() {
+    override fun bar(value: () -> Unit): (String) -> Unit {
+        throw UnsupportedOperationException()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun foo(value: C): C {
+        throw UnsupportedOperationException()
+    }
+
+    override fun hashCode(): Int {
+        throw UnsupportedOperationException()
+    }
+
+    override val method: (String?) -> String
+        get() = throw UnsupportedOperationException()
+
+    override fun toString(): String {
+        throw UnsupportedOperationException()
+    }
+}
