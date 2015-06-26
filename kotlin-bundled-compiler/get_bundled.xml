@@ -11,6 +11,7 @@
 	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
 	<property name="injector-generator-file" value="injector-generator.jar"/>
+	<property name="test-data-file" value="kotlin-test-data.zip" />
 	<property name="guava-file" value="guava-17.0.jar"/>
 	<property name="branch" value="?branch=${bootstrap_branch}" />
 	
@@ -19,6 +20,8 @@
 	<condition property="target.dir" value="${teamcity.build.workingDir}/lib" else="lib">
 		<isset property="teamcity.build.workingDir"/>
 	</condition>
+	
+	<property name="testData.dir" value="../kotlin-eclipse-ui-test/common_testData" />
 	
 	<property name="download.name" value="downloads" />
 	<property name="download.dir" value="${target.dir}/${download.name}" />
@@ -32,12 +35,30 @@
 	<target name="refresh_eclipse" unless="no_eclipse">
 		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
 	</target>
+	
+	<target name="download_test_data">
+		<delete includeemptydirs="true">
+			<fileset dir="${testData.dir}" includes="**/*" />
+		</delete>
+		
+		<mkdir dir="${testData.dir}" />
+		
+		<get 
+            src="${teamcity-kotlin-url}/internal/${test-data-file}${branch}" 
+            dest="${testData.dir}/${test-data-file}" 
+            usetimestamp="true" />
+		
+		<unzip src="${testData.dir}/${test-data-file}" dest="${testData.dir}" />
+		
+		<delete file="${testData.dir}/${test-data-file}}" />
+	</target>
 
 	<target name="download_bundled">
 		<mkdir dir="${target.dir}" />
 		<delete includeemptydirs="true">
 			<fileset dir="${target.dir}" includes="**/*" excludes="${download.name}/*" />
 		</delete>
+		
 
 		<mkdir dir="${download.dir}" />
 
@@ -120,6 +141,6 @@
 		</zip>
 	</target>
 	
-    <target name="get_bundled" depends="download_bundled, refresh_eclipse">
+    <target name="get_bundled" depends="download_bundled, refresh_eclipse, download_test_data">
     </target>
 </project>
