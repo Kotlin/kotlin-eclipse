@@ -43,7 +43,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         .setRenderDefaultValues(false)
         .setModifiers(DescriptorRenderer.Modifier.OVERRIDE)
         .setWithDefinedIn(false)
-        .setNameShortness(NameShortness.SOURCE_CODE_QUALIFIED)
+        .setNameShortness(NameShortness.SHORT)
         .setOverrideRenderingPolicy(DescriptorRenderer.OverrideRenderingPolicy.RENDER_OVERRIDE)
         .setUnitReturnType(false)
         .setTypeNormalizer(IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES)
