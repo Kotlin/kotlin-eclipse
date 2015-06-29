@@ -19,6 +19,8 @@ import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.psi.JetCallExpression;
 import org.jetbrains.kotlin.psi.JetExpression;
 import org.jetbrains.kotlin.psi.JetQualifiedExpression;
+import org.jetbrains.kotlin.psi.JetSuperExpression;
+import org.jetbrains.kotlin.psi.JetValueArgument;
 import org.jetbrains.kotlin.psi.PsiPackage;
 import org.jetbrains.kotlin.psi.ValueArgument;
 import org.jetbrains.kotlin.resolve.BindingContext;
@@ -152,12 +154,23 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         
         JetCallExpression jetCallExpression = (JetCallExpression) call; 
         
+        BindingContext bindingContext = getBindingContext(element, file);
+        
+        return bindingContext != null ? 
+                CallUtilPackage.getResolvedCall(jetCallExpression.getCalleeExpression(), bindingContext) : null;
+    }
+    
+    @Nullable
+    private static BindingContext getBindingContext(@NotNull JetQualifiedExpression element, @NotNull IFile file) {
+        JetExpression call = element.getSelectorExpression();
+        if (!(call instanceof JetCallExpression)) return null;
+        
         IJavaProject javaProject = JavaCore.create(file.getProject());
         BindingContext bindingContext = KotlinAnalyzer
                 .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
                 .getBindingContext();
         
-        return CallUtilPackage.getResolvedCall(jetCallExpression.getCalleeExpression(), bindingContext);
+        return bindingContext;
     }
     
     @Override
@@ -172,9 +185,41 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         if (calleeExpression == null) {
             return false;
         }
-
+        
+        List<JetValueArgument> valueArguments = callExpression.getValueArguments();
+        if (valueArguments.isEmpty()) return false;
+        
+        for (JetValueArgument argument : valueArguments) {
+            if (argument.isNamed()) {
+                return false;
+            }
+        }
+        
+        JetQualifiedExpression qualifiedExpression = PsiTreeUtil.getParentOfType(psiElement, JetQualifiedExpression.class);
+        if (qualifiedExpression != null && !isReceiverExpressionWithValue(qualifiedExpression)) {
+            return false;
+        }
+        
         return "get".equals(calleeExpression.getText()) && callExpression.getTypeArgumentList() == null &&
-                callExpression.getValueArguments().size() + callExpression.getFunctionLiteralArguments().size() > 0;
+                valueArguments.size() + callExpression.getFunctionLiteralArguments().size() > 0;
+    }
+    
+    private boolean isReceiverExpressionWithValue(@NotNull JetQualifiedExpression expression) {
+        JetExpression receiver = expression.getReceiverExpression();
+        if (receiver instanceof JetSuperExpression) return false;
+        
+        KotlinEditor editor = getActiveEditor();
+        if (editor == null) return false;
+        
+        IFile file = EditorUtil.getFile(editor);
+        if (file == null) return false;
+        
+        BindingContext bindingContext = getBindingContext(expression, file);
+        if (bindingContext != null) {
+            return bindingContext.getType(receiver) != null;
+        }
+        
+        return false;
     }
 
     @Override
