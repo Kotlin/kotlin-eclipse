@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.psi.JetClassInitializer;
 import org.jetbrains.kotlin.psi.JetFunction;
 import org.jetbrains.kotlin.psi.JetImportList;
 import org.jetbrains.kotlin.psi.JetPackageDirective;
+import org.jetbrains.kotlin.psi.JetPropertyAccessor;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -184,7 +185,8 @@ public class AlignmentStrategy {
         IElementType elementType = node.getElementType();
         if ("BLOCK".equals(elementType.toString())) {
             PsiElement parent = node.getPsi().getParent();
-            if (parent instanceof JetFunction || parent instanceof JetClass || parent instanceof JetClassInitializer) {
+            if (parent instanceof JetFunction || parent instanceof JetClass || parent instanceof JetClassInitializer 
+                    || parent instanceof JetPropertyAccessor) {
                 return indent + 1;
             } 
         } else if (BLOCK_ELEMENT_TYPES.contains(elementType.toString())) {
