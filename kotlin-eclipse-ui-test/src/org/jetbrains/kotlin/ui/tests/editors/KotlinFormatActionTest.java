@@ -69,4 +69,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void withWhitespaceBeforeBrace() {
     	doAutoTest();
     }
+    
+    @Test
+    public void withMutableVariable() {
+    	doAutoTest();
+    }
 }
