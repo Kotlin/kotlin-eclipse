@@ -8,19 +8,23 @@ import org.jetbrains.kotlin.ui.editors.quickassist.KotlinImplementMethodsProposa
 
 public class KotlinImplementMethodsTestCase extends AbstractKotlinQuickAssistTestCase<KotlinImplementMethodsProposal> {
 	private boolean isSpacesForTab;
+	private int initialSpacesCount;
 
 	@Override
 	public void configure() {
 		super.configure();
 		
 		isSpacesForTab = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
+		initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, 4);
 	}
 
 	@Override
 	public void afterTest() {
 		super.afterTest();
 		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, isSpacesForTab);
+		EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, initialSpacesCount);
 	}
 
 	protected void doTest(String testPath) {
