@@ -97,12 +97,11 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         for (i in generatedMembers.indices) {
             generatedText.append(newLineWithShift)
             generatedText.append(AlignmentStrategy.alignCode(generatedMembers[i].getNode(), indent, lineDelimiter))
-            if (i == generatedMembers.lastIndex) {
-                generatedText.append(AlignmentStrategy.alignCode(newLine.getNode(), indent - 1, lineDelimiter))
-            } else {
-                generatedText.append(newLineWithShift)
+            if (i != generatedMembers.lastIndex) {
+            	generatedText.append(newLineWithShift)
             }
         }
+		generatedText.append(AlignmentStrategy.alignCode(newLine.getNode(), indent - 1, lineDelimiter))
         
         document.replace(insertOffset, 0, generatedText.toString())
 	}
@@ -166,7 +165,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         body.append(" = ")
         body.append(generateUnsupportedOrSuperCall(classOrObject, descriptor))
         if (descriptor.isVar()) {
-            body.append("\nset(value) {}")
+            body.append("\nset(value) {\n}")
         }
         return JetPsiFactory(classOrObject.getProject()).createProperty(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
@@ -181,7 +180,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
             val builder = StringBuilder()
             builder.append("super")
             if (classOrObject.getDelegationSpecifiers().size() > 1) {
-                builder.append("<").append(descriptor.getContainingDeclaration().escapedName()).append(">")
+                builder.append("<").append(descriptor.getContainingDeclaration()!!.escapedName()).append(">")
             }
             builder.append(".").append(descriptor.escapedName())
 
