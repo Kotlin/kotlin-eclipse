@@ -2,6 +2,7 @@
 	<property name="idea-sources-build-id" value="474470"/>
 	<property name="compiler.tag" value="for_eclipse" />
 	<property name="bootstrap_branch" value="M12%2Fbootstrap"/>
+	
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
 	
 	<property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
@@ -13,7 +14,10 @@
 	<property name="injector-generator-file" value="injector-generator.jar"/>
 	<property name="test-data-file" value="kotlin-test-data.zip" />
 	<property name="guava-file" value="guava-17.0.jar"/>
-	<property name="branch" value="?branch=${bootstrap_branch}" />
+	
+	<condition property="branch" value="?branch=${bootstrap_branch}" else="">
+	    <length string="${bootstrap_branch}" trim="true" when="greater" length="0" />
+	</condition>
 	
 	<property name="project.name" value="kotlin-bundled-compiler" />
 		
