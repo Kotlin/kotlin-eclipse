@@ -134,7 +134,7 @@ public class CompilerOutputParser {
             }
             String text = message.toString();
 
-            messageCollector.report(category, text, CompilerMessageLocation.create(path, line, column));
+            messageCollector.report(category, text, CompilerMessageLocation.create(path, line, column, null));
             
             tags.pop();
         }

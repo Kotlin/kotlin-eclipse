@@ -2,6 +2,6 @@ package pckg.navigation
 
 import kotlin.platform.platformName
 
-[platformName("doGetX")]
+@platformName("doGetX")
 fun <caret>getSome() {
 }

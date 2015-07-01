@@ -1,9 +1,9 @@
-// EXIST: java.util.ArrayList
-// NUMBER: 1
-
 import java.util.ArrayList
 
 fun main(args : Array<String>) {
 	val list = ArrayList<Int>()
 	println(list)
 }
+
+// EXIST: java.util.ArrayList
+// NUMBER: 1

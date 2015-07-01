@@ -27,7 +27,6 @@ Import-Package: com.intellij.openapi.vfs,
  org.eclipse.jdt.ui,
  org.jetbrains.kotlin.core.resolve,
  org.jetbrains.kotlin.core.utils,
- org.jetbrains.kotlin.di,
  org.eclipse.jdt.internal.debug.core,
  org.eclipse.jdt.debug.core
 Export-Package: org.jetbrains.kotlin.core,

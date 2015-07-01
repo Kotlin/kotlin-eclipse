@@ -1,3 +1,3 @@
-// NUMBER: 1
-
 fun test() = HashS<caret>et
+
+// NUMBER: 1

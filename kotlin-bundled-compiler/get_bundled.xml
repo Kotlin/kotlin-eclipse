@@ -1,7 +1,7 @@
 <project default="get_bundled">
 	<property name="idea-sources-build-id" value="474470"/>
 	<property name="compiler.tag" value="for_eclipse" />
-	<property name="bootstrap_branch" value="M12%2Fbootstrap"/>
+	<property name="bootstrap_branch" value=""/>
 	
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
 	
@@ -11,7 +11,6 @@
 	
 	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
-	<property name="injector-generator-file" value="injector-generator.jar"/>
 	<property name="test-data-file" value="kotlin-test-data.zip" />
 	<property name="guava-file" value="guava-17.0.jar"/>
 	
@@ -111,11 +110,6 @@
 			</patternset>
 			<mapper type="flatten"/>
 		</unzip>
-		
-		<get 
-			src="${teamcity-kotlin-url}/internal/injector-generator.jar${branch}"
-			dest="${target.dir}/${injector-generator-file}"
-			usetimestamp="true" />
 		
 		<get 
 			src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"

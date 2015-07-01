@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.psi.JetNamedFunction
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.renderer.DescriptorRendererBuilder
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.renderer.NameShortness
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
@@ -37,18 +36,19 @@ import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
+import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
-    private val OVERRIDE_RENDERER = DescriptorRendererBuilder()
-        .setRenderDefaultValues(false)
-        .setModifiers(DescriptorRenderer.Modifier.OVERRIDE)
-        .setWithDefinedIn(false)
-        .setNameShortness(NameShortness.SHORT)
-        .setOverrideRenderingPolicy(DescriptorRenderer.OverrideRenderingPolicy.RENDER_OVERRIDE)
-        .setUnitReturnType(false)
-        .setTypeNormalizer(IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES)
-        .build()
-
+    private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
+            renderDefaultValues = false
+            modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
+            withDefinedIn = false
+            nameShortness = NameShortness.SHORT
+            overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
+            unitReturnType = false
+            typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES
+    }
 	
 	override fun apply(document: IDocument, psiElement: PsiElement) {
         val classOrObject = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetClassOrObject>(), false)

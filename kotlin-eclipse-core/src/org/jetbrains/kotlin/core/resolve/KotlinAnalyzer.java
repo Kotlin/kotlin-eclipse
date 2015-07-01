@@ -35,7 +35,7 @@ public class KotlinAnalyzer {
     @NotNull
     public static AnalysisResult analyzeFiles(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
             @NotNull Collection<JetFile> filesToAnalyze) {
-        return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+        return EclipseAnalyzerFacadeForJVM.INSTANCE$.analyzeFilesWithJavaIntegration(
                 javaProject, 
                 kotlinEnvironment.getProject(), 
                 filesToAnalyze);

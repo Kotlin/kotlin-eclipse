@@ -43,7 +43,9 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -51,7 +53,6 @@ import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
-import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
@@ -144,9 +145,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             @NotNull JetSimpleNameExpression simpleNameExpression,
             @NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        BindingContext context = KotlinAnalyzer
-                .analyzeFile(javaProject, simpleNameExpression.getContainingJetFile())
-                .getBindingContext();
+        AnalysisResult analysisResult = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingJetFile());
         
         Function1<DeclarationDescriptor, Boolean> visibilityFilter = new Function1<DeclarationDescriptor, Boolean>() {
             @Override
@@ -162,7 +161,11 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             }
         };
         
-        return new ReferenceVariantsHelper(context, visibilityFilter).getReferenceVariants(
+        return new ReferenceVariantsHelper(
+                analysisResult.getBindingContext(), 
+                analysisResult.getModuleDescriptor(),
+                KotlinEnvironment.getEnvironment(javaProject).getProject(),
+                visibilityFilter).getReferenceVariants(
                 simpleNameExpression, DescriptorKindFilter.ALL, false, nameFilter);
     }
     
@@ -174,7 +177,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         for (DeclarationDescriptor descriptor : descriptors) {
             String completion = descriptor.getName().getIdentifier();
             Image image = KotlinDescriptorUtils.INSTANCE.getImage(descriptor);
-            String presentableString = DescriptorRenderer.STARTS_FROM_NAME.render(descriptor);
+            String presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor);
             assert image != null : "Image for completion must not be null";
             
             KotlinCompletionProposal proposal = new KotlinCompletionProposal(

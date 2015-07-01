@@ -27,6 +27,8 @@ import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.eclipse.jdt.core.IMember
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.psi.JetEnumEntry
+import org.jetbrains.kotlin.psi.JetPrimaryConstructor
+import org.jetbrains.kotlin.psi.JetConstructor
 
 fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? {
 	val result = ArrayList<JetElement>()
@@ -93,7 +95,13 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 					visitExplicitDeclaration(constructor)
 				}
 			
-//				Check primary constructor 
+//				Temporary hack, update it later
+				override fun visitPrimaryConstructor(constructor: JetPrimaryConstructor, data: Void?): Void? {
+					visitExplicitDeclaration(constructor)
+					return null
+				}
+			
+//				Check primary constructor when there are no secondary constructors
 				override fun visitClass(jetClass: JetClass) {
 					if (equalsJvmSignature(jetClass, element) && (jetClass.getFqName() == element.getDeclaringType().getFqName())) {
 						result.add(jetClass)
@@ -130,7 +138,8 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
 	return jetSignatures.any { 
 		if (it.first == memberSignature) {
 			return@any when {
-				javaMember is IMethod && javaMember.isConstructor() -> jetElement is JetClass || jetElement is JetSecondaryConstructor
+				javaMember is IMethod && javaMember.isConstructor() -> 
+					jetElement is JetClass || jetElement is JetConstructor<*>
 				else -> it.second == javaMember.getElementName()
 			}
 		}

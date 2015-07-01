@@ -70,6 +70,7 @@ import com.intellij.psi.PsiElementFinder;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.augment.PsiAugmentProvider;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.compiled.ClassFileDecompilers;
 import com.intellij.psi.impl.PsiTreeChangePreprocessor;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
@@ -137,6 +138,7 @@ public class KotlinEnvironment {
         project.registerService(CodeAnalyzerInitializer.class, cliLightClassGenerationSupport);
         project.registerService(KotlinAnalysisProjectCache.class, new KotlinAnalysisProjectCache(javaProject));
         project.registerService(KotlinLightClassManager.class, new KotlinLightClassManager(javaProject));
+        project.registerService(CodeStyleManager.class, new DummyCodeStyleManager());
         
         VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(KT_JDK_ANNOTATIONS_PATH));
         annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
