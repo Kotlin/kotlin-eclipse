@@ -139,6 +139,6 @@
 		</zip>
 	</target>
 	
-    <target name="get_bundled" depends="download_bundled, refresh_eclipse, download_test_data">
+    <target name="get_bundled" depends="download_bundled, download_test_data, refresh_eclipse">
     </target>
 </project>
