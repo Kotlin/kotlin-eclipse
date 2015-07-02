@@ -18,13 +18,16 @@ package org.jetbrains.kotlin.core.resolve.lang.kotlin;
 
 
 
-import kotlin.jvm.functions.Function2;
-
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot;
-import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot.RootType;
-import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinder;
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
@@ -38,25 +41,39 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
 
 public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder implements JvmVirtualFileFinderFactory {
-    @NotNull
-    private final JvmDependenciesIndex index;
-
-    public EclipseVirtualFileFinder(@NotNull JvmDependenciesIndex index) {
-        this.index = index;
+    private final IJavaProject javaProject;
+    
+    public EclipseVirtualFileFinder(@NotNull IJavaProject javaProject) {
+        this.javaProject = javaProject;
     }
 
     @Nullable
     @Override
     public VirtualFile findVirtualFileWithHeader(@NotNull ClassId classId) {
-        // Copied from JvmCliVirtualFileFinder
-        final String classFileName = classId.getRelativeClassName().asString().replace('.', '$');
-        return index.findClass(classId, JavaRoot.OnlyBinary, new Function2<VirtualFile, JavaRoot.RootType, VirtualFile>() {
-            @Override
-            public VirtualFile invoke(VirtualFile dir, RootType rootType) {
-                VirtualFile child = dir.findChild(classFileName + ".class");
-                return (child != null && child.isValid()) ? child : null;
+        try {
+            IType type = javaProject.findType(classId.getPackageFqName().asString(), classId.getRelativeClassName().asString());
+            if (type == null) return null;
+            
+            if (!type.isBinary()) return null;
+            
+            if (EclipseJavaClassFinder.isInKotlinBinFolder(type)) return null;
+            
+            IPath path;
+            IResource resource = type.getResource();
+            if (resource != null) {
+                path = resource.getLocation(); // if resource exists then jar is in workspace
+            } else {
+                path = type.getPath();
             }
-        });
+            if (path != null) {
+                String relativePath = type.getFullyQualifiedName().replace('.', '/') + ".class";
+                return KotlinEnvironment.getEnvironment(javaProject).getVirtualFileInJar(path, relativePath);
+            }
+        } catch (JavaModelException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return null;
     }
     
     @NotNull
@@ -73,7 +90,10 @@ public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder imple
         if (fqName == null) {
             return null;
         }
-        VirtualFile file = findVirtualFileWithHeader(ClassId.topLevel(fqName));
+        ClassId classId = computeClassId(javaClass);
+        if (classId == null) return null;
+        
+        VirtualFile file = findVirtualFileWithHeader(classId);
         if (file == null) {
             return null;
         }
@@ -86,11 +106,22 @@ public class EclipseVirtualFileFinder extends VirtualFileKotlinClassFinder imple
 
         return KotlinBinaryClassCache.getKotlinBinaryClass(file);
     }
+    
+    @Nullable
+    private static ClassId computeClassId(@NotNull JavaClass jClass) {
+        JavaClass container = jClass.getOuterClass();
+        if (container != null) {
+            ClassId parentClassId = computeClassId(container);
+            return parentClassId == null ? null : parentClassId.createNestedClassId(jClass.getName());
+        }
+        
+        FqName fqName = jClass.getFqName();
+        return fqName != null ? ClassId.topLevel(fqName) : null;
+    }
 
     @Override
     @NotNull
     public JvmVirtualFileFinder create(@NotNull GlobalSearchScope scope) {
-        return new EclipseVirtualFileFinder(index);
+        return new EclipseVirtualFileFinder(javaProject);
     }
-
 }

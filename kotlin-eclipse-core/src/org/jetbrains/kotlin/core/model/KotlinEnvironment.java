@@ -23,17 +23,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.asJava.KotlinLightClassForPackage;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot;
-import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex;
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension;
 import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
@@ -145,9 +146,7 @@ public class KotlinEnvironment {
 
         configureClasspath();
         
-        JvmDependenciesIndex index = new JvmDependenciesIndex(javaRoots);
-        
-        project.registerService(JvmVirtualFileFinderFactory.class, new EclipseVirtualFileFinder(index));
+        project.registerService(JvmVirtualFileFinderFactory.class, new EclipseVirtualFileFinder(javaProject));
         
         ExternalDeclarationsProvider.OBJECT$.registerExtensionPoint(project);
         ExpressionCodegenExtension.OBJECT$.registerExtensionPoint(project);
@@ -241,6 +240,15 @@ public class KotlinEnvironment {
     @NotNull
     public JavaCoreApplicationEnvironment getJavaApplicationEnvironment() {
         return applicationEnvironment;
+    }
+    
+    @Nullable
+    public VirtualFile getVirtualFile(@NotNull IPath location) {
+        return applicationEnvironment.getLocalFileSystem().findFileByIoFile(location.toFile());
+    }
+    
+    public VirtualFile getVirtualFileInJar(@NotNull IPath pathToJar, @NotNull String relativePath) {
+        return applicationEnvironment.getJarFileSystem().findFileByPath(pathToJar + "!/" + relativePath);
     }
     
     private void addToClasspath(File path) throws CoreException {

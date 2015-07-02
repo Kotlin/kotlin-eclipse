@@ -29,7 +29,6 @@ import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotationArgument;
 import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.name.ClassId;
-import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
 
 import com.google.common.collect.Lists;
@@ -79,19 +78,6 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     @Nullable
     public ClassId getClassId() {
         ITypeBinding annotationType = getBinding().getAnnotationType();    
-        return annotationType != null ? computeClassId(annotationType) : null;
+        return annotationType != null ? EclipseJavaElementUtil.computeClassId(annotationType) : null;
     }
-    
-    @Nullable
-    private static ClassId computeClassId(@NotNull ITypeBinding classBinding) {
-        ITypeBinding container = classBinding.getDeclaringClass();
-        if (container != null) {
-            ClassId parentClassId = computeClassId(container);
-            return parentClassId == null ? null : parentClassId.createNestedClassId(Name.identifier(classBinding.getName()));
-        }
-        
-        String fqName = classBinding.getQualifiedName();
-        return fqName == null ? null : ClassId.topLevel(new FqName(fqName));
-    }
-
 }

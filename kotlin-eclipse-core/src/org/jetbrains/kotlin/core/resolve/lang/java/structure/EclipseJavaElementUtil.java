@@ -34,6 +34,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
@@ -42,7 +43,9 @@ import org.jetbrains.kotlin.descriptors.Visibility;
 import org.jetbrains.kotlin.load.java.JavaVisibilities;
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaValueParameter;
+import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
+import org.jetbrains.kotlin.name.Name;
 
 import com.google.common.collect.Lists;
 import com.intellij.psi.CommonClassNames;
@@ -157,6 +160,18 @@ public class EclipseJavaElementUtil {
         }
         
         return null;
+    }
+    
+    @Nullable
+    public static ClassId computeClassId(@NotNull ITypeBinding classBinding) {
+        ITypeBinding container = classBinding.getDeclaringClass();
+        if (container != null) {
+            ClassId parentClassId = computeClassId(container);
+            return parentClassId == null ? null : parentClassId.createNestedClassId(Name.identifier(classBinding.getName()));
+        }
+        
+        String fqName = classBinding.getQualifiedName();
+        return fqName == null ? null : ClassId.topLevel(new FqName(fqName));
     }
     
     public static boolean isKotlinLightClass(@NotNull IJavaElement element) {
