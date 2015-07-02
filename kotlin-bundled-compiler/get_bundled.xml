@@ -40,11 +40,10 @@
 	</target>
 	
 	<target name="download_test_data">
+		<mkdir dir="${testData.dir}" />
 		<delete includeemptydirs="true">
 			<fileset dir="${testData.dir}" includes="**/*" />
 		</delete>
-		
-		<mkdir dir="${testData.dir}" />
 		
 		<get 
             src="${teamcity-kotlin-url}/internal/${test-data-file}${branch}" 
