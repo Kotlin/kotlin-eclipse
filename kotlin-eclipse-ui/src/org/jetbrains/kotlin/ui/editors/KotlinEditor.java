@@ -88,6 +88,8 @@ public class KotlinEditor extends CompilationUnitEditor {
         PlatformUI.getWorkbench().getHelpSystem().setHelp(formatAction, IJavaHelpContextIds.FORMAT_ACTION);
         
         setAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT, new KotlinOpenDeclarationAction(this));
+        
+        setAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT, new KotlinSelectEnclosingAction(this));
     }
     
     @Override
