@@ -251,6 +251,11 @@ public class KotlinEnvironment {
         return applicationEnvironment.getJarFileSystem().findFileByPath(pathToJar + "!/" + relativePath);
     }
     
+    public boolean isJarFile(@NotNull IPath pathToJar) {
+        VirtualFile jarFile = applicationEnvironment.getJarFileSystem().findFileByPath(pathToJar + "!/");
+        return jarFile != null && jarFile.isValid();
+    }
+    
     private void addToClasspath(File path) throws CoreException {
         if (path.isFile()) {
             VirtualFile jarFile = applicationEnvironment.getJarFileSystem().findFileByPath(path + "!/");
