@@ -30,7 +30,8 @@ import org.junit.runners.Suite;
     KotlinFormatActionTest.class,
     KotlinCustomLocationBugTest.class,
     PsiVisualizationCommandTest.class,
-    KotlinEditorClosedProjectInfluenceTest.class
+    KotlinEditorClosedProjectInfluenceTest.class,
+    KotlinSelectEnclosingTest.class
 } )
 public class AllTests {
 
