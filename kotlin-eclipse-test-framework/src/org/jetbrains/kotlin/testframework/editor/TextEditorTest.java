@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFormatAction;
 import org.jetbrains.kotlin.ui.editors.KotlinOpenDeclarationAction;
+import org.jetbrains.kotlin.ui.editors.KotlinSelectEnclosingAction;
 
 public class TextEditorTest {
     
@@ -67,18 +68,25 @@ public class TextEditorTest {
                 int cursor = content.indexOf(KotlinEditorTestCase.CARET_TAG);
                 content = content.replaceAll(KotlinEditorTestCase.CARET_TAG, "");
                 
+                int selectionStart = content.indexOf(KotlinEditorTestCase.SELECTION_TAG_OPEN);
+                content = content.replaceAll(KotlinEditorTestCase.SELECTION_TAG_OPEN, "");
+                
+                int selectionEnd = content.indexOf(KotlinEditorTestCase.SELECTION_TAG_CLOSE);
+                content = content.replaceAll(KotlinEditorTestCase.SELECTION_TAG_CLOSE, "");               
+                
                 IFile file = testProject.createSourceFile(packageName, name, content);
                 editor = (JavaEditor) EditorTestUtils.openInEditor(file);
                 setCaret(cursor);
+                setSelection(selectionStart, selectionEnd - selectionStart);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
         
         return editor;
-    }
-    
-    public void type(char c) {
+    }    
+
+	public void type(char c) {
         Event e = new Event();
         e.character = c;
         e.widget = editor.getViewer().getTextWidget();
@@ -93,11 +101,21 @@ public class TextEditorTest {
         ((KotlinEditor) editor).getAction(KotlinFormatAction.FORMAT_ACTION_TEXT).run();
     }
     
+    public void runSelectEnclosingAction() {
+    	((KotlinEditor) editor).getAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT).run();
+    }
+    
     public void setCaret(int offset) {
         if (offset > -1) {
             editor.setHighlightRange(offset, 0, true);
             editor.setFocus();
         }
+    }
+    
+    public void setSelection(int selectionStart, int selectionLength) {
+    	if (selectionStart != -1 &&  selectionLength !=-1) {
+    		editor.setHighlightRange(selectionStart, selectionLength, false);
+    	}    	
     }
     
     public void typeEnter() {

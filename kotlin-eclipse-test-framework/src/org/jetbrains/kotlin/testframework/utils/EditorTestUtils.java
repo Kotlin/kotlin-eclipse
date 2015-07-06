@@ -18,6 +18,8 @@ package org.jetbrains.kotlin.testframework.utils;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
@@ -43,20 +45,44 @@ public class EditorTestUtils {
         return page.openEditor(fileEditorInput, defaultEditor.getId());
     }
     
-    public static void assertByEditor(JavaEditor activeEditor, String expected) {
-        assertByStringWithOffset(EditorUtil.getSourceCode(activeEditor), expected, activeEditor.getViewer().getTextWidget().getCaretOffset());
+    public static void assertByEditorWithErrorMessage(JavaEditor activeEditor, String expected, String message) {
+        StyledText editorTextWidget = activeEditor.getViewer().getTextWidget();
+		assertByStringWithEditorWidgetAndErrorMessage(EditorUtil.getSourceCode(activeEditor), expected, editorTextWidget, message);
     }
     
-    private static void assertByStringWithOffset(String actual, String expected, int caretOffset) {
-        expected = expected.replaceAll(KotlinEditorTestCase.BREAK_TAG, System.lineSeparator());
+    public static void assertByEditor(JavaEditor activeEditor, String expected) {
+    	assertByEditorWithErrorMessage(activeEditor, expected, "");
+    }
+    
+    private static void assertByStringWithEditorWidgetAndErrorMessage(String actual, String expected, StyledText editorTextWidget, String errorMessage) {
+        int caretOffset = editorTextWidget.getCaretOffset();
+        Point selection = editorTextWidget.getSelection();
+    	expected = expected.replaceAll(KotlinEditorTestCase.BREAK_TAG, System.lineSeparator());
+    	int selectionStartOffset = selection.x;
+        int selectionEndOffset = selection.y;
         if (expected.contains(KotlinEditorTestCase.CARET_TAG) && caretOffset != -1) {
             actual = actual.substring(0, caretOffset) + KotlinEditorTestCase.CARET_TAG + actual.substring(caretOffset);
+            int caretTagLength = KotlinEditorTestCase.CARET_TAG.length();
+            if (selectionStartOffset > caretOffset) {
+				selectionStartOffset += caretTagLength;
+            }
+            if (selectionEndOffset >= caretOffset) {
+            	selectionEndOffset += caretTagLength;
+            }
         }
-        
+        // caret tag is expected to be absent if selection is present or to be within selection
+        if (expected.contains(KotlinEditorTestCase.SELECTION_TAG_OPEN) && selection.x != selection.y) {
+        	StringBuilder taggedBuilder = new StringBuilder(actual);
+        	//insert closing tag first, because then there's no need to recalc end offset
+        	taggedBuilder.insert(selectionEndOffset, KotlinEditorTestCase.SELECTION_TAG_CLOSE);
+        	taggedBuilder.insert(selectionStartOffset, KotlinEditorTestCase.SELECTION_TAG_OPEN);
+			actual = taggedBuilder.toString();
+        }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
         try {
             Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected), LineEndUtil.removeAllCarriageReturns(actual));
         } catch (ComparisonFailure e) {
-            throw new ComparisonFailure("", escapeNewLines(e.getExpected()), escapeNewLines(e.getActual()));
+            throw new ComparisonFailure(errorMessage, escapeNewLines(e.getExpected()), escapeNewLines(e.getActual()));
         }
     }
     
