@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.load.java.structure.JavaMethod;
 import org.jetbrains.kotlin.load.java.structure.JavaType;
@@ -53,7 +52,7 @@ public class EclipseJavaMethod extends EclipseJavaMember<IMethodBinding> impleme
     }
 
     @Override
-    @Nullable
+    @NotNull
     public JavaType getReturnType() {
         return EclipseJavaType.create(getBinding().getReturnType());
     }

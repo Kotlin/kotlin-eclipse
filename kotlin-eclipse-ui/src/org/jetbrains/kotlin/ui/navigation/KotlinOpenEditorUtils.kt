@@ -43,15 +43,7 @@ fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? 
 fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisitorVoid? {
 	return when (element) {
 		is IType -> object : JetAllVisitor() {
-			override fun visitClass(jetClass: JetClass) {
-				visitClassOrObject(jetClass)
-			}
-			
-			override fun visitObjectDeclaration(declaration: JetObjectDeclaration) {
-				visitClassOrObject(declaration)
-			}
-			
-			fun visitClassOrObject(jetClassOrObject: JetClassOrObject) {
+			override fun visitClassOrObject(jetClassOrObject: JetClassOrObject) {
 				if (jetClassOrObject.getFqName() == element.getFqName()) {
 					result.add(jetClassOrObject)
 					return
@@ -95,10 +87,8 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 					visitExplicitDeclaration(constructor)
 				}
 			
-//				Temporary hack, update it later
-				override fun visitPrimaryConstructor(constructor: JetPrimaryConstructor, data: Void?): Void? {
+				override fun visitPrimaryConstructor(constructor: JetPrimaryConstructor) {
 					visitExplicitDeclaration(constructor)
-					return null
 				}
 			
 //				Check primary constructor when there are no secondary constructors

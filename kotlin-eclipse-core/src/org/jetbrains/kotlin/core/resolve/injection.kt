@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmCheckerProvider
 import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver
-import org.jetbrains.kotlin.resolve.lazy.ScopeProvider
 import org.jetbrains.kotlin.container.*
 import org.jetbrains.kotlin.frontend.di.*
 import com.intellij.openapi.project.Project
@@ -34,6 +33,8 @@ import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaProperty
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory
 import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.resolve.lazy.FileScopeProviderImpl
+import org.jetbrains.kotlin.resolve.BodyResolveCache
 
 private fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: GlobalSearchScope, project: Project) {
     useInstance(moduleContentScope)
@@ -69,9 +70,10 @@ public fun createContainerForTopDownAnalyzerForJvm(
     configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project)
     useInstance(javaProject)
     useInstance(declarationProviderFactory)
+	useInstance(BodyResolveCache.ThrowException)
 
     useImpl<SingleModuleClassResolver>()
-    useImpl<ScopeProvider>()
+    useImpl<FileScopeProviderImpl>()
 }.let {
     it.javaAnalysisInit()
 
