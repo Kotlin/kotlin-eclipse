@@ -92,7 +92,12 @@ public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier
     }
     
     override public fun getFields(): Collection<JavaField> {
-        return fields(getBinding().getDeclaredFields())
+        return getBinding().getDeclaredFields()
+        		.filter { 
+        		    val name = it.getName()
+        		    name != null && Name.isValidIdentifier(name)
+        		 }
+        		.map { EclipseJavaField(it) }
     }
     
     override public fun getConstructors(): Collection<JavaConstructor> {
