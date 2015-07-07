@@ -86,7 +86,9 @@ public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier
     }
     
     override public fun getMethods(): Collection<JavaMethod> {
-        return methods(getBinding().getDeclaredMethods())
+        return getBinding().getDeclaredMethods()
+        		.filterNot { it.isConstructor() }
+        		.map { EclipseJavaMethod(it) }
     }
     
     override public fun getFields(): Collection<JavaField> {

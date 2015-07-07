@@ -36,7 +36,7 @@ public class EclipseJavaTypeParameter(binding: ITypeBinding) : EclipseJavaClassi
     override public fun getOwner(): JavaTypeParameterListOwner? {
         val methodOwner = getBinding().getDeclaringMethod()
         if (methodOwner != null) {
-            return EclipseJavaMethod(methodOwner)
+            return if (methodOwner.isConstructor()) EclipseJavaConstructor(methodOwner) else EclipseJavaMethod(methodOwner) 
         }
         
         val typeOwner = getBinding().getDeclaringClass()

@@ -10,6 +10,11 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
 	public void configure() {
 		configureProjectWithStdLib();
 	}
+	
+	@Test
+	public void testresolveConstructor() throws Exception {
+		doTest("testData/diagnostics/resolveConstructor.kt");
+	}
 
 	@Test
 	public void testaccessClassObjectFromJava() throws Exception {
