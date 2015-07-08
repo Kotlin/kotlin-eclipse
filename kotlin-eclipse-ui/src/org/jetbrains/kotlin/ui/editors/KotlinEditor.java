@@ -20,7 +20,10 @@ import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor;
+import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.SelectionHistory;
+import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.StructureSelectHistoryAction;
 import org.eclipse.jdt.internal.ui.text.JavaColorManager;
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.ITextViewerExtension;
@@ -31,6 +34,10 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.ui.debug.KotlinToggleBreakpointAdapter;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction;
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectNextAction;
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectPreviousAction;
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction;
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor;
 
 public class KotlinEditor extends CompilationUnitEditor {
@@ -87,9 +94,19 @@ public class KotlinEditor extends CompilationUnitEditor {
         markAsSelectionDependentAction(KotlinFormatAction.FORMAT_ACTION_TEXT, true);
         PlatformUI.getWorkbench().getHelpSystem().setHelp(formatAction, IJavaHelpContextIds.FORMAT_ACTION);
         
+        SelectionHistory selectionHistory = new SelectionHistory(this);
+
+        StructureSelectHistoryAction historyAction= new StructureSelectHistoryAction(this, selectionHistory);
+        historyAction.setActionDefinitionId(IJavaEditorActionDefinitionIds.SELECT_LAST);
+        setAction(KotlinSemanticSelectionAction.HISTORY, historyAction);
+        selectionHistory.setHistoryAction(historyAction);
+        
         setAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT, new KotlinOpenDeclarationAction(this));
         
-        setAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT, new KotlinSelectEnclosingAction(this));
+        setAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT, new KotlinSelectEnclosingAction(this, selectionHistory));
+        setAction(KotlinSelectPreviousAction.SELECT_PREVIOUS_TEXT, new KotlinSelectPreviousAction(this, selectionHistory));
+        setAction(KotlinSelectNextAction.SELECT_NEXT_TEXT, new KotlinSelectNextAction(this, selectionHistory));
+        
     }
     
     @Override

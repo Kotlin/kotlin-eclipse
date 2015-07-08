@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFormatAction;
 import org.jetbrains.kotlin.ui.editors.KotlinOpenDeclarationAction;
-import org.jetbrains.kotlin.ui.editors.KotlinSelectEnclosingAction;
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction;
 
 public class TextEditorTest {
     
