@@ -38,7 +38,7 @@ fun unconfigureKotlinRuntime(javaProject: IJavaProject) {
 }
 
 fun removeKotlinBinFolder(project: IProject) {
-	val kotlinBinFolder = KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project)
+	val kotlinBinFolder = KotlinJavaManager.getKotlinBinFolderFor(project)
 	kotlinBinFolder.delete(true, null)
 }
 

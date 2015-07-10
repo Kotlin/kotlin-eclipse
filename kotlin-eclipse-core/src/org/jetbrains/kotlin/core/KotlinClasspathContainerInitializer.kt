@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.core.model.KotlinJavaManager
 public class KotlinClasspathContainerInitializer : ClasspathContainerInitializer() {
     override public fun initialize(containerPath: IPath, javaProject: IJavaProject) {
         if (!(JavaCore.getClasspathContainer(runtimeContainerId, javaProject) is KotlinClasspathContainer)) {
-            if (!KotlinJavaManager.INSTANCE.hasLinkedKotlinBinFolder(javaProject)) {
+            if (!KotlinJavaManager.hasLinkedKotlinBinFolder(javaProject)) {
 	    		addFolderForKotlinClassFiles(javaProject)
 	    	}
             
