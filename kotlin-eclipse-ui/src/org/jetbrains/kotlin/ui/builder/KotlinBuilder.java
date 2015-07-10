@@ -52,6 +52,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         IJavaProject javaProject = JavaCore.create(getProject());
         if (isBuildingForLaunch()) {
             compileKotlinFiles(javaProject);
+            return null;
         }
         
         KotlinAnalysisProjectCache.getInstance(javaProject).resetCache();
