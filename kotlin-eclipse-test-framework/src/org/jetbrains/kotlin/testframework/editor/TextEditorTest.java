@@ -113,9 +113,9 @@ public class TextEditorTest {
     }
     
     public void setSelection(int selectionStart, int selectionLength) {
-    	if (selectionStart != -1 &&  selectionLength !=-1) {
-    		editor.setHighlightRange(selectionStart, selectionLength, false);
-    	}    	
+		if (selectionStart >= 0 && selectionLength >= 0) {
+			editor.selectAndReveal(selectionStart, selectionLength);
+		}
     }
     
     public void typeEnter() {
