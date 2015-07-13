@@ -1,0 +1,1 @@
+val v = "a<caret>aa ${x + y} bbb"

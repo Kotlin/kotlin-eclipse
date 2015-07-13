@@ -49,12 +49,13 @@ public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
 		}
 		//skip brace
 		element = element.getNextSibling()
-		if (element is PsiWhiteSpace) {
-			while (element.getNextSibling() != null && element.getNextSibling() is PsiWhiteSpace) {
-				element = element.getNextSibling()
-			}
+		while (element!= null && element is PsiWhiteSpace) {
+			element = element.getNextSibling()
 		}
-		return element.getTextRange().getStartOffset() + element.getText().lastIndexOf('\n') + 1 //VERY BAD!
+		if (element == null) {
+			return block.getTextRange().getStartOffset()
+		}
+		return element.getTextRange().getStartOffset()
 	}
 
 	private fun findBlockContentEnd(block: PsiElement): Int {
@@ -67,11 +68,12 @@ public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
 		}
 		//skip brace
 		element = element.getPrevSibling()
-		if (element is PsiWhiteSpace) {
-			while (element.getPrevSibling() != null && element.getPrevSibling() is PsiWhiteSpace) {
-				element = element.getPrevSibling()
-			}
+		while (element!= null && element is PsiWhiteSpace) {
+			element = element.getPrevSibling()
 		}
-		return element.getTextRange().getStartOffset() + element.getText().indexOf('\n') + 1 //VERY BAD!
+		if (element == null) {
+			return block.getTextRange().getEndOffset()
+		}
+		return element.getTextRange().getEndOffset()
 	}
 }

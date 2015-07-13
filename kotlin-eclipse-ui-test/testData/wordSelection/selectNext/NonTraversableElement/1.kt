@@ -1,0 +1,1 @@
+val property: String <selection><caret>=</selection> "Non-traversable test"
