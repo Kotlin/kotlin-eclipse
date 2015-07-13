@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.ui.tests.editors
+package org.jetbrains.kotlin.ui.tests.editors.selection
 
 import java.io.File;
 import java.util.ArrayList;
@@ -7,12 +7,11 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorSequentialAutoTestC
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 
-public abstract class KotlinSelectEnclosingTestCase: KotlinEditorSequentialAutoTestCase() {
+public abstract class KotlinCommonSelectionTestCase: KotlinEditorSequentialAutoTestCase() {
 	private val INITIAL_FILE_NAME = "0" + KotlinEditorAutoTestCase.KT_FILE_EXTENSION;
-	private val RELATIVE_PATH = "wordSelection";
+	protected val COMMON_DIR: String = "wordSelection"
+	abstract protected val RELATIVE_DIR: String
 
-	override fun performSingleOperation() = testEditor.runSelectEnclosingAction()
-	
 	override fun getInitialFileName() = INITIAL_FILE_NAME
 	
 	override fun getAfterFilesPaths(testFolder: File): ArrayList<String> {
@@ -37,5 +36,5 @@ public abstract class KotlinSelectEnclosingTestCase: KotlinEditorSequentialAutoT
 		return KotlinEditorTestCase.getText(afterFilePath).replace(KotlinEditorTestCase.CARET_TAG.toRegex(), "")
 	}
 
-	override fun getTestDataRelativePath() = RELATIVE_PATH
+	override fun getTestDataRelativePath() = COMMON_DIR + File.separator + RELATIVE_DIR
 }

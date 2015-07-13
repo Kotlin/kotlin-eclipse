@@ -1,0 +1,1 @@
+val property: String <caret>= "Non-traversable test"

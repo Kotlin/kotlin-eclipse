@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.jetbrains.kotlin.ui.tests.editors.selection.KotlinSelectEnclosingTest;
+import org.jetbrains.kotlin.ui.tests.editors.selection.KotlinSelectNextTest;
+import org.jetbrains.kotlin.ui.tests.editors.selection.KotlinSelectPreviousTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -31,7 +34,9 @@ import org.junit.runners.Suite;
     KotlinCustomLocationBugTest.class,
     PsiVisualizationCommandTest.class,
     KotlinEditorClosedProjectInfluenceTest.class,
-    KotlinSelectEnclosingTest.class
+    KotlinSelectEnclosingTest.class,
+    KotlinSelectNextTest.class,
+    KotlinSelectPreviousTest.class
 } )
 public class AllTests {
 

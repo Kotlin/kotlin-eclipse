@@ -30,6 +30,8 @@ import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFormatAction;
 import org.jetbrains.kotlin.ui.editors.KotlinOpenDeclarationAction;
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction;
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectNextAction;
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectPreviousAction;
 
 public class TextEditorTest {
     
@@ -103,6 +105,14 @@ public class TextEditorTest {
     
     public void runSelectEnclosingAction() {
     	((KotlinEditor) editor).getAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT).run();
+    }
+    
+    public void runSelectPreviousAction() {
+    	((KotlinEditor) editor).getAction(KotlinSelectPreviousAction.SELECT_PREVIOUS_TEXT).run();
+    }
+    
+    public void runSelectNextAction() {
+    	((KotlinEditor) editor).getAction(KotlinSelectNextAction.SELECT_NEXT_TEXT).run();
     }
     
     public void setCaret(int offset) {
