@@ -26,7 +26,7 @@ public class KotlinSelectPreviousAction extends KotlinSemanticSelectionAction {
     protected TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection) {
         boolean isSelectionCandidate = false;
         PsiElement currentChild = enclosingElement.getLastChild();
-        KotlinElementSelectioner selectionerInstance = KotlinElementSelectioner.getInstance();
+        KotlinElementSelectioner selectionerInstance = KotlinElementSelectioner.INSTANCE$;
         TextRange selectedRange = getCrConvertedTextRange(selection);
         String selectedText = selection.getText();
         // if selected text is all whitespaces then select enclosing

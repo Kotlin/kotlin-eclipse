@@ -26,13 +26,15 @@ public class KotlinSelectNextAction extends KotlinSemanticSelectionAction {
     protected TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection) {
         boolean isSelectionCandidate = false;
         PsiElement currentChild = enclosingElement.getFirstChild();
-        KotlinElementSelectioner selectionerInstance = KotlinElementSelectioner.getInstance();
+        KotlinElementSelectioner selectionerInstance = KotlinElementSelectioner.INSTANCE$;
         TextRange selectedRange = getCrConvertedTextRange(selection);
         String selectedText = selection.getText();
+        
         // if selected text is all whitespaces then select enclosing
         if (!selectedText.isEmpty() && selectedText.trim().isEmpty()) {
             return selectionerInstance.selectEnclosing(enclosingElement, selectedRange);
         }
+        
         while (currentChild != null) {
             ElementSelection selectionType = checkSelection(currentChild, selectedRange);
             // if all completely selected elements are not the children of the enclosing element, then select enclosing element
@@ -50,6 +52,7 @@ public class KotlinSelectNextAction extends KotlinSemanticSelectionAction {
             }
             currentChild = currentChild.getNextSibling();
         }
+        
         return selectionerInstance.selectEnclosing(enclosingElement, selectedRange);
     }
     
