@@ -23,7 +23,7 @@ public class KotlinSelectEnclosingAction extends KotlinSemanticSelectionAction {
 
     @Override
     protected TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection) {
-        return KotlinElementSelectioner.getInstance().selectEnclosing(enclosingElement, 
+        return KotlinElementSelectioner.INSTANCE$.selectEnclosing(enclosingElement, 
                 getCrConvertedTextRange(selection));
     }
 }

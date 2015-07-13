@@ -9,7 +9,7 @@ public class KotlinDocSectionSelectionHandler: KotlinElementSelectionHandler {
 		= enclosingElement is KDocSection
 
 	override fun selectEnclosing(enclosingElement: PsiElement, selectedRange: TextRange)
-		= KotlinElementSelectioner.getInstance().selectEnclosing(enclosingElement.getParent(), selectedRange)
+		= KotlinElementSelectioner.selectEnclosing(enclosingElement.getParent(), selectedRange)
 
 	override fun selectNext(enclosingElement: PsiElement, selectionCandidate: PsiElement, selectedRange: TextRange)
 		= selectEnclosing(enclosingElement, selectedRange)
