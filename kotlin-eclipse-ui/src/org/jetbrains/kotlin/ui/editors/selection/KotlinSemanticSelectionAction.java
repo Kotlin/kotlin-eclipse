@@ -8,6 +8,8 @@ import org.eclipse.jface.text.ITextSelection;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.openapi.util.TextRange;
@@ -40,13 +42,13 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     public void run(ITextSelection selection) {
         String sourceCode = EditorUtil.getSourceCode(editor);
         IFile file = EditorUtil.getFile(editor);
-        
         if (file != null) {
             PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(file, sourceCode);
             if (parsedCode == null) {
                 return;
             }
-            PsiElement enclosingElement = getEnclosingElementForSelection(parsedCode, selection);
+            TextRange selectedRange = getCrConvertedTextRange(selection);
+            PsiElement enclosingElement = getEnclosingElementForSelection(parsedCode, selectedRange);
             if (enclosingElement == null) {
                 return;
             }
@@ -54,7 +56,8 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
             history.remember(new SourceRange(selection.getOffset(), selection.getLength()));
             try {
                 history.ignoreSelectionChanges();
-                editor.selectAndReveal(elementRange.getStartOffset(), elementRange.getLength());
+                TextRange convertedRange = getLfConvertedTextRange(elementRange);
+                editor.selectAndReveal(convertedRange.getStartOffset(), convertedRange.getLength());
             } finally {
                 history.listenToSelectionChanges();
             }
@@ -63,15 +66,39 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
         }
     }
     
-    protected PsiElement getEnclosingElementForSelection(PsiFile parsedCode, ITextSelection selection) {
-        PsiElement selectedElement = parsedCode.findElementAt(selection.getOffset());
+    protected TextRange getCrConvertedTextRange(ITextSelection selection) {
+        int startOffset = LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(editor),
+                selection.getOffset());
+        int endOffset =  LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(editor),
+                selection.getOffset()+selection.getLength());
+        return new TextRange(startOffset, endOffset);
+    }
+    
+    protected TextRange getLfConvertedTextRange(TextRange range) {
+        IFile file = EditorUtil.getFile(editor);
+        if (file!=null) {
+            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+
+            int startOffset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(),
+                    range.getStartOffset(), EditorUtil.getDocument(editor));
+            int endOffset =  LineEndUtil.convertLfToDocumentOffset(jetFile.getText(),
+                    range.getEndOffset(), EditorUtil.getDocument(editor));
+            return new TextRange(startOffset, endOffset);
+        } else {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return null;
+        }
+    }
+    
+    protected PsiElement getEnclosingElementForSelection(PsiFile parsedCode, TextRange selectedRange) {
+        PsiElement selectedElement = parsedCode.findElementAt(selectedRange.getStartOffset());
         if (selectedElement instanceof PsiWhiteSpace) {
-            PsiElement shiftedElement = parsedCode.findElementAt(selection.getOffset()-1);
+            PsiElement shiftedElement = parsedCode.findElementAt(selectedRange.getStartOffset()-1);
             if (!(shiftedElement instanceof PsiWhiteSpace)) {
                 selectedElement = shiftedElement;
             }
         }
-        while (selectedElement!=null && checkSelection(selectedElement, selection)!=ElementSelection.IsEnclosingSelection) {
+        while (selectedElement!=null && checkSelection(selectedElement, selectedRange)!=ElementSelection.IsEnclosingSelection) {
             selectedElement = selectedElement.getParent();
         }
         return selectedElement;
@@ -79,10 +106,10 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     
     abstract protected TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection);
     
-    protected ElementSelection checkSelection(PsiElement element, ITextSelection selection) {
+    protected ElementSelection checkSelection(PsiElement element, TextRange selectedRange) {
         TextRange elementRange = element.getTextRange();
-        int selectionStartOffset = selection.getOffset();
-        int selectionEndOffset = selectionStartOffset + selection.getLength();
+        int selectionStartOffset = selectedRange.getStartOffset();
+        int selectionEndOffset = selectedRange.getEndOffset();
         int elementStartOffset = elementRange.getStartOffset();
         int elementEndOffset = elementRange.getEndOffset();
         if (selectionStartOffset == selectionEndOffset) {
