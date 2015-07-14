@@ -24,8 +24,8 @@ public class KotlinSelectPreviousAction extends KotlinSemanticSelectionAction {
     @Override
     protected @NotNull TextRange runInternalSelection(PsiElement enclosingElement, TextRange selectedRange,
             String selectedText) {
-        PsiElement selectionCandidate = findSelectionCandidate(enclosingElement, new PsiElementAllChildren(
-                enclosingElement, true), selectedRange, selectedText);
+        PsiElement selectionCandidate = findSelectionCandidate(enclosingElement,
+                PsiElementChildrenIterable.backwardChildrenIterator(enclosingElement), selectedRange, selectedText);
         KotlinElementSelectioner elementSelectioner = KotlinElementSelectioner.INSTANCE$;
         
         if (selectionCandidate == null) {

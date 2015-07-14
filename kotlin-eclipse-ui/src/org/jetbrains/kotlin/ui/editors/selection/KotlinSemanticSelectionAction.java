@@ -121,7 +121,7 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     
     @Nullable
     protected PsiElement findSelectionCandidate(@NotNull PsiElement enclosingElement,
-            PsiElementAllChildren elementChildren, TextRange selectedRange, String selectedText) {
+            PsiElementChildrenIterable elementChildren, TextRange selectedRange, String selectedText) {
         boolean isSelectionCandidate = false;
         
         // if selected text is all whitespaces then select enclosing

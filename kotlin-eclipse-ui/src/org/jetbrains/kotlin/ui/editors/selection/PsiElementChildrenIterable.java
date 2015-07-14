@@ -4,9 +4,9 @@ import java.util.Iterator;
 
 import com.intellij.psi.PsiElement;
 
-public class PsiElementAllChildren implements Iterable<PsiElement> {
+public class PsiElementChildrenIterable implements Iterable<PsiElement> {
     
-    public class PsiChildrenIterator implements Iterator<PsiElement> {
+    private class PsiChildrenIterator implements Iterator<PsiElement> {
         
         private PsiElement currentElement;
         private final boolean reverse;
@@ -41,12 +41,20 @@ public class PsiElementAllChildren implements Iterable<PsiElement> {
     
     private final Iterator<PsiElement> iterator;
     
-    public PsiElementAllChildren(PsiElement enclosingElement, boolean reverse) {
+    private PsiElementChildrenIterable(PsiElement enclosingElement, boolean reverse) {
         iterator = new PsiChildrenIterator(enclosingElement, reverse);
     }
     
     @Override
     public Iterator<PsiElement> iterator() {
         return iterator;
+    }
+    
+    public static PsiElementChildrenIterable forwardChildrenIterator(PsiElement enclosingElement) {
+        return new PsiElementChildrenIterable(enclosingElement, true);
+    }
+    
+    public static PsiElementChildrenIterable backwardChildrenIterator(PsiElement enclosingElement) {
+        return new PsiElementChildrenIterable(enclosingElement, false);
     }
 }
