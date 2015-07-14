@@ -18,17 +18,17 @@ public class KotlinStringTemplateSelectionHandler: KotlinDefaultSelectionHandler
 		return TextRange(literalRange.getStartOffset()+1, literalRange.getEndOffset()-1)
 	}
 	
-	override fun selectNext(enclosingElement: PsiElement, selectionCandidate:PsiElement, selectedRange: TextRange): TextRange {
+	override fun selectNext(enclosingElement: PsiElement, selectionCandidate: PsiElement, selectedRange: TextRange): TextRange {
 		if (selectionCandidate.getNextSibling() == null) {// is quote sign
-			return super.selectEnclosing(enclosingElement, selectedRange)
+			return enclosingElement.getTextRange()
 		}
-		return super.selectNext(enclosingElement, selectionCandidate, selectedRange)
+		return selectionWithElementAppendedToEnd(selectedRange, selectionCandidate)
 	}
 	
 	override fun selectPrevious(enclosingElement: PsiElement, selectionCandidate:PsiElement, selectedRange: TextRange): TextRange {
 		if (selectionCandidate.getPrevSibling() == null) {// is quote sign
-			return super.selectEnclosing(enclosingElement, selectedRange)
+			return enclosingElement.getTextRange()
 		}
-		return super.selectPrevious(enclosingElement, selectionCandidate, selectedRange)
+		return selectionWithElementAppendedToBeginning(selectedRange, selectionCandidate)
 	}
 }
