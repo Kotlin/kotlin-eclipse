@@ -95,16 +95,18 @@ public class KotlinEditor extends CompilationUnitEditor {
         PlatformUI.getWorkbench().getHelpSystem().setHelp(formatAction, IJavaHelpContextIds.FORMAT_ACTION);
         
         SelectionHistory selectionHistory = new SelectionHistory(this);
-
-        StructureSelectHistoryAction historyAction= new StructureSelectHistoryAction(this, selectionHistory);
+        
+        StructureSelectHistoryAction historyAction = new StructureSelectHistoryAction(this, selectionHistory);
         historyAction.setActionDefinitionId(IJavaEditorActionDefinitionIds.SELECT_LAST);
         setAction(KotlinSemanticSelectionAction.HISTORY, historyAction);
         selectionHistory.setHistoryAction(historyAction);
         
         setAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT, new KotlinOpenDeclarationAction(this));
         
-        setAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT, new KotlinSelectEnclosingAction(this, selectionHistory));
-        setAction(KotlinSelectPreviousAction.SELECT_PREVIOUS_TEXT, new KotlinSelectPreviousAction(this, selectionHistory));
+        setAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT, new KotlinSelectEnclosingAction(this,
+                selectionHistory));
+        setAction(KotlinSelectPreviousAction.SELECT_PREVIOUS_TEXT, new KotlinSelectPreviousAction(this,
+                selectionHistory));
         setAction(KotlinSelectNextAction.SELECT_NEXT_TEXT, new KotlinSelectNextAction(this, selectionHistory));
         
     }
@@ -120,12 +122,11 @@ public class KotlinEditor extends CompilationUnitEditor {
         super.dispose();
     }
     
-    
     @Override
     public void setSelection(IJavaElement element) {
         KotlinOpenEditor.revealKotlinElement(this, element);
     }
-
+    
     @NotNull
     private KotlinOutlinePage getKotlinOutlinePage() {
         if (kotlinOutlinePage == null) {
