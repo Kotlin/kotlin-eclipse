@@ -2,12 +2,8 @@ package org.jetbrains.kotlin.ui.editors.selection.handlers
 
 import com.intellij.psi.PsiElement
 import com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.jetbrains.kotlin.kdoc.psi.api.KDoc
-import org.jetbrains.kotlin.psi.JetDotQualifiedExpression
 import org.jetbrains.kotlin.psi.JetExpression
-import org.jetbrains.kotlin.psi.JetBlockExpression
-import org.jetbrains.kotlin.psi.JetWhenExpression
 
 public class KotlinNonTraversableSelectionHanlder: KotlinDefaultSelectionHandler() {
 	override fun canSelect(enclosingElement: PsiElement) = 
