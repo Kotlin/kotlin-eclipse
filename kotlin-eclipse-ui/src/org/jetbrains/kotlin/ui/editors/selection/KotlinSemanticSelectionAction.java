@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.SourceRange;
 import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.SelectionHistory;
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,16 +47,19 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
             if (parsedCode == null) {
                 return;
             }
-            TextRange selectedRange = getCrConvertedTextRange(selection);
+            IDocument document = EditorUtil.getDocument(editor);
+            TextRange crRange = new TextRange(selection.getOffset(), selection.getOffset() + selection.getLength());
+            TextRange selectedRange = LineEndUtil.lfRangeFromCrRange(crRange, document);
             PsiElement enclosingElement = getEnclosingElementForSelection(parsedCode, selectedRange);
             if (enclosingElement == null) {
                 return;
             }
-            TextRange elementRange = runInternalSelection(enclosingElement, selection);
+            TextRange elementRange = runInternalSelection(enclosingElement, selectedRange, selection.getText());
             history.remember(new SourceRange(selection.getOffset(), selection.getLength()));
             try {
                 history.ignoreSelectionChanges();
-                TextRange convertedRange = getLfConvertedTextRange(elementRange);
+                JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editorFile);
+                TextRange convertedRange = LineEndUtil.crRangeFromLfRange(jetFile.getText(), elementRange, document);
                 editor.selectAndReveal(convertedRange.getStartOffset(), convertedRange.getLength());
             } finally {
                 history.listenToSelectionChanges();
@@ -63,24 +67,6 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
         } else {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
         }
-    }
-    
-    protected TextRange getCrConvertedTextRange(ITextSelection selection) {
-        int startOffset = LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(editor), selection.getOffset());
-        int endOffset = LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(editor), selection.getOffset()
-                + selection.getLength());
-        return new TextRange(startOffset, endOffset);
-    }
-    
-    protected TextRange getLfConvertedTextRange(TextRange range) {
-        
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editorFile);
-        
-        int startOffset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), range.getStartOffset(),
-                EditorUtil.getDocument(editor));
-        int endOffset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), range.getEndOffset(),
-                EditorUtil.getDocument(editor));
-        return new TextRange(startOffset, endOffset);
     }
     
     @Nullable
@@ -100,7 +86,8 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     }
     
     @NotNull
-    abstract protected TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection);
+    abstract protected TextRange runInternalSelection(PsiElement enclosingElement, TextRange selectedRange,
+            String selectedText);
     
     protected ElementSelection checkSelection(PsiElement element, TextRange selectedRange) {
         TextRange elementRange = element.getTextRange();

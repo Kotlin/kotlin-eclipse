@@ -2,7 +2,6 @@ package org.jetbrains.kotlin.ui.editors.selection;
 
 import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.SelectionHistory;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
-import org.eclipse.jface.text.ITextSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.selection.handlers.KotlinElementSelectioner;
@@ -23,10 +22,10 @@ public class KotlinSelectNextAction extends KotlinSemanticSelectionAction {
     }
     
     @Override
-    protected @NotNull TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection) {
-        TextRange selectedRange = getCrConvertedTextRange(selection);
+    protected @NotNull TextRange runInternalSelection(PsiElement enclosingElement, TextRange selectedRange,
+            String selectedText) {
         PsiElement selectionCandidate = findSelectionCandidate(enclosingElement, new PsiElementAllChildren(
-                enclosingElement, false), selectedRange, selection.getText());
+                enclosingElement, false), selectedRange, selectedText);
         KotlinElementSelectioner elementSelectioner = KotlinElementSelectioner.INSTANCE$;
         
         if (selectionCandidate == null) {

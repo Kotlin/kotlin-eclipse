@@ -20,6 +20,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextUtilities;
 import org.jetbrains.annotations.NotNull;
 
+import com.intellij.openapi.util.TextRange;
+
 public class LineEndUtil {
     
     public static final char CARRIAGE_RETURN_CHAR = '\r';
@@ -102,5 +104,20 @@ public class LineEndUtil {
     
     public static String removeAllCarriageReturns(String s) {
         return s.replaceAll(CARRIAGE_RETURN_STRING, "");
+    }
+    
+    @NotNull
+    public static TextRange lfRangeFromCrRange(@NotNull TextRange crRange, @NotNull IDocument document) {
+        int startOffset = LineEndUtil.convertCrToDocumentOffset(document, crRange.getStartOffset());
+        int endOffset = LineEndUtil.convertCrToDocumentOffset(document, crRange.getEndOffset());
+        return new TextRange(startOffset, endOffset);
+    }
+    
+    @NotNull
+    public static TextRange crRangeFromLfRange(@NotNull String lfText, @NotNull TextRange lfRange,
+            @NotNull IDocument document) {
+        int startOffset = LineEndUtil.convertLfToDocumentOffset(lfText, lfRange.getStartOffset(), document);
+        int endOffset = LineEndUtil.convertLfToDocumentOffset(lfText, lfRange.getEndOffset(), document);
+        return new TextRange(startOffset, endOffset);
     }
 }
