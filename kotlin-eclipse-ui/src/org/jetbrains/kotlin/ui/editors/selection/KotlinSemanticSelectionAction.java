@@ -41,30 +41,30 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     public void run(ITextSelection selection) {
         String sourceCode = EditorUtil.getSourceCode(editor);
         IFile editorFile = EditorUtil.getFile(editor);
-        if (editorFile != null) {
-            PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(editorFile, sourceCode);
-            if (parsedCode == null) {
-                return;
-            }
-            IDocument document = EditorUtil.getDocument(editor);
-            TextRange crRange = new TextRange(selection.getOffset(), selection.getOffset() + selection.getLength());
-            TextRange selectedRange = LineEndUtil.lfRangeFromCrRange(crRange, document);
-            PsiElement enclosingElement = getEnclosingElementForSelection(parsedCode, selectedRange);
-            if (enclosingElement == null) {
-                return;
-            }
-            TextRange elementRange = runInternalSelection(enclosingElement, selectedRange, selection.getText());
-            history.remember(new SourceRange(selection.getOffset(), selection.getLength()));
-            try {
-                history.ignoreSelectionChanges();
-                JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editorFile);
-                TextRange convertedRange = LineEndUtil.crRangeFromLfRange(jetFile.getText(), elementRange, document);
-                editor.selectAndReveal(convertedRange.getStartOffset(), convertedRange.getLength());
-            } finally {
-                history.listenToSelectionChanges();
-            }
-        } else {
+        if (editorFile == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return;
+        }
+        PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(editorFile, sourceCode);
+        if (parsedCode == null) {
+            return;
+        }
+        IDocument document = EditorUtil.getDocument(editor);
+        TextRange crRange = new TextRange(selection.getOffset(), selection.getOffset() + selection.getLength());
+        TextRange selectedRange = LineEndUtil.lfRangeFromCrRange(crRange, document);
+        PsiElement enclosingElement = getEnclosingElementForSelection(parsedCode, selectedRange);
+        if (enclosingElement == null) {
+            return;
+        }
+        TextRange elementRange = runInternalSelection(enclosingElement, selectedRange, selection.getText());
+        history.remember(new SourceRange(selection.getOffset(), selection.getLength()));
+        try {
+            history.ignoreSelectionChanges();
+            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editorFile);
+            TextRange convertedRange = LineEndUtil.crRangeFromLfRange(jetFile.getText(), elementRange, document);
+            editor.selectAndReveal(convertedRange.getStartOffset(), convertedRange.getLength());
+        } finally {
+            history.listenToSelectionChanges();
         }
     }
     
