@@ -26,7 +26,6 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     
     protected KotlinEditor editor;
     protected SelectionHistory history;
-    private IFile editorFile;
     
     protected KotlinSemanticSelectionAction(KotlinEditor editor, SelectionHistory history) {
         super(editor.getSite());
@@ -41,7 +40,7 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     @Override
     public void run(ITextSelection selection) {
         String sourceCode = EditorUtil.getSourceCode(editor);
-        editorFile = EditorUtil.getFile(editor);
+        IFile editorFile = EditorUtil.getFile(editor);
         if (editorFile != null) {
             PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(editorFile, sourceCode);
             if (parsedCode == null) {
