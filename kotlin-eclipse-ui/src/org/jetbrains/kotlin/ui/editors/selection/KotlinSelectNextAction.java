@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.ui.editors.selection;
 import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.SelectionHistory;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.text.ITextSelection;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.selection.handlers.KotlinElementSelectioner;
 
@@ -13,7 +14,7 @@ import com.intellij.psi.PsiWhiteSpace;
 public class KotlinSelectNextAction extends KotlinSemanticSelectionAction {
     
     private static final String ACTION_DESCRIPTION = "Select next element";
-
+    
     public static final String SELECT_NEXT_TEXT = "SelectNext";
     
     public KotlinSelectNextAction(KotlinEditor editor, SelectionHistory history) {
@@ -23,7 +24,7 @@ public class KotlinSelectNextAction extends KotlinSemanticSelectionAction {
     }
     
     @Override
-    protected TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection) {
+    protected @NotNull TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection) {
         boolean isSelectionCandidate = false;
         PsiElement currentChild = enclosingElement.getFirstChild();
         KotlinElementSelectioner selectionerInstance = KotlinElementSelectioner.INSTANCE$;
@@ -37,17 +38,20 @@ public class KotlinSelectNextAction extends KotlinSemanticSelectionAction {
         
         while (currentChild != null) {
             ElementSelection selectionType = checkSelection(currentChild, selectedRange);
-            // if all completely selected elements are not the children of the enclosing element, then select enclosing element
+            // if all completely selected elements are not the children of the
+            // enclosing element, then select enclosing element
             if (selectionType == ElementSelection.PartiallySelected && !(currentChild instanceof PsiWhiteSpace)) {
                 return selectionerInstance.selectEnclosing(enclosingElement, selectedRange);
             }
             if (selectionType == ElementSelection.NotSelected) {
-                //if we're already looking for selection candidate, select if not whitespace
-                if (!(currentChild instanceof PsiWhiteSpace)&& !currentChild.getText().isEmpty() && isSelectionCandidate) {
+                // if we're already looking for selection candidate, select if
+                // not whitespace
+                if (!(currentChild instanceof PsiWhiteSpace) && !currentChild.getText().isEmpty()
+                        && isSelectionCandidate) {
                     return selectionerInstance.selectNext(enclosingElement, currentChild, selectedRange);
                 }
             } else {
-                //next child is selection candidate
+                // next child is selection candidate
                 isSelectionCandidate = true;
             }
             currentChild = currentChild.getNextSibling();
