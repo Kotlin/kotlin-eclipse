@@ -18,7 +18,7 @@ public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
 			return enclosingElement.getTextRange()
 		}
 		val resultRange = TextRange(elementStart, elementEnd)
-		if (resultRange.equals(selectedRange) || !resultRange.contains(selectedRange)) {
+		if (resultRange == selectedRange || selectedRange !in resultRange) {
 			return enclosingElement.getTextRange()
 		}
 		return resultRange;
@@ -28,52 +28,34 @@ public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
 		if (selectionCandidate.getNode().getElementType() == JetTokens.LBRACE) {
 			return selectEnclosing(enclosingElement, selectedRange)
 		}
-		return super.selectPrevious(enclosingElement, selectionCandidate, selectedRange)
+		return selectionWithElementAppendedToBeginning(selectedRange, selectionCandidate)
 	}
-
 
 	override fun selectNext(enclosingElement: PsiElement, selectionCandidate: PsiElement, selectedRange: TextRange): TextRange {
 		if (selectionCandidate.getNode().getElementType() == JetTokens.RBRACE) {
 			return selectEnclosing(enclosingElement, selectedRange)
 		}
-		return super.selectNext(enclosingElement, selectionCandidate, selectedRange)
+		return selectionWithElementAppendedToEnd(selectedRange, selectionCandidate)
 	}
 
 	private fun findBlockContentStart(block: PsiElement): Int {
-		var element = block.getFirstChild()
-		while (element!= null && element.getNode().getElementType() != JetTokens.LBRACE) {
-			element = element.getNextSibling()
-		}
-		if (element == null || element.getNextSibling() == null) {
-			return block.getTextRange().getStartOffset()
-		}
-		//skip brace
-		element = element.getNextSibling()
-		while (element!= null && element is PsiWhiteSpace) {
-			element = element.getNextSibling()
-		}
-		if (element == null) {
-			return block.getTextRange().getStartOffset()
-		}
+	    val element = block.allChildren
+        .dropWhile { it.getNode().getElementType() != JetTokens.LBRACE }
+        .drop(1)
+        .dropWhile { it is PsiWhiteSpace }
+        .firstOrNull() ?: block
 		return element.getTextRange().getStartOffset()
 	}
 
 	private fun findBlockContentEnd(block: PsiElement): Int {
-		var element = block.getLastChild()
-		while (element!= null && element.getNode().getElementType() != JetTokens.RBRACE) {
-			element = element.getPrevSibling()
-		}
-		if (element == null || element.getPrevSibling() == null) {
-			return block.getTextRange().getEndOffset()
-		}
-		//skip brace
-		element = element.getPrevSibling()
-		while (element!= null && element is PsiWhiteSpace) {
-			element = element.getPrevSibling()
-		}
-		if (element == null) {
-			return block.getTextRange().getEndOffset()
-		}
+	    val element = block.allChildren
+        .toList()
+        .reverse()
+        .asSequence()
+        .dropWhile { it.getNode().getElementType() != JetTokens.RBRACE }
+        .drop(1)
+        .dropWhile { it is PsiWhiteSpace }
+        .firstOrNull() ?: block
 		return element.getTextRange().getEndOffset()
 	}
 }
