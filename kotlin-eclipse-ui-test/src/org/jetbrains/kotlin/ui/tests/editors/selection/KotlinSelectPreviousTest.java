@@ -44,6 +44,11 @@ public class KotlinSelectPreviousTest extends KotlinSelectPreviousTestCase {
 	}
 	
 	@Test
+	public void ShiftOnWhitespace() {
+		doAutoTest();
+	}
+	
+	@Test
 	public void TemplateStringLiteral() {
 		doAutoTest();
 	}

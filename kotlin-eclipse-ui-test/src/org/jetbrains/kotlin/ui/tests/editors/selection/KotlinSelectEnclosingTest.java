@@ -45,6 +45,11 @@ public class KotlinSelectEnclosingTest extends KotlinSelectEnclosingTestCase {
 	}
 	
 	@Test
+	public void ShiftOnWhitespace() {
+		doAutoTest();
+	}
+	
+	@Test
 	public void SimpleComment() {
 		doAutoTest();
 	}
