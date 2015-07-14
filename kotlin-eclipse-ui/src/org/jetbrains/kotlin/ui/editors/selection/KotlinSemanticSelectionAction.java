@@ -132,4 +132,37 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
         
         return ElementSelection.PartiallySelected;
     }
+    
+    @Nullable
+    protected PsiElement findSelectionCandidate(@NotNull PsiElement enclosingElement,
+            PsiElementAllChildren elementChildren, TextRange selectedRange, String selectedText) {
+        boolean isSelectionCandidate = false;
+        
+        // if selected text is all whitespaces then select enclosing
+        if (!selectedText.isEmpty() && selectedText.trim().isEmpty()) {
+            return null;
+        }
+        
+        for (PsiElement currentChild : elementChildren) {
+            ElementSelection selectionType = checkSelection(currentChild, selectedRange);
+            // if all completely selected elements are not the children of the
+            // enclosing element, then select enclosing element
+            if (selectionType == ElementSelection.PartiallySelected && !(currentChild instanceof PsiWhiteSpace)) {
+                return null;
+            }
+            if (selectionType == ElementSelection.NotSelected) {
+                // if we're already looking for selection candidate, select if
+                // not whitespace
+                if (!(currentChild instanceof PsiWhiteSpace) && !currentChild.getText().isEmpty()
+                        && isSelectionCandidate) {
+                    return currentChild;
+                }
+            } else {
+                // next child is selection candidate
+                isSelectionCandidate = true;
+            }
+        }
+        
+        return null;
+    }
 }
