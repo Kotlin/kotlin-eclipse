@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.ui.editors.selection;
 import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.SelectionHistory;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.text.ITextSelection;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.selection.handlers.KotlinElementSelectioner;
 
@@ -22,7 +23,7 @@ public class KotlinSelectEnclosingAction extends KotlinSemanticSelectionAction {
     }
 
     @Override
-    protected TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection) {
+    protected @NotNull TextRange runInternalSelection(PsiElement enclosingElement, ITextSelection selection) {
         return KotlinElementSelectioner.INSTANCE$.selectEnclosing(enclosingElement, 
                 getCrConvertedTextRange(selection));
     }
