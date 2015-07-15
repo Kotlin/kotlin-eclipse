@@ -37,6 +37,11 @@ public class PsiElementChildrenIterable implements Iterable<PsiElement> {
             }
             return result;
         }
+        
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
     
     private final Iterator<PsiElement> iterator;
@@ -51,10 +56,10 @@ public class PsiElementChildrenIterable implements Iterable<PsiElement> {
     }
     
     public static PsiElementChildrenIterable forwardChildrenIterator(PsiElement enclosingElement) {
-        return new PsiElementChildrenIterable(enclosingElement, true);
+        return new PsiElementChildrenIterable(enclosingElement, false);
     }
     
     public static PsiElementChildrenIterable backwardChildrenIterator(PsiElement enclosingElement) {
-        return new PsiElementChildrenIterable(enclosingElement, false);
+        return new PsiElementChildrenIterable(enclosingElement, true);
     }
 }
