@@ -12,6 +12,7 @@ public class ExpectedCompletionUtils {
 	private static final String EXIST_JAVA_ONLY_LINE_PREFIX = "EXIST_JAVA_ONLY:";
 	private static final String ELEMENT_PREFIX = "ELEMENT:";
 	private static final String COMPLETION_CHAR_PREFIX = "COMPLETION_CHAR:";
+	private static final String INVOCATION_COUNT_PREFIX = "INVOCATION_COUNT:";
 
 	public static List<String> itemsShouldAbsent(String fileText) {
 		return getItems(fileText, ABSENT_LINE_PREFIX);
@@ -48,5 +49,15 @@ public class ExpectedCompletionUtils {
 		}
 
 		return new Integer(numbers.get(0));
+	}
+	
+	public static Boolean shouldHideNonVisibleMembers(String fileText) {
+		List<String> counts = getItems(fileText, INVOCATION_COUNT_PREFIX);
+
+		if (counts.isEmpty()) {
+			return true;
+		}
+
+		return new Integer(counts.get(0)) == 1;
 	}
 }

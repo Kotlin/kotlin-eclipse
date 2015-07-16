@@ -344,26 +344,69 @@ public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
 	public void testVariableClassName() {
 		doTest("testData/completion/basic/common/VariableClassName.kt");
 	}
+	
+	//visibility tests
+    @Test
+    public void testVisibilityClassMembersFromExternalForce() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityClassMembersFromExternalForce.kt");
+    }
 
-	@Test
-	public void testVisibilityClassMembersFromExternal() {
-		doTest("testData/completion/basic/common/VisibilityClassMembersFromExternal.kt");
-	}
+    @Test
+    public void testVisibilityClassMembersFromExternal() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityClassMembersFromExternal.kt");
+    }
 
-//	@Test
-//	public void testVisibilityClassMembersFromExternalForce() {
-//		doTest("testData/completion/basic/common/VisibilityClassMembersFromExternalForce.kt");
-//	}
+    @Test
+    public void testVisibilityInSubclassForce() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityInSubclassForce.kt");
+    }
 
-	@Test
-	public void testVisibilityInSubclass() {
-		doTest("testData/completion/basic/common/VisibilityInSubclass.kt");
-	}
+    @Test
+    public void testVisibilityInSubclass() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityInSubclass.kt");
+    }
 
-	@Test
-	public void testVisibilityInSubclassForce() {
-		doTest("testData/completion/basic/common/VisibilityInSubclassForce.kt");
-	}
+    @Test
+    public void testVisibilityPrivateToThisInConstructor() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityPrivateToThisInConstructor.kt");
+    }
+
+    @Test
+    public void testVisibilityPrivateToThisInConstructorWithThis() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityPrivateToThisInConstructorWithThis.kt");
+    }
+
+    @Test
+    public void testVisibilityPrivateToThisInSpecialScope() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityPrivateToThisInSpecialScope.kt");
+    }
+
+    @Test
+    public void testVisibilityPrivateToThis() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityPrivateToThis.kt");
+    }
+
+    @Test
+    public void testVisibilityPrivateToThisWithReceiver2() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityPrivateToThisWithReceiver2.kt");
+    }
+
+    @Test
+    public void testVisibilityPrivateToThisWithReceiver() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityPrivateToThisWithReceiver.kt");
+    }
+
+    @Test
+    public void testVisibilityPrivateToThisWithThis() throws Exception {
+        doTest("common_testData/ide/completion/basic/common/visibility/VisibilityPrivateToThisWithThis.kt");
+    }
+
+    @Test
+    public void testVisibilityPrivateToThisWithWrongThis() throws Exception {
+        doTest("testData/completion/basic/common/visibility/VisibilityPrivateToThisWithWrongThis.kt");
+    }
+    
+    //java tests
 
     public void testAutoForceCompletion() throws Exception {
         doTest("testData/completion/basic/java/AutoForceCompletion.kt");

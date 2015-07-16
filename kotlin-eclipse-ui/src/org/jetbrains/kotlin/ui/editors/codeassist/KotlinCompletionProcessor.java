@@ -27,7 +27,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
+import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -48,6 +50,8 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility;
+import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
 import org.jetbrains.kotlin.name.Name;
@@ -142,14 +146,32 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     
     @NotNull
     private Collection<DeclarationDescriptor> getReferenceVariants(
-            @NotNull JetSimpleNameExpression simpleNameExpression,
+            @NotNull final JetSimpleNameExpression simpleNameExpression,
             @NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        AnalysisResult analysisResult = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingJetFile());
+        final AnalysisResult analysisResult = KotlinAnalyzer.analyzeFile(javaProject,
+                simpleNameExpression.getContainingJetFile());
+        final String expressionName = KotlinCompletionUtils.INSTANCE.replaceMarkerInIdentifier(simpleNameExpression.getReferencedName());
+        
+        final DeclarationDescriptor inDescriptor = CodeassistPackage.getResolutionScope(
+                simpleNameExpression.getReferencedNameElement(), analysisResult.getBindingContext()).getContainingDeclaration();
+        
+        final boolean showNonVisibleMembers = !JavaPlugin.getDefault().getPreferenceStore().getBoolean(
+                PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS);
         
         Function1<DeclarationDescriptor, Boolean> visibilityFilter = new Function1<DeclarationDescriptor, Boolean>() {
             @Override
             public Boolean invoke(DeclarationDescriptor descriptor) {
+                if (descriptor instanceof TypeParameterDescriptor) {
+                    if (!CodeassistPackage.isVisible((TypeParameterDescriptor) descriptor, inDescriptor)) {
+                        return false;
+                    }
+                }
+                if (descriptor instanceof DeclarationDescriptorWithVisibility) {
+                    boolean visible = CodeassistPackage.isVisible((DeclarationDescriptorWithVisibility) descriptor,
+                            inDescriptor, analysisResult.getBindingContext(), simpleNameExpression);
+                    return visible || showNonVisibleMembers;
+                }
                 return true;
             }
         };
@@ -157,7 +179,8 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         Function1<Name, Boolean> nameFilter = new Function1<Name, Boolean>() {
             @Override
             public Boolean invoke(Name name) {
-                return true;
+                String nameString = name.asString();
+                return nameString.startsWith(expressionName);
             }
         };
         

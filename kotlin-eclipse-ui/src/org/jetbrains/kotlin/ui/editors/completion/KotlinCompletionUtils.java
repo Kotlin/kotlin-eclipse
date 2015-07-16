@@ -72,4 +72,9 @@ public class KotlinCompletionUtils {
         
         return PsiTreeUtil.getParentOfType(psiElement, JetSimpleNameExpression.class);
     }
+    
+    @NotNull
+    public String replaceMarkerInIdentifier(@NotNull String identifier) {
+        return identifier.replaceFirst(KOTLIN_DUMMY_IDENTIFIER, "");
+    }
 }

@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
@@ -42,6 +44,10 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 
 	protected void doTest(String testPath) {
 		String fileText = KotlinTestUtils.getText(testPath);
+		
+		boolean shouldHideNonVisible = ExpectedCompletionUtils.shouldHideNonVisibleMembers(fileText);
+		JavaPlugin.getDefault().getPreferenceStore().setValue(PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS, shouldHideNonVisible);
+		
 		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
 
 		List<String> actualProposals = getActualProposals((KotlinEditor) testEditor.getEditor());
