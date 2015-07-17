@@ -38,6 +38,8 @@ public class KotlinAutoImportAssistProposal(val proposalType: IType) : KotlinQui
 		}
 		
 		val placeElement = findNodeToNewImport(file)
+        if (placeElement == null) return
+        
 		val breakLineBefore = computeBreakLineBeforeImport(placeElement)
 		val breakLineAfter = computeBreakLineAfterImport(placeElement)
 		val lineDelimiter = TextUtilities.getDefaultLineDelimiter(document)
@@ -99,7 +101,8 @@ public class KotlinAutoImportAssistProposal(val proposalType: IType) : KotlinQui
 		
 		return 1
 	}
-	private fun findNodeToNewImport(file:IFile):PsiElement {
+    
+	private fun findNodeToNewImport(file:IFile): PsiElement? {
 		val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
 		val jetImportDirective = jetFile.getImportDirectives()
 		return if (jetImportDirective.isNotEmpty()) jetImportDirective.last() else jetFile.getPackageDirective()

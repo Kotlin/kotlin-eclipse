@@ -52,6 +52,8 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 	
 	override fun apply(document: IDocument, psiElement: PsiElement) {
         val classOrObject = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetClassOrObject>(), false)
+        if (classOrObject == null) return
+        
         val missingImplementations = collectMethodsToGenerate(classOrObject)
         if (missingImplementations.isEmpty()) {
             return
@@ -180,7 +182,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
             val builder = StringBuilder()
             builder.append("super")
             if (classOrObject.getDelegationSpecifiers().size() > 1) {
-                builder.append("<").append(descriptor.getContainingDeclaration()!!.escapedName()).append(">")
+                builder.append("<").append(descriptor.getContainingDeclaration().escapedName()).append(">")
             }
             builder.append(".").append(descriptor.escapedName())
 
