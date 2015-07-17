@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaArrayType;
 import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.load.java.structure.JavaClassifier;
@@ -28,9 +29,9 @@ import org.jetbrains.kotlin.load.java.structure.JavaClassifierType;
 import org.jetbrains.kotlin.load.java.structure.JavaType;
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter;
 import org.jetbrains.kotlin.load.java.structure.JavaTypeSubstitutor;
+import org.jetbrains.kotlin.name.FqName;
 
 import com.google.common.collect.Lists;
-
 
 public class EclipseJavaImmediateClass implements JavaClassifierType {
 
@@ -89,5 +90,17 @@ public class EclipseJavaImmediateClass implements JavaClassifierType {
         }
         
         return substitutedParameters;
+    }
+
+    @Override
+    @NotNull
+    public Collection<JavaAnnotation> getAnnotations() {
+        return javaClass.getAnnotations();
+    }
+
+    @Override
+    @Nullable
+    public JavaAnnotation findAnnotation(@NotNull FqName fqName) {
+        return javaClass.findAnnotation(fqName);
     }
 }

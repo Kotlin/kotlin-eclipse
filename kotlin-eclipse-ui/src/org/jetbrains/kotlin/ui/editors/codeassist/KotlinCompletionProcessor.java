@@ -166,7 +166,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
                 analysisResult.getModuleDescriptor(),
                 KotlinEnvironment.getEnvironment(javaProject).getProject(),
                 visibilityFilter).getReferenceVariants(
-                simpleNameExpression, DescriptorKindFilter.ALL, false, nameFilter);
+                simpleNameExpression, DescriptorKindFilter.ALL, nameFilter, false, false);
     }
     
     private List<ICompletionProposal> collectCompletionProposals(

@@ -42,14 +42,6 @@ import com.google.common.collect.Lists
 import org.jetbrains.kotlin.load.java.structure.JavaClass.OriginKind
 
 public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(javaElement), JavaClass {
-    override public fun getAnnotations(): Collection<JavaAnnotation> {
-        return annotations(getBinding().getAnnotations())
-    }
-    
-    override public fun findAnnotation(fqName: FqName): JavaAnnotation? {
-        return EclipseJavaElementUtil.findAnnotation(getBinding().getAnnotations(), fqName)
-    }
-    
     override public fun getName(): Name = Name.guess(getBinding().getName())
     
     override public fun isAbstract(): Boolean = Modifier.isAbstract(getBinding().getModifiers())

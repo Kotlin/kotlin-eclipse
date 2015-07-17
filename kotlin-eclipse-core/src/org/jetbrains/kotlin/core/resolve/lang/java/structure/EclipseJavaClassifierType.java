@@ -91,5 +91,4 @@ public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> imp
     public List<JavaType> getTypeArguments() {
         return types(getBinding().getTypeArguments());
     }
-
 }

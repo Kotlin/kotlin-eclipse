@@ -148,8 +148,8 @@ public class KotlinEnvironment {
         
         project.registerService(JvmVirtualFileFinderFactory.class, new EclipseVirtualFileFinder(javaProject));
         
-        ExternalDeclarationsProvider.OBJECT$.registerExtensionPoint(project);
-        ExpressionCodegenExtension.OBJECT$.registerExtensionPoint(project);
+        ExternalDeclarationsProvider.Companion.registerExtensionPoint(project);
+        ExpressionCodegenExtension.Companion.registerExtensionPoint(project);
         
         for (String config : EnvironmentConfigFiles.JVM_CONFIG_FILES) {
             registerApplicationExtensionPointsAndExtensionsFrom(config);

@@ -66,7 +66,7 @@ public fun createContainerForTopDownAnalyzerForJvm(
         moduleContentScope: GlobalSearchScope,
         javaProject: IJavaProject
 ): ContainerForTopDownAnalyzerForJvm = createContainer("TopDownAnalyzerForJvm") {
-    configureModule(moduleContext, KotlinJvmCheckerProvider, bindingTrace)
+    configureModule(moduleContext, KotlinJvmCheckerProvider(moduleContext.module), bindingTrace)
     configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project)
     useInstance(javaProject)
     useInstance(declarationProviderFactory)

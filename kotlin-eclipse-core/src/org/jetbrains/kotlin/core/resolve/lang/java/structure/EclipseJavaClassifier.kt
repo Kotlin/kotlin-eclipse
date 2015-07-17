@@ -19,8 +19,12 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure
 import org.eclipse.jdt.core.dom.ITypeBinding
 import org.jetbrains.kotlin.load.java.structure.JavaClassifier
 import kotlin.platform.platformStatic
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotationOwner
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotation
+import org.jetbrains.kotlin.name.FqName
 
-public abstract class EclipseJavaClassifier<T : ITypeBinding>(javaType: T) : EclipseJavaElement<T>(javaType), JavaClassifier {
+public abstract class EclipseJavaClassifier<T : ITypeBinding>(javaType: T) : 
+		EclipseJavaElement<T>(javaType), JavaClassifier, JavaAnnotationOwner {
 	companion object {
 		@platformStatic 
 		fun create(element: ITypeBinding): JavaClassifier {
@@ -32,4 +36,12 @@ public abstract class EclipseJavaClassifier<T : ITypeBinding>(javaType: T) : Ecl
 			}
 		}
 	}
+    
+    override public fun getAnnotations(): Collection<JavaAnnotation> {
+        return getBinding().getAnnotations().map { EclipseJavaAnnotation(it) }
+    }
+
+    override public fun findAnnotation(fqName: FqName): JavaAnnotation? {
+        return EclipseJavaElementUtil.findAnnotation(getBinding().getAnnotations(), fqName)
+    }
 }
