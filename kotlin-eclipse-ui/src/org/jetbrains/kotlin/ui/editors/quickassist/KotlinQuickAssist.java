@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.ui.editors.quickassist;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -10,9 +11,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
+import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
@@ -67,5 +71,29 @@ public abstract class KotlinQuickAssist {
         }
         
         return activeEditor.getViewer().getTextWidget().getCaretOffset();
+    }
+    
+    
+    public boolean isDiagnosticActiveForElement(PsiElement element, @NotNull DiagnosticFactory<?> diagnosticType, @NotNull String attribute) {
+        KotlinEditor editor = getActiveEditor();
+        if (editor == null) {
+            return false;
+        }
+        
+        int caretOffset = getCaretOffset(editor);
+        DiagnosticAnnotation annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, caretOffset);
+        if (annotation != null) {
+            DiagnosticFactory<?> diagnostic = annotation.getDiagnostic();
+            return diagnostic != null ? diagnostic.equals(diagnosticType) : false;
+        }
+        
+        IFile file = EditorUtil.getFile(editor);
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return false;
+        }
+        
+        IMarker marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, caretOffset);
+        return marker != null ? marker.getAttribute(attribute, false) : false;
     }
 }

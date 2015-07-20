@@ -12,9 +12,10 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor;
 import org.jetbrains.kotlin.descriptors.VariableDescriptor;
-import org.jetbrains.kotlin.diagnostics.Diagnostic;
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
 import org.jetbrains.kotlin.diagnostics.Errors;
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers;
+import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.psi.JetFunction;
 import org.jetbrains.kotlin.psi.JetNamedDeclaration;
 import org.jetbrains.kotlin.psi.JetNamedFunction;
@@ -25,6 +26,7 @@ import org.jetbrains.kotlin.psi.JetTypeReference;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.types.ErrorUtils;
 import org.jetbrains.kotlin.types.JetType;
+import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
@@ -36,6 +38,9 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
     private static final String REMOVE_TYPE_MESSAGE = "Remove explicitly specified type";
     
     private String displayString = SPECIFY_TYPE_EXPLICITLY_MESSAGE;
+    
+    private final DiagnosticFactory<?> errorForQuickFix = Errors.PUBLIC_MEMBER_SHOULD_SPECIFY_TYPE;
+    private final String markerAnnotationForFix = AnnotationManager.IS_PUBLIC_MEMBER_TYPE_NOT_SPECIFIED;
 
     @Override
     public void apply(@NotNull IDocument document, @NotNull PsiElement element) {
@@ -44,7 +49,10 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
             element = typeRefParent;
         }
         
-        PsiElement parent = element.getParent();
+        PsiElement parent = PsiTreeUtil.getParentOfType(element, JetNamedDeclaration.class);// element.getParent();
+        if (parent == null) {
+            parent = element.getParent();
+        }
         JetType type = getTypeForDeclaration((JetNamedDeclaration) parent);
         if (parent instanceof JetProperty) {
             JetProperty property = (JetProperty) parent;
@@ -118,6 +126,10 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
     
     @Override
     public boolean isApplicable(@NotNull PsiElement element) {
+        if (isDiagnosticActiveForElement(element, errorForQuickFix, markerAnnotationForFix)) {
+            return true;
+        }
+        
         JetTypeReference typeRefParent = PsiTreeUtil.getTopmostParentOfType(element, JetTypeReference.class);
         if (typeRefParent != null) {
             element = typeRefParent;
@@ -127,11 +139,14 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
             return false;
         }
         JetNamedDeclaration declaration = (JetNamedDeclaration) parent;
+        
+        boolean isDeclarationVisible = declaration.hasModifier(JetTokens.PUBLIC_KEYWORD) ||
+                declaration.hasModifier(JetTokens.PROTECTED_KEYWORD);
 
         if (declaration instanceof JetProperty && !PsiTreeUtil.isAncestor(((JetProperty) declaration).getInitializer(), element, false)) {
             if (((JetProperty) declaration).getTypeReference() != null) {
                 setDisplayString(REMOVE_TYPE_MESSAGE);
-                return true;
+                return !isDeclarationVisible;
             } else {
                 setDisplayString(SPECIFY_TYPE_EXPLICITLY_MESSAGE);
             }
@@ -143,7 +158,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         else if (declaration instanceof JetParameter && ((JetParameter) declaration).isLoopParameter()) {
             if (((JetParameter) declaration).getTypeReference() != null) {
                 setDisplayString(REMOVE_TYPE_MESSAGE);
-                return true;
+                return !isDeclarationVisible;
             } else {
                 setDisplayString(SPECIFY_TYPE_EXPLICITLY_MESSAGE);
             }
@@ -156,25 +171,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
             return false;
         }
         
-        return !hasPublicMemberDiagnostic(declaration);
-    }
-    
-    private boolean hasPublicMemberDiagnostic(@NotNull JetNamedDeclaration declaration) {
-        IFile file = getActiveFile();
-        assert file != null;
-        
-        IJavaProject javaProject = JavaCore.create(file.getProject());
-        
-        BindingContext bindingContext = KotlinAnalyzer
-                .analyzeFile(javaProject, declaration.getContainingJetFile())
-                .getBindingContext();
-        for (Diagnostic diagnostic : bindingContext.getDiagnostics()) {
-            if (Errors.PUBLIC_MEMBER_SHOULD_SPECIFY_TYPE == diagnostic.getFactory() && declaration == diagnostic.getPsiElement()) {
-                return true;
-            }
-        }
-        
-        return false;
+        return !isDeclarationVisible;
     }
     
     private void addTypeAnnotation(@NotNull IDocument document, @NotNull JetFunction function, @NotNull JetType exprType) {
