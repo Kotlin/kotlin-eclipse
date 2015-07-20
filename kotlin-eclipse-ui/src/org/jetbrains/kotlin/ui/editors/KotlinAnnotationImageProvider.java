@@ -30,7 +30,7 @@ public class KotlinAnnotationImageProvider implements IAnnotationImageProvider {
         if (annotation instanceof DiagnosticAnnotation) {
             DiagnosticAnnotation diagnosticAnnotation = (DiagnosticAnnotation) annotation;
             DiagnosticFactory<?> diagnostic = diagnosticAnnotation.getDiagnostic();
-            if (diagnostic != null && DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic)) {
+            if (diagnostic != null && DiagnosticAnnotationUtil.isQuickFixable(diagnostic)) {
                 switch (diagnosticAnnotation.getType()) {
                     case AnnotationManager.ANNOTATION_ERROR_TYPE:
                         return JavaPluginImages.get(JavaPluginImages.IMG_OBJS_FIXABLE_ERROR);
