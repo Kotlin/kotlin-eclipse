@@ -16,11 +16,19 @@ public abstract class AbstractKotlinQuickAssistTestCase<Proposal extends KotlinQ
 	}
 	
 	protected void doTestFor(String testPath, Proposal proposal) {
+		doTestFor(testPath, proposal, false);
+	}
+	
+	protected void doTestFor(String testPath, Proposal proposal, boolean joinBuildThread) {
 		String fileText = KotlinTestUtils.getText(testPath);
 		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
 		
 		String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");
+        
+        if (joinBuildThread) {
+        	KotlinTestUtils.joinBuildThread();
+        }
 
         Assert.assertTrue(
                 "isAvailable() for " + proposal.getClass() + " should return " + isApplicableExpected,

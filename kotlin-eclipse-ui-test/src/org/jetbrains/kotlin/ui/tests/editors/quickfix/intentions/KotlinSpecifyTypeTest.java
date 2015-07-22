@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Test;
 
 public class KotlinSpecifyTypeTest extends KotlinSpecifyTypeTestCase {
@@ -56,8 +57,18 @@ public class KotlinSpecifyTypeTest extends KotlinSpecifyTypeTestCase {
 	}
 	
 	@Test
+	public void testPublicMemberResolvedType() {
+		doTestWithBuildThreadJoin("testData/intentions/specifyType/PublicMemberResolvedType.kt");
+	}
+	
+	@Test
 	public void testRemoveUnresolvedType() {
 		doTest("testData/intentions/specifyType/RemoveUnresolvedType.kt");
+	}
+	
+	@Test
+	public void testRemovingForPublicMember() {
+		doTest("testData/intentions/specifyType/RemovingForPublicMember.kt");
 	}
 	
 	@Test
