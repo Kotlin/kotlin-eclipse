@@ -1,6 +1,8 @@
 package org.jetbrains.kotlin.ui.editors.quickassist;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
@@ -14,8 +16,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
@@ -71,6 +76,33 @@ public abstract class KotlinQuickAssistProposal extends KotlinQuickAssist implem
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
+    }
+    
+    public void replaceBetween(@NotNull PsiElement from, @NotNull PsiElement till, @NotNull String text) {
+        KotlinEditor kotlinEditor = getActiveEditor();
+        assert kotlinEditor != null : "Active editor cannot be null";
+        
+        try {
+            int startOffset = getStartOffset(from, kotlinEditor);
+            int endOffset = getEndOffset(till, kotlinEditor);
+            kotlinEditor.getViewer().getDocument().replace(startOffset, endOffset - startOffset, text);
+        } catch (BadLocationException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+    }
+    
+    public void replace(@NotNull PsiElement toReplace, @NotNull String text) {
+        replaceBetween(toReplace, toReplace, text);
+    }
+    
+    @Nullable
+    protected BindingContext getBindingContext(@NotNull JetFile jetFile)  {
+        IFile file = getActiveFile();
+        if (file == null) {
+            return null;
+        }
+        IJavaProject javaProject = JavaCore.create(file.getProject());
+        return KotlinAnalyzer.analyzeFile(javaProject, jetFile).getBindingContext();
     }
     
     @Override

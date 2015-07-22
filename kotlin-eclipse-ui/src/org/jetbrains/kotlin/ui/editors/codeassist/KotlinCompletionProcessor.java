@@ -58,6 +58,7 @@ import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
+import org.jetbrains.kotlin.resolve.scopes.JetScope;
 import org.jetbrains.kotlin.ui.editors.KeywordManager;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
@@ -153,8 +154,10 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
                 simpleNameExpression.getContainingJetFile());
         final String expressionName = KotlinCompletionUtils.INSTANCE.replaceMarkerInIdentifier(simpleNameExpression.getReferencedName());
         
-        final DeclarationDescriptor inDescriptor = CodeassistPackage.getResolutionScope(
-                simpleNameExpression.getReferencedNameElement(), analysisResult.getBindingContext()).getContainingDeclaration();
+        JetScope resolutionScope = CodeassistPackage.getResolutionScope(
+                simpleNameExpression.getReferencedNameElement(), analysisResult.getBindingContext());
+        
+        final DeclarationDescriptor inDescriptor = resolutionScope.getContainingDeclaration();
         
         final boolean showNonVisibleMembers = !JavaPlugin.getDefault().getPreferenceStore().getBoolean(
                 PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS);

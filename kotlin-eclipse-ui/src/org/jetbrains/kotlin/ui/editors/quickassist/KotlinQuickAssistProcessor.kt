@@ -27,7 +27,9 @@ public class KotlinQuickAssistProcessor : IQuickAssistProcessor {
         return listOf(
         	KotlinReplaceGetAssistProposal(), 
         	KotlinSpecifyTypeAssistProposal(),
-        	KotlinImplementMethodsProposal())
+        	KotlinImplementMethodsProposal(),
+        	KotlinConvertToExpressionBodyAssistProposal(),
+        	KotlinConvertToBlockBodyAssistProposal())
     }
     
     private fun getKotlinQuickAssistProposalsGenerators() : List<KotlinQuickAssistProposalsGenerator> {
