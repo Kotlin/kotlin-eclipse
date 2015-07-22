@@ -25,6 +25,10 @@ public abstract class KotlinSpecifyTypeTestCase extends AbstractKotlinQuickAssis
 		doTestFor(testPath, new KotlinSpecifyTypeAssistProposal());
 	}
 	
+	protected void doTestWithBuildThreadJoin(String testPath) {
+		doTestFor(testPath, new KotlinSpecifyTypeAssistProposal(), true);
+	}
+	
 	@Override
 	protected void assertByEditor(JavaEditor editor, String expected) {
 		EditorTestUtils.assertByEditor(editor, expected);
