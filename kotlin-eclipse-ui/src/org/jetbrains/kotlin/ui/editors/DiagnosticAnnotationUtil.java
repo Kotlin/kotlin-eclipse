@@ -43,12 +43,13 @@ import org.jetbrains.kotlin.diagnostics.Severity;
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 
 import com.google.common.base.Predicate;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiErrorElement;
 import com.intellij.psi.PsiFile;
 
@@ -98,21 +99,12 @@ public class DiagnosticAnnotationUtil {
     
     @NotNull
     public List<DiagnosticAnnotation> createParsingDiagnosticAnnotations(@NotNull IFile file) {
-        return recursiveCreateParsingDiagnosticAnnotations(KotlinPsiManager.INSTANCE.getParsedFile(file), file);
-    }
-    
-    @NotNull
-    private List<DiagnosticAnnotation> recursiveCreateParsingDiagnosticAnnotations(@NotNull PsiElement psiElement, @NotNull IFile file) {
+        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         List<DiagnosticAnnotation> result = new ArrayList<DiagnosticAnnotation>();
-        
-        if (psiElement instanceof PsiErrorElement) {
-            result.add(createKotlinAnnotation((PsiErrorElement) psiElement, file));
-        } else {
-            for (PsiElement child : psiElement.getChildren()) {
-                result.addAll(recursiveCreateParsingDiagnosticAnnotations(child, file));
-            }
+        for (PsiErrorElement syntaxError : AnalyzingUtils.getSyntaxErrorRanges(jetFile)) {
+            result.add(createKotlinAnnotation(syntaxError, file));
         }
-
+        
         return result;
     }
     
