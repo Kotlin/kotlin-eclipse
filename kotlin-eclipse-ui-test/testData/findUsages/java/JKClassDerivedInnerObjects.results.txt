@@ -1,0 +1,2 @@
+Unclassified usage (2: 25) public interface T: A
+Unclassified usage (4: 23) public object O1: A()

@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.testframework.editor;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
@@ -64,16 +65,16 @@ public class KotlinProjectTestCase {
         }
     }
     
-    public void createSourceFile(String pkg, String fileName, String content) {
+    public IFile createSourceFile(String pkg, String fileName, String content) {
         try {
-            testJavaProject.createSourceFile(pkg, fileName, content);
+            return testJavaProject.createSourceFile(pkg, fileName, content);
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
     }
     
-    public void createSourceFile(String fileName, String content) {
-        createSourceFile(TextEditorTest.TEST_PACKAGE_NAME, fileName, content);
+    public IFile createSourceFile(String fileName, String content) {
+        return createSourceFile(TextEditorTest.TEST_PACKAGE_NAME, fileName, content);
     }
     
     protected TextEditorTest configureEditor(String fileName, String content) {

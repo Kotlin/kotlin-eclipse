@@ -43,6 +43,13 @@ import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
+import com.intellij.lang.java.JavaLanguage;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtilRt;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.PsiJavaFile;
+
 public class TestJavaProject {
     
     public final static String SRC_FOLDER = "src";
@@ -125,8 +132,22 @@ public class TestJavaProject {
     }
     
     public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
+    	String ext = FileUtilRt.getExtension(fileName);
+    	String refinedFileName;
+    	if ("java".equals(ext)) {
+    		refinedFileName = getJavaClassName(content);
+    		if (refinedFileName != null) {
+    		    refinedFileName += ".java";
+    		} else {
+    		    refinedFileName = fileName;
+    		}
+    	} else {
+    		refinedFileName = fileName;
+    	}
+    	
+    	
         IPackageFragment fragment = createPackage(pkg);
-        IFile file = createFile((IFolder) fragment.getResource(), fileName, new ByteArrayInputStream(content.getBytes()));
+        IFile file = createFile((IFolder) fragment.getResource(), refinedFileName, new ByteArrayInputStream(content.getBytes()));
         
         return file;
     }
@@ -193,6 +214,16 @@ public class TestJavaProject {
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    private String getJavaClassName(String content) {
+    	PsiJavaFile javaPsiFile = createJavaPsiFile(content, getKotlinEnvironment().getProject());
+    	PsiClass[] classes = javaPsiFile.getClasses();
+    	return classes.length > 0 ? classes[0].getName() : null;
+    }
+    
+    private PsiJavaFile createJavaPsiFile(String text, Project ideaProject) {
+    	return (PsiJavaFile) PsiFileFactory.getInstance(ideaProject).createFileFromText("test.java", JavaLanguage.INSTANCE, text);
     }
     
     private void cleanSourceFolder() throws CoreException {

@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Event;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -113,6 +114,10 @@ public class TextEditorTest {
     
     public void runSelectNextAction() {
     	((KotlinEditor) editor).getAction(KotlinSelectNextAction.SELECT_NEXT_TEXT).run();
+    }
+    
+    public int getCaretOffset() {
+    	return ((ITextSelection) editor.getViewer().getSelectionProvider().getSelection()).getOffset();
     }
     
     public void setCaret(int offset) {

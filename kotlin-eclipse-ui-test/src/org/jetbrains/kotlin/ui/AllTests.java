@@ -32,6 +32,7 @@ import org.junit.runners.Suite;
 	org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions.KotlinConvertToBlockBodyTest.class,
 	org.jetbrains.kotlin.ui.tests.editors.navigation.AllTests.class,
 	org.jetbrains.kotlin.core.tests.diagnostics.AllDiagnosticsTests.class,
-	org.jetbrains.kotlin.ui.tests.editors.completion.handlers.KotlinCompletionHandlerInsertTest.class} )
+	org.jetbrains.kotlin.ui.tests.editors.completion.handlers.KotlinCompletionHandlerInsertTest.class,
+	org.jetbrains.kotlin.ui.tests.search.KotlinFindReferencesTest.class} )
 public class AllTests {
 }
