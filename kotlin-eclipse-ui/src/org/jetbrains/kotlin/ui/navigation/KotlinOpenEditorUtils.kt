@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2000-2015 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.jetbrains.kotlin.ui.navigation
 
 import org.jetbrains.kotlin.psi.JetVisitorVoid
@@ -29,6 +45,8 @@ import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.psi.JetEnumEntry
 import org.jetbrains.kotlin.psi.JetPrimaryConstructor
 import org.jetbrains.kotlin.psi.JetConstructor
+import org.jetbrains.kotlin.core.asJava.equalsJvmSignature
+import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
 
 fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? {
 	val result = ArrayList<JetElement>()
@@ -115,39 +133,8 @@ fun IType.getFqName(): FqName {
 	return FqName(this.getFullyQualifiedName('.'))
 }
 
-fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
-	val jetSignatures = jetElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)
-	if (jetSignatures == null) return false
-	
-	val memberSignature = when (javaMember) {
-		is IField -> javaMember.getTypeSignature().replace("\\.".toRegex(), "/") // Hack
-		is IMethod -> javaMember.getSignature()
-		else -> null
-	}
-	
-	return jetSignatures.any { 
-		if (it.first == memberSignature) {
-			return@any when {
-				javaMember is IMethod && javaMember.isConstructor() -> 
-					jetElement is JetClass || jetElement is JetConstructor<*>
-				else -> it.second == javaMember.getElementName()
-			}
-		}
-		
-		false
-	}
-}
-
 fun equalsDeclaringTypes(jetElement: JetElement, javaMember: IMember): Boolean  {
-	val parent = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetClassOrObject>(), javaClass<JetFile>())
-	
-	val jetFqName = when (parent) {
-		is JetClassOrObject -> parent.getFqName()
-		is JetFile -> PackageClassUtils.getPackageClassFqName(parent.getPackageFqName())
-		else -> null
-	}
-	
-	return jetFqName == javaMember.getDeclaringType().getFqName()
+	return getDeclaringTypeFqName(jetElement) == javaMember.getDeclaringType().getFqName()
 }
 
 open class JetAllVisitor() : JetVisitorVoid() {

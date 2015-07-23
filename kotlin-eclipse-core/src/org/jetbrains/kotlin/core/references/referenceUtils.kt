@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
@@ -42,6 +43,10 @@ public fun KotlinReference.resolveToSourceElements(): List<SourceElement> {
     val javaProject = JavaCore.create(eclipseFile.getProject())
     val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, jetFile)
     return resolveToSourceElements(analysisResult.bindingContext)
+}
+
+public fun KotlinReference.resolveToLightElements(context: BindingContext, javaProject: IJavaProject): List<IJavaElement> {
+    return sourceElementsToLightElements(resolveToSourceElements(context), javaProject)
 }
 
 public fun KotlinReference.resolveToSourceElements(context: BindingContext): List<SourceElement> {

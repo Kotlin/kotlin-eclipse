@@ -494,4 +494,13 @@
             id="org.jetbrains.kotlin.eclipse.ui.kotlinMergeViewer">
       </viewer>
    </extension>
+   <extension
+         point="org.eclipse.jdt.ui.queryParticipants">
+      <queryParticipant
+            class="org.jetbrains.kotlin.ui.search.KotlinQueryParticipant"
+            id="org.jetbrains.kotlin.ui.search.queryParticipant"
+            name="Kotlin Query Participant"
+            nature="org.jetbrains.kotlin.core.kotlinNature">
+      </queryParticipant>
+   </extension>
 </plugin>

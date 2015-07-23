@@ -16,7 +16,10 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.resolver;
 
+import org.eclipse.jdt.core.IJavaElement;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
 import org.jetbrains.kotlin.load.java.sources.JavaSourceElement;
 import org.jetbrains.kotlin.load.java.structure.JavaElement;
 
@@ -31,5 +34,10 @@ public class EclipseJavaSourceElement implements JavaSourceElement {
     @NotNull
     public JavaElement getJavaElement() {
         return javaElement;
+    }
+    
+    @Nullable
+    public IJavaElement getEclipseJavaElement() {
+        return ((EclipseJavaElement<?>) javaElement).getBinding().getJavaElement();
     }
 }
