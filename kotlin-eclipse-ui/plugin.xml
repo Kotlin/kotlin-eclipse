@@ -227,6 +227,16 @@
             id="org.jetbrains.kotlin.ui.commands.configuration"
             name="Configure Kotlin">
       </command>
+      <command
+            defaultHandler="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInProjectHandler"
+            id="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInProject"
+            name="Find References In Project">
+      </command>
+      <command
+            defaultHandler="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWorkspaceHandler"
+            id="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
+            name="Find References In Workspace">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -261,6 +271,23 @@
             <command
                   commandId="org.jetbrains.kotlin.ui.commands.configuration"
                   label="Add Kotlin Nature"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinEditor.EditorContext">
+         <menu
+               label="References">
+            <command
+                  commandId="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInProject"
+                  label="Project"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
+                  label="Workspace"
                   style="push">
             </command>
          </menu>
