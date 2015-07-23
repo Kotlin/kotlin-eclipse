@@ -31,6 +31,14 @@ import org.eclipse.search.internal.ui.text.EditorOpener
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider
+import org.eclipse.jface.viewers.StyledString
+import org.eclipse.jface.viewers.ITreeContentProvider
+import org.eclipse.jface.viewers.Viewer
+import org.eclipse.jdt.ui.JavaElementLabels
+import org.eclipse.jdt.internal.corext.util.Strings
+import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.JetNamedDeclaration
 
 public class KotlinReferenceMatchPresentation : IMatchPresentation {
     private val editorOpener = EditorOpener()
@@ -56,21 +64,19 @@ public class KotlinReferenceMatchPresentation : IMatchPresentation {
 
 public class KotlinReferenceLabelProvider : LabelProvider() {
     override fun getText(element: Any): String {
-        if (element !is JetReferenceExpression){
+        if (element !is KotlinAdaptableElement){
         	throw IllegalArgumentException("KotlinReferenceLabelProvider asked for non-reference expression: $element")
         }
         
-        val eclipseFile = KotlinPsiManager.getEclispeFile(element.getContainingJetFile())
-        if (eclipseFile != null) {
-            val document = EditorUtil.getDocument(eclipseFile)
-            val lineRegion = document.getLineInformationOfOffset(element.getTextDocumentOffset(document))
-            return document.get().substring(lineRegion.getOffset(), lineRegion.getOffset() + lineRegion.getLength()).trim()
-        }
-        
-        return ""
+        val jetElement = element.jetElement
+        return getContainingDeclaration(jetElement)?.let { it.getFqName()?.asString() } ?: ""
     }
     
     override fun getImage(element: Any): Image {
         return JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_PUBLIC)
+    }
+    
+    private fun getContainingDeclaration(jetElement: JetElement): JetNamedDeclaration? {
+        return PsiTreeUtil.getNonStrictParentOfType(jetElement, javaClass<JetNamedDeclaration>())
     }
 }

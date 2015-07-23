@@ -33,6 +33,12 @@ import org.jetbrains.kotlin.psi.JetElement
 import org.eclipse.jdt.internal.core.JavaModel
 import org.eclipse.core.resources.IProject
 import org.jetbrains.kotlin.core.references.createReference
+import org.eclipse.core.runtime.IAdaptable
+import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.JetClassOrObject
+import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
+import org.eclipse.jdt.core.IJavaProject
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
@@ -47,7 +53,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
         val references = obtainReferences(searchResult as FileSearchResult, files)
         val matchedReferences = resolveReferencesAndMatch(references, element)
         
-        matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression)) }
+        matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression, element.getJavaProject())) }
     }
     
     override public fun estimateTicks(specification: QuerySpecification): Int = 500
@@ -65,13 +71,13 @@ public class KotlinQueryParticipant : IQueryParticipant {
         return query.getSearchResult()
     }
     
-    private fun resolveReferencesAndMatch(references: List<KotlinReference>, element: IJavaElement): List<KotlinReference> {
-        val javaProject = element.getJavaProject()
+    private fun resolveReferencesAndMatch(references: List<KotlinReference>, lightElement: IJavaElement): List<KotlinReference> {
+        val javaProject = lightElement.getJavaProject()
         val analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult()
         
-        return references.filter {
-            it.resolveToLightElements(analysisResult.bindingContext, javaProject).any {
-                it == element
+        return references.filter { reference ->
+            reference.resolveToLightElements(analysisResult.bindingContext, javaProject).any { potentialElement ->
+                potentialElement == lightElement
             }
         }
     }
@@ -100,4 +106,13 @@ public class KotlinQueryParticipant : IQueryParticipant {
     }
 }
 
-public class KotlinElementMatch(val jetElement: JetElement) : Match(jetElement, jetElement.getTextOffset(), jetElement.getTextOffset())
+public class KotlinElementMatch(val jetElement: JetElement, project: IJavaProject) : Match(KotlinAdaptableElement(jetElement, project), jetElement.getTextOffset(), jetElement.getTextOffset())
+
+class KotlinAdaptableElement(val jetElement: JetElement, val project: IJavaProject): IAdaptable {
+    override fun getAdapter(adapter: Class<*>?): Any? {
+        return when {
+            javaClass<IResource>() == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())
+            else -> null
+        }
+    }
+}
