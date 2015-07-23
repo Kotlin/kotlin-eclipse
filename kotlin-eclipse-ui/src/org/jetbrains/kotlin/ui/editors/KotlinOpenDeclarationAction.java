@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2015 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,17 +50,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
+import org.jetbrains.kotlin.core.references.KotlinReference;
+import org.jetbrains.kotlin.core.references.ReferencesPackage;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.SourceElement;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.JetReferenceExpression;
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
-import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement;
 
 import com.intellij.openapi.vfs.VirtualFile;
@@ -97,7 +94,12 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             return;
         }
         
-        SourceElement element = getTargetElement(getSelectedExpression(file, selection.getOffset()), file, javaProject);
+        JetReferenceExpression selectedExpression = getSelectedExpression(file, selection.getOffset());
+        if (selectedExpression == null) {
+            return;
+        }
+        
+        SourceElement element = getTargetElement(selectedExpression, file, javaProject);
         if (element == null) {
             return;
         }
@@ -112,22 +114,11 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private SourceElement getTargetElement(@Nullable JetReferenceExpression expression, @NotNull IFile file, @NotNull IJavaProject javaProject) {
-        BindingContext bindingContext = KotlinAnalyzer
-                .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
-                .getBindingContext();
-        DeclarationDescriptor descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
-        if (descriptor != null) {
-            List<SourceElement> declarations = EclipseDescriptorUtils.descriptorToDeclarations(descriptor, javaProject);
-
-            if (declarations.size() > 1 || declarations.isEmpty()) {
-                return null;
-            }
-
-            return declarations.get(0);
-        }
+    private SourceElement getTargetElement(@NotNull JetReferenceExpression expression, @NotNull IFile file, @NotNull IJavaProject javaProject) {
+        KotlinReference reference = ReferencesPackage.createReference(expression);
+        List<SourceElement> sourceElements = ReferencesPackage.resolveToSourceElements(reference);
         
-        return null;
+        return sourceElements.size() == 1 ? sourceElements.get(0) : null; 
     }
     
     private void gotoElement(@NotNull SourceElement element, @NotNull IJavaProject javaProject) throws JavaModelException, PartInitException {
@@ -232,7 +223,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             return null;
         }
         
-        return PsiTreeUtil.getParentOfType(psiExpression, JetSimpleNameExpression.class);
+        return ReferencesPackage.getReferenceExpression(psiExpression);
     }
     
     @Nullable

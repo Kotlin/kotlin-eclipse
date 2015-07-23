@@ -29,6 +29,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -48,6 +49,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.util.text.StringUtilRt;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.impl.PsiFileFactoryImpl;
@@ -269,5 +271,12 @@ public class KotlinPsiManager {
     @Nullable
     public static JetFile getKotlinFileIfExist(@NotNull IFile file, @NotNull String sourceCode) {
         return INSTANCE.exists(file) ? INSTANCE.getParsedFile(file, sourceCode) : null;
+    }
+    
+    @Nullable
+    public static IFile getEclispeFile(@NotNull JetFile jetFile) {
+        VirtualFile virtualFile = jetFile.getVirtualFile();
+        return virtualFile != null ? 
+                ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath())) : null;
     }
 }
