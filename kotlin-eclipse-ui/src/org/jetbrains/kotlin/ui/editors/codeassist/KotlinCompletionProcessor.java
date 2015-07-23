@@ -54,12 +54,12 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility;
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
+import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
-import org.jetbrains.kotlin.ui.editors.KeywordManager;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinDescriptorUtils;
@@ -68,6 +68,7 @@ import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
 
 import com.google.common.collect.Lists;
+import com.intellij.psi.tree.IElementType;
 
 public class KotlinCompletionProcessor implements IContentAssistProcessor, ICompletionListener {
      
@@ -266,7 +267,8 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             int offset, String identifierPart) {
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         if (!identifierPart.isEmpty()) {
-            for (String keyword : KeywordManager.getAllKeywords()) {
+            for (IElementType keywordToken : JetTokens.KEYWORDS.getTypes()) {
+                String keyword = keywordToken.toString();
                 if (keyword.startsWith(identifierPart)) {
                     proposals.add(new CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length()));
                 }
