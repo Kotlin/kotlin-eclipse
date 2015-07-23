@@ -35,6 +35,8 @@ import com.intellij.psi.PsiElement
 import org.eclipse.jdt.core.IMethod
 import org.jetbrains.kotlin.core.asJava.equalsJvmSignature
 import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
+import org.eclipse.jdt.core.dom.IBinding
+import org.eclipse.jdt.core.dom.IMethodBinding
 
 public object KotlinJavaManager {
     public val KOTLIN_BIN_FOLDER: Path = Path("kotlin_bin")
@@ -77,10 +79,20 @@ public fun sourceElementsToLightElements(sourceElements: List<SourceElement>, ja
     return sourceElements
             .map {
                 when (it) {
-                    is EclipseJavaSourceElement -> it.getEclipseJavaElement()
+                    is EclipseJavaSourceElement -> obtainJavaElement(it.getElementBinding())
                     is KotlinSourceElement -> findLightJavaElement(it.psi, javaProject)
                     else -> null
                 }
             }
             .filterNotNull()
 }
+
+private fun obtainJavaElement(binding: IBinding): IJavaElement? {
+    return if (binding is IMethodBinding && binding.isDefaultConstructor()) {
+        binding.getDeclaringClass().getJavaElement()
+    } else {
+        binding.getJavaElement()
+    }
+}
+
+

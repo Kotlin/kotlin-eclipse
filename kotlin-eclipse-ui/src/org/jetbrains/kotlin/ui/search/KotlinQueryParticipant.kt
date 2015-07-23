@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.core.references.resolveToLightElements 
+import org.jetbrains.kotlin.core.references.resolveToSourceElements 
 import java.util.ArrayList
 import org.jetbrains.kotlin.core.references.KotlinReference
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
@@ -39,21 +40,24 @@ import org.jetbrains.kotlin.psi.JetClassOrObject
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
 import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.core.IMethod
+import org.eclipse.jdt.core.IMember
+import org.eclipse.jdt.core.search.SearchPattern
+import org.eclipse.jdt.core.IType
+import org.eclipse.jdt.core.IField
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
         if (querySpecification !is ElementQuerySpecification) return
         
-        val element = querySpecification.getElement()
-        
         val files = getKotlinFilesByScope(querySpecification)
-        val searchResult = searchTextOccurrences(element, files)
+        val searchResult = searchTextOccurrences(querySpecification.getElement(), files)
         if (searchResult == null) return
         
         val references = obtainReferences(searchResult as FileSearchResult, files)
-        val matchedReferences = resolveReferencesAndMatch(references, element)
+        val matchedReferences = resolveReferencesAndMatch(references, querySpecification)
         
-        matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression, element.getJavaProject())) }
+        matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression, querySpecification.getElement().getJavaProject())) }
     }
     
     override public fun estimateTicks(specification: QuerySpecification): Int = 500
@@ -71,16 +75,38 @@ public class KotlinQueryParticipant : IQueryParticipant {
         return query.getSearchResult()
     }
     
-    private fun resolveReferencesAndMatch(references: List<KotlinReference>, lightElement: IJavaElement): List<KotlinReference> {
-        val javaProject = lightElement.getJavaProject()
-        val analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult()
+    private fun resolveReferencesAndMatch(references: List<KotlinReference>, querySpecification: ElementQuerySpecification): List<KotlinReference> {
+        val javaProject = querySpecification.getElement().getJavaProject()
+        val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
+        
+        val originElement = querySpecification.getElement()
         
         return references.filter { reference ->
-            reference.resolveToLightElements(analysisResult.bindingContext, javaProject).any { potentialElement ->
-                potentialElement == lightElement
+            reference.resolveToLightElements(analysisResult.bindingContext, javaProject).any { javaElement -> 
+                referenceFilter(javaElement, originElement)
             }
         }
     }
+    
+    private fun referenceFilter(potentialElement: IJavaElement, originElement: IJavaElement): Boolean {
+        return when {
+            originElement.isConstructorCall() && potentialElement.isConstructorCall() -> {
+                (originElement as IMethod).getDeclaringType() == (potentialElement as IMethod).getDeclaringType()
+            }
+            
+            originElement.isConstructorCall() -> {
+                (originElement as IMethod).getDeclaringType() == potentialElement
+            }
+            
+            potentialElement.isConstructorCall() -> {
+                originElement == (potentialElement as IMethod).getDeclaringType()
+            }
+            
+            else -> potentialElement == originElement
+        }
+    }
+    
+    private fun IJavaElement.isConstructorCall() = this is IMethod && this.isConstructor()
     
     private fun obtainReferences(searchResult: FileSearchResult, files: List<IFile>): List<KotlinReference> {
         val references = ArrayList<KotlinReference>()
