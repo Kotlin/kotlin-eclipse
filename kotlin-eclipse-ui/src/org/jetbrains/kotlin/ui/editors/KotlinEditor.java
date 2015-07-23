@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.ui.debug.KotlinToggleBreakpointAdapter;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction;
@@ -41,7 +42,6 @@ import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction;
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor;
 
 public class KotlinEditor extends CompilationUnitEditor {
-    
     private final IColorManager colorManager;
     private final BracketInserter bracketInserter;
     private KotlinOutlinePage kotlinOutlinePage = null;
@@ -80,6 +80,11 @@ public class KotlinEditor extends CompilationUnitEditor {
     @Override
     protected boolean isMarkingOccurrences() {
         return false;
+    }
+    
+    @Override
+    protected boolean isTabsToSpacesConversionEnabled() {
+        return IndenterUtil.isSpacesForTabs();
     }
     
     @Override
