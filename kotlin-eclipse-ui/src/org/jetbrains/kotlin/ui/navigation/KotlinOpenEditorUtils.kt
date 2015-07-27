@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.psi.JetEnumEntry
 import org.jetbrains.kotlin.psi.JetPrimaryConstructor
 import org.jetbrains.kotlin.psi.JetConstructor
+import org.jetbrains.kotlin.core.utils.getDeclaringTypeFqName
 
 fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? {
 	val result = ArrayList<JetElement>()
@@ -139,15 +140,7 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
 }
 
 fun equalsDeclaringTypes(jetElement: JetElement, javaMember: IMember): Boolean  {
-	val parent = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetClassOrObject>(), javaClass<JetFile>())
-	
-	val jetFqName = when (parent) {
-		is JetClassOrObject -> parent.getFqName()
-		is JetFile -> PackageClassUtils.getPackageClassFqName(parent.getPackageFqName())
-		else -> null
-	}
-	
-	return jetFqName == javaMember.getDeclaringType().getFqName()
+	return getDeclaringTypeFqName(jetElement) == javaMember.getDeclaringType().getFqName()
 }
 
 open class JetAllVisitor() : JetVisitorVoid() {

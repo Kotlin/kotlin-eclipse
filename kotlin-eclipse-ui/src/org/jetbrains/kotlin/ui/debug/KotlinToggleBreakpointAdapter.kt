@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2000-2015 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.jetbrains.kotlin.ui.debug
 
 import org.eclipse.core.resources.IFile
@@ -20,9 +36,12 @@ import org.jetbrains.kotlin.psi.JetClass
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.psi.JetPsiUtil
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.core.utils.getDeclaringTypeFqName
+import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.psi.JetElement
 
-public class KotlinToggleBreakpointAdapter:IToggleBreakpointsTarget {
-    override public fun toggleLineBreakpoints(part:IWorkbenchPart, selection:ISelection) {
+public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
+    override public fun toggleLineBreakpoints(part: IWorkbenchPart, selection: ISelection) {
         val editor = getEditor(part)
         if (editor == null) return
         
@@ -34,7 +53,8 @@ public class KotlinToggleBreakpointAdapter:IToggleBreakpointsTarget {
         
         val lineNumber = (selection as ITextSelection).getStartLine() + 1
         val document = editor.getDocumentProvider().getDocument(editor.getEditorInput())
-        val typeName = getTypeName(document, lineNumber, file)
+        val typeName = getTypeNameFqName(document, lineNumber, file)
+        if (typeName == null) return
         
         val existingBreakpoint = JDIDebugModel.lineBreakpointExists(file, typeName, lineNumber)
         if (existingBreakpoint != null) {
@@ -46,32 +66,26 @@ public class KotlinToggleBreakpointAdapter:IToggleBreakpointsTarget {
     
     override public fun canToggleLineBreakpoints(part: IWorkbenchPart, selection: ISelection): Boolean = true
     
-    override public fun toggleMethodBreakpoints(part:IWorkbenchPart, selection:ISelection) {}
+    override public fun toggleMethodBreakpoints(part: IWorkbenchPart, selection: ISelection) {}
     
     override public fun canToggleMethodBreakpoints(part: IWorkbenchPart, selection: ISelection): Boolean = true
     
-    override public fun toggleWatchpoints(part:IWorkbenchPart, selection:ISelection) {}
+    override public fun toggleWatchpoints(part: IWorkbenchPart, selection: ISelection) {}
     
     override public fun canToggleWatchpoints(part: IWorkbenchPart, selection: ISelection): Boolean = true
     
-    private fun getTypeName(document: IDocument, lineNumber: Int, file: IFile): String {
+    private fun getTypeNameFqName(document: IDocument, lineNumber: Int, file: IFile): String? {
         val kotlinParsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
-        val typeName = findTopmostType(document.getLineOffset(lineNumber - 1), kotlinParsedFile).asString()
+        val typeName = findTopmostTypeFqName(document.getLineOffset(lineNumber - 1), kotlinParsedFile)
         
-        return typeName
+        return typeName?.asString()
     }
     
-    private fun findTopmostType(offset: Int, jetFile: JetFile): FqName {
+    private fun findTopmostTypeFqName(offset: Int, jetFile: JetFile): FqName? {
         val element = jetFile.findElementAt(offset)
-        val jetClass = JetPsiUtil.getTopmostParentOfTypes(element, javaClass<JetClass>()) as? JetClass
-        if (jetClass != null) {
-            val fqName = jetClass.getFqName()
-            if (fqName != null) { // For example, fqName might be null if jetClass is a local class
-                return fqName
-            }
-        }
+        val jetElement = PsiTreeUtil.getNonStrictParentOfType(element, javaClass<JetElement>())
         
-        return PackageClassUtils.getPackageClassFqName(jetFile.getPackageFqName())
+        return if (jetElement != null) getDeclaringTypeFqName(jetElement) else null
     }
     
     private fun getEditor(part: IWorkbenchPart): ITextEditor? {
