@@ -35,9 +35,13 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.resolve.lazy.FileScopeProviderImpl
 import org.jetbrains.kotlin.resolve.BodyResolveCache
+import org.jetbrains.kotlin.incremental.components.UsageCollector
+import org.jetbrains.kotlin.synthetic.AdditionalScopesWithJavaSyntheticExtensions
 
-private fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: GlobalSearchScope, project: Project) {
+private fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: GlobalSearchScope, 
+        project: Project, usageCollector: UsageCollector) {
     useInstance(moduleContentScope)
+    useInstance(usageCollector)
 
     useImpl<ResolveSession>()
 
@@ -58,16 +62,18 @@ private fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContent
     useImpl<EclipseJavaSourceElementFactory>()
     useImpl<JavaLazyAnalyzerPostConstruct>()
     useImpl<JavaFlexibleTypeCapabilitiesProvider>()
+    useImpl<AdditionalScopesWithJavaSyntheticExtensions>()
 }
 
 public fun createContainerForTopDownAnalyzerForJvm(
         moduleContext: ModuleContext, bindingTrace: BindingTrace,
         declarationProviderFactory: DeclarationProviderFactory,
         moduleContentScope: GlobalSearchScope,
-        javaProject: IJavaProject
+        javaProject: IJavaProject,
+        usageCollector: UsageCollector
 ): ContainerForTopDownAnalyzerForJvm = createContainer("TopDownAnalyzerForJvm") {
     configureModule(moduleContext, KotlinJvmCheckerProvider(moduleContext.module), bindingTrace)
-    configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project)
+    configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, usageCollector)
     useInstance(javaProject)
     useInstance(declarationProviderFactory)
 	useInstance(BodyResolveCache.ThrowException)

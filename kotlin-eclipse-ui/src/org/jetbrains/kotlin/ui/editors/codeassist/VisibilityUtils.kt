@@ -45,7 +45,7 @@ public fun PsiElement.getResolutionScope(bindingContext: BindingContext): JetSco
         }
 
         if (parent is JetFile) {
-            return bindingContext[BindingContext.FILE_TO_PACKAGE_FRAGMENT, parent].getMemberScope()
+            return bindingContext[BindingContext.FILE_TO_PACKAGE_FRAGMENT, parent]!!.getMemberScope()
         }
     }
     error("Not in JetFile")
