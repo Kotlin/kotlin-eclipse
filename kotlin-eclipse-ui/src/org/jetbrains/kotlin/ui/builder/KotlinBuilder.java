@@ -55,9 +55,9 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             return null;
         }
         
-        KotlinAnalysisProjectCache.getInstance(javaProject).resetCache();
+        KotlinAnalysisProjectCache.INSTANCE$.resetCache(javaProject);
         
-        AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
+        AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject);
         updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
         
         final Set<IFile> affectedFiles = Sets.newHashSet();
