@@ -17,9 +17,7 @@
 package org.jetbrains.kotlin.core.model;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
@@ -34,7 +32,6 @@ import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
-import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot;
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension;
 import org.jetbrains.kotlin.core.Activator;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
@@ -90,8 +87,6 @@ public class KotlinEnvironment {
     private final JavaCoreProjectEnvironment projectEnvironment;
     private final MockProject project;
     private final IJavaProject javaProject;
-    
-    private final List<JavaRoot> javaRoots = new ArrayList<>();
     
     private KotlinEnvironment(@NotNull IJavaProject javaProject, @NotNull Disposable disposable) {
         this.javaProject = javaProject;
@@ -262,14 +257,12 @@ public class KotlinEnvironment {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
             }
             projectEnvironment.addJarToClassPath(path);
-            javaRoots.add(new JavaRoot(jarFile, JavaRoot.RootType.BINARY));
         } else {
             VirtualFile root = applicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath());
             if (root == null) {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
             }
             projectEnvironment.addSourcesToClasspath(root);
-            javaRoots.add(new JavaRoot(root, JavaRoot.RootType.SOURCE));
         }
     }
 }
