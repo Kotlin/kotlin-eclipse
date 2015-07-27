@@ -77,7 +77,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     
     private void resetCache(@NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        KotlinAnalysisProjectCache.getInstance(javaProject).resetCache();
+        KotlinAnalysisProjectCache.INSTANCE$.resetCache(javaProject);
     }
     
     @SuppressWarnings("unchecked")

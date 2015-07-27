@@ -49,7 +49,7 @@ public class KotlinFileStore extends LocalFile {
         
         List<JetFile> jetFiles = KotlinLightClassManager.getInstance(javaProject).getSourceFiles(file);
         if (!jetFiles.isEmpty()) {
-            AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
+            AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject);
             GenerationState state = KotlinLightClassGeneration.buildLightClasses(analysisResult, javaProject, jetFiles);
             
             String requestedClassName = new Path(file.getAbsolutePath()).lastSegment();
