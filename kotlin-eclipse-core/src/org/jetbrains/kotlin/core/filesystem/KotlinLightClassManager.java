@@ -109,7 +109,7 @@ public class KotlinLightClassManager {
     
     public List<JetFile> getSourceFiles(@NotNull File file) {
         if (sourceFiles.isEmpty()) {
-            AnalysisResult analysisResult = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult();
+            AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject);
             computeLightClassesSources(analysisResult.getBindingContext());
         }
         

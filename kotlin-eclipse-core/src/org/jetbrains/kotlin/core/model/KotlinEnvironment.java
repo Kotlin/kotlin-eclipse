@@ -137,7 +137,6 @@ public class KotlinEnvironment {
         project.registerService(CliLightClassGenerationSupport.class, cliLightClassGenerationSupport);
         project.registerService(KotlinLightClassForPackage.FileStubCache.class, new KotlinLightClassForPackage.FileStubCache(project));
         project.registerService(CodeAnalyzerInitializer.class, cliLightClassGenerationSupport);
-        project.registerService(KotlinAnalysisProjectCache.class, new KotlinAnalysisProjectCache(javaProject));
         project.registerService(KotlinLightClassManager.class, new KotlinLightClassManager(javaProject));
         project.registerService(CodeStyleManager.class, new DummyCodeStyleManager());
         
