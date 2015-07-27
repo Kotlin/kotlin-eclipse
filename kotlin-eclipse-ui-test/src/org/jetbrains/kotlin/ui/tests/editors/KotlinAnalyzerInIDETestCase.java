@@ -79,7 +79,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
 		KotlinTestUtils.joinBuildThread();
 		
 		IJavaProject javaProject = testEditor.getTestJavaProject().getJavaProject();
-		BindingContext bindingContext = KotlinAnalysisProjectCache.getInstance(javaProject).getAnalysisResult().getBindingContext();
+		BindingContext bindingContext = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject).getBindingContext();
 		Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(bindingContext.getDiagnostics());
 		
 		for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {
