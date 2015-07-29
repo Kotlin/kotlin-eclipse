@@ -62,7 +62,6 @@ import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
-import org.jetbrains.kotlin.ui.editors.completion.KotlinDescriptorUtils;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
@@ -124,7 +123,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         
         proposals.addAll(
                 collectCompletionProposals(
-                        KotlinCompletionUtils.INSTANCE.filterCompletionProposals(cachedDescriptors, identifierPart),
+                        KotlinCompletionUtils.INSTANCE$.filterCompletionProposals(cachedDescriptors, identifierPart),
                         identOffset,
                         offset - identOffset));
         proposals.addAll(generateKeywordProposals(viewer, identOffset, offset, identifierPart));
@@ -135,7 +134,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     
     @NotNull
     private Collection<DeclarationDescriptor> generateBasicCompletionProposals(@NotNull ITextViewer viewer, int identOffset) {
-        JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE.getSimpleNameExpression(editor, identOffset);
+        JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE$.getSimpleNameExpression(editor, identOffset);
         if (simpleNameExpression == null) {
             return Collections.emptyList();
         }
@@ -153,7 +152,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         IJavaProject javaProject = JavaCore.create(file.getProject());
         final AnalysisResult analysisResult = KotlinAnalyzer.analyzeFile(javaProject,
                 simpleNameExpression.getContainingJetFile());
-        final String expressionName = KotlinCompletionUtils.INSTANCE.replaceMarkerInIdentifier(simpleNameExpression.getReferencedName());
+        final String expressionName = KotlinCompletionUtils.INSTANCE$.replaceMarkerInIdentifier(simpleNameExpression.getReferencedName());
         
         JetScope resolutionScope = CodeassistPackage.getResolutionScope(
                 simpleNameExpression.getReferencedNameElement(), analysisResult.getBindingContext());
@@ -203,7 +202,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         List<ICompletionProposal> proposals = Lists.newArrayList();
         for (DeclarationDescriptor descriptor : descriptors) {
             String completion = descriptor.getName().getIdentifier();
-            Image image = KotlinDescriptorUtils.INSTANCE.getImage(descriptor);
+            Image image = KotlinCompletionUtils.INSTANCE$.getImage(descriptor);
             String presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor);
             assert image != null : "Image for completion must not be null";
             
