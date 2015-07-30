@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.ui.editors.quickassist;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -53,8 +54,11 @@ public abstract class KotlinQuickAssist {
         IFile file = EditorUtil.getFile(javaEditor);
         
         if (file != null) {
-            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-            int caretOffset = LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(javaEditor), getCaretOffset(javaEditor));
+            IDocument document = EditorUtil.getDocument(javaEditor);
+            JetFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
+            if (jetFile == null) return null;
+            
+            int caretOffset = LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(javaEditor));
             return jetFile.findElementAt(caretOffset);
         } else {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);

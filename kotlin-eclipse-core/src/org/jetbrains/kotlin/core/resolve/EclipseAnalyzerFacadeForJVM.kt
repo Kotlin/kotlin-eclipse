@@ -37,6 +37,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import java.util.HashSet
 import org.jetbrains.kotlin.incremental.components.UsageCollector
+import org.jetbrains.kotlin.utils.KotlinFrontEndException
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<JetFile>): AnalysisResult {
@@ -55,7 +57,15 @@ public object EclipseAnalyzerFacadeForJVM {
         val container = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
                 GlobalSearchScope.allScope(project), javaProject, UsageCollector.DO_NOTHING)
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
-        container.lazyTopDownAnalyzerForTopLevel.analyzeFiles(TopDownAnalysisMode.TopLevelDeclarations, filesToAnalyze, additionalProviders)
+        
+        try {
+            container.lazyTopDownAnalyzerForTopLevel.analyzeFiles(TopDownAnalysisMode.TopLevelDeclarations, filesToAnalyze, additionalProviders)
+        } catch(e: KotlinFrontEndException) {
+//          Editor will break if we do not catch this exception
+//          and will not be able to save content without reopening it.
+//          In IDEA this exception throws only in CLI
+            KotlinLogger.logError(e)
+        }
         
         return AnalysisResult.success(trace.getBindingContext(), moduleContext.module)
     }

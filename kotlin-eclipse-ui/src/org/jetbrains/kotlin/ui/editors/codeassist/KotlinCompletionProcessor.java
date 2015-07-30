@@ -54,20 +54,20 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility;
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
+import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
-import org.jetbrains.kotlin.ui.editors.KeywordManager;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
-import org.jetbrains.kotlin.ui.editors.completion.KotlinDescriptorUtils;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
 
 import com.google.common.collect.Lists;
+import com.intellij.psi.tree.IElementType;
 
 public class KotlinCompletionProcessor implements IContentAssistProcessor, ICompletionListener {
      
@@ -123,7 +123,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         
         proposals.addAll(
                 collectCompletionProposals(
-                        KotlinCompletionUtils.INSTANCE.filterCompletionProposals(cachedDescriptors, identifierPart),
+                        KotlinCompletionUtils.INSTANCE$.filterCompletionProposals(cachedDescriptors, identifierPart),
                         identOffset,
                         offset - identOffset));
         proposals.addAll(generateKeywordProposals(viewer, identOffset, offset, identifierPart));
@@ -134,7 +134,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     
     @NotNull
     private Collection<DeclarationDescriptor> generateBasicCompletionProposals(@NotNull ITextViewer viewer, int identOffset) {
-        JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE.getSimpleNameExpression(editor, identOffset);
+        JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE$.getSimpleNameExpression(editor, identOffset);
         if (simpleNameExpression == null) {
             return Collections.emptyList();
         }
@@ -152,7 +152,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         IJavaProject javaProject = JavaCore.create(file.getProject());
         final AnalysisResult analysisResult = KotlinAnalyzer.analyzeFile(javaProject,
                 simpleNameExpression.getContainingJetFile());
-        final String expressionName = KotlinCompletionUtils.INSTANCE.replaceMarkerInIdentifier(simpleNameExpression.getReferencedName());
+        final String expressionName = KotlinCompletionUtils.INSTANCE$.replaceMarkerInIdentifier(simpleNameExpression.getReferencedName());
         
         JetScope resolutionScope = CodeassistPackage.getResolutionScope(
                 simpleNameExpression.getReferencedNameElement(), analysisResult.getBindingContext());
@@ -179,13 +179,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             }
         };
         
-        Function1<Name, Boolean> nameFilter = new Function1<Name, Boolean>() {
-            @Override
-            public Boolean invoke(Name name) {
-                String nameString = name.asString();
-                return nameString.startsWith(expressionName);
-            }
-        };
+        Function1<Name, Boolean> nameFilter = KotlinCompletionUtils.INSTANCE$.getNameFilter(expressionName);
         
         return new ReferenceVariantsHelper(
                 analysisResult.getBindingContext(), 
@@ -202,7 +196,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         List<ICompletionProposal> proposals = Lists.newArrayList();
         for (DeclarationDescriptor descriptor : descriptors) {
             String completion = descriptor.getName().getIdentifier();
-            Image image = KotlinDescriptorUtils.INSTANCE.getImage(descriptor);
+            Image image = KotlinCompletionUtils.INSTANCE$.getImage(descriptor);
             String presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor);
             assert image != null : "Image for completion must not be null";
             
@@ -266,7 +260,8 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             int offset, String identifierPart) {
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         if (!identifierPart.isEmpty()) {
-            for (String keyword : KeywordManager.getAllKeywords()) {
+            for (IElementType keywordToken : JetTokens.KEYWORDS.getTypes()) {
+                String keyword = keywordToken.toString();
                 if (keyword.startsWith(identifierPart)) {
                     proposals.add(new CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length()));
                 }
