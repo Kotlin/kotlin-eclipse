@@ -27,8 +27,6 @@ import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression
-import com.google.common.base.Predicate
-import com.google.common.collect.Collections2
 import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -38,19 +36,24 @@ import org.eclipse.jdt.ui.ISharedImages
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
+import java.util.ArrayList
 
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
     
     public fun filterCompletionProposals(descriptors: List<DeclarationDescriptor>, prefix: String): Collection<DeclarationDescriptor> {
-        return descriptors.filter { descriptor -> 
-            val name = descriptor.name
-            if (name.isSpecial()) return@filter false
-            
+        val nameFilter = getNameFilter(prefix)
+        return descriptors.filter { descriptor -> nameFilter(descriptor.getName()) }
+    }
+    
+    public fun getNameFilter(prefix: String): (Name) -> Boolean = { name: Name ->
+        if (!name.isSpecial()) {
             val identifier = name.getIdentifier()
             identifier.startsWith(prefix) || 
                 identifier.toLowerCase().startsWith(prefix) || 
                 SearchPattern.camelCaseMatch(prefix, identifier)
+        } else {
+            false
         }
     }
     

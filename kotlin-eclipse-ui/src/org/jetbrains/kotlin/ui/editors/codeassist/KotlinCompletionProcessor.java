@@ -179,13 +179,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             }
         };
         
-        Function1<Name, Boolean> nameFilter = new Function1<Name, Boolean>() {
-            @Override
-            public Boolean invoke(Name name) {
-                String nameString = name.asString();
-                return nameString.startsWith(expressionName);
-            }
-        };
+        Function1<Name, Boolean> nameFilter = KotlinCompletionUtils.INSTANCE$.getNameFilter(expressionName);
         
         return new ReferenceVariantsHelper(
                 analysisResult.getBindingContext(), 
