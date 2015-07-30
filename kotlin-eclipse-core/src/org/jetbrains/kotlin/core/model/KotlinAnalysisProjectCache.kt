@@ -32,18 +32,23 @@ public object KotlinAnalysisProjectCache {
     
     public fun resetCache(javaProject: IJavaProject) {
         val project = javaProject.getProject()
-        synchronized (project) {
-            cachedAnalysisResults.remove(javaProject.getProject()) 
+        synchronized(project) {
+            cachedAnalysisResults.remove(javaProject.getProject())
         }
+         
     }
     
     public fun getAnalysisResult(javaProject: IJavaProject): AnalysisResult {
         val project = javaProject.getProject()
-        synchronized (project) {
-            return cachedAnalysisResults.getOrPut(project) {
+        return synchronized(project) {
+            cachedAnalysisResults.getOrPut(project) {
                 val environment = KotlinEnvironment.getEnvironment(javaProject)
                 KotlinAnalyzer.analyzeFiles(javaProject, environment, ProjectUtils.getSourceFiles(javaProject.getProject()))
             }
         }
+    }
+    
+    public synchronized fun getAnalysisResultIfCached(javaProject: IJavaProject): AnalysisResult? {
+        return cachedAnalysisResults.get(javaProject.getProject())
     }
 }

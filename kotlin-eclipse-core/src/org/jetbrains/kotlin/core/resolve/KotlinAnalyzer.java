@@ -41,7 +41,7 @@ public class KotlinAnalyzer {
                 filesToAnalyze);
     }
     
-    private static AnalysisResult analyzeFiles(@NotNull IJavaProject javaProject, @NotNull Collection<JetFile> filesToAnalyze) {
+    public static AnalysisResult analyzeFiles(@NotNull IJavaProject javaProject, @NotNull Collection<JetFile> filesToAnalyze) {
         KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
         return analyzeFiles(javaProject, kotlinEnvironment, filesToAnalyze);
     }
