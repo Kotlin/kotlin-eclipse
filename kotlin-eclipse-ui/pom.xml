@@ -21,7 +21,7 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>0.12.200</version>
+                <version>${kotlin.version}</version>
 
                 <executions>
                     <execution>
