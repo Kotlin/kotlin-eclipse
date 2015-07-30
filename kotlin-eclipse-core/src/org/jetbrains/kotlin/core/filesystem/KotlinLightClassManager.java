@@ -176,6 +176,12 @@ public class KotlinLightClassManager {
                     LightClassFile lightClass = new LightClassFile(eclipseFile);
                     List<IFile> sources = sourceFiles.get(lightClass.asFile());
                     return sources != null ? sources.isEmpty() : true;
+                } else if (resource instanceof IFolder) {
+                    try {
+                        return ((IFolder) resource).members().length == 0;
+                    } catch (CoreException e) {
+                        KotlinLogger.logAndThrow(e);
+                    } 
                 }
                 
                 return false;
