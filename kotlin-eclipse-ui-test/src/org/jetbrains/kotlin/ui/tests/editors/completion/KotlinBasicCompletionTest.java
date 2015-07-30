@@ -443,4 +443,14 @@ public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
     public void testTopLevelFromStandardLibraryWithoutParam() throws Exception {
         doTest("testData/completion/basic/java/TopLevelFromStandardLibraryWithoutParam.kt");
     }
+    
+    @Test
+    public void testVariableWithLowerCase() {
+        doTest("testData/completion/basic/common/VariableWithLowerCase.kt");
+    }
+    
+    @Test
+    public void testFunctionWithLowerCase() {
+        doTest("testData/completion/basic/common/FunctionWithLowerCase.kt");
+    }
 }

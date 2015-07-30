@@ -27,8 +27,6 @@ import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression
-import com.google.common.base.Predicate
-import com.google.common.collect.Collections2
 import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -38,20 +36,24 @@ import org.eclipse.jdt.ui.ISharedImages
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
+import java.util.ArrayList
 
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
     
     public fun filterCompletionProposals(descriptors: List<DeclarationDescriptor>, prefix: String): Collection<DeclarationDescriptor> {
-        return descriptors.filter { descriptor -> 
-            val name = descriptor.name
-            if (name.isSpecial()) return@filter false
-            
-            val identifier = name.getIdentifier()
-            identifier.startsWith(prefix) || 
-                identifier.toLowerCase().startsWith(prefix) || 
-                SearchPattern.camelCaseMatch(prefix, identifier)
-        }
+        return descriptors.filter { applicableNameFor(prefix, it.getName()) }
+    }
+    
+    public fun applicableNameFor(prefix: String, name: Name): Boolean {
+        return if (!name.isSpecial()) {
+                val identifier = name.getIdentifier()
+                identifier.startsWith(prefix) || 
+                    identifier.toLowerCase().startsWith(prefix) || 
+                    SearchPattern.camelCaseMatch(prefix, identifier)
+            } else {
+                false
+            }
     }
     
     public fun getSimpleNameExpression(editor: JavaEditor, identOffset: Int): JetSimpleNameExpression? {
