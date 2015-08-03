@@ -453,4 +453,10 @@ public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
     public void testFunctionWithLowerCase() {
         doTest("testData/completion/basic/common/FunctionWithLowerCase.kt");
     }
+    
+    @Test
+    public void testWithCompletedExpression() {
+        doTest("testData/completion/basic/common/WithCompletedExpression.kt");
+    }
+    
 }
