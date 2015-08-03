@@ -74,12 +74,12 @@ public class KotlinProjectTestCase {
     }
     
     public IFile createSourceFile(String fileName, String content) {
-        return createSourceFile(TextEditorTest.TEST_PACKAGE_NAME, fileName, content);
+        return createSourceFile("", fileName, content);
     }
     
     protected TextEditorTest configureEditor(String fileName, String content) {
         TextEditorTest testEditor = new TextEditorTest(testJavaProject);
-        testEditor.createEditor(fileName, content, TextEditorTest.TEST_PACKAGE_NAME);
+        testEditor.createEditor(fileName, content, "");
         
         return testEditor;
     }
