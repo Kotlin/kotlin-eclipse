@@ -16,8 +16,10 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core;
 
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Plugin;
-//import org.jetbrains.kotlin.ui.builder.ResourceChangeListener;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.osgi.framework.BundleContext;
 
 public class Activator extends Plugin {
@@ -37,10 +39,15 @@ public class Activator extends Plugin {
 	@Override
     public void start(BundleContext bundleContext) throws Exception {
 		super.start(bundleContext);
+		
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(KotlinAnalysisProjectCache.INSTANCE$,
+		        IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE | IResourceChangeEvent.PRE_BUILD);
 	}
 
 	@Override
     public void stop(BundleContext bundleContext) throws Exception {
+	    ResourcesPlugin.getWorkspace().removeResourceChangeListener(KotlinAnalysisProjectCache.INSTANCE$);
+	    
 		plugin = null;
 	}
 }

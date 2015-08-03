@@ -55,8 +55,6 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             return null;
         }
         
-        KotlinAnalysisProjectCache.INSTANCE$.resetCache(javaProject);
-        
         AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject);
         updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
         

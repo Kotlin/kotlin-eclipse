@@ -25,30 +25,48 @@ import com.intellij.openapi.project.Project
 import kotlin.platform.platformStatic
 import org.eclipse.core.resources.IProject
 import java.util.concurrent.ConcurrentHashMap
-import java.util.HashMap
+import org.eclipse.core.resources.IResourceChangeListener
+import org.eclipse.core.resources.IResourceChangeEvent
 
-public object KotlinAnalysisProjectCache {
-    private val cachedAnalysisResults = HashMap<IProject, AnalysisResult>()
+public object KotlinAnalysisProjectCache : IResourceChangeListener {
+    private val cachedAnalysisResults = ConcurrentHashMap<IProject, AnalysisResult>()
     
     public fun resetCache(javaProject: IJavaProject) {
         val project = javaProject.getProject()
         synchronized(project) {
             cachedAnalysisResults.remove(javaProject.getProject())
         }
-         
     }
     
     public fun getAnalysisResult(javaProject: IJavaProject): AnalysisResult {
         val project = javaProject.getProject()
         return synchronized(project) {
-            cachedAnalysisResults.getOrPut(project) {
+            val analysisResult = cachedAnalysisResults.getOrElse(project) {
                 val environment = KotlinEnvironment.getEnvironment(javaProject)
                 KotlinAnalyzer.analyzeFiles(javaProject, environment, ProjectUtils.getSourceFiles(javaProject.getProject()))
             }
+            
+            cachedAnalysisResults.putIfAbsent(project, analysisResult) ?: analysisResult
         }
     }
     
     public synchronized fun getAnalysisResultIfCached(javaProject: IJavaProject): AnalysisResult? {
         return cachedAnalysisResults.get(javaProject.getProject())
+    }
+    
+    override fun resourceChanged(event: IResourceChangeEvent) {
+        when (event.getType()) {
+            IResourceChangeEvent.PRE_DELETE,
+            IResourceChangeEvent.PRE_CLOSE,
+            IResourceChangeEvent.PRE_BUILD -> event.getDelta()?.accept { delta ->
+                val resource = delta.getResource()
+                if (resource is IProject) {
+                    cachedAnalysisResults.remove(resource)
+                    return@accept false
+                }
+                
+                true
+            }
+        }
     }
 }
