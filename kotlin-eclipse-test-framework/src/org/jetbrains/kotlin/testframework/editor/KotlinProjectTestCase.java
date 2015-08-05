@@ -3,6 +3,9 @@ package org.jetbrains.kotlin.testframework.editor;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase.Separator;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.junit.After;
@@ -12,10 +15,17 @@ import org.junit.Before;
 public class KotlinProjectTestCase {
     
     private static TestJavaProject testJavaProject;
+    private int initialSpacesCount;
+    private Separator initialSeparator;
     
     @Before
     public void beforeTest() {
         KotlinTestUtils.refreshWorkspace();
+        
+        initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.SPACE : Separator.TAB;
+        initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, 4);
     }
     
     @After
@@ -25,6 +35,9 @@ public class KotlinProjectTestCase {
         if (testJavaProject != null) {
             testJavaProject.clean();
         }
+        
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == initialSeparator));
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, initialSpacesCount);
     }
     
     @AfterClass

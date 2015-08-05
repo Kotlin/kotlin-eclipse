@@ -14,7 +14,7 @@ public class KotlinImplementMethodsTestCase extends KotlinSpacesForTabsQuickAssi
 		EditorTestUtils.assertByEditor(editor, removeCaretAndSelection(expected));
 	}
 	
-	private String removeCaretAndSelection(String text) {
+	public static String removeCaretAndSelection(String text) {
 		return text
 				.replaceAll("<caret>", "")
 				.replaceAll("<selection>", "")
