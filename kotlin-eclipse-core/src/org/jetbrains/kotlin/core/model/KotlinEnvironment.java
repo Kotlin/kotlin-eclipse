@@ -63,10 +63,8 @@ import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFinder;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.compiled.ClassFileDecompilers;
@@ -103,23 +101,7 @@ public class KotlinEnvironment {
         project = projectEnvironment.getProject();
 
 //        For j2k converter
-        project.registerService(NullableNotNullManager.class, new NullableNotNullManager() {
-            @Override
-            protected boolean hasHardcodedContracts(PsiElement element) {
-                return false;
-            }
-
-            @Override
-            public boolean isNotNull(@NotNull PsiModifierListOwner owner, boolean checkBases) {
-                return true;
-            }
-
-            @Override
-            public boolean isNullable(@NotNull PsiModifierListOwner owner, boolean checkBases) {
-                return !isNotNull(owner, checkBases);
-            }
-            
-        }); 
+        project.registerService(NullableNotNullManager.class, new KotlinNullableNotNullManager(javaProject)); 
         
         CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(
                 project.getComponent(PsiManager.class));
