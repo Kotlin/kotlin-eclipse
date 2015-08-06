@@ -3,5 +3,6 @@
 		<aspect name="org.jetbrains.kotlin.aspects.debug.ui.SuppressBreakpointMarkerUpdaterAspect"/>
 		<aspect name="org.jetbrains.kotlin.aspects.debug.core.KotlinSourceLookupAspect"/>
 		<aspect name="org.jetbrains.kotlin.aspects.navigation.KotlinOpenEditorAspect"/>
+		<aspect name="org.jetbrains.kotlin.aspects.navigation.KotlinSearchEditorOpenerAspect"/>
 	</aspects>
 </aspectj>
