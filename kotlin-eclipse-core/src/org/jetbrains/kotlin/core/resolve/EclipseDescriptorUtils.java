@@ -1,8 +1,12 @@
 package org.jetbrains.kotlin.core.resolve;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor;
@@ -11,6 +15,7 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithSource;
 import org.jetbrains.kotlin.descriptors.SourceElement;
+import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils;
 
 import com.google.common.collect.Lists;
 
@@ -18,22 +23,39 @@ import com.google.common.collect.Lists;
 public class EclipseDescriptorUtils {
     // NOTE this is also used by KDoc
     @Nullable
-    public static SourceElement descriptorToDeclaration(@NotNull DeclarationDescriptor descriptor) {
+    public static SourceElement descriptorToDeclaration(@NotNull DeclarationDescriptor descriptor, IJavaProject project) {
         if (descriptor instanceof CallableMemberDescriptor) {
             return callableDescriptorToDeclaration((CallableMemberDescriptor) descriptor);
         } else if (descriptor instanceof ClassDescriptor) {
-            return classDescriptorToDeclaration((ClassDescriptor) descriptor);
+            return classDescriptorToDeclaration((ClassDescriptor) descriptor, project);
         } else {
             return doGetDescriptorToDeclaration(descriptor);
         }
     }
 
     @NotNull
-    public static List<SourceElement> descriptorToDeclarations(@NotNull DeclarationDescriptor descriptor) {
+    public static List<SourceElement> descriptorToDeclarations(@NotNull DeclarationDescriptor descriptor, @NotNull IJavaProject project) {
+        if (BuiltInsReferenceResolver.isFromBuiltinModule(descriptor)) {
+            
+            Collection<DeclarationDescriptor> effectiveReferencedDescriptors = DescriptorToSourceUtils.getEffectiveReferencedDescriptors(descriptor);
+            
+            HashSet<SourceElement> result = new HashSet<SourceElement>();
+            BuiltInsReferenceResolver resolver = BuiltInsReferenceResolver.getInstance(project);
+            for (DeclarationDescriptor effectiveReferenced: effectiveReferencedDescriptors) {
+                DeclarationDescriptor resultDescriptor = resolver.findCurrentDescriptor(effectiveReferenced);
+                if (resultDescriptor != null && resultDescriptor instanceof DeclarationDescriptorWithSource) {
+                    SourceElement element = ((DeclarationDescriptorWithSource)resultDescriptor).getSource();
+                    if (!element.equals(SourceElement.NO_SOURCE)) {
+                        result.add(element);
+                    }
+                }
+            }
+            return new ArrayList<SourceElement>(result);
+        }
         if (descriptor instanceof CallableMemberDescriptor) {
             return callableDescriptorToDeclarations((CallableMemberDescriptor) descriptor);
         } else {
-            SourceElement sourceElement = descriptorToDeclaration(descriptor);
+            SourceElement sourceElement = descriptorToDeclaration(descriptor, project);
             if (sourceElement != null) {
                 return Lists.newArrayList(sourceElement);
             } else {
@@ -41,7 +63,7 @@ public class EclipseDescriptorUtils {
             }
         }
     }
-
+    
     @Nullable
     public static SourceElement callableDescriptorToDeclaration(@NotNull CallableMemberDescriptor callable) {
         if (callable.getKind() == Kind.DECLARATION || callable.getKind() == Kind.SYNTHESIZED) {
@@ -71,7 +93,7 @@ public class EclipseDescriptorUtils {
     }
     
     @Nullable
-    public static SourceElement classDescriptorToDeclaration(@NotNull ClassDescriptor clazz) {
+    public static SourceElement classDescriptorToDeclaration(@NotNull ClassDescriptor clazz, IJavaProject project) {
         return doGetDescriptorToDeclaration(clazz);
     }
     

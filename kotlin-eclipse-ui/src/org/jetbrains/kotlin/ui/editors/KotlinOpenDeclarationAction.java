@@ -37,7 +37,11 @@ import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.util.OpenStrategy;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IReusableEditor;
+import org.eclipse.ui.IStorageEditorInput;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -61,7 +65,9 @@ import org.jetbrains.kotlin.resolve.source.KotlinSourceElement;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 
 public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
@@ -112,7 +118,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
                 .getBindingContext();
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
         if (descriptor != null) {
-            List<SourceElement> declarations = EclipseDescriptorUtils.descriptorToDeclarations(descriptor);
+            List<SourceElement> declarations = EclipseDescriptorUtils.descriptorToDeclarations(descriptor, javaProject);
 
             if (declarations.size() > 1 || declarations.isEmpty()) {
                 return null;
@@ -139,6 +145,9 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         assert virtualFile != null;
         
         IFile targetFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath()));
+        if (targetFile == null) {
+            targetFile = EditorsPackage.getAcrhivedFileFromVirtual(virtualFile);
+        }
         IEditorPart editorPart = findEditorPart(targetFile, element, javaProject);
         if (editorPart == null) {
             return;
@@ -171,16 +180,42 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             @NotNull IJavaProject javaProject) throws JavaModelException, PartInitException {
         if (targetFile != null && targetFile.exists()) {
             return openInEditor(targetFile);
-        } 
-        
-        PsiClass psiClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
-        if (psiClass == null) {
-            return null;
         }
         
-        IType targetType = javaProject.findType(psiClass.getQualifiedName());
+        PsiClass psiClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
+        if (psiClass != null) {
+            IType targetType = javaProject.findType(psiClass.getQualifiedName());
+            return EditorUtility.openInEditor(targetType, true);
+        }
+
+        //external jar
+        if (targetFile != null && targetFile.getFullPath().toOSString().contains("jar")) {
+            PsiFile elementFile = element.getContainingFile();
+            
+            if (elementFile == null) {
+                return null;
+            }
+            
+            IWorkbench wb = PlatformUI.getWorkbench();
+            IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+
+            String fileText = elementFile.getText();
+            String fileName = elementFile.getName();
+
+            PsiDirectory containingDirectory = elementFile.getContainingDirectory();
+            StringStorage storage = new StringStorage(fileText, fileName, EditorsPackage.getFqNameInsideArchive(containingDirectory.toString()));
+            IStorageEditorInput input = new StringInput(storage);
+            IWorkbenchPage page = win.getActivePage();
+            if (page != null) {
+                IEditorPart reusedEditor = page.findEditor(input);
+                if (reusedEditor != null) {
+                    page.reuseEditor((IReusableEditor) reusedEditor, input);
+                }
+                return page.openEditor(input, "org.jetbrains.kotlin.ui.editors.KotlinEditor");
+            }
+        }
         
-        return EditorUtility.openInEditor(targetType, true);
+        return null;
     }
     
     @Nullable
