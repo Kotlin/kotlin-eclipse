@@ -35,6 +35,7 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
     companion object {
         public val CONTAINER_ENTRY: IClasspathEntry = JavaCore.newContainerEntry(runtimeContainerId)
         private val LIB_RUNTIME_NAME = "kotlin-runtime"
+        private val LIB_RUNTIME_SRC_NAME = "kotlin-runtime-sources"
         private val LIB_REFLECT_NAME = "kotlin-reflect"
 		
 		@platformStatic
@@ -50,7 +51,11 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
 		entries.add(kotlinBinFolderEntry)
 		
 		if (!ProjectUtils.isMavenProject(javaProject.getProject())) {
-			val kotlinRuntimeEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_RUNTIME_NAME)))
+			val kotlinRuntimeEntry = JavaCore.newLibraryEntry(
+				Path(ProjectUtils.buildLibPath(LIB_RUNTIME_NAME)), 
+                Path(ProjectUtils.buildLibPath(LIB_RUNTIME_SRC_NAME)),
+				null, 
+				true)
 			val kotlinReflectEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_REFLECT_NAME)))
 			
 			entries.add(kotlinRuntimeEntry)
