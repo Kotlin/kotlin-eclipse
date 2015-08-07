@@ -152,8 +152,6 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         IJavaProject javaProject = JavaCore.create(file.getProject());
         final AnalysisResult analysisResult = KotlinAnalyzer.analyzeFile(javaProject,
                 simpleNameExpression.getContainingJetFile());
-        final String expressionName = KotlinCompletionUtils.INSTANCE$.replaceMarkerInIdentifier(simpleNameExpression.getReferencedName());
-        
         JetScope resolutionScope = CodeassistPackage.getResolutionScope(
                 simpleNameExpression.getReferencedNameElement(), analysisResult.getBindingContext());
         
