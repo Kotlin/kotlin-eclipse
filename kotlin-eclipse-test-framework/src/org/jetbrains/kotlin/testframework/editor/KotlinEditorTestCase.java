@@ -54,6 +54,7 @@ public abstract class KotlinEditorTestCase {
     public static final String WARNING_TAG_OPEN = "<warning>";
     public static final String WARNING_TAG_CLOSE = "</warning>";
     public static final String BREAK_TAG = "<br>";
+    public static final String REFERENCE_TAG = "<ref>";
     
     @Rule
     public TestName name = new TestName();
@@ -180,7 +181,8 @@ public abstract class KotlinEditorTestCase {
     public static String removeTags(String text) {
         return resolveTestTags(text).replaceAll(CARET_TAG, "")
         		.replaceAll(SELECTION_TAG_OPEN, "")
-        		.replaceAll(SELECTION_TAG_CLOSE, "");
+        		.replaceAll(SELECTION_TAG_CLOSE, "")
+        		.replaceAll(REFERENCE_TAG, "");
     }
     
     public static String getNameByPath(String testPath) {
