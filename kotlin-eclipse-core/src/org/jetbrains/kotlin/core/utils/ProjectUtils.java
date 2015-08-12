@@ -125,7 +125,7 @@ public class ProjectUtils {
                 }
             }
         } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
+            KotlinLogger.logError("Error while cleaning folder", e);
         }
     }
     
