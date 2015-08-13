@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -70,7 +69,7 @@ public class EclipseDescriptorUtils {
             return doGetDescriptorToDeclaration(callable);
         }
         //TODO: should not use this method for fake_override and delegation
-        Set<? extends CallableMemberDescriptor> overriddenDescriptors = callable.getOverriddenDescriptors();
+        Collection<? extends CallableMemberDescriptor> overriddenDescriptors = callable.getOverriddenDescriptors();
         if (overriddenDescriptors.size() == 1) {
             return callableDescriptorToDeclaration(overriddenDescriptors.iterator().next());
         }
@@ -85,7 +84,7 @@ public class EclipseDescriptorUtils {
         }
 
         List<SourceElement> r = Lists.newArrayList();
-        Set<? extends CallableMemberDescriptor> overriddenDescriptors = callable.getOverriddenDescriptors();
+        Collection<? extends CallableMemberDescriptor> overriddenDescriptors = callable.getOverriddenDescriptors();
         for (CallableMemberDescriptor overridden : overriddenDescriptors) {
             r.addAll(callableDescriptorToDeclarations(overridden));
         }

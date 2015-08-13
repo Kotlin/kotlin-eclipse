@@ -518,4 +518,65 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
 	public void testAssignToArrayElement() throws Exception {
 		doTest("common_testData/compiler/diagnostics/tests/AssignToArrayElement.kt");
 	}
+	
+	//deprecation tests
+	@Test
+    public void testAnnotationUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/annotationUsage.kt");
+    }
+
+	@Test
+    public void testComponentUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/componentUsage.kt");
+    }
+	
+	@Test
+    public void testFunctionUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/functionUsage.kt");
+    }
+
+	@Test
+    public void testGenericConstructorUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/genericConstructorUsage.kt");
+    }
+
+	@Test
+    public void testImports() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/imports.kt");
+    }
+
+	@Test
+    public void testIteratorUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/iteratorUsage.kt");
+    }
+
+	@Test
+    public void testJavaDeprecated() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/javaDeprecated.kt");
+    }
+
+	@Test
+    public void testJavaDocDeprecated() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/javaDocDeprecated.kt");
+    }
+
+	@Test
+    public void testNestedTypesUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/nestedTypesUsage.kt");
+    }
+
+	@Test
+    public void testObjectUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/objectUsage.kt");
+    }
+
+	@Test
+    public void testPropertyUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/propertyUsage.kt");
+    }
+
+	@Test
+    public void testTypeUsage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/deprecated/typeUsage.kt");
+    }
 }

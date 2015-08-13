@@ -10,5 +10,5 @@ fun JetNamedDeclaration.canRemoveTypeSpecificationByVisibility(bindingContext: B
     if (isOverride) return true
 
     val descriptor = bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, this]
-    return descriptor !is DeclarationDescriptorWithVisibility || !descriptor.getVisibility().isPublicAPI()
+    return descriptor !is DeclarationDescriptorWithVisibility || !descriptor.getVisibility().isPublicAPI
 }

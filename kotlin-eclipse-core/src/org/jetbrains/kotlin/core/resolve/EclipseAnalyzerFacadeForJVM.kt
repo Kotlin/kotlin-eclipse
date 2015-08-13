@@ -36,9 +36,9 @@ import com.google.common.collect.Sets
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import java.util.HashSet
-import org.jetbrains.kotlin.incremental.components.UsageCollector
 import org.jetbrains.kotlin.utils.KotlinFrontEndException
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.incremental.components.LookupTracker
 
 public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<JetFile>): AnalysisResult {
@@ -55,7 +55,7 @@ public object EclipseAnalyzerFacadeForJVM {
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
         val container = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
-                GlobalSearchScope.allScope(project), javaProject, UsageCollector.DO_NOTHING)
+                GlobalSearchScope.allScope(project), javaProject, LookupTracker.DO_NOTHING)
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         
         try {

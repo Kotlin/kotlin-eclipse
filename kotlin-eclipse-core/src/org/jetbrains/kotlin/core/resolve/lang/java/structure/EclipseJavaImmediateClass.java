@@ -103,4 +103,9 @@ public class EclipseJavaImmediateClass implements JavaClassifierType {
     public JavaAnnotation findAnnotation(@NotNull FqName fqName) {
         return javaClass.findAnnotation(fqName);
     }
+
+    @Override
+    public boolean isDeprecatedInJavaDoc() {
+        return javaClass.isDeprecatedInJavaDoc();
+    }
 }

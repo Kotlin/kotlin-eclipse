@@ -44,4 +44,7 @@ public abstract class EclipseJavaClassifier<T : ITypeBinding>(javaType: T) :
     override public fun findAnnotation(fqName: FqName): JavaAnnotation? {
         return EclipseJavaElementUtil.findAnnotation(getBinding().getAnnotations(), fqName)
     }
+	
+	override fun isDeprecatedInJavaDoc(): Boolean =
+			getBinding().isDeprecated()
 }

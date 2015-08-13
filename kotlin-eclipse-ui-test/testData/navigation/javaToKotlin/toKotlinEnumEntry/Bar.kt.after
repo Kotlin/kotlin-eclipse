@@ -1,7 +1,7 @@
 package pckg.navigation
 
 enum class KotlinEnum {
-	ABC
-	<caret>ABD
+	ABC,
+	<caret>ABD,
 	ABE
 }

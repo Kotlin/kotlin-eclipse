@@ -49,13 +49,12 @@ import org.jetbrains.kotlin.frontend.di.DiPackage;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
-import org.jetbrains.kotlin.resolve.AdditionalCheckerProvider;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
+import org.jetbrains.kotlin.resolve.TargetPlatform;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
-import org.jetbrains.kotlin.types.DynamicTypesSettings;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
@@ -107,8 +106,7 @@ public class BuiltInsReferenceResolver {
                 newModuleContext.getStorageManager(), jetBuiltInsFiles);
         
         ResolveSession resolveSession = DiPackage.createLazyResolveSession(newModuleContext, declarationFactory,
-                new BindingTraceContext(), AdditionalCheckerProvider.DefaultProvider.INSTANCE$,
-                new DynamicTypesSettings());
+                new BindingTraceContext(), TargetPlatform.Default.INSTANCE$);
         
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
         
