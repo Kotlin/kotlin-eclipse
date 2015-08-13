@@ -74,4 +74,9 @@ public abstract class EclipseJavaMember<T extends IBinding> extends EclipseJavaE
     public Name getName() {
         return Name.guess(getBinding().getName());
     }
+    
+    @Override
+    public boolean isDeprecatedInJavaDoc() {
+         return getBinding().isDeprecated();
+    }
 }

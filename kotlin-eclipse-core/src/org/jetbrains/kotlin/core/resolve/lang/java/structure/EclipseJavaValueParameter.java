@@ -73,4 +73,9 @@ public class EclipseJavaValueParameter extends EclipseJavaElement<ITypeBinding> 
     public boolean isVararg() {
         return isVararg;
     }
+
+    @Override
+    public boolean isDeprecatedInJavaDoc() {
+        return getBinding().isDeprecated();
+    }
 }

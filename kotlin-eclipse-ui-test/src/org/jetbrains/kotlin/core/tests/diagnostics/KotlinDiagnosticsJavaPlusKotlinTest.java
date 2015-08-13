@@ -27,8 +27,8 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
 	}
 
 	@Test
-	public void testcantDeclareIfSamAdapterIsInherited() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/j+k/cantDeclareIfSamAdapterIsInherited.kt");
+	public void testcanDeclareIfSamAdapterIsInherited() throws Exception {
+		doTest("common_testData/compiler/diagnostics/tests/j+k/canDeclareIfSamAdapterIsInherited.kt");
 	}
 
 	@Test

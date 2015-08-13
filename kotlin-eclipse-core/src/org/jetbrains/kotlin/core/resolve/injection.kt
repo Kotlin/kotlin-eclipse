@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.context.ModuleContext
 import org.jetbrains.kotlin.resolve.BindingTrace
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import com.intellij.psi.search.GlobalSearchScope
-import org.jetbrains.kotlin.load.kotlin.KotlinJvmCheckerProvider
 import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver
 import org.jetbrains.kotlin.container.*
 import org.jetbrains.kotlin.frontend.di.*
@@ -35,13 +34,14 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.resolve.lazy.FileScopeProviderImpl
 import org.jetbrains.kotlin.resolve.BodyResolveCache
-import org.jetbrains.kotlin.incremental.components.UsageCollector
 import org.jetbrains.kotlin.synthetic.AdditionalScopesWithJavaSyntheticExtensions
+import org.jetbrains.kotlin.incremental.components.LookupTracker
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 
 private fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: GlobalSearchScope, 
-        project: Project, usageCollector: UsageCollector) {
+        project: Project, lookupTracker: LookupTracker) {
     useInstance(moduleContentScope)
-    useInstance(usageCollector)
+    useInstance(lookupTracker)
 
     useImpl<ResolveSession>()
 
@@ -70,10 +70,10 @@ public fun createContainerForTopDownAnalyzerForJvm(
         declarationProviderFactory: DeclarationProviderFactory,
         moduleContentScope: GlobalSearchScope,
         javaProject: IJavaProject,
-        usageCollector: UsageCollector
+        lookupTracker: LookupTracker
 ): ContainerForTopDownAnalyzerForJvm = createContainer("TopDownAnalyzerForJvm") {
-    configureModule(moduleContext, KotlinJvmCheckerProvider(moduleContext.module), bindingTrace)
-    configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, usageCollector)
+    configureModule(moduleContext, JvmPlatform, bindingTrace)
+    configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, lookupTracker)
     useInstance(javaProject)
     useInstance(declarationProviderFactory)
 	useInstance(BodyResolveCache.ThrowException)

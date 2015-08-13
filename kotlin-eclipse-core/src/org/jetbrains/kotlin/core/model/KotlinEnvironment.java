@@ -104,8 +104,9 @@ public class KotlinEnvironment {
 //        For j2k converter
         project.registerService(NullableNotNullManager.class, new KotlinNullableNotNullManager(javaProject)); 
         
-        CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(
-                project.getComponent(PsiManager.class));
+        PsiManager psiManager = project.getComponent(PsiManager.class);
+        assert (psiManager != null);
+        CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(psiManager);
         project.registerService(ExternalAnnotationsManager.class, annotationsManager);
         project.registerService(CoreJavaFileManager.class,
                 (CoreJavaFileManager) ServiceManager.getService(project, JavaFileManager.class));

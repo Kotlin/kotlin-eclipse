@@ -86,4 +86,9 @@ public class EclipseJavaType<T extends ITypeBinding> implements JavaType, JavaAn
         return EclipseJavaElementUtil.findAnnotation(getBinding().getAnnotations(), fqName);
     }
 
+    @Override
+    public boolean isDeprecatedInJavaDoc() {
+        return binding.isDeprecated();
+    }
+
 }
