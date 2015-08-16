@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.UtilsPackage;
 import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.idea.JetLanguage;
+import org.jetbrains.kotlin.psi.JetElement;
 import org.jetbrains.kotlin.psi.JetFile;
 
 import com.intellij.openapi.project.Project;
@@ -278,5 +279,11 @@ public class KotlinPsiManager {
         VirtualFile virtualFile = jetFile.getVirtualFile();
         return virtualFile != null ? 
                 ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath())) : null;
+    }
+    
+    @Nullable
+    public static IJavaProject getJavaProject(@NotNull JetElement jetElement) {
+        IFile eclipseFile = getEclispeFile(jetElement.getContainingJetFile());
+        return eclipseFile != null ? JavaCore.create(eclipseFile.getProject()) : null;
     }
 }

@@ -36,43 +36,61 @@ import org.jetbrains.kotlin.core.model.findLightJavaElement
 import org.jetbrains.kotlin.core.references.KotlinReference
 import org.jetbrains.kotlin.core.references.createReference
 import org.jetbrains.kotlin.core.references.resolveToLightElements
+import org.jetbrains.kotlin.core.references.resolveToSourceElements
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.ui.actions.FindReferencesInProjectAction
+import org.eclipse.jdt.internal.core.JavaModelManager
+import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
+import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
+import org.eclipse.jdt.internal.ui.search.SearchUtil
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
+import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
+import org.eclipse.jdt.core.search.IJavaSearchConstants
+import org.eclipse.jdt.ui.search.PatternQuerySpecification
+import org.eclipse.jdt.core.search.IJavaSearchScope
+import org.jetbrains.kotlin.psi.JetDeclaration
+import kotlin.properties.Delegates
+import org.eclipse.jdt.ui.search.QuerySpecification
+import org.eclipse.jdt.ui.search.ElementQuerySpecification
 
 public class KotlinFindReferencesInProjectHandler : KotlinFindReferencesHandler() {
-    override fun findReferences(element: IJavaElement, editor: KotlinEditor) {
-        FindReferencesInProjectAction(editor.getSite()).run(element)
+    override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification? {
+        val factory = JavaSearchScopeFactory.getInstance()
+        return createQuerySpecification(
+                jetElement,
+                javaProject,
+                factory.createJavaProjectSearchScope(javaProject, false), 
+                factory.getProjectScopeDescription(javaProject, false))
     }
 }
 
 public class KotlinFindReferencesInWorkspaceHandler : KotlinFindReferencesHandler() {
-    override fun findReferences(element: IJavaElement, editor: KotlinEditor) {
-        FindReferencesAction(editor.getSite()).run(element)
+    override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification? {
+        val factory = JavaSearchScopeFactory.getInstance()
+        return createQuerySpecification(
+                jetElement,
+                javaProject,
+                factory.createWorkspaceScope(false), 
+                factory.getWorkspaceScopeDescription(false))
     }
 }
 
 abstract class KotlinFindReferencesHandler : AbstractHandler() {
+    var javaProject: IJavaProject by Delegates.notNull()
+    
     override public fun execute(event: ExecutionEvent): Any? {
         val file = getFile(event)!!
-        val javaProject = JavaCore.create(file.getProject())
-        val kotlinEditor = HandlerUtil.getActiveEditor(event) as KotlinEditor
+        javaProject = JavaCore.create(file.getProject())
         
         val jetElement = getJetElement(event)
         if (jetElement == null) return null
         
-        val referenceExpression = getReferenceExpression(jetElement)
-        val targetLightElement = 
-            if (referenceExpression != null) {
-	            val reference = createReference(referenceExpression)
-	            getOriginLightElement(reference, file, javaProject)
-	        } else {
-	            findLightJavaElement(jetElement, javaProject)
-	        }
+        val querySpecification = createScopeQuerySpecification(jetElement)
+        val query = JavaSearchQuery(querySpecification)
         
-        if (targetLightElement == null) return null
-        
-        findReferences(targetLightElement, kotlinEditor)
+        SearchUtil.runQueryInBackground(query)
         
         return null
     }
@@ -82,12 +100,7 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
         setBaseEnabled(editorObject is KotlinEditor)
     }
     
-    abstract fun findReferences(element: IJavaElement, editor: KotlinEditor)
-    
-    private fun getOriginLightElement(reference: KotlinReference, file: IFile, javaProject: IJavaProject): IJavaElement? {
-        val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
-        return reference.resolveToLightElements(analysisResult.bindingContext, javaProject).firstOrNull()
-    }
+    abstract fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification?
     
     private fun getJetElement(event: ExecutionEvent): JetElement? {
         val activeEditor = HandlerUtil.getActiveEditor(event) as KotlinEditor
@@ -106,3 +119,49 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
         return EditorUtil.getFile(activeEditor)
     }
 }
+
+fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, scope: IJavaSearchScope, 
+        description: String): QuerySpecification? {
+    fun createFindReferencesQuery(element: IJavaElement): ElementQuerySpecification {
+        return ElementQuerySpecification(element, IJavaSearchConstants.REFERENCES, scope, description)
+    }
+    
+    fun createFindReferencesQuery(elements: List<JetElement>): KotlinQueryPatternSpecification {
+        return KotlinQueryPatternSpecification(elements, scope, description)
+    }
+    
+    return if (jetElement is JetDeclaration) {
+        val lightElement = findLightJavaElement(jetElement, javaProject)
+        if (lightElement != null) {
+            createFindReferencesQuery(lightElement)
+        } else {
+//          Element should present only in Kotlin as there is no corresponding light element
+            createFindReferencesQuery(listOf(jetElement))
+        }
+    } else {
+        // Try search usages by reference
+        val referenceExpression = getReferenceExpression(jetElement)
+        if (referenceExpression == null) return null
+        
+        val reference = createReference(referenceExpression)
+        val sourceElements = reference.resolveToSourceElements()
+        val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
+        if (lightElements.isNotEmpty()) {
+            createFindReferencesQuery(lightElements.first())
+        } else {
+            createFindReferencesQuery(
+                    sourceElements
+                        .filterIsInstance(javaClass<KotlinSourceElement>())
+                        .map { it.psi })
+        }
+    }
+}
+
+class KotlinQueryPatternSpecification(val jetElements: List<JetElement>, searchScope: IJavaSearchScope, description: String) : 
+        PatternQuerySpecification(
+            jetElements.first().getName(), 
+            IJavaSearchConstants.CLASS, 
+            true, 
+            IJavaSearchConstants.REFERENCES, 
+            searchScope, 
+            description)

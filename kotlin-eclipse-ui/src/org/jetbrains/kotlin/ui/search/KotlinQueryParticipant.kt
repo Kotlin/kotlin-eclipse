@@ -45,46 +45,67 @@ import org.eclipse.jdt.core.IMember
 import org.eclipse.jdt.core.search.SearchPattern
 import org.eclipse.jdt.core.IType
 import org.eclipse.jdt.core.IField
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQueryPatternSpecification
+import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
-        if (querySpecification !is ElementQuerySpecification) return
-        
         val files = getKotlinFilesByScope(querySpecification)
-        val searchResult = searchTextOccurrences(querySpecification.getElement(), files)
+        if (files.isEmpty()) return
+        
+        val searchResult = searchTextOccurrences(querySpecification, files)
         if (searchResult == null) return
         
         val references = obtainReferences(searchResult as FileSearchResult, files)
         val matchedReferences = resolveReferencesAndMatch(references, querySpecification)
         
-        matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression, querySpecification.getElement().getJavaProject())) }
+        matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression)) }
     }
     
     override public fun estimateTicks(specification: QuerySpecification): Int = 500
     
-    override public fun getUIParticipant(): IMatchPresentation? {
-        return KotlinReferenceMatchPresentation()
-    }
+    override public fun getUIParticipant() = KotlinReferenceMatchPresentation()
     
-    private fun searchTextOccurrences(element: IJavaElement, filesScope: List<IFile>): ISearchResult? {
+    private fun searchTextOccurrences(querySpecification: QuerySpecification, filesScope: List<IFile>): ISearchResult? {
         val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null, false)
-        val query = FileSearchQuery(element.getElementName(), false, false, scope)
+        val searchText = when (querySpecification) {
+            is KotlinQueryPatternSpecification -> buildOrPattern(querySpecification.jetElements)
+            is ElementQuerySpecification -> querySpecification.getElement().getElementName()
+            else -> return null
+        }
+        
+        val query = FileSearchQuery(searchText, false, false, scope)
         
         query.run(null)
         
         return query.getSearchResult()
     }
     
-    private fun resolveReferencesAndMatch(references: List<KotlinReference>, querySpecification: ElementQuerySpecification): List<KotlinReference> {
-        val javaProject = querySpecification.getElement().getJavaProject()
-        val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-        
-        val originElement = querySpecification.getElement()
+    private fun resolveReferencesAndMatch(references: List<KotlinReference>, querySpecification: QuerySpecification): List<KotlinReference> {
+        val isApplicable: (List<SourceElement>, IJavaProject) -> Boolean = when (querySpecification) {
+            is KotlinQueryPatternSpecification -> { elements, _ ->
+                elements.any { (it as KotlinSourceElement).psi in querySpecification.jetElements }
+            }
+            
+            is ElementQuerySpecification -> { elements, project ->
+                sourceElementsToLightElements(elements, project).any { referenceFilter(it, querySpecification.getElement()) }
+            }
+            
+            else -> throw IllegalArgumentException("$querySpecification is not supported to resolve and search references")
+        }
         
         return references.filter { reference ->
-            reference.resolveToLightElements(analysisResult.bindingContext, javaProject).any { javaElement -> 
-                referenceFilter(javaElement, originElement)
-            }
+            val javaProject = KotlinPsiManager.getJavaProject(reference.expression)
+            return@filter if (javaProject != null) {
+                    val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
+                    val sourceElements = reference.resolveToSourceElements(analysisResult.bindingContext)
+                    isApplicable(sourceElements, javaProject)
+                } else {
+                    false
+                }
         }
     }
     
@@ -116,9 +137,9 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val document = EditorUtil.getDocument(file)
             
             matches
-            	.map { jetFile.findElementByDocumentOffset(it.getOffset(), document) }
-        		.mapNotNull { getReferenceExpression(it) }
-        		.mapNotNullTo(references) { createReference(it) }
+                .map { jetFile.findElementByDocumentOffset(it.getOffset(), document) }
+                .mapNotNull { getReferenceExpression(it) }
+                .mapNotNullTo(references) { createReference(it) }
         }
         
         return references
@@ -126,15 +147,18 @@ public class KotlinQueryParticipant : IQueryParticipant {
     
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
         return querySpecification.getScope().enclosingProjectsAndJars()
-        		.map { JavaModel.getTarget(it, true) }
-        		.filterIsInstance(javaClass<IProject>())
-        		.flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
+                .map { JavaModel.getTarget(it, true) }
+                .filterIsInstance(javaClass<IProject>())
+                .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
     }
+    
+    private fun buildOrPattern(elements: List<JetElement>): String = elements.joinToString("|") { it.getName()!! }
 }
 
-public class KotlinElementMatch(val jetElement: JetElement, project: IJavaProject) : Match(KotlinAdaptableElement(jetElement, project), jetElement.getTextOffset(), jetElement.getTextOffset())
+public class KotlinElementMatch(val jetElement: JetElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(), 
+        jetElement.getTextOffset())
 
-class KotlinAdaptableElement(val jetElement: JetElement, val project: IJavaProject): IAdaptable {
+class KotlinAdaptableElement(val jetElement: JetElement): IAdaptable {
     override fun getAdapter(adapter: Class<*>?): Any? {
         return when {
             javaClass<IResource>() == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())
