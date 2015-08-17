@@ -24,12 +24,18 @@ import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.psi.JetCallExpression
+import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
+import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
+import org.jetbrains.kotlin.resolve.calls.model.VariableAsFunctionResolvedCall
+import org.jetbrains.kotlin.psi.Call
 
 public fun createReference(element: JetReferenceExpression): KotlinReference {
-	return when(element) {
-		is JetSimpleNameExpression -> KotlinSimpleNameReference(element)
-		else -> throw UnsupportedOperationException("Reference for $element is not supported")
-	}
+    return when(element) {
+        is JetSimpleNameExpression -> KotlinSimpleNameReference(element)
+        is JetCallExpression -> KotlinInvokeFunctionReference(element)
+        else -> throw UnsupportedOperationException("Reference for $element is not supported")
+    }
 }
 
 public interface KotlinReference {
@@ -46,5 +52,17 @@ public class KotlinSimpleNameReference(override val expression: JetSimpleNameExp
         }
         
         return context[BindingContext.AMBIGUOUS_REFERENCE_TARGET, expression].orEmpty()
+    }
+}
+
+public class KotlinInvokeFunctionReference(override val expression: JetCallExpression) : KotlinReference {
+    override fun getTargetDescriptors(context: BindingContext): Collection<DeclarationDescriptor> {
+        val call = expression.getCall(context)
+        val resolvedCall = call.getResolvedCall(context)
+        return when {
+            resolvedCall is VariableAsFunctionResolvedCall -> listOf(resolvedCall.functionCall.getCandidateDescriptor())
+            call != null && resolvedCall != null && call.getCallType() == Call.CallType.INVOKE -> listOf(resolvedCall.getCandidateDescriptor())
+            else -> emptyList()
+        }
     }
 }
