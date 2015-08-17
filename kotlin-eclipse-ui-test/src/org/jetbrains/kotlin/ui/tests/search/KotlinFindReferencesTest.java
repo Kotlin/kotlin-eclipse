@@ -58,4 +58,19 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
     public void testJKNestedClassAllUsages() {
         doTest("testData/findUsages/java/JKNestedClassAllUsages.0.java");
     }
+    
+    @Test
+    public void testJavaClassAllUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findClassUsages/javaClassAllUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinLocalClassUsages1() {
+        doTest("common_testData/ide/findUsages/kotlin/findClassUsages/kotlinLocalClassUsages1.0.kt");
+    }
+    
+    @Test
+    public void testKotlinLocalClassUsages2() {
+        doTest("common_testData/ide/findUsages/kotlin/findClassUsages/kotlinLocalClassUsages2.0.kt");
+    }
 }
