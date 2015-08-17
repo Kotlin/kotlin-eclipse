@@ -39,6 +39,11 @@ import org.eclipse.jdt.ui.JavaElementLabels
 import org.eclipse.jdt.internal.corext.util.Strings
 import org.jetbrains.kotlin.psi.JetElement
 import org.jetbrains.kotlin.psi.JetNamedDeclaration
+import org.jetbrains.kotlin.psi.JetClass
+import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
+import org.jetbrains.kotlin.psi.JetNamedFunction
+import org.jetbrains.kotlin.psi.JetClassOrObject
+import org.jetbrains.kotlin.psi.JetProperty
 
 public class KotlinReferenceMatchPresentation : IMatchPresentation {
     private val editorOpener = EditorOpener()
@@ -69,7 +74,11 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
         }
         
         val jetElement = element.jetElement
-        return getContainingDeclaration(jetElement)?.let { it.getFqName()?.asString() } ?: ""
+        val declaration = PsiTreeUtil.getNonStrictParentOfType(jetElement, 
+                javaClass<JetNamedFunction>(),
+                javaClass<JetProperty>(),
+                javaClass<JetClassOrObject>()) as? JetNamedDeclaration
+        return declaration?.let { it.getFqName()?.asString() ?: it.getNameAsSafeName().asString() } ?: ""
     }
     
     override fun getImage(element: Any): Image {
