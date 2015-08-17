@@ -30,13 +30,6 @@ import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.eclipse.swt.graphics.Image
-import org.eclipse.jdt.ui.JavaUI
-import org.eclipse.jdt.ui.ISharedImages
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.VariableDescriptor
-import java.util.ArrayList
 
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
@@ -78,15 +71,4 @@ public object KotlinCompletionUtils {
     public fun replaceMarkerInIdentifier(identifier: String): String {
         return identifier.replaceFirst(KOTLIN_DUMMY_IDENTIFIER, "")
     }
-    
-    public fun getImage(descriptor: DeclarationDescriptor): Image? {
-        return when(descriptor) {
-            is ClassDescriptor -> getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
-            is FunctionDescriptor -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PUBLIC)
-            is VariableDescriptor -> getImageFromJavaUI(ISharedImages.IMG_FIELD_PUBLIC)
-            else -> null
-        }
-    }
-    
-    private fun getImageFromJavaUI(imageName: String): Image = JavaUI.getSharedImages().getImage(imageName)
 }

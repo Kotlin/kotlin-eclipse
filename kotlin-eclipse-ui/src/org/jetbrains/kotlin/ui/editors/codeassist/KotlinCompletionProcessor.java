@@ -53,6 +53,7 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility;
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider;
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
 import org.jetbrains.kotlin.lexer.JetTokens;
 import org.jetbrains.kotlin.name.Name;
@@ -199,7 +200,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         List<ICompletionProposal> proposals = Lists.newArrayList();
         for (DeclarationDescriptor descriptor : descriptors) {
             String completion = descriptor.getName().getIdentifier();
-            Image image = KotlinCompletionUtils.INSTANCE$.getImage(descriptor);
+            Image image = KotlinImageProvider.INSTANCE$.getImage(descriptor);
             String presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor);
             assert image != null : "Image for completion must not be null";
             

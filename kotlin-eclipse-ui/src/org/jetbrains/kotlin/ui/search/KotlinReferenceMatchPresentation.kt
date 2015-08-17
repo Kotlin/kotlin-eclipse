@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.psi.JetNamedFunction
 import org.jetbrains.kotlin.psi.JetClassOrObject
 import org.jetbrains.kotlin.psi.JetProperty
+import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 
 public class KotlinReferenceMatchPresentation : IMatchPresentation {
     private val editorOpener = EditorOpener()
@@ -70,7 +71,7 @@ public class KotlinReferenceMatchPresentation : IMatchPresentation {
 public class KotlinReferenceLabelProvider : LabelProvider() {
     override fun getText(element: Any): String {
         if (element !is KotlinAdaptableElement){
-        	throw IllegalArgumentException("KotlinReferenceLabelProvider asked for non-reference expression: $element")
+            throw IllegalArgumentException("KotlinReferenceLabelProvider asked for non-reference expression: $element")
         }
         
         val jetElement = element.jetElement
@@ -81,8 +82,10 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
         return declaration?.let { it.getFqName()?.asString() ?: it.getNameAsSafeName().asString() } ?: ""
     }
     
-    override fun getImage(element: Any): Image {
-        return JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_PUBLIC)
+    override fun getImage(element: Any): Image? {
+        val jetElement = (element as KotlinAdaptableElement).jetElement
+        val containingDeclaration = getContainingDeclaration(jetElement)
+        return containingDeclaration?.let { KotlinImageProvider.getImage(it) } ?: null
     }
     
     private fun getContainingDeclaration(jetElement: JetElement): JetNamedDeclaration? {
