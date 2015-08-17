@@ -132,6 +132,13 @@ public class KotlinEditor extends CompilationUnitEditor {
         KotlinOpenEditor.revealKotlinElement(this, element);
     }
     
+    @Override
+    protected void initializeKeyBindingScopes() {
+        setKeyBindingScopes(new String[] { 
+                "org.jetbrains.kotlin.eclipse.ui.kotlinEditorScope",
+                "org.eclipse.jdt.ui.javaEditorScope" });
+    }
+    
     @NotNull
     private KotlinOutlinePage getKotlinOutlinePage() {
         if (kotlinOutlinePage == null) {

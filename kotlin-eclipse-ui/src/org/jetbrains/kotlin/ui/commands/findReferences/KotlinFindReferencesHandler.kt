@@ -108,7 +108,8 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
     
     private fun getJetElement(event: ExecutionEvent): JetElement? {
         val activeEditor = HandlerUtil.getActiveEditor(event) as KotlinEditor
-        val selection = HandlerUtil.getActiveMenuSelection(event) as ITextSelection
+        val selection = activeEditor.getSelectionProvider().getSelection() as? ITextSelection
+        if (selection == null) return null
         
         val psiElement = EditorUtil.getPsiElement(activeEditor, selection.getOffset())
         if (psiElement != null) {

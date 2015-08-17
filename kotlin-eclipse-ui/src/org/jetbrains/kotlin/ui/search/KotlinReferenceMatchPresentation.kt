@@ -70,7 +70,7 @@ public class KotlinReferenceMatchPresentation : IMatchPresentation {
 
 public class KotlinReferenceLabelProvider : LabelProvider() {
     override fun getText(element: Any): String {
-        if (element !is KotlinAdaptableElement){
+        if (element !is KotlinAdaptableElement) {
             throw IllegalArgumentException("KotlinReferenceLabelProvider asked for non-reference expression: $element")
         }
         

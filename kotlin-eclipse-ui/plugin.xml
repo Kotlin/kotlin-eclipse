@@ -233,7 +233,9 @@
             name="Find References In Project">
       </command>
       <command
+            categoryId="org.eclipse.search.ui.category.search"
             defaultHandler="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWorkspaceHandler"
+            description="Find References In Workspace"
             id="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
             name="Find References In Workspace">
       </command>
@@ -529,5 +531,23 @@
             name="Kotlin Query Participant"
             nature="org.jetbrains.kotlin.core.kotlinNature">
       </queryParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
+            contextId="org.jetbrains.kotlin.eclipse.ui.kotlinEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="CTRL+SHIFT+G">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            description="Kotlin Editor Scope"
+            id="org.jetbrains.kotlin.eclipse.ui.kotlinEditorScope"
+            name="Editing Kotlin Source"
+            parentId="org.eclipse.ui.textEditorScope">
+      </context>
    </extension>
 </plugin>
