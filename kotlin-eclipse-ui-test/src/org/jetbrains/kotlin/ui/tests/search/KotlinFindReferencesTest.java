@@ -73,4 +73,111 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
     public void testKotlinLocalClassUsages2() {
         doTest("common_testData/ide/findUsages/kotlin/findClassUsages/kotlinLocalClassUsages2.0.kt");
     }
+    
+    @Test
+    public void testJavaMethodUsages() {
+        doTest("testData/findUsages/kotlin/findFunctionUsages/javaMethodUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinLocalMethodUsages1() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinLocalMethodUsages1.0.kt");
+    }
+    
+    @Test
+    public void testKotlinLocalMethodUsages2() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinLocalMethodUsages2.0.kt");
+    }
+    
+    @Test
+    public void testKotlinMethodUsages() {
+        doTest("testData/findUsages/kotlin/findFunctionUsages/kotlinMethodUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinMultiRefInImport() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinMultiRefInImport.0.kt");
+    }
+    
+    @Test
+    public void testKotlinNestedClassMethodUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinNestedClassMethodUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinTopLevelMethodUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinTopLevelMethodUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinTraitImplThroughDelegate() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinTraitImplThroughDelegate.0.kt");
+    }
+    
+    @Test
+    public void testKotlinTraitNoImplThroughDelegate() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinTraitNoImplThroughDelegate.0.kt");
+    }
+    
+    @Test
+    public void testLocalClassMember() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/localClassMember.0.kt");
+    }
+    
+    @Test
+    public void testObjectExpressionDeepMember() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/objectExpressionDeepMember.0.kt");
+    }
+    
+    @Test
+    public void testObjectExpressionMember() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/objectExpressionMember.0.kt");
+    }
+    
+    @Test
+    public void testObjectExpressionMember2() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/objectExpressionMember2.0.kt");
+    }
+    
+    @Test
+    public void testSynthesizedFunction() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/synthesizedFunction.0.kt");
+    }
+    
+    @Test
+    public void testJavaObjectUsages() {
+        doTest("testData/findUsages/kotlin/findObjectUsages/javaObjectUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinLocalObjectUsages1() {
+        doTest("common_testData/ide/findUsages/kotlin/findObjectUsages/kotlinLocalObjectUsages1.0.kt");
+    }
+    
+    @Test
+    public void testKotlinLocalObjectUsages2() {
+        doTest("common_testData/ide/findUsages/kotlin/findObjectUsages/kotlinLocalObjectUsages2.0.kt");
+    }
+    
+    @Test
+    public void testKotlinNestedObjectUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findObjectUsages/kotlinNestedObjectUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinObjectUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findObjectUsages/kotlinObjectUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinConstructorParameterUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findParameterUsages/kotlinConstructorParameterUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinFunctionParameterUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findParameterUsages/kotlinFunctionParameterUsages.0.kt");
+    }
+    
+    
 }
