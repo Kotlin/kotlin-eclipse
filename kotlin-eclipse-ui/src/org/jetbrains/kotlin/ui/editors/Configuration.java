@@ -34,7 +34,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
@@ -43,9 +42,7 @@ import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
-import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
-import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.source.DefaultAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationHover;
@@ -58,7 +55,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.jetbrains.kotlin.ui.editors.highlighting.KotlinTokenScanner;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePopup;
 
@@ -67,7 +63,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     private final KotlinEditor editor;
 
     public Configuration(@NotNull IColorManager colorManager, @NotNull KotlinEditor editor, IPreferenceStore preferenceStore) {
-        super(colorManager, preferenceStore, editor, IJavaPartitions.JAVA_PARTITIONING);
+        super(colorManager, preferenceStore, editor.getJavaEditor(), IJavaPartitions.JAVA_PARTITIONING);
         this.editor = editor;
     }
     
@@ -94,7 +90,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
             }
         });
         
-        presenter.setInformationProvider(new OutlineInformationProvider(editor), IDocument.DEFAULT_CONTENT_TYPE);
+        presenter.setInformationProvider(new OutlineInformationProvider(editor.getJavaEditor()), IDocument.DEFAULT_CONTENT_TYPE);
         presenter.setSizeConstraints(45, 15, true, false);
         
         return presenter;
@@ -112,16 +108,12 @@ public class Configuration extends JavaSourceViewerConfiguration {
     
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
-        IQuickAssistAssistant quickAssist = new QuickAssistAssistant();
-        quickAssist.setQuickAssistProcessor(new KotlinCorrectionProcessor(editor));
-        quickAssist.setInformationControlCreator(getInformationControlCreator(sourceViewer));
-        return quickAssist; 
+        return null;
     }
     
     @Override
     public IReconciler getReconciler(ISourceViewer sourceViewer) {
-        KotlinReconcilingStrategy ktReconcilingStrategy = new KotlinReconcilingStrategy(editor);
-        return new MonoReconciler(ktReconcilingStrategy, false);
+        return null;
     }
 
     @Nullable
@@ -140,7 +132,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     
     @Override
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
-        return new IAutoEditStrategy[] { new KotlinAutoIndentStrategy(editor) };
+        return null;
     }
     
     @Override
@@ -156,17 +148,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
 
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-         ContentAssistant assistant= new ContentAssistant();
-         KotlinCompletionProcessor completionProcessor = new KotlinCompletionProcessor(editor);
-         
-         assistant.setContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE);
-         assistant.addCompletionListener(completionProcessor);
-         assistant.enableAutoActivation(true);
-         assistant.setAutoActivationDelay(500);
-         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
-         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-
-        return assistant;
+        return null;
     }
     
     private static class OutlineInformationProvider implements IInformationProvider, IInformationProviderExtension {

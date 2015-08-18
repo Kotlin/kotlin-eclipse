@@ -24,13 +24,11 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.internal.ui.actions.ActionMessages;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
@@ -55,8 +53,8 @@ import org.jetbrains.kotlin.core.references.ReferencesPackage;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
 import org.jetbrains.kotlin.descriptors.SourceElement;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetReferenceExpression;
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement;
 
@@ -75,7 +73,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     private final KotlinEditor editor;
     
     public KotlinOpenDeclarationAction(@NotNull KotlinEditor editor) {
-        super(editor.getSite());
+        super(editor.getJavaEditor().getSite());
         this.editor = editor;
         
         setText(ActionMessages.OpenAction_declaration_label);
@@ -84,22 +82,19 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Override
     public void run(ITextSelection selection) {
-        IFile file = EditorUtil.getFile(editor);
+        JetFile file = editor.getParsedFile();
+        
         if (file == null) {
             return;
         }
         
-        IJavaProject javaProject = JavaCore.create(file.getProject());
+        IJavaProject javaProject = editor.getJavaProject();
+        
         if (javaProject == null) {
             return;
         }
         
-        JetReferenceExpression selectedExpression = getSelectedExpression(file, selection.getOffset());
-        if (selectedExpression == null) {
-            return;
-        }
-        
-        SourceElement element = getTargetElement(selectedExpression, file, javaProject);
+        SourceElement element = getTargetElement(getSelectedExpressionWithParsedFile(editor, file, selection.getOffset()), file, javaProject);
         if (element == null) {
             return;
         }
@@ -114,7 +109,10 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private SourceElement getTargetElement(@NotNull JetReferenceExpression expression, @NotNull IFile file, @NotNull IJavaProject javaProject) {
+    private SourceElement getTargetElement(@Nullable JetReferenceExpression expression, @NotNull JetFile file, @NotNull IJavaProject javaProject) {
+        if (expression == null) {
+            return null;
+        }
         KotlinReference reference = ReferencesPackage.createReference(expression);
         List<SourceElement> sourceElements = ReferencesPackage.resolveToSourceElements(reference);
         
@@ -147,7 +145,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         AbstractTextEditor targetEditor = (AbstractTextEditor) editorPart;
         
         int start = LineEndUtil.convertLfToDocumentOffset(element.getContainingFile().getText(), 
-                element.getTextOffset(), EditorUtil.getDocument(editor));
+                element.getTextOffset(), editor.getDocument());
         targetEditor.selectAndReveal(start, 0);
     }
     
@@ -210,15 +208,15 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private JetReferenceExpression getSelectedExpression(@NotNull IFile file, int offset) {
-        return getSelectedExpression(editor, file, offset);
+    public static JetReferenceExpression getSelectedExpression(@NotNull KotlinEditor editor, @NotNull IFile file, int offset) {
+        return getSelectedExpressionWithParsedFile(editor, KotlinPsiManager.INSTANCE.getParsedFile(file), offset);
     }
     
     @Nullable
-    public static JetReferenceExpression getSelectedExpression(@NotNull JavaEditor editor, @NotNull IFile file, int offset) {
-        offset = LineEndUtil.convertCrToDocumentOffset(editor.getViewer().getDocument(), offset);
+    public static JetReferenceExpression getSelectedExpressionWithParsedFile(@NotNull KotlinEditor editor, @NotNull JetFile file, int offset) {
+        offset = LineEndUtil.convertCrToDocumentOffset(editor.getJavaEditor().getViewer().getDocument(), offset);
         
-        PsiElement psiExpression = KotlinPsiManager.INSTANCE.getParsedFile(file).findElementAt(offset);
+        PsiElement psiExpression = file.findElementAt(offset);
         if (psiExpression == null) {
             return null;
         }

@@ -50,15 +50,15 @@ public abstract class KotlinQuickAssist {
         AbstractTextEditor editor = getActiveEditor();
         if (editor == null) return null;
 
-        KotlinFileEditor javaEditor = (KotlinFileEditor) editor;
-        IFile file = EditorUtil.getFile(javaEditor);
+        KotlinFileEditor kotlinEditor = (KotlinFileEditor) editor;
+        IFile file = kotlinEditor.getFile();
         
         if (file != null) {
-            IDocument document = EditorUtil.getDocument(javaEditor);
+            IDocument document = kotlinEditor.getDocument();
             JetFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
             if (jetFile == null) return null;
             
-            int caretOffset = LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(javaEditor));
+            int caretOffset = LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(kotlinEditor));
             return jetFile.findElementAt(caretOffset);
         } else {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);

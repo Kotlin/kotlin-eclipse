@@ -25,7 +25,6 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
@@ -44,8 +43,8 @@ public class EditorUtil {
         return editor.getViewer().getDocument().get();
     }
     
-    public static int getOffsetInEditor(@NotNull JavaEditor editor, int offset) {
-        return LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(editor), offset);
+    public static int getOffsetInEditor(@NotNull KotlinEditor editor, int offset) {
+        return LineEndUtil.convertCrToDocumentOffset(editor.getDocument(), offset);
     }
     
     @NotNull
@@ -70,11 +69,9 @@ public class EditorUtil {
     
     @Nullable
     public static PsiElement getPsiElement(@NotNull KotlinEditor editor, int offset) {
-        IFile file = EditorUtil.getFile(editor);
-        
-        if (file != null) {
-            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-            int caretOffset = LineEndUtil.convertCrToDocumentOffset(EditorUtil.getDocument(editor), offset);
+        JetFile jetFile = editor.getParsedFile();
+        if (jetFile != null) {
+            int caretOffset = LineEndUtil.convertCrToDocumentOffset(editor.getDocument(), offset);
             return jetFile.findElementAt(caretOffset);
         } else {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);

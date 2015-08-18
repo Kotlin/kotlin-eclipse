@@ -16,26 +16,23 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.outline;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 
 public class KotlinOutlinePage extends ContentOutlinePage {
     
-    private final JavaEditor editor;
+    private final KotlinEditor editor;
     private TreeViewer viewer;
     
-    public KotlinOutlinePage(JavaEditor editor) {
+    public KotlinOutlinePage(KotlinEditor editor) {
         this.editor = editor;
     }
     
@@ -60,18 +57,12 @@ public class KotlinOutlinePage extends ContentOutlinePage {
             
             int offset = EditorUtil.getOffsetInEditor(editor, psiElement.getTextOffset());
              
-            editor.selectAndReveal(offset, 0);
+            editor.getJavaEditor().selectAndReveal(offset, 0); //TODO: reveal Kotlin Element?
        }
     }
     
     private void setInputAndExpand() {
-        PsiFile psiFile = null;
-        IFile file = EditorUtil.getFile(editor);
-        if (file != null) {
-            psiFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-        } else {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-        }
+        PsiFile psiFile  = editor.getParsedFile();
         viewer.setInput(psiFile);
         viewer.expandAll();
     }

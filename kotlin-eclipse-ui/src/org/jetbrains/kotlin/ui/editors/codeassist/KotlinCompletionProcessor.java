@@ -61,7 +61,7 @@ import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.resolve.scopes.JetScope;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext;
@@ -78,11 +78,11 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     private static final char[] VALID_PROPOSALS_CHARS = new char[] { '.' };
     private static final char[] VALID_INFO_CHARS = new char[] { '(', ',' };
     
-    private final KotlinEditor editor;
+    private final KotlinFileEditor editor;
     private final List<DeclarationDescriptor> cachedDescriptors = Lists.newArrayList();
     private boolean isNewSession = true;
     
-    public KotlinCompletionProcessor(KotlinEditor editor) {
+    public KotlinCompletionProcessor(KotlinFileEditor editor) {
         this.editor = editor;
     }
     

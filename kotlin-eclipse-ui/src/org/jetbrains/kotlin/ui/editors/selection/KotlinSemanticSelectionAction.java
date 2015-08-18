@@ -1,6 +1,5 @@
 package org.jetbrains.kotlin.ui.editors.selection;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.SourceRange;
 import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.SelectionHistory;
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction;
@@ -8,9 +7,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
@@ -28,7 +24,7 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     protected SelectionHistory history;
     
     protected KotlinSemanticSelectionAction(KotlinEditor editor, SelectionHistory history) {
-        super(editor.getSite());
+        super(editor.getJavaEditor().getSite());
         this.editor = editor;
         this.history = history;
     }
@@ -39,20 +35,16 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     
     @Override
     public void run(ITextSelection selection) {
-        String sourceCode = EditorUtil.getSourceCode(editor);
-        IFile editorFile = EditorUtil.getFile(editor);
-        if (editorFile == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+        IDocument document = editor.getDocument();
+        JetFile jetFile = editor.getParsedFile();
+        
+        if (jetFile == null) {
             return;
         }
-        PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(editorFile, sourceCode);
-        if (parsedCode == null) {
-            return;
-        }
-        IDocument document = EditorUtil.getDocument(editor);
+        
         TextRange crRange = new TextRange(selection.getOffset(), selection.getOffset() + selection.getLength());
         TextRange selectedRange = LineEndUtil.lfRangeFromCrRange(crRange, document);
-        PsiElement enclosingElement = getEnclosingElementForSelection(parsedCode, selectedRange);
+        PsiElement enclosingElement = getEnclosingElementForSelection(jetFile, selectedRange);
         if (enclosingElement == null) {
             return;
         }
@@ -60,9 +52,9 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
         history.remember(new SourceRange(selection.getOffset(), selection.getLength()));
         try {
             history.ignoreSelectionChanges();
-            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editorFile);
+            
             TextRange convertedRange = LineEndUtil.crRangeFromLfRange(jetFile.getText(), elementRange, document);
-            editor.selectAndReveal(convertedRange.getStartOffset(), convertedRange.getLength());
+            editor.getJavaEditor().selectAndReveal(convertedRange.getStartOffset(), convertedRange.getLength());
         } finally {
             history.listenToSelectionChanges();
         }

@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.internal.ui.text.JavaWordFinder;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.IRegion;
@@ -24,8 +23,7 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.psi.JetFile;
 
 public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
     
@@ -35,7 +33,7 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
         if (region == null || !(textEditor instanceof KotlinEditor)) {
             return null;
         }
-        KotlinEditor kotlinEditor = (KotlinEditor) textEditor;
+        KotlinEditor editor = (KotlinEditor) textEditor;
         
         IAction openAction = textEditor.getAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT);
         if (!(openAction instanceof KotlinOpenDeclarationAction)) {
@@ -48,13 +46,13 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         
-        IFile file = EditorUtil.getFile(kotlinEditor);
-        if (file == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + kotlinEditor, null);
+        JetFile parsedFile = editor.getParsedFile();
+        
+        if (parsedFile == null) {
             return null;
         }
 
-        if (KotlinOpenDeclarationAction.getSelectedExpression(kotlinEditor, file, offset) == null) {
+        if (KotlinOpenDeclarationAction.getSelectedExpressionWithParsedFile(editor, parsedFile, offset) == null) {
             return null;
         }
         

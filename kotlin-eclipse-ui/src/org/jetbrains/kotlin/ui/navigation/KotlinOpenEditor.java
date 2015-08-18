@@ -13,10 +13,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.JetElement;
 import org.jetbrains.kotlin.psi.JetFile;
@@ -56,16 +54,18 @@ public class KotlinOpenEditor {
 	}
 	
 	public static void revealKotlinElement(@NotNull KotlinEditor kotlinEditor, @NotNull IJavaElement javaElement) {
-	    IFile file = EditorUtil.getFile(kotlinEditor);
-	    if (file != null) {
-	        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-            JetElement jetElement = NavigationPackage.findKotlinDeclaration(javaElement, jetFile);
-            if (jetElement == null) {
-                jetElement = jetFile;
-            }
-            
-            int offset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), jetElement.getTextOffset(), EditorUtil.getDocument(file));
-            kotlinEditor.selectAndReveal(offset, 0);
-	    }
+        JetFile jetFile = kotlinEditor.getParsedFile();
+        
+        if (jetFile == null) {
+            return;
+        }
+        
+        JetElement jetElement = NavigationPackage.findKotlinDeclaration(javaElement, jetFile);
+        if (jetElement == null) {
+            jetElement = jetFile;
+        }
+        
+        int offset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), jetElement.getTextOffset(), kotlinEditor.getDocument());
+        kotlinEditor.getJavaEditor().selectAndReveal(offset, 0);
 	}
 }

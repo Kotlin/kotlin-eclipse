@@ -107,8 +107,8 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
     abstract fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification?
     
     private fun getJetElement(event: ExecutionEvent): JetElement? {
-        val activeEditor = HandlerUtil.getActiveEditor(event) as KotlinFileEditor
-        val selection = activeEditor.getSelectionProvider().getSelection() as? ITextSelection
+        val activeEditor = HandlerUtil.getActiveEditor(event) as KotlinEditor
+        val selection = activeEditor.javaEditor.getSelectionProvider().getSelection() as? ITextSelection
         if (selection == null) return null
         
         val psiElement = EditorUtil.getPsiElement(activeEditor, selection.getOffset())

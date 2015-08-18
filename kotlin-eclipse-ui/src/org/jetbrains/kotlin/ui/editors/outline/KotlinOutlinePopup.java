@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.outline;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlExtension;
@@ -43,24 +41,23 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
 
 public class KotlinOutlinePopup extends PopupDialog implements IInformationControl, IInformationControlExtension, IInformationControlExtension2, DisposeListener {
     
     private TreeViewer treeViewer;
-    private final JavaEditor editor;
+    private final KotlinEditor editor;
     private final int treeStyle;
     private Text filterInputText;
     
-    public KotlinOutlinePopup(JavaEditor editor, Shell parent, int shellStyle, int treeStyle) {
+    public KotlinOutlinePopup(KotlinEditor editor, Shell parent, int shellStyle, int treeStyle) {
         this(editor, parent, shellStyle, treeStyle, true, true, false, true, true, null, null);
     }
 
-    public KotlinOutlinePopup(JavaEditor editor, Shell parent, int shellStyle, int treeStyle, boolean takeFocusOnOpen, boolean persistSize,
+    public KotlinOutlinePopup(KotlinEditor editor, Shell parent, int shellStyle, int treeStyle, boolean takeFocusOnOpen, boolean persistSize,
             boolean persistLocation, boolean showDialogMenu, boolean showPersistActions, String titleText, String infoText) {
         super(parent, shellStyle, takeFocusOnOpen, persistSize, persistLocation, showDialogMenu, showPersistActions, titleText, infoText);
         
@@ -183,7 +180,7 @@ public class KotlinOutlinePopup extends PopupDialog implements IInformationContr
             PsiElement psiElement = (PsiElement) treeSelection;
             int offset = EditorUtil.getOffsetInEditor(editor, psiElement.getTextOffset());
              
-            editor.selectAndReveal(offset, 0);
+            editor.getJavaEditor().selectAndReveal(offset, 0);
             close();
        }
     }
@@ -196,13 +193,7 @@ public class KotlinOutlinePopup extends PopupDialog implements IInformationContr
 
     @Override
     public void setInput(Object input) {
-        PsiElement element = null;
-        IFile file = EditorUtil.getFile(editor);
-        if (file != null) {
-            element = KotlinPsiManager.INSTANCE.getParsedFile(file);
-        } else {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-        }
+        PsiElement element = editor.getParsedFile();
         treeViewer.setInput(element);
     }
 

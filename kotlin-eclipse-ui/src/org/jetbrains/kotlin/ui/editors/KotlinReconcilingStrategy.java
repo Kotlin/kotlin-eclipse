@@ -47,9 +47,9 @@ import com.google.common.base.Predicates;
 
 public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
-    private final KotlinEditor editor;
+    private final KotlinFileEditor editor;
     
-    public KotlinReconcilingStrategy(KotlinEditor editor) {
+    public KotlinReconcilingStrategy(KotlinFileEditor editor) {
         this.editor = editor;
     }
     
