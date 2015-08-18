@@ -50,19 +50,29 @@ import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
+import org.eclipse.jface.util.SafeRunnable
+import org.eclipse.core.runtime.ISafeRunnable
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
         val files = getKotlinFilesByScope(querySpecification)
         if (files.isEmpty()) return
         
-        val searchResult = searchTextOccurrences(querySpecification, files)
-        if (searchResult == null) return
-        
-        val references = obtainReferences(searchResult as FileSearchResult, files)
-        val matchedReferences = resolveReferencesAndMatch(references, querySpecification)
-        
-        matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression)) }
+        SafeRunnable.run(object : ISafeRunnable {
+            override fun run() {
+                val searchResult = searchTextOccurrences(querySpecification, files)
+                if (searchResult == null) return
+                
+                val references = obtainReferences(searchResult as FileSearchResult, files)
+                val matchedReferences = resolveReferencesAndMatch(references, querySpecification)
+                
+                matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression)) }
+            }
+            
+            override fun handleException(exception: Throwable?) {
+                // Default runner will log exceptions
+            }
+        })
     }
     
     override public fun estimateTicks(specification: QuerySpecification): Int = 500
