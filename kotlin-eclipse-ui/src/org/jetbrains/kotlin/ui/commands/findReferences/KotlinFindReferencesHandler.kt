@@ -54,6 +54,8 @@ import org.jetbrains.kotlin.psi.JetDeclaration
 import kotlin.properties.Delegates
 import org.eclipse.jdt.ui.search.QuerySpecification
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
+import org.jetbrains.kotlin.psi.JetObjectDeclarationName
+import org.jetbrains.kotlin.psi.JetObjectDeclaration
 
 public class KotlinFindReferencesInProjectHandler : KotlinFindReferencesHandler() {
     override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification? {
@@ -88,6 +90,8 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
         if (jetElement == null) return null
         
         val querySpecification = createScopeQuerySpecification(jetElement)
+        if (querySpecification == null) return null
+        
         val query = JavaSearchQuery(querySpecification)
         
         SearchUtil.runQueryInBackground(query)
@@ -122,6 +126,11 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
 
 fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, scope: IJavaSearchScope, 
         description: String): QuerySpecification? {
+    if (jetElement is JetObjectDeclarationName) {
+        val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetObjectDeclaration>())
+        return objectDeclaration?.let { createQuerySpecification(it, javaProject, scope, description) }
+    }
+    
     fun createFindReferencesQuery(element: IJavaElement): ElementQuerySpecification {
         return ElementQuerySpecification(element, IJavaSearchConstants.REFERENCES, scope, description)
     }
