@@ -53,6 +53,9 @@ import java.util.regex.Pattern
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
 import org.eclipse.jdt.core.ICompilationUnit
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
+import org.eclipse.jdt.ui.search.QuerySpecification
+import org.eclipse.jdt.core.search.IJavaSearchScope
+import org.jetbrains.kotlin.ui.commands.findReferences.createQuerySpecification
 
 abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
     Before public fun configure() {
@@ -64,16 +67,9 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         
         KotlinTestUtils.joinBuildThread()
         
-        val targetElement = if (editor.getEditingFile().getFileExtension() == "java") {
-                val root = EditorUtility.getEditorInputJavaElement(editor.getEditor(), false) as ICompilationUnit
-                root.getElementAt(editor.getCaretOffset())
-            } else {
-                findTargetJavaElement(editor).first()
-            }
-        
         val scope = SearchEngine.createWorkspaceScope()
         
-        val querySpecification = ElementQuerySpecification(targetElement, IJavaSearchConstants.REFERENCES, scope, null)
+        val querySpecification = createQuerySpecificationBy(editor, scope)!!
         val searchQuery = JavaSearchQuery(querySpecification)
         searchQuery.run(NullProgressMonitor())
         
@@ -81,24 +77,38 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         checkResults(searchResult, resultFile, sourceFiles)
     }
     
+    private fun createQuerySpecificationBy(editor: TextEditorTest, scope: IJavaSearchScope) = 
+        if (editor.getEditingFile().getFileExtension() == "java") {
+            val root = EditorUtility.getEditorInputJavaElement(editor.getEditor(), false) as ICompilationUnit
+            val javaElement = root.getElementAt(editor.getCaretOffset())
+            
+            ElementQuerySpecification(javaElement, IJavaSearchConstants.REFERENCES, scope, null)
+        } else {
+            val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editor.getEditingFile())
+            val element = jetFile.findElementByDocumentOffset(editor.getCaretOffset(), editor.getDocument())!!
+            val jetElement = PsiTreeUtil.getNonStrictParentOfType(element, javaClass<JetElement>())!!
+            
+            createQuerySpecification(jetElement, editor.getTestJavaProject().getJavaProject(), scope, "")
+        }
+    
     private fun checkResults(searchResult: ISearchResult, resultFile: File, sourceFiles: List<TestFile>) {
         if (searchResult !is AbstractJavaSearchResult) throw RuntimeException()
         
         val actualResults = searchResult.getElements().flatMap { searchElement ->
             searchResult.getMatches(searchElement).map { match -> 
-            	when (match) {
-            	    is JavaElementMatch -> {
-            	        val file = searchResult.getFile(match.getElement())!!
+                when (match) {
+                    is JavaElementMatch -> {
+                        val file = searchResult.getFile(match.getElement())!!
                         val testFile = sourceFiles.first { it.file == file }
                         renderReference(testFile, match.getOffset())
-            	    }
+                    }
                     is KotlinElementMatch -> {
                         val file = KotlinPsiManager.getEclispeFile(match.jetElement.getContainingJetFile())
                         val testFile = sourceFiles.first { it.file == file }
                         renderKotlinReference(testFile, match.jetElement)
                     }
                     else -> throw RuntimeException()
-            	}
+                }
             }
         }
         
@@ -116,21 +126,19 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
     }
     
     private fun loadResultsFile(resultFile: File): List<TestResult> {
-        val fileNameRegex = "(\\[.+\\])".toRegex()
-        val offsetRegex = "\\((\\d+:.*\\d+)\\)".toRegex()
+        val fileNameRegex = "\\[(.+)\\]".toRegex()
+        val offsetRegex = "\\((\\d+):\\s*(\\d+)\\)".toRegex()
         return FileUtil.loadFile(resultFile).splitToSequence("\n")
-        	.filter { it.isNotBlank() }
-        	.map { line ->
-	            val fileNameMatch = fileNameRegex.match(line)
-                val rawFileName = if (fileNameMatch != null) fileNameMatch.groups[0]?.value as String else null
-                val fileName = if (rawFileName != null) rawFileName.substring(1, rawFileName.length() - 2) else null
+            .filter { it.isNotBlank() }
+            .map { line ->
+                val fileNameMatch = fileNameRegex.match(line)
+                val fileName = if (fileNameMatch != null) fileNameMatch.groups[1]?.value as String else null
                 
-                val offsetString = offsetRegex.match(line)!!.groups[1]!!.value
-                val offset = offsetString.replace(":", "").split(" ")
+                val offsetMatch= offsetRegex.match(line)!!
 	            TestResult(
 	                fileName, 
-	                offset[0].toInt(), 
-	                offset[1].toInt())
+	                offsetMatch.groups[1]!!.value.toInt(), 
+	                offsetMatch.groups[2]!!.value.toInt())
         	}.toList()
     }
     
@@ -148,22 +156,6 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         }
         
         throw RuntimeException()
-    }
-    
-    private fun findTargetJavaElement(editor: TextEditorTest): List<IJavaElement> {
-        val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editor.getEditingFile())
-        val element = jetFile.findElementByDocumentOffset(editor.getCaretOffset(), editor.getDocument())!!
-        
-        val expression = getReferenceExpression(element)
-        val javaProject = editor.getTestJavaProject().getJavaProject()
-        if (expression != null) {
-            val kotlinReference = createReference(expression)
-            val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-            return kotlinReference.resolveToLightElements(analysisResult.bindingContext, javaProject)
-        } else {
-            val jetElement = PsiTreeUtil.getNonStrictParentOfType(element, javaClass<JetElement>())!!
-            return listOf(findLightJavaElement(jetElement, javaProject)!!)
-        }
     }
     
     private fun configureSourceFiles(filePath: String): TestConfiguration {

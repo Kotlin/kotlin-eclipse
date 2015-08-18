@@ -46,6 +46,7 @@ Import-Package: com.intellij.navigation,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,
+ org.jetbrains.kotlin.ui.commands.findReferences,
  org.jetbrains.kotlin.ui.editors,
  org.jetbrains.kotlin.ui.editors.codeassist,
  org.jetbrains.kotlin.ui.editors.quickassist,
