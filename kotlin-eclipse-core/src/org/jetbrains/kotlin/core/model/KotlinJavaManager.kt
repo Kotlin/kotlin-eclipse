@@ -37,13 +37,14 @@ import org.jetbrains.kotlin.core.asJava.equalsJvmSignature
 import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
 import org.eclipse.jdt.core.dom.IBinding
 import org.eclipse.jdt.core.dom.IMethodBinding
+import org.jetbrains.kotlin.psi.JetClassOrObject
 
 public object KotlinJavaManager {
     public val KOTLIN_BIN_FOLDER: Path = Path("kotlin_bin")
     
     public fun getKotlinBinFolderFor(project: IProject): IFolder = project.getFolder(KOTLIN_BIN_FOLDER)
     
-    public fun findEclipseType(jetClass: JetClass, javaProject: IJavaProject): IType? {
+    public fun findEclipseType(jetClass: JetClassOrObject, javaProject: IJavaProject): IType? {
         return jetClass.getFqName().let {
             if (it != null) javaProject.findType(it.asString()) else null
         }
@@ -69,7 +70,7 @@ public object KotlinJavaManager {
 
 public fun findLightJavaElement(element: PsiElement, javaProject: IJavaProject): IJavaElement? {
     return when (element) {
-        is JetClass -> KotlinJavaManager.findEclipseType(element, javaProject)
+        is JetClassOrObject -> KotlinJavaManager.findEclipseType(element, javaProject)
         is JetDeclaration -> KotlinJavaManager.findEclipseMethod(element, javaProject)
         else -> null
     }
