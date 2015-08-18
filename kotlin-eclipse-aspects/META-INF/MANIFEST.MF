@@ -14,6 +14,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
 Import-Package: com.intellij.navigation,
+ com.intellij.openapi.vfs,
  org.eclipse.core.resources,
  org.eclipse.debug.core,
  org.eclipse.debug.core.sourcelookup,
@@ -25,13 +26,16 @@ Import-Package: com.intellij.navigation,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.launching.sourcelookup.containers,
  org.eclipse.jface.text,
+ org.eclipse.ui.ide,
  org.jetbrains.annotations,
  org.jetbrains.kotlin.idea,
+ org.jetbrains.kotlin.load.kotlin,
  org.jetbrains.kotlin.name,
  org.jetbrains.kotlin.psi,
  org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.editors,
- org.jetbrains.kotlin.ui.navigation
+ org.jetbrains.kotlin.ui.navigation,
+ org.jetbrains.kotlin.utils
 Eclipse-SupplementBundle: 
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.launching,

@@ -20,6 +20,10 @@ public aspect KotlinOpenEditorAspect {
 			if (EclipseJavaElementUtil.isKotlinLightClass(javaElement)) {
 				return KotlinOpenEditor.openKotlinEditor(javaElement, activate);
 			}	
+			
+			if (EclipseJavaElementUtil.isKotlinClassFile(javaElement)) {
+			    return KotlinOpenEditor.openKotlinClassFileEditor(javaElement, activate);
+			}
 		}
 		
 		return proceed(inputElement, activate);

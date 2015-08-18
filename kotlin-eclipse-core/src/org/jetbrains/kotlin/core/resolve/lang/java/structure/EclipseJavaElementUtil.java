@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
@@ -43,11 +44,15 @@ import org.jetbrains.kotlin.descriptors.Visibility;
 import org.jetbrains.kotlin.load.java.JavaVisibilities;
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaValueParameter;
+import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
+import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
+import org.jetbrains.kotlin.utils.PathUtil;
 
 import com.google.common.collect.Lists;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.CommonClassNames;
 
 public class EclipseJavaElementUtil {
@@ -189,5 +194,23 @@ public class EclipseJavaElementUtil {
         }
         
         return false;
+    }
+    
+    public static boolean isKotlinClassFile(@NotNull IJavaElement element) {
+        if (!(element instanceof IClassFile)) {
+            return false;
+        }
+        IClassFile classFile = (IClassFile) element;
+        String relativePath = classFile.getType().getFullyQualifiedName().replace('.', '/') + ".class";
+        VirtualFile virtualFile = PathUtil.jarFileOrDirectoryToVirtualFile(classFile.getPath().toFile());
+        VirtualFile archiveRelativeFile = virtualFile.findFileByRelativePath(relativePath);
+        if (archiveRelativeFile == null) {
+            return false;
+        }
+        KotlinJvmBinaryClass binaryClass = KotlinBinaryClassCache.getKotlinBinaryClass(archiveRelativeFile);
+        if (binaryClass == null) {
+            return false;
+        }
+        return true;
     }
 }
