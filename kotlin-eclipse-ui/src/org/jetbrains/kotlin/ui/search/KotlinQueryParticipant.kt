@@ -52,6 +52,7 @@ import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jface.util.SafeRunnable
 import org.eclipse.core.runtime.ISafeRunnable
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
@@ -69,8 +70,8 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression)) }
             }
             
-            override fun handleException(exception: Throwable?) {
-                // Default runner will log exceptions
+            override fun handleException(exception: Throwable) {
+                KotlinLogger.logError(exception)
             }
         })
     }
@@ -97,7 +98,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     private fun resolveReferencesAndMatch(references: List<KotlinReference>, querySpecification: QuerySpecification): List<KotlinReference> {
         val isApplicable: (List<SourceElement>, IJavaProject) -> Boolean = when (querySpecification) {
             is KotlinQueryPatternSpecification -> { elements, _ ->
-                elements.any { (it as KotlinSourceElement).psi in querySpecification.jetElements }
+                elements.any { (it as? KotlinSourceElement)?.psi in querySpecification.jetElements }
             }
             
             is ElementQuerySpecification -> { elements, project ->
