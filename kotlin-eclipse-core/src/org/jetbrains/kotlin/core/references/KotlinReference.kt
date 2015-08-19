@@ -29,11 +29,14 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.VariableAsFunctionResolvedCall
 import org.jetbrains.kotlin.psi.Call
+import org.jetbrains.kotlin.psi.JetExpression
+import org.jetbrains.kotlin.psi.JetConstructorDelegationReferenceExpression
 
 public fun createReference(element: JetReferenceExpression): KotlinReference {
     return when(element) {
         is JetSimpleNameExpression -> KotlinSimpleNameReference(element)
         is JetCallExpression -> KotlinInvokeFunctionReference(element)
+        is JetConstructorDelegationReferenceExpression -> KotlinConstructorDelegationReference(element)
         else -> throw UnsupportedOperationException("Reference for $element is not supported")
     }
 }
@@ -45,14 +48,7 @@ public interface KotlinReference {
 }
 
 public class KotlinSimpleNameReference(override val expression: JetSimpleNameExpression) : KotlinReference {
-    override fun getTargetDescriptors(context: BindingContext): Collection<DeclarationDescriptor> {
-        val targetDescriptor = context[BindingContext.REFERENCE_TARGET, expression]
-        if (targetDescriptor != null) {
-            return listOf(targetDescriptor)
-        }
-        
-        return context[BindingContext.AMBIGUOUS_REFERENCE_TARGET, expression].orEmpty()
-    }
+    override fun getTargetDescriptors(context: BindingContext) = expression.getReferenceTargets(context)
 }
 
 public class KotlinInvokeFunctionReference(override val expression: JetCallExpression) : KotlinReference {
@@ -65,4 +61,18 @@ public class KotlinInvokeFunctionReference(override val expression: JetCallExpre
             else -> emptyList()
         }
     }
+}
+
+public class KotlinConstructorDelegationReference(override val expression: JetConstructorDelegationReferenceExpression) 
+        : KotlinReference {
+    override fun getTargetDescriptors(context: BindingContext) = expression.getReferenceTargets(context)
+}
+
+fun JetReferenceExpression.getReferenceTargets(context: BindingContext): Collection<DeclarationDescriptor> {
+    val targetDescriptor = context[BindingContext.REFERENCE_TARGET, this]
+    return if (targetDescriptor != null) {
+            listOf(targetDescriptor) 
+        } else {
+            context[BindingContext.AMBIGUOUS_REFERENCE_TARGET, this].orEmpty()
+        }
 }
