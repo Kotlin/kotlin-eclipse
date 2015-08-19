@@ -386,7 +386,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     
     @Test
     public void testTraitSupertypeList() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/traitWithRequired/TraitSupertypeList.kt");
+        doTest("common_testData/compiler/diagnostics/tests/traitWithRequired/traitSupertypeList.kt");
     }
     
     @Test
