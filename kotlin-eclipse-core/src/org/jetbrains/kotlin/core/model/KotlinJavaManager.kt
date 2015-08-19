@@ -44,6 +44,8 @@ import org.jetbrains.kotlin.psi.JetNamedFunction
 import org.jetbrains.kotlin.psi.JetSecondaryConstructor
 import org.jetbrains.kotlin.psi.JetFunction
 import org.jetbrains.kotlin.psi.JetPropertyAccessor
+import org.eclipse.jdt.core.IMember
+import org.jetbrains.kotlin.psi.JetProperty
 
 public object KotlinJavaManager {
     public val KOTLIN_BIN_FOLDER: Path = Path("kotlin_bin")
@@ -56,16 +58,22 @@ public object KotlinJavaManager {
         }
     }
     
-    public fun findEclipseMethod(jetFunction: JetDeclaration, javaProject: IJavaProject): IMethod? {
-        val declaringTypeFqName = getDeclaringTypeFqName(jetFunction)
-        if (declaringTypeFqName == null) return null
+    public fun <T : IMember> findEclipseMembers(declaration: JetDeclaration, javaProject: IJavaProject, 
+            klass: Class<T>): List<IMember> {
+        val declaringTypeFqName = getDeclaringTypeFqName(declaration)
+        if (declaringTypeFqName == null) return emptyList()
         
         val eclipseType = javaProject.findType(declaringTypeFqName.asString())
-        if (eclipseType == null) return null
+        if (eclipseType == null) return emptyList()
         
-        return eclipseType.getMethods().firstOrNull {
-            equalsJvmSignature(jetFunction, it)
+        fun check(member: IMember): Boolean { 
+            return klass.isAssignableFrom(member.javaClass) && equalsJvmSignature(declaration, member)
         }
+        
+        val methods = eclipseType.getMethods().filter { check(it) }
+        val fields = eclipseType.getFields().filter { check(it) }
+        
+        return methods + fields
     }
     
     public fun hasLinkedKotlinBinFolder(javaProject: IJavaProject): Boolean {
@@ -79,7 +87,8 @@ public fun JetElement.toLightElements(javaProject: IJavaProject): List<IJavaElem
         is JetClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
         is JetNamedFunction,
         is JetSecondaryConstructor,
-        is JetPropertyAccessor -> KotlinJavaManager.findEclipseMethod(this as JetDeclaration, javaProject).singletonOrEmptyList()
+        is JetPropertyAccessor -> KotlinJavaManager.findEclipseMembers(this as JetDeclaration, javaProject, javaClass<IMethod>())
+        is JetProperty -> KotlinJavaManager.findEclipseMembers(this, javaProject, javaClass<IMember>()) 
         else -> emptyList()
     }
 }

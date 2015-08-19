@@ -132,8 +132,8 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
         return objectDeclaration?.let { createQuerySpecification(it, javaProject, scope, description) }
     }
     
-    fun createFindReferencesQuery(element: IJavaElement): ElementQuerySpecification {
-        return ElementQuerySpecification(element, IJavaSearchConstants.REFERENCES, scope, description)
+    fun createFindReferencesQuery(elements: List<IJavaElement>): KotlinLightElementsQuerySpecification {
+        return KotlinLightElementsQuerySpecification(elements, scope, description)
     }
     
     fun createFindReferencesQuery(elements: List<JetElement>): KotlinQueryPatternSpecification {
@@ -143,7 +143,7 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
     return if (jetElement is JetDeclaration) {
         val lightElements = jetElement.toLightElements(javaProject)
         if (lightElements.isNotEmpty()) {
-            createFindReferencesQuery(lightElements.first())
+            createFindReferencesQuery(lightElements)
         } else {
 //          Element should present only in Kotlin as there is no corresponding light element
             createFindReferencesQuery(listOf(jetElement))
@@ -157,7 +157,7 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
         val sourceElements = reference.resolveToSourceElements()
         val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
         if (lightElements.isNotEmpty()) {
-            createFindReferencesQuery(lightElements.first())
+            createFindReferencesQuery(lightElements)
         } else {
             createFindReferencesQuery(
                     sourceElements
@@ -166,6 +166,15 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
         }
     }
 }
+
+class KotlinLightElementsQuerySpecification(val lightElements: List<IJavaElement>, searchScope: IJavaSearchScope, description: String) :
+        PatternQuerySpecification(
+            "$$",
+            IJavaSearchConstants.CLASS,
+            true,
+            IJavaSearchConstants.REFERENCES,
+            searchScope,
+            description)
 
 class KotlinQueryPatternSpecification(val jetElements: List<JetElement>, searchScope: IJavaSearchScope, description: String) : 
         PatternQuerySpecification(

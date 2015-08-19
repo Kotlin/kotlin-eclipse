@@ -53,11 +53,19 @@ import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jface.util.SafeRunnable
 import org.eclipse.core.runtime.ISafeRunnable
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLightElementsQuerySpecification
+import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
+import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
         val files = getKotlinFilesByScope(querySpecification)
         if (files.isEmpty()) return
+        
+        if (querySpecification is KotlinLightElementsQuerySpecification) {
+            runCompositeSearch(requestor, querySpecification, monitor)
+            return
+        }
         
         SafeRunnable.run(object : ISafeRunnable {
             override fun run() {
@@ -79,6 +87,24 @@ public class KotlinQueryParticipant : IQueryParticipant {
     override public fun estimateTicks(specification: QuerySpecification): Int = 500
     
     override public fun getUIParticipant() = KotlinReferenceMatchPresentation()
+    
+    private fun runCompositeSearch(requestor: ISearchRequestor, specification: KotlinLightElementsQuerySpecification, 
+            monitor: IProgressMonitor) {
+        
+        fun reportSearchResults(result: AbstractJavaSearchResult) {
+            for (searchElement in result.getElements()) {
+                result.getMatches(searchElement).forEach { requestor.reportMatch(it) }
+            }
+        }
+        
+        specification.lightElements
+            .map { ElementQuerySpecification(it, specification.getLimitTo(), specification.getScope(), specification.getScopeDescription()) }
+            .forEach { 
+                val searchQuery = JavaSearchQuery(it)
+                searchQuery.run(monitor)
+                reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
+            }
+    }
     
     private fun searchTextOccurrences(querySpecification: QuerySpecification, filesScope: List<IFile>): ISearchResult? {
         val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null, false)
