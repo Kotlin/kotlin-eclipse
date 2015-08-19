@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.psi.JetClassOrObject
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.name.FqName
+import com.intellij.psi.PsiElement
 
 fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
     val jetSignatures = jetElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)
@@ -53,10 +54,13 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
 
 fun getDeclaringTypeFqName(jetElement: JetElement): FqName? {
     val parent = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetClassOrObject>(), javaClass<JetFile>())
-    
-    return when (parent) {
-        is JetClassOrObject -> parent.getFqName()
-        is JetFile -> PackageClassUtils.getPackageClassFqName(parent.getPackageFqName())
+    return if (parent != null) getTypeFqName(parent) else null
+}
+
+fun getTypeFqName(element: PsiElement): FqName? {
+    return when (element) {
+        is JetClassOrObject -> element.getFqName()
+        is JetFile -> PackageClassUtils.getPackageClassFqName(element.getPackageFqName())
         else -> null
     }
 }

@@ -34,7 +34,7 @@ import org.jetbrains.kotlin.psi.JetDeclaration
 import com.intellij.psi.PsiElement
 import org.eclipse.jdt.core.IMethod
 import org.jetbrains.kotlin.core.asJava.equalsJvmSignature
-import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
+import org.jetbrains.kotlin.core.asJava.getTypeFqName
 import org.eclipse.jdt.core.dom.IBinding
 import org.eclipse.jdt.core.dom.IMethodBinding
 import org.jetbrains.kotlin.psi.JetClassOrObject
@@ -46,6 +46,9 @@ import org.jetbrains.kotlin.psi.JetFunction
 import org.jetbrains.kotlin.psi.JetPropertyAccessor
 import org.eclipse.jdt.core.IMember
 import org.jetbrains.kotlin.psi.JetProperty
+import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.psi.JetFile
 
 public object KotlinJavaManager {
     public val KOTLIN_BIN_FOLDER: Path = Path("kotlin_bin")
@@ -60,11 +63,32 @@ public object KotlinJavaManager {
     
     public fun <T : IMember> findEclipseMembers(declaration: JetDeclaration, javaProject: IJavaProject, 
             klass: Class<T>): List<IMember> {
-        val declaringTypeFqName = getDeclaringTypeFqName(declaration)
+        val declaringType = PsiTreeUtil.getParentOfType(declaration, javaClass<JetClassOrObject>(), javaClass<JetFile>())
+        val seekInParent: Boolean = declaringType is JetObjectDeclaration && declaringType.isCompanion()
+        
+        if (declaringType == null) return emptyList()
+        
+        val declaringTypeFqName = getTypeFqName(declaringType)
         if (declaringTypeFqName == null) return emptyList()
         
         val eclipseType = javaProject.findType(declaringTypeFqName.asString())
         if (eclipseType == null) return emptyList()
+        
+        val typeMembers = findMembersIn(eclipseType, declaration, klass)
+        return if (seekInParent) {
+                val parentMembers = findMembersIn(eclipseType.getDeclaringType(), declaration, klass)
+                typeMembers + parentMembers
+            } else {
+                typeMembers
+            }
+    }
+    
+    public fun hasLinkedKotlinBinFolder(javaProject: IJavaProject): Boolean {
+        val folder = javaProject.getProject().getFolder(KotlinJavaManager.KOTLIN_BIN_FOLDER)
+        return folder.isLinked() && KotlinFileSystem.SCHEME == folder.getLocationURI().getScheme()
+    }
+    
+    private fun <T : IMember> findMembersIn(eclipseType: IType, declaration: JetDeclaration, klass: Class<T>): List<IMember> {
         
         fun check(member: IMember): Boolean { 
             return klass.isAssignableFrom(member.javaClass) && equalsJvmSignature(declaration, member)
@@ -74,11 +98,6 @@ public object KotlinJavaManager {
         val fields = eclipseType.getFields().filter { check(it) }
         
         return methods + fields
-    }
-    
-    public fun hasLinkedKotlinBinFolder(javaProject: IJavaProject): Boolean {
-        val folder = javaProject.getProject().getFolder(KotlinJavaManager.KOTLIN_BIN_FOLDER)
-        return folder.isLinked() && KotlinFileSystem.SCHEME == folder.getLocationURI().getScheme()
     }
 }
 
