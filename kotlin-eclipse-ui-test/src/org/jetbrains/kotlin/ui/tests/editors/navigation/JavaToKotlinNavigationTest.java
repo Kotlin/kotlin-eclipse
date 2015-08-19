@@ -232,4 +232,14 @@ public class JavaToKotlinNavigationTest extends JavaToKotlinNavigationTestCase {
 	public void toParametrizedClass() {
 		doAutoTest();
 	}
+	
+	@Test
+	public void toMutablePropertyInCompanion() {
+	    doAutoTest();
+	}
+	
+	@Test
+	public void toPropertyInCompanion() {
+	    doAutoTest();
+	}
 }

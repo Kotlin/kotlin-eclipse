@@ -72,15 +72,19 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
 		}
 		is IField -> object: JetAllVisitor() {
 			override fun visitObjectDeclaration(declaration: JetObjectDeclaration) {
-				visitObjectOrEnum(declaration)
+				visitExplicitDeclaration(declaration)
 				declaration.acceptChildren(this)
 			}
 			
 			override fun visitEnumEntry(enumEntry: JetEnumEntry) {
-				visitObjectOrEnum(enumEntry)
+				visitExplicitDeclaration(enumEntry)
 			}
+            
+            override fun visitProperty(property: JetProperty) {
+                visitExplicitDeclaration(property)
+            }
 			
-			fun visitObjectOrEnum(declaration: JetClassOrObject) {
+			fun visitExplicitDeclaration(declaration: JetDeclaration) {
 				if (equalsJvmSignature(declaration, element)) {
 					result.add(declaration)
 				}
