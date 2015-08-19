@@ -32,7 +32,7 @@ import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.eclipse.ui.ISources
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.core.model.findLightJavaElement
+import org.jetbrains.kotlin.core.model.toLightElements
 import org.jetbrains.kotlin.core.references.KotlinReference
 import org.jetbrains.kotlin.core.references.createReference
 import org.jetbrains.kotlin.core.references.resolveToLightElements
@@ -141,9 +141,9 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
     }
     
     return if (jetElement is JetDeclaration) {
-        val lightElement = findLightJavaElement(jetElement, javaProject)
-        if (lightElement != null) {
-            createFindReferencesQuery(lightElement)
+        val lightElements = jetElement.toLightElements(javaProject)
+        if (lightElements.isNotEmpty()) {
+            createFindReferencesQuery(lightElements.first())
         } else {
 //          Element should present only in Kotlin as there is no corresponding light element
             createFindReferencesQuery(listOf(jetElement))

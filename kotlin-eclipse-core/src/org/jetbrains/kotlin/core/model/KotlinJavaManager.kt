@@ -38,6 +38,12 @@ import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
 import org.eclipse.jdt.core.dom.IBinding
 import org.eclipse.jdt.core.dom.IMethodBinding
 import org.jetbrains.kotlin.psi.JetClassOrObject
+import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
+import org.jetbrains.kotlin.psi.JetNamedFunction
+import org.jetbrains.kotlin.psi.JetSecondaryConstructor
+import org.jetbrains.kotlin.psi.JetFunction
+import org.jetbrains.kotlin.psi.JetPropertyAccessor
 
 public object KotlinJavaManager {
     public val KOTLIN_BIN_FOLDER: Path = Path("kotlin_bin")
@@ -68,24 +74,25 @@ public object KotlinJavaManager {
     }
 }
 
-public fun findLightJavaElement(element: PsiElement, javaProject: IJavaProject): IJavaElement? {
-    return when (element) {
-        is JetClassOrObject -> KotlinJavaManager.findEclipseType(element, javaProject)
-        is JetDeclaration -> KotlinJavaManager.findEclipseMethod(element, javaProject)
-        else -> null
+public fun JetElement.toLightElements(javaProject: IJavaProject): List<IJavaElement> {
+    return when (this) {
+        is JetClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
+        is JetNamedFunction,
+        is JetSecondaryConstructor,
+        is JetPropertyAccessor -> KotlinJavaManager.findEclipseMethod(this as JetDeclaration, javaProject).singletonOrEmptyList()
+        else -> emptyList()
     }
 }
 
 public fun sourceElementsToLightElements(sourceElements: List<SourceElement>, javaProject: IJavaProject): List<IJavaElement> {
     return sourceElements
-            .map {
+            .flatMap {
                 when (it) {
-                    is EclipseJavaSourceElement -> obtainJavaElement(it.getElementBinding())
-                    is KotlinSourceElement -> findLightJavaElement(it.psi, javaProject)
-                    else -> null
+                    is EclipseJavaSourceElement -> obtainJavaElement(it.getElementBinding()).singletonOrEmptyList()
+                    is KotlinSourceElement -> it.psi.toLightElements(javaProject)
+                    else -> emptyList<IJavaElement>()
                 }
             }
-            .filterNotNull()
 }
 
 private fun obtainJavaElement(binding: IBinding): IJavaElement? {

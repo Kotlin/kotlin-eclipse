@@ -43,7 +43,6 @@ import org.eclipse.core.resources.IResource
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.eclipse.jface.text.AbstractDocument
 import org.jetbrains.kotlin.core.references.createReference
-import org.jetbrains.kotlin.core.model.findLightJavaElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import kotlin.properties.Delegates
