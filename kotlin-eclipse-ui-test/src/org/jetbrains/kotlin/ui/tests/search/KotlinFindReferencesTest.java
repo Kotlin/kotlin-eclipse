@@ -179,5 +179,40 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
         doTest("common_testData/ide/findUsages/kotlin/findParameterUsages/kotlinFunctionParameterUsages.0.kt");
     }
     
+    @Test
+    public void testJavaClassObjectPropertyUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/javaClassObjectPropertyUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinClassObjectPropertyUsage() {
+        doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/kotlinClassObjectPropertyUsage.0.kt");
+    }
+    
+    @Test
+    public void testKotlinLocalPropertyUsages1() {
+        doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/kotlinLocalPropertyUsages1.0.kt");
+    }
+    
+    @Test
+    public void testKotlinLocalPropertyUsages2() {
+        doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/kotlinLocalPropertyUsages2.0.kt");
+    }
+    
+    @Test
+    public void testKotlinNestedClassPropertyUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/kotlinNestedClassPropertyUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinPrivatePropertyInClassObjectUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/kotlinPrivatePropertyInClassObjectUsages.0.kt");
+    }
+    
+    @Test
+    public void testKotlinTopLevelPropertyUsages() {
+        doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/kotlinTopLevelPropertyUsages.0.kt");
+    }
+    
     
 }
