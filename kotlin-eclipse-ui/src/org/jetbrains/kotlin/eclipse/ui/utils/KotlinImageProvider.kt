@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.descriptors.VariableDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.psi.JetFile
 
 public object KotlinImageProvider {
     public fun getImage(descriptor: DeclarationDescriptor): Image? {
@@ -40,6 +41,7 @@ public object KotlinImageProvider {
     
     public fun getImage(element: JetElement): Image? {
         return when(element) {
+            is JetFile,
             is JetClassOrObject -> getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
             is JetFunction -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PUBLIC)
             is JetVariableDeclaration -> getImageFromJavaUI(ISharedImages.IMG_FIELD_PUBLIC)

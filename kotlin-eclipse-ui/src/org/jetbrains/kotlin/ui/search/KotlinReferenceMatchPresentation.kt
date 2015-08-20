@@ -45,6 +45,8 @@ import org.jetbrains.kotlin.psi.JetNamedFunction
 import org.jetbrains.kotlin.psi.JetClassOrObject
 import org.jetbrains.kotlin.psi.JetProperty
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
+import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.core.asJava.getTypeFqName
 
 public class KotlinReferenceMatchPresentation : IMatchPresentation {
     private val editorOpener = EditorOpener()
@@ -74,12 +76,16 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
             throw IllegalArgumentException("KotlinReferenceLabelProvider asked for non-reference expression: $element")
         }
         
-        val jetElement = element.jetElement
-        val declaration = PsiTreeUtil.getNonStrictParentOfType(jetElement, 
-                javaClass<JetNamedFunction>(),
-                javaClass<JetProperty>(),
-                javaClass<JetClassOrObject>()) as? JetNamedDeclaration
-        return declaration?.let { it.getFqName()?.asString() ?: it.getNameAsSafeName().asString() } ?: ""
+        val declaration = getContainingDeclaration(element.jetElement)
+        return when (declaration) {
+            is JetNamedDeclaration -> declaration.let { 
+                with (it) {
+                    getFqName()?.asString() ?: getNameAsSafeName().asString()
+                }
+            }
+            is JetFile -> getTypeFqName(declaration)?.asString() ?: ""
+            else -> ""
+        }
     }
     
     override fun getImage(element: Any): Image? {
@@ -88,7 +94,11 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
         return containingDeclaration?.let { KotlinImageProvider.getImage(it) } ?: null
     }
     
-    private fun getContainingDeclaration(jetElement: JetElement): JetNamedDeclaration? {
-        return PsiTreeUtil.getNonStrictParentOfType(jetElement, javaClass<JetNamedDeclaration>())
+    private fun getContainingDeclaration(jetElement: JetElement): JetElement? {
+        return PsiTreeUtil.getNonStrictParentOfType(jetElement, 
+                javaClass<JetNamedFunction>(),
+                javaClass<JetProperty>(),
+                javaClass<JetClassOrObject>(),
+                javaClass<JetFile>())
     }
 }
