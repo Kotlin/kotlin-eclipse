@@ -53,7 +53,7 @@ import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jface.util.SafeRunnable
 import org.eclipse.core.runtime.ISafeRunnable
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLightElementsQuerySpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinCompositeQuerySpecification
 import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
 import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
@@ -64,7 +64,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
         val files = getKotlinFilesByScope(querySpecification)
         if (files.isEmpty()) return
         
-        if (querySpecification is KotlinLightElementsQuerySpecification) {
+        if (querySpecification is KotlinCompositeQuerySpecification) {
             runCompositeSearch(requestor, querySpecification, monitor)
             return
         }
@@ -90,7 +90,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     
     override public fun getUIParticipant() = KotlinReferenceMatchPresentation()
     
-    private fun runCompositeSearch(requestor: ISearchRequestor, specification: KotlinLightElementsQuerySpecification, 
+    private fun runCompositeSearch(requestor: ISearchRequestor, specification: KotlinCompositeQuerySpecification, 
             monitor: IProgressMonitor) {
         
         fun reportSearchResults(result: AbstractJavaSearchResult) {
@@ -99,13 +99,21 @@ public class KotlinQueryParticipant : IQueryParticipant {
             }
         }
         
-        specification.lightElements
-            .map { ElementQuerySpecification(it, specification.getLimitTo(), specification.getScope(), specification.getScopeDescription()) }
-            .forEach { 
-                val searchQuery = JavaSearchQuery(it)
-                searchQuery.run(monitor)
-                reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
-            }
+        (specification.lightElements + specification.jetElements).map {
+            when (it) {
+                is IJavaElement -> ElementQuerySpecification(it, specification.getLimitTo(), specification.getScope(), 
+                    specification.getScopeDescription())
+                
+                is JetElement -> KotlinQueryPatternSpecification(listOf(it), specification.getScope(), 
+                    specification.getScopeDescription())
+                
+                else -> throw IllegalStateException("Cannot create query specification for $it")
+            } 
+         }.forEach {
+            val searchQuery = JavaSearchQuery(it)
+            searchQuery.run(monitor)
+            reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
+        }
     }
     
     private fun searchTextOccurrences(querySpecification: QuerySpecification, filesScope: List<IFile>): ISearchResult? {

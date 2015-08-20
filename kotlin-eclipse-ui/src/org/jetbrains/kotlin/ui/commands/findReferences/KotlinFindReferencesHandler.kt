@@ -127,15 +127,18 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
 
 fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, scope: IJavaSearchScope, 
         description: String): QuerySpecification? {
-    if (jetElement is JetObjectDeclarationName) {
-        val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetObjectDeclaration>())
-        return objectDeclaration?.let { createQuerySpecification(it, javaProject, scope, description) }
-    }
     
     fun createFindReferencesQuery(elements: List<IJavaElement>): QuerySpecification {
         return when (elements.size()) {
             1 -> ElementQuerySpecification(elements[0], IJavaSearchConstants.REFERENCES, scope, description)
-            else -> KotlinLightElementsQuerySpecification(elements, scope, description)
+            else -> {
+                val isJetElementIsDistinct = elements.all { it.getElementName() != jetElement.getName() }
+                KotlinCompositeQuerySpecification(
+                        elements, 
+                        if (isJetElementIsDistinct) listOf(jetElement) else emptyList(),
+                        scope,
+                        description)
+            }
         }
     }
     
@@ -143,47 +146,62 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
         return KotlinQueryPatternSpecification(elements, scope, description)
     }
     
-    return if (jetElement is JetDeclaration) {
-        val lightElements = jetElement.toLightElements(javaProject)
-        if (lightElements.isNotEmpty()) {
-            createFindReferencesQuery(lightElements)
-        } else {
-//          Element should present only in Kotlin as there is no corresponding light element
-            createFindReferencesQuery(listOf(jetElement))
+    return when (jetElement) {
+        is JetObjectDeclarationName -> {
+            val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetObjectDeclaration>())
+            objectDeclaration?.let { createQuerySpecification(it, javaProject, scope, description) }
         }
-    } else {
-        // Try search usages by reference
-        val referenceExpression = getReferenceExpression(jetElement)
-        if (referenceExpression == null) return null
         
-        val reference = createReference(referenceExpression)
-        val sourceElements = reference.resolveToSourceElements()
-        val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
-        if (lightElements.isNotEmpty()) {
-            createFindReferencesQuery(lightElements)
-        } else {
-            createFindReferencesQuery(
-                    sourceElements
-                        .filterIsInstance(javaClass<KotlinSourceElement>())
-                        .map { it.psi })
+        is JetDeclaration -> {
+            val lightElements = jetElement.toLightElements(javaProject)
+            if (lightElements.isNotEmpty()) {
+                createFindReferencesQuery(lightElements)
+            } else {
+                // Element should present only in Kotlin as there is no corresponding light element
+                createFindReferencesQuery(listOf(jetElement))
+            }
         }
+        
+        else -> {
+            // Try search usages by reference
+            val referenceExpression = getReferenceExpression(jetElement)
+            if (referenceExpression == null) return null
+            
+            val reference = createReference(referenceExpression)
+            val sourceElements = reference.resolveToSourceElements()
+            val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
+            if (lightElements.isNotEmpty()) {
+                createFindReferencesQuery(lightElements)
+            } else {
+                createFindReferencesQuery(
+                        sourceElements
+                            .filterIsInstance(javaClass<KotlinSourceElement>())
+                            .map { it.psi })
+            }
+        } 
     }
 }
 
-class KotlinLightElementsQuerySpecification(val lightElements: List<IJavaElement>, searchScope: IJavaSearchScope, description: String) :
-        PatternQuerySpecification(
-            "$$",
-            IJavaSearchConstants.CLASS,
-            true,
-            IJavaSearchConstants.REFERENCES,
-            searchScope,
-            description)
+// This pattern is using to run composite search which is described in KotlinQueryParticipant.
+class KotlinCompositeQuerySpecification(
+        val lightElements: List<IJavaElement>, 
+        val jetElements: List<JetElement>, 
+        searchScope: IJavaSearchScope, 
+        description: String) : KotlinDummyQuerySpecification(searchScope, description)
 
-class KotlinQueryPatternSpecification(val jetElements: List<JetElement>, searchScope: IJavaSearchScope, description: String) : 
-        PatternQuerySpecification(
-            jetElements.first().getName(), 
-            IJavaSearchConstants.CLASS, 
-            true, 
-            IJavaSearchConstants.REFERENCES, 
-            searchScope, 
-            description)
+// Using of this pattern assumes that elements presents only in Kotlin
+class KotlinQueryPatternSpecification(
+        val jetElements: List<JetElement>, 
+        searchScope: IJavaSearchScope, 
+        description: String) : KotlinDummyQuerySpecification(searchScope, description)
+
+// After passing this query specification to java, it will try to find some usages and to ensure that nothing will found
+// before KotlinQueryParticipant here is using dummy element '------------'
+open class KotlinDummyQuerySpecification(searchScope: IJavaSearchScope, description: String) : PatternQuerySpecification(
+        "------------", 
+        IJavaSearchConstants.CLASS, 
+        true, 
+        IJavaSearchConstants.REFERENCES, 
+        searchScope, 
+        description
+)

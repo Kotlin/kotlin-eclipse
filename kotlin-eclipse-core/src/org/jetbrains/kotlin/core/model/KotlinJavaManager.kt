@@ -63,12 +63,12 @@ public object KotlinJavaManager {
     
     public fun <T : IMember> findEclipseMembers(declaration: JetDeclaration, javaProject: IJavaProject, 
             klass: Class<T>): List<IMember> {
-        val declaringType = PsiTreeUtil.getParentOfType(declaration, javaClass<JetClassOrObject>(), javaClass<JetFile>())
-        val seekInParent: Boolean = declaringType is JetObjectDeclaration && declaringType.isCompanion()
+        val containingElement = PsiTreeUtil.getParentOfType(declaration, javaClass<JetClassOrObject>(), javaClass<JetFile>())
+        val seekInParent: Boolean = containingElement is JetObjectDeclaration && containingElement.isCompanion()
         
-        if (declaringType == null) return emptyList()
+        if (containingElement == null) return emptyList()
         
-        val declaringTypeFqName = getTypeFqName(declaringType)
+        val declaringTypeFqName = getTypeFqName(containingElement)
         if (declaringTypeFqName == null) return emptyList()
         
         val eclipseType = javaProject.findType(declaringTypeFqName.asString())
