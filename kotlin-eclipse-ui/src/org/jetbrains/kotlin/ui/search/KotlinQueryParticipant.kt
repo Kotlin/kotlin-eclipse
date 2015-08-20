@@ -56,6 +56,8 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLightElementsQuerySpecification
 import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
 import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
+import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
+import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
@@ -135,6 +137,8 @@ public class KotlinQueryParticipant : IQueryParticipant {
         }
         
         return references.filter { reference ->
+            if (isImportDirective(reference)) return@filter false
+            
             val javaProject = KotlinPsiManager.getJavaProject(reference.expression)
             return@filter if (javaProject != null) {
                     val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
@@ -143,6 +147,12 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 } else {
                     false
                 }
+        }
+    }
+    
+    private fun isImportDirective(reference: KotlinReference): Boolean {
+        return reference.expression.let {
+            if (it is JetSimpleNameExpression) it.isImportDirectiveExpression() else false
         }
     }
     

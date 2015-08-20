@@ -98,7 +98,8 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
                 when (match) {
                     is JavaElementMatch -> {
                         val file = searchResult.getFile(match.getElement())!!
-                        val testFile = sourceFiles.first { it.file == file }
+                        val testFile = sourceFiles.firstOrNull { it.file == file }
+                        if (testFile == null) return@map null
                         renderReference(testFile, match.getOffset())
                     }
                     is KotlinElementMatch -> {
@@ -108,7 +109,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
                     }
                     else -> throw RuntimeException()
                 }
-            }
+            }.filterNotNull()
         }
         
         val expectedResults = loadResultsFile(resultFile)

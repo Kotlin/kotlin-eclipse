@@ -1,0 +1,2 @@
+Receiver (7: 26) println("foo = ${O.foo}")
+Value read (8: 19) val obj = O

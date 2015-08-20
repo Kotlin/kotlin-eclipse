@@ -96,7 +96,7 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
     
     @Test
     public void testKotlinMultiRefInImport() {
-        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinMultiRefInImport.0.kt");
+        doTest("testData/findUsages/kotlin/findFunctionUsages/kotlinMultiRefInImport.0.kt");
     }
     
     @Test
@@ -105,8 +105,8 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
     }
     
     @Test
-    public void testKotlinTopLevelMethodUsages() {
-        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinTopLevelMethodUsages.0.kt");
+    public void testKotlinTopLevelMethodUsagesNoImport() {
+        doTest("common_testData/ide/findUsages/kotlin/findFunctionUsages/kotlinTopLevelMethodUsagesNoImport.0.kt");
     }
     
     @Test
@@ -161,12 +161,12 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
     
     @Test
     public void testKotlinNestedObjectUsages() {
-        doTest("common_testData/ide/findUsages/kotlin/findObjectUsages/kotlinNestedObjectUsages.0.kt");
+        doTest("testData/findUsages/kotlin/findObjectUsages/kotlinNestedObjectUsages.0.kt");
     }
     
     @Test
     public void testKotlinObjectUsages() {
-        doTest("common_testData/ide/findUsages/kotlin/findObjectUsages/kotlinObjectUsages.0.kt");
+        doTest("testData/findUsages/kotlin/findObjectUsages/kotlinObjectUsages.0.kt");
     }
     
     @Test
@@ -211,7 +211,7 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
     
     @Test
     public void testKotlinTopLevelPropertyUsages() {
-        doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/kotlinTopLevelPropertyUsages.0.kt");
+        doTest("testData/findUsages/kotlin/findPropertyUsages/kotlinTopLevelPropertyUsages.0.kt");
     }
     
     

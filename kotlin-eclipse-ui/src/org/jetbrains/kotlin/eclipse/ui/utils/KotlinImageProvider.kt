@@ -41,7 +41,6 @@ public object KotlinImageProvider {
     
     public fun getImage(element: JetElement): Image? {
         return when(element) {
-            is JetFile,
             is JetClassOrObject -> getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
             is JetFunction -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PUBLIC)
             is JetVariableDeclaration -> getImageFromJavaUI(ISharedImages.IMG_FIELD_PUBLIC)
