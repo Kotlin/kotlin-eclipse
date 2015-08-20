@@ -132,8 +132,11 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
         return objectDeclaration?.let { createQuerySpecification(it, javaProject, scope, description) }
     }
     
-    fun createFindReferencesQuery(elements: List<IJavaElement>): KotlinLightElementsQuerySpecification {
-        return KotlinLightElementsQuerySpecification(elements, scope, description)
+    fun createFindReferencesQuery(elements: List<IJavaElement>): QuerySpecification {
+        return when (elements.size()) {
+            1 -> ElementQuerySpecification(elements[0], IJavaSearchConstants.REFERENCES, scope, description)
+            else -> KotlinLightElementsQuerySpecification(elements, scope, description)
+        }
     }
     
     fun createFindReferencesQuery(elements: List<JetElement>): KotlinQueryPatternSpecification {
