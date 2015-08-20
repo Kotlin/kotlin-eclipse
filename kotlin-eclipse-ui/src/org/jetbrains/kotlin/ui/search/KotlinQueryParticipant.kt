@@ -21,7 +21,6 @@ import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.core.references.getReferenceExpression
-import org.jetbrains.kotlin.core.references.resolveToLightElements 
 import org.jetbrains.kotlin.core.references.resolveToSourceElements 
 import java.util.ArrayList
 import org.jetbrains.kotlin.core.references.KotlinReference
@@ -150,7 +149,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val javaProject = KotlinPsiManager.getJavaProject(reference.expression)
             return@filter if (javaProject != null) {
                     val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-                    val sourceElements = reference.resolveToSourceElements(analysisResult.bindingContext)
+                    val sourceElements = reference.resolveToSourceElements(analysisResult.bindingContext, javaProject)
                     isApplicable(sourceElements, javaProject)
                 } else {
                     false

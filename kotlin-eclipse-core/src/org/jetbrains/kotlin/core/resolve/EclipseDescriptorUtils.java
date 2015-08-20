@@ -23,11 +23,11 @@ import com.google.common.collect.Lists;
 public class EclipseDescriptorUtils {
     // NOTE this is also used by KDoc
     @Nullable
-    public static SourceElement descriptorToDeclaration(@NotNull DeclarationDescriptor descriptor, IJavaProject project) {
+    public static SourceElement descriptorToDeclaration(@NotNull DeclarationDescriptor descriptor) {
         if (descriptor instanceof CallableMemberDescriptor) {
             return callableDescriptorToDeclaration((CallableMemberDescriptor) descriptor);
         } else if (descriptor instanceof ClassDescriptor) {
-            return classDescriptorToDeclaration((ClassDescriptor) descriptor, project);
+            return classDescriptorToDeclaration((ClassDescriptor) descriptor);
         } else {
             return doGetDescriptorToDeclaration(descriptor);
         }
@@ -55,7 +55,7 @@ public class EclipseDescriptorUtils {
         if (descriptor instanceof CallableMemberDescriptor) {
             return callableDescriptorToDeclarations((CallableMemberDescriptor) descriptor);
         } else {
-            SourceElement sourceElement = descriptorToDeclaration(descriptor, project);
+            SourceElement sourceElement = descriptorToDeclaration(descriptor);
             if (sourceElement != null) {
                 return Lists.newArrayList(sourceElement);
             } else {
@@ -93,7 +93,7 @@ public class EclipseDescriptorUtils {
     }
     
     @Nullable
-    public static SourceElement classDescriptorToDeclaration(@NotNull ClassDescriptor clazz, IJavaProject project) {
+    public static SourceElement classDescriptorToDeclaration(@NotNull ClassDescriptor clazz) {
         return doGetDescriptorToDeclaration(clazz);
     }
     

@@ -42,19 +42,11 @@ public fun KotlinReference.resolveToSourceElements(): List<SourceElement> {
     
     val javaProject = JavaCore.create(eclipseFile.getProject())
     val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, jetFile)
-    return resolveToSourceElements(analysisResult.bindingContext)
+    return resolveToSourceElements(analysisResult.bindingContext, javaProject)
 }
 
-public fun KotlinReference.resolveToLightElements(context: BindingContext, javaProject: IJavaProject): List<IJavaElement> {
-    return sourceElementsToLightElements(resolveToSourceElements(context), javaProject)
-}
-
-public fun KotlinReference.resolveToSourceElements(context: BindingContext): List<SourceElement> {
-    return resolveToSourceElements(getTargetDescriptors(context))
-}
-
-public fun resolveToSourceElements(targetDescriptors: Collection<DeclarationDescriptor>): List<SourceElement> {
-    return targetDescriptors flatMap { target -> EclipseDescriptorUtils.descriptorToDeclarations(target) }
+public fun KotlinReference.resolveToSourceElements(context: BindingContext, project: IJavaProject): List<SourceElement> {
+    return getTargetDescriptors(context).flatMap { EclipseDescriptorUtils.descriptorToDeclarations(it, project) }
 }
 
 public fun getReferenceExpression(element: PsiElement): JetReferenceExpression? {
