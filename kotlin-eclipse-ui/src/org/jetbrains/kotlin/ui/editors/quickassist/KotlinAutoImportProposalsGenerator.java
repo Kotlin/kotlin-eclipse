@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
 import org.jetbrains.kotlin.diagnostics.Errors;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinSearchTypeRequestor;
 
 import com.google.common.collect.Lists;
@@ -29,7 +29,7 @@ public class KotlinAutoImportProposalsGenerator extends KotlinQuickAssistProposa
     
     @Override
     @NotNull
-    protected List<KotlinQuickAssistProposal> getProposals(@NotNull KotlinEditor kotlinEditor,
+    protected List<KotlinQuickAssistProposal> getProposals(@NotNull KotlinFileEditor kotlinFileEditor,
             @NotNull PsiElement psiElement) {
         List<KotlinQuickAssistProposal> assistProposals = Lists.newArrayList();
         try {

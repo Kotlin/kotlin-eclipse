@@ -41,7 +41,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 public class KotlinLaunchShortcut implements ILaunchShortcut {
     @Override
@@ -72,7 +72,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
     
     @Override
     public void launch(IEditorPart editor, String mode) {
-        if (editor instanceof KotlinEditor) {
+        if (editor instanceof KotlinFileEditor) {
             IFile file = EditorUtil.getFile(editor);
             
             if (file == null) {

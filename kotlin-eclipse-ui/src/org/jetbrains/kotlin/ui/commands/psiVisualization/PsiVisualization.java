@@ -25,7 +25,7 @@ import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 public class PsiVisualization extends AbstractHandler {
 
@@ -33,11 +33,11 @@ public class PsiVisualization extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IEditorPart editor = HandlerUtil.getActiveEditor(event);
 
-        assert editor instanceof KotlinEditor : "Unsupported editor class: " + editor == null ? "NULL" : editor.getClass().getName();
+        assert editor instanceof KotlinFileEditor : "Unsupported editor class: " + editor == null ? "NULL" : editor.getClass().getName();
         
         IFile file = EditorUtil.getFile(editor);
         if (file != null) {
-            String sourceCode = EditorUtil.getSourceCode((KotlinEditor) editor);
+            String sourceCode = EditorUtil.getSourceCode((KotlinFileEditor) editor);
 
             new VisualizationPage(HandlerUtil.getActiveShell(event), sourceCode, file).open();
         } else {
@@ -50,7 +50,7 @@ public class PsiVisualization extends AbstractHandler {
     @Override
     public void setEnabled(Object evaluationContext) {
         Object editorObject = HandlerUtil.getVariable(evaluationContext, ISources.ACTIVE_EDITOR_NAME);
-        setBaseEnabled(editorObject instanceof KotlinEditor);
+        setBaseEnabled(editorObject instanceof KotlinFileEditor);
     }
 
 }

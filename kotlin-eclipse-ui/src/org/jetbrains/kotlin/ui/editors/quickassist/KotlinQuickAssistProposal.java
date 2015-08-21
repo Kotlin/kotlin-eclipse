@@ -21,7 +21,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -68,24 +68,24 @@ public abstract class KotlinQuickAssistProposal extends KotlinQuickAssist implem
     }
     
     public void insertAfter(@NotNull PsiElement element, @NotNull String text) {
-        KotlinEditor kotlinEditor = getActiveEditor();
-        assert kotlinEditor != null : "Active editor cannot be null";
+        KotlinFileEditor kotlinFileEditor = getActiveEditor();
+        assert kotlinFileEditor != null : "Active editor cannot be null";
         
         try {
-            kotlinEditor.getViewer().getDocument().replace(getEndOffset(element, kotlinEditor), 0, text);
+            kotlinFileEditor.getViewer().getDocument().replace(getEndOffset(element, kotlinFileEditor), 0, text);
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
     }
     
     public void replaceBetween(@NotNull PsiElement from, @NotNull PsiElement till, @NotNull String text) {
-        KotlinEditor kotlinEditor = getActiveEditor();
-        assert kotlinEditor != null : "Active editor cannot be null";
+        KotlinFileEditor kotlinFileEditor = getActiveEditor();
+        assert kotlinFileEditor != null : "Active editor cannot be null";
         
         try {
-            int startOffset = getStartOffset(from, kotlinEditor);
-            int endOffset = getEndOffset(till, kotlinEditor);
-            kotlinEditor.getViewer().getDocument().replace(startOffset, endOffset - startOffset, text);
+            int startOffset = getStartOffset(from, kotlinFileEditor);
+            int endOffset = getEndOffset(till, kotlinFileEditor);
+            kotlinFileEditor.getViewer().getDocument().replace(startOffset, endOffset - startOffset, text);
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }

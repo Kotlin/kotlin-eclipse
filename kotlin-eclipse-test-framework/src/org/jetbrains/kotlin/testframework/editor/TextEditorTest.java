@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Event;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFormatAction;
 import org.jetbrains.kotlin.ui.editors.KotlinOpenDeclarationAction;
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction;
@@ -97,23 +97,23 @@ public class TextEditorTest {
     }
     
     public void runOpenDeclarationAction() {
-        ((KotlinEditor) editor).getAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT).run();
+        ((KotlinFileEditor) editor).getAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT).run();
     }
     
     public void runFormatAction() {
-        ((KotlinEditor) editor).getAction(KotlinFormatAction.FORMAT_ACTION_TEXT).run();
+        ((KotlinFileEditor) editor).getAction(KotlinFormatAction.FORMAT_ACTION_TEXT).run();
     }
     
     public void runSelectEnclosingAction() {
-    	((KotlinEditor) editor).getAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT).run();
+    	((KotlinFileEditor) editor).getAction(KotlinSelectEnclosingAction.SELECT_ENCLOSING_TEXT).run();
     }
     
     public void runSelectPreviousAction() {
-    	((KotlinEditor) editor).getAction(KotlinSelectPreviousAction.SELECT_PREVIOUS_TEXT).run();
+    	((KotlinFileEditor) editor).getAction(KotlinSelectPreviousAction.SELECT_PREVIOUS_TEXT).run();
     }
     
     public void runSelectNextAction() {
-    	((KotlinEditor) editor).getAction(KotlinSelectNextAction.SELECT_NEXT_TEXT).run();
+    	((KotlinFileEditor) editor).getAction(KotlinSelectNextAction.SELECT_NEXT_TEXT).run();
     }
     
     public int getCaretOffset() {

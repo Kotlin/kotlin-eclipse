@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.intellij.psi.PsiElement;
 
@@ -35,14 +35,14 @@ public abstract class KotlinQuickAssist {
     }
     
     @Nullable
-    protected KotlinEditor getActiveEditor() {
+    protected KotlinFileEditor getActiveEditor() {
         IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
         if (workbenchWindow == null) {
             return null;
         }
 
-        return (KotlinEditor) workbenchWindow.getActivePage().getActiveEditor();
+        return (KotlinFileEditor) workbenchWindow.getActivePage().getActiveEditor();
     }
     
     @Nullable
@@ -50,7 +50,7 @@ public abstract class KotlinQuickAssist {
         AbstractTextEditor editor = getActiveEditor();
         if (editor == null) return null;
 
-        KotlinEditor javaEditor = (KotlinEditor) editor;
+        KotlinFileEditor javaEditor = (KotlinFileEditor) editor;
         IFile file = EditorUtil.getFile(javaEditor);
         
         if (file != null) {
@@ -67,7 +67,7 @@ public abstract class KotlinQuickAssist {
         return null;
     }
     
-    protected int getCaretOffset(@NotNull KotlinEditor activeEditor) {
+    protected int getCaretOffset(@NotNull KotlinFileEditor activeEditor) {
         ISelection selection = activeEditor.getSelectionProvider().getSelection();
         if (selection instanceof ITextSelection) {
             ITextSelection textSelection = (ITextSelection) selection;
@@ -79,7 +79,7 @@ public abstract class KotlinQuickAssist {
     
     
     public boolean isDiagnosticActiveForElement(PsiElement element, @NotNull DiagnosticFactory<?> diagnosticType, @NotNull String attribute) {
-        KotlinEditor editor = getActiveEditor();
+        KotlinFileEditor editor = getActiveEditor();
         if (editor == null) {
             return false;
         }

@@ -32,7 +32,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -78,8 +78,8 @@ public abstract class KotlinEditorTestCase {
         initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
     }
     
-    protected KotlinEditor getEditor() {
-        return (KotlinEditor) testEditor.getEditor();
+    protected KotlinFileEditor getEditor() {
+        return (KotlinFileEditor) testEditor.getEditor();
     }
     
     protected int getCaret() {

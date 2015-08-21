@@ -21,7 +21,7 @@ import org.eclipse.jface.text.templates.TemplateContextType;
 
 public class KotlinTemplateContextType extends TemplateContextType {
     
-    public static final String CONTEXT_TYPE_REGISTRY = "org.jetbrains.kotlin.ui.editors.KotlinEditor";
+    public static final String CONTEXT_TYPE_REGISTRY = "org.jetbrains.kotlin.ui.editors.KotlinFileEditor";
     public static final String KOTLIN_ID_TOP_LEVEL_DECLARATIONS = "kotlin-top-level-declarations";
 
     public KotlinTemplateContextType() {

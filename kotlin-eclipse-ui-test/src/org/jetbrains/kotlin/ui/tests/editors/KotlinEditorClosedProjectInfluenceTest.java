@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.junit.Test;
 
 /**
@@ -46,7 +46,7 @@ public class KotlinEditorClosedProjectInfluenceTest extends KotlinEditorTestCase
 		);
 		IEditorPart editor = EditorTestUtils.openInEditor(file);
 
-		assertTrue(editor instanceof KotlinEditor);
+		assertTrue(editor instanceof KotlinFileEditor);
 	}
 
 	@Test
@@ -61,7 +61,7 @@ public class KotlinEditorClosedProjectInfluenceTest extends KotlinEditorTestCase
 		);
 		IEditorPart editor = EditorTestUtils.openInEditor(file);
 
-		assertTrue(editor instanceof KotlinEditor);
+		assertTrue(editor instanceof KotlinFileEditor);
 	}
 
 }

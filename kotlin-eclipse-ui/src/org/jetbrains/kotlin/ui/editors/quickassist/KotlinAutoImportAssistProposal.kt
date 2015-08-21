@@ -18,7 +18,7 @@ import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.psi.JetImportDirective
 import org.jetbrains.kotlin.psi.JetImportList
 import org.jetbrains.kotlin.psi.JetPackageDirective
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace

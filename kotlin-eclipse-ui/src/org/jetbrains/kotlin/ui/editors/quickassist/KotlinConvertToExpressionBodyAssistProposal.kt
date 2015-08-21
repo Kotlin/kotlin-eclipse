@@ -32,7 +32,7 @@ import com.intellij.psi.PsiWhiteSpace
 import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -69,7 +69,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
 
     }
     
-    private fun replaceBody(declaration: JetDeclarationWithBody, newBody: JetExpression, editor: KotlinEditor) {
+    private fun replaceBody(declaration: JetDeclarationWithBody, newBody: JetExpression, editor: KotlinFileEditor) {
         val body = declaration.getBodyExpression()!!
         val eqToken = JetPsiFactory(declaration).createEQ().getText()
         
@@ -80,7 +80,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         replace(body, "$eqToken $valueText")
     }
     
-    private fun insertAndSelectType(declaration: JetDeclarationWithBody, setUnitType: Boolean, omitType:Boolean, editor: KotlinEditor) {
+    private fun insertAndSelectType(declaration: JetDeclarationWithBody, setUnitType: Boolean, omitType:Boolean, editor: KotlinFileEditor) {
         val body = declaration.getBodyExpression()!!
         
         if (omitType && !setUnitType) {

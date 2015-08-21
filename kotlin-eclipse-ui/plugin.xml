@@ -197,11 +197,11 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="org.jetbrains.kotlin.ui.editors.KotlinEditor"
+            class="org.jetbrains.kotlin.ui.editors.KotlinFileEditor"
             contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
             extensions="kt"
             icon="icons/kotlin-file.gif"
-            id="org.jetbrains.kotlin.ui.editors.KotlinEditor"
+            id="org.jetbrains.kotlin.ui.editors.KotlinFileEditor"
             name="Kotlin Editor">
       </editor>
    </extension>
@@ -244,7 +244,7 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinEditor.EditorContext">
+            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinFileEditor.EditorContext">
          <command
                commandId="org.jetbrains.kotlin.psi.visualization"
                label="View Psi Structure of current file"
@@ -279,7 +279,7 @@
       </menuContribution>
       <menuContribution
             allPopups="false"
-            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinEditor.EditorContext">
+            locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinFileEditor.EditorContext">
          <menu
                label="References">
             <command
@@ -454,10 +454,10 @@
             class="org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateContextType"
             id="kotlin-top-level-declarations"
             name="Kotlin Top Level Declarations"
-            registryId="org.jetbrains.kotlin.ui.editors.KotlinEditor">
+            registryId="org.jetbrains.kotlin.ui.editors.KotlinFileEditor">
       </contextType>
       <contextTypeRegistry
-            id="org.jetbrains.kotlin.ui.editors.KotlinEditor">
+            id="org.jetbrains.kotlin.ui.editors.KotlinFileEditor">
       </contextTypeRegistry>
    </extension>
    <extension
@@ -478,7 +478,7 @@
             id="org.jetbrains.kotlin.ui.editors.kotlinCode"
             name="Kotlin Editor">
          <context
-               type="org.jetbrains.kotlin.ui.editors.KotlinEditor">
+               type="org.jetbrains.kotlin.ui.editors.KotlinFileEditor">
          </context>
       </target>
    </extension>

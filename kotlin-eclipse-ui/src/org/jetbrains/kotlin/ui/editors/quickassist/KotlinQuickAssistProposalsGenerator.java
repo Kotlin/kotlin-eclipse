@@ -4,14 +4,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.intellij.psi.PsiElement;
 
 public abstract class KotlinQuickAssistProposalsGenerator extends KotlinQuickAssist {
     @NotNull
     public List<KotlinQuickAssistProposal> getProposals() {
-        KotlinEditor activeEditor = getActiveEditor();
+        KotlinFileEditor activeEditor = getActiveEditor();
         if (activeEditor == null) {
             return Collections.emptyList();
         }
@@ -29,5 +29,5 @@ public abstract class KotlinQuickAssistProposalsGenerator extends KotlinQuickAss
     }
     
     @NotNull
-    protected abstract List<KotlinQuickAssistProposal> getProposals(@NotNull KotlinEditor kotlinEditor, @NotNull PsiElement psiElement);
+    protected abstract List<KotlinQuickAssistProposal> getProposals(@NotNull KotlinFileEditor kotlinFileEditor, @NotNull PsiElement psiElement);
 }

@@ -55,6 +55,7 @@ import org.eclipse.jdt.ui.search.QuerySpecification
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.jetbrains.kotlin.psi.JetObjectDeclarationName
 import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
 public class KotlinFindReferencesInProjectHandler : KotlinFindReferencesHandler() {
     override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification? {
@@ -106,7 +107,7 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
     abstract fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification?
     
     private fun getJetElement(event: ExecutionEvent): JetElement? {
-        val activeEditor = HandlerUtil.getActiveEditor(event) as KotlinEditor
+        val activeEditor = HandlerUtil.getActiveEditor(event) as KotlinFileEditor
         val selection = activeEditor.getSelectionProvider().getSelection() as? ITextSelection
         if (selection == null) return null
         

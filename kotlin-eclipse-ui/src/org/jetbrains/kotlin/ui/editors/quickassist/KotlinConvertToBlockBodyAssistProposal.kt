@@ -20,7 +20,7 @@ import com.intellij.psi.PsiWhiteSpace
 import org.jetbrains.kotlin.psi.JetReturnExpression
 import org.jetbrains.kotlin.psi.JetBlockExpression
 import org.jetbrains.kotlin.psi.JetPsiUtil
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
 class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -61,7 +61,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
         }
     }
 
-    private fun replaceBody(declaration: JetDeclarationWithBody, factory: JetPsiFactory, context: BindingContext, editor: KotlinEditor) {
+    private fun replaceBody(declaration: JetDeclarationWithBody, factory: JetPsiFactory, context: BindingContext, editor: KotlinFileEditor) {
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
         val indent = AlignmentStrategy.computeIndent(declaration.getNode())
         

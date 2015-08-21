@@ -32,7 +32,7 @@ import org.jetbrains.kotlin.renderer.NameShortness
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.jetbrains.kotlin.psi.JetDeclaration
@@ -108,7 +108,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         document.replace(insertOffset, 0, generatedText.toString())
 	}
     
-    private fun removeWhitespaceAfterLBrace(body: JetClassBody, document: IDocument, editor: KotlinEditor) {
+    private fun removeWhitespaceAfterLBrace(body: JetClassBody, document: IDocument, editor: KotlinFileEditor) {
         val lBrace = body.getLBrace()
         if (lBrace != null) {
             val sibling = lBrace.getNextSibling()

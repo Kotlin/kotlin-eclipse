@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilPackage;
 import org.jetbrains.kotlin.resolve.calls.model.DefaultValueArgument;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedValueArgument;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.google.common.collect.Lists;
 import com.intellij.psi.PsiElement;
@@ -48,7 +48,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             return; 
         }
         
-        KotlinEditor activeEditor = getActiveEditor();
+        KotlinFileEditor activeEditor = getActiveEditor();
         if (activeEditor == null) {
             return;
         }
@@ -68,7 +68,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     }
     
     private void replaceGetForElement(@NotNull JetQualifiedExpression element, @NotNull String arguments) {
-        KotlinEditor editor = getActiveEditor();
+        KotlinFileEditor editor = getActiveEditor();
         if (editor == null) {
             return;
         }
@@ -208,7 +208,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         JetExpression receiver = expression.getReceiverExpression();
         if (receiver instanceof JetSuperExpression) return false;
         
-        KotlinEditor editor = getActiveEditor();
+        KotlinFileEditor editor = getActiveEditor();
         if (editor == null) return false;
         
         IFile file = EditorUtil.getFile(editor);

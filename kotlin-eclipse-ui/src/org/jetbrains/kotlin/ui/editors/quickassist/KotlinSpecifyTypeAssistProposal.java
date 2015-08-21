@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.types.ErrorUtils;
 import org.jetbrains.kotlin.types.JetType;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -79,7 +79,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
     }
     
     private void addTypeAnnotationToElement(@NotNull IDocument document, @NotNull PsiElement anchor, @NotNull JetType exprType) {
-        KotlinEditor editor = getActiveEditor();
+        KotlinFileEditor editor = getActiveEditor();
         if (editor == null) return;
         
         try {
@@ -90,7 +90,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
     }
     
     private void removeTypeAnnotationFromElement(@NotNull IDocument document, @NotNull PsiElement removeAfter, @NotNull JetTypeReference typeReference) {
-        KotlinEditor editor = getActiveEditor();
+        KotlinFileEditor editor = getActiveEditor();
         if (editor == null) return;
         
         try {

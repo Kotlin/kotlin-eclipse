@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.psi.JetPsiFactory;
 import org.jetbrains.kotlin.psi.psiUtil.PsiUtilPackage;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
-import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinOpenDeclarationAction;
 import org.junit.Assert;
 
@@ -45,7 +45,7 @@ public class KotlinBuiltInsReferenceResolverTestCase extends KotlinEditorTestCas
         JavaEditor editor = testEditor.getEditor();
         testEditor.setCaret(referenceOffset);
         
-        KotlinOpenDeclarationAction openAction = new KotlinOpenDeclarationAction((KotlinEditor)editor);
+        KotlinOpenDeclarationAction openAction = new KotlinOpenDeclarationAction((KotlinFileEditor)editor);
         openAction.run(new TextSelection(KotlinTestUtils.getCaret(editor), 0));
         
         JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -61,8 +61,8 @@ public class KotlinBuiltInsReferenceResolverTestCase extends KotlinEditorTestCas
         
         JetFile jetFile = getFileFromEditor(javaEditor, javaProject);
         
-        Assert.assertTrue(javaEditor instanceof KotlinEditor);
-        KotlinEditor editor = (KotlinEditor) javaEditor;
+        Assert.assertTrue(javaEditor instanceof KotlinFileEditor);
+        KotlinFileEditor editor = (KotlinFileEditor) javaEditor;
         
         int editorOffset = editor.getViewer().getTextWidget().getCaretOffset();
         

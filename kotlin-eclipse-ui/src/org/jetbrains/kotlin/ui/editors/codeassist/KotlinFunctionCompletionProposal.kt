@@ -11,7 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.lexer.JetTokens
 import org.jetbrains.kotlin.psi.JetTypeArgumentList
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2
 import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.DocumentEvent

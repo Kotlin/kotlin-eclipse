@@ -202,7 +202,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
                 if (reusedEditor != null) {
                     page.reuseEditor((IReusableEditor) reusedEditor, input);
                 }
-                return page.openEditor(input, "org.jetbrains.kotlin.ui.editors.KotlinEditor");
+                return page.openEditor(input, "org.jetbrains.kotlin.ui.editors.KotlinFileEditor");
             }
         }
         

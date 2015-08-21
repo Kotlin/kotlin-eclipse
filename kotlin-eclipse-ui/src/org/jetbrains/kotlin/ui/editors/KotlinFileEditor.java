@@ -41,13 +41,13 @@ import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectPreviousAction;
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction;
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor;
 
-public class KotlinEditor extends CompilationUnitEditor {
+public class KotlinFileEditor extends CompilationUnitEditor {
     private final IColorManager colorManager;
     private final BracketInserter bracketInserter;
     private KotlinOutlinePage kotlinOutlinePage = null;
     private KotlinToggleBreakpointAdapter kotlinToggleBreakpointAdapter = null;
     
-    public KotlinEditor() {
+    public KotlinFileEditor() {
         super();
         colorManager = new JavaColorManager();
         bracketInserter = new BracketInserter();
