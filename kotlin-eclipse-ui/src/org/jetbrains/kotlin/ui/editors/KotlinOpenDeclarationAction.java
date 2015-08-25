@@ -21,8 +21,10 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -54,9 +56,13 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
 import org.jetbrains.kotlin.descriptors.SourceElement;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
+import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement;
+import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClass;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetReferenceExpression;
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement;
+import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
@@ -126,16 +132,31 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         } else if (element instanceof KotlinSourceElement) {
             PsiElement psiElement = ((KotlinSourceElement) element).getPsi();
             gotoKotlinDeclaration(psiElement, javaProject);
+        } else if (element instanceof KotlinJvmBinarySourceElement) {
+            KotlinJvmBinaryClass binaryClass = ((KotlinJvmBinarySourceElement) element).getBinaryClass();
+            gotoElementInBinaryClass(binaryClass, javaProject);
         }
     }
     
+    private void gotoElementInBinaryClass(KotlinJvmBinaryClass binaryClass, IJavaProject javaProject) throws JavaModelException, PartInitException {
+        VirtualFile file = ((VirtualFileKotlinClass)binaryClass).getFile();
+        
+        String packagePath = file.getParent().getPath();
+        IFile packageFile = EditorsPackage.getAcrhivedFileFromPath(packagePath);
+        IPackageFragment fragment = javaProject.findPackageFragment(packageFile.getFullPath());
+        
+        String className = file.getName();
+        IClassFile classFile = fragment.getClassFile(className);
+        KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen());
+    }
+
     private void gotoKotlinDeclaration(@NotNull PsiElement element, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
         VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
         assert virtualFile != null;
         
         IFile targetFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath()));
         if (targetFile == null) {
-            targetFile = EditorsPackage.getAcrhivedFileFromVirtual(virtualFile);
+            targetFile = EditorsPackage.getAcrhivedFileFromPath(virtualFile.getPath());
         }
         IEditorPart editorPart = findEditorPart(targetFile, element, javaProject);
         if (editorPart == null) {

@@ -8,8 +8,8 @@ import java.io.File
 
 private val ARCHIVE_EXTENSION = "jar"
 
-fun getAcrhivedFileFromVirtual(virtualFile: VirtualFile) =
-	ResourcesPlugin.getWorkspace().getRoot().getFile(Path(virtualFile.getPath().replace("!", "")))
+fun getAcrhivedFileFromPath(path: String) =
+	ResourcesPlugin.getWorkspace().getRoot().getFile(Path(path.replace("!", "")))
 
 fun getFqNameInsideArchive(globalPath: String) =
 	globalPath.substringAfterLast(ARCHIVE_EXTENSION).

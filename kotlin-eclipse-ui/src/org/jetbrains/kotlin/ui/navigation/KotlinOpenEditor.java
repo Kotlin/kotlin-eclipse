@@ -8,9 +8,15 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.internal.core.ClassFile;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
@@ -18,6 +24,8 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.JetElement;
 import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditorInput;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 // Seeks Kotlin editor by IJavaElement
@@ -67,5 +75,26 @@ public class KotlinOpenEditor {
         
         int offset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), jetElement.getTextOffset(), kotlinEditor.getDocument());
         kotlinEditor.getJavaEditor().selectAndReveal(offset, 0);
+	}
+	
+	@Nullable
+	public static IEditorPart openKotlinClassFileEditor(@NotNull IJavaElement element, boolean activate) {
+        if (element instanceof ClassFile) {
+            ClassFile classFile = (ClassFile) element;
+            
+            KotlinClassFileEditorInput editorInput = new KotlinClassFileEditorInput(classFile,
+                    classFile.getJavaProject());
+            
+            IWorkbench wb = PlatformUI.getWorkbench();
+            IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+            IWorkbenchPage page = win.getActivePage();
+            
+            try {
+                return IDE.openEditor(page, editorInput, KotlinClassFileEditor.EDITOR_ID, activate);
+            } catch (PartInitException e) {
+                KotlinLogger.logAndThrow(e);
+            }
+        }        
+        return null;
 	}
 }
