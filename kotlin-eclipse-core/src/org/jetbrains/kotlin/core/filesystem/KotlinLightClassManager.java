@@ -22,24 +22,17 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.analyzer.AnalysisResult;
-import org.jetbrains.kotlin.codegen.ClassBuilderMode;
-import org.jetbrains.kotlin.codegen.state.JetTypeMapper;
+import org.jetbrains.kotlin.codegen.binding.PsiCodegenPredictor;
 import org.jetbrains.kotlin.core.asJava.LightClassFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
-import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.JetClassOrObject;
 import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.org.objectweb.asm.Type;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -62,13 +55,11 @@ public class KotlinLightClassManager {
         this.javaProject = javaProject;
     }
     
-    public void computeLightClassesSources(
-            @NotNull BindingContext context) {
-        JetTypeMapper typeMapper = new JetTypeMapper(context, ClassBuilderMode.LIGHT_CLASSES);
+    public void computeLightClassesSources() {
         IProject project = javaProject.getProject();
         Map<File, Set<IFile>> newSourceFilesMap = new HashMap<>();
         for (IFile sourceFile : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
-            List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile, context, typeMapper);
+            List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile);
             
             for (IPath path : lightClassesPaths) {
                 LightClassFile lightClassFile = new LightClassFile(project.getFile(path));
@@ -110,8 +101,7 @@ public class KotlinLightClassManager {
     
     public List<JetFile> getSourceFiles(@NotNull File file) {
         if (sourceFiles.isEmpty()) {
-            AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject);
-            computeLightClassesSources(analysisResult.getBindingContext());
+            computeLightClassesSources();
         }
         
         return getSourceJetFiles(file);
@@ -136,22 +126,14 @@ public class KotlinLightClassManager {
     }
 
     @NotNull
-    private List<IPath> getLightClassesPaths(
-            @NotNull IFile sourceFile, 
-            @NotNull BindingContext context,
-            @NotNull JetTypeMapper typeMapper) {
+    private List<IPath> getLightClassesPaths(@NotNull IFile sourceFile) {
         List<IPath> lightClasses = new ArrayList<IPath>();
         
         JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
         for (JetClassOrObject classOrObject : PsiTreeUtil.findChildrenOfType(jetFile, JetClassOrObject.class)) {
-            FqName fqName = classOrObject.getFqName();
-            if (fqName == null) continue;
-            
-            ClassDescriptor descriptor = context.get(BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, 
-                    fqName.toUnsafe());
-            if (descriptor != null) {
-                Type asmType = typeMapper.mapClass(descriptor);
-                lightClasses.add(computePathByInternalName(asmType.getInternalName()));
+            String internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(classOrObject);
+            if (internalName != null) {
+                lightClasses.add(computePathByInternalName(internalName));
             }
         }
         
