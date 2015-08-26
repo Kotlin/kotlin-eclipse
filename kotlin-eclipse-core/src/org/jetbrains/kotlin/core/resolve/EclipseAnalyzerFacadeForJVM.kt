@@ -42,16 +42,20 @@ import org.jetbrains.kotlin.incremental.components.LookupTracker
 
 public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<JetFile>): AnalysisResult {
-        val allFiles = LinkedHashSet<JetFile>(filesToAnalyze)
-        val addedFiles = filesToAnalyze.map { getPath(it) }
+        val filesSet = filesToAnalyze.toSet()
+        if (filesSet.size() != filesToAnalyze.size()) {
+            KotlinLogger.logWarning("Analyzed files have duplicates")
+        }
+        
+        val allFiles = LinkedHashSet<JetFile>(filesSet)
+        val addedFiles = filesSet.map { getPath(it) }
         
         ProjectUtils.getSourceFilesWithDependencies(javaProject).filterNotTo(allFiles) {
             getPath(it) in addedFiles
         }
         
-        val globalContext = GlobalContext()
-        val providerFactory = FileBasedDeclarationProviderFactory(globalContext.storageManager, allFiles)
         val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project)
+        val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
         val container = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
@@ -59,7 +63,7 @@ public object EclipseAnalyzerFacadeForJVM {
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         
         try {
-            container.lazyTopDownAnalyzerForTopLevel.analyzeFiles(TopDownAnalysisMode.TopLevelDeclarations, filesToAnalyze, additionalProviders)
+            container.lazyTopDownAnalyzerForTopLevel.analyzeFiles(TopDownAnalysisMode.TopLevelDeclarations, filesSet, additionalProviders)
         } catch(e: KotlinFrontEndException) {
 //          Editor will break if we do not catch this exception
 //          and will not be able to save content without reopening it.

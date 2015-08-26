@@ -42,6 +42,10 @@ public class KotlinLogger {
         log(IStatus.INFO, message, null);
     }
     
+    public static void logWarning(String message) {
+        log(IStatus.WARNING, message, null);
+    }
+    
     public static void logAndThrow(Throwable exception) {
         logError(exception);
         throw new RuntimeException(exception);
