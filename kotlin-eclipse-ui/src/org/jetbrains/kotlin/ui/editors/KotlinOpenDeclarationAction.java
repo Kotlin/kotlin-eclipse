@@ -142,8 +142,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         VirtualFile file = ((VirtualFileKotlinClass)binaryClass).getFile();
         
         String packagePath = file.getParent().getPath();
-        IFile packageFile = EditorsPackage.getAcrhivedFileFromPath(packagePath);
-        IPackageFragment fragment = javaProject.findPackageFragment(packageFile.getFullPath());
+        IPackageFragment fragment = javaProject.findPackageFragment(EditorsPackage.pathFromUrlInArchive(packagePath));
         
         String className = file.getName();
         IClassFile classFile = fragment.getClassFile(className);
