@@ -60,9 +60,6 @@ import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
-        val files = getKotlinFilesByScope(querySpecification)
-        if (files.isEmpty()) return
-        
         if (querySpecification is KotlinCompositeQuerySpecification) {
             runCompositeSearch(requestor, querySpecification, monitor)
             return
@@ -70,6 +67,9 @@ public class KotlinQueryParticipant : IQueryParticipant {
         
         SafeRunnable.run(object : ISafeRunnable {
             override fun run() {
+                val files = getKotlinFilesByScope(querySpecification)
+                if (files.isEmpty()) return
+                
                 val searchResult = searchTextOccurrences(querySpecification, files)
                 if (searchResult == null) return
                 
@@ -200,10 +200,18 @@ public class KotlinQueryParticipant : IQueryParticipant {
     }
     
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
-        return querySpecification.getScope().enclosingProjectsAndJars()
-                .map { JavaModel.getTarget(it, true) }
-                .filterIsInstance(IProject::class.java)
-                .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
+//        We can significantly reduce scope to one file when there are no light elements in query specification.
+//        In this case search elements are not visible from Java and other Kotlin files
+        return if (querySpecification is KotlinQueryPatternSpecification) {
+                querySpecification.jetElements
+                    .map { KotlinPsiManager.getEclispeFile(it.getContainingJetFile()) }
+                    .filterNotNull()
+            } else {
+                querySpecification.getScope().enclosingProjectsAndJars()
+                    .map { JavaModel.getTarget(it, true) }
+                    .filterIsInstance(IProject::class.java)
+                    .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
+            }
     }
     
     private fun buildOrPattern(elements: List<JetElement>): String = elements.joinToString("|") { it.getName()!! }
