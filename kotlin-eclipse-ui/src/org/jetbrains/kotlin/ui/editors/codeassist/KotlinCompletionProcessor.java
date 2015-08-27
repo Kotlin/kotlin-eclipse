@@ -21,15 +21,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import kotlin.jvm.functions.Function1;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
-import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -45,22 +39,13 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.model.KotlinEnvironment;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility;
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider;
-import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper;
 import org.jetbrains.kotlin.lexer.JetTokens;
-import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
-import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
-import org.jetbrains.kotlin.resolve.scopes.JetScope;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext;
@@ -115,7 +100,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         
         if (isNewSession) {
             cachedDescriptors.clear();
-            cachedDescriptors.addAll(generateBasicCompletionProposals(viewer, identOffset));
+            cachedDescriptors.addAll(generateBasicCompletionProposals(identifierPart, identOffset));
             
             isNewSession = false;
         }
@@ -124,7 +109,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         
         proposals.addAll(
                 collectCompletionProposals(
-                        KotlinCompletionUtils.INSTANCE$.filterCompletionProposals(cachedDescriptors, identifierPart),
+                        cachedDescriptors,
                         identOffset,
                         offset - identOffset));
         proposals.addAll(generateKeywordProposals(viewer, identOffset, offset, identifierPart));
@@ -134,7 +119,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     }
     
     @NotNull
-    private Collection<DeclarationDescriptor> generateBasicCompletionProposals(@NotNull ITextViewer viewer, int identOffset) {
+    private Collection<DeclarationDescriptor> generateBasicCompletionProposals(String identifierPart, int identOffset) {
         JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE$.getSimpleNameExpression(editor, identOffset);
         if (simpleNameExpression == null) {
             return Collections.emptyList();
@@ -143,54 +128,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         IFile file = EditorUtil.getFile(editor);
         assert file != null : "Failed to retrieve IFile from editor " + editor;
         
-        return getReferenceVariants(simpleNameExpression, file);
-    }
-    
-    @NotNull
-    private Collection<DeclarationDescriptor> getReferenceVariants(
-            @NotNull final JetSimpleNameExpression simpleNameExpression,
-            @NotNull IFile file) {
-        IJavaProject javaProject = JavaCore.create(file.getProject());
-        final AnalysisResult analysisResult = KotlinAnalyzer.analyzeFile(javaProject,
-                simpleNameExpression.getContainingJetFile());
-        JetScope resolutionScope = CodeassistPackage.getResolutionScope(
-                simpleNameExpression.getReferencedNameElement(), analysisResult.getBindingContext());
-        
-        final DeclarationDescriptor inDescriptor = resolutionScope.getContainingDeclaration();
-        
-        final boolean showNonVisibleMembers = !JavaPlugin.getDefault().getPreferenceStore().getBoolean(
-                PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS);
-        
-        Function1<DeclarationDescriptor, Boolean> visibilityFilter = new Function1<DeclarationDescriptor, Boolean>() {
-            @Override
-            public Boolean invoke(DeclarationDescriptor descriptor) {
-                if (descriptor instanceof TypeParameterDescriptor) {
-                    if (!CodeassistPackage.isVisible((TypeParameterDescriptor) descriptor, inDescriptor)) {
-                        return false;
-                    }
-                }
-                if (descriptor instanceof DeclarationDescriptorWithVisibility) {
-                    boolean visible = CodeassistPackage.isVisible((DeclarationDescriptorWithVisibility) descriptor,
-                            inDescriptor, analysisResult.getBindingContext(), simpleNameExpression);
-                    return visible || showNonVisibleMembers;
-                }
-                return true;
-            }
-        };
-        
-        Function1<Name, Boolean> nameFilter = new Function1<Name, Boolean>() {
-            @Override
-            public Boolean invoke(Name name) {
-                return true;
-            }
-        };
-        
-        return new ReferenceVariantsHelper(
-                analysisResult.getBindingContext(), 
-                analysisResult.getModuleDescriptor(),
-                KotlinEnvironment.getEnvironment(javaProject).getProject(),
-                visibilityFilter).getReferenceVariants(
-                simpleNameExpression, DescriptorKindFilter.ALL, nameFilter, false, false);
+        return KotlinCompletionUtils.INSTANCE$.getReferenceVariants(simpleNameExpression, identifierPart, file);
     }
     
     private List<ICompletionProposal> collectCompletionProposals(
@@ -293,7 +231,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     
     @Override
     public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
-        return null;
+        return KotlinFunctionParameterInfoAssist.INSTANCE$.computeContextInformation(editor, offset);
     }
 
     @Override

@@ -30,13 +30,20 @@ import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
+import org.jetbrains.kotlin.ui.editors.codeassist.isVisible
+import org.eclipse.jdt.ui.PreferenceConstants
+import org.eclipse.jdt.internal.ui.JavaPlugin
+import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
+import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
-    
-    public fun filterCompletionProposals(descriptors: List<DeclarationDescriptor>, prefix: String): Collection<DeclarationDescriptor> {
-        return descriptors.filter { applicableNameFor(prefix, it.getName()) }
-    }
     
     public fun applicableNameFor(prefix: String, name: Name): Boolean {
         return if (!name.isSpecial()) {
@@ -47,6 +54,40 @@ public object KotlinCompletionUtils {
             } else {
                 false
             }
+    }
+    
+    public fun getReferenceVariants(simpleNameExpression: JetSimpleNameExpression, prefixName: String, file: IFile): 
+            Collection<DeclarationDescriptor> {
+        val javaProject = JavaCore.create(file.getProject())
+        val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingJetFile())
+        
+        val resolutionScope = simpleNameExpression.getReferencedNameElement().getResolutionScope(analysisResult.bindingContext)
+        val inDescriptor = resolutionScope.getContainingDeclaration()
+        
+        
+        val visibilityFilter = { descriptor: DeclarationDescriptor ->
+            when (descriptor) {
+                is TypeParameterDescriptor -> descriptor.isVisible(inDescriptor)
+                
+                is DeclarationDescriptorWithVisibility -> {
+                    val showNonVisibleMembers = !JavaPlugin.getDefault().getPreferenceStore().getBoolean(
+                            PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS)
+                    
+                    showNonVisibleMembers || descriptor.isVisible(inDescriptor, analysisResult.bindingContext, simpleNameExpression)
+                }
+                
+                else -> true
+            }
+        }
+        
+        val nameFilter: (Name) -> Boolean = { name -> applicableNameFor(prefixName, name) }
+        
+        return ReferenceVariantsHelper(
+                analysisResult.bindingContext, 
+                analysisResult.moduleDescriptor,
+                KotlinEnvironment.getEnvironment(javaProject).getProject(),
+                visibilityFilter).getReferenceVariants(
+                simpleNameExpression, DescriptorKindFilter.ALL, nameFilter, false, false)
     }
     
     public fun getSimpleNameExpression(editor: JavaEditor, identOffset: Int): JetSimpleNameExpression? {
