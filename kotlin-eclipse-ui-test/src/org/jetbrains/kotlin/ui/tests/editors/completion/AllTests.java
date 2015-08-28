@@ -21,7 +21,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( { 
-	KotlinBasicCompletionTest.class
+	KotlinBasicCompletionTest.class,
+	KotlinFunctionParameterInfoTest.class
 } )
 public class AllTests {
 

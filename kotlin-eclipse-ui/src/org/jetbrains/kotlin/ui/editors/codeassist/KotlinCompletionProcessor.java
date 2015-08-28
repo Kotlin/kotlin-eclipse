@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import kotlin.jvm.functions.Function1;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
@@ -44,6 +46,7 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider;
 import org.jetbrains.kotlin.lexer.JetTokens;
+import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
@@ -65,28 +68,11 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     
     private final KotlinFileEditor editor;
     private final List<DeclarationDescriptor> cachedDescriptors = Lists.newArrayList();
+    private KotlinParameterListValidator kotlinParameterValidator = null;
     private boolean isNewSession = true;
     
     public KotlinCompletionProcessor(KotlinFileEditor editor) {
         this.editor = editor;
-    }
-    
-    /**
-     * A very simple context which invalidates information after typing several
-     * chars.
-     */
-    private static class KotlinContextValidator implements IContextInformationValidator {
-        private int initialOffset;
-        
-        @Override
-        public void install(IContextInformation info, ITextViewer viewer, int offset) {
-            this.initialOffset = offset;
-        }
-
-        @Override
-        public boolean isContextInformationValid(int offset) {
-            return Math.abs(initialOffset - offset) < 1;
-        }
     }
     
     @Override
@@ -109,7 +95,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         
         proposals.addAll(
                 collectCompletionProposals(
-                        cachedDescriptors,
+                        KotlinCompletionUtils.INSTANCE$.filterCompletionProposals(cachedDescriptors, identifierPart),
                         identOffset,
                         offset - identOffset));
         proposals.addAll(generateKeywordProposals(viewer, identOffset, offset, identifierPart));
@@ -119,7 +105,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     }
     
     @NotNull
-    private Collection<DeclarationDescriptor> generateBasicCompletionProposals(String identifierPart, int identOffset) {
+    private Collection<DeclarationDescriptor> generateBasicCompletionProposals(final String identifierPart, int identOffset) {
         JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE$.getSimpleNameExpression(editor, identOffset);
         if (simpleNameExpression == null) {
             return Collections.emptyList();
@@ -128,7 +114,14 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         IFile file = EditorUtil.getFile(editor);
         assert file != null : "Failed to retrieve IFile from editor " + editor;
         
-        return KotlinCompletionUtils.INSTANCE$.getReferenceVariants(simpleNameExpression, identifierPart, file);
+        Function1<Name, Boolean> nameFilter = new Function1<Name, Boolean>() {
+            @Override
+            public Boolean invoke(Name name) {
+                return KotlinCompletionUtils.INSTANCE$.applicableNameFor(identifierPart, name);
+            }
+        };
+        
+        return KotlinCompletionUtils.INSTANCE$.getReferenceVariants(simpleNameExpression, nameFilter, file);
     }
     
     private List<ICompletionProposal> collectCompletionProposals(
@@ -251,7 +244,10 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
 
     @Override
     public IContextInformationValidator getContextInformationValidator() {
-        return new KotlinContextValidator();
+        if (kotlinParameterValidator == null) {
+            kotlinParameterValidator = new KotlinParameterListValidator(editor);
+        }
+        return kotlinParameterValidator;
     }
 
     @Override

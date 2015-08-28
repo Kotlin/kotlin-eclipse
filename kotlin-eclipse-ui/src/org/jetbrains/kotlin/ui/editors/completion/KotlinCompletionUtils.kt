@@ -45,6 +45,10 @@ import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
     
+    public fun filterCompletionProposals(descriptors: List<DeclarationDescriptor>, prefix: String): Collection<DeclarationDescriptor> {
+        return descriptors.filter { applicableNameFor(prefix, it.getName()) }
+    }
+    
     public fun applicableNameFor(prefix: String, name: Name): Boolean {
         return if (!name.isSpecial()) {
                 val identifier = name.getIdentifier()
@@ -56,7 +60,7 @@ public object KotlinCompletionUtils {
             }
     }
     
-    public fun getReferenceVariants(simpleNameExpression: JetSimpleNameExpression, prefixName: String, file: IFile): 
+    public fun getReferenceVariants(simpleNameExpression: JetSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
             Collection<DeclarationDescriptor> {
         val javaProject = JavaCore.create(file.getProject())
         val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingJetFile())
@@ -79,8 +83,6 @@ public object KotlinCompletionUtils {
                 else -> true
             }
         }
-        
-        val nameFilter: (Name) -> Boolean = { name -> applicableNameFor(prefixName, name) }
         
         return ReferenceVariantsHelper(
                 analysisResult.bindingContext, 

@@ -25,9 +25,11 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.intellij.psi.PsiElement;
 
@@ -78,5 +80,11 @@ public class EditorUtil {
         }
 
         return null;
+    }
+    
+    @Nullable
+    public static JetFile updatePsiFile(@NotNull KotlinFileEditor editor) {
+        IFile file = editor.getFile();
+        return file != null ? KotlinPsiManager.getKotlinFileIfExist(file, editor.getDocument().get()) : null;
     }
 }

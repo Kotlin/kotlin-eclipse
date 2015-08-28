@@ -34,19 +34,25 @@ import org.eclipse.swt.graphics.Image
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.types.JetType
+import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.resolve.descriptorUtil.hasDefaultValue
+import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
+import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.psi.JetParameter
+import org.jetbrains.kotlin.core.references.getReferenceExpression
+import org.jetbrains.kotlin.core.references.createReference
 
 public object KotlinFunctionParameterInfoAssist {
     public fun computeContextInformation(editor: KotlinFileEditor, offset: Int): Array<IContextInformation> {
-        val psiElement = EditorUtil.getPsiElement(editor, offset)
-        val argumentList = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetValueArgumentList>())
-        if (argumentList == null) return emptyArray()
-        
-        val expression = getCallSimpleNameExpression(argumentList)
+        val expression = getCallSimpleNameExpression(editor, offset)
         if (expression == null) return emptyArray()
         
-        val name = expression.getReferencedName()
-        
-        val variants = KotlinCompletionUtils.getReferenceVariants(expression, name, EditorUtil.getFile(editor)!!)
+        val referencedName = expression.getReferencedName()
+
+        val nameFilter: (Name) -> Boolean = { name -> name.asString() == referencedName }
+        val variants = KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, EditorUtil.getFile(editor)!!)
         
         return variants
                 .flatMap { 
@@ -62,18 +68,25 @@ public object KotlinFunctionParameterInfoAssist {
     }
 }
 
-fun getCallSimpleNameExpression(argumentList: JetValueArgumentList): JetSimpleNameExpression? {
+fun getCallSimpleNameExpression(editor: KotlinFileEditor, offset: Int): JetSimpleNameExpression? {
+    val psiElement = EditorUtil.getPsiElement(editor, offset)
+    val argumentList = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetValueArgumentList>())
+    if (argumentList == null) return null
+    
     val argumentListParent = argumentList.getParent()
     return if (argumentListParent is JetCallElement) argumentListParent.getCallNameExpression() else null
 }
 
 public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescriptor) : IContextInformation {
     val displayString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
-    val informationString = descriptor.getValueParameters().joinToString(", ") { renderParameter(it) }
+    val renderedParameters = descriptor.getValueParameters().map { renderParameter(it) }
+    val informationString = renderedParameters.joinToString(", ")
+    val displayImage = KotlinImageProvider.getImage(descriptor)
+    val name = descriptor.getName()
     
     override fun getContextDisplayString(): String = displayString
     
-    override fun getImage(): Image? = null
+    override fun getImage(): Image? = displayImage
     
     override fun getInformationDisplayString(): String = informationString
     
@@ -83,9 +96,27 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
         if (parameter.getVarargElementType() != null) result.append("vararg ")
         result.append(parameter.getName())
                 .append(": ")
-                .append(DescriptorRenderer.SHORT_NAMES_IN_TYPES.renderType(getActualParameterType(parameter)));
+                .append(DescriptorRenderer.SHORT_NAMES_IN_TYPES.renderType(getActualParameterType(parameter)))
+        
+        if (parameter.hasDefaultValue()) {
+            val parameterDeclaration = EclipseDescriptorUtils.descriptorToDeclaration(parameter)
+            if (parameterDeclaration != null) {
+                result.append(" = ${getDefaultExpressionString(parameterDeclaration)}")
+            }
+        }
         
         return result.toString()
+    }
+    
+    private fun getDefaultExpressionString(parameterDeclaration: SourceElement): String {
+        val parameterText: String? = if (parameterDeclaration is KotlinSourceElement) {
+                val parameter = parameterDeclaration.psi
+                (parameter as? JetParameter)?.getDefaultValue()?.getText()
+            } else {
+                null
+            }
+        
+        return parameterText ?: "..."
     }
     
     private fun getActualParameterType(descriptor: ValueParameterDescriptor): JetType {
