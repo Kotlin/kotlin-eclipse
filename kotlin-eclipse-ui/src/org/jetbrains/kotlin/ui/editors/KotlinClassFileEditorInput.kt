@@ -13,18 +13,28 @@ import org.eclipse.jdt.internal.core.ClassFile
 import org.eclipse.jdt.internal.core.BinaryType
 
 public class KotlinClassFileEditorInput(classFile:IClassFile, private val javaProject:IJavaProject?):InternalClassFileEditorInput(classFile) {
+    private val sourceShortName: String?
+    private val sourceFullPath: String?
+
+    init {
+        sourceShortName = (getClassFile().getType() as? BinaryType)?.getSourceFileName(null)?.toString()
+        sourceFullPath = if (sourceShortName != null) {
+            val index = KotlinSourceIndex.getInstance(javaProject)
+            val packageFragment = getClassFile().getParent() as PackageFragment
+            index.resolvePath(packageFragment, sourceShortName)
+        } else {
+            null
+        }
+    }
 
     private fun compareSources(another:KotlinClassFileEditorInput):Boolean {
-        try {
-            val sourceShortName = getSourceShortName() ?: return false
-            val anotherSourceShortName = another.getSourceShortName() ?: return false
-            return when {
-                sourceShortName != anotherSourceShortName -> false
-                getClassFile().getParent() == another.getClassFile().getParent() -> true
-                else -> resolveShortSourceName(sourceShortName) == another.resolveShortSourceName(anotherSourceShortName)
-            }
-        } catch (e:JavaModelException) {
+        if (sourceShortName == null || another.sourceShortName == null) {
             return false
+        }
+        return when {
+            sourceShortName != another.sourceShortName -> false
+            getClassFile().getParent() == another.getClassFile().getParent() -> true
+            else -> sourceFullPath == another.sourceFullPath
         }
     }
 
@@ -35,12 +45,9 @@ public class KotlinClassFileEditorInput(classFile:IClassFile, private val javaPr
                 else -> false
             }
 
-    private fun getSourceShortName() =
-            (getClassFile().getType() as? BinaryType)?.getSourceFileName(null)?.toString()
+    override fun getName() =
+            sourceShortName ?: super.getName()
 
-    private fun resolveShortSourceName(simpleSourceFileName: String): String {
-        val index = KotlinSourceIndex.getInstance(javaProject);
-        val packageFragment = getClassFile().getParent() as PackageFragment;
-        return index.resolvePath(packageFragment, simpleSourceFileName);
-    }
+    override fun getToolTipText() =
+            sourceFullPath ?: super.getToolTipText()
 }
