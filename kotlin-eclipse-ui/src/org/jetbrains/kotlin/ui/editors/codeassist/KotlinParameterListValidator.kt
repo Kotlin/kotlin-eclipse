@@ -92,7 +92,7 @@ public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IConte
         val argumentList = PsiTreeUtil.getNonStrictParentOfType(psiElement, javaClass<JetValueArgumentList>())
         if (argumentList == null) return null
         
-        val offsetInPSI = LineEndUtil.convertCrToDocumentOffset(editor.getDocument(), offset)
+        val offsetInPSI = LineEndUtil.convertCrToDocumentOffset(editor.document, offset)
         var child = argumentList.getNode().getFirstChildNode()
         var index = 0
         while (child != null && child.getStartOffset() < offsetInPSI) {
