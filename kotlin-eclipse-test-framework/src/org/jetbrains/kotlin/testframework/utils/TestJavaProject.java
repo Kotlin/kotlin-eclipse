@@ -198,6 +198,11 @@ public class TestJavaProject {
         ProjectUtils.addKotlinRuntime(javaProject);
     }
     
+    public void addLibrary(IPath libraryPath, IPath sourcePath) throws JavaModelException {
+        IClasspathEntry libraryEntry = JavaCore.newLibraryEntry(libraryPath, sourcePath, null);
+        ProjectUtils.addContainerEntryToClasspath(javaProject, libraryEntry);
+    }
+    
     private void addSystemLibraries() throws JavaModelException {
         ProjectUtils.addContainerEntryToClasspath(javaProject, JavaRuntime.getDefaultJREContainerEntry());
     }
