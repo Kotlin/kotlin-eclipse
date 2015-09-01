@@ -50,6 +50,8 @@ import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
+import org.jetbrains.kotlin.ui.debug.KotlinRunToLineAdapter
+import org.eclipse.debug.ui.actions.IRunToLineTarget
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -60,18 +62,21 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val kotlinToggleBreakpointAdapter by lazy { KotlinToggleBreakpointAdapter() }
     
-    override public fun getAdapter(required: Class<*>?): Any? {
-        return when {
-            javaClass<IContentOutlinePage>() == required -> kotlinOutlinePage
-            javaClass<IToggleBreakpointsTarget>() == required -> kotlinToggleBreakpointAdapter
-            else -> super.getAdapter(required)
+    private val kotlinRunToLineAdapter by lazy { KotlinRunToLineAdapter() }
+    
+    override public fun getAdapter(required: Class<*>): Any? {
+        return when (required) {
+            javaClass<IContentOutlinePage>() -> kotlinOutlinePage
+            javaClass<IToggleBreakpointsTarget>() -> kotlinToggleBreakpointAdapter
+            javaClass<IRunToLineTarget>() -> kotlinRunToLineAdapter
+            else -> super<CompilationUnitEditor>.getAdapter(required)
         }
     }
     
     override public fun createPartControl(parent: Composite) {
         setSourceViewerConfiguration(FileEditorConfiguration(colorManager, this, getPreferenceStore()))
         
-        super.createPartControl(parent)
+        super<CompilationUnitEditor>.createPartControl(parent)
         
         val sourceViewer = getSourceViewer()
         if (sourceViewer is ITextViewerExtension) {
@@ -86,7 +91,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     override protected fun isTabsToSpacesConversionEnabled(): Boolean = IndenterUtil.isSpacesForTabs()
     
     override protected fun createActions() {
-        super.createActions()
+        super<CompilationUnitEditor>.createActions()
         
         setAction("QuickFormat", null)
         
@@ -119,7 +124,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
             sourceViewer.removeVerifyKeyListener(bracketInserter)
         }
         
-        super.dispose()
+        super<CompilationUnitEditor>.dispose()
     }
     
     override public fun setSelection(element: IJavaElement) {

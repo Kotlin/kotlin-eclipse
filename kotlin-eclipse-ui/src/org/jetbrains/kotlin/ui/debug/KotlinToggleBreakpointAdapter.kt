@@ -52,7 +52,7 @@ public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
         
         val lineNumber = (selection as ITextSelection).getStartLine() + 1
         val document = editor.getDocumentProvider().getDocument(editor.getEditorInput())
-        val typeName = getTypeName(document, lineNumber, file)
+        val typeName = findTopmostTypeName(document, lineNumber, file)
         if (typeName == null) return
         
         val existingBreakpoint = JDIDebugModel.lineBreakpointExists(file, typeName.asString(), lineNumber)
@@ -73,12 +73,17 @@ public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
     
     override public fun canToggleWatchpoints(part: IWorkbenchPart, selection: ISelection): Boolean = true
     
-    private fun getTypeName(document: IDocument, lineNumber: Int, file: IFile): FqName? {
-        val kotlinParsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
-        return findTopmostType(document.getLineOffset(lineNumber - 1), kotlinParsedFile)
+    private fun getEditor(part: IWorkbenchPart): ITextEditor? {
+        return if (part is ITextEditor) part else part.getAdapter(javaClass<ITextEditor>()) as? ITextEditor
     }
-    
-    private fun findTopmostType(offset: Int, jetFile: JetFile): FqName? {
+}
+
+fun findTopmostTypeName(document: IDocument, lineNumber: Int, file: IFile): FqName? {
+    val kotlinParsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
+    return findTopmostType(document.getLineOffset(lineNumber - 1), kotlinParsedFile)
+}
+
+fun findTopmostType(offset: Int, jetFile: JetFile): FqName? {
         val element = jetFile.findElementAt(offset)
         val jetClassOrObject = JetPsiUtil.getTopmostParentOfTypes(element, javaClass<JetClassOrObject>())
         if (jetClassOrObject != null) {
@@ -88,9 +93,4 @@ public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
         }
         
         return PackageClassUtils.getPackageClassFqName(jetFile.getPackageFqName())
-}
-    
-    private fun getEditor(part: IWorkbenchPart): ITextEditor? {
-        return if (part is ITextEditor) part else part.getAdapter(javaClass<ITextEditor>()) as? ITextEditor
     }
-}
