@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.psi.JetPsiUtil
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.psi.JetClassOrObject
+import org.jetbrains.kotlin.psi.JetObjectDeclaration
 
 public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
     override public fun toggleLineBreakpoints(part: IWorkbenchPart, selection: ISelection) {
@@ -80,12 +81,14 @@ public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
     private fun findTopmostType(offset: Int, jetFile: JetFile): FqName? {
         val element = jetFile.findElementAt(offset)
         val jetClassOrObject = JetPsiUtil.getTopmostParentOfTypes(element, javaClass<JetClassOrObject>())
-        return if (jetClassOrObject != null) {
-                (jetClassOrObject as JetClassOrObject).getFqName()
-            } else {
-                PackageClassUtils.getPackageClassFqName(jetFile.getPackageFqName())
-            }
-    }
+        if (jetClassOrObject != null) {
+            val classOrObject = jetClassOrObject as JetClassOrObject
+            val fqName = classOrObject.getFqName()
+            if (fqName != null) return fqName
+        }
+        
+        return PackageClassUtils.getPackageClassFqName(jetFile.getPackageFqName())
+}
     
     private fun getEditor(part: IWorkbenchPart): ITextEditor? {
         return if (part is ITextEditor) part else part.getAdapter(javaClass<ITextEditor>()) as? ITextEditor
