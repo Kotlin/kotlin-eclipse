@@ -41,7 +41,8 @@ Eclipse-SupplementBundle:
  org.eclipse.jdt.launching,
  org.eclipse.jdt.ui,
  org.eclipse.debug.core,
- org.eclipse.pde.launching
+ org.eclipse.pde.launching,
+ org.eclipse.jdt.core
 Export-Package: org.jetbrains.kotlin.aspects.debug.ui,
  org.jetbrains.kotlin.aspects.debug.core,
  org.jetbrains.kotlin.aspects.navigation
