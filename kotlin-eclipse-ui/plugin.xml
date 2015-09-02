@@ -560,4 +560,19 @@
             parentId="org.eclipse.ui.textEditorScope">
       </context>
    </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.jetbrains.kotlin.ui.debug.commands.KotlinStepIntoSelectionHandler"
+            commandId="org.eclipse.jdt.debug.ui.commands.StepIntoSelection">
+         <activeWhen>
+            <with
+                  variable="activeEditor">
+               <instanceof
+                     value="org.jetbrains.kotlin.ui.editors.KotlinEditor">
+               </instanceof>
+            </with>
+         </activeWhen>
+      </handler>
+   </extension>
 </plugin>
