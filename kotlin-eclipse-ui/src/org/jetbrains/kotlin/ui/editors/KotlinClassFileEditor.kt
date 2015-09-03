@@ -18,7 +18,6 @@ import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectNextAction
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectPreviousAction
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
-import kotlin.properties.Delegates
 import kotlin.lazy
 import java.lang.Class
 import org.eclipse.jdt.core.IClassFile
@@ -28,6 +27,12 @@ import org.jetbrains.kotlin.psi.JetPsiFactory
 import com.intellij.openapi.util.text.StringUtil
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.psi.JetFile
+import org.eclipse.ui.IEditorInput
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.psi.JetClassOrObject
+import org.jetbrains.kotlin.psi.JetTreeVisitorVoid
+import org.jetbrains.kotlin.psi.JetVisitor
+import org.jetbrains.kotlin.psi.JetElement
 
 public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
     override fun isEditable() = false
@@ -59,11 +64,11 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
     }
 
     override public fun getAdapter(required: Class<*>):Any? =
-        when (required) {
-            javaClass<IContentOutlinePage>() -> kotlinOutlinePage
-            javaClass<IToggleBreakpointsTarget>() -> kotlinToggleBreakpointAdapter
-            else -> super<ClassFileEditor>.getAdapter(required)
-        }
+            when (required) {
+                javaClass<IContentOutlinePage>() -> kotlinOutlinePage
+                javaClass<IToggleBreakpointsTarget>() -> kotlinToggleBreakpointAdapter
+                else -> super<ClassFileEditor>.getAdapter(required)
+            }
 
     override public fun createPartControl(parent:Composite) {
         setSourceViewerConfiguration(Configuration(colorManager, this, getPreferenceStore()))
@@ -73,7 +78,7 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
     override protected fun isMarkingOccurrences() = false
 
     override protected fun isTabsToSpacesConversionEnabled() =
-        IndenterUtil.isSpacesForTabs()
+            IndenterUtil.isSpacesForTabs()
 
     override protected fun createActions() {
         super<ClassFileEditor>.createActions()
@@ -97,7 +102,10 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
     }
 
     override public fun setSelection(element:IJavaElement) {
-        KotlinOpenEditor.revealKotlinElement(this, element)
+        when (element) {
+            is IClassFile -> revealClassInFile(findDeclarationInFile(element))
+            else -> KotlinOpenEditor.revealKotlinElement(this, element)
+        }
     }
 
     companion object {
@@ -109,4 +117,34 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
 
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
+    
+    private fun findDeclarationInFile(classFile: IClassFile): JetClassOrObject? {
+        val fqName = classFile.getType().getFullyQualifiedName()
+        return parsedFile.accept(object: JetVisitor<JetClassOrObject?, String>() {
+            override fun visitClassOrObject(classOrObject: JetClassOrObject, classFqName: String): JetClassOrObject? =
+                    if (classOrObject.getFqName().toString() == classFqName) {
+                        classOrObject
+                    } else {
+                        super.visitClassOrObject(classOrObject, classFqName)
+                    }
+            
+            override fun visitJetElement(element: JetElement, classFqName: String): JetClassOrObject? =
+                    element.getChildren().asSequence().map { 
+                        when(it) {
+                            is JetElement -> it.accept(this, classFqName)
+                            else -> null
+                        }
+                     }.filterNotNull().firstOrNull()
+                
+            override fun visitJetFile(file: JetFile, classFqName: String): JetClassOrObject? = 
+                    visitJetElement(file, classFqName)
+        }, fqName)
+    }
+
+    private fun revealClassInFile(classDeclaration: JetClassOrObject?) {
+        if (classDeclaration != null) {
+            val correctedOffset = LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), classDeclaration.getTextOffset(), document);
+            selectAndReveal(correctedOffset, 0);
+        }
+    }
 }
