@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -52,8 +53,10 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.references.KotlinReference;
 import org.jetbrains.kotlin.core.references.ReferencesPackage;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.SourceElement;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
@@ -61,6 +64,7 @@ import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClass;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetReferenceExpression;
+import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement;
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor;
 
@@ -100,13 +104,16 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             return;
         }
         
-        SourceElement element = getTargetElement(getSelectedExpressionWithParsedFile(editor, file, selection.getOffset()), file, javaProject);
+        JetReferenceExpression selectedExpression = getSelectedExpressionWithParsedFile(editor, file, selection.getOffset());
+        SourceElement element = getTargetElement(selectedExpression, file, javaProject);
         if (element == null) {
             return;
         }
         
+        assert(selectedExpression != null);
+        
         try {
-            gotoElement(element, javaProject);
+            gotoElement(element, ReferencesPackage.createReference(selectedExpression), javaProject);
         } catch (JavaModelException e) {
             KotlinLogger.logError(e);
         } catch (PartInitException e) {
@@ -125,7 +132,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         return sourceElements.size() == 1 ? sourceElements.get(0) : null; 
     }
     
-    private void gotoElement(@NotNull SourceElement element, @NotNull IJavaProject javaProject) throws JavaModelException, PartInitException {
+    private void gotoElement(@NotNull SourceElement element, KotlinReference kotlinReference, @NotNull IJavaProject javaProject) throws JavaModelException, PartInitException {
         if (element instanceof EclipseJavaSourceElement) {
             IBinding binding = ((EclipseJavaElement<?>) ((EclipseJavaSourceElement) element).getJavaElement()).getBinding();
             gotoJavaDeclaration(binding, javaProject);
@@ -134,11 +141,11 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             gotoKotlinDeclaration(psiElement, javaProject);
         } else if (element instanceof KotlinJvmBinarySourceElement) {
             KotlinJvmBinaryClass binaryClass = ((KotlinJvmBinarySourceElement) element).getBinaryClass();
-            gotoElementInBinaryClass(binaryClass, javaProject);
+            gotoElementInBinaryClass(binaryClass, kotlinReference, javaProject);
         }
     }
     
-    private void gotoElementInBinaryClass(KotlinJvmBinaryClass binaryClass, IJavaProject javaProject) throws JavaModelException, PartInitException {
+    private void gotoElementInBinaryClass(KotlinJvmBinaryClass binaryClass, KotlinReference kotlinReference, IJavaProject javaProject) throws JavaModelException, PartInitException {
         VirtualFile file = ((VirtualFileKotlinClass)binaryClass).getFile();
         
         String packagePath = file.getParent().getPath();
@@ -146,9 +153,26 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         
         String className = file.getName();
         IClassFile classFile = fragment.getClassFile(className);
-        KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen());
-    }
+        KotlinClassFileEditor targetEditor = (KotlinClassFileEditor) KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen());
+        
+        if (targetEditor == null) {
+            return;
+        }
+        
+        JetFile jetFile = editor.getParsedFile();
+        assert(jetFile != null);
+        BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getBindingContext();
+        Collection<DeclarationDescriptor> descriptors = kotlinReference.getTargetDescriptors(context);
 
+        //TODO: popup if there's several descriptors to navigate to
+        DeclarationDescriptor descriptor = descriptors.iterator().next();
+        
+        int offset = EditorsPackage.findDeclarationInParsedFile(descriptor, targetEditor.getParsedFile());
+        int start = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), offset, editor.getDocument());
+        targetEditor.selectAndReveal(start, 0);
+        
+    }
+    
     private void gotoKotlinDeclaration(@NotNull PsiElement element, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
         VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
         assert virtualFile != null;
