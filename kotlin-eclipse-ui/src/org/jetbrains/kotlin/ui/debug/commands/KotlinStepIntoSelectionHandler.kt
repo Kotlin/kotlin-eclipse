@@ -54,7 +54,7 @@ public class KotlinStepIntoSelectionHandler : AbstractHandler() {
     }
 }
 
-private fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelection) {
+public fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelection) {
     val frame = EvaluationContextManager.getEvaluationContext(editor)
     if (frame == null || !frame.isSuspended()) return
     
