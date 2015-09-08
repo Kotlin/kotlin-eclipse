@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.core.filesystem;
 import java.io.File;
 import java.net.URI;
 
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
 
@@ -21,6 +22,17 @@ public class KotlinFileSystem extends FileSystem {
         return new KotlinFileStore(new File(uri.getSchemeSpecificPart()));
     }
     
+    @Override
+    public int attributes() {
+        return EFS.ATTRIBUTE_READ_ONLY;
+//        return super.attributes();
+    }
+
+    @Override
+    public boolean canWrite() {
+        return true;
+    }
+
     public static KotlinFileSystem getInstance() {
         return instance;
     }
