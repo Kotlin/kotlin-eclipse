@@ -28,10 +28,20 @@ import org.jetbrains.kotlin.psi.JetClassOrObject
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.name.FqName
 import com.intellij.psi.PsiElement
+import java.util.HashSet
+import org.jetbrains.kotlin.psi.JetProperty
 
 fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
-    val jetSignatures = jetElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)
-    if (jetSignatures == null) return false
+    val jetSignatures = HashSet<Pair<String, String>>()
+    
+    jetElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)?.let { jetSignatures.addAll(it) }
+    if (jetElement is JetProperty) {
+        jetElement.getAccessors().forEach { accessor ->
+            accessor.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)?.let { jetSignatures.addAll(it) }
+        }
+    }
+    
+    if (jetSignatures.isEmpty()) return false
     
     val memberSignature = when (javaMember) {
         is IField -> javaMember.getTypeSignature().replace("\\.".toRegex(), "/") // Hack

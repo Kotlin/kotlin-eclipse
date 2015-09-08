@@ -97,4 +97,9 @@ public class KotlinStepIntoSelectionTest extends KotlinStepIntoSelectionTestCase
     public void testWhile() {
         doTest("testData/debugger/while.kt");
     }
+    
+    @Test
+    public void testPropertyGetter() {
+        doTest("testData/debugger/propertyGetter.kt");
+    }
 }
