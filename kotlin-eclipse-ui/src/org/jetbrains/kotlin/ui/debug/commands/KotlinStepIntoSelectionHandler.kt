@@ -39,15 +39,14 @@ import org.eclipse.jdt.internal.debug.ui.actions.StepIntoSelectionUtils
 import org.eclipse.ui.IEditorPart
 import org.eclipse.debug.core.model.IThread
 import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 public class KotlinStepIntoSelectionHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
-        val editor = HandlerUtil.getActiveEditor(event)
-        if (editor is KotlinFileEditor) {
-            val selection = editor.getEditorSite().getSelectionProvider().getSelection()
-            if (selection is ITextSelection) {
-                stepIntoSelection(editor, selection)
-            }
+        val editor = HandlerUtil.getActiveEditor(event) as KotlinFileEditor
+        val selection = editor.getEditorSite().getSelectionProvider().getSelection()
+        if (selection is ITextSelection) {
+            stepIntoSelection(editor, selection)
         }
         
         return null
@@ -61,18 +60,19 @@ public fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelection
     val psiElement = EditorUtil.getPsiElement(editor, selection.getOffset())
     if (psiElement == null) return
     
-    
     val expression = getReferenceExpression(psiElement)
     if (expression == null) return
     
-    
     val sourceElements = createReference(expression).resolveToSourceElements()
     val javaElements = sourceElementsToLightElements(sourceElements, editor.javaProject!!)
-    if (javaElements.size() == 1) {
-        val method = javaElements.first() as? IMethod
-        if (method != null) {
-            stepIntoElement(method, frame, selection, editor)
-        }
+    if (javaElements.size() > 1) {
+        KotlinLogger.logWarning("There are more than one java element for $sourceElements")
+        return
+    }
+    
+    val method = javaElements.first() as? IMethod
+    if (method != null) {
+        stepIntoElement(method, frame, selection, editor)
     }
 }
 
@@ -81,9 +81,6 @@ private fun stepIntoElement(method: IMethod, frame: IJavaStackFrame, selection: 
         val handler = StepIntoSelectionHandler(frame.getThread() as IJavaThread, frame, method)
         handler.step()
     } else {
-        val callingTypeName = findTopmostType(selection.getOffset(), editor.parsedFile!!)
-        if (callingTypeName == null) return
-        
         val refMethod = javaClass<StepIntoSelectionUtils>().getDeclaredMethod(
                 "runToLineBeforeStepIn",
                 javaClass<IEditorPart>(),
