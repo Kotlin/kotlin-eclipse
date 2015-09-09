@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 
 import org.eclipse.core.resources.IStorage;
@@ -71,6 +70,6 @@ public class StringStorage implements IStorage {
     }
     
     public String getFqName() {
-        return packageFqName + File.separator + name;
+        return packageFqName + '/' + name;
     }
 }

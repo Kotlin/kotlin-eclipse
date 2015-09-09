@@ -15,9 +15,11 @@ fun pathFromUrlInArchive(url: String) =
     Path(url.replace("!",""))
 
 fun getFqNameInsideArchive(globalPath: String) =
-	globalPath.substringAfterLast(ARCHIVE_EXTENSION).
-	substringAfter('!').
-	substringAfter(File.separatorChar)
+	globalPath.substringAfterLast(ARCHIVE_EXTENSION)
+	.substringAfter('!')
+	.substringAfter(File.separatorChar)
+	.replace(File.separatorChar, '/')
+	
 
 fun isArchived(file :IFile) = 
 	file.getFullPath().toOSString().contains(ARCHIVE_EXTENSION)
