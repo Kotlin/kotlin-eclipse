@@ -84,7 +84,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         val comments = PsiTreeUtil.getChildrenOfTypeAsList(initialFile, javaClass<PsiComment>())
         val expectedTarget = comments.get(comments.size() - 1).getText().substring(2).split(":")
         Assert.assertEquals(2, expectedTarget.size())
-        val expectedFile = expectedTarget[0].replace('/', File.separatorChar)
+        val expectedFile = expectedTarget[0]
         val expectedName = expectedTarget[1]
         
         val parsedFile = getParsedFile(editor)
