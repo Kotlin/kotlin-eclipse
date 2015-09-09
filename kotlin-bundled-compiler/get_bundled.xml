@@ -1,6 +1,6 @@
 <project default="get_bundled">
 	<property name="idea-sources-build-id" value="474470"/>
-	<property name="compiler.tag" value="for_eclipse" />
+	<property name="compiler.tag" value="for_eclipse_temp" />
 	<property name="bootstrap_branch" value=""/>
 	
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />

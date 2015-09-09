@@ -20,7 +20,6 @@ import java.util.Collection;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.psi.JetFile;
 
@@ -28,12 +27,12 @@ import com.google.common.collect.Lists;
 
 public class KotlinAnalyzer {
     @NotNull
-    public static AnalysisResult analyzeFile(@NotNull IJavaProject javaProject, @NotNull JetFile jetFile) {
+    public static AnalysisResultWithProvider analyzeFile(@NotNull IJavaProject javaProject, @NotNull JetFile jetFile) {
         return analyzeFiles(javaProject, Lists.newArrayList(jetFile));
     }
     
     @NotNull
-    public static AnalysisResult analyzeFiles(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
+    public static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
             @NotNull Collection<JetFile> filesToAnalyze) {
         return EclipseAnalyzerFacadeForJVM.INSTANCE$.analyzeFilesWithJavaIntegration(
                 javaProject, 
@@ -41,7 +40,7 @@ public class KotlinAnalyzer {
                 filesToAnalyze);
     }
     
-    public static AnalysisResult analyzeFiles(@NotNull IJavaProject javaProject, @NotNull Collection<JetFile> filesToAnalyze) {
+    public static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull Collection<JetFile> filesToAnalyze) {
         KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
         return analyzeFiles(javaProject, kotlinEnvironment, filesToAnalyze);
     }

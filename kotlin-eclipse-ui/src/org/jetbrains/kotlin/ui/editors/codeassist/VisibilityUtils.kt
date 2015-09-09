@@ -24,16 +24,19 @@ import org.jetbrains.kotlin.psi.JetUnaryExpression
 import org.jetbrains.kotlin.psi.JetUserType
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.resolve.scopes.utils.asLexicalScope
+import org.jetbrains.kotlin.resolve.scopes.LexicalScope
 
 // from compiler/frontend/src/org/jetbrains/kotlin/psi/psiUtil/psiUtils.kt
     public val PsiElement.parentsWithSelf: Sequence<PsiElement>
     get() = sequence(this) { if (it is PsiFile) null else it.getParent() }
 
 // from idea/idea-core/src/org/jetbrains/kotlin/idea/core/Utils.kt but without the second parameter
-public fun PsiElement.getResolutionScope(bindingContext: BindingContext): JetScope {
+public fun PsiElement.getResolutionScope(bindingContext: BindingContext): LexicalScope {
     for (parent in parentsWithSelf) {
         if (parent is JetExpression) {
-            val scope = bindingContext[BindingContext.RESOLUTION_SCOPE, parent]
+            val scope = bindingContext[BindingContext.LEXICAL_SCOPE, parent] ?:
+                        bindingContext[BindingContext.RESOLUTION_SCOPE, parent]?.asLexicalScope()
             if (scope != null) return scope
         }
 
@@ -45,7 +48,7 @@ public fun PsiElement.getResolutionScope(bindingContext: BindingContext): JetSco
         }
 
         if (parent is JetFile) {
-            return bindingContext[BindingContext.FILE_TO_PACKAGE_FRAGMENT, parent]!!.getMemberScope()
+            return bindingContext[BindingContext.FILE_TO_PACKAGE_FRAGMENT, parent]!!.getMemberScope().asLexicalScope()
         }
     }
     error("Not in JetFile")

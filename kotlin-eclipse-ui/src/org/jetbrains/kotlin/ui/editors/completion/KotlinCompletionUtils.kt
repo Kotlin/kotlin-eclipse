@@ -41,6 +41,8 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
+import org.jetbrains.kotlin.resolve.scopes.JetScope
+import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
@@ -63,11 +65,12 @@ public object KotlinCompletionUtils {
     public fun getReferenceVariants(simpleNameExpression: JetSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
             Collection<DeclarationDescriptor> {
         val javaProject = JavaCore.create(file.getProject())
-        val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingJetFile())
+        val (analysisResult, container) = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingJetFile())
         
-        val resolutionScope = simpleNameExpression.getReferencedNameElement().getResolutionScope(analysisResult.bindingContext)
-        val inDescriptor = resolutionScope.getContainingDeclaration()
-        
+        val inDescriptor = simpleNameExpression
+                .getReferencedNameElement()
+                .getResolutionScope(analysisResult.bindingContext)
+                .ownerDescriptor
         
         val visibilityFilter = { descriptor: DeclarationDescriptor ->
             when (descriptor) {
@@ -85,11 +88,10 @@ public object KotlinCompletionUtils {
         }
         
         return ReferenceVariantsHelper(
-                analysisResult.bindingContext, 
-                analysisResult.moduleDescriptor,
-                KotlinEnvironment.getEnvironment(javaProject).getProject(),
+                analysisResult.bindingContext,
+                KotlinResolutionFacade(javaProject, container),
                 visibilityFilter).getReferenceVariants(
-                simpleNameExpression, DescriptorKindFilter.ALL, nameFilter, false, false)
+                simpleNameExpression, DescriptorKindFilter.ALL, nameFilter)
     }
     
     public fun getSimpleNameExpression(editor: JavaEditor, identOffset: Int): JetSimpleNameExpression? {

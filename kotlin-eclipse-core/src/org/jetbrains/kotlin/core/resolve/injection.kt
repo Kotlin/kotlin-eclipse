@@ -37,8 +37,9 @@ import org.jetbrains.kotlin.resolve.BodyResolveCache
 import org.jetbrains.kotlin.synthetic.AdditionalScopesWithJavaSyntheticExtensions
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import org.jetbrains.kotlin.resolve.CompilerEnvironment
 
-private fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: GlobalSearchScope, 
+fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: GlobalSearchScope, 
         project: Project, lookupTracker: LookupTracker) {
     useInstance(moduleContentScope)
     useInstance(lookupTracker)
@@ -71,19 +72,21 @@ public fun createContainerForTopDownAnalyzerForJvm(
         moduleContentScope: GlobalSearchScope,
         javaProject: IJavaProject,
         lookupTracker: LookupTracker
-): ContainerForTopDownAnalyzerForJvm = createContainer("TopDownAnalyzerForJvm") {
-    configureModule(moduleContext, JvmPlatform, bindingTrace)
-    configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, lookupTracker)
-    useInstance(javaProject)
-    useInstance(declarationProviderFactory)
-	useInstance(BodyResolveCache.ThrowException)
+): Pair<ContainerForTopDownAnalyzerForJvm, StorageComponentContainer> = createContainer("TopDownAnalyzerForJvm") {
+    it.configureModule(moduleContext, JvmPlatform, bindingTrace)
+    it.configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, lookupTracker)
+    
+    it.useInstance(javaProject)
+    it.useInstance(declarationProviderFactory)
+    
+    CompilerEnvironment.configure(it)
 
-    useImpl<SingleModuleClassResolver>()
-    useImpl<FileScopeProviderImpl>()
+    it.useImpl<SingleModuleClassResolver>()
+    it.useImpl<FileScopeProviderImpl>()
 }.let {
     it.javaAnalysisInit()
 
-    ContainerForTopDownAnalyzerForJvm(it)
+    Pair(ContainerForTopDownAnalyzerForJvm(it), it)
 }
 
 private fun StorageComponentContainer.javaAnalysisInit() {
