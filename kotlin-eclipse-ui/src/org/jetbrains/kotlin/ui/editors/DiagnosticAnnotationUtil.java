@@ -222,14 +222,10 @@ public class DiagnosticAnnotationUtil {
     }
     
     public static boolean isQuickFixable(@NotNull DiagnosticFactory<?> diagnostic) {
-        return isUnresolvedReference(diagnostic) || isPublicMemberTypeNotSpecified(diagnostic);
+        return isUnresolvedReference(diagnostic);
     }
 
     public static boolean isUnresolvedReference(@NotNull DiagnosticFactory<?> diagnostic) {
         return Errors.UNRESOLVED_REFERENCE.equals(diagnostic);
-    }
-    
-    public static boolean isPublicMemberTypeNotSpecified(@NotNull DiagnosticFactory<?> diagnostic) {
-        return Errors.PUBLIC_MEMBER_SHOULD_SPECIFY_TYPE.equals(diagnostic);
     }
 }

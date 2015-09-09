@@ -41,7 +41,7 @@ public fun KotlinReference.resolveToSourceElements(): List<SourceElement> {
     if (eclipseFile == null) return emptyList()
     
     val javaProject = JavaCore.create(eclipseFile.getProject())
-    val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, jetFile)
+    val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult
     return resolveToSourceElements(analysisResult.bindingContext, javaProject)
 }
 

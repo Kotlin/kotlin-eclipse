@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IProject
 import java.util.concurrent.ConcurrentHashMap
 import org.eclipse.core.resources.IResourceChangeListener
 import org.eclipse.core.resources.IResourceChangeEvent
+import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
 
 public object KotlinAnalysisProjectCache : IResourceChangeListener {
     private val cachedAnalysisResults = ConcurrentHashMap<IProject, AnalysisResult>()
@@ -43,7 +44,9 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
         return synchronized(project) {
             val analysisResult = cachedAnalysisResults.getOrElse(project) {
                 val environment = KotlinEnvironment.getEnvironment(javaProject)
-                KotlinAnalyzer.analyzeFiles(javaProject, environment, ProjectUtils.getSourceFiles(javaProject.getProject()))
+                KotlinAnalyzer
+                        .analyzeFiles(javaProject, environment, ProjectUtils.getSourceFiles(javaProject.getProject()))
+                        .analysisResult
             }
             
             cachedAnalysisResults.putIfAbsent(project, analysisResult) ?: analysisResult

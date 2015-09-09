@@ -168,6 +168,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         BindingContext bindingContext = KotlinAnalyzer
                 .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
+                .getAnalysisResult()
                 .getBindingContext();
         
         return bindingContext;

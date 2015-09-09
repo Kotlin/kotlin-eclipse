@@ -39,9 +39,12 @@ import java.util.HashSet
 import org.jetbrains.kotlin.utils.KotlinFrontEndException
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.incremental.components.LookupTracker
+import org.jetbrains.kotlin.container.ComponentProvider
+
+public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
 public object EclipseAnalyzerFacadeForJVM {
-    public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<JetFile>): AnalysisResult {
+    public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<JetFile>): AnalysisResultWithProvider {
         val filesSet = filesToAnalyze.toSet()
         if (filesSet.size() != filesToAnalyze.size()) {
             KotlinLogger.logWarning("Analyzed files have duplicates")
@@ -58,8 +61,9 @@ public object EclipseAnalyzerFacadeForJVM {
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
-        val container = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
+        val containerAndProvider = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
                 GlobalSearchScope.allScope(project), javaProject, LookupTracker.DO_NOTHING)
+        val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         
         try {
@@ -71,7 +75,9 @@ public object EclipseAnalyzerFacadeForJVM {
             KotlinLogger.logError(e)
         }
         
-        return AnalysisResult.success(trace.getBindingContext(), moduleContext.module)
+        return AnalysisResultWithProvider(
+                AnalysisResult.success(trace.getBindingContext(), moduleContext.module),
+                containerAndProvider.second)
     }
     
     private fun getPath(jetFile: JetFile): String = jetFile.getVirtualFile().getPath()

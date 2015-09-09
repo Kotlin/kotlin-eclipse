@@ -33,6 +33,15 @@ import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.container.ComponentProvider
+import org.jetbrains.kotlin.container.getService
+import org.jetbrains.kotlin.types.expressions.ExpressionTypingServices
+import org.jetbrains.kotlin.resolve.scopes.JetScope
+import org.jetbrains.kotlin.resolve.scopes.utils.asLexicalScope
+import org.jetbrains.kotlin.types.TypeUtils
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo
+import org.jetbrains.kotlin.resolve.BindingTraceContext
+import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
 
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -48,7 +57,8 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
     	val declaration = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetDeclarationWithBody>())!!
-        val context = getBindingContext(declaration.getContainingJetFile())!!
+        val (analysisResult, componentProvider) = getAnalysisResultWithProvider(declaration.getContainingJetFile())!!
+        val context = analysisResult.bindingContext
         val value = calcValue(declaration, context)!!
 
         val setUnitType: Boolean = if (!declaration.hasDeclaredReturnType() && declaration is JetNamedFunction) {
@@ -63,7 +73,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         replaceBody(declaration, value, editor)
         
         val omitType = (declaration.hasDeclaredReturnType() || setUnitType) &&
-             declaration is JetCallableDeclaration && canOmitType(declaration, value, context, setUnitType)
+             declaration is JetCallableDeclaration && canOmitType(declaration, value, context, componentProvider, setUnitType)
 
         insertAndSelectType(declaration, setUnitType, omitType, editor)   
 
@@ -139,12 +149,13 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         return false
     }
     
-    private fun canOmitType(declaration: JetCallableDeclaration, expression: JetExpression, bindingContext: BindingContext, setUnitType: Boolean): Boolean {
+    private fun canOmitType(declaration: JetCallableDeclaration, expression: JetExpression, 
+            bindingContext: BindingContext, provider: ComponentProvider, setUnitType: Boolean): Boolean {
         if (!declaration.canRemoveTypeSpecificationByVisibility(bindingContext))
             return false
 
-//        // Workaround for anonymous objects and similar expressions without resolution scope
-//        // TODO: This should probably be fixed in front-end so that resolution scope is recorded for anonymous objects as well
+        // Workaround for anonymous objects and similar expressions without resolution scope
+        // TODO: This should probably be fixed in front-end so that resolution scope is recorded for anonymous objects as well
         val scopeExpression = ((declaration as? JetDeclarationWithBody)?.getBodyExpression() as? JetBlockExpression)
                                  ?.getStatements()?.singleOrNull()
                          ?: return false
@@ -155,9 +166,19 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         	(bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration] as? CallableDescriptor)?.getReturnType() ?: return false
             }
         val scope = bindingContext[BindingContext.RESOLUTION_SCOPE, scopeExpression] ?: return false
-        val expressionType = expression.computeTypeInfoInContext(scope).type ?: return false
-        return JetTypeChecker.DEFAULT.isSubtypeOf(expressionType, declaredType)
+        val expressionType = expression.computeTypeInContext(provider, scope)
+        return expressionType?.isSubtypeOf(declaredType) ?: false
     }
+}
+
+private fun JetExpression.computeTypeInContext(provider: ComponentProvider, scope: JetScope): JetType? {
+    return provider.getService(ExpressionTypingServices::class.java).getTypeInfo(
+            scope.asLexicalScope(), 
+            this,
+            TypeUtils.NO_EXPECTED_TYPE,
+            DataFlowInfo.EMPTY,
+            BindingTraceContext(),
+            false).type
 }
 
 fun JetCallableDeclaration.setType(type: JetType) {

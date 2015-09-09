@@ -12,8 +12,6 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor;
 import org.jetbrains.kotlin.descriptors.VariableDescriptor;
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
-import org.jetbrains.kotlin.diagnostics.Errors;
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers;
 import org.jetbrains.kotlin.psi.JetFunction;
 import org.jetbrains.kotlin.psi.JetNamedDeclaration;
@@ -25,7 +23,6 @@ import org.jetbrains.kotlin.psi.JetTypeReference;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.types.ErrorUtils;
 import org.jetbrains.kotlin.types.JetType;
-import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.intellij.psi.PsiElement;
@@ -38,9 +35,6 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
     
     private String displayString = SPECIFY_TYPE_EXPLICITLY_MESSAGE;
     
-    private final DiagnosticFactory<?> errorForQuickFix = Errors.PUBLIC_MEMBER_SHOULD_SPECIFY_TYPE;
-    private final String markerAnnotationForFix = AnnotationManager.IS_PUBLIC_MEMBER_TYPE_NOT_SPECIFIED;
-
     @Override
     public void apply(@NotNull IDocument document, @NotNull PsiElement element) {
         JetTypeReference typeRefParent = PsiTreeUtil.getTopmostParentOfType(element, JetTypeReference.class);
@@ -125,10 +119,6 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
     
     @Override
     public boolean isApplicable(@NotNull PsiElement element) {
-        if (isDiagnosticActiveForElement(element, errorForQuickFix, markerAnnotationForFix)) {
-            return true;
-        }
-        
         JetTypeReference typeRefParent = PsiTreeUtil.getTopmostParentOfType(element, JetTypeReference.class);
         if (typeRefParent != null) {
             element = typeRefParent;
@@ -144,7 +134,8 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
             return false;
         }
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        BindingContext bindingContext = KotlinAnalyzer.analyzeFile(javaProject, declaration.getContainingJetFile()).getBindingContext();
+        BindingContext bindingContext = KotlinAnalyzer.analyzeFile(javaProject, declaration.getContainingJetFile())
+                .getAnalysisResult().getBindingContext();
         
         boolean canRemoveType = QuickassistPackage.canRemoveTypeSpecificationByVisibility(declaration, bindingContext);
 
@@ -216,6 +207,7 @@ public class KotlinSpecifyTypeAssistProposal extends KotlinQuickAssistProposal {
         
         BindingContext bindingContext = KotlinAnalyzer
                 .analyzeFile(javaProject, declaration.getContainingJetFile())
+                .getAnalysisResult()
                 .getBindingContext();
         DeclarationDescriptor descriptor = bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, declaration);
 

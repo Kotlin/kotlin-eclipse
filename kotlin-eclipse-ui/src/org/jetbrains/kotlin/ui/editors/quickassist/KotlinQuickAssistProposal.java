@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
@@ -97,12 +98,16 @@ public abstract class KotlinQuickAssistProposal extends KotlinQuickAssist implem
     
     @Nullable
     protected BindingContext getBindingContext(@NotNull JetFile jetFile)  {
+        return getAnalysisResultWithProvider(jetFile).getAnalysisResult().getBindingContext();
+    }
+    
+    protected AnalysisResultWithProvider getAnalysisResultWithProvider(@NotNull JetFile jetFile) {
         IFile file = getActiveFile();
         if (file == null) {
             return null;
         }
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        return KotlinAnalyzer.analyzeFile(javaProject, jetFile).getBindingContext();
+        return KotlinAnalyzer.analyzeFile(javaProject, jetFile);
     }
     
     @Override

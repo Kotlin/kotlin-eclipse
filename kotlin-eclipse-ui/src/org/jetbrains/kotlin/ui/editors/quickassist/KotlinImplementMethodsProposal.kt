@@ -41,13 +41,13 @@ import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
-            renderDefaultValues = false
-            modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
-            withDefinedIn = false
-            nameShortness = NameShortness.SHORT
-            overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
-            unitReturnType = false
-            typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES
+            it.renderDefaultValues = false
+            it.modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
+            it.withDefinedIn = false
+            it.nameShortness = NameShortness.SHORT
+            it.overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
+            it.unitReturnType = false
+            it.typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES
     }
 	
 	override fun apply(document: IDocument, psiElement: PsiElement) {
@@ -242,8 +242,6 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         return whiteSpace
     }
 
-
-	
 	public fun collectMethodsToGenerate(classOrObject: JetClassOrObject): Set<CallableMemberDescriptor> {
         val descriptor = classOrObject.resolveToDescriptor()
         if (descriptor is ClassDescriptor) {
@@ -255,7 +253,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 	private fun JetElement.resolveToDescriptor(): DeclarationDescriptor {
 		val jetFile = this.getContainingJetFile()
 		val project = getActiveFile()!!.getProject()
-		val analysisResult = KotlinAnalyzer.analyzeFile(JavaCore.create(project), jetFile)
+		val analysisResult = KotlinAnalyzer.analyzeFile(JavaCore.create(project), jetFile).analysisResult
 		return BindingContextUtils.getNotNull(
 				analysisResult.bindingContext, 
 				BindingContext.DECLARATION_TO_DESCRIPTOR,
