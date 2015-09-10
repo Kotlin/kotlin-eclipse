@@ -23,7 +23,7 @@ import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jetbrains.kotlin.core.utils.UtilsPackage;
-import org.jetbrains.kotlin.ui.builder.KotlinJavaElementListener;
+import org.jetbrains.kotlin.ui.builder.KotlinClassPathListener;
 import org.jetbrains.kotlin.ui.builder.ResourceChangeListener;
 import org.osgi.framework.BundleContext;
 
@@ -38,7 +38,7 @@ public class Activator extends AbstractUIPlugin {
     private static Activator plugin;
     
     private final IResourceChangeListener resourceChangeListener = new ResourceChangeListener();
-    private final IElementChangedListener kotlinJavaElementChangedListener = new KotlinJavaElementListener();
+    private final IElementChangedListener kotlinJavaElementChangedListener = new KotlinClassPathListener();
     
     public Activator() {
     }
