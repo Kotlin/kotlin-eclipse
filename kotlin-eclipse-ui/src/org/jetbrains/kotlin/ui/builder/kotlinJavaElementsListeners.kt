@@ -22,19 +22,54 @@ import org.eclipse.jdt.core.IJavaElementDelta
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinNature
+import org.eclipse.jdt.core.IAnnotation
+import org.eclipse.jdt.core.IMember
+import org.eclipse.jdt.core.IType
+import org.eclipse.jdt.core.ICompilationUnit
+import org.eclipse.jdt.core.IJavaElement
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
+import org.eclipse.jdt.core.IJavaModel
+import org.eclipse.jdt.core.ITypeParameter
+import org.eclipse.jdt.internal.core.ImportContainer
+import org.eclipse.jdt.core.IPackageFragment
+import org.eclipse.jdt.core.IPackageDeclaration
 
 public class KotlinClassPathListener : IElementChangedListener {
     override public fun elementChanged(event: ElementChangedEvent) {
         updateEnvironmentIfClasspathChanged(event.getDelta())
     }
     
-    public fun updateEnvironmentIfClasspathChanged(delta: IJavaElementDelta) {
+    private fun updateEnvironmentIfClasspathChanged(delta: IJavaElementDelta) {
         delta.getAffectedChildren().forEach { updateEnvironmentIfClasspathChanged(it) }
         
         val javaProject = delta.getElement().getJavaProject()
         if (javaProject != null && javaProject.exists() && KotlinNature.hasKotlinNature(javaProject.getProject())) {
             if ((delta.getFlags() and IJavaElementDelta.F_CLASSPATH_CHANGED) !== 0) {
                 KotlinEnvironment.updateKotlinEnvironment(javaProject)
+            }
+        }
+    }
+}
+
+public class KotlinJavaDeclarationsListener : IElementChangedListener {
+    override fun elementChanged(event: ElementChangedEvent) {
+        resetCacheIfJavaElementDeclarationChanged(event.getDelta())
+    }
+    
+    private fun resetCacheIfJavaElementDeclarationChanged(delta: IJavaElementDelta) {
+        delta.getAffectedChildren().forEach { resetCacheIfJavaElementDeclarationChanged(it) }
+        
+        val element = delta.getElement()
+        when (element) {
+            is IType,
+            is IMember,
+            is ITypeParameter,
+            is ImportContainer,
+            is IPackageDeclaration -> {
+                val javaProject = element.getJavaProject()
+                if (javaProject != null) {
+                    KotlinAnalysisProjectCache.resetCache(javaProject)
+                }
             }
         }
     }
