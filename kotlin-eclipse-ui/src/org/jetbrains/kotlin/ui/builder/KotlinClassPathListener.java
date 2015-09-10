@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 
-public class KotlinJavaElementListener implements IElementChangedListener {
+public class KotlinClassPathListener implements IElementChangedListener {
     @Override
     public void elementChanged(ElementChangedEvent event) {
         updateEnvironmentIfClasspathChanged(event.getDelta());
