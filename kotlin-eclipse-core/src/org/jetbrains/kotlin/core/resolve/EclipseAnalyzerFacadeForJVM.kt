@@ -40,6 +40,7 @@ import org.jetbrains.kotlin.utils.KotlinFrontEndException
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.container.ComponentProvider
+import org.jetbrains.kotlin.descriptors.PackagePartProvider
 
 public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
@@ -57,12 +58,12 @@ public object EclipseAnalyzerFacadeForJVM {
             getPath(it) in addedFiles
         }
         
-        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project)
+        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project, project.getName())
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
         val containerAndProvider = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
-                GlobalSearchScope.allScope(project), javaProject, LookupTracker.DO_NOTHING)
+                GlobalSearchScope.allScope(project), javaProject, LookupTracker.DO_NOTHING, PackagePartProvider.EMPTY)
         val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         

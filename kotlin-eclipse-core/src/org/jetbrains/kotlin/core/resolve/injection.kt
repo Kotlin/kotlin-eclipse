@@ -38,6 +38,7 @@ import org.jetbrains.kotlin.synthetic.AdditionalScopesWithJavaSyntheticExtension
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.resolve.CompilerEnvironment
+import org.jetbrains.kotlin.descriptors.PackagePartProvider
 
 fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: GlobalSearchScope, 
         project: Project, lookupTracker: LookupTracker) {
@@ -71,18 +72,21 @@ public fun createContainerForTopDownAnalyzerForJvm(
         declarationProviderFactory: DeclarationProviderFactory,
         moduleContentScope: GlobalSearchScope,
         javaProject: IJavaProject,
-        lookupTracker: LookupTracker
+        lookupTracker: LookupTracker,
+        packagePartProvider: PackagePartProvider
 ): Pair<ContainerForTopDownAnalyzerForJvm, StorageComponentContainer> = createContainer("TopDownAnalyzerForJvm") {
-    it.configureModule(moduleContext, JvmPlatform, bindingTrace)
-    it.configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, lookupTracker)
+    useInstance(packagePartProvider)
     
-    it.useInstance(javaProject)
-    it.useInstance(declarationProviderFactory)
+    configureModule(moduleContext, JvmPlatform, bindingTrace)
+    configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, lookupTracker)
     
-    CompilerEnvironment.configure(it)
+    useInstance(javaProject)
+    useInstance(declarationProviderFactory)
+    
+    CompilerEnvironment.configure(this)
 
-    it.useImpl<SingleModuleClassResolver>()
-    it.useImpl<FileScopeProviderImpl>()
+    useImpl<SingleModuleClassResolver>()
+    useImpl<FileScopeProviderImpl>()
 }.let {
     it.javaAnalysisInit()
 

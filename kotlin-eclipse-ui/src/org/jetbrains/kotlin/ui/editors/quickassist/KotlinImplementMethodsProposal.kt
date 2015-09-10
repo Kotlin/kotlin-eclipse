@@ -41,13 +41,13 @@ import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
-            it.renderDefaultValues = false
-            it.modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
-            it.withDefinedIn = false
-            it.nameShortness = NameShortness.SHORT
-            it.overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
-            it.unitReturnType = false
-            it.typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES
+            renderDefaultValues = false
+            modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
+            withDefinedIn = false
+            nameShortness = NameShortness.SHORT
+            overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
+            unitReturnType = false
+            typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES
     }
 	
 	override fun apply(document: IDocument, psiElement: PsiElement) {

@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider;
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
 import org.jetbrains.kotlin.psi.JetClassOrObject;
@@ -131,13 +132,13 @@ public class KotlinLightClassManager {
         
         JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
         for (JetClassOrObject classOrObject : PsiTreeUtil.findChildrenOfType(jetFile, JetClassOrObject.class)) {
-            String internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(classOrObject);
+            String internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(classOrObject, NoResolveFileClassesProvider.INSTANCE$);
             if (internalName != null) {
                 lightClasses.add(computePathByInternalName(internalName));
             }
         }
         
-        if (PackagePartClassUtils.fileHasCallables(jetFile)) {
+        if (PackagePartClassUtils.fileHasTopLevelCallables(jetFile)) {
             String internalName = PackageClassUtils.getPackageClassInternalName(jetFile.getPackageFqName());
             lightClasses.add(computePathByInternalName(internalName));
         }
