@@ -28,6 +28,9 @@ import java.util.concurrent.ConcurrentHashMap
 import org.eclipse.core.resources.IResourceChangeListener
 import org.eclipse.core.resources.IResourceChangeEvent
 import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public object KotlinAnalysisProjectCache : IResourceChangeListener {
     private val cachedAnalysisResults = ConcurrentHashMap<IProject, AnalysisResult>()
@@ -63,8 +66,12 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
             IResourceChangeEvent.PRE_CLOSE,
             IResourceChangeEvent.PRE_BUILD -> event.getDelta()?.accept { delta ->
                 val resource = delta.getResource()
-                if (resource is IProject) {
-                    cachedAnalysisResults.remove(resource)
+                if (resource is IFile){
+                    val javaProject = JavaCore.create(resource.getProject())
+                    if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource, javaProject)) {
+                        cachedAnalysisResults.remove(resource.getProject())
+                    }
+                    
                     return@accept false
                 }
                 
