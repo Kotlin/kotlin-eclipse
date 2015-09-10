@@ -82,7 +82,7 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
     val renderedParameters = descriptor.getValueParameters().map { renderParameter(it) }
     val informationString = renderedParameters.joinToString(", ")
     val displayImage = KotlinImageProvider.getImage(descriptor)
-    val name = descriptor.getName()
+    val name = if (descriptor is ConstructorDescriptor) descriptor.getContainingDeclaration().getName() else descriptor.getName()
     
     override fun getContextDisplayString(): String = displayString
     
