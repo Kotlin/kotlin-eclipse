@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.asJava.KotlinLightClassForPackage;
+import org.jetbrains.kotlin.asJava.KotlinLightClassForFacade;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.CoreExternalAnnotationsManager;
@@ -115,7 +115,8 @@ public class KotlinEnvironment {
         CliLightClassGenerationSupport cliLightClassGenerationSupport = new CliLightClassGenerationSupport(project);
         project.registerService(LightClassGenerationSupport.class, cliLightClassGenerationSupport);
         project.registerService(CliLightClassGenerationSupport.class, cliLightClassGenerationSupport);
-        project.registerService(KotlinLightClassForPackage.FileStubCache.class, new KotlinLightClassForPackage.FileStubCache(project));
+        project.registerService(KotlinLightClassForFacade.PackageFacadeStubCache.class, new KotlinLightClassForFacade.PackageFacadeStubCache(project));
+        project.registerService(KotlinLightClassForFacade.FacadeStubCache.class, new KotlinLightClassForFacade.FacadeStubCache(project));
         project.registerService(CodeAnalyzerInitializer.class, cliLightClassGenerationSupport);
         project.registerService(KotlinLightClassManager.class, new KotlinLightClassManager(javaProject));
         project.registerService(CodeStyleManager.class, new DummyCodeStyleManager());

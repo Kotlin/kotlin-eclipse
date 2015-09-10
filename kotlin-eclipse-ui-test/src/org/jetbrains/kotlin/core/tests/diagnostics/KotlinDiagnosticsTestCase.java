@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 import kotlin.KotlinPackage;
 import kotlin.jvm.functions.Function1;
 
+import org.eclipse.core.runtime.Path;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
@@ -368,7 +369,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         try {
             getTestProject().createSourceFile(
                     PathUtil.getParentPath(filePath), 
-                    PathUtil.getFileName(filePath), 
+                    new Path(filePath).lastSegment(), 
                     content);
             return true;
         } catch (Exception e) {

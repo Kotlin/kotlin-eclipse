@@ -24,8 +24,8 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
 import org.jetbrains.kotlin.core.utils.ProjectUtils
-import kotlin.platform.platformStatic
 import java.util.ArrayList
+import kotlin.jvm.JvmStatic
 
 val runtimeContainerId: IPath = Path("org.jetbrains.kotlin.core.KOTLIN_CONTAINER")
 
@@ -38,7 +38,7 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
         private val LIB_RUNTIME_SRC_NAME = "kotlin-runtime-sources"
         private val LIB_REFLECT_NAME = "kotlin-reflect"
 		
-		@platformStatic
+		@JvmStatic
         public fun getPathToLightClassesFolder(javaProject: IJavaProject): IPath {
             return Path(javaProject.getProject().getName()).append(KotlinJavaManager.KOTLIN_BIN_FOLDER).makeAbsolute()
         }
