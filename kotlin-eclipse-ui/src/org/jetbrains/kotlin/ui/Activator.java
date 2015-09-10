@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jetbrains.kotlin.core.utils.UtilsPackage;
 import org.jetbrains.kotlin.ui.builder.KotlinClassPathListener;
+import org.jetbrains.kotlin.ui.builder.KotlinJavaDeclarationsListener;
 import org.jetbrains.kotlin.ui.builder.ResourceChangeListener;
 import org.osgi.framework.BundleContext;
 
@@ -38,7 +39,8 @@ public class Activator extends AbstractUIPlugin {
     private static Activator plugin;
     
     private final IResourceChangeListener resourceChangeListener = new ResourceChangeListener();
-    private final IElementChangedListener kotlinJavaElementChangedListener = new KotlinClassPathListener();
+    private final IElementChangedListener kotlinClassPathChangedListener = new KotlinClassPathListener();
+    private final IElementChangedListener kotlinJavaDeclarationsListener = new KotlinJavaDeclarationsListener();
     
     public Activator() {
     }
@@ -51,13 +53,15 @@ public class Activator extends AbstractUIPlugin {
         UtilsPackage.addFilesToParseFromKotlinProjectsInWorkspace();
         
         ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener, IResourceChangeEvent.POST_CHANGE);
-        JavaCore.addElementChangedListener(kotlinJavaElementChangedListener);
+        JavaCore.addElementChangedListener(kotlinClassPathChangedListener);
+        JavaCore.addElementChangedListener(kotlinJavaDeclarationsListener);
     }
     
     @Override
     public void stop(BundleContext context) throws Exception {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceChangeListener);
-        JavaCore.removeElementChangedListener(kotlinJavaElementChangedListener);
+        JavaCore.removeElementChangedListener(kotlinClassPathChangedListener);
+        JavaCore.removeElementChangedListener(kotlinJavaDeclarationsListener);
         
         plugin = null;
         super.stop(context);
