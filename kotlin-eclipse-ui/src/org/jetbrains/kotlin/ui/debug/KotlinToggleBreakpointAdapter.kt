@@ -38,6 +38,7 @@ import org.jetbrains.kotlin.psi.JetPsiUtil
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.psi.JetClassOrObject
 import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
 
 public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
     override public fun toggleLineBreakpoints(part: IWorkbenchPart, selection: ISelection) {
@@ -84,13 +85,13 @@ fun findTopmostTypeName(document: IDocument, lineNumber: Int, file: IFile): FqNa
 }
 
 fun findTopmostType(offset: Int, jetFile: JetFile): FqName? {
-        val element = jetFile.findElementAt(offset)
-        val jetClassOrObject = JetPsiUtil.getTopmostParentOfTypes(element, JetClassOrObject::class.java)
-        if (jetClassOrObject != null) {
-            val classOrObject = jetClassOrObject as JetClassOrObject
-            val fqName = classOrObject.getFqName()
-            if (fqName != null) return fqName
-        }
-        
-        return PackageClassUtils.getPackageClassFqName(jetFile.getPackageFqName())
+    val element = jetFile.findElementAt(offset)
+    val jetClassOrObject = JetPsiUtil.getTopmostParentOfTypes(element, JetClassOrObject::class.java)
+    if (jetClassOrObject != null) {
+        val classOrObject = jetClassOrObject as JetClassOrObject
+        val fqName = classOrObject.getFqName()
+        if (fqName != null) return fqName
     }
+    
+    return NoResolveFileClassesProvider.getFileClassFqName(jetFile)
+}
