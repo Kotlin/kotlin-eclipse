@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import kotlin.platform.platformStatic
 import org.eclipse.jface.text.contentassist.CompletionProposal
 
 public fun withKotlinInsertHandler(

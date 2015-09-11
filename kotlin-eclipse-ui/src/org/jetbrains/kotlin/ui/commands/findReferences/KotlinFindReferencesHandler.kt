@@ -113,7 +113,7 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
         
         val psiElement = EditorUtil.getPsiElement(activeEditor, selection.getOffset())
         if (psiElement != null) {
-            return PsiTreeUtil.getNonStrictParentOfType(psiElement, javaClass<JetElement>())
+            return PsiTreeUtil.getNonStrictParentOfType(psiElement, JetElement::class.java)
         }
         
         return null
@@ -148,7 +148,7 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
     
     return when (jetElement) {
         is JetObjectDeclarationName -> {
-            val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetObjectDeclaration>())
+            val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, JetObjectDeclaration::class.java)
             objectDeclaration?.let { createQuerySpecification(it, javaProject, scope, description) }
         }
         
@@ -175,7 +175,7 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
             } else {
                 createFindReferencesQuery(
                         sourceElements
-                            .filterIsInstance(javaClass<KotlinSourceElement>())
+                            .filterIsInstance(KotlinSourceElement::class.java)
                             .map { it.psi })
             }
         } 

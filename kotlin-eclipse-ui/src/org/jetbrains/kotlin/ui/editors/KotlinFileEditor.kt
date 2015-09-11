@@ -66,9 +66,9 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
-            javaClass<IContentOutlinePage>() -> kotlinOutlinePage
-            javaClass<IToggleBreakpointsTarget>() -> kotlinToggleBreakpointAdapter
-            javaClass<IRunToLineTarget>() -> kotlinRunToLineAdapter
+            IContentOutlinePage::class.java -> kotlinOutlinePage
+            IToggleBreakpointsTarget::class.java -> kotlinToggleBreakpointAdapter
+            IRunToLineTarget::class.java -> kotlinRunToLineAdapter
             else -> super<CompilationUnitEditor>.getAdapter(required)
         }
     }
@@ -137,7 +137,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
                 "org.eclipse.jdt.ui.javaEditorScope"))
     }
     
-    public fun getFile(): IFile? = getEditorInput().getAdapter(javaClass<IFile>()) as? IFile
+    public fun getFile(): IFile? = getEditorInput().getAdapter(IFile::class.java) as? IFile
     
     override val javaEditor: JavaEditor = this
     

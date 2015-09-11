@@ -60,8 +60,8 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
 
     override public fun getAdapter(required: Class<*>):Any? =
         when (required) {
-            javaClass<IContentOutlinePage>() -> kotlinOutlinePage
-            javaClass<IToggleBreakpointsTarget>() -> kotlinToggleBreakpointAdapter
+            IContentOutlinePage::class.java -> kotlinOutlinePage
+            IToggleBreakpointsTarget::class.java -> kotlinToggleBreakpointAdapter
             else -> super<ClassFileEditor>.getAdapter(required)
         }
 
@@ -105,7 +105,7 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
     }
 
     private val classFile: IClassFile
-        get() = getEditorInput().getAdapter(javaClass<IJavaElement>()) as IClassFile
+        get() = getEditorInput().getAdapter(IJavaElement::class.java) as IClassFile
 
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())

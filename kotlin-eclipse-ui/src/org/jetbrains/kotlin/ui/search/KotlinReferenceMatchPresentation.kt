@@ -96,9 +96,9 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
     
     private fun getContainingDeclaration(jetElement: JetElement): JetElement? {
         return PsiTreeUtil.getNonStrictParentOfType(jetElement, 
-                javaClass<JetNamedFunction>(),
-                javaClass<JetProperty>(),
-                javaClass<JetClassOrObject>(),
-                javaClass<JetFile>())
+                JetNamedFunction::class.java,
+                JetProperty::class.java,
+                JetClassOrObject::class.java,
+                JetFile::class.java)
     }
 }

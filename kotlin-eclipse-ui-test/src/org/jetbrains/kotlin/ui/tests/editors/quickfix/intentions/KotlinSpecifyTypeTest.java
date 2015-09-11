@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
-import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Test;
 
 public class KotlinSpecifyTypeTest extends KotlinSpecifyTypeTestCase {

@@ -74,7 +74,7 @@ public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
     override public fun canToggleWatchpoints(part: IWorkbenchPart, selection: ISelection): Boolean = true
     
     private fun getEditor(part: IWorkbenchPart): ITextEditor? {
-        return if (part is ITextEditor) part else part.getAdapter(javaClass<ITextEditor>()) as? ITextEditor
+        return if (part is ITextEditor) part else part.getAdapter(ITextEditor::class.java) as? ITextEditor
     }
 }
 
@@ -85,7 +85,7 @@ fun findTopmostTypeName(document: IDocument, lineNumber: Int, file: IFile): FqNa
 
 fun findTopmostType(offset: Int, jetFile: JetFile): FqName? {
         val element = jetFile.findElementAt(offset)
-        val jetClassOrObject = JetPsiUtil.getTopmostParentOfTypes(element, javaClass<JetClassOrObject>())
+        val jetClassOrObject = JetPsiUtil.getTopmostParentOfTypes(element, JetClassOrObject::class.java)
         if (jetClassOrObject != null) {
             val classOrObject = jetClassOrObject as JetClassOrObject
             val fqName = classOrObject.getFqName()

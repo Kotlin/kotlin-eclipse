@@ -73,7 +73,7 @@ public class KotlinFunctionCompletionProposal(
         }
 
         openingBracketOffset = indexOfSkippingSpace(document, openingBracket, completionOffset)
-        assert(openingBracketOffset != -1, "If there wasn't open bracket it should already have been inserted")
+        assert(openingBracketOffset != -1) { "If there wasn't open bracket it should already have been inserted" }
 
         val closeBracketOffset = indexOfSkippingSpace(document, closingBracket, openingBracketOffset + 1)
 

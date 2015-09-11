@@ -89,7 +89,7 @@ public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IConte
 //    Copied with some changes from JetFunctionParameterInfoHandler.java
     private fun getCurrentArgumentIndex(offset: Int): Int? {
         val psiElement = EditorUtil.getPsiElement(editor, offset)
-        val argumentList = PsiTreeUtil.getNonStrictParentOfType(psiElement, javaClass<JetValueArgumentList>())
+        val argumentList = PsiTreeUtil.getNonStrictParentOfType(psiElement, JetValueArgumentList::class.java)
         if (argumentList == null) return null
         
         val offsetInPSI = LineEndUtil.convertCrToDocumentOffset(editor.document, offset)

@@ -49,13 +49,13 @@ public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
 
 	private fun findBlockContentEnd(block: PsiElement): Int {
 	    val element = block.allChildren
-        .toList()
-        .reverse()
-        .asSequence()
-        .dropWhile { it.getNode().getElementType() != JetTokens.RBRACE }
-        .drop(1)
-        .dropWhile { it is PsiWhiteSpace }
-        .firstOrNull() ?: block
+            .toList()
+            .reversed()
+            .asSequence()
+            .dropWhile { it.getNode().getElementType() != JetTokens.RBRACE }
+            .drop(1)
+            .dropWhile { it is PsiWhiteSpace }
+            .firstOrNull() ?: block
 		return element.getTextRange().getEndOffset()
 	}
 }

@@ -18,7 +18,6 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure
 
 import org.eclipse.jdt.core.dom.ITypeBinding
 import org.jetbrains.kotlin.load.java.structure.JavaClassifier
-import kotlin.platform.platformStatic
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotationOwner
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotation
 import org.jetbrains.kotlin.name.FqName
@@ -26,7 +25,7 @@ import org.jetbrains.kotlin.name.FqName
 public abstract class EclipseJavaClassifier<T : ITypeBinding>(javaType: T) : 
 		EclipseJavaElement<T>(javaType), JavaClassifier, JavaAnnotationOwner {
 	companion object {
-		@platformStatic 
+		@JvmStatic 
 		fun create(element: ITypeBinding): JavaClassifier {
 			return when {
 				element.isTypeVariable() -> EclipseJavaTypeParameter(element)

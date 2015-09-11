@@ -7,7 +7,6 @@ import org.eclipse.swt.SWT
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.lexer.JetTokens
 import com.intellij.psi.PsiElement
-import kotlin.platform.platformStatic
 import org.eclipse.jface.preference.PreferenceConverter
 import org.eclipse.jface.preference.IPreferenceStore
 import org.eclipse.jdt.ui.PreferenceConstants

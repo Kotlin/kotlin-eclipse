@@ -110,7 +110,7 @@ public object KotlinCompletionUtils {
         
         val offsetWithourCR = LineEndUtil.convertCrToDocumentOffset(sourceCodeWithMarker, identOffset, EditorUtil.getDocument(editor))
         val psiElement = jetFile.findElementAt(offsetWithourCR)
-        return PsiTreeUtil.getParentOfType(psiElement, javaClass<JetSimpleNameExpression>())
+        return PsiTreeUtil.getParentOfType(psiElement, JetSimpleNameExpression::class.java)
     }
     
     public fun replaceMarkerInIdentifier(identifier: String): String {

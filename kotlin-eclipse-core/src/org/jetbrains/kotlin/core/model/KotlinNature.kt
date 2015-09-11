@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IProjectNature
 import org.eclipse.core.runtime.CoreException
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import kotlin.properties.Delegates
-import kotlin.platform.platformStatic
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.core.resources.IResourceDelta
 
@@ -32,12 +31,12 @@ public class KotlinNature: IProjectNature {
         public val KOTLIN_NATURE: String = "org.jetbrains.kotlin.core.kotlinNature"
         public val KOTLIN_BUILDER: String = "org.jetbrains.kotlin.ui.kotlinBuilder"
         
-        @platformStatic
+        @JvmStatic
         public fun hasKotlinNature(project: IProject) : Boolean {
             return project.hasNature(KOTLIN_NATURE)
         }
         
-        @platformStatic
+        @JvmStatic
         public fun addNature(project:IProject) {
 	        if (!hasKotlinNature(project)) {
 	            val description = project.getDescription()
