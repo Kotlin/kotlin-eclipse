@@ -38,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinLightVirtualFile;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.UtilsPackage;
 import org.jetbrains.kotlin.idea.JetFileType;
@@ -255,8 +256,7 @@ public class KotlinPsiManager {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
         
-        String path = file.getRawLocation().toOSString();
-        LightVirtualFile virtualFile = new LightVirtualFile(path, JetLanguage.INSTANCE, text);
+        LightVirtualFile virtualFile = new KotlinLightVirtualFile(file, text);
         virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET);
         
         PsiFileFactoryImpl psiFileFactory = (PsiFileFactoryImpl) PsiFileFactory.getInstance(project);

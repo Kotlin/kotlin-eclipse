@@ -139,8 +139,12 @@ public class KotlinLightClassManager {
         }
         
         if (PackagePartClassUtils.fileHasTopLevelCallables(jetFile)) {
-            String internalName = PackageClassUtils.getPackageClassInternalName(jetFile.getPackageFqName());
-            lightClasses.add(computePathByInternalName(internalName));
+            String newFacadeInternalName = NoResolveFileClassesProvider.INSTANCE$.getFileClassInternalName(jetFile);
+            lightClasses.add(computePathByInternalName(newFacadeInternalName));
+            
+//            TODO: remove this after M13
+            String oldFacadeInternalName = PackageClassUtils.getPackageClassInternalName(jetFile.getPackageFqName());
+            lightClasses.add(computePathByInternalName(oldFacadeInternalName));
         }
         
         return lightClasses;
