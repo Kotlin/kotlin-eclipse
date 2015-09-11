@@ -63,7 +63,7 @@ public object EclipseAnalyzerFacadeForJVM {
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
         val containerAndProvider = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
-                GlobalSearchScope.allScope(project), javaProject, LookupTracker.DO_NOTHING, PackagePartProvider.EMPTY)
+                GlobalSearchScope.allScope(project), javaProject, LookupTracker.DO_NOTHING, KotlinPackagePartProvider(javaProject))
         val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         

@@ -236,7 +236,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             String fileName = elementFile.getName();
 
             PsiDirectory containingDirectory = elementFile.getContainingDirectory();
-            StringStorage storage = new StringStorage(fileText, fileName, EditorsPackage.getFqNameInsideArchive(containingDirectory.toString()));
+            StringStorage storage = new StringStorage(fileText, fileName, JarNavigationUtilsKt.getFqNameInsideArchive(containingDirectory.toString()));
             IStorageEditorInput input = new StringInput(storage);
             IWorkbenchPage page = win.getActivePage();
             if (page != null) {

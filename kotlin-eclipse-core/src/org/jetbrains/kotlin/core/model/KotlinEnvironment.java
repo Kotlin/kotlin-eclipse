@@ -17,8 +17,11 @@
 package org.jetbrains.kotlin.core.model;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -87,6 +90,7 @@ public class KotlinEnvironment {
     private final JavaCoreProjectEnvironment projectEnvironment;
     private final MockProject project;
     private final IJavaProject javaProject;
+    private final Set<VirtualFile> roots = new LinkedHashSet<>();
     
     private KotlinEnvironment(@NotNull IJavaProject javaProject, @NotNull Disposable disposable) {
         this.javaProject = javaProject;
@@ -238,6 +242,10 @@ public class KotlinEnvironment {
         return jarFile != null && jarFile.isValid();
     }
     
+    public Set<VirtualFile> getRoots() {
+        return Collections.unmodifiableSet(roots);
+    }
+    
     private void addToClasspath(File path) throws CoreException {
         if (path.isFile()) {
             VirtualFile jarFile = applicationEnvironment.getJarFileSystem().findFileByPath(path + "!/");
@@ -245,12 +253,14 @@ public class KotlinEnvironment {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
             }
             projectEnvironment.addJarToClassPath(path);
+            roots.add(jarFile);
         } else {
             VirtualFile root = applicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath());
             if (root == null) {
                 throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Can't find jar: " + path));
             }
             projectEnvironment.addSourcesToClasspath(root);
+            roots.add(root);
         }
     }
 }
