@@ -34,7 +34,7 @@ import org.jetbrains.kotlin.psi.JetTreeVisitorVoid
 import org.jetbrains.kotlin.psi.JetVisitor
 import org.jetbrains.kotlin.psi.JetElement
 
-public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
+public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
     override fun isEditable() = false
 
     override val javaEditor = this
@@ -49,9 +49,9 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
     override val javaProject: IJavaProject
         get() = classFile.getJavaProject()
 
-    private val colorManager:IColorManager
+    private val colorManager : IColorManager
     
-    private val kotlinOutlinePage:KotlinOutlinePage by lazy {
+    private val kotlinOutlinePage : KotlinOutlinePage by lazy {
         KotlinOutlinePage(this)
     }
     
@@ -63,12 +63,12 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
         colorManager = JavaColorManager()
     }
 
-    override public fun getAdapter(required: Class<*>):Any? =
-            when (required) {
-                javaClass<IContentOutlinePage>() -> kotlinOutlinePage
-                javaClass<IToggleBreakpointsTarget>() -> kotlinToggleBreakpointAdapter
-                else -> super<ClassFileEditor>.getAdapter(required)
-            }
+    override public fun getAdapter(required: Class<*>) : Any? =
+        when (required) {
+            IContentOutlinePage::class.java -> kotlinOutlinePage
+            IToggleBreakpointsTarget::class.java -> kotlinToggleBreakpointAdapter
+            else -> super<ClassFileEditor>.getAdapter(required)
+        }
 
     override public fun createPartControl(parent:Composite) {
         setSourceViewerConfiguration(Configuration(colorManager, this, getPreferenceStore()))
@@ -113,7 +113,7 @@ public class KotlinClassFileEditor:ClassFileEditor(), KotlinEditor {
     }
 
     private val classFile: IClassFile
-        get() = getEditorInput().getAdapter(javaClass<IJavaElement>()) as IClassFile
+        get() = getEditorInput().getAdapter(IJavaElement::class.java) as IClassFile
 
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())

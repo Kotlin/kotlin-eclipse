@@ -45,7 +45,7 @@ import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
 
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
-        val declaration = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetDeclarationWithBody>()) ?: return false
+        val declaration = PsiTreeUtil.getParentOfType(psiElement, JetDeclarationWithBody::class.java) ?: return false
         val context = getBindingContext(declaration.getContainingJetFile()) ?: return false
         val value = calcValue(declaration, context)
         return value != null && !containsReturn(value)
@@ -56,7 +56,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
     }
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
-    	val declaration = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetDeclarationWithBody>())!!
+    	val declaration = PsiTreeUtil.getParentOfType(psiElement, JetDeclarationWithBody::class.java)!!
         val (analysisResult, componentProvider) = getAnalysisResultWithProvider(declaration.getContainingJetFile())!!
         val context = analysisResult.bindingContext
         val value = calcValue(declaration, context)!!
@@ -163,8 +163,8 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         val declaredType: JetType = if (setUnitType) {
             KotlinBuiltIns.getInstance().getUnitType()
         } else {
-        	(bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration] as? CallableDescriptor)?.getReturnType() ?: return false
-            }
+            (bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration] as? CallableDescriptor)?.getReturnType() ?: return false
+        }
         val scope = bindingContext[BindingContext.RESOLUTION_SCOPE, scopeExpression] ?: return false
         val expressionType = expression.computeTypeInContext(provider, scope)
         return expressionType?.isSubtypeOf(declaredType) ?: false

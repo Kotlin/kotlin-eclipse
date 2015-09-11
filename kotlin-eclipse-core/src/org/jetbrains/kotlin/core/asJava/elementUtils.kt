@@ -53,7 +53,7 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
 }
 
 fun getDeclaringTypeFqName(jetElement: JetElement): FqName? {
-    val parent = PsiTreeUtil.getParentOfType(jetElement, javaClass<JetClassOrObject>(), javaClass<JetFile>())
+    val parent = PsiTreeUtil.getParentOfType(jetElement, JetClassOrObject::class.java, JetFile::class.java)
     return if (parent != null) getTypeFqName(parent) else null
 }
 

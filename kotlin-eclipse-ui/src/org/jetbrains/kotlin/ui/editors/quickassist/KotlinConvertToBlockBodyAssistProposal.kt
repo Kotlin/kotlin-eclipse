@@ -24,7 +24,7 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
 class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
-        val declaration = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetDeclarationWithBody>())?: return false
+        val declaration = PsiTreeUtil.getParentOfType(psiElement, JetDeclarationWithBody::class.java)?: return false
         if (declaration is JetFunctionLiteral || declaration.hasBlockBody() || !declaration.hasBody()) return false
 
         when (declaration) {
@@ -44,7 +44,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun getDisplayString() = "Convert to block body"
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
-        val declaration = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetDeclarationWithBody>())!!
+        val declaration = PsiTreeUtil.getParentOfType(psiElement, JetDeclarationWithBody::class.java)!!
         val context = getBindingContext(declaration.getContainingJetFile())!!
 
         val shouldSpecifyType = declaration is JetNamedFunction 
@@ -100,7 +100,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
                     else {
                     return factory.createBlock(expression.getText())
                 }
-            val returnExpression = PsiTreeUtil.getChildOfType(block, javaClass<JetReturnExpression>())
+            val returnExpression = PsiTreeUtil.getChildOfType(block, JetReturnExpression::class.java)
             val returned = returnExpression?.getReturnedExpression()?: return factory.createBlock("return ${expression.getText()}")
             if (JetPsiUtil.areParenthesesNecessary(expression, returned, returnExpression!!)) {
                 return factory.createBlock("return (${expression.getText()})")

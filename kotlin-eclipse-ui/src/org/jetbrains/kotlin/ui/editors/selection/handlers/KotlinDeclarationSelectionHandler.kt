@@ -48,7 +48,7 @@ public class KotlinDeclarationSelectionHandler: KotlinDefaultSelectionHandler() 
 
         var lastNonCommentChild = enclosingElement.allChildren
             .toList()
-            .reverse()
+            .reversed()
             .asSequence()
             .firstOrNull { it !is PsiWhiteSpace && it !is PsiComment }
             ?: enclosingElement.getLastChild()

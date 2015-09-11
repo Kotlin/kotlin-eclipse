@@ -50,5 +50,5 @@ public fun KotlinReference.resolveToSourceElements(context: BindingContext, proj
 }
 
 public fun getReferenceExpression(element: PsiElement): JetReferenceExpression? {
-	return PsiTreeUtil.getNonStrictParentOfType(element, javaClass<JetReferenceExpression>())
+	return PsiTreeUtil.getNonStrictParentOfType(element, JetReferenceExpression::class.java)
 }

@@ -22,7 +22,6 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
-import kotlin.platform.platformStatic
 import org.eclipse.core.resources.IProject
 import java.util.concurrent.ConcurrentHashMap
 import org.eclipse.core.resources.IResourceChangeListener
@@ -56,7 +55,7 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
         }
     }
     
-    public synchronized fun getAnalysisResultIfCached(javaProject: IJavaProject): AnalysisResult? {
+    public @Synchronized fun getAnalysisResultIfCached(javaProject: IJavaProject): AnalysisResult? {
         return cachedAnalysisResults.get(javaProject.getProject())
     }
     

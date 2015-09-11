@@ -57,7 +57,7 @@ import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.jetbrains.kotlin.ui.commands.findReferences.createQuerySpecification
 
 abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
-    Before public fun configure() {
+    @Before public fun configure() {
         configureProjectWithStdLib()
     }
     
@@ -85,7 +85,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         } else {
             val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editor.getEditingFile())
             val element = jetFile.findElementByDocumentOffset(editor.getCaretOffset(), editor.getDocument())!!
-            val jetElement = PsiTreeUtil.getNonStrictParentOfType(element, javaClass<JetElement>())!!
+            val jetElement = PsiTreeUtil.getNonStrictParentOfType(element, JetElement::class.java)!!
             
             createQuerySpecification(jetElement, editor.getTestJavaProject().getJavaProject(), scope, "")
         }

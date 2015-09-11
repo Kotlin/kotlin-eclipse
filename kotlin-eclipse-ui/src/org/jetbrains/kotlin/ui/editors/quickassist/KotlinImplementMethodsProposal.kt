@@ -51,7 +51,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     }
 	
 	override fun apply(document: IDocument, psiElement: PsiElement) {
-        val classOrObject = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetClassOrObject>(), false)
+        val classOrObject = PsiTreeUtil.getParentOfType(psiElement, JetClassOrObject::class.java, false)
         if (classOrObject == null) return
         
         val missingImplementations = collectMethodsToGenerate(classOrObject)
@@ -65,7 +65,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 	override fun getDisplayString(): String = "Implement Members"
 	
 	override fun isApplicable(psiElement: PsiElement): Boolean {
-		val classOrObject = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetClassOrObject>(), false)
+		val classOrObject = PsiTreeUtil.getParentOfType(psiElement, JetClassOrObject::class.java, false)
 		if (classOrObject != null) {
 			return collectMethodsToGenerate(classOrObject).isNotEmpty()
 		}

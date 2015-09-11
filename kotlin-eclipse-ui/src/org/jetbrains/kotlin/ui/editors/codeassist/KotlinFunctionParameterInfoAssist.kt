@@ -70,7 +70,7 @@ public object KotlinFunctionParameterInfoAssist {
 
 fun getCallSimpleNameExpression(editor: KotlinFileEditor, offset: Int): JetSimpleNameExpression? {
     val psiElement = EditorUtil.getPsiElement(editor, offset)
-    val argumentList = PsiTreeUtil.getParentOfType(psiElement, javaClass<JetValueArgumentList>())
+    val argumentList = PsiTreeUtil.getParentOfType(psiElement, JetValueArgumentList::class.java)
     if (argumentList == null) return null
     
     val argumentListParent = argumentList.getParent()

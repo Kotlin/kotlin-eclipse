@@ -202,7 +202,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
         return querySpecification.getScope().enclosingProjectsAndJars()
                 .map { JavaModel.getTarget(it, true) }
-                .filterIsInstance(javaClass<IProject>())
+                .filterIsInstance(IProject::class.java)
                 .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
     }
     
@@ -215,7 +215,7 @@ public class KotlinElementMatch(val jetElement: JetElement) : Match(KotlinAdapta
 class KotlinAdaptableElement(val jetElement: JetElement): IAdaptable {
     override fun getAdapter(adapter: Class<*>?): Any? {
         return when {
-            javaClass<IResource>() == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())
+            IResource::class.java == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())
             else -> null
         }
     }

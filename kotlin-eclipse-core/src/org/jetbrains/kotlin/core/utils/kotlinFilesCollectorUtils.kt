@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.CoreException
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import kotlin.platform.platformStatic
 import org.eclipse.jdt.core.IPackageFragmentRoot
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.eclipse.core.resources.ResourcesPlugin

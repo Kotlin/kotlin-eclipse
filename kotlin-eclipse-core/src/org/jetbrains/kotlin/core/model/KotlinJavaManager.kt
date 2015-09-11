@@ -63,7 +63,7 @@ public object KotlinJavaManager {
     
     public fun <T : IMember> findEclipseMembers(declaration: JetDeclaration, javaProject: IJavaProject, 
             klass: Class<T>): List<IMember> {
-        val containingElement = PsiTreeUtil.getParentOfType(declaration, javaClass<JetClassOrObject>(), javaClass<JetFile>())
+        val containingElement = PsiTreeUtil.getParentOfType(declaration, JetClassOrObject::class.java, JetFile::class.java)
         val seekInParent: Boolean = containingElement is JetObjectDeclaration && containingElement.isCompanion()
         
         if (containingElement == null) return emptyList()
@@ -106,8 +106,8 @@ public fun JetElement.toLightElements(javaProject: IJavaProject): List<IJavaElem
         is JetClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
         is JetNamedFunction,
         is JetSecondaryConstructor,
-        is JetPropertyAccessor -> KotlinJavaManager.findEclipseMembers(this as JetDeclaration, javaProject, javaClass<IMethod>())
-        is JetProperty -> KotlinJavaManager.findEclipseMembers(this, javaProject, javaClass<IMember>()) 
+        is JetPropertyAccessor -> KotlinJavaManager.findEclipseMembers(this as JetDeclaration, javaProject, IMethod::class.java)
+        is JetProperty -> KotlinJavaManager.findEclipseMembers(this, javaProject, IMember::class.java) 
         else -> emptyList()
     }
 }
