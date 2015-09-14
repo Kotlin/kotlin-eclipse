@@ -86,16 +86,6 @@ public class KotlinConvertToExpressionBodyTest extends
     }
 
     @Test
-    public void testProtectedFunNoSelection() {
-        doTest("common_testData/ide/intentions/convertToExpressionBody/protectedFunNoSelection.kt");
-    }
-
-    @Test
-    public void testPublicFunNoSelection() {
-        doTest("common_testData/ide/intentions/convertToExpressionBody/publicFunNoSelection.kt");
-    }
-
-    @Test
     public void testReturnWithNoValue() {
         doTest("common_testData/ide/intentions/convertToExpressionBody/returnWithNoValue.kt");
     }
