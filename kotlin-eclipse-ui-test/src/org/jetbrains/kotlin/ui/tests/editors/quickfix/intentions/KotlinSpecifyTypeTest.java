@@ -19,74 +19,64 @@ package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 import org.junit.Test;
 
 public class KotlinSpecifyTypeTest extends KotlinSpecifyTypeTestCase {
-
-	@Test
-	public void testBadCaretPosition() {
-		doTest("testData/intentions/specifyType/BadCaretPosition.kt");
-	}
-	
-	@Test
-	public void testClassNameClashing() {
-		doTest("testData/intentions/specifyType/ClassNameClashing.kt");
-	}
-	
-	@Test
-	public void testEnumType() {
-		doTest("testData/intentions/specifyType/EnumType.kt");
-	}
-	
-	@Test
-	public void testFunctionType() {
-		doTest("testData/intentions/specifyType/FunctionType.kt");
-	}
-	
-	@Test
-	public void testLoopParameter() {
-		doTest("testData/intentions/specifyType/LoopParameter.kt");
-	}
-	
-	@Test
-	public void testOnType() {
-		doTest("testData/intentions/specifyType/OnType.kt");
-	}
-	
-	@Test
-	public void testPublicMember() {
-		doTest("testData/intentions/specifyType/PublicMember.kt");
-	}
-	
-	@Test
-	public void testPublicMemberResolvedType() {
-		doTestWithBuildThreadJoin("testData/intentions/specifyType/PublicMemberResolvedType.kt");
-	}
-	
-	@Test
-	public void testRemoveUnresolvedType() {
-		doTest("testData/intentions/specifyType/RemoveUnresolvedType.kt");
-	}
-	
-	@Test
-	public void testRemovingForPublicMember() {
-		doTest("testData/intentions/specifyType/RemovingForPublicMember.kt");
-	}
-	
-	@Test
-	public void testStringRedefined() {
-		doTest("testData/intentions/specifyType/StringRedefined.kt");
-	}
-	
-	@Test
-	public void testTypeAlreadyProvided() {
-		doTest("testData/intentions/specifyType/TypeAlreadyProvided.kt");
-	}
-	
-	@Test
-	public void testUnitType() {
-		doTest("testData/intentions/specifyType/UnitType.kt");
-	}
-	
-	@Test
-	public void testUnknownType() {
-		doTest("testData/intentions/specifyType/UnknownType.kt");
-	}
+    
+    @Test
+    public void testBadCaretPosition() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/badCaretPosition.kt");
+    }
+    
+    @Test
+    public void testClassNameClashing() {
+        doTest("testData/intentions/specifyType/ClassNameClashing.kt");
+    }
+    
+    @Test
+    public void testConstructor() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/constructor.kt");
+    }
+    
+    @Test
+    public void testEnumType() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/enumType.kt");
+    }
+    
+    @Test
+    public void testFunctionType() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/functionType.kt");
+    }
+    
+    @Test
+    public void testLambdaParam() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/lambdaParam.kt");
+    }
+    
+    @Test
+    public void testLoopParameter() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/loopParameter.kt");
+    }
+    
+    @Test
+    public void testPublicMember() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/publicMember.kt");
+    }
+    
+    @Test
+    public void testStringRedefined() {
+        doTest("testData/intentions/specifyType/StringRedefined.kt");
+    }
+    
+    @Test
+    public void testTypeAlreadyProvided() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/typeAlreadyProvided.kt");
+    }
+    
+    @Test
+    public void testUnitType() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/unitType.kt");
+    }
+    
+    @Test
+    public void testUnknownType() {
+        doTest("common_testData/ide/intentions/specifyTypeExplicitly/unknownType.kt");
+    }
 }

@@ -77,6 +77,11 @@ public abstract class KotlinQuickAssist {
         return activeEditor.getViewer().getTextWidget().getCaretOffset();
     }
     
+    protected int getCaretOffsetInPSI(@NotNull KotlinFileEditor activeEditor, IDocument document) {
+        int caretOffset = getCaretOffset(activeEditor);
+        return LineEndUtil.convertCrToDocumentOffset(document, caretOffset);
+    }
+    
     
     public boolean isDiagnosticActiveForElement(PsiElement element, @NotNull DiagnosticFactory<?> diagnosticType, @NotNull String attribute) {
         KotlinFileEditor editor = getActiveEditor();

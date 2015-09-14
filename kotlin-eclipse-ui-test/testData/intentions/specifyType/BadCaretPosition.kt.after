@@ -1,3 +1,0 @@
-// "class org.jetbrains.kotlin.idea.intentions.SpecifyTypeExplicitlyAction" "false"
-
-val x = "<caret>"
