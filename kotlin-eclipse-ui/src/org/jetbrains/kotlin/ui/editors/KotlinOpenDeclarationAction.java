@@ -161,7 +161,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         
         JetFile jetFile = editor.getParsedFile();
         assert(jetFile != null);
-        BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getBindingContext();
+        BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getAnalysisResult().getBindingContext();
         Collection<DeclarationDescriptor> descriptors = kotlinReference.getTargetDescriptors(context);
 
         //TODO: popup if there's several descriptors to navigate to
