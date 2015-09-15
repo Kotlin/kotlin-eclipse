@@ -7,9 +7,7 @@ fun bar() {
 }
 
 fun main(args : Array<String>) {
-    //Breakpoint!
     foo()
 }
 
 // LINE: 6
-// TYPE: _DefaultPackage

@@ -53,9 +53,8 @@ public class KotlinStepIntoSelectionHandler : AbstractHandler() {
     }
 }
 
-public fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelection) {
-    val frame = EvaluationContextManager.getEvaluationContext(editor)
-    if (frame == null || !frame.isSuspended()) return
+public fun stepIntoSelection(frame: IJavaStackFrame, editor: KotlinFileEditor, selection: ITextSelection) {
+    if (!frame.isSuspended()) return
     
     val psiElement = EditorUtil.getPsiElement(editor, selection.getOffset())
     if (psiElement == null) return
@@ -65,8 +64,8 @@ public fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelection
     
     val sourceElements = createReference(expression).resolveToSourceElements()
     val javaElements = sourceElementsToLightElements(sourceElements, editor.javaProject!!)
-    if (javaElements.size() > 1) {
-        KotlinLogger.logWarning("There are more than one java element for $sourceElements")
+    if (javaElements.size() != 1) {
+        KotlinLogger.logWarning("There are [${javaElements.size()}] java element(s) for $sourceElements")
         return
     }
     
@@ -76,18 +75,25 @@ public fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelection
     }
 }
 
+public fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelection) {
+    val frame = EvaluationContextManager.getEvaluationContext(editor)
+    if (frame != null) {
+        stepIntoSelection(frame, editor, selection)
+    }
+}
+
 private fun stepIntoElement(method: IMethod, frame: IJavaStackFrame, selection: ITextSelection, editor: KotlinFileEditor) {
     if (selection.getStartLine() + 1 == frame.getLineNumber()) {
         val handler = StepIntoSelectionHandler(frame.getThread() as IJavaThread, frame, method)
         handler.step()
     } else {
-        val refMethod = javaClass<StepIntoSelectionUtils>().getDeclaredMethod(
+        val refMethod = StepIntoSelectionUtils::class.java.getDeclaredMethod(
                 "runToLineBeforeStepIn",
-                javaClass<IEditorPart>(),
-                javaClass<String>(),
-                javaClass<ITextSelection>(),
-                javaClass<IThread>(),
-                javaClass<IMethod>())
+                IEditorPart::class.java,
+                String::class.java,
+                ITextSelection::class.java,
+                IThread::class.java,
+                IMethod::class.java)
         refMethod.setAccessible(true)
         refMethod.invoke(null, editor, frame.getReceivingTypeName(), selection, frame.getThread(), method)
     }

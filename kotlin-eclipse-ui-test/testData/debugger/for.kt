@@ -9,7 +9,6 @@ fun f1() = 1..2
 fun f2() {}
 
 fun main(args : Array<String>) {
-    //Breakpoint!
     foo()
 }
 

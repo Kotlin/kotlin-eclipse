@@ -35,15 +35,19 @@ abstract class KotlinStepIntoSelectionTestCase : KotlinProjectTestCase() {
                 PlatformUI.getWorkbench().getActiveWorkbenchWindow())
     }
     
-    companion object {
-        val BREAKPOINT_TAG = "Breakpoint!"
+    @After
+    override fun afterTest() {
+        super.afterTest()
+        KotlinProjectTestCase.afterAllTests()
     }
     
     fun doTest(testPath: String) {
         val fileText = KotlinTestUtils.getText(testPath)
         val testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText)
+//        testEditor = KotlinEditorTestCase.configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText)
+//        testEditor.getTestJavaProject().addKotlinRuntime()
         
-        setInitialBreakpoints(testEditor)
+        setInitialBreakpoint(testEditor)
         
         val waiter = KotlinDebugEventWaiter(DebugEvent.SUSPEND)
         
@@ -51,11 +55,12 @@ abstract class KotlinStepIntoSelectionTestCase : KotlinProjectTestCase() {
         KotlinTestUtils.joinBuildThread()
 
         try {
-            waiter.waitForEvent()
+            val frame = waiter.waitForEvent()
             
             val steppedWaiter = KotlinDebugEventWaiter(DebugEvent.SUSPEND)
             
             stepIntoSelection(
+                    frame!!.getTopStackFrame() as IJavaStackFrame,
                     testEditor.getEditor() as KotlinFileEditor, 
                     testEditor.getEditor().getEditorSite().getSelectionProvider().getSelection() as ITextSelection)
                     
@@ -82,25 +87,17 @@ abstract class KotlinStepIntoSelectionTestCase : KotlinProjectTestCase() {
     
     fun launchToBreakpoint(testEditor: TextEditorTest): ILaunch {
         val launchConfiguration = KotlinLaunchShortcut.createConfiguration(testEditor.getEditingFile())
-        return launchConfiguration.launch(ILaunchManager.DEBUG_MODE, null)
+        return launchConfiguration.launch(ILaunchManager.DEBUG_MODE, null, true)
     }
     
-    fun setInitialBreakpoints(testEditor: TextEditorTest) {
+    fun setInitialBreakpoint(testEditor: TextEditorTest) {
         val selection = testEditor.getEditor().getEditorSite().getSelectionProvider().getSelection()
         
         val toggleBreakpointsTarget = DebugUITools.getToggleBreakpointsTargetManager()
                 .getToggleBreakpointsTarget(testEditor.getEditor(), selection)
         
-        val document = testEditor.getDocument()
-        val text = document.get()
-        var breakpointOffset = text.indexOf(BREAKPOINT_TAG)
-        while (breakpointOffset > 0) {
-            val lineOfTag = document.getLineOfOffset(breakpointOffset)
-            val offset = document.getLineOffset(lineOfTag + 1)
-            toggleBreakpointsTarget.toggleLineBreakpoints(testEditor.getEditor(), TextSelection(document, offset, 0))
-            
-            breakpointOffset = text.indexOf(BREAKPOINT_TAG, offset)
-        }
+        toggleBreakpointsTarget.toggleLineBreakpoints(testEditor.getEditor(), 
+                TextSelection(testEditor.getDocument(), testEditor.getCaretOffset(), 0))
     }
 }
 
@@ -109,19 +106,20 @@ class KotlinDebugEventWaiter(val eventType: Int) : IDebugEventSetListener {
         DebugPlugin.getDefault().addDebugEventListener(this)
     }
     
-    volatile var applicableEvent: DebugEvent? = null
+    @Volatile var applicableEvent: DebugEvent? = null
     
-    override fun handleDebugEvents(events: Array<DebugEvent>) {
+    @Synchronized override fun handleDebugEvents(events: Array<DebugEvent>) {
         events.firstOrNull { isApplicable(it) }?.let {
             applicableEvent = it
+            (this as java.lang.Object).notifyAll()
             unregister()
         }
     }
     
-    synchronized fun waitForEvent(): IJavaThread? {
+    @Synchronized fun waitForEvent(): IJavaThread? {
         if (applicableEvent != null) return applicableEvent!!.getSource() as IJavaThread
         
-        Thread.sleep(2000)
+        (this as java.lang.Object).wait(4000)
         
         unregister()
         return applicableEvent?.getSource() as? IJavaThread

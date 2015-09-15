@@ -18,7 +18,8 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.core.commands,
  org.eclipse.ui.workbench,
  org.eclipse.search,
- org.eclipse.jdt.debug
+ org.eclipse.jdt.debug,
+ org.eclipse.jdt.core
 Import-Package: com.intellij.openapi.util,
  com.intellij.openapi.util.io,
  com.intellij.util.containers,

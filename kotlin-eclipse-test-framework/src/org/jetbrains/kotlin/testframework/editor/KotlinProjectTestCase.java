@@ -1,6 +1,8 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
@@ -28,10 +30,17 @@ public class KotlinProjectTestCase {
     }
     
     @AfterClass
-    public static void afterAllTests() {
+    public static void afterAllTests() throws CoreException {
         if (testJavaProject != null) {
             testJavaProject.clean();
             testJavaProject.setDefaultSettings();
+        }
+        
+        KotlinTestUtils.refreshWorkspace();
+        
+        IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+        for (IProject project : projects) {
+            project.delete(true, true, null);
         }
     }
     

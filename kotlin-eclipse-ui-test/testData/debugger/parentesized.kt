@@ -5,7 +5,6 @@ fun foo() {
 fun bar() {}
 
 fun main(args : Array<String>) {
-    //Breakpoint!
     foo()
 }
 

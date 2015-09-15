@@ -9,7 +9,6 @@ class Delegate {
 }
 
 fun main(args : Array<String>) {
-    //Breakpoint!
     foo()
 }
 

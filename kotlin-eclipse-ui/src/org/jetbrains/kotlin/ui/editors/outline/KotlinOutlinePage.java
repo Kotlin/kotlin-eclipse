@@ -30,7 +30,6 @@ import com.intellij.psi.PsiFile;
 public class KotlinOutlinePage extends ContentOutlinePage {
     
     private final KotlinEditor editor;
-    private TreeViewer viewer;
     
     public KotlinOutlinePage(KotlinEditor editor) {
         this.editor = editor;
@@ -40,7 +39,7 @@ public class KotlinOutlinePage extends ContentOutlinePage {
     public void createControl(Composite parent) {
         super.createControl(parent);
         
-        viewer = getTreeViewer();
+        TreeViewer viewer = getTreeViewer();
         viewer.setContentProvider(new PsiContentProvider());
         viewer.setLabelProvider(new PsiLabelProvider());
         viewer.addSelectionChangedListener(this);
@@ -63,11 +62,13 @@ public class KotlinOutlinePage extends ContentOutlinePage {
     
     private void setInputAndExpand() {
         PsiFile psiFile  = editor.getParsedFile();
+        TreeViewer viewer = getTreeViewer();
         viewer.setInput(psiFile);
         viewer.expandAll();
     }
     
     public void refresh() {
+        TreeViewer viewer = getTreeViewer();
         if (viewer == null) {
             return;
         }

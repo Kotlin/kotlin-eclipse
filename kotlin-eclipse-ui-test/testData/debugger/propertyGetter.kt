@@ -16,7 +16,6 @@ val d: Int
     }
 
 fun main(args : Array<String>) {
-    //Breakpoint!
     foo()
 }
 

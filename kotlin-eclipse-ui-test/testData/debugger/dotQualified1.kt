@@ -10,7 +10,6 @@ class A {
 fun f2(x: Int) = 2
 
 fun main(args : Array<String>) {
-    //Breakpoint!
     foo()
 }
 

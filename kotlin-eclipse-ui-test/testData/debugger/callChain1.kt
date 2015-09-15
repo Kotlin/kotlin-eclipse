@@ -11,7 +11,6 @@ class B {
 }
 
 fun main(args : Array<String>) {
-    //Breakpoint!
     foo()
 }
 
