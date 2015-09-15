@@ -9,7 +9,8 @@ Require-Bundle: org.eclipse.ui,
  org.aspectj.runtime,
  org.jetbrains.kotlin.core,
  org.eclipse.jdt.ui,
- org.eclipse.pde.launching
+ org.eclipse.pde.launching,
+ org.eclipse.jdt.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
