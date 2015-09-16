@@ -31,7 +31,7 @@ public abstract class KotlinCompletionHandlerInsertTestCase extends KotlinEditor
 			if (proposal.getDisplayString().startsWith(itemToComplete)) {
 				if (proposal instanceof ICompletionProposalExtension2) {
 					ICompletionProposalExtension2 proposalExtension = (ICompletionProposalExtension2) proposal;
-					proposalExtension.apply(getEditor().getViewer(), completionChar, 0, getCaret());
+					proposalExtension.apply(getEditor().getViewer(), completionChar, 0, testEditor.getCaretOffset());
 				} else {
 					proposal.apply(getEditor().getViewer().getDocument());
 				}

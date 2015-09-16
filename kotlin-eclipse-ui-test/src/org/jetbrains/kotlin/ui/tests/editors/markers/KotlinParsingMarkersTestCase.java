@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.TypingUtils;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
@@ -66,12 +67,12 @@ public abstract class KotlinParsingMarkersTestCase extends KotlinEditorWithAfter
             
             switch (marker.getAttribute(IMarker.SEVERITY, 0)) {
             case IMarker.SEVERITY_ERROR:
-                offset += insertTagByOffset(result, ERROR_TAG_OPEN, openTagStartOffset, offset);
-                offset += insertTagByOffset(result, ERROR_TAG_CLOSE, closeTagStartOffset, offset);
+                offset += insertTagByOffset(result, KotlinEditorTestCase.ERROR_TAG_OPEN, openTagStartOffset, offset);
+                offset += insertTagByOffset(result, KotlinEditorTestCase.ERROR_TAG_CLOSE, closeTagStartOffset, offset);
                 break;
             case IMarker.SEVERITY_WARNING:
-                offset += insertTagByOffset(result, WARNING_TAG_OPEN, openTagStartOffset, offset);
-                offset += insertTagByOffset(result, WARNING_TAG_CLOSE, closeTagStartOffset, offset);
+                offset += insertTagByOffset(result, KotlinEditorTestCase.WARNING_TAG_OPEN, openTagStartOffset, offset);
+                offset += insertTagByOffset(result, KotlinEditorTestCase.WARNING_TAG_CLOSE, closeTagStartOffset, offset);
                 break;
             default:
                 break;

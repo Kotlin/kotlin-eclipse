@@ -21,7 +21,7 @@ public abstract class KotlinEditorSequentialAutoTestCase extends
 	
 	@Override
 	protected void doMultiFileAutoTest(File testFolder) {		
-		testEditor = configureEditor(getInitialFileName(), getInitialFileContent(testFolder));
+		configureEditor(getInitialFileName(), getInitialFileContent(testFolder));
 		
 		ArrayList<String> afterFilesPaths = getAfterFilesPaths(testFolder);
 		
@@ -37,7 +37,7 @@ public abstract class KotlinEditorSequentialAutoTestCase extends
 	}
 
 	protected String getInitialFileContent(File testFolder) {
-		return getText(testFolder.getAbsolutePath()+File.separator+getInitialFileName());
+		return KotlinEditorTestCase.getText(testFolder.getAbsolutePath() + File.separator + getInitialFileName());
 	}
 
 	abstract protected ArrayList<String> getAfterFilesPaths(File testFolder);

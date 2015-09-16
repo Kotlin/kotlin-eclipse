@@ -38,7 +38,8 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
     private static final String EXISTENCE_ASSERTION_ERROR_MESSAGE_FORMAT = "List of actual proposals doesn't contain expected proposal: %s";
     
     private List<ICompletionProposal> createProposals() {
-        return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(new TextInvocationContext(getEditor().getViewer(), getCaret(), -1)));
+        return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(
+                new TextInvocationContext(getEditor().getViewer(), testEditor.getCaretOffset(), -1)));
     }
     
     @Override

@@ -38,11 +38,6 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
     @Rule
     public fun getTestName(): TestName = name
     
-    private val testEditor: TextEditorTest by lazy {
-        val processedFileText = KotlinEditorTestCase.removeTags(fileText)
-        configureEditor(inputFileName, processedFileText)
-    }
-    
     val inputFileName: String by lazy {
         val inputFileName = name.getMethodName()
         val filenameAsArray = inputFileName.substring(TEST_PREFIX.length()).toCharArray()
@@ -58,14 +53,15 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         KotlinEditorTestCase.removeTags(fileText)
     }
     
-    Before    
+    @Before    
     open fun configure() {
         configureProject()
         createSourceFile(inputFileName, processedFileText)
     }
 
     public fun doAutoTest() {
-        val testEditor = configureEditor(inputFileName, processedFileText)
+        val processedFileText = KotlinEditorTestCase.removeTags(fileText)
+        configureEditor(inputFileName, processedFileText)
         val referenceOffset = getReferenceOffset(fileText)
         val editorFile = testEditor.getEditingFile()
         
@@ -81,7 +77,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
     }
 
     private fun assertWithEditor(initialFile: JetFile, editor: KotlinEditor) {
-        val comments = PsiTreeUtil.getChildrenOfTypeAsList(initialFile, javaClass<PsiComment>())
+        val comments = PsiTreeUtil.getChildrenOfTypeAsList(initialFile, PsiComment::class.java)
         val expectedTarget = comments.get(comments.size() - 1).getText().substring(2).split(":")
         Assert.assertEquals(2, expectedTarget.size())
         val expectedFile = expectedTarget[0]
@@ -91,7 +87,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         
         val editorOffset = editor.javaEditor.getViewer().getTextWidget().getCaretOffset()
         
-        val expression = parsedFile.findElementAt(editorOffset)?.getNonStrictParentOfType(javaClass<PsiNamedElement>())
+        val expression = parsedFile.findElementAt(editorOffset)?.getNonStrictParentOfType(PsiNamedElement::class.java)
         
         Assert.assertEquals(expectedFile, editor.javaEditor.getTitleToolTip())
         Assert.assertEquals(expectedName, expression?.getName())

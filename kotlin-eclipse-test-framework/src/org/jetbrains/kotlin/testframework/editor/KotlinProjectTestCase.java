@@ -1,10 +1,13 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -12,6 +15,8 @@ import org.junit.Before;
 public class KotlinProjectTestCase {
     
     private static TestJavaProject testJavaProject;
+    
+    protected TextEditorTest testEditor = null;
     
     @Before
     public void beforeTest() {
@@ -33,6 +38,19 @@ public class KotlinProjectTestCase {
             testJavaProject.clean();
             testJavaProject.setDefaultSettings();
         }
+        
+        try {
+            IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+            for (IProject project : projects) {
+                project.delete(true, true, null);
+            }
+        } catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    protected KotlinFileEditor getEditor() {
+        return (KotlinFileEditor) testEditor.getEditor();
     }
     
     protected void configureProject() {
@@ -78,8 +96,14 @@ public class KotlinProjectTestCase {
     }
     
     protected TextEditorTest configureEditor(String fileName, String content) {
+        return configureEditor(fileName, content, "");
+    }
+    
+    protected TextEditorTest configureEditor(String fileName, String content, String pckgName) {
         TextEditorTest testEditor = new TextEditorTest(testJavaProject);
-        testEditor.createEditor(fileName, content, "");
+        testEditor.createEditor(fileName, content, pckgName);
+        
+        this.testEditor = testEditor;
         
         return testEditor;
     }

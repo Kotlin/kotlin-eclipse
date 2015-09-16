@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
@@ -96,11 +97,11 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     private List<Pair<IFile, String>> loadFilesToProject(@NotNull List<File> files) {
         List<Pair<IFile, String>> filesWithExpectedData = Lists.newArrayList(); 
         for (File file : files) {
-            String input = getText(file);
-            String resolvedInput = resolveTestTags(input);
+            String input = KotlinEditorTestCase.getText(file);
+            String resolvedInput = KotlinEditorTestCase.resolveTestTags(input);
             filesWithExpectedData.add(new Pair<IFile, String>(
                     createSourceFile(SourceFileData.getPackageFromContent(resolvedInput), file.getName(), 
-                            resolveTestTags(resolvedInput)), 
+                            KotlinEditorTestCase.resolveTestTags(resolvedInput)), 
                     input));
         }
         
@@ -108,7 +109,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     }
     
     private String loadEclipseFile(IFile file) {
-        return getText(file.getLocation().toFile());
+        return KotlinEditorTestCase.getText(file.getLocation().toFile());
     }
     
     private static String insertTagsForErrors(String fileText, IMarker[] markers) throws CoreException {
@@ -120,8 +121,8 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
         		continue;
         	}
         	
-        	offset += insertTagByOffset(result, ERROR_TAG_OPEN, getTagStartOffset(marker, IMarker.CHAR_START), offset);
-        	offset += insertTagByOffset(result, ERROR_TAG_CLOSE, getTagStartOffset(marker, IMarker.CHAR_END), offset);
+        	offset += insertTagByOffset(result, KotlinEditorTestCase.ERROR_TAG_OPEN, getTagStartOffset(marker, IMarker.CHAR_START), offset);
+        	offset += insertTagByOffset(result, KotlinEditorTestCase.ERROR_TAG_CLOSE, getTagStartOffset(marker, IMarker.CHAR_END), offset);
         }
         
         return result.toString();

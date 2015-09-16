@@ -25,7 +25,7 @@ import java.util.List;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
-import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 
@@ -100,14 +100,13 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
     
     @Override
     protected void doSingleFileAutoTest(String testPath) {
-        String fileText = getText(testPath);
-        testEditor = configureEditor(
-                getNameByPath(testPath),
+        String fileText = KotlinEditorTestCase.getText(testPath);
+        configureEditor(
+                KotlinEditorTestCase.getNameByPath(testPath),
                 fileText,
-                TextEditorTest.TEST_PROJECT_NAME,
                 NavigationSourceFileData.getPackageFromContent(fileText));
         
-        performTest(getText(testPath + AFTER_FILE_EXTENSION));
+        performTest(KotlinEditorTestCase.getText(testPath + AFTER_FILE_EXTENSION));
     }
     
     @Override
@@ -117,10 +116,9 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         NavigationSourceFileData target = NavigationSourceFileData.getFileByPredicate(
                 files,
                 NavigationSourceFileData.IS_BEFORE_PREDICATE);
-        testEditor = configureEditor(
+        configureEditor(
                 target.getFileName().replace(BEFORE_FILE_EXTENSION, ""),
                 target.getContent(),
-                TextEditorTest.TEST_PROJECT_NAME,
                 target.getPackageName());
         
         NavigationSourceFileData targetAfter = NavigationSourceFileData.getFileByPredicate(

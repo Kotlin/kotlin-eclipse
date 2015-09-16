@@ -71,7 +71,7 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
                 throw new RuntimeException(String.format(NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT, targetAfterFile.getAbsolutePath()));
             }
             
-            target.contentAfter = getText(targetAfterFile);
+            target.contentAfter = KotlinEditorTestCase.getText(targetAfterFile);
             
             return result.values();
         }
@@ -85,11 +85,11 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
     
     @Override
     protected void doSingleFileAutoTest(String testPath) {
-        String fileText = getText(testPath);
-        testEditor = configureEditor(getNameByPath(testPath), fileText,
+        String fileText = KotlinEditorTestCase.getText(testPath);
+        configureEditor(KotlinEditorTestCase.getNameByPath(testPath), fileText,
                 WithAfterSourceFileData.getPackageFromContent(fileText));
         
-        performTest(fileText, getText(testPath + AFTER_FILE_EXTENSION));
+        performTest(fileText, KotlinEditorTestCase.getText(testPath + AFTER_FILE_EXTENSION));
     }
     
     @Override
@@ -97,7 +97,7 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
         Collection<WithAfterSourceFileData> files = WithAfterSourceFileData.getTestFiles(testFolder);
         
         WithAfterSourceFileData target = WithAfterSourceFileData.getTargetFile(files);
-        testEditor = configureEditor(target.getFileName(), target.getContent(), target.getPackageName());
+        configureEditor(target.getFileName(), target.getContent(), target.getPackageName());
         
         for (WithAfterSourceFileData file : files) {
             if (file != target) {
