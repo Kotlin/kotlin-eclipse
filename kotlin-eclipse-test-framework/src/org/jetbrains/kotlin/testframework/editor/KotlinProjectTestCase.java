@@ -35,13 +35,6 @@ public class KotlinProjectTestCase {
             testJavaProject.clean();
             testJavaProject.setDefaultSettings();
         }
-        
-        KotlinTestUtils.refreshWorkspace();
-        
-        IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-        for (IProject project : projects) {
-            project.delete(true, true, null);
-        }
     }
     
     protected void configureProject() {

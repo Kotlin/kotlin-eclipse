@@ -38,7 +38,8 @@ abstract class KotlinStepIntoSelectionTestCase : KotlinProjectTestCase() {
     @After
     override fun afterTest() {
         super.afterTest()
-        KotlinProjectTestCase.afterAllTests()
+        
+//        ResourcesPlugin.getWorkspace().getRoot().getProjects().forEach { it.delete(true, true, null) }
     }
     
     fun doTest(testPath: String) {
@@ -55,12 +56,12 @@ abstract class KotlinStepIntoSelectionTestCase : KotlinProjectTestCase() {
         KotlinTestUtils.joinBuildThread()
 
         try {
-            val frame = waiter.waitForEvent()
+            val thread = waiter.waitForEvent()!!
             
-            val steppedWaiter = KotlinDebugEventWaiter(DebugEvent.SUSPEND)
+            val steppedWaiter = KotlinElementDebugEventWaiter(DebugEvent.SUSPEND, thread)
             
             stepIntoSelection(
-                    frame!!.getTopStackFrame() as IJavaStackFrame,
+                    thread.getTopStackFrame() as IJavaStackFrame,
                     testEditor.getEditor() as KotlinFileEditor, 
                     testEditor.getEditor().getEditorSite().getSelectionProvider().getSelection() as ITextSelection)
                     
@@ -72,16 +73,21 @@ abstract class KotlinStepIntoSelectionTestCase : KotlinProjectTestCase() {
             Assert.assertEquals(expectedMethodName, javaStackFrame.getLineNumber().toString())
         } finally {
             if (!launch.isTerminated()) {
-                val terminateWaiter = KotlinDebugEventWaiter(DebugEvent.TERMINATE)
+                val terminateWaiter = KotlinElementDebugEventWaiter(DebugEvent.TERMINATE, launch.getDebugTarget().getThreads()[0])
                 launch.getDebugTarget().getThreads().forEach { 
                     if (it.isSuspended()) it.resume()
                 }
                 
                 launch.getDebugTarget().terminate()
+                launch.getDebugTarget().disconnect()
                 terminateWaiter.waitForEvent()!!
             }
             
             DebugPlugin.getDefault().getLaunchManager().removeLaunch(launch)
+        
+            val modelWaiter = KotlinElementDebugEventWaiter(DebugEvent.MODEL_SPECIFIC, this);
+            DebugPlugin.getDefault().fireDebugEventSet(arrayOf(DebugEvent(this, DebugEvent.MODEL_SPECIFIC)));
+            modelWaiter.waitForEvent();
         }
     }
     
@@ -101,7 +107,7 @@ abstract class KotlinStepIntoSelectionTestCase : KotlinProjectTestCase() {
     }
 }
 
-class KotlinDebugEventWaiter(val eventType: Int) : IDebugEventSetListener {
+open class KotlinDebugEventWaiter(val eventType: Int) : IDebugEventSetListener {
     init {
         DebugPlugin.getDefault().addDebugEventListener(this)
     }
@@ -110,9 +116,9 @@ class KotlinDebugEventWaiter(val eventType: Int) : IDebugEventSetListener {
     
     @Synchronized override fun handleDebugEvents(events: Array<DebugEvent>) {
         events.firstOrNull { isApplicable(it) }?.let {
+            unregister()
             applicableEvent = it
             (this as java.lang.Object).notifyAll()
-            unregister()
         }
     }
     
@@ -125,11 +131,17 @@ class KotlinDebugEventWaiter(val eventType: Int) : IDebugEventSetListener {
         return applicableEvent?.getSource() as? IJavaThread
     }
     
-    fun isApplicable(event: DebugEvent): Boolean {
+    open fun isApplicable(event: DebugEvent): Boolean {
         return event.getKind() == eventType && event.getDetail() != DebugEvent.EVALUATION_IMPLICIT
     }
     
     fun unregister() {
         DebugPlugin.getDefault().removeDebugEventListener(this)
+    }
+}
+
+class KotlinElementDebugEventWaiter(type: Int, val element: Any) : KotlinDebugEventWaiter(type) {
+    override fun isApplicable(event: DebugEvent): Boolean {
+        return super.isApplicable(event) && event.getSource() == element
     }
 }
