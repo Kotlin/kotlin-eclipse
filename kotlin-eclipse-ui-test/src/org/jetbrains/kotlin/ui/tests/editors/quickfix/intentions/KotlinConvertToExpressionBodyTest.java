@@ -7,7 +7,8 @@ public class KotlinConvertToExpressionBodyTest extends
 	
     @Test
     public void testAnonymousObjectExpression() {
-        doTest("common_testData/ide/intentions/convertToExpressionBody/anonymousObjectExpression.kt");
+//        doTest("common_testData/ide/intentions/convertToExpressionBody/anonymousObjectExpression.kt");
+        doTest("testData/intentions/convertToExpressionBody/anonymousObjectExpression.kt");
     }
 
     @Test
@@ -37,7 +38,7 @@ public class KotlinConvertToExpressionBodyTest extends
 
     @Test
     public void testFunWithImplicitUnitTypeWithThrow() {
-        doTest("common_testData/ide/intentions/convertToExpressionBody/funWithImplicitUnitTypeWithThrow.kt");
+        doTest("testData/intentions/convertToExpressionBody/funWithImplicitUnitTypeWithThrow.kt");
     }
 
     @Test
@@ -47,12 +48,12 @@ public class KotlinConvertToExpressionBodyTest extends
 
     @Test
     public void testFunWithNothingType() {
-        doTest("common_testData/ide/intentions/convertToExpressionBody/funWithNothingType.kt");
+        doTest("testData/intentions/convertToExpressionBody/funWithNothingType.kt");
     }
 
     @Test
     public void testFunWithReturn() {
-        doTest("common_testData/ide/intentions/convertToExpressionBody/funWithReturn.kt");
+        doTest("testData/intentions/convertToExpressionBody/funWithReturn.kt");
     }
 
     @Test
@@ -67,7 +68,7 @@ public class KotlinConvertToExpressionBodyTest extends
 
     @Test
     public void testFunWithUnitTypeWithThrow() {
-        doTest("common_testData/ide/intentions/convertToExpressionBody/funWithUnitTypeWithThrow.kt");
+        doTest("testData/intentions/convertToExpressionBody/funWithUnitTypeWithThrow.kt");
     }
 
     @Test

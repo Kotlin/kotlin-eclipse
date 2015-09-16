@@ -93,5 +93,5 @@ fun findTopmostType(offset: Int, jetFile: JetFile): FqName? {
         if (fqName != null) return fqName
     }
     
-    return NoResolveFileClassesProvider.getFileClassFqName(jetFile)
+    return NoResolveFileClassesProvider.getFileClassInfo(jetFile).fileClassFqName
 }

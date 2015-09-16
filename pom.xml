@@ -26,7 +26,7 @@
 		
 		<ajdt-luna-repo.url>http://download.eclipse.org/tools/ajdt/44/dev/update</ajdt-luna-repo.url>
 		
-		<kotlin.version>0.1-SNAPSHOT</kotlin.version>
+		<kotlin.version>0.13.1513</kotlin.version>
 		
 		<aspectj.version>1.8.2</aspectj.version>
 		<aspectj.plugin.version>1.7</aspectj.plugin.version>

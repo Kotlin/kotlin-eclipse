@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.fileClasses.FileClassesPackage;
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider;
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
@@ -139,7 +140,8 @@ public class KotlinLightClassManager {
         }
         
         if (PackagePartClassUtils.fileHasTopLevelCallables(jetFile)) {
-            String newFacadeInternalName = NoResolveFileClassesProvider.INSTANCE$.getFileClassInternalName(jetFile);
+            String newFacadeInternalName = FileClassesPackage.getFileClassInternalName(
+                    NoResolveFileClassesProvider.INSTANCE$, jetFile);
             lightClasses.add(computePathByInternalName(newFacadeInternalName));
             
 //            TODO: remove this after M13
