@@ -524,6 +524,13 @@
             properties="canLaunchAsApplication"
             type="org.eclipse.core.runtime.IAdaptable">
       </propertyTester>
+      <propertyTester
+            class="org.eclipse.ui.internal.console.ConsoleTypePropertyTester"
+            id="org.jetbrains.kotin.ui.consoleTypeTester"
+            namespace="org.jetbrains.kotlin.ui.launching"
+            properties="checkConsoleType"
+            type="org.eclipse.debug.internal.ui.views.console.ProcessConsole">
+      </propertyTester>
    </extension>
    <extension
          point="org.eclipse.compare.contentMergeViewers">
@@ -559,5 +566,19 @@
             name="Editing Kotlin Source"
             parentId="org.eclipse.ui.textEditorScope">
       </context>
+   </extension>
+   <extension
+         point="org.eclipse.ui.console.consolePatternMatchListeners">
+      <consolePatternMatchListener
+            class="org.eclipse.jdt.internal.debug.ui.console.JavaConsoleTracker"
+            id="org.jetbrains.kotlin.ui.consoleTracker"
+            regex="\(\S*(\.kt)\S*\)">
+         <enablement>
+            <test
+                  property="org.jetbrains.kotlin.ui.launching.checkConsoleType"
+                  value="org.eclipse.debug.ui.ProcessConsoleType">
+            </test>
+         </enablement>
+      </consolePatternMatchListener>
    </extension>
 </plugin>
