@@ -1,0 +1,7 @@
+package org.jet;
+
+public class SomeJava extends SomeKotlin {
+    public void callKotlin() {
+        BazKt.someOn<caret>e();
+    }
+}

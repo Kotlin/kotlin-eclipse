@@ -242,4 +242,10 @@ public class JavaToKotlinNavigationTest extends JavaToKotlinNavigationTestCase {
 	public void toPropertyInCompanion() {
 	    doAutoTest();
 	}
+	
+	@Test
+	public void toFunctionInFilePart() {
+	    doAutoTest();
+	}
+	
 }

@@ -138,7 +138,7 @@ fun IType.getFqName(): FqName {
 }
 
 fun equalsDeclaringTypes(jetElement: JetElement, javaMember: IMember): Boolean  {
-	return getDeclaringTypeFqName(jetElement) == javaMember.getDeclaringType().getFqName()
+	return getDeclaringTypeFqName(jetElement).any { it == javaMember.getDeclaringType().getFqName() }
 }
 
 open class JetAllVisitor() : JetVisitorVoid() {

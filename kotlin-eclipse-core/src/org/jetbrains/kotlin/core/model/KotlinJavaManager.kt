@@ -68,7 +68,7 @@ public object KotlinJavaManager {
         
         if (containingElement == null) return emptyList()
         
-        val declaringTypeFqName = getTypeFqName(containingElement)
+        val declaringTypeFqName = getTypeFqName(containingElement).firstOrNull()
         if (declaringTypeFqName == null) return emptyList()
         
         val eclipseType = javaProject.findType(declaringTypeFqName.asString())
