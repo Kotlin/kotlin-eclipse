@@ -248,4 +248,9 @@ public class JavaToKotlinNavigationTest extends JavaToKotlinNavigationTestCase {
 	    doAutoTest();
 	}
 	
+	@Test
+	public void toFilePart() {
+	    doAutoTest();
+	}
+	
 }

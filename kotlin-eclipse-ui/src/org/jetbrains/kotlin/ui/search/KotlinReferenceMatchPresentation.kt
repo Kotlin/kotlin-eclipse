@@ -84,10 +84,10 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
                 }
             }
             is JetFile -> {
-                val typeFqNames = getTypeFqName(declaration)
-                var typeFqName = typeFqNames.firstOrNull()?.asString()
-                if (typeFqNames.size() > 1) {
-                    typeFqName = "$typeFqName (${typeFqNames[1]})"
+                val typeFqNameInfo = getTypeFqName(declaration)
+                var typeFqName = typeFqNameInfo.className?.asString()
+                if (typeFqNameInfo.filePartName != null) {
+                    typeFqName = "$typeFqName (${typeFqNameInfo.filePartName})"
                 }
                 typeFqName ?: ""
             }

@@ -47,6 +47,44 @@ import org.jetbrains.kotlin.psi.JetPrimaryConstructor
 import org.jetbrains.kotlin.psi.JetConstructor
 import org.jetbrains.kotlin.core.asJava.equalsJvmSignature
 import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
+import org.eclipse.core.resources.IFile
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.eclipse.ui.dialogs.ListDialog
+import org.eclipse.jdt.internal.ui.viewsupport.JavaUILabelProvider
+import org.eclipse.compare.internal.ListContentProvider
+import org.eclipse.jface.window.Window
+import org.eclipse.ui.PlatformUI
+
+fun chooseSourceFile(sourceFiles: List<JetFile>): IFile? {
+    return when {
+        sourceFiles.isEmpty() -> null
+        sourceFiles.size() == 1 -> KotlinPsiManager.getEclispeFile(sourceFiles.first())
+        else -> chooseFile(sourceFiles)
+    }
+}
+
+fun chooseFile(jetFiles: List<JetFile>): IFile? {
+    val eclipseFiles = jetFiles.map(KotlinPsiManager::getEclispeFile)
+    
+    val dialog = ListDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell())
+    dialog.setBlockOnOpen(true)
+    dialog.setMessage("Select a Kotlin file to navigate")
+    dialog.setTitle("Choose Kotlin file")
+    dialog.setContentProvider(ListContentProvider())
+    dialog.setLabelProvider(JavaUILabelProvider())
+    
+    dialog.setInput(eclipseFiles)
+    
+    if (dialog.open() != Window.OK) {
+        return null
+    }
+    
+    return dialog.getResult().firstOrNull() as? IFile
+}
+
+fun findNavigationFileFromSources(element: IJavaElement, sourceFiles: List<JetFile>): JetFile? {
+    return sourceFiles.firstOrNull { findKotlinDeclaration(element, it) != null }
+}
 
 fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? {
     val result = ArrayList<JetElement>()
@@ -139,7 +177,9 @@ fun IType.getFqName(): FqName {
 }
 
 fun equalsDeclaringTypes(jetElement: JetElement, javaMember: IMember): Boolean  {
-    return getDeclaringTypeFqName(jetElement).any { it == javaMember.getDeclaringType().getFqName() }
+    val typeNameInfo = getDeclaringTypeFqName(jetElement)
+    val javaTypeFqName = javaMember.getDeclaringType().getFqName() 
+    return typeNameInfo.className == javaTypeFqName || typeNameInfo.filePartName == javaTypeFqName
 }
 
 open class JetAllVisitor() : JetVisitorVoid() {

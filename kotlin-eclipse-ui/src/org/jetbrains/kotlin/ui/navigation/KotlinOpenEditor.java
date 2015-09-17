@@ -4,9 +4,6 @@ import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.core.ClassFile;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
@@ -19,6 +16,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
@@ -34,24 +32,17 @@ public class KotlinOpenEditor {
 	public static IEditorPart openKotlinEditor(@NotNull IJavaElement element, boolean activate) {
 	    File lightClass = element.getResource().getFullPath().toFile();
 	    List<JetFile> sourceFiles = KotlinLightClassManager.getInstance(element.getJavaProject()).getSourceFiles(lightClass);
-	    JetFile referenceFile = null;
-	    for (JetFile sourceFile : sourceFiles) {
-	        JetElement referenceElement = NavigationPackage.findKotlinDeclaration(element, sourceFile);
-	        if (referenceElement != null) {
-	            referenceFile = sourceFile;
-	            break;
-	        }
-	    }
+	    JetFile navigationFile = NavigationPackage.findNavigationFileFromSources(element, sourceFiles);
 	    
-	    if (referenceFile == null) {
-	        return null;
+	    IFile kotlinFile;
+	    if (navigationFile != null) {
+	        kotlinFile = KotlinPsiManager.getEclispeFile(navigationFile);
+	    } else {
+	        kotlinFile = NavigationPackage.chooseSourceFile(sourceFiles);
 	    }
-	    
-	    IPath sourceFilePath = new Path(referenceFile.getVirtualFile().getPath());
-	    IFile kotlinFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
 	    
 	    try {
-	        if (kotlinFile.exists()) {
+	        if (kotlinFile != null && kotlinFile.exists()) {
 	            return EditorUtility.openInEditor(kotlinFile, activate);
 	        }
 	    } catch (PartInitException e) {

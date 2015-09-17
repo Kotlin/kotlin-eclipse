@@ -54,17 +54,23 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
     }
 }
 
-fun getDeclaringTypeFqName(jetElement: JetElement): List<FqName> {
+fun getDeclaringTypeFqName(jetElement: JetElement): KotlinClassNameInfo {
     val parent = PsiTreeUtil.getParentOfType(jetElement, JetClassOrObject::class.java, JetFile::class.java)
-    return if (parent != null) getTypeFqName(parent) else emptyList()
+    return if (parent != null) getTypeFqName(parent) else KotlinClassNameInfo.EMPTY
 }
 
-fun getTypeFqName(element: PsiElement): List<FqName> {
+fun getTypeFqName(element: PsiElement): KotlinClassNameInfo {
     return when (element) {
-        is JetClassOrObject -> element.getFqName().singletonOrEmptyList()
+        is JetClassOrObject -> KotlinClassNameInfo(element.getFqName())
         is JetFile -> 
-            listOf(PackageClassUtils.getPackageClassFqName(element.getPackageFqName()), 
+            KotlinClassNameInfo(PackageClassUtils.getPackageClassFqName(element.getPackageFqName()), 
                 NoResolveFileClassesProvider.getFileClassInfo(element).fileClassFqName)
-        else -> emptyList()
+        else -> KotlinClassNameInfo.EMPTY
+    }
+}
+
+data class KotlinClassNameInfo(val className: FqName? = null, val filePartName: FqName? = null) {
+    companion object {
+        val EMPTY = KotlinClassNameInfo()
     }
 }
