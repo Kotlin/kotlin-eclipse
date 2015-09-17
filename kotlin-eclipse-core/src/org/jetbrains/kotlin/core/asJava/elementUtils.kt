@@ -28,6 +28,8 @@ import org.jetbrains.kotlin.psi.JetClassOrObject
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.name.FqName
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
+import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
 
 fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
     val jetSignatures = jetElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)
@@ -52,15 +54,17 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
     }
 }
 
-fun getDeclaringTypeFqName(jetElement: JetElement): FqName? {
+fun getDeclaringTypeFqName(jetElement: JetElement): List<FqName> {
     val parent = PsiTreeUtil.getParentOfType(jetElement, JetClassOrObject::class.java, JetFile::class.java)
-    return if (parent != null) getTypeFqName(parent) else null
+    return if (parent != null) getTypeFqName(parent) else emptyList()
 }
 
-fun getTypeFqName(element: PsiElement): FqName? {
+fun getTypeFqName(element: PsiElement): List<FqName> {
     return when (element) {
-        is JetClassOrObject -> element.getFqName()
-        is JetFile -> PackageClassUtils.getPackageClassFqName(element.getPackageFqName())
-        else -> null
+        is JetClassOrObject -> element.getFqName().singletonOrEmptyList()
+        is JetFile -> 
+            listOf(PackageClassUtils.getPackageClassFqName(element.getPackageFqName()), 
+                NoResolveFileClassesProvider.getFileClassInfo(element).fileClassFqName)
+        else -> emptyList()
     }
 }
