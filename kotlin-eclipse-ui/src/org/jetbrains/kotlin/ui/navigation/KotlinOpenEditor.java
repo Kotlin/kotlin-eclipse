@@ -4,9 +4,6 @@ import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.core.ClassFile;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
@@ -19,6 +16,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
@@ -43,15 +41,15 @@ public class KotlinOpenEditor {
 	        }
 	    }
 	    
-	    if (referenceFile == null) {
-	        return null;
+	    IFile kotlinFile;
+	    if (referenceFile != null) {
+	        kotlinFile = KotlinPsiManager.getEclispeFile(referenceFile);
+	    } else {
+	        kotlinFile = NavigationPackage.chooseSourceFile(sourceFiles);
 	    }
 	    
-	    IPath sourceFilePath = new Path(referenceFile.getVirtualFile().getPath());
-	    IFile kotlinFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(sourceFilePath);
-	    
 	    try {
-	        if (kotlinFile.exists()) {
+	        if (kotlinFile != null && kotlinFile.exists()) {
 	            return EditorUtility.openInEditor(kotlinFile, activate);
 	        }
 	    } catch (PartInitException e) {
