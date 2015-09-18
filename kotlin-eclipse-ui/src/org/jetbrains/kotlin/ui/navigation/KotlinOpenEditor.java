@@ -8,12 +8,12 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.core.ClassFile;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IReusableEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
@@ -81,7 +81,13 @@ public class KotlinOpenEditor {
             IWorkbenchPage page = win.getActivePage();
             
             try {
-                return IDE.openEditor(page, editorInput, KotlinClassFileEditor.EDITOR_ID, activate);
+                IEditorPart reusedEditor = page.openEditor(editorInput, KotlinClassFileEditor.EDITOR_ID, activate);
+                if (reusedEditor != null) {
+                    //the input is compared by a source path, but corresponding classes may be different
+                    //so if editor is reused, the input should be changed for the purpose of inner navigation
+                    page.reuseEditor((IReusableEditor) reusedEditor, editorInput);
+                }
+                return reusedEditor;
             } catch (PartInitException e) {
                 KotlinLogger.logAndThrow(e);
             }
