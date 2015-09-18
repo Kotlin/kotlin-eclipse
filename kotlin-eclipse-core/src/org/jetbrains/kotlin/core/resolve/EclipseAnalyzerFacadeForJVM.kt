@@ -52,8 +52,7 @@ public object EclipseAnalyzerFacadeForJVM {
         }
         
         val allFiles = LinkedHashSet<JetFile>(filesSet)
-        val addedFiles = filesSet.map { getPath(it) }
-        
+        val addedFiles = filesSet.map { getPath(it) }.filterNotNull().toSet()
         ProjectUtils.getSourceFilesWithDependencies(javaProject).filterNotTo(allFiles) {
             getPath(it) in addedFiles
         }
@@ -81,5 +80,5 @@ public object EclipseAnalyzerFacadeForJVM {
                 containerAndProvider.second)
     }
     
-    private fun getPath(jetFile: JetFile): String = jetFile.getVirtualFile().getPath()
+    private fun getPath(jetFile: JetFile): String? = jetFile.getVirtualFile()?.getPath()
 }

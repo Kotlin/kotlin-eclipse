@@ -33,17 +33,21 @@ import org.jetbrains.kotlin.psi.JetClassOrObject
 import org.jetbrains.kotlin.psi.JetTreeVisitorVoid
 import org.jetbrains.kotlin.psi.JetVisitor
 import org.jetbrains.kotlin.psi.JetElement
+import org.eclipse.jface.text.source.SourceViewerConfiguration
+import org.jetbrains.kotlin.core.references.FILE_PROJECT
 
 public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
     override fun isEditable() = false
 
     override val javaEditor = this
 
-    override val parsedFile: JetFile
+    override val parsedFile: JetFile 
         get() {
             val environment = KotlinEnvironment.getEnvironment(javaProject);
             val ideaProject = environment.getProject();
-            return JetPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(),"\n"))
+            val jetFile = JetPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(),"\n"))
+            jetFile.putUserData(FILE_PROJECT, javaProject)
+            return jetFile
         }
 
     override val javaProject: IJavaProject

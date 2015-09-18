@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.resolve.calls.model.VariableAsFunctionResolvedCall
 import org.jetbrains.kotlin.psi.Call
 import org.jetbrains.kotlin.psi.JetExpression
 import org.jetbrains.kotlin.psi.JetConstructorDelegationReferenceExpression
+import org.eclipse.jdt.core.IJavaProject
 
 public fun createReference(element: JetReferenceExpression): KotlinReference {
     return when(element) {
@@ -63,8 +64,7 @@ public class KotlinInvokeFunctionReference(override val expression: JetCallExpre
     }
 }
 
-public class KotlinConstructorDelegationReference(override val expression: JetConstructorDelegationReferenceExpression) 
-        : KotlinReference {
+public class KotlinConstructorDelegationReference(override val expression: JetConstructorDelegationReferenceExpression) : KotlinReference {
     override fun getTargetDescriptors(context: BindingContext) = expression.getReferenceTargets(context)
 }
 

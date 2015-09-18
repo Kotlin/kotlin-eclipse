@@ -34,15 +34,19 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import com.intellij.openapi.util.Key
+
+public val FILE_PROJECT: Key<IJavaProject> = Key.create("FILE_PROJECT")
 
 public fun KotlinReference.resolveToSourceElements(): List<SourceElement> {
     val jetFile = expression.getContainingJetFile()
-    val eclipseFile = KotlinPsiManager.getEclispeFile(jetFile)
-    if (eclipseFile == null) return emptyList()
-    
-    val javaProject = JavaCore.create(eclipseFile.getProject())
-    val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult
-    return resolveToSourceElements(analysisResult.bindingContext, javaProject)
+    val javaProject = JavaCore.create(KotlinPsiManager.getEclispeFile(jetFile)?.getProject()) 
+                      ?: jetFile.getUserData(FILE_PROJECT)
+    if (javaProject == null) return emptyList()
+
+    return resolveToSourceElements(
+                KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult.bindingContext,
+                javaProject)
 }
 
 public fun KotlinReference.resolveToSourceElements(context: BindingContext, project: IJavaProject): List<SourceElement> {
