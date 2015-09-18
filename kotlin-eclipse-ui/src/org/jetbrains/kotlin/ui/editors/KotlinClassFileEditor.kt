@@ -151,4 +151,19 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
             selectAndReveal(correctedOffset, 0);
         }
     }
+    
+    //overriden for the purpose of highlighting
+    //because JavaEditor::doSetInput resets source viewer configuration
+    override fun setSourceViewerConfiguration(configuration: SourceViewerConfiguration) {
+        when(configuration) {
+            is Configuration -> super<ClassFileEditor>.setSourceViewerConfiguration(configuration)
+            else -> super<ClassFileEditor>.setSourceViewerConfiguration(Configuration(colorManager, this, getPreferenceStore()))
+        }
+    }
+    
+    //overriden to empty because ClassFileEditor's semantic highlighting crashes Kotlin syntax coloring
+    //TODO: rewrite when the semantic highlighting will be introduced
+    override protected fun installSemanticHighlighting() {
+        
+    }
 }
