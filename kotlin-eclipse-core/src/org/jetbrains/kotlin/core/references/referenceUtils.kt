@@ -37,13 +37,18 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public fun KotlinReference.resolveToSourceElements(): List<SourceElement> {
     val jetFile = expression.getContainingJetFile()
+
     val eclipseFile = KotlinPsiManager.getEclispeFile(jetFile)
     if (eclipseFile == null) return emptyList()
-    
     val javaProject = JavaCore.create(eclipseFile.getProject())
-    val analysisResult = KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult
-    return resolveToSourceElements(analysisResult.bindingContext, javaProject)
+
+    return resolveToSourceElements(jetFile, javaProject)
 }
+
+public fun KotlinReference.resolveToSourceElements(jetFile: JetFile, javaProject: IJavaProject) =
+        resolveToSourceElements(
+                KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult.bindingContext,
+                javaProject)
 
 public fun KotlinReference.resolveToSourceElements(context: BindingContext, project: IJavaProject): List<SourceElement> {
     return getTargetDescriptors(context).flatMap { EclipseDescriptorUtils.descriptorToDeclarations(it, project) }

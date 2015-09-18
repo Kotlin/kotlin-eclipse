@@ -127,7 +127,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             return null;
         }
         KotlinReference reference = ReferencesPackage.createReference(expression);
-        List<SourceElement> sourceElements = ReferencesPackage.resolveToSourceElements(reference);
+        List<SourceElement> sourceElements = ReferencesPackage.resolveToSourceElements(reference, file, javaProject);
         
         return sourceElements.size() == 1 ? sourceElements.get(0) : null; 
     }
@@ -138,7 +138,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             gotoJavaDeclaration(binding, javaProject);
         } else if (element instanceof KotlinSourceElement) {
             PsiElement psiElement = ((KotlinSourceElement) element).getPsi();
-            gotoKotlinDeclaration(psiElement, javaProject);
+            gotoKotlinDeclaration(psiElement, kotlinReference, javaProject);
         } else if (element instanceof KotlinJvmBinarySourceElement) {
             KotlinJvmBinaryClass binaryClass = ((KotlinJvmBinarySourceElement) element).getBinaryClass();
             gotoElementInBinaryClass(binaryClass, kotlinReference, javaProject);
@@ -173,24 +173,35 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         
     }
     
-    private void gotoKotlinDeclaration(@NotNull PsiElement element, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
+    private void gotoKotlinDeclaration(@NotNull PsiElement element, KotlinReference kotlinReference, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
+        AbstractTextEditor targetEditor = findEditorForReferencedElement(element, kotlinReference, javaProject);
+        if (targetEditor == null) {
+            return;
+        }        
+        int start = LineEndUtil.convertLfToDocumentOffset(element.getContainingFile().getText(), 
+                element.getTextOffset(), editor.getDocument());
+        targetEditor.selectAndReveal(start, 0);
+    }
+    
+    private AbstractTextEditor findEditorForReferencedElement(@NotNull PsiElement element, KotlinReference kotlinReference, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
+        //if element is in the same file
+        if (kotlinReference.getExpression().getContainingFile().equals(element.getContainingFile())) {
+            return editor.getJavaEditor();
+        }
         VirtualFile virtualFile = element.getContainingFile().getVirtualFile();
-        assert virtualFile != null;
+        if (virtualFile == null) {
+            return null;
+        }
         
         IFile targetFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath()));
         if (targetFile == null) {
             targetFile = EditorsPackage.getAcrhivedFileFromPath(virtualFile.getPath());
         }
         IEditorPart editorPart = findEditorPart(targetFile, element, javaProject);
-        if (editorPart == null) {
-            return;
+        if (!(editorPart instanceof AbstractTextEditor)) {
+            return null;
         }
-        
-        AbstractTextEditor targetEditor = (AbstractTextEditor) editorPart;
-        
-        int start = LineEndUtil.convertLfToDocumentOffset(element.getContainingFile().getText(), 
-                element.getTextOffset(), editor.getDocument());
-        targetEditor.selectAndReveal(start, 0);
+        return (AbstractTextEditor) editorPart;
     }
     
     private static void gotoJavaDeclaration(@NotNull IBinding binding, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {

@@ -53,10 +53,9 @@ public object EclipseAnalyzerFacadeForJVM {
         
         val allFiles = LinkedHashSet<JetFile>(filesSet)
         val addedFiles = filesSet.map { getPath(it) }
-        
         ProjectUtils.getSourceFilesWithDependencies(javaProject).filterNotTo(allFiles) {
             getPath(it) in addedFiles
-        }
+        }.filterNotNull()
         
         val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project, project.getName())
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
@@ -81,5 +80,5 @@ public object EclipseAnalyzerFacadeForJVM {
                 containerAndProvider.second)
     }
     
-    private fun getPath(jetFile: JetFile): String = jetFile.getVirtualFile().getPath()
+    private fun getPath(jetFile: JetFile): String? = jetFile.getVirtualFile()?.getPath()
 }
