@@ -58,7 +58,12 @@ public class KotlinTokenScanner implements ITokenScanner {
         lastElement = jetFile.findElementAt(offset);
         if (lastElement != null) {
             offset = lastElement.getTextRange().getEndOffset();
-            return kotlinTokensFactory.getToken(lastElement);
+            IToken token = kotlinTokensFactory.getToken(lastElement);
+            if (kotlinTokensFactory.isBlockToken(token)) {
+                rangeEnd = jetFile.getTextLength();
+            }
+            
+            return token;
         }
         
         return Token.EOF;
