@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.IDocument;
@@ -28,6 +29,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.source.Annotation;
+import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.MarkerUtilities;
@@ -63,16 +65,26 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
     @Override
     public void reconcile(IRegion partition) {
-        IFile file = EditorUtil.getFile(editor);
-        
-        if (file != null) {
-            resetCache(file);
-
-            updateLineAnnotations(file);
-            updateOutlinePage();
-        } else {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-        }
+        SafeRunnable.run(new ISafeRunnable() {
+            @Override
+            public void run() throws Exception {
+                IFile file = EditorUtil.getFile(editor);
+                
+                if (file != null) {
+                    resetCache(file);
+                    
+                    updateLineAnnotations(file);
+                    updateOutlinePage();
+                } else {
+                    KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+                }
+            }
+            
+            @Override
+            public void handleException(Throwable exception) {
+                KotlinLogger.logError(exception);
+            }
+        });
     }
     
     private void resetCache(@NotNull IFile file) {
