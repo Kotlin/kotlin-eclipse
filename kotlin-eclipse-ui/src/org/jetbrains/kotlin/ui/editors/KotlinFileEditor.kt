@@ -53,6 +53,8 @@ import com.intellij.openapi.util.text.StringUtil
 import org.jetbrains.kotlin.ui.debug.KotlinRunToLineAdapter
 import org.eclipse.debug.ui.actions.IRunToLineTarget
 import org.jetbrains.kotlin.ui.overrideImplement.KotlinOverrideMembersAction
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInProjectAction
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWorkspaceAction
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -117,6 +119,10 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setAction(KotlinSelectNextAction.SELECT_NEXT_TEXT, KotlinSelectNextAction(this, selectionHistory))
         
         setAction(KotlinOverrideMembersAction.ACTION_ID, KotlinOverrideMembersAction(this))
+        
+        setAction(KotlinFindReferencesInProjectAction.ACTION_ID, KotlinFindReferencesInProjectAction(this))
+        
+        setAction(KotlinFindReferencesInWorkspaceAction.ACTION_ID, KotlinFindReferencesInWorkspaceAction(this))
     }
     
     override public fun dispose() {

@@ -543,15 +543,6 @@
       </queryParticipant>
    </extension>
    <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            commandId="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
-            contextId="org.jetbrains.kotlin.eclipse.ui.kotlinEditorScope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="CTRL+SHIFT+G">
-      </key>
-   </extension>
-   <extension
          point="org.eclipse.ui.contexts">
       <context
             description="Kotlin Editor Scope"
