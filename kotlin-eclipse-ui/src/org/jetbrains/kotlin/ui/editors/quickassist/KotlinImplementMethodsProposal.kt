@@ -38,6 +38,7 @@ import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
 import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
@@ -72,7 +73,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 		
 		return false
 	}
-	
+    
 	public fun generateMethods(document: IDocument, classOrObject: JetClassOrObject, selectedElements: Set<CallableMemberDescriptor>) {
 		var body = classOrObject.getBody()
 		val editor = getActiveEditor()!!
@@ -250,17 +251,6 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         return emptySet()
     }
 	
-	private fun JetElement.resolveToDescriptor(): DeclarationDescriptor {
-		val jetFile = this.getContainingJetFile()
-		val project = getActiveFile()!!.getProject()
-		val analysisResult = KotlinAnalyzer.analyzeFile(JavaCore.create(project), jetFile).analysisResult
-		return BindingContextUtils.getNotNull(
-				analysisResult.bindingContext, 
-				BindingContext.DECLARATION_TO_DESCRIPTOR,
-				this,
-				"Descriptor wasn't found for declaration " + this.toString() + "\n" +
-				this.getElementTextWithContext())
-	}
 	
 	fun DeclarationDescriptor.escapedName() = DescriptorRenderer.COMPACT.renderName(getName())
 }
