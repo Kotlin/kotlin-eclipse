@@ -198,7 +198,7 @@ class KotlinQueryPatternSpecification(
 // After passing this query specification to java, it will try to find some usages and to ensure that nothing will found
 // before KotlinQueryParticipant here is using dummy element '------------'
 open class KotlinDummyQuerySpecification(searchScope: IJavaSearchScope, description: String) : PatternQuerySpecification(
-        "------------", 
+        "Kotlin Find References", 
         IJavaSearchConstants.CLASS, 
         true, 
         IJavaSearchConstants.REFERENCES, 
