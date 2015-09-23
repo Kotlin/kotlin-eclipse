@@ -35,7 +35,19 @@ import java.io.BufferedReader
 import java.io.StringReader
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 
-public object NavigationTestLibrary {
+public data class TestLibraryData(val libPath: String, val srcPath: String)
+
+public fun getTestLibrary() = 
+        NavigationTestLibrary().let { 
+            TestLibraryData(it.libraryPath, it.sourceArchivePath)
+         }
+
+public fun TestLibraryData.clean() {
+    File(libPath).delete()
+    File(srcPath).delete()
+}
+
+private class NavigationTestLibrary {
     private val srcFolderName = "src"
     private val targetFolderName = "target"
     
@@ -48,9 +60,14 @@ public object NavigationTestLibrary {
     private val sourceArchiveFile: File
     
     public val libraryPath: String
-        get() = libraryFile.getAbsolutePath()
+        get() {
+            return libraryFile.getAbsolutePath()
+        }
+    
     public val sourceArchivePath: String
-        get() = sourceArchiveFile.getAbsolutePath()
+        get() {
+            return sourceArchiveFile.getAbsolutePath()
+        }
     
     init {
         val targetFolder = File(testDataRootFolder, targetFolderName)
@@ -58,12 +75,13 @@ public object NavigationTestLibrary {
             targetFolder.mkdir()
         }
         libraryFile = File(targetFolder, "${commonArtifactName}.jar")
-        sourceArchiveFile = File(targetFolder, "${commonArtifactName}-sources.zip")
         if (!libraryFile.exists()) {
             runCompiler(libraryFile)
-        } 
+        }
+        
+        sourceArchiveFile = File(targetFolder, "${commonArtifactName}-sources.zip")
         if (!sourceArchiveFile.exists()) {
-            createSourceArchive(sourceArchiveFile, srcPath)            
+            createSourceArchive(sourceArchiveFile, srcPath)
         }
     }
     

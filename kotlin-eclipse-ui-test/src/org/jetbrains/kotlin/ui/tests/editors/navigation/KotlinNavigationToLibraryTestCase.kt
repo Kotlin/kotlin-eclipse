@@ -9,9 +9,9 @@ import org.junit.Before
 import org.junit.Test
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.ui.tests.editors.navigation.library.NavigationTestLibrary
+import org.jetbrains.kotlin.ui.tests.editors.navigation.library.getTestLibrary
+import org.jetbrains.kotlin.ui.tests.editors.navigation.library.clean
 import org.junit.AfterClass
-import kotlin.platform.platformStatic
 
 public open class KotlinNavigationToLibraryTestCase: KotlinSourcesNavigationTestCase() {
     override fun getParsedFile(editor: KotlinEditor): JetFile =
@@ -20,13 +20,14 @@ public open class KotlinNavigationToLibraryTestCase: KotlinSourcesNavigationTest
     override val testDataPath: String =
         "testData/navigation/lib"
 
-    Before
+    @Before
     override fun configure() {
         super.configure()
         try
         {
-            val libPath = Path(NavigationTestLibrary.libraryPath)
-            val srcPath = Path(NavigationTestLibrary.sourceArchivePath)
+            val testData = getTestLibrary()
+            val libPath = Path(testData.libPath)
+            val srcPath = Path(testData.srcPath)
             getTestProject().addLibrary(libPath, srcPath)
         }
         catch (e:JavaModelException) {
@@ -36,9 +37,9 @@ public open class KotlinNavigationToLibraryTestCase: KotlinSourcesNavigationTest
     
     companion object {
         @AfterClass
-        @platformStatic
+        @JvmStatic
         fun afterAllTests() {
-            NavigationTestLibrary.clean()
+            getTestLibrary().clean()
         }
     }
 }
