@@ -76,12 +76,10 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     }
     
     private fun specifyType(declaration: JetDeclarationWithBody, factory: JetPsiFactory, context: BindingContext) {
-    	val returnType = (declaration as JetNamedFunction).returnType(context)!!
-        val typeBuilder = StringBuilder()
-        typeBuilder.append(factory.createColon())
-        typeBuilder.append(factory.createWhiteSpace())
-        typeBuilder.append(returnType)
-        insertAfter(declaration.getValueParameterList()!!, typeBuilder.toString())
+    	val returnType = (declaration as JetNamedFunction).returnType(context).toString()
+        val stringToInsert = listOf(factory.createColon(), factory.createWhiteSpace())
+            .joinToString(separator = "") { it.getText()} + returnType
+        insertAfter(declaration.getValueParameterList()!!, stringToInsert)
     }
 
     private fun convert(declaration: JetDeclarationWithBody, bindingContext: BindingContext): JetExpression {

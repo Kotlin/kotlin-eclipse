@@ -1,0 +1,11 @@
+interface Item {
+    fun title(): String
+    fun wight(): Int
+}
+
+class Book: Item {
+    override fun title(): String {
+        return "Book"
+    }
+    override fun wight() = 12
+}

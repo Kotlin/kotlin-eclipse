@@ -13,6 +13,11 @@ public class KotlinConvertToBlockBodyTest extends
 	public void testAnnotatedExpr() {
 		doTest("common_testData/ide/intentions/convertToBlockBody/annotatedExpr.kt");
 	}
+	
+   @Test
+    public void testImplicitlyNonUnitFun() {
+        doTest("testData/intentions/convertToBlockBody/implicitlyNonUnitFun.kt");
+    }
 
 	@Test
 	public void testExplicitlyNonUnitFun() {
