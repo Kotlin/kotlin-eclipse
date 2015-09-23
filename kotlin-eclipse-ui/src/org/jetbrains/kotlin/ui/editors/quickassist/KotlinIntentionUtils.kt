@@ -27,6 +27,12 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.resolve.BindingContextUtils
 import org.jetbrains.kotlin.psi.psiUtil.getElementTextWithContext
+import org.eclipse.core.resources.IProject
+import org.jetbrains.kotlin.core.model.KotlinJavaManager
+import org.eclipse.jdt.core.IPackageFragmentRoot
+import org.eclipse.jdt.core.IMember
+import org.eclipse.jdt.core.IMethod
+import org.eclipse.jdt.core.IType
 
 fun JetNamedDeclaration.canRemoveTypeSpecificationByVisibility(bindingContext: BindingContext): Boolean {
     val isOverride = getModifierList()?.hasModifier(JetTokens.OVERRIDE_KEYWORD) ?: false
@@ -46,3 +52,15 @@ fun JetElement.resolveToDescriptor(): DeclarationDescriptor {
             this,
             "Descriptor wasn't found for declaration " + this.toString() + "\n" + this.getElementTextWithContext())
 }
+
+fun obtainKotlinPackageFragmentRoots(projects: Array<IProject>): Array<IPackageFragmentRoot> {
+    return projects
+            .map {
+                val javaProject = JavaCore.create(it)
+                javaProject.findPackageFragmentRoot(KotlinJavaManager.getKotlinBinFolderFor(it).getFullPath())
+            }
+            .filterNotNull()
+            .toTypedArray()
+}
+
+fun unionMembers(types: List<IType>, methods: List<IMethod>): List<IMember> = types + methods

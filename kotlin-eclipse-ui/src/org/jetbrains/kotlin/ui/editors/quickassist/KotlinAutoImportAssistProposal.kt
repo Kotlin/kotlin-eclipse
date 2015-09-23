@@ -23,8 +23,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiWhiteSpace
 import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
+import org.eclipse.jdt.core.IMember
+import org.eclipse.jdt.core.IMethod
 
-public class KotlinAutoImportAssistProposal(val proposalType: IType) : KotlinQuickAssistProposal() {
+public class KotlinAutoImportAssistProposal(val proposalType: IMember) : KotlinQuickAssistProposal() {
 	override public fun apply(document: IDocument, psiElement: PsiElement) {
 		val editor = getActiveEditor()
 		if (editor == null) {
@@ -53,10 +55,23 @@ public class KotlinAutoImportAssistProposal(val proposalType: IType) : KotlinQui
 	override public fun getImage(): Image = JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_IMPDECL)
 	
 	override public fun getDisplayString(): String {
-		return "Import '${proposalType.getElementName()}' (${proposalType.getPackageFragment().getElementName()})"
+	    val packageFragment = when (proposalType) {
+	        is IType -> proposalType.getPackageFragment()
+            is IMethod -> proposalType.getDeclaringType().getPackageFragment()
+            else -> null
+	    }
+		return "Import '${proposalType.getElementName()}' (${packageFragment?.getElementName()})"
 	}
 	
-	public fun getFqName(): String = proposalType.getFullyQualifiedName('.')
+	public fun getFqName(): String {
+	    fun getFqName(type: IType) = type.getFullyQualifiedName('.')
+        
+	    return when (proposalType) {
+	        is IType -> getFqName(proposalType)
+            is IMethod -> "${proposalType.getDeclaringType().getPackageFragment().getElementName()}.${proposalType.getElementName()}"
+            else -> throw IllegalStateException("Cannot import type or function of $proposalType")
+	    }
+	}
 	
 	private fun getOffset(element: PsiElement, editor: AbstractTextEditor): Int {
 		return element.getEndLfOffset(EditorUtil.getDocument(editor))
