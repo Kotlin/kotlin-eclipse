@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.psi.JetReturnExpression
 import org.jetbrains.kotlin.psi.JetBlockExpression
 import org.jetbrains.kotlin.psi.JetPsiUtil
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.psi.JetTypeReference
 
 class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -76,12 +77,10 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     }
     
     private fun specifyType(declaration: JetDeclarationWithBody, factory: JetPsiFactory, context: BindingContext) {
-    	val returnType = (declaration as JetNamedFunction).returnType(context)!!
-        val typeBuilder = StringBuilder()
-        typeBuilder.append(factory.createColon())
-        typeBuilder.append(factory.createWhiteSpace())
-        typeBuilder.append(returnType)
-        insertAfter(declaration.getValueParameterList()!!, typeBuilder.toString())
+    	val returnType = factory.createType((declaration as JetNamedFunction).returnType(context).toString())
+        val stringToInsert = listOf(factory.createColon(), factory.createWhiteSpace(), returnType)
+            .joinToString(separator = "") { it.getText()}
+        insertAfter(declaration.getValueParameterList()!!, stringToInsert)
     }
 
     private fun convert(declaration: JetDeclarationWithBody, bindingContext: BindingContext): JetExpression {
@@ -121,8 +120,6 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
         return newBody
     }
 
-    private fun JetNamedFunction.returnType(context: BindingContext): JetType? {
-        val descriptor = context[BindingContext.DECLARATION_TO_DESCRIPTOR, this] ?: return null
-        return (descriptor as FunctionDescriptor).getReturnType()
-    }
+    private fun JetNamedFunction.returnType(context: BindingContext) =
+            (context[BindingContext.DECLARATION_TO_DESCRIPTOR, this] as? FunctionDescriptor)?.getReturnType()
 }
