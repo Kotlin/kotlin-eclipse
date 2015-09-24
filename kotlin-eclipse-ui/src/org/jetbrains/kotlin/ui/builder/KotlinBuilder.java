@@ -31,6 +31,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
@@ -42,6 +46,7 @@ import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.google.common.collect.Sets;
 
@@ -135,6 +140,28 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         for (Map.Entry<IFile, List<DiagnosticAnnotation>> entry : annotations.entrySet()) {
             for (DiagnosticAnnotation annotation : entry.getValue()) {
                 AnnotationManager.addProblemMarker(annotation, entry.getKey());
+            }
+        }
+    }
+    
+    private void cleanMarkersAndAnnotations(IProject project) throws CoreException {
+        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
+            if (file.exists()) {
+                file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
+            }
+        }
+        
+        for (IWorkbenchWindow workbench : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IEditorReference editorReference : workbench.getActivePage().getEditorReferences()) {
+                IEditorPart editor = editorReference.getEditor(false);
+                if (editor instanceof KotlinFileEditor) {
+                    KotlinFileEditor kotlinEditor = (KotlinFileEditor) editor;
+                    IFile file = kotlinEditor.getFile();
+                    if (file != null && file.getProject().equals(project)) {
+                        AnnotationManager.cleanAnnotations(kotlinEditor);
+                    }
+                    
+                }
             }
         }
     }

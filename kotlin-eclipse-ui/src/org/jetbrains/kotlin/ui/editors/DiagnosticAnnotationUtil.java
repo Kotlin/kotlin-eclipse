@@ -47,7 +47,6 @@ import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 
-import com.google.common.base.Predicate;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiErrorElement;
@@ -166,8 +165,7 @@ public class DiagnosticAnnotationUtil {
     
     public void updateAnnotations(
             @NotNull AbstractTextEditor editor, 
-            @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations,
-            @NotNull Predicate<Annotation> replacementAnnotationsPredicate) {
+            @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations) {
         try {
             List<DiagnosticAnnotation> newAnnotations;
             IFile file = EditorUtil.getFile(editor);
@@ -178,7 +176,7 @@ public class DiagnosticAnnotationUtil {
                 newAnnotations = Collections.emptyList();
             }
             
-            AnnotationManager.updateAnnotations(editor, newAnnotations, replacementAnnotationsPredicate);
+            AnnotationManager.updateAnnotations(editor, newAnnotations);
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }

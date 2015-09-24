@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.ISafeRunnable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -28,11 +27,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.reconciler.DirtyRegion;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
-import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.texteditor.MarkerAnnotation;
-import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
@@ -43,9 +39,6 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 
 public class KotlinReconcilingStrategy implements IReconcilingStrategy {
 
@@ -92,7 +85,6 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         KotlinAnalysisProjectCache.INSTANCE$.resetCache(javaProject);
     }
     
-    @SuppressWarnings("unchecked")
     private void updateLineAnnotations(IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         JetFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor));
@@ -105,30 +97,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
         Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics);
         
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);
-        DiagnosticAnnotationUtil.INSTANCE.updateAnnotations(editor, annotations, Predicates.or(diagnosticAnnotationPredicate(), markerProblemPredicate()));
-    }
-    
-    private static Predicate<Annotation> diagnosticAnnotationPredicate() {
-        return new Predicate<Annotation>() {
-            @Override
-            public boolean apply(Annotation annotation) {
-                return annotation instanceof DiagnosticAnnotation;
-            }
-        };
-    }
-    
-    private static Predicate<Annotation> markerProblemPredicate() {
-        return new Predicate<Annotation>() {
-            @Override
-            public boolean apply(Annotation annotation) {
-                if (!(annotation instanceof MarkerAnnotation)) {
-                    return false;
-                }
-                
-                MarkerAnnotation markerAnnotation = (MarkerAnnotation) annotation;
-                return MarkerUtilities.isMarkerType(markerAnnotation.getMarker(), IMarker.PROBLEM);
-            }
-        };
+        DiagnosticAnnotationUtil.INSTANCE.updateAnnotations(editor, annotations);
     }
     
     private void updateOutlinePage() {
