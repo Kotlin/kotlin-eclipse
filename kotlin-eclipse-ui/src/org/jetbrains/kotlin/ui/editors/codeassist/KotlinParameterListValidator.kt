@@ -35,13 +35,13 @@ import com.intellij.psi.PsiErrorElement
 
 public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IContextInformationValidator, 
         IContextInformationPresenter {
-    var info: IContextInformation by Delegates.notNull()
+    var info: KotlinFunctionParameterContextInformation by Delegates.notNull()
     var viewer: ITextViewer by Delegates.notNull()
     var position: Int by Delegates.notNull()
     var previousIndex: Int by Delegates.notNull()
     
     override fun install(info: IContextInformation, viewer: ITextViewer, offset: Int) {
-        this.info = info
+        this.info = info as KotlinFunctionParameterContextInformation
         this.viewer = viewer
         this.position = offset
         this.previousIndex = -1
@@ -56,9 +56,14 @@ public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IConte
         
         if (offset < line.getOffset()) return false
         
+        val currentArgumentIndex = getCurrentArgumentIndex(offset)
+        if (currentArgumentIndex == null || isIndexOutOfBound(currentArgumentIndex)) {
+            return false
+        }
+        
         val expression = getCallSimpleNameExpression(editor, offset)
         
-        return expression?.getReferencedName() == (info as KotlinFunctionParameterContextInformation).name.asString()
+        return expression?.getReferencedName() == info.name.asString()
     }
     
     override fun updatePresentation(offset: Int, presentation: TextPresentation): Boolean {
@@ -69,7 +74,9 @@ public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IConte
         presentation.clear()
         previousIndex = currentArgumentIndex
         
-        val renderedParameter = (info as KotlinFunctionParameterContextInformation).renderedParameters[currentArgumentIndex]
+        if (isIndexOutOfBound(currentArgumentIndex)) return false
+        
+        val renderedParameter = info.renderedParameters[currentArgumentIndex]
         
         val displayString = info.getInformationDisplayString()
         val start = displayString.indexOf(renderedParameter)
@@ -85,6 +92,8 @@ public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IConte
         
         return true
     }
+    
+    private fun isIndexOutOfBound(index: Int): Boolean = info.renderedParameters.size() <= index
     
 //    Copied with some changes from JetFunctionParameterInfoHandler.java
     private fun getCurrentArgumentIndex(offset: Int): Int? {
