@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
@@ -201,8 +203,18 @@ public class EclipseJavaElementUtil {
             return false;
         }
         IClassFile classFile = (IClassFile) element;
+        IPath classFilePath = classFile.getPath();
+        if (!classFilePath.toFile().exists()) {
+            //maybe eclipse local path, try to resolve
+            IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(classFilePath);
+            if (file.exists()) {
+                classFilePath = file.getRawLocation();
+            } else {
+                return false;
+            }
+        }
+        VirtualFile virtualFile = PathUtil.jarFileOrDirectoryToVirtualFile(classFilePath.toFile());
         String relativePath = classFile.getType().getFullyQualifiedName().replace('.', '/') + ".class";
-        VirtualFile virtualFile = PathUtil.jarFileOrDirectoryToVirtualFile(classFile.getPath().toFile());
         VirtualFile archiveRelativeFile = virtualFile.findFileByRelativePath(relativePath);
         if (archiveRelativeFile == null) {
             return false;
