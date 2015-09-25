@@ -26,6 +26,7 @@ import org.eclipse.ui.IEditorPart
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.ui.tests.editors.navigation.library.TestLibraryData
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 open public class KotlinNavigationFromLibraryTestCase: KotlinProjectTestCase() {
 
@@ -38,7 +39,9 @@ open public class KotlinNavigationFromLibraryTestCase: KotlinProjectTestCase() {
     @Before
     fun configure() {
         configureProject()
+        KotlinLogger.logInfo("[KNFL LOG MESSAGE] Getting library.")
         val testData = getTestLibrary()
+        KotlinLogger.logInfo("[KNFL LOG MESSAGE] Got library.")
         val libPath = Path(testData.libPath)
         val srcPath = Path(testData.srcPath)
         try {
@@ -124,7 +127,9 @@ open public class KotlinNavigationFromLibraryTestCase: KotlinProjectTestCase() {
         @AfterClass
         @JvmStatic
         fun afterAllTests() {
+            KotlinLogger.logInfo("[KNFL LOG MESSAGE] Beginning to clean.")
             getTestLibrary().clean()
+            KotlinLogger.logInfo("[KNFL LOG MESSAGE] Cleaning finished.")
         }
     }
 
