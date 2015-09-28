@@ -55,6 +55,7 @@ import org.eclipse.debug.ui.actions.IRunToLineTarget
 import org.jetbrains.kotlin.ui.overrideImplement.KotlinOverrideMembersAction
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInProjectAction
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWorkspaceAction
+import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -123,6 +124,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setAction(KotlinFindReferencesInProjectAction.ACTION_ID, KotlinFindReferencesInProjectAction(this))
         
         setAction(KotlinFindReferencesInWorkspaceAction.ACTION_ID, KotlinFindReferencesInWorkspaceAction(this))
+        
+        setAction(KotlinRenameAction.ACTION_ID, KotlinRenameAction(this))
     }
     
     override public fun dispose() {
