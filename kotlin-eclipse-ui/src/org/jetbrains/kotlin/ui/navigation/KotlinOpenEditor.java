@@ -4,8 +4,9 @@ import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.internal.core.ClassFile;
+import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IReusableEditor;
@@ -70,28 +71,33 @@ public class KotlinOpenEditor {
 	
 	@Nullable
 	public static IEditorPart openKotlinClassFileEditor(@NotNull IJavaElement element, boolean activate) {
-        if (element instanceof ClassFile) {
-            ClassFile classFile = (ClassFile) element;
+        IClassFile classFile;
+        if (element instanceof IClassFile) {
+            classFile = (IClassFile) element;
+        } else if (element instanceof BinaryType) {
+            classFile = ((BinaryType) element).getClassFile();
+        } else  {
+            return null;
+        }
             
-            KotlinClassFileEditorInput editorInput = new KotlinClassFileEditorInput(classFile,
-                    classFile.getJavaProject());
-            
-            IWorkbench wb = PlatformUI.getWorkbench();
-            IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
-            IWorkbenchPage page = win.getActivePage();
-            
-            try {
-                IEditorPart reusedEditor = page.openEditor(editorInput, KotlinClassFileEditor.EDITOR_ID, activate);
-                if (reusedEditor != null) {
-                    //the input is compared by a source path, but corresponding classes may be different
-                    //so if editor is reused, the input should be changed for the purpose of inner navigation
-                    page.reuseEditor((IReusableEditor) reusedEditor, editorInput);
-                }
-                return reusedEditor;
-            } catch (PartInitException e) {
-                KotlinLogger.logAndThrow(e);
+        KotlinClassFileEditorInput editorInput = new KotlinClassFileEditorInput(classFile,
+                classFile.getJavaProject());
+        
+        IWorkbench wb = PlatformUI.getWorkbench();
+        IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
+        IWorkbenchPage page = win.getActivePage();
+        
+        try {
+            IEditorPart reusedEditor = page.openEditor(editorInput, KotlinClassFileEditor.EDITOR_ID, activate);
+            if (reusedEditor != null) {
+                //the input is compared by a source path, but corresponding classes may be different
+                //so if editor is reused, the input should be changed for the purpose of inner navigation
+                page.reuseEditor((IReusableEditor) reusedEditor, editorInput);
             }
-        }        
+            return reusedEditor;
+        } catch (PartInitException e) {
+            KotlinLogger.logAndThrow(e);
+        }
         return null;
 	}
 }

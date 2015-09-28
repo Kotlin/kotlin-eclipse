@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -36,11 +35,13 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.internal.core.BinaryType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.Visibilities;
 import org.jetbrains.kotlin.descriptors.Visibility;
 import org.jetbrains.kotlin.load.java.JavaVisibilities;
@@ -198,20 +199,22 @@ public class EclipseJavaElementUtil {
         return false;
     }
     
-    public static boolean isKotlinClassFile(@NotNull IJavaElement element) {
-        if (!(element instanceof IClassFile)) {
+    public static boolean isKotlinBinaryElement(@NotNull IJavaElement element) {
+        IClassFile classFile;
+        if (element instanceof IClassFile) {
+            classFile = (IClassFile) element;
+        } else if (element instanceof BinaryType) {
+            classFile = ((BinaryType) element).getClassFile();
+        } else  {
             return false;
         }
-        IClassFile classFile = (IClassFile) element;
-        IPath classFilePath = classFile.getPath();
-        if (!classFilePath.toFile().exists()) {
-            //maybe eclipse local path, try to resolve
-            IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(classFilePath);
-            if (file.exists()) {
-                classFilePath = file.getRawLocation();
-            } else {
-                return false;
-            }
+        return isKotlinClassFile(classFile);
+    }
+
+    private static boolean isKotlinClassFile(IClassFile classFile) {
+        IPath classFilePath = ProjectUtils.convertToGlobalPath(classFile.getPath());
+        if (classFilePath == null) {
+            return false;
         }
         VirtualFile virtualFile = PathUtil.jarFileOrDirectoryToVirtualFile(classFilePath.toFile());
         String relativePath = classFile.getType().getFullyQualifiedName().replace('.', '/') + ".class";

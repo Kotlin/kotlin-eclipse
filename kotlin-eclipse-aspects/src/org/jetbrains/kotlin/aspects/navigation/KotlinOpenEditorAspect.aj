@@ -21,7 +21,7 @@ public aspect KotlinOpenEditorAspect {
 				return KotlinOpenEditor.openKotlinEditor(javaElement, activate);
 			}	
 			
-			if (EclipseJavaElementUtil.isKotlinClassFile(javaElement)) {
+			if (EclipseJavaElementUtil.isKotlinBinaryElement(javaElement)) {
 			    return KotlinOpenEditor.openKotlinClassFileEditor(javaElement, activate);
 			}
 		}

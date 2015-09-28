@@ -14,17 +14,18 @@ import org.jetbrains.kotlin.idea.JetFileType
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import kotlin.io.use
 import org.eclipse.core.resources.ResourcesPlugin
+import org.jetbrains.kotlin.core.utils.ProjectUtils
 
 public class LibrarySourcesIndex(private val root: IPackageFragmentRoot) {
     private val index: HashMap<String, ArrayList<SourceFile>>
     private val PACKAGE_LINE_PREFIX = "package "
     
     init {
-        val sourcePath = root.getResolvedClasspathEntry()?.getSourceAttachmentPath()
-        val fullSourcePath = ResourcesPlugin.getWorkspace().getRoot().getFile(sourcePath).getRawLocation()
+        val sourcePath = ProjectUtils.convertToGlobalPath(
+            root.getResolvedClasspathEntry()?.getSourceAttachmentPath())
         index = HashMap<String, ArrayList<SourceFile>>()
-        if (fullSourcePath != null) {
-            val sourceArchive = ZipFile(fullSourcePath.toOSString())
+        if (sourcePath != null) {
+            val sourceArchive = ZipFile(sourcePath.toOSString())
             val names = sourceArchive.entries()
                 .toList()
                 .map { it.getName() }
@@ -43,9 +44,9 @@ public class LibrarySourcesIndex(private val root: IPackageFragmentRoot) {
             return sourcesList.first().path
         }
         val packageName = packageFragment.getElementName()
-        val sourcePath = root.getResolvedClasspathEntry()?.getSourceAttachmentPath()!!
-        val fullSourcePath = ResourcesPlugin.getWorkspace().getRoot().getFile(sourcePath).getRawLocation()
-        val sourceArchive = ZipFile(fullSourcePath.toOSString())
+        val sourcePath = ProjectUtils.convertToGlobalPath(
+            root.getResolvedClasspathEntry()?.getSourceAttachmentPath())!!
+        val sourceArchive = ZipFile(sourcePath.toOSString())
         sourcesList.forEach {
             if (it.effectivePackage == null) {
                 it.effectivePackage = getPackageName(sourceArchive, sourceArchive.getEntry(it.path))

@@ -331,6 +331,23 @@ public class ProjectUtils {
         addContainerEntryToClasspath(javaProject, KotlinClasspathContainer.CONTAINER_ENTRY);
     }
     
+    @Nullable
+    public static IPath convertToGlobalPath(@Nullable IPath path) {
+        if (path == null) {
+            return null;
+        }
+        if (path.toFile().exists()) {
+            return path.makeAbsolute();
+        } else {
+            IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+            if (file.exists()) {
+                return file.getRawLocation();
+            }
+        }
+        return null;
+            
+    }
+    
     public static boolean isMavenProject(@NotNull IProject project) {
         try {
             return project.hasNature(MAVEN_NATURE_ID);
