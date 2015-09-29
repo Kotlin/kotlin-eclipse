@@ -16,6 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
@@ -62,10 +64,14 @@ import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClass;
+import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader;
+import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader.Kind;
+import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.psi.JetReferenceExpression;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement;
+import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor;
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor;
 
 import com.intellij.openapi.vfs.VirtualFile;
@@ -143,6 +149,91 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     private void gotoElementInBinaryClass(KotlinJvmBinaryClass binaryClass, KotlinReference kotlinReference, IJavaProject javaProject) throws JavaModelException, PartInitException {
+        JetFile jetFile = kotlinReference.getExpression().getContainingJetFile();
+        BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getAnalysisResult().getBindingContext();
+        Collection<DeclarationDescriptor> descriptors = kotlinReference.getTargetDescriptors(context);
+        if (descriptors.isEmpty()) {
+            return;
+        }
+        
+        //TODO: popup if there's several descriptors to navigate to
+        DeclarationDescriptor descriptor = descriptors.iterator().next();
+        
+        IClassFile classFile = findImplementingClass(binaryClass, descriptor, javaProject);
+        if (classFile == null) {
+            return;
+        }
+        
+        KotlinClassFileEditor targetEditor = (KotlinClassFileEditor) KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen());
+        
+        if (targetEditor == null) {
+            return;
+        }
+        
+        
+        int offset = EditorsPackage.findDeclarationInParsedFile(descriptor, targetEditor.getParsedFile());
+        int start = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), offset, editor.getDocument());
+        targetEditor.selectAndReveal(start, 0);
+        
+    }
+
+    private IClassFile findImplementingClass(KotlinJvmBinaryClass binaryClass, DeclarationDescriptor descriptor, IJavaProject javaProject)
+            throws JavaModelException {
+        Kind binaryClassKind = binaryClass.getClassHeader().getKind();
+        if (KotlinClassHeader.Kind.MULTIFILE_CLASS.equals(binaryClassKind) || 
+                KotlinClassHeader.Kind.PACKAGE_FACADE.equals(binaryClassKind)) {
+            return getImplementingFacadePart(binaryClass, descriptor, javaProject);
+        }
+        
+        return getClassFile(binaryClass, javaProject);
+    }
+
+    private IClassFile getImplementingFacadePart(KotlinJvmBinaryClass binaryClass, DeclarationDescriptor descriptor,
+            IJavaProject javaProject) throws JavaModelException {
+        if (descriptor instanceof DeserializedCallableMemberDescriptor) {
+            DeserializedCallableMemberDescriptor memberDescriptor 
+                = (DeserializedCallableMemberDescriptor) descriptor;
+            Name className = getImplClassName(memberDescriptor);
+            IPackageFragment fragment = (IPackageFragment) getClassFile(binaryClass, javaProject).getParent();
+            IClassFile file = fragment.getClassFile(className.asString() + ".class");
+            if (file.exists()) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    //implemented via Reflection because Eclipse has issues with ProGuard-shrunken compiler 
+    //in com.google.protobuf.GeneratedMessageLite.ExtendableMessage
+    private Name getImplClassName(DeserializedCallableMemberDescriptor memberDescriptor) {
+        int nameIndex;
+        try {
+            Method getProtoMethod = DeserializedCallableMemberDescriptor.class.getMethod("getProto");
+            Object proto = getProtoMethod.invoke(memberDescriptor);
+            
+            Field implClassNameField = Class.forName("org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf").getField("implClassName");
+            Object implClassName = implClassNameField.get(null);
+            
+            
+            Class<?> protobufCallable = Class.forName("org.jetbrains.kotlin.serialization.ProtoBuf$Callable");
+            @SuppressWarnings("unchecked")
+            Method getExtensionMethod = protobufCallable.getMethod("getExtension", implClassName.getClass());
+            Object indexObj = getExtensionMethod.invoke(proto, implClassName);
+            
+            if (!(indexObj instanceof Integer)) {
+                return null;
+            }
+            nameIndex = ((Integer)indexObj).intValue();
+        } catch (ReflectiveOperationException | IllegalArgumentException | SecurityException e) {
+            return null;
+        }
+        
+        Name className = memberDescriptor.getNameResolver().getName(nameIndex);
+        return className;
+    }
+
+    private IClassFile getClassFile(KotlinJvmBinaryClass binaryClass, IJavaProject javaProject)
+            throws JavaModelException {
         VirtualFile file = ((VirtualFileKotlinClass)binaryClass).getFile();
         
         String packagePath = file.getParent().getPath();
@@ -150,23 +241,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         
         String className = file.getName();
         IClassFile classFile = fragment.getClassFile(className);
-        KotlinClassFileEditor targetEditor = (KotlinClassFileEditor) KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen());
-        
-        if (targetEditor == null) {
-            return;
-        }
-        
-        JetFile jetFile = kotlinReference.getExpression().getContainingJetFile();
-        BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getAnalysisResult().getBindingContext();
-        Collection<DeclarationDescriptor> descriptors = kotlinReference.getTargetDescriptors(context);
-
-        //TODO: popup if there's several descriptors to navigate to
-        DeclarationDescriptor descriptor = descriptors.iterator().next();
-        
-        int offset = EditorsPackage.findDeclarationInParsedFile(descriptor, targetEditor.getParsedFile());
-        int start = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), offset, editor.getDocument());
-        targetEditor.selectAndReveal(start, 0);
-        
+        return classFile;
     }
     
     private void gotoKotlinDeclaration(@NotNull PsiElement element, KotlinReference kotlinReference, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {

@@ -37,5 +37,10 @@ public class KotlinNavigationToLibraryTest extends KotlinNavigationToLibraryTest
     @Test
     public void testConstructor() {
         doAutoTest();
-    }    
+    }  
+    
+    @Test
+    public void testPackageFacadeFunction() {
+        doAutoTest();
+    }
 }
