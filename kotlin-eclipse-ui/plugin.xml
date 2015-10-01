@@ -585,7 +585,7 @@
             <with
                   variable="element">
                <instanceof
-                     value="org.eclipse.jdt.core.IJavaElement">
+                     value="org.eclipse.jdt.core.IType">
                </instanceof>
             </with>
          </enablement>
