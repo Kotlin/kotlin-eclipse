@@ -40,6 +40,9 @@ import org.eclipse.text.edits.ReplaceEdit
 import org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor
 import org.eclipse.ltk.core.refactoring.participants.RefactoringArguments
 import org.eclipse.ltk.core.refactoring.participants.RenameArguments
+import org.eclipse.text.edits.TextEdit
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
 
 public class KotlinTypeRenameParticipant : RenameParticipant() {
     lateinit var element: IType
@@ -73,10 +76,17 @@ public class KotlinTypeRenameParticipant : RenameParticipant() {
         
         kotlinQueryParticipant.search({ matches.add(it) }, querySpecification, NullProgressMonitor())
         
-        matches
+        val groupedEdits = matches
             .map { createTextChange(it) }
             .filterNotNull()
-            .forEach { changes.add(it) }
+            .groupBy { it.file }
+        
+        for ((file, edits) in groupedEdits) {
+            val fileChange = TextFileChange("Kotlin change", file)
+            edits.forEach { TextChangeCompatibility.addTextEdit(fileChange, "Kotlin change", it.edit) }
+            
+            changes.add(fileChange)
+        }
         
         return RefactoringStatus() // TODO: add corresponding refactoring status
     }
@@ -87,7 +97,7 @@ public class KotlinTypeRenameParticipant : RenameParticipant() {
         return CompositeChange("Changes in Kotlin", changes.toTypedArray())
     }
     
-    private fun createTextChange(match: Match): Change? {
+    private fun createTextChange(match: Match): FileEdit? {
         if (match !is KotlinElementMatch) return null
         
         val jetElement = match.jetElement
@@ -97,9 +107,10 @@ public class KotlinTypeRenameParticipant : RenameParticipant() {
         
         val document = EditorUtil.getDocument(eclipseFile) // TODO: make workaround here later
         
-        val change = TextFileChange("Rename Kotlin reference", eclipseFile)
-        change.setEdit(ReplaceEdit(jetElement.getTextDocumentOffset(document), jetElement.getTextLength(), newName))
-        
-        return change
+        return FileEdit(
+                eclipseFile, 
+                ReplaceEdit(jetElement.getTextDocumentOffset(document), jetElement.getTextLength(), newName))
     }
 }
+
+data class FileEdit(val file: IFile, val edit: TextEdit)
