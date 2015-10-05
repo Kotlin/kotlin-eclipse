@@ -41,7 +41,7 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
         else -> null
     }
     
-    return jetSignatures.any { 
+    return jetSignatures.any {
         if (it.first == memberSignature) {
             return@any when {
                 javaMember is IMethod && javaMember.isConstructor() -> 
