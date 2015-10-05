@@ -112,15 +112,16 @@ public fun JetElement.toLightElements(javaProject: IJavaProject): List<IJavaElem
     }
 }
 
+public fun SourceElement.toLightElements(javaProject: IJavaProject): List<IJavaElement> {
+    return when (this) {
+        is EclipseJavaSourceElement -> obtainJavaElement(this.getElementBinding()).singletonOrEmptyList()
+        is KotlinSourceElement -> this.psi.toLightElements(javaProject)
+        else -> emptyList<IJavaElement>()
+    }
+}
+
 public fun sourceElementsToLightElements(sourceElements: List<SourceElement>, javaProject: IJavaProject): List<IJavaElement> {
-    return sourceElements
-            .flatMap {
-                when (it) {
-                    is EclipseJavaSourceElement -> obtainJavaElement(it.getElementBinding()).singletonOrEmptyList()
-                    is KotlinSourceElement -> it.psi.toLightElements(javaProject)
-                    else -> emptyList<IJavaElement>()
-                }
-            }
+    return sourceElements.flatMap { it.toLightElements(javaProject) }
 }
 
 private fun obtainJavaElement(binding: IBinding): IJavaElement? {

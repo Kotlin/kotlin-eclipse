@@ -43,6 +43,7 @@ import org.eclipse.ltk.core.refactoring.participants.RenameArguments
 import org.eclipse.text.edits.TextEdit
 import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
+import org.jetbrains.kotlin.psi.JetNamedDeclaration
 
 public class KotlinTypeRenameParticipant : RenameParticipant() {
     lateinit var element: IType
@@ -70,7 +71,7 @@ public class KotlinTypeRenameParticipant : RenameParticipant() {
         val factory = JavaSearchScopeFactory.getInstance()
         val querySpecification = ElementQuerySpecification(
                 element, 
-                IJavaSearchConstants.REFERENCES,
+                IJavaSearchConstants.ALL_OCCURRENCES,
                 factory.createWorkspaceScope(false),
                 factory.getWorkspaceScopeDescription(false))
         
@@ -107,9 +108,15 @@ public class KotlinTypeRenameParticipant : RenameParticipant() {
         
         val document = EditorUtil.getDocument(eclipseFile) // TODO: make workaround here later
         
+        val textLength = if (jetElement is JetNamedDeclaration) {
+            jetElement.getNameIdentifier()!!.getTextLength()
+        } else {
+            jetElement.getTextLength()
+        }
+        
         return FileEdit(
                 eclipseFile, 
-                ReplaceEdit(jetElement.getTextDocumentOffset(document), jetElement.getTextLength(), newName))
+                ReplaceEdit(jetElement.getTextDocumentOffset(document), textLength, newName))
     }
 }
 

@@ -64,6 +64,7 @@ import org.eclipse.jface.text.IUndoManagerExtension
 import org.eclipse.core.commands.operations.OperationHistoryFactory
 import org.eclipse.core.commands.operations.IUndoableOperation
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.psi.JetNamedDeclaration
 
 public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
@@ -148,7 +149,12 @@ fun beginRenameRefactoring(javaElement: IJavaElement, jetElement: JetElement, ed
     val linkedPositionGroup = LinkedPositionGroup()
     val offsetInDocument = jetElement.getTextDocumentOffset(editor.document)
     
-    val position = LinkedPosition(editor.document, offsetInDocument, jetElement.getTextLength())
+    val textLength = if (jetElement is JetNamedDeclaration) {
+        jetElement.getNameIdentifier()!!.getTextLength()
+    } else {
+        jetElement.getTextLength()
+    }
+    val position = LinkedPosition(editor.document, offsetInDocument, textLength)
     linkedPositionGroup.addPosition(position)
     
     val startindUndoOperation = getCurrentUndoOperation(editor)
