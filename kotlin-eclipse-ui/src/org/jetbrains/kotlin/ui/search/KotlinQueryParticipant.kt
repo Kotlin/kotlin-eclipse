@@ -74,6 +74,8 @@ import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.psi.JetObjectDeclarationName
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
@@ -140,7 +142,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             else -> return null
         }
         
-        val query = FileSearchQuery(searchText, false, false, scope)
+        val query = FileSearchQuery(searchText, false, true, true, scope)
         
         query.run(null)
         
@@ -155,7 +157,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val beforeResolveCheck = beforeResolveFilters.all { it.isApplicable(element) }
             if (!beforeResolveCheck) return@filter false
             
-            if (element is JetDeclaration) {
+            if (element is JetDeclaration || element is JetObjectDeclaration || element is JetObjectDeclarationName) {
                 return@filter true
             }
             
