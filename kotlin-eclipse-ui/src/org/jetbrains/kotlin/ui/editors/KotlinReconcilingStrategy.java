@@ -37,6 +37,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
@@ -90,6 +91,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     private void resetCache(@NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
         KotlinAnalysisProjectCache.INSTANCE$.resetCache(javaProject);
+        KotlinAnalysisFileCache.INSTANCE$.resetCache();
     }
     
     @SuppressWarnings("unchecked")

@@ -20,19 +20,18 @@ import java.util.Collection;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.psi.JetFile;
-
-import com.google.common.collect.Lists;
 
 public class KotlinAnalyzer {
     @NotNull
     public static AnalysisResultWithProvider analyzeFile(@NotNull IJavaProject javaProject, @NotNull JetFile jetFile) {
-        return analyzeFiles(javaProject, Lists.newArrayList(jetFile));
+        return KotlinAnalysisFileCache.INSTANCE$.getAnalysisResult(jetFile, javaProject);
     }
     
     @NotNull
-    public static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
+    private static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
             @NotNull Collection<JetFile> filesToAnalyze) {
         return EclipseAnalyzerFacadeForJVM.INSTANCE$.analyzeFilesWithJavaIntegration(
                 javaProject, 

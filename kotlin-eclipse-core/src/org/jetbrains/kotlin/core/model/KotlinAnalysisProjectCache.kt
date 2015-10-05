@@ -45,9 +45,8 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
         val project = javaProject.getProject()
         return synchronized(project) {
             val analysisResult = cachedAnalysisResults.getOrElse(project) {
-                val environment = KotlinEnvironment.getEnvironment(javaProject)
                 KotlinAnalyzer
-                        .analyzeFiles(javaProject, environment, ProjectUtils.getSourceFiles(javaProject.getProject()))
+                        .analyzeFiles(javaProject, ProjectUtils.getSourceFiles(javaProject.getProject()))
                         .analysisResult
             }
             
