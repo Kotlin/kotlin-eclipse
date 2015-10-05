@@ -7,5 +7,6 @@
 		<aspect	name="org.jetbrains.kotlin.aspects.navigation.KotlinFindSourceAspect"/>
 		<aspect	name="org.jetbrains.kotlin.aspects.refactoring.KotlinRefactoringChecksAspect"/>
 		<aspect	name="org.jetbrains.kotlin.aspects.refactoring.KotlinBreakpointRenamingAspect"/>
+		<aspect	name="org.jetbrains.kotlin.aspects.refactoring.KotlinRefactoringTypeAspect"/>
 	</aspects>
 </aspectj>

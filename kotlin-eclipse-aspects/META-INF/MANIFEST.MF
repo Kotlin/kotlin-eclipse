@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.core,
  org.eclipse.ltk.core.refactoring,
  org.eclipse.jdt.debug.ui,
- org.eclipse.debug.core
+ org.eclipse.debug.core,
+ org.eclipse.jdt.core.manipulation
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
@@ -25,7 +26,6 @@ Import-Package: com.intellij.navigation,
  org.eclipse.jdt.core,
  org.eclipse.jdt.debug.core,
  org.eclipse.jdt.internal.core,
- org.eclipse.jdt.internal.corext.refactoring,
  org.eclipse.jdt.internal.debug.core,
  org.eclipse.jdt.internal.debug.ui,
  org.eclipse.jdt.launching,
@@ -41,8 +41,7 @@ Import-Package: com.intellij.navigation,
  org.jetbrains.kotlin.ui.editors,
  org.jetbrains.kotlin.ui.navigation,
  org.jetbrains.kotlin.ui.refactorings.rename,
- org.jetbrains.kotlin.utils,
- org.eclipse.jdt.internal.corext.refactoring.util
+ org.jetbrains.kotlin.utils
 Eclipse-SupplementBundle: 
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.launching,
@@ -51,7 +50,8 @@ Eclipse-SupplementBundle:
  org.eclipse.pde.launching,
  org.eclipse.jdt.core,
  org.eclipse.ltk.core.refactoring,
- org.eclipse.jdt.debug.ui
+ org.eclipse.jdt.debug.ui,
+ org.eclipse.jdt.core.manipulation
 Export-Package: org.jetbrains.kotlin.aspects.debug.ui,
  org.jetbrains.kotlin.aspects.debug.core,
  org.jetbrains.kotlin.aspects.navigation,

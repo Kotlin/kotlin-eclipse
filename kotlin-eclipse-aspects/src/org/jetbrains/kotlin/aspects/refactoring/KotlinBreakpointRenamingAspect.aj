@@ -13,7 +13,7 @@ public aspect KotlinBreakpointRenamingAspect {
 
     @SuppressAjWarnings({"adviceDidNotMatch"})
     IJavaElement around(IJavaElement parent, IJavaElement element): findElement(parent, element) {
-        if (parent instanceof KotlinLightCompilationUnit || element instanceof KotlinLightCompilationUnit) {
+        if (parent instanceof KotlinLightCompilationUnit) {
             return null;
         }
         
