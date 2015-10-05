@@ -12,7 +12,6 @@
 	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
 	<property name="test-data-file" value="kotlin-test-data.zip" />
-	<property name="guava-file" value="guava-17.0.jar"/>
 	
 	<condition property="branch" value="?branch=${bootstrap_branch}" else="">
 	    <length string="${bootstrap_branch}" trim="true" when="greater" length="0" />
@@ -120,11 +119,6 @@
 			dest="${target.dir}/intellij-core.jar" 
 			usetimestamp="true"/>
 		
-		<get
-			src="${idea-sdk-url}/core/guava-17.0.jar"
-			dest="${target.dir}/${guava-file}"
-			usetimestamp="true" />
-
 		<!-- Also retrivive sources -->
 		<get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 
 					dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
