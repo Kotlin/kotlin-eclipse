@@ -1,5 +1,5 @@
 <project default="get_bundled">
-	<property name="idea-sources-build-id" value="570959"/>
+	<property name="idea-sources-build-id" value="474470"/>
 	<property name="compiler.tag" value="for_eclipse" />
 	<property name="bootstrap_branch" value="M13"/>
 	
@@ -12,8 +12,6 @@
 	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
 	<property name="test-data-file" value="kotlin-test-data.zip" />
-	
-	<property name="json-file" value="gson-2.3.1.jar"/>
 	
 	<condition property="branch" value="?branch=${bootstrap_branch}" else="">
 	    <length string="${bootstrap_branch}" trim="true" when="greater" length="0" />
@@ -120,11 +118,6 @@
 		<get src="${idea-sdk-url}/core/intellij-core.jar" 
 			dest="${target.dir}/intellij-core.jar" 
 			usetimestamp="true"/>
-		
-		<get
-           src="${idea-sdk-url}/core/${gson-file}"
-           dest="${target.dir}/${guava-file}"
-           usetimestamp="true" />
 		
 		<!-- Also retrivive sources -->
 		<get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 

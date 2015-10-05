@@ -1,0 +1,9 @@
+<project>
+	<property name="target.dir" value="lib"/>
+	
+	<get src="http://central.maven.org/maven2/com/google/code/gson/gson/2.3.1/gson-2.3.1.jar" 
+        dest="${target.dir}/gson-2.3.1.jar" 
+        usetimestamp="true"/>
+	
+	<target name="get_dependencies"></target>
+</project>
