@@ -126,7 +126,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             else -> return null
         }
         
-        val query = FileSearchQuery(searchText, false, false, scope)
+        val query = FileSearchQuery(searchText, false, true, true, scope)
         
         query.run(null)
         
