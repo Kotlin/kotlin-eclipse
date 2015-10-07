@@ -1,2 +1,7 @@
-// MAIN_FILE: main.kt
-// newName: Foo
+{
+  "type": "KOTLIN_CLASS",
+  "classId": "/Foo",
+  "oldName": "Foo",
+  "newName": "Bar",
+  "mainFile": "main.kt"
+}

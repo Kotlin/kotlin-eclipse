@@ -27,8 +27,8 @@ public class KotlinViewerCreator : IViewerCreator {
 }
 
 class KotlinMergeViewer(parent: Composite, configuration: CompareConfiguration): TextMergeViewer(parent, configuration) {
-    override fun <T : Any?> getAdapter(adapter: Class<T>?): T? {
-        return super.getAdapter(adapter) as? T
+    override fun <T : Any?> getAdapter(adapter: Class<T>?): T {
+        return super.getAdapter(adapter) as T
     }
 
 	private val colorManager = JavaColorManager()

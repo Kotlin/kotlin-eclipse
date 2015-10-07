@@ -1,10 +1,10 @@
-class JavaBar extends Bar {
+class JavaFoo extends Bar {
 
 }
 
 class Usage {
     public static void main(String[] args) {
-        Bar bar = null;
+        Bar foo = null;
         new Bar() {
         };
     }

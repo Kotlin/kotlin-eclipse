@@ -1,6 +1,6 @@
 open class Foo : Throwable()
 
-val foo: Foo = Fo<caret>o()
+val foo: Foo = Foo()
 val foo1: Foo = Foo()
 
 val foos: List<Foo> = listOf()

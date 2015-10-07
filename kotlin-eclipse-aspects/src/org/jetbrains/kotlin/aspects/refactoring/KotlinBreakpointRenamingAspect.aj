@@ -1,9 +1,11 @@
 package org.jetbrains.kotlin.aspects.refactoring;
 
 import org.aspectj.lang.annotation.SuppressAjWarnings;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.debug.core.refactoring.BreakpointChange;
-import org.jetbrains.kotlin.ui.refactorings.rename.KotlinLightCompilationUnit;
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 
 @SuppressWarnings("restriction")
 public aspect KotlinBreakpointRenamingAspect {
@@ -13,7 +15,8 @@ public aspect KotlinBreakpointRenamingAspect {
 
     @SuppressAjWarnings({"adviceDidNotMatch"})
     IJavaElement around(IJavaElement parent, IJavaElement element): findElement(parent, element) {
-        if (parent instanceof KotlinLightCompilationUnit) {
+        IResource resource = parent.getResource();
+        if (resource instanceof IFile && KotlinPsiManager.isKotlinFile((IFile) resource)) {
             return null;
         }
         

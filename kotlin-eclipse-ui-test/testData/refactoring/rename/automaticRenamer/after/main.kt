@@ -1,42 +1,42 @@
 open class Bar : Throwable()
 
-val bar: Bar = Bar()
-val bar1: Bar = Bar()
+val foo: Bar = Bar()
+val foo1: Bar = Bar()
 
-val bars: List<Bar> = listOf()
+val foos: List<Bar> = listOf()
 val foos1: Array<Bar> = array()
 
 fun main(args: Array<String>) {
-    val bar: Bar = Bar()
-    val someVerySpecialBar: Bar = Bar()
-    val barAnother: Bar = Bar()
+    val foo: Bar = Bar()
+    val someVerySpecialFoo: Bar = Bar()
+    val fooAnother: Bar = Bar()
 
     val anonymous = object : Bar() {
     }
 
-    val (bar1: Bar, bars: List<Bar>) = Pair(Bar(), listOf<Bar>())
+    val (foo1: Foo, foos: List<Foo>) = Pair(Bar(), listOf<Bar>())
 
     try {
-        for (bar2: Bar in listOf<Bar>()) {
+        for (foo2: Bar in listOf<Bar>()) {
 
         }
-    } catch (bar: Bar) {
+    } catch (foo: Bar) {
 
     }
 
-    fun local(bar: Bar) {
+    fun local(foo: Bar) {
 
     }
 }
 
-fun topLevel(bar: Bar) {
+fun topLevel(foo: Bar) {
 
 }
 
-fun collectionLikes(bars: List<Array<Bar>>, foos: List<Map<Bar, Bar>>) {
+fun collectionLikes(foos: List<Array<Bar>>, foos: List<Map<Bar, Bar>>) {
 
 }
 
-class BarImpl : Bar()
+class FooImpl : Bar()
 
-object BarObj : Bar()
+object FooObj : Bar()

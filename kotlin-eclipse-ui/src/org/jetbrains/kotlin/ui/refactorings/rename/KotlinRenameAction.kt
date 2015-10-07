@@ -76,7 +76,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
     }
     
     override fun run(selection: ITextSelection) {
-        val jetElement = getJetElement(selection)
+        val jetElement = getJetElement(selection, editor)
         if (jetElement == null) return
         
         val javaElements = resolveToJavaElements(jetElement, editor.javaProject!!)
@@ -89,14 +89,15 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         beginRenameRefactoring(javaElements[0], jetElement, editor)
     }
     
-    private fun getJetElement(selection: ITextSelection): JetElement? {
-        val psiElement = EditorUtil.getPsiElement(editor, selection.getOffset())
-        if (psiElement != null) {
-            return PsiTreeUtil.getNonStrictParentOfType(psiElement, JetElement::class.java)
-        }
-        
-        return null
-    }
+}
+
+fun getJetElement(selection: ITextSelection, editor: KotlinFileEditor): JetElement? {
+    val psiElement = EditorUtil.getPsiElement(editor, selection.getOffset())
+            if (psiElement != null) {
+                return PsiTreeUtil.getNonStrictParentOfType(psiElement, JetElement::class.java)
+            }
+    
+    return null
 }
 
 fun resolveToJavaElements(jetElement: JetElement, javaProject: IJavaProject): List<IJavaElement> {
@@ -186,6 +187,21 @@ fun beginRenameRefactoring(javaElement: IJavaElement, jetElement: JetElement, ed
     ui.setExitPosition(editor.getViewer(), offsetInDocument, 0, Integer.MAX_VALUE)
     ui.setExitPolicy(DeleteBlockingExitPolicy(editor.document))
     ui.enter()
+}
+
+// for tests
+fun doRename(selection: ITextSelection, newName: String, editor: KotlinFileEditor) {
+    val jetElement = getJetElement(selection, editor)
+    if (jetElement == null) return
+    
+    val javaElements = resolveToJavaElements(jetElement, editor.javaProject!!)
+    if (javaElements.isEmpty()) return
+    
+    if (javaElements.size() > 1) {
+        KotlinLogger.logWarning("There are more than one (${javaElements.size()}) java elements for $jetElement")
+    }
+    
+    doRename(javaElements[0], jetElement, newName, editor)
 }
 
 fun doRename(javaElement: IJavaElement, jetElement: JetElement, newName: String, editor: KotlinFileEditor) {
