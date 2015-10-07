@@ -57,6 +57,7 @@ import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
 import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
@@ -98,17 +99,19 @@ public class KotlinQueryParticipant : IQueryParticipant {
             }
         }
         
-        (specification.lightElements + specification.jetElements).map {
-            when (it) {
-                is IJavaElement -> ElementQuerySpecification(it, specification.getLimitTo(), specification.getScope(), 
-                    specification.getScopeDescription())
-                
-                is JetElement -> KotlinQueryPatternSpecification(listOf(it), specification.getScope(), 
-                    specification.getScopeDescription())
-                
-                else -> throw IllegalStateException("Cannot create query specification for $it")
-            } 
-         }.forEach {
+        val specifications = arrayListOf<QuerySpecification>()
+        specification.lightElements.mapTo(specifications) { 
+            ElementQuerySpecification(it, 
+                specification.getLimitTo(), 
+                specification.getScope(), 
+                specification.getScopeDescription())
+        }
+        specification.jetElement?.let {
+            specifications.add(KotlinQueryPatternSpecification(it, specification.getScope(), 
+                    specification.getScopeDescription()))
+        }
+        
+        specifications.forEach {
             val searchQuery = JavaSearchQuery(it)
             searchQuery.run(monitor)
             reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
@@ -118,7 +121,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     private fun searchTextOccurrences(querySpecification: QuerySpecification, filesScope: List<IFile>): ISearchResult? {
         val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null, false)
         val searchText = when (querySpecification) {
-            is KotlinQueryPatternSpecification -> buildOrPattern(querySpecification.jetElements)
+            is KotlinQueryPatternSpecification -> querySpecification.jetElement.getName()!!
             is ElementQuerySpecification -> querySpecification.getElement().getElementName()
             else -> return null
         }
@@ -133,7 +136,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     private fun resolveReferencesAndMatch(references: List<KotlinReference>, querySpecification: QuerySpecification): List<KotlinReference> {
         val isApplicable: (List<SourceElement>, IJavaProject) -> Boolean = when (querySpecification) {
             is KotlinQueryPatternSpecification -> { elements, _ ->
-                elements.any { (it as? KotlinSourceElement)?.psi in querySpecification.jetElements }
+                elements.any { (it as? KotlinSourceElement)?.psi == querySpecification.jetElement }
             }
             
             is ElementQuerySpecification -> { elements, project ->
@@ -143,13 +146,20 @@ public class KotlinQueryParticipant : IQueryParticipant {
             else -> throw IllegalArgumentException("$querySpecification is not supported to resolve and search references")
         }
         
-        return references.filter { reference ->
+        // This is important for optimization: 
+        // we will consequentially cache files one by one which are containing these references
+        val sortedByFileNameReferences = references.sortedBy { it.expression.getContainingJetFile().getName() }
+        
+        return sortedByFileNameReferences.filter { reference ->
             if (isImportDirective(reference)) return@filter false
             
             val javaProject = KotlinPsiManager.getJavaProject(reference.expression)
             return@filter if (javaProject != null) {
-                    val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-                    val sourceElements = reference.resolveToSourceElements(analysisResult.bindingContext, javaProject)
+                    val analysisResultWithProvider = KotlinAnalysisFileCache.getAnalysisResult(
+                            reference.expression.getContainingJetFile(), 
+                            javaProject)
+                    val sourceElements = reference.resolveToSourceElements(
+                            analysisResultWithProvider.analysisResult.bindingContext, javaProject)
                     isApplicable(sourceElements, javaProject)
                 } else {
                     false
@@ -203,9 +213,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
 //        We can significantly reduce scope to one file when there are no light elements in query specification.
 //        In this case search elements are not visible from Java and other Kotlin files
         return if (querySpecification is KotlinQueryPatternSpecification) {
-                querySpecification.jetElements
-                    .map { KotlinPsiManager.getEclispeFile(it.getContainingJetFile()) }
-                    .filterNotNull()
+                listOf(KotlinPsiManager.getEclispeFile(querySpecification.jetElement.getContainingJetFile())!!)
             } else {
                 querySpecification.getScope().enclosingProjectsAndJars()
                     .map { JavaModel.getTarget(it, true) }
@@ -213,8 +221,6 @@ public class KotlinQueryParticipant : IQueryParticipant {
                     .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
             }
     }
-    
-    private fun buildOrPattern(elements: List<JetElement>): String = elements.joinToString("|") { it.getName()!! }
 }
 
 public class KotlinElementMatch(val jetElement: JetElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(), 

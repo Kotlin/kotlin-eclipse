@@ -63,6 +63,7 @@ import org.eclipse.jdt.internal.ui.search.SearchMessages
 import org.eclipse.jdt.internal.ui.JavaPluginImages
 import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 abstract class KotlinFindReferencesHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
@@ -183,15 +184,15 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
                 val isJetElementIsDistinct = elements.all { it.getElementName() != jetElement.getName() }
                 KotlinCompositeQuerySpecification(
                         elements, 
-                        if (isJetElementIsDistinct) listOf(jetElement) else emptyList(),
+                        if (isJetElementIsDistinct) jetElement else null,
                         scope,
                         description)
             }
         }
     }
     
-    fun createFindReferencesQuery(elements: List<JetElement>): KotlinQueryPatternSpecification {
-        return KotlinQueryPatternSpecification(elements, scope, description)
+    fun createFindReferencesQuery(element: JetElement): KotlinQueryPatternSpecification {
+        return KotlinQueryPatternSpecification(element, scope, description)
     }
     
     return when (jetElement) {
@@ -206,7 +207,7 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
                 createFindReferencesQuery(lightElements)
             } else {
                 // Element should present only in Kotlin as there is no corresponding light element
-                createFindReferencesQuery(listOf(jetElement))
+                createFindReferencesQuery(jetElement)
             }
         }
         
@@ -221,10 +222,12 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
             if (lightElements.isNotEmpty()) {
                 createFindReferencesQuery(lightElements)
             } else {
-                createFindReferencesQuery(
-                        sourceElements
-                            .filterIsInstance(KotlinSourceElement::class.java)
-                            .map { it.psi })
+                if (sourceElements.size() > 1) {
+                    KotlinLogger.logWarning("There are more than one elements for ${referenceExpression.getText()}")
+                }
+                
+                val kotlinSourceElement = sourceElements[0] as KotlinSourceElement
+                createFindReferencesQuery(kotlinSourceElement.psi)
             }
         } 
     }
@@ -233,13 +236,13 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
 // This pattern is using to run composite search which is described in KotlinQueryParticipant.
 class KotlinCompositeQuerySpecification(
         val lightElements: List<IJavaElement>, 
-        val jetElements: List<JetElement>, 
+        val jetElement: JetElement?, 
         searchScope: IJavaSearchScope, 
         description: String) : KotlinDummyQuerySpecification(searchScope, description)
 
 // Using of this pattern assumes that elements presents only in Kotlin
 class KotlinQueryPatternSpecification(
-        val jetElements: List<JetElement>, 
+        val jetElement: JetElement, 
         searchScope: IJavaSearchScope, 
         description: String) : KotlinDummyQuerySpecification(searchScope, description)
 
