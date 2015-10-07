@@ -207,9 +207,9 @@ public class KotlinElementMatch(val jetElement: JetElement) : Match(KotlinAdapta
         jetElement.getTextOffset())
 
 class KotlinAdaptableElement(val jetElement: JetElement): IAdaptable {
-    override fun <T> getAdapter(adapter: Class<T>): T? {
+    override fun getAdapter(adapter: Class<*>): Any? {
         return when {
-            IResource::class.java == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile()) as? T
+            IResource::class.java == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())
             else -> null
         }
     }
