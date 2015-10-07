@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.testframework.utils.WorkspaceUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
@@ -119,7 +120,7 @@ public abstract class KotlinEditorTestCase {
     
     private void deleteProjectAndCloseEditors() {
         try {
-            joinBuildThread();
+            KotlinTestUtils.waitUntilIndexesReady();
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
             
             if (testEditor != null) {
@@ -157,16 +158,6 @@ public abstract class KotlinEditorTestCase {
             return String.valueOf(FileUtil.loadFile(file));
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-    }
-    
-    public static void joinBuildThread() {
-        while (true) {
-            try {
-            	Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
-                break;
-            } catch (OperationCanceledException | InterruptedException e) {
-            }
         }
     }
     

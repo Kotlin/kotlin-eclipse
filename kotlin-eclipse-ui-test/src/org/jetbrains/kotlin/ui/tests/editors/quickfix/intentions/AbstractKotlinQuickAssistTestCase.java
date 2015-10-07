@@ -27,7 +27,7 @@ public abstract class AbstractKotlinQuickAssistTestCase<Proposal extends KotlinQ
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");
         
         if (joinBuildThread) {
-        	KotlinTestUtils.joinBuildThread();
+        	KotlinTestUtils.waitUntilIndexesReady();
         }
 
         Assert.assertTrue(

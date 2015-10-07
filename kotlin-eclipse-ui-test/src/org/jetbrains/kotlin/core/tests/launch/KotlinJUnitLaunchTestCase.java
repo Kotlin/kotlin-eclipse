@@ -17,7 +17,6 @@ import org.eclipse.jdt.internal.junit.launcher.TestKindRegistry;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.psi.JetClass;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
@@ -37,7 +36,7 @@ public class KotlinJUnitLaunchTestCase extends KotlinProjectTestCase {
 		String fileText = KotlinTestUtils.getText(testPath);
 		final TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
 		
-		KotlinEditorTestCase.joinBuildThread();
+		KotlinTestUtils.waitUntilIndexesReady();
 		
 		final LaunchShortcutExtension launchShortcut = findKotlinJUnitLaunchShortcut();
 		assertNotNull("Kotlin JUnit launch shortcut was not founded", launchShortcut);

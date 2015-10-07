@@ -30,6 +30,7 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut;
 import org.junit.Assert;
 
@@ -87,7 +88,7 @@ public abstract class KotlinLaunchTestCase extends KotlinEditorTestCase {
                 }
             };
             
-            joinBuildThread();
+            KotlinTestUtils.joinBuildThread();
             job.schedule();
             job.join();
         } catch (InterruptedException e) {

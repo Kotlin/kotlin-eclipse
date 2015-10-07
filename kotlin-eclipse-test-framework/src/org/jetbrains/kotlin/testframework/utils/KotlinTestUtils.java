@@ -4,10 +4,16 @@ import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.core.search.TypeNameRequestor;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 
 import com.intellij.openapi.util.io.FileUtil;
@@ -41,6 +47,34 @@ public class KotlinTestUtils {
                 break;
             } catch (OperationCanceledException | InterruptedException e) {
             }
+        }
+    }
+    
+    // Copied from jdt testplugin
+    public static void waitUntilIndexesReady() {
+        // dummy query for waiting until the indexes are ready
+        SearchEngine engine = new SearchEngine();
+        IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
+        try {
+            engine.searchAllTypeNames(
+                null,
+                SearchPattern.R_EXACT_MATCH,
+                "!@$#!@".toCharArray(),
+                SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE,
+                IJavaSearchConstants.CLASS,
+                scope,
+                new TypeNameRequestor() {
+                    @Override
+                    public void acceptType(
+                        int modifiers,
+                        char[] packageName,
+                        char[] simpleTypeName,
+                        char[][] enclosingTypeNames,
+                        String path) {}
+                },
+                IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,
+                null);
+        } catch (CoreException e) {
         }
     }
     

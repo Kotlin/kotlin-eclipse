@@ -76,7 +76,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
 		List<Pair<IFile, String>> filesWithExpectedData = loadFilesToProject(files);
 		configureProjectWithStdLibAndBuilder();
 		
-		KotlinTestUtils.joinBuildThread();
+		KotlinTestUtils.waitUntilIndexesReady();
 		
 		IJavaProject javaProject = testEditor.getTestJavaProject().getJavaProject();
 		BindingContext bindingContext = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject).getBindingContext();

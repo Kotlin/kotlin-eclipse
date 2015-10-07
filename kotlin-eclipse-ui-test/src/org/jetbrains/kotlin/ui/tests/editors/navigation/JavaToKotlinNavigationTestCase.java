@@ -23,7 +23,7 @@ public abstract class JavaToKotlinNavigationTestCase extends KotlinNavigationTes
 			throw new RuntimeException(e);
 		}
 		
-		KotlinTestUtils.joinBuildThread();
+		KotlinTestUtils.waitUntilIndexesReady();
 		
 		JavaEditor editor = testEditor.getEditor();
 		OpenAction openAction = new OpenAction(editor);
