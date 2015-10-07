@@ -13,54 +13,52 @@ import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import com.intellij.openapi.util.io.FileUtil;
 
 public class KotlinTestUtils {
-	public enum Separator {
-		TAB, SPACE;
-	}
-	
-	public static final String ERROR_TAG_OPEN = "<error>";
-	public static final String ERROR_TAG_CLOSE = "</error>";
-	public static final String BR = "<br>";
-
-	public static String getText(String testPath) {
-		try {
-			File file = new File(testPath);
-			return String.valueOf(FileUtil.loadFile(file));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public static String getNameByPath(String testPath) {
-		return new Path(testPath).lastSegment();
-	}
-	
-	public static void joinBuildThread() {
-		while (true) {
-			try {
-				Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
-				break;
-			} catch (OperationCanceledException | InterruptedException e) {
-			}
-		}
-	}
-	
-	public static void refreshWorkspace() {
-		WorkspaceUtil.refreshWorkspace();
-		try {
-			Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_REFRESH, new NullProgressMonitor());
-		} catch (OperationCanceledException | InterruptedException e) {
-			e.printStackTrace();
-		}
+    public enum Separator {
+        TAB, SPACE;
     }
-	
-	public static int getCaret(JavaEditor javaEditor) {
-		return javaEditor.getViewer().getTextWidget().getCaretOffset();
-	}
-	
-	public static String resolveTestTags(String text) {
-		return text
-				.replaceAll(ERROR_TAG_OPEN, "")
-				.replaceAll(ERROR_TAG_CLOSE, "")
-				.replaceAll(BR, System.lineSeparator());
+    
+    public static final String ERROR_TAG_OPEN = "<error>";
+    public static final String ERROR_TAG_CLOSE = "</error>";
+    public static final String BR = "<br>";
+    
+    public static String getText(String testPath) {
+        try {
+            File file = new File(testPath);
+            return String.valueOf(FileUtil.loadFile(file));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static String getNameByPath(String testPath) {
+        return new Path(testPath).lastSegment();
+    }
+    
+    public static void joinBuildThread() {
+        while (true) {
+            try {
+                Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
+                break;
+            } catch (OperationCanceledException | InterruptedException e) {
+            }
+        }
+    }
+    
+    public static void refreshWorkspace() {
+        WorkspaceUtil.refreshWorkspace();
+        try {
+            Job.getJobManager().join(ResourcesPlugin.FAMILY_MANUAL_REFRESH, new NullProgressMonitor());
+        } catch (OperationCanceledException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static int getCaret(JavaEditor javaEditor) {
+        return javaEditor.getViewer().getTextWidget().getCaretOffset();
+    }
+    
+    public static String resolveTestTags(String text) {
+        return text.replaceAll(ERROR_TAG_OPEN, "").replaceAll(ERROR_TAG_CLOSE, "").replaceAll(BR,
+                System.lineSeparator());
     }
 }
