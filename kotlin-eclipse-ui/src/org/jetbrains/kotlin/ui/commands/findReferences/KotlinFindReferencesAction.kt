@@ -146,7 +146,7 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
         
         javaProject = JavaCore.create(file.getProject())
         
-        val jetElement = getJetElement(selection)
+        val jetElement = EditorUtil.getJetElement(editor, selection.getOffset())
         if (jetElement == null) return
         
         val querySpecification = createScopeQuerySpecification(jetElement)
@@ -158,15 +158,6 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
     }
     
     abstract fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification?
-    
-    private fun getJetElement(selection: ITextSelection): JetElement? {
-        val psiElement = EditorUtil.getPsiElement(editor, selection.getOffset())
-        if (psiElement != null) {
-            return PsiTreeUtil.getNonStrictParentOfType(psiElement, JetElement::class.java)
-        }
-        
-        return null
-    }
     
     private fun getFile(event: ExecutionEvent): IFile? {
         val activeEditor = HandlerUtil.getActiveEditor(event)

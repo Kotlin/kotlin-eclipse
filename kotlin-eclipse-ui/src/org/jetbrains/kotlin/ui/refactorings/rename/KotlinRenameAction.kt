@@ -20,8 +20,53 @@ import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.eclipse.jface.text.ITextSelection
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.core.references.getReferenceExpression
+import org.jetbrains.kotlin.core.references.createReference
+import org.jetbrains.kotlin.core.references.resolveToSourceElements
+import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
+import org.eclipse.jdt.internal.ui.refactoring.reorg.RenameLinkedMode
+import org.eclipse.jdt.core.IJavaElement
+import org.eclipse.jface.text.link.LinkedModeModel
+import org.eclipse.jface.text.link.LinkedPositionGroup
+import org.eclipse.jface.text.link.LinkedPosition
+import com.intellij.psi.PsiElement
+import org.eclipse.jdt.internal.ui.javaeditor.EditorHighlightingSynchronizer
+import org.eclipse.jface.text.link.ILinkedModeListener
+import org.eclipse.ui.texteditor.link.EditorLinkedModeUI
+import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.eclipse.jdt.core.refactoring.IJavaRefactorings
+import org.eclipse.ltk.core.refactoring.RefactoringCore
+import org.eclipse.jdt.core.refactoring.descriptors.RenameJavaElementDescriptor
+import org.eclipse.jdt.ui.refactoring.RenameSupport
+import org.eclipse.jdt.core.IType
+import org.eclipse.core.resources.IResource
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.core.ICompilationUnit
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
+import org.eclipse.jdt.core.ISourceRange
+import org.eclipse.jdt.core.IMethod
+import org.eclipse.jdt.internal.core.CompilationUnit
+import org.eclipse.text.edits.TextEdit
+import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.text.edits.UndoEdit
+import org.eclipse.jdt.core.compiler.CharOperation
+import org.eclipse.jdt.internal.compiler.env.ICompilationUnit as ContentProviderCompilationUnit
+import org.jetbrains.kotlin.psi.JetElement
+import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.core.model.toLightElements
+import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.eclipse.jface.text.ITextViewerExtension6
+import org.eclipse.jface.text.IUndoManagerExtension
+import org.eclipse.core.commands.operations.OperationHistoryFactory
+import org.eclipse.core.commands.operations.IUndoableOperation
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.psi.JetNamedDeclaration
 
-public class KotlinRenameAction(val kotlinEditor: KotlinFileEditor) : SelectionDispatchAction(kotlinEditor.getSite()) {
+public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.RENAME_ELEMENT)
     }
@@ -31,6 +76,79 @@ public class KotlinRenameAction(val kotlinEditor: KotlinFileEditor) : SelectionD
     }
     
     override fun run(selection: ITextSelection) {
-        println("Kotlin Rename Action activated")
+        val jetElement = EditorUtil.getJetElement(editor, selection.getOffset())
+        if (jetElement == null) return
+        
+        val javaElements = resolveToJavaElements(jetElement, editor.javaProject!!)
+        if (javaElements.isEmpty()) return
+        
+        if (javaElements.size() > 1) {
+            KotlinLogger.logWarning("There are more than one (${javaElements.size()}) java elements for $jetElement")
+        }
+        
+        val javaElement = javaElements[0]
+        if (javaElement is IType) {
+            beginRenameRefactoring(javaElement, jetElement, editor)
+        }
+        
+    }
+}
+
+fun resolveToJavaElements(jetElement: JetElement, javaProject: IJavaProject): List<IJavaElement> {
+    return when (jetElement) {
+        is JetDeclaration -> jetElement.toLightElements(javaProject)
+        else -> {
+            val referenceExpression = getReferenceExpression(jetElement)
+            if (referenceExpression == null) return emptyList()
+            
+            val sourceElements = createReference(referenceExpression).resolveToSourceElements()
+            sourceElementsToLightElements(sourceElements, javaProject)
+        }
+    }
+}
+
+fun beginRenameRefactoring(javaElement: IType, jetElement: JetElement, editor: KotlinFileEditor) {
+    val linkedPositionGroup = LinkedPositionGroup()
+    val offsetInDocument = jetElement.getTextDocumentOffset(editor.document)
+    
+    val textLength = if (jetElement is JetNamedDeclaration) {
+        jetElement.getNameIdentifier()!!.getTextLength()
+    } else {
+        jetElement.getTextLength()
+    }
+    val position = LinkedPosition(editor.document, offsetInDocument, textLength)
+    linkedPositionGroup.addPosition(position)
+    
+    val linkedModeModel = LinkedModeModel()
+    linkedModeModel.addGroup(linkedPositionGroup)
+    linkedModeModel.forceInstall()
+    linkedModeModel.addLinkingListener(EditorHighlightingSynchronizer(editor))
+    linkedModeModel.addLinkingListener(object : ILinkedModeListener {
+        override fun left(model: LinkedModeModel, flags: Int) {
+            if ((flags and ILinkedModeListener.UPDATE_CARET) != 0) {
+                KotlinPsiManager.getKotlinFileIfExist(editor.getFile()!!, editor.document.get()) // commit document
+                
+                doRename(javaElement, jetElement, position.getContent(), editor)
+            }
+        }
+        
+        override fun resume(model: LinkedModeModel?, flags: Int) {
+        }
+        
+        override fun suspend(model: LinkedModeModel?) {
+        }
+    })
+    
+    val ui = EditorLinkedModeUI(linkedModeModel, editor.getViewer())
+    ui.setExitPosition(editor.getViewer(), offsetInDocument, 0, Integer.MAX_VALUE)
+    ui.setExitPolicy(DeleteBlockingExitPolicy(editor.document))
+    ui.enter()
+}
+
+fun doRename(javaElement: IType, jetElement: JetElement, newName: String, editor: KotlinFileEditor) {
+    val kotlinLightType = KotlinLightType(javaElement, jetElement, editor)
+    val renameSupport = RenameSupport.create(kotlinLightType, newName, RenameSupport.UPDATE_REFERENCES)
+    with(editor.getSite()) {
+        renameSupport.perform(getShell(), getWorkbenchWindow())
     }
 }

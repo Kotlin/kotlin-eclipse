@@ -27,11 +27,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.psi.JetElement;
 import org.jetbrains.kotlin.psi.JetFile;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 
 public class EditorUtil {
     
@@ -80,6 +82,13 @@ public class EditorUtil {
         }
 
         return null;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Nullable
+    public static JetElement getJetElement(@NotNull KotlinEditor editor, int offset) {
+        PsiElement psiElement = getPsiElement(editor, offset);
+        return psiElement != null ? PsiTreeUtil.getNonStrictParentOfType(psiElement, JetElement.class) : null;
     }
     
     @Nullable

@@ -17,7 +17,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.junit,
  org.eclipse.jdt.debug,
  org.eclipse.compare,
- org.eclipse.search
+ org.eclipse.search,
+ org.eclipse.jdt.core.manipulation,
+ org.eclipse.ltk.core.refactoring
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.navigation,
  org.eclipse.core.expressions,
@@ -42,7 +44,10 @@ Import-Package: com.intellij.navigation,
  org.eclipse.ui.texteditor.templates,
  org.eclipse.ui.views.contentoutline,
  org.eclipse.ui.wizards.newresource,
- org.jetbrains.kotlin.j2k
+ org.jetbrains.kotlin.j2k,
+ org.eclipse.ui.texteditor.link,
+ org.eclipse.jdt.internal.compiler.env,
+ org.eclipse.jdt.core.compiler
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,
