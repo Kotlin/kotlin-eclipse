@@ -65,6 +65,8 @@ import org.eclipse.core.commands.operations.OperationHistoryFactory
 import org.eclipse.core.commands.operations.IUndoableOperation
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.psi.JetNamedDeclaration
+import org.eclipse.jface.text.source.ISourceViewer
+import org.eclipse.jface.text.IUndoManager
 
 public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
@@ -107,6 +109,39 @@ fun resolveToJavaElements(jetElement: JetElement, javaProject: IJavaProject): Li
     }
 }
 
+fun undo(editor: KotlinFileEditor, startingUndoOperation: IUndoableOperation?) {
+    editor.getSite().getWorkbenchWindow().run(false, true) {
+        val undoManager = getUndoManager(editor)
+        if (undoManager is IUndoManagerExtension) {
+            val undoContext = undoManager.getUndoContext()
+            val operationHistory = OperationHistoryFactory.getOperationHistory()
+            while (undoManager.undoable()) {
+                if (startingUndoOperation != null && startingUndoOperation == operationHistory.getUndoOperation(undoContext)) {
+                    return@run
+                }
+                undoManager.undo()
+            }
+            
+        }
+    }
+}
+
+fun getCurrentUndoOperation(editor: KotlinFileEditor): IUndoableOperation? {
+    val undoManager = getUndoManager(editor)
+    if (undoManager is IUndoManagerExtension) {
+        val undoContext = undoManager.getUndoContext()
+        val operationHistory = OperationHistoryFactory.getOperationHistory()
+        return operationHistory.getUndoOperation(undoContext)
+    }
+    
+    return null
+}
+
+fun getUndoManager(editor: KotlinFileEditor): IUndoManager? {
+    val viewer = editor.getViewer()
+    return if (viewer is ITextViewerExtension6) viewer.getUndoManager() else null
+}
+
 fun beginRenameRefactoring(javaElement: IType, jetElement: JetElement, editor: KotlinFileEditor) {
     val linkedPositionGroup = LinkedPositionGroup()
     val offsetInDocument = jetElement.getTextDocumentOffset(editor.document)
@@ -119,6 +154,8 @@ fun beginRenameRefactoring(javaElement: IType, jetElement: JetElement, editor: K
     val position = LinkedPosition(editor.document, offsetInDocument, textLength)
     linkedPositionGroup.addPosition(position)
     
+    val startindUndoOperation = getCurrentUndoOperation(editor)
+    
     val linkedModeModel = LinkedModeModel()
     linkedModeModel.addGroup(linkedPositionGroup)
     linkedModeModel.forceInstall()
@@ -126,9 +163,12 @@ fun beginRenameRefactoring(javaElement: IType, jetElement: JetElement, editor: K
     linkedModeModel.addLinkingListener(object : ILinkedModeListener {
         override fun left(model: LinkedModeModel, flags: Int) {
             if ((flags and ILinkedModeListener.UPDATE_CARET) != 0) {
+                val newName = position.getContent()
+                undo(editor, startindUndoOperation)
+                
                 KotlinPsiManager.getKotlinFileIfExist(editor.getFile()!!, editor.document.get()) // commit document
                 
-                doRename(javaElement, jetElement, position.getContent(), editor)
+                doRename(javaElement, jetElement, newName, editor)
             }
         }
         
