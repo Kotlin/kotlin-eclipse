@@ -4,6 +4,9 @@
 		<aspect name="org.jetbrains.kotlin.aspects.debug.core.KotlinSourceLookupAspect"/>
 		<aspect name="org.jetbrains.kotlin.aspects.navigation.KotlinOpenEditorAspect"/>
 		<aspect name="org.jetbrains.kotlin.aspects.navigation.KotlinSearchEditorOpenerAspect"/>
-		<aspect	name="org.jetbrains.kotlin.aspects.navigation.KotlinFindSourceAspect"/>
+		<aspect name="org.jetbrains.kotlin.aspects.navigation.KotlinFindSourceAspect"/>
+		<aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRefactoringChecksAspect"/>
+        <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinBreakpointRenamingParticipantAspect"/>
+        <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRefactoringTypeAspect"/>
 	</aspects>
 </aspectj>

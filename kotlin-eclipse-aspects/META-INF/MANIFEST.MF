@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.ui,
  org.jetbrains.kotlin.core,
  org.eclipse.jdt.ui,
  org.eclipse.pde.launching,
- org.eclipse.jdt.core
+ org.eclipse.jdt.core,
+ org.eclipse.ltk.core.refactoring
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
@@ -36,7 +37,9 @@ Import-Package: com.intellij.navigation,
  org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.editors,
  org.jetbrains.kotlin.ui.navigation,
- org.jetbrains.kotlin.utils
+ org.jetbrains.kotlin.utils,
+ org.eclipse.jdt.internal.corext.refactoring,
+ org.eclipse.jdt.internal.debug.core.refactoring
 Eclipse-SupplementBundle: 
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.launching,
@@ -46,4 +49,5 @@ Eclipse-SupplementBundle:
  org.eclipse.jdt.core
 Export-Package: org.jetbrains.kotlin.aspects.debug.ui,
  org.jetbrains.kotlin.aspects.debug.core,
- org.jetbrains.kotlin.aspects.navigation
+ org.jetbrains.kotlin.aspects.navigation,
+ org.jetbrains.kotlin.aspects.refactoring
