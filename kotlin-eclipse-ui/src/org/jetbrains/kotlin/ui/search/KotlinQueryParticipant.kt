@@ -58,6 +58,9 @@ import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
+import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.psi.JetObjectDeclarationName
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
@@ -74,10 +77,10 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 val searchResult = searchTextOccurrences(querySpecification, files)
                 if (searchResult == null) return
                 
-                val references = obtainReferences(searchResult as FileSearchResult, files)
-                val matchedReferences = resolveReferencesAndMatch(references, querySpecification)
+                val elements = obtainElements(searchResult as FileSearchResult, files)
+                val matchedReferences = resolveElementsAndMatch(elements, querySpecification)
                 
-                matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it.expression)) }
+                matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it)) }
             }
             
             override fun handleException(exception: Throwable) {
@@ -133,37 +136,38 @@ public class KotlinQueryParticipant : IQueryParticipant {
         return query.getSearchResult()
     }
     
-    private fun resolveReferencesAndMatch(references: List<KotlinReference>, querySpecification: QuerySpecification): List<KotlinReference> {
-        val isApplicable: (List<SourceElement>, IJavaProject) -> Boolean = when (querySpecification) {
-            is KotlinQueryPatternSpecification -> { elements, _ ->
-                elements.any { (it as? KotlinSourceElement)?.psi == querySpecification.jetElement }
-            }
-            
-            is ElementQuerySpecification -> { elements, project ->
-                sourceElementsToLightElements(elements, project).any { referenceFilter(it, querySpecification.getElement()) }
-            }
-            
-            else -> throw IllegalArgumentException("$querySpecification is not supported to resolve and search references")
-        }
+    private fun resolveElementsAndMatch(elements: List<JetElement>, querySpecification: QuerySpecification): List<JetElement> {
+        val beforeResolveFilters = getBeforeResolveFilters(querySpecification)
+        val afterResolveFilters = getAfterResolveFilters()
         
         // This is important for optimization: 
         // we will consequentially cache files one by one which are containing these references
-        val sortedByFileNameReferences = references.sortedBy { it.expression.getContainingJetFile().getName() }
+        val sortedByFileNameElements = elements.sortedBy { it.getContainingJetFile().getName() }
         
-        return sortedByFileNameReferences.filter { reference ->
-            if (isImportDirective(reference)) return@filter false
+        return sortedByFileNameElements.filter { element ->
+            val beforeResolveCheck = beforeResolveFilters.all { it.isApplicable(element) }
+            if (!beforeResolveCheck) return@filter false
             
-            val javaProject = KotlinPsiManager.getJavaProject(reference.expression)
-            return@filter if (javaProject != null) {
-                    val analysisResultWithProvider = KotlinAnalysisFileCache.getAnalysisResult(
-                            reference.expression.getContainingJetFile(), 
-                            javaProject)
-                    val sourceElements = reference.resolveToSourceElements(
-                            analysisResultWithProvider.analysisResult.bindingContext, javaProject)
-                    isApplicable(sourceElements, javaProject)
-                } else {
-                    false
-                }
+            if (element is JetDeclaration || element is JetObjectDeclaration || element is JetObjectDeclarationName) {
+                return@filter true
+            }
+            
+            val javaProject = KotlinPsiManager.getJavaProject(element)
+            if (javaProject == null) return@filter false
+            
+            if (element !is JetReferenceExpression) return@filter false
+                
+            val analysisResultWithProvider = KotlinAnalysisFileCache.getAnalysisResult(
+                        element.getContainingJetFile(), 
+                        javaProject)
+            
+            val sourceElements = createReference(element).resolveToSourceElements(
+                    analysisResultWithProvider.analysisResult.bindingContext, 
+                    javaProject)
+            
+            return@filter sourceElements.any { sourceElement ->
+                afterResolveFilters.all { it.isApplicable(sourceElement, querySpecification) }
+            }
         }
     }
     
@@ -193,8 +197,8 @@ public class KotlinQueryParticipant : IQueryParticipant {
     
     private fun IJavaElement.isConstructorCall() = this is IMethod && this.isConstructor()
     
-    private fun obtainReferences(searchResult: FileSearchResult, files: List<IFile>): List<KotlinReference> {
-        val references = ArrayList<KotlinReference>()
+    private fun obtainElements(searchResult: FileSearchResult, files: List<IFile>): List<JetElement> {
+        val elements = ArrayList<JetElement>()
         for (file in files) {
             val matches = searchResult.getMatches(file)
             val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
@@ -202,11 +206,11 @@ public class KotlinQueryParticipant : IQueryParticipant {
             
             matches
                 .map { jetFile.findElementByDocumentOffset(it.getOffset(), document) }
-                .mapNotNull { getReferenceExpression(it) }
-                .mapNotNullTo(references) { createReference(it) }
+                .mapNotNull { PsiTreeUtil.getNonStrictParentOfType(it, JetElement::class.java) }
+                .filterNotNullTo(elements)
         }
         
-        return references
+        return elements
     }
     
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
