@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.filesystem.IFileInfo;
@@ -93,6 +94,9 @@ public class KotlinFileStore extends LocalFile {
         try {
             IContainer folder = findFolderInWorkspace();
             if (folder != null && folder.exists()) {
+                IJavaProject javaProject = JavaCore.create(folder.getProject());
+                KotlinLightClassGeneration.updateLightClasses(javaProject, Collections.<IFile>emptySet());
+                
                 for (IResource member : folder.members()) {
                     children.add(member.getName());
                 }

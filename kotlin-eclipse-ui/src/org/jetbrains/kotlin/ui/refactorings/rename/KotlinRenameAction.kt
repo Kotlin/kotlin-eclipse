@@ -67,6 +67,8 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.eclipse.jface.text.source.ISourceViewer
 import org.eclipse.jface.text.IUndoManager
+import org.jetbrains.kotlin.core.model.KotlinJavaManager
+import org.eclipse.core.runtime.NullProgressMonitor
 
 public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
@@ -191,4 +193,6 @@ fun doRename(javaElement: IType, jetElement: JetElement, newName: String, editor
     with(editor.getSite()) {
         renameSupport.perform(getShell(), getWorkbenchWindow())
     }
+    
+    javaElement.getJavaProject().getProject().refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
 }
