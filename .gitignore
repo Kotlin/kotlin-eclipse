@@ -5,3 +5,4 @@ target
 *.orig
 .DS_Store
 common_testData
+kotlin-eclipse-ui-test/lib
