@@ -21,7 +21,6 @@ import com.intellij.openapi.project.Project;
 public class KotlinLightClassGeneration {
     
     public static void updateLightClasses(
-            @NotNull AnalysisResult analysisResult, 
             @NotNull IJavaProject javaProject,
             @NotNull Set<IFile> affectedFiles) throws CoreException {
         if (!KotlinJavaManager.INSTANCE$.hasLinkedKotlinBinFolder(javaProject)) {

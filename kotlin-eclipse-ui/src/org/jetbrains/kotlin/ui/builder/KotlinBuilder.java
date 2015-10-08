@@ -69,7 +69,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         }
         
         if (!affectedFiles.isEmpty()) {
-            KotlinLightClassGeneration.updateLightClasses(analysisResult, javaProject, affectedFiles);
+            KotlinLightClassGeneration.updateLightClasses(javaProject, affectedFiles);
         }
         
         return null;
