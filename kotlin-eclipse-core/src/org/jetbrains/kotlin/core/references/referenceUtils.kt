@@ -35,6 +35,11 @@ import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import com.intellij.openapi.util.Key
+import org.jetbrains.kotlin.psi.JetObjectDeclarationName
+import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.core.model.toLightElements
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 public val FILE_PROJECT: Key<IJavaProject> = Key.create("FILE_PROJECT")
 
@@ -55,4 +60,53 @@ public fun KotlinReference.resolveToSourceElements(context: BindingContext, proj
 
 public fun getReferenceExpression(element: PsiElement): JetReferenceExpression? {
 	return PsiTreeUtil.getNonStrictParentOfType(element, JetReferenceExpression::class.java)
+}
+
+sealed class SourceDeclaration private constructor() {
+    // Represents Java elements and Kotlin light elements 
+    class JavaScopeDeclaration(val javaElements: List<IJavaElement>) : SourceDeclaration()
+    
+    class KotlinLocalScopeDeclaration(val jetDeclaration: JetDeclaration) : SourceDeclaration()
+    
+    object NoSourceDeclaration : SourceDeclaration()
+}
+
+public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): SourceDeclaration {
+    val jetElement = this
+    return when (jetElement) {
+        is JetObjectDeclarationName -> {
+            val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, JetObjectDeclaration::class.java)
+            objectDeclaration?.let { it.resolveToSourceDeclaration(javaProject) } ?: SourceDeclaration.NoSourceDeclaration
+        }
+        
+        is JetDeclaration -> {
+            val lightElements = jetElement.toLightElements(javaProject)
+            if (lightElements.isNotEmpty()) {
+                SourceDeclaration.JavaScopeDeclaration(lightElements)
+            } else {
+                // Element should present only in Kotlin as there is no corresponding light element
+                SourceDeclaration.KotlinLocalScopeDeclaration(jetElement)
+            }
+        }
+        
+        else -> {
+            // Try search usages by reference
+            val referenceExpression = getReferenceExpression(jetElement)
+            if (referenceExpression == null) return SourceDeclaration.NoSourceDeclaration
+            
+            val reference = createReference(referenceExpression)
+            val sourceElements = reference.resolveToSourceElements()
+            val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
+            if (lightElements.isNotEmpty()) {
+                SourceDeclaration.JavaScopeDeclaration(lightElements)
+            } else {
+                if (sourceElements.size() > 1) {
+                    KotlinLogger.logWarning("There are more than one elements for ${referenceExpression.getText()}")
+                }
+                
+                val kotlinSourceElement = sourceElements[0] as KotlinSourceElement
+                SourceDeclaration.KotlinLocalScopeDeclaration(kotlinSourceElement.psi as JetDeclaration)
+            }
+        } 
+    }
 }

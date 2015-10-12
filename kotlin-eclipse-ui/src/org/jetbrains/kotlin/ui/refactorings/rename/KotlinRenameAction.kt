@@ -69,6 +69,18 @@ import org.eclipse.jface.text.source.ISourceViewer
 import org.eclipse.jface.text.IUndoManager
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
 import org.eclipse.core.runtime.NullProgressMonitor
+import org.jetbrains.kotlin.psi.JetObjectDeclarationName
+import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper
+import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper
+import org.eclipse.jdt.core.JavaCore
+import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring
+import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
+import org.jetbrains.kotlin.core.references.SourceDeclaration.JavaScopeDeclaration
+import org.jetbrains.kotlin.core.references.SourceDeclaration.KotlinLocalScopeDeclaration
+import org.jetbrains.kotlin.core.references.SourceDeclaration.NoSourceDeclaration
+import org.jetbrains.kotlin.core.references.SourceDeclaration
 
 public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
@@ -83,136 +95,139 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         val jetElement = EditorUtil.getJetElement(editor, selection.getOffset())
         if (jetElement == null) return
         
-        val javaElements = resolveToJavaElements(jetElement, editor.javaProject!!)
-        if (javaElements.isEmpty()) return
-        
-        if (javaElements.size() > 1) {
-            KotlinLogger.logWarning("There are more than one (${javaElements.size()}) java elements for $jetElement")
-        }
-        
-        val javaElement = javaElements[0]
-        beginRenameRefactoring(javaElement, jetElement, editor)
-        
+        val javaProject = JavaCore.create(editor.getFile()!!.getProject())
+        performRefactoring(jetElement, javaProject)
     }
-}
-
-fun resolveToJavaElements(jetElement: JetElement, javaProject: IJavaProject): List<IJavaElement> {
-    return when (jetElement) {
-        is JetDeclaration -> jetElement.toLightElements(javaProject)
-        else -> {
-            val referenceExpression = getReferenceExpression(jetElement)
-            if (referenceExpression == null) return emptyList()
-            
-            val sourceElements = createReference(referenceExpression).resolveToSourceElements()
-            sourceElementsToLightElements(sourceElements, javaProject)
+    
+    fun performRefactoring(jetElement: JetElement, javaProject: IJavaProject) {
+        val sourceDeclaration = jetElement.resolveToSourceDeclaration(javaProject)
+        beginRenameRefactoring(sourceDeclaration, jetElement, editor)
+    }
+    
+    fun undo(editor: KotlinFileEditor, startingUndoOperation: IUndoableOperation?) {
+        editor.getSite().getWorkbenchWindow().run(false, true) {
+            val undoManager = getUndoManager(editor)
+            if (undoManager is IUndoManagerExtension) {
+                val undoContext = undoManager.getUndoContext()
+                val operationHistory = OperationHistoryFactory.getOperationHistory()
+                while (undoManager.undoable()) {
+                    if (startingUndoOperation != null && startingUndoOperation == operationHistory.getUndoOperation(undoContext)) {
+                        return@run
+                    }
+                    undoManager.undo()
+                }
+                
+            }
         }
     }
-}
-
-fun undo(editor: KotlinFileEditor, startingUndoOperation: IUndoableOperation?) {
-    editor.getSite().getWorkbenchWindow().run(false, true) {
+    
+    fun getCurrentUndoOperation(editor: KotlinFileEditor): IUndoableOperation? {
         val undoManager = getUndoManager(editor)
         if (undoManager is IUndoManagerExtension) {
             val undoContext = undoManager.getUndoContext()
             val operationHistory = OperationHistoryFactory.getOperationHistory()
-            while (undoManager.undoable()) {
-                if (startingUndoOperation != null && startingUndoOperation == operationHistory.getUndoOperation(undoContext)) {
-                    return@run
+            return operationHistory.getUndoOperation(undoContext)
+        }
+        
+        return null
+    }
+    
+    fun getUndoManager(editor: KotlinFileEditor): IUndoManager? {
+        val viewer = editor.getViewer()
+        return if (viewer is ITextViewerExtension6) viewer.getUndoManager() else null
+    }
+    
+    fun beginRenameRefactoring(sourceDeclaration: SourceDeclaration, selectedElement: JetElement, editor: KotlinFileEditor) {
+        val linkedPositionGroup = LinkedPositionGroup()
+        val offsetInDocument = selectedElement.getTextDocumentOffset(editor.document)
+        
+        val textLength = if (selectedElement is JetNamedDeclaration) {
+            selectedElement.getNameIdentifier()!!.getTextLength()
+        } else {
+            selectedElement.getTextLength()
+        }
+        val position = LinkedPosition(editor.document, offsetInDocument, textLength)
+        linkedPositionGroup.addPosition(position)
+        
+        val startindUndoOperation = getCurrentUndoOperation(editor)
+        
+        val linkedModeModel = LinkedModeModel()
+        linkedModeModel.addGroup(linkedPositionGroup)
+        linkedModeModel.forceInstall()
+        linkedModeModel.addLinkingListener(EditorHighlightingSynchronizer(editor))
+        linkedModeModel.addLinkingListener(object : ILinkedModeListener {
+            override fun left(model: LinkedModeModel, flags: Int) {
+                if ((flags and ILinkedModeListener.UPDATE_CARET) != 0) {
+                    val newName = position.getContent()
+                    undo(editor, startindUndoOperation)
+                    
+                    KotlinPsiManager.getKotlinFileIfExist(editor.getFile()!!, editor.document.get()) // commit document
+                    
+                    doRename(sourceDeclaration, selectedElement, newName, editor)
                 }
-                undoManager.undo()
             }
             
-        }
-    }
-}
-
-fun getCurrentUndoOperation(editor: KotlinFileEditor): IUndoableOperation? {
-    val undoManager = getUndoManager(editor)
-    if (undoManager is IUndoManagerExtension) {
-        val undoContext = undoManager.getUndoContext()
-        val operationHistory = OperationHistoryFactory.getOperationHistory()
-        return operationHistory.getUndoOperation(undoContext)
-    }
-    
-    return null
-}
-
-fun getUndoManager(editor: KotlinFileEditor): IUndoManager? {
-    val viewer = editor.getViewer()
-    return if (viewer is ITextViewerExtension6) viewer.getUndoManager() else null
-}
-
-fun beginRenameRefactoring(javaElement: IJavaElement, jetElement: JetElement, editor: KotlinFileEditor) {
-    val linkedPositionGroup = LinkedPositionGroup()
-    val offsetInDocument = jetElement.getTextDocumentOffset(editor.document)
-    
-    val textLength = if (jetElement is JetNamedDeclaration) {
-        jetElement.getNameIdentifier()!!.getTextLength()
-    } else {
-        jetElement.getTextLength()
-    }
-    val position = LinkedPosition(editor.document, offsetInDocument, textLength)
-    linkedPositionGroup.addPosition(position)
-    
-    val startindUndoOperation = getCurrentUndoOperation(editor)
-    
-    val linkedModeModel = LinkedModeModel()
-    linkedModeModel.addGroup(linkedPositionGroup)
-    linkedModeModel.forceInstall()
-    linkedModeModel.addLinkingListener(EditorHighlightingSynchronizer(editor))
-    linkedModeModel.addLinkingListener(object : ILinkedModeListener {
-        override fun left(model: LinkedModeModel, flags: Int) {
-            if ((flags and ILinkedModeListener.UPDATE_CARET) != 0) {
-                val newName = position.getContent()
-                undo(editor, startindUndoOperation)
-                
-                KotlinPsiManager.getKotlinFileIfExist(editor.getFile()!!, editor.document.get()) // commit document
-                
-                doRename(javaElement, jetElement, newName, editor)
+            override fun resume(model: LinkedModeModel?, flags: Int) {
             }
-        }
+            
+            override fun suspend(model: LinkedModeModel?) {
+            }
+        })
         
-        override fun resume(model: LinkedModeModel?, flags: Int) {
-        }
-        
-        override fun suspend(model: LinkedModeModel?) {
-        }
-    })
-    
-    val ui = EditorLinkedModeUI(linkedModeModel, editor.getViewer())
-    ui.setExitPosition(editor.getViewer(), offsetInDocument, 0, Integer.MAX_VALUE)
-    ui.setExitPolicy(DeleteBlockingExitPolicy(editor.document))
-    ui.enter()
+        val ui = EditorLinkedModeUI(linkedModeModel, editor.getViewer())
+        ui.setExitPosition(editor.getViewer(), offsetInDocument, 0, Integer.MAX_VALUE)
+        ui.setExitPolicy(DeleteBlockingExitPolicy(editor.document))
+        ui.enter()
+    }
 }
 
-fun doRename(javaElement: IJavaElement, jetElement: JetElement, newName: String, editor: KotlinFileEditor) {
-    val updateStrategy = RenameSupport.UPDATE_REFERENCES
-    val renameSupport = when (javaElement) {
-        is IType -> {
-            val lightType = KotlinLightType(javaElement, jetElement, editor)
-            RenameSupport.create(lightType, newName, updateStrategy)
-        }
+
+fun doRename(sourceDeclaration: SourceDeclaration, selectedElement: JetElement, newName: String, editor: KotlinFileEditor) {
+    fun renameByJavaElement(declaration: JavaScopeDeclaration) {
+        val javaElement = declaration.javaElements[0]
         
-        is IMethod -> {
-            val lightMethod = KotlinLightFunction(javaElement, jetElement, editor)
+        val updateStrategy = RenameSupport.UPDATE_REFERENCES
+        val renameSupport = when (javaElement) {
+            is IType -> {
+                val lightType = KotlinLightType(javaElement, selectedElement, editor)
+                RenameSupport.create(lightType, newName, updateStrategy)
+            }
             
-//            val contributionId = IJavaRefactorings.RENAME_METHOD
-//            val descriptor = RefactoringCore.getRefactoringContribution(contributionId).createDescriptor() as RenameJavaElementDescriptor
-//            descriptor.setJavaElement(javaElement)
-//            descriptor.setNewName(newName)
-//            descriptor.setUpdateReferences(true)
-//            descriptor.setKeepOriginal(true)
-//            
-//            RenameSupport.create(descriptor)
-            RenameSupport.create(lightMethod, newName, updateStrategy)
+            is IMethod -> {
+                val lightMethod = KotlinLightFunction(javaElement, selectedElement, editor)
+                RenameSupport.create(lightMethod, newName, updateStrategy)
+            }
+            
+            else -> throw UnsupportedOperationException("Rename refactoring for ${javaElement} is not supported")
         }
         
-        else -> throw UnsupportedOperationException("Rename refactoring for ${javaElement} is not supported")
+        with(editor.getSite()) {
+            renameSupport.perform(getShell(), getWorkbenchWindow())
+        }
     }
     
-    with(editor.getSite()) {
-        renameSupport.perform(getShell(), getWorkbenchWindow())
+    fun renameLocalKotlinElement(declaration: KotlinLocalScopeDeclaration) {
+        val helper = createHelper(declaration.jetDeclaration, newName, editor)
+        try {
+            helper.perform(true, true)
+        } catch (e: InterruptedException) {
+            // skip
+        }
     }
     
-    javaElement.getJavaProject().getProject().refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+    when (sourceDeclaration) {
+        is JavaScopeDeclaration -> renameByJavaElement(sourceDeclaration)
+        is KotlinLocalScopeDeclaration -> renameLocalKotlinElement(sourceDeclaration)
+    }
+    
+    editor.getFile()!!.getProject().refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+}
+
+fun createHelper(jetElement: JetDeclaration, newName: String, editor: KotlinFileEditor): RefactoringExecutionHelper {
+    return RefactoringExecutionHelper(
+            RenameRefactoring(KotlinRenameProcessor(jetElement, newName)), 
+            RefactoringCore.getConditionCheckingFailedSeverity(),
+            RefactoringSaveHelper.SAVE_REFACTORING,
+            editor.getSite().getShell(),
+            editor.getSite().getWorkbenchWindow())
 }

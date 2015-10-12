@@ -29,20 +29,21 @@ import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
 import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.eclipse.jdt.core.IJavaElement
+import org.eclipse.jdt.ui.search.QuerySpecification
 
 open class KotlinRenameParticipant : RenameParticipant() {
-    lateinit var element: IJavaElement
+    lateinit var element: Any
     lateinit var newName: String
     
     val changes = arrayListOf<Change>()
         
     override fun initialize(element: Any): Boolean {
-        this.element = obtainOriginElement(element as IJavaElement)
+        this.element = element
         changes.clear()
         return true
     }
     
-    override fun initialize(processor: RefactoringProcessor, element: Any?, arguments: RefactoringArguments): Boolean {
+    override fun initialize(processor: RefactoringProcessor?, element: Any?, arguments: RefactoringArguments): Boolean {
         if (arguments is RenameArguments) {
             newName = arguments.getNewName()
         }
@@ -50,15 +51,10 @@ open class KotlinRenameParticipant : RenameParticipant() {
         return super.initialize(processor, element, arguments)
     }
     
-    override fun checkConditions(pm: IProgressMonitor, context: CheckConditionsContext): RefactoringStatus? {
+    override fun checkConditions(pm: IProgressMonitor?, context: CheckConditionsContext?): RefactoringStatus? {
         val kotlinQueryParticipant = KotlinQueryParticipant()
         val matches = arrayListOf<Match>()
-        val factory = JavaSearchScopeFactory.getInstance()
-        val querySpecification = ElementQuerySpecification(
-                element, 
-                IJavaSearchConstants.ALL_OCCURRENCES,
-                factory.createWorkspaceScope(false),
-                factory.getWorkspaceScopeDescription(false))
+        val querySpecification = createSearchQuery()
         
         kotlinQueryParticipant.search({ matches.add(it) }, querySpecification, NullProgressMonitor())
         
@@ -79,8 +75,17 @@ open class KotlinRenameParticipant : RenameParticipant() {
     
     override fun getName() = "Kotlin Type Rename Participant"
     
-    override fun createChange(pm: IProgressMonitor): Change {
+    override fun createChange(pm: IProgressMonitor?): Change {
         return CompositeChange("Changes in Kotlin", changes.toTypedArray())
+    }
+    
+    protected open fun createSearchQuery(): QuerySpecification {
+        val factory = JavaSearchScopeFactory.getInstance()
+        return ElementQuerySpecification(
+                obtainOriginElement(element as IJavaElement), 
+                IJavaSearchConstants.ALL_OCCURRENCES,
+                factory.createWorkspaceScope(false),
+                factory.getWorkspaceScopeDescription(false))
     }
     
     private fun createTextChange(match: Match): FileEdit? {

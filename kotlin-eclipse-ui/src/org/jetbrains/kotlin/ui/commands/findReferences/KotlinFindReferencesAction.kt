@@ -46,6 +46,7 @@ import org.eclipse.jdt.internal.ui.search.SearchUtil
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
+import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.eclipse.jdt.ui.search.PatternQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchScope
@@ -64,6 +65,9 @@ import org.eclipse.jdt.internal.ui.JavaPluginImages
 import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.references.SourceDeclaration.JavaScopeDeclaration
+import org.jetbrains.kotlin.core.references.SourceDeclaration.KotlinLocalScopeDeclaration
+import org.jetbrains.kotlin.core.references.SourceDeclaration.NoSourceDeclaration
 
 abstract class KotlinFindReferencesHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
@@ -183,44 +187,14 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
     }
     
     fun createFindReferencesQuery(element: JetElement): KotlinQueryPatternSpecification {
-        return KotlinQueryPatternSpecification(element, scope, description)
+        return KotlinQueryPatternSpecification(element, IJavaSearchConstants.REFERENCES, scope, description)
     }
     
-    return when (jetElement) {
-        is JetObjectDeclarationName -> {
-            val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, JetObjectDeclaration::class.java)
-            objectDeclaration?.let { createQuerySpecification(it, javaProject, scope, description) }
-        }
-        
-        is JetDeclaration -> {
-            val lightElements = jetElement.toLightElements(javaProject)
-            if (lightElements.isNotEmpty()) {
-                createFindReferencesQuery(lightElements)
-            } else {
-                // Element should present only in Kotlin as there is no corresponding light element
-                createFindReferencesQuery(jetElement)
-            }
-        }
-        
-        else -> {
-            // Try search usages by reference
-            val referenceExpression = getReferenceExpression(jetElement)
-            if (referenceExpression == null) return null
-            
-            val reference = createReference(referenceExpression)
-            val sourceElements = reference.resolveToSourceElements()
-            val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
-            if (lightElements.isNotEmpty()) {
-                createFindReferencesQuery(lightElements)
-            } else {
-                if (sourceElements.size() > 1) {
-                    KotlinLogger.logWarning("There are more than one elements for ${referenceExpression.getText()}")
-                }
-                
-                val kotlinSourceElement = sourceElements[0] as KotlinSourceElement
-                createFindReferencesQuery(kotlinSourceElement.psi)
-            }
-        } 
+    val sourceDeclaration = jetElement.resolveToSourceDeclaration(javaProject)
+    return when (sourceDeclaration) {
+        is JavaScopeDeclaration -> createFindReferencesQuery(sourceDeclaration.javaElements)
+        is KotlinLocalScopeDeclaration -> createFindReferencesQuery(sourceDeclaration.jetDeclaration)
+        is NoSourceDeclaration -> null
     }
 }
 
@@ -234,16 +208,17 @@ class KotlinCompositeQuerySpecification(
 // Using of this pattern assumes that elements presents only in Kotlin
 class KotlinQueryPatternSpecification(
         val jetElement: JetElement, 
+        val searchingElementsDescription: Int,
         searchScope: IJavaSearchScope, 
-        description: String) : KotlinDummyQuerySpecification(searchScope, description)
+        description: String) : KotlinDummyQuerySpecification(searchScope, description, searchingElementsDescription)
 
 // After passing this query specification to java, it will try to find some usages and to ensure that nothing will found
 // before KotlinQueryParticipant here is using dummy element '------------'
-open class KotlinDummyQuerySpecification(searchScope: IJavaSearchScope, description: String) : PatternQuerySpecification(
+open class KotlinDummyQuerySpecification(searchScope: IJavaSearchScope, description: String, searchingElementsDescription: Int = IJavaSearchConstants.REFERENCES) : PatternQuerySpecification(
         "Kotlin Find References", 
         IJavaSearchConstants.CLASS, 
         true, 
-        IJavaSearchConstants.REFERENCES, 
+        searchingElementsDescription, 
         searchScope, 
         description
 )
