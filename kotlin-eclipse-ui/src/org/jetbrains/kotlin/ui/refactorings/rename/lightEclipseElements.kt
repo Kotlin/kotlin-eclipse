@@ -59,6 +59,31 @@ class KotlinLightType(val originElement: IType, jetElement: JetElement, val edit
     override fun isReadOnly(): Boolean = false
 }
 
+class KotlinLightFunction(val originMethod: IMethod, jetElement: JetElement, val editor: KotlinFileEditor) : IMethod by originMethod {
+    private val nameRange by lazy {
+        object : ISourceRange {
+            override fun getLength(): Int {
+                return 0
+            }
+            
+            override fun getOffset(): Int = jetElement.getTextDocumentOffset(editor.document)
+        }
+    }
+    
+    override fun getCompilationUnit(): ICompilationUnit {
+        val compilationUnit = EditorUtility.getEditorInputJavaElement(editor, false) as CompilationUnit
+        return KotlinLightCompilationUnit(editor.getFile()!!, compilationUnit)
+    }
+    
+    override fun getNameRange(): ISourceRange = nameRange
+
+    override fun getPrimaryElement(): IJavaElement? = originMethod
+
+    override fun isBinary(): Boolean = false
+
+    override fun isReadOnly(): Boolean = false
+}
+
 class KotlinLightCompilationUnit(val file: IFile, compilationUnit: ICompilationUnit) : ICompilationUnit by compilationUnit,
        ContentProviderCompilationUnit {
     override fun getFileName(): CharArray? = CharOperation.NO_CHAR

@@ -576,6 +576,7 @@
             <with
                   variable="affectedNatures">
                <iterate
+                     ifEmpty="false"
                      operator="or">
                   <equals
                         value="org.jetbrains.kotlin.core.kotlinNature">
@@ -586,6 +587,29 @@
                   variable="element">
                <instanceof
                      value="org.eclipse.jdt.core.IType">
+               </instanceof>
+            </with>
+         </enablement>
+      </renameParticipant>
+      <renameParticipant
+            class="org.jetbrains.kotlin.ui.refactorings.rename.KotlinFunctionRenameParticipant"
+            id="org.jetbrains.kotlin.ui.refacotrings.renameFunction"
+            name="Kotlin Function Rename Participant">
+         <enablement>
+            <with
+                  variable="affectedNatures">
+               <iterate
+                     ifEmpty="false"
+                     operator="or">
+                  <equals
+                        value="org.jetbrains.kotlin.core.kotlinNature">
+                  </equals>
+               </iterate>
+            </with>
+            <with
+                  variable="element">
+               <instanceof
+                     value="org.eclipse.jdt.core.IMethod">
                </instanceof>
             </with>
          </enablement>

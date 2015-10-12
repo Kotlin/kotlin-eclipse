@@ -91,9 +91,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         }
         
         val javaElement = javaElements[0]
-        if (javaElement is IType) {
-            beginRenameRefactoring(javaElement, jetElement, editor)
-        }
+        beginRenameRefactoring(javaElement, jetElement, editor)
         
     }
 }
@@ -144,7 +142,7 @@ fun getUndoManager(editor: KotlinFileEditor): IUndoManager? {
     return if (viewer is ITextViewerExtension6) viewer.getUndoManager() else null
 }
 
-fun beginRenameRefactoring(javaElement: IType, jetElement: JetElement, editor: KotlinFileEditor) {
+fun beginRenameRefactoring(javaElement: IJavaElement, jetElement: JetElement, editor: KotlinFileEditor) {
     val linkedPositionGroup = LinkedPositionGroup()
     val offsetInDocument = jetElement.getTextDocumentOffset(editor.document)
     
@@ -187,9 +185,31 @@ fun beginRenameRefactoring(javaElement: IType, jetElement: JetElement, editor: K
     ui.enter()
 }
 
-fun doRename(javaElement: IType, jetElement: JetElement, newName: String, editor: KotlinFileEditor) {
-    val kotlinLightType = KotlinLightType(javaElement, jetElement, editor)
-    val renameSupport = RenameSupport.create(kotlinLightType, newName, RenameSupport.UPDATE_REFERENCES)
+fun doRename(javaElement: IJavaElement, jetElement: JetElement, newName: String, editor: KotlinFileEditor) {
+    val updateStrategy = RenameSupport.UPDATE_REFERENCES
+    val renameSupport = when (javaElement) {
+        is IType -> {
+            val lightType = KotlinLightType(javaElement, jetElement, editor)
+            RenameSupport.create(lightType, newName, updateStrategy)
+        }
+        
+        is IMethod -> {
+            val lightMethod = KotlinLightFunction(javaElement, jetElement, editor)
+            
+//            val contributionId = IJavaRefactorings.RENAME_METHOD
+//            val descriptor = RefactoringCore.getRefactoringContribution(contributionId).createDescriptor() as RenameJavaElementDescriptor
+//            descriptor.setJavaElement(javaElement)
+//            descriptor.setNewName(newName)
+//            descriptor.setUpdateReferences(true)
+//            descriptor.setKeepOriginal(true)
+//            
+//            RenameSupport.create(descriptor)
+            RenameSupport.create(lightMethod, newName, updateStrategy)
+        }
+        
+        else -> throw UnsupportedOperationException("Rename refactoring for ${javaElement} is not supported")
+    }
+    
     with(editor.getSite()) {
         renameSupport.perform(getShell(), getWorkbenchWindow())
     }
