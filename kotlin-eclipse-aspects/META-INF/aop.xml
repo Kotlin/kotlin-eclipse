@@ -8,5 +8,7 @@
 		<aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRefactoringChecksAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinBreakpointRenamingParticipantAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRefactoringTypeAspect"/>
+        <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinBinaryReferencesAspect"/>
+        <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRippleMethodFinderAspect"/>
 	</aspects>
 </aspectj>
