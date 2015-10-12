@@ -110,7 +110,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 specification.getScopeDescription())
         }
         specification.jetElement?.let {
-            specifications.add(KotlinQueryPatternSpecification(it, specification.getScope(), 
+            specifications.add(KotlinQueryPatternSpecification(it, specification.getLimitTo(), specification.getScope(), 
                     specification.getScopeDescription()))
         }
         

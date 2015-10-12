@@ -614,5 +614,27 @@
             </with>
          </enablement>
       </renameParticipant>
+      <renameParticipant
+            class="org.jetbrains.kotlin.ui.refactorings.rename.KotlinLocalPropertyRenameParticipant"
+            id="org.jetbrains.kotlin.ui.refacotrings.renameLocalProperty"
+            name="Kotlin Local Variable Rename Participant">
+         <enablement>
+            <with
+                  variable="affectedNatures">
+               <iterate
+                     operator="or">
+                  <equals
+                        value="org.jetbrains.kotlin.core.kotlinNature">
+                  </equals>
+               </iterate>
+            </with>
+            <with
+                  variable="element">
+               <instanceof
+                     value="org.jetbrains.kotlin.psi.JetElement">
+               </instanceof>
+            </with>
+         </enablement>
+      </renameParticipant>
    </extension>
 </plugin>
