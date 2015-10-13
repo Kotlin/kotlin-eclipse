@@ -82,11 +82,7 @@ public class EditorTestUtils {
         try {
             Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected), LineEndUtil.removeAllCarriageReturns(actual));
         } catch (ComparisonFailure e) {
-            throw new ComparisonFailure(errorMessage, escapeNewLines(e.getExpected()), escapeNewLines(e.getActual()));
+            throw new ComparisonFailure(errorMessage, e.getExpected(), e.getActual());
         }
-    }
-    
-    private static String escapeNewLines(String s) {
-        return s.replaceAll("\n", "\\\\n").replaceAll("\r", "\\\\r").replaceAll("\t", "\\\\t");
     }
 }
