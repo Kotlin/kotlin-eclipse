@@ -10,7 +10,8 @@ Bundle-ClassPath: .,
  lib/kotlin-compiler.jar,
  lib/kotlin-runtime.jar,
  lib/kotlin-ide-common.jar,
- lib/kotlin-reflect.jar
+ lib/kotlin-reflect.jar,
+ ../kotlin-eclipse-ui-test/lib/gson-2.3.1.jar
 Export-Package: com.google.common.base,
  com.google.common.collect,
  org.jetbrains.kotlin.j2k,
