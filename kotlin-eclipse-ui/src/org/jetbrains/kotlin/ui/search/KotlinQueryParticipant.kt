@@ -171,32 +171,6 @@ public class KotlinQueryParticipant : IQueryParticipant {
         }
     }
     
-    private fun isImportDirective(reference: KotlinReference): Boolean {
-        return reference.expression.let {
-            if (it is JetSimpleNameExpression) it.isImportDirectiveExpression() else false
-        }
-    }
-    
-    private fun referenceFilter(potentialElement: IJavaElement, originElement: IJavaElement): Boolean {
-        return when {
-            originElement.isConstructorCall() && potentialElement.isConstructorCall() -> {
-                (originElement as IMethod).getDeclaringType() == (potentialElement as IMethod).getDeclaringType()
-            }
-            
-            originElement.isConstructorCall() -> {
-                (originElement as IMethod).getDeclaringType() == potentialElement
-            }
-            
-            potentialElement.isConstructorCall() -> {
-                originElement == (potentialElement as IMethod).getDeclaringType()
-            }
-            
-            else -> potentialElement == originElement
-        }
-    }
-    
-    private fun IJavaElement.isConstructorCall() = this is IMethod && this.isConstructor()
-    
     private fun obtainElements(searchResult: FileSearchResult, files: List<IFile>): List<JetElement> {
         val elements = ArrayList<JetElement>()
         for (file in files) {
