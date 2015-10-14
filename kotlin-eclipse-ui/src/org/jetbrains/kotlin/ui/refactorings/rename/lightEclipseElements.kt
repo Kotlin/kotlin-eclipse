@@ -32,20 +32,24 @@ import org.eclipse.jdt.core.compiler.CharOperation
 import org.eclipse.core.resources.IResource
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 
-class KotlinLightType(val originElement: IType, jetElement: JetElement, val editor: KotlinFileEditor) : IType by originElement {
+class KotlinLightType(val originElement: IType, jetElement: JetElement?, val editor: KotlinFileEditor?) : IType by originElement {
     private val nameRange by lazy {
         object : ISourceRange {
             override fun getLength(): Int {
                 return 0
             }
             
-            override fun getOffset(): Int = jetElement.getTextDocumentOffset(editor.document)
+            override fun getOffset(): Int = jetElement?.getTextDocumentOffset(editor!!.document) ?: -1
         }
     }
     
-    override fun getCompilationUnit(): ICompilationUnit {
-        val compilationUnit = EditorUtility.getEditorInputJavaElement(editor, false) as CompilationUnit
-        return KotlinLightCompilationUnit(editor.getFile()!!, compilationUnit)
+    override fun getCompilationUnit(): ICompilationUnit? {
+        if (editor != null) {
+            val compilationUnit = EditorUtility.getEditorInputJavaElement(editor, false) as CompilationUnit
+            return KotlinLightCompilationUnit(editor.getFile()!!, compilationUnit)
+        }
+        
+        return null
     }
     
     override fun getMethods(): Array<IMethod> = emptyArray()
@@ -59,20 +63,24 @@ class KotlinLightType(val originElement: IType, jetElement: JetElement, val edit
     override fun isReadOnly(): Boolean = false
 }
 
-class KotlinLightFunction(val originMethod: IMethod, jetElement: JetElement, val editor: KotlinFileEditor) : IMethod by originMethod {
+class KotlinLightFunction(val originMethod: IMethod, jetElement: JetElement?, val editor: KotlinFileEditor?) : IMethod by originMethod {
     private val nameRange by lazy {
         object : ISourceRange {
             override fun getLength(): Int {
                 return 0
             }
             
-            override fun getOffset(): Int = jetElement.getTextDocumentOffset(editor.document)
+            override fun getOffset(): Int = jetElement?.getTextDocumentOffset(editor!!.document) ?: -1
         }
     }
     
-    override fun getCompilationUnit(): ICompilationUnit {
-        val compilationUnit = EditorUtility.getEditorInputJavaElement(editor, false) as CompilationUnit
-        return KotlinLightCompilationUnit(editor.getFile()!!, compilationUnit)
+    override fun getCompilationUnit(): ICompilationUnit? {
+        if (editor != null) {
+            val compilationUnit = EditorUtility.getEditorInputJavaElement(editor, false) as CompilationUnit
+            return KotlinLightCompilationUnit(editor.getFile()!!, compilationUnit)
+        }
+        
+        return null
     }
     
     override fun getNameRange(): ISourceRange = nameRange
