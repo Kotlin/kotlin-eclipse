@@ -29,20 +29,23 @@ import org.jetbrains.kotlin.core.model.toLightElements
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.search.IJavaSearchConstants
+import org.jetbrains.kotlin.core.references.SourceDeclaration
+import org.jetbrains.kotlin.core.references.SourceDeclaration.KotlinLocalScopeDeclaration
+import org.jetbrains.kotlin.core.references.SourceDeclaration.JavaScopeDeclaration
 
 interface SearchFilter {
     fun isApplicable(jetElement: JetElement): Boolean
 }
 
 interface SearchFilterAfterResolve {
-    fun isApplicable(sourceElement: SourceElement, querySpecification: KotlinQueryPatternSpecification): Boolean
+    fun isApplicable(sourceDeclaration: SourceDeclaration, querySpecification: KotlinQueryPatternSpecification): Boolean
     
-    fun isApplicable(sourceElement: SourceElement, querySpecification: ElementQuerySpecification): Boolean
+    fun isApplicable(sourceDeclaration: SourceDeclaration, querySpecification: ElementQuerySpecification): Boolean
     
-    fun isApplicable(sourceElement: SourceElement, querySpecification: QuerySpecification): Boolean {
+    fun isApplicable(sourceDeclaration: SourceDeclaration, querySpecification: QuerySpecification): Boolean {
         return when (querySpecification) {
-            is KotlinQueryPatternSpecification -> isApplicable(sourceElement, querySpecification)
-            is ElementQuerySpecification -> isApplicable(sourceElement, querySpecification)
+            is KotlinQueryPatternSpecification -> isApplicable(sourceDeclaration, querySpecification)
+            is ElementQuerySpecification -> isApplicable(sourceDeclaration, querySpecification)
             else -> throw IllegalStateException("Cannot apply filter for $querySpecification")
         }
     }
@@ -71,14 +74,13 @@ class NonImportFilter : SearchFilter {
 }
 
 class ResolvedReferenceFilter : SearchFilterAfterResolve {
-    override fun isApplicable(sourceElement: SourceElement, querySpecification: KotlinQueryPatternSpecification): Boolean {
-        return (sourceElement as? KotlinSourceElement)?.psi == querySpecification.jetElement
+    override fun isApplicable(sourceDeclaration: SourceDeclaration, querySpecification: KotlinQueryPatternSpecification): Boolean {
+        return (sourceDeclaration as? KotlinLocalScopeDeclaration)?.jetDeclaration == querySpecification.jetElement
     }
     
-    override fun isApplicable(sourceElement: SourceElement, querySpecification: ElementQuerySpecification): Boolean {
-        val javaProject = querySpecification.getElement().getJavaProject()
-        return sourceElement.toLightElements(javaProject).any { lightElement -> 
-            referenceFilter(lightElement, querySpecification.getElement()) 
+    override fun isApplicable(sourceDeclaration: SourceDeclaration, querySpecification: ElementQuerySpecification): Boolean {
+        return (sourceDeclaration as JavaScopeDeclaration).javaElements.any { lightElement -> 
+            referenceFilter(lightElement, querySpecification.getElement())
         }
     }
     

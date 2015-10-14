@@ -21,7 +21,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.core.references.getReferenceExpression
-import org.jetbrains.kotlin.core.references.resolveToSourceElements 
+import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import java.util.ArrayList
 import org.jetbrains.kotlin.core.references.KotlinReference
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
@@ -61,6 +61,7 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclarationName
+import org.jetbrains.kotlin.core.references.SourceDeclaration.NoSourceDeclaration
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
@@ -148,26 +149,13 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val beforeResolveCheck = beforeResolveFilters.all { it.isApplicable(element) }
             if (!beforeResolveCheck) return@filter false
             
-            if (element is JetDeclaration || element is JetObjectDeclaration || element is JetObjectDeclarationName) {
-                return@filter true
-            }
-            
             val javaProject = KotlinPsiManager.getJavaProject(element)
             if (javaProject == null) return@filter false
             
-            if (element !is JetReferenceExpression) return@filter false
-                
-            val analysisResultWithProvider = KotlinAnalysisFileCache.getAnalysisResult(
-                        element.getContainingJetFile(), 
-                        javaProject)
+            val sourceDeclaration = element.resolveToSourceDeclaration(javaProject)
+            if (sourceDeclaration is NoSourceDeclaration) return@filter false
             
-            val sourceElements = createReference(element).resolveToSourceElements(
-                    analysisResultWithProvider.analysisResult.bindingContext, 
-                    javaProject)
-            
-            return@filter sourceElements.any { sourceElement ->
-                afterResolveFilters.all { it.isApplicable(sourceElement, querySpecification) }
-            }
+            return@filter afterResolveFilters.all { it.isApplicable(sourceDeclaration, querySpecification) }
         }
     }
     
