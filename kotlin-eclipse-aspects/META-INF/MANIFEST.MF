@@ -40,8 +40,7 @@ Import-Package: com.intellij.navigation,
  org.jetbrains.kotlin.utils,
  org.eclipse.jdt.internal.corext.refactoring,
  org.eclipse.jdt.internal.debug.core.refactoring,
- org.eclipse.jdt.internal.corext.refactoring.base,
- org.jetbrains.kotlin.ui.refactorings.rename
+ org.eclipse.jdt.internal.corext.refactoring.base
 Eclipse-SupplementBundle: 
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.launching,

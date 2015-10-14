@@ -10,7 +10,6 @@
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRefactoringTypeAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinBinaryReferencesAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRippleMethodFinderAspect"/>
-        <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRenameJavaElementAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRemoveDeclarationUpdateAspect"/>
 	</aspects>
 </aspectj>
