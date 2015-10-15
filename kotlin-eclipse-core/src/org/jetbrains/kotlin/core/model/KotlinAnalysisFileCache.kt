@@ -7,6 +7,7 @@ import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
+import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
 
 data class FileAnalysisResults(val file: JetFile, val analysisResult: AnalysisResultWithProvider)
 
@@ -17,7 +18,12 @@ public object KotlinAnalysisFileCache {
         return if (lastAnalysedFileCache != null && lastAnalysedFileCache!!.file == file) {
             lastAnalysedFileCache!!.analysisResult
         } else {
-            lastAnalysedFileCache = FileAnalysisResults(file, KotlinAnalyzer.analyzeFiles(project, listOf(file)))
+            val kotlinEnvironment = KotlinEnvironment.getEnvironment(project)
+            val analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+                project, 
+                kotlinEnvironment.getProject(), 
+                listOf(file))
+            lastAnalysedFileCache = FileAnalysisResults(file, analysisResult)
             lastAnalysedFileCache!!.analysisResult
         }
     }

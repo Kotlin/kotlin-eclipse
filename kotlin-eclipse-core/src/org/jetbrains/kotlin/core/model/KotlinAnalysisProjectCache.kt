@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
 import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
 
 public object KotlinAnalysisProjectCache : IResourceChangeListener {
     private val cachedAnalysisResults = ConcurrentHashMap<IProject, AnalysisResult>()
@@ -45,9 +46,11 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
         val project = javaProject.getProject()
         return synchronized(project) {
             val analysisResult = cachedAnalysisResults.getOrElse(project) {
-                KotlinAnalyzer
-                        .analyzeFiles(javaProject, ProjectUtils.getSourceFiles(javaProject.getProject()))
-                        .analysisResult
+                val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject)
+                EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+                    javaProject, 
+                    kotlinEnvironment.getProject(), 
+                    ProjectUtils.getSourceFiles(javaProject.getProject())).analysisResult
             }
             
             cachedAnalysisResults.putIfAbsent(project, analysisResult) ?: analysisResult

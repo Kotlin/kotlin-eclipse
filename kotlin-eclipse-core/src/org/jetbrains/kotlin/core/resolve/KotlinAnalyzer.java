@@ -40,6 +40,10 @@ public class KotlinAnalyzer {
     }
     
     public static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull Collection<JetFile> filesToAnalyze) {
+        if (filesToAnalyze.size() == 1) {
+            return analyzeFile(javaProject, filesToAnalyze.iterator().next());
+        }
+        
         KotlinEnvironment kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject);
         return analyzeFiles(javaProject, kotlinEnvironment, filesToAnalyze);
     }
