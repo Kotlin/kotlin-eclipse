@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.builder;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,6 +39,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult;
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
@@ -55,9 +57,6 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             return null;
         }
         
-        AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject);
-        updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
-        
         final Set<IFile> affectedFiles = Sets.newHashSet();
         if (kind == FULL_BUILD) {
             affectedFiles.addAll(KotlinPsiManager.INSTANCE.getFilesByProject(getProject()));
@@ -68,11 +67,22 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             }
         }
         
+        commitFiles(affectedFiles);
+        
         if (!affectedFiles.isEmpty()) {
             KotlinLightClassGeneration.updateLightClasses(javaProject, affectedFiles);
         }
         
+        AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject);
+        updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
+        
         return null;
+    }
+    
+    private void commitFiles(@NotNull Collection<IFile> files) {
+        for (IFile file : files) {
+            KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getDocument(file).get());
+        }
     }
     
     private Set<IFile> getAffectedFiles(@NotNull IResourceDelta delta, @NotNull final IJavaProject javaProject) throws CoreException {
