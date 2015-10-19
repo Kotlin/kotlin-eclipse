@@ -8,7 +8,7 @@ import org.eclipse.ltk.core.refactoring.Change
 import org.eclipse.ltk.core.refactoring.participants.RenameArguments
 
 public class KotlinRenameRefactoring(val jetElement: JetElement, val newName: String) : Refactoring() {
-    val renameParticipant = KotlinLocalPropertyRenameParticipant()
+    val renameParticipant = KotlinLocalRenameParticipant()
     
     override fun checkFinalConditions(pm: IProgressMonitor?): RefactoringStatus? {
         renameParticipant.checkConditions(null, null)
