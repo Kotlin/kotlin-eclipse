@@ -52,30 +52,31 @@ public class KotlinTestUtils {
     
     // Copied from jdt testplugin
     public static void waitUntilIndexesReady() {
+        joinBuildThread();
         // dummy query for waiting until the indexes are ready
-        SearchEngine engine = new SearchEngine();
-        IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
-        try {
-            engine.searchAllTypeNames(
-                null,
-                SearchPattern.R_EXACT_MATCH,
-                "!@$#!@".toCharArray(),
-                SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE,
-                IJavaSearchConstants.CLASS,
-                scope,
-                new TypeNameRequestor() {
-                    @Override
-                    public void acceptType(
-                        int modifiers,
-                        char[] packageName,
-                        char[] simpleTypeName,
-                        char[][] enclosingTypeNames,
-                        String path) {}
-                },
-                IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,
-                null);
-        } catch (CoreException e) {
-        }
+//        SearchEngine engine = new SearchEngine();
+//        IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
+//        try {
+//            engine.searchAllTypeNames(
+//                null,
+//                SearchPattern.R_EXACT_MATCH,
+//                "!@$#!@".toCharArray(),
+//                SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE,
+//                IJavaSearchConstants.CLASS,
+//                scope,
+//                new TypeNameRequestor() {
+//                    @Override
+//                    public void acceptType(
+//                        int modifiers,
+//                        char[] packageName,
+//                        char[] simpleTypeName,
+//                        char[][] enclosingTypeNames,
+//                        String path) {}
+//                },
+//                IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,
+//                null);
+//        } catch (CoreException e) {
+//        }
     }
     
     public static void refreshWorkspace() {
