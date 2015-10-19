@@ -189,7 +189,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             List<JetFile> jetFiles = getJetFiles(testFilesInModule, true);
             allJetFiles.addAll(jetFiles);
 
-            KotlinTestUtils.joinBuildThread(); // Because analyze might be triggered by eclipse we should wait for the end 
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE$
                     .analyzeFilesWithJavaIntegration(getTestProject().getJavaProject(), getProject(), jetFiles)
                     .getAnalysisResult();
