@@ -64,7 +64,7 @@ import org.jetbrains.kotlin.psi.JetObjectDeclarationName
 import org.jetbrains.kotlin.core.references.SourceDeclaration.NoSourceDeclaration
 
 public class KotlinQueryParticipant : IQueryParticipant {
-    override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor) {
+    override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
         if (querySpecification is KotlinCompositeQuerySpecification) {
             runCompositeSearch(requestor, querySpecification, monitor)
             return
@@ -95,7 +95,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     override public fun getUIParticipant() = KotlinReferenceMatchPresentation()
     
     private fun runCompositeSearch(requestor: ISearchRequestor, specification: KotlinCompositeQuerySpecification, 
-            monitor: IProgressMonitor) {
+            monitor: IProgressMonitor?) {
         
         fun reportSearchResults(result: AbstractJavaSearchResult) {
             for (searchElement in result.getElements()) {

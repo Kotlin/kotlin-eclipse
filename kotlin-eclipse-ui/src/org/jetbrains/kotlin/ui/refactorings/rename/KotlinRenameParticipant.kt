@@ -14,7 +14,6 @@ import org.eclipse.search.ui.text.Match
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
-import org.eclipse.core.runtime.NullProgressMonitor
 import org.jetbrains.kotlin.ui.search.KotlinElementMatch
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
@@ -56,7 +55,7 @@ open class KotlinRenameParticipant : RenameParticipant() {
         val matches = arrayListOf<Match>()
         val querySpecification = createSearchQuery()
         
-        kotlinQueryParticipant.search({ matches.add(it) }, querySpecification, NullProgressMonitor())
+        kotlinQueryParticipant.search({ matches.add(it) }, querySpecification, pm)
         
         val groupedEdits = matches
             .map { createTextChange(it) }
