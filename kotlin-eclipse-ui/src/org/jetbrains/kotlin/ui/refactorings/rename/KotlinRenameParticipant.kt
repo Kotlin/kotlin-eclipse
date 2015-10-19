@@ -34,11 +34,8 @@ open class KotlinRenameParticipant : RenameParticipant() {
     lateinit var element: Any
     lateinit var newName: String
     
-    val changes = arrayListOf<Change>()
-        
     override fun initialize(element: Any): Boolean {
         this.element = element
-        changes.clear()
         return true
     }
     
@@ -51,6 +48,12 @@ open class KotlinRenameParticipant : RenameParticipant() {
     }
     
     override fun checkConditions(pm: IProgressMonitor?, context: CheckConditionsContext?): RefactoringStatus? {
+        return RefactoringStatus() // TODO: add corresponding refactoring status
+    }
+    
+    override fun getName() = "Kotlin Type Rename Participant"
+    
+    override fun createChange(pm: IProgressMonitor?): Change {
         val kotlinQueryParticipant = KotlinQueryParticipant()
         val matches = arrayListOf<Match>()
         val querySpecification = createSearchQuery()
@@ -62,6 +65,8 @@ open class KotlinRenameParticipant : RenameParticipant() {
             .filterNotNull()
             .groupBy { it.file }
         
+        val changes = arrayListOf<Change>()
+        
         for ((file, edits) in groupedEdits) {
             val fileChange = TextFileChange("Kotlin change", file)
             edits.forEach { TextChangeCompatibility.addTextEdit(fileChange, "Kotlin change", it.edit) }
@@ -69,12 +74,6 @@ open class KotlinRenameParticipant : RenameParticipant() {
             changes.add(fileChange)
         }
         
-        return RefactoringStatus() // TODO: add corresponding refactoring status
-    }
-    
-    override fun getName() = "Kotlin Type Rename Participant"
-    
-    override fun createChange(pm: IProgressMonitor?): Change {
         return CompositeChange("Changes in Kotlin", changes.toTypedArray())
     }
     
