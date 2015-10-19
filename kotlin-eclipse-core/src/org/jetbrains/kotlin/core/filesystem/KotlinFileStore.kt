@@ -41,11 +41,9 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
         
         val jetFiles = KotlinLightClassManager.getInstance(javaProject).getSourceFiles(file)
         if (jetFiles.isNotEmpty()) {
-            val analysisResult = {
-                val cachedResult = KotlinAnalysisProjectCache.getAnalysisResultIfCached(javaProject)
-                cachedResult ?: KotlinAnalyzer.analyzeFiles(javaProject, jetFiles).analysisResult
-            }()
-                
+            val analysisResult = KotlinAnalysisProjectCache.getAnalysisResultIfCached(javaProject) ?: 
+                    KotlinAnalyzer.analyzeFiles(javaProject, jetFiles).analysisResult
+            
             val state = KotlinLightClassGeneration.buildLightClasses(analysisResult, javaProject, jetFiles)
             val requestedClassName = Path(file.getAbsolutePath()).lastSegment()
             val generatedClass = state.factory.asList().find { 
@@ -80,8 +78,6 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
     override public fun childNames(options: Int, monitor: IProgressMonitor?): Array<String> {
         val folder = findFolderInWorkspace()
         if (folder != null && folder.exists()) {
-            val javaProject = JavaCore.create(folder.getProject())
-            KotlinLightClassGeneration.updateLightClasses(javaProject, Collections.emptySet<IFile>())
             return folder.members()
                     .map { it.getName() }
                     .toTypedArray()
