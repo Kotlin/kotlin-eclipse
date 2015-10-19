@@ -27,7 +27,10 @@ import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.graphics.Color;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
+import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Assert;
+import org.junit.Before;
 
 public abstract class KotlinHighlightingTestCase extends KotlinEditorAutoTestCase {
 	
@@ -43,12 +46,17 @@ public abstract class KotlinHighlightingTestCase extends KotlinEditorAutoTestCas
 	private static final String STRING_CLOSE = "</string>";
 	private static final String COMMENT_OPEN = "<comment>";
 	private static final String COMMENT_CLOSE = "</comment>";
+	
+	@Before
+	public void before() {
+	    configureProject();
+	}
 
     @Override
     protected void doSingleFileAutoTest(String testPath) {
-    	String fileText = getText(testPath);
-        testEditor = configureEditor(
-                getNameByPath(testPath),
+    	String fileText = KotlinTestUtils.getText(testPath);
+        TextEditorTest testEditor = configureEditor(
+                KotlinTestUtils.getNameByPath(testPath),
                 removeColorTags(fileText));
         
         StyleRange[] styleRanges = testEditor.getEditor().getViewer().getTextWidget().getStyleRanges();

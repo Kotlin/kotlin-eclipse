@@ -6,11 +6,17 @@ import java.util.ArrayList;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorSequentialAutoTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
+import org.junit.Before
 
 public abstract class KotlinCommonSelectionTestCase: KotlinEditorSequentialAutoTestCase() {
 	private val INITIAL_FILE_NAME = "0" + KotlinEditorAutoTestCase.KT_FILE_EXTENSION;
 	protected val COMMON_DIR: String = "wordSelection"
 	abstract protected val RELATIVE_DIR: String
+    
+    @Before
+    fun before() {
+        configureProject()
+    }
 
 	override fun getInitialFileName() = INITIAL_FILE_NAME
 	
