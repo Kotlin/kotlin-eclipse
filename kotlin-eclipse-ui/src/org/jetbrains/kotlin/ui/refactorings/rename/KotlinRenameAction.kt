@@ -161,7 +161,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
                     
                     KotlinPsiManager.getKotlinFileIfExist(editor.getFile()!!, editor.document.get()) // commit document
                     
-                    doRename(sourceDeclaration, selectedElement, newName, editor)
+                    doRename(sourceDeclaration, newName, editor)
                 }
             }
             
@@ -180,19 +180,19 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
 }
 
 
-fun doRename(sourceDeclaration: SourceDeclaration, selectedElement: JetElement, newName: String, editor: KotlinFileEditor) {
+fun doRename(sourceDeclaration: SourceDeclaration, newName: String, editor: KotlinFileEditor) {
     fun renameByJavaElement(declaration: JavaScopeDeclaration) {
         val javaElement = declaration.javaElements[0]
         
         val updateStrategy = RenameSupport.UPDATE_REFERENCES
         val renameSupport = when (javaElement) {
             is IType -> {
-                val lightType = KotlinLightType(javaElement, selectedElement, editor)
+                val lightType = KotlinLightType(javaElement, editor)
                 RenameSupport.create(lightType, newName, updateStrategy)
             }
             
             is IMethod -> {
-                val lightMethod = KotlinLightFunction(javaElement, selectedElement, editor)
+                val lightMethod = KotlinLightFunction(javaElement, editor)
                 RenameSupport.create(lightMethod, newName, updateStrategy)
             }
             
