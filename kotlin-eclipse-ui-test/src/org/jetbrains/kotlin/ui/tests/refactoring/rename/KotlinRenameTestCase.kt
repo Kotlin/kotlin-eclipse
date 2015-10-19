@@ -55,7 +55,7 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         if (selectedElement == null) return
         
         val sourceDeclaration = selectedElement.resolveToSourceDeclaration(editor.javaProject!!)
-        doRename(sourceDeclaration, selectedElement, newName, editor)
+        doRename(sourceDeclaration, newName, editor)
     }
     
     private fun checkResult(sourceFolderAfter: File, actualFiles: List<IFile>) {
