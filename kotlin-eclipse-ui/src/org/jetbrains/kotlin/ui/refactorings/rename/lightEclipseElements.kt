@@ -32,14 +32,12 @@ import org.eclipse.jdt.core.compiler.CharOperation
 import org.eclipse.core.resources.IResource
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 
-class KotlinLightType(val originElement: IType, jetElement: JetElement, val editor: KotlinFileEditor) : IType by originElement {
+class KotlinLightType(val originElement: IType, val editor: KotlinFileEditor) : IType by originElement {
     private val nameRange by lazy {
         object : ISourceRange {
-            override fun getLength(): Int {
-                return 0
-            }
+            override fun getLength(): Int = 0
             
-            override fun getOffset(): Int = jetElement.getTextDocumentOffset(editor.document)
+            override fun getOffset(): Int = 1
         }
     }
     
@@ -59,14 +57,12 @@ class KotlinLightType(val originElement: IType, jetElement: JetElement, val edit
     override fun isReadOnly(): Boolean = false
 }
 
-class KotlinLightFunction(val originMethod: IMethod, jetElement: JetElement, val editor: KotlinFileEditor) : IMethod by originMethod {
+class KotlinLightFunction(val originMethod: IMethod, val editor: KotlinFileEditor) : IMethod by originMethod {
     private val nameRange by lazy {
         object : ISourceRange {
-            override fun getLength(): Int {
-                return 0
-            }
+            override fun getLength(): Int = 0
             
-            override fun getOffset(): Int = jetElement.getTextDocumentOffset(editor.document)
+            override fun getOffset(): Int = 1
         }
     }
     
