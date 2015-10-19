@@ -33,9 +33,7 @@ public class KotlinRenameProcessor(val jetDeclaration: JetDeclaration, val newNa
         return RefactoringStatus()
     }
     
-    override fun checkInitialConditions(pm: IProgressMonitor?): RefactoringStatus? {
-        return RefactoringStatus()
-    }
+    override fun checkInitialConditions(pm: IProgressMonitor?): RefactoringStatus = RefactoringStatus()
     
     override fun getIdentifier(): String = "org.jetbrains.kotlin.ui.refactoring.renameProcessor"
     
