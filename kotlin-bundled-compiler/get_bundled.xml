@@ -1,13 +1,14 @@
 <project default="get_bundled">
-	<property name="idea-sources-build-id" value="474470"/>
+	<property name="idea-sources-build-id" value="586670"/>
 	<property name="compiler.tag" value="for_eclipse" />
 	<property name="bootstrap_branch" value="M13"/>
+	<property name="idea-version" value="142.4675.3"/>
 	
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
 	
 	<property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
 	<property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/bt345/${compiler.query}" />
-	<property name="idea-sdk-url" value="${teamcity-base}/guestAuth/repository/download/bt410/${idea-sources-build-id}:id" />
+	<property name="idea-sdk-url" value="https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea" />
 	
 	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
@@ -128,21 +129,28 @@
 			dest="${target.dir}/kotlin-ide-common.jar"
 			usetimestamp="true" />
 		
-		<get src="${idea-sdk-url}/core/intellij-core.jar" 
-			dest="${target.dir}/intellij-core.jar" 
+		<get src="${idea-sdk-url}/intellij-core/${idea-version}/intellij-core-${idea-version}.zip" 
+			dest="${download.dir}/intellij-core.zip" 
 			usetimestamp="true"/>
+		
+		<unzip src="${download.dir}/intellij-core.zip" dest="${target.dir}">
+			<patternset>
+				<include name="intellij-core.jar" />
+		    </patternset>
+			<mapper type="flatten"/>
+		</unzip>
 		
 		<!-- Also retrivive sources -->
 		<get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 
 					dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
 		
 		<!-- Get idea sources -->
-		<get src="${idea-sdk-url}/sources.zip" dest="${download.dir}/idea-sdk-sources.zip" usetimestamp="true" />
+		<get src="${idea-sdk-url}/ideaIC/${idea-version}/ideaIC-${idea-version}-sources.jar" dest="${download.dir}/idea-sdk-sources.jar" usetimestamp="true" />
 		
 		<!-- Pack souces into single archive -->
 		<zip destfile="${target.dir}/${compiler-sources-file}">
 			<zipfileset src="${download.dir}/${compiler-sources-file}" />
-			<zipfileset src="${download.dir}/idea-sdk-sources.zip" />
+			<zipfileset src="${download.dir}/idea-sdk-sources.jar" />
 		</zip>
 	</target>
 	
