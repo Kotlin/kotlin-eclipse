@@ -208,17 +208,17 @@ class KotlinCompositeQuerySpecification(
 // Using of this pattern assumes that elements presents only in Kotlin
 class KotlinQueryPatternSpecification(
         val jetElement: JetElement, 
-        val searchingElementsDescription: Int,
+        limitTo: Int,
         searchScope: IJavaSearchScope, 
-        description: String) : KotlinDummyQuerySpecification(searchScope, description, searchingElementsDescription)
+        description: String) : KotlinDummyQuerySpecification(searchScope, description, limitTo)
 
 // After passing this query specification to java, it will try to find some usages and to ensure that nothing will found
 // before KotlinQueryParticipant here is using dummy element '------------'
-open class KotlinDummyQuerySpecification(searchScope: IJavaSearchScope, description: String, searchingElementsDescription: Int = IJavaSearchConstants.REFERENCES) : PatternQuerySpecification(
+open class KotlinDummyQuerySpecification(searchScope: IJavaSearchScope, description: String, limitTo: Int = IJavaSearchConstants.REFERENCES) : PatternQuerySpecification(
         "Kotlin Find References", 
         IJavaSearchConstants.CLASS, 
         true, 
-        searchingElementsDescription, 
+        limitTo, 
         searchScope, 
         description
 )
