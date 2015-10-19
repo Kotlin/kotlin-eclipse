@@ -96,6 +96,8 @@ public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): Vis
             
             val reference = createReference(referenceExpression)
             val sourceElements = reference.resolveToSourceElements()
+            if (sourceElements.isEmpty()) return VisibilityScopeDeclaration.NoDeclaration
+            
             val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
             if (lightElements.isNotEmpty()) {
                 VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration(lightElements)
@@ -104,8 +106,9 @@ public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): Vis
                     KotlinLogger.logWarning("There are more than one elements for ${referenceExpression.getText()}")
                 }
                 
-                val kotlinSourceElement = sourceElements[0] as KotlinSourceElement
-                VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration(kotlinSourceElement.psi as JetDeclaration)
+                sourceElements.firstOrNull { it is KotlinSourceElement }?.let { 
+                    VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration((it as KotlinSourceElement).psi as JetDeclaration)
+                } ?: VisibilityScopeDeclaration.NoDeclaration
             }
         } 
     }
