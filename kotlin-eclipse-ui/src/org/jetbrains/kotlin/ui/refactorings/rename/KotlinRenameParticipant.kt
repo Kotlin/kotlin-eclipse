@@ -98,15 +98,14 @@ open class KotlinRenameParticipant : RenameParticipant() {
         
         val document = EditorUtil.getDocument(eclipseFile) // TODO: make workaround here later
         
-        val textLength = if (jetElement is JetNamedDeclaration) {
-            jetElement.getNameIdentifier()!!.getTextLength()
-        } else {
-            jetElement.getTextLength()
-        }
-        
-        return FileEdit(
+        val textLength = getLengthOfIdentifier(jetElement)
+        return if (textLength != null) {
+            FileEdit(
                 eclipseFile, 
                 ReplaceEdit(jetElement.getTextDocumentOffset(document), textLength, newName))
+        } else {
+            null
+        }
     }
     
     private fun obtainOriginElement(javaElement: IJavaElement): IJavaElement {

@@ -141,11 +141,9 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         val linkedPositionGroup = LinkedPositionGroup()
         val offsetInDocument = selectedElement.getTextDocumentOffset(editor.document)
         
-        val textLength = if (selectedElement is JetNamedDeclaration) {
-            selectedElement.getNameIdentifier()!!.getTextLength()
-        } else {
-            selectedElement.getTextLength()
-        }
+        val textLength = getLengthOfIdentifier(selectedElement)
+        if (textLength == null) return
+        
         val position = LinkedPosition(editor.document, offsetInDocument, textLength)
         linkedPositionGroup.addPosition(position)
         
