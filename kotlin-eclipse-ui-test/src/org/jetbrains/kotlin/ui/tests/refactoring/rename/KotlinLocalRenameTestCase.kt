@@ -7,8 +7,8 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.refactorings.rename.doRename
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
-import org.jetbrains.kotlin.core.references.SourceDeclaration
 import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
 
 abstract class KotlinLocalRenameTestCase : KotlinProjectTestCase() {
     @Before
@@ -23,7 +23,7 @@ abstract class KotlinLocalRenameTestCase : KotlinProjectTestCase() {
         val jetElement = EditorUtil.getJetElement(testEditor.getEditor() as KotlinFileEditor, 
                 KotlinTestUtils.getCaret(testEditor.getEditor()))!!
         
-        doRename(SourceDeclaration.KotlinLocalScopeDeclaration(jetElement as JetDeclaration), jetElement, newName, 
+        doRename(VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration(jetElement as JetDeclaration), newName, 
                 testEditor.getEditor() as KotlinFileEditor)
         
         val expected = KotlinTestUtils.getText("${testPath}.after")
