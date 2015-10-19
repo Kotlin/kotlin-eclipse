@@ -65,9 +65,9 @@ import org.eclipse.jdt.internal.ui.JavaPluginImages
 import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.references.SourceDeclaration.JavaScopeDeclaration
-import org.jetbrains.kotlin.core.references.SourceDeclaration.KotlinLocalScopeDeclaration
-import org.jetbrains.kotlin.core.references.SourceDeclaration.NoSourceDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 
 abstract class KotlinFindReferencesHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
@@ -192,9 +192,9 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
     
     val sourceDeclaration = jetElement.resolveToSourceDeclaration(javaProject)
     return when (sourceDeclaration) {
-        is JavaScopeDeclaration -> createFindReferencesQuery(sourceDeclaration.javaElements)
-        is KotlinLocalScopeDeclaration -> createFindReferencesQuery(sourceDeclaration.jetDeclaration)
-        is NoSourceDeclaration -> null
+        is JavaAndKotlinScopeDeclaration -> createFindReferencesQuery(sourceDeclaration.javaElements)
+        is KotlinOnlyScopeDeclaration -> createFindReferencesQuery(sourceDeclaration.jetDeclaration)
+        is NoDeclaration -> null
     }
 }
 

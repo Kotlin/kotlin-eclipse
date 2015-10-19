@@ -61,7 +61,7 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclarationName
-import org.jetbrains.kotlin.core.references.SourceDeclaration.NoSourceDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
@@ -153,7 +153,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             if (javaProject == null) return@filter false
             
             val sourceDeclaration = element.resolveToSourceDeclaration(javaProject)
-            if (sourceDeclaration is NoSourceDeclaration) return@filter false
+            if (sourceDeclaration is NoDeclaration) return@filter false
             
             return@filter afterResolveFilters.all { it.isApplicable(sourceDeclaration, querySpecification) }
         }

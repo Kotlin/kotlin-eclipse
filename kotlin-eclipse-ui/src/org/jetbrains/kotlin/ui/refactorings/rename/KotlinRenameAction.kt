@@ -77,10 +77,9 @@ import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
-import org.jetbrains.kotlin.core.references.SourceDeclaration.JavaScopeDeclaration
-import org.jetbrains.kotlin.core.references.SourceDeclaration.KotlinLocalScopeDeclaration
-import org.jetbrains.kotlin.core.references.SourceDeclaration.NoSourceDeclaration
-import org.jetbrains.kotlin.core.references.SourceDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
 
 public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
@@ -137,7 +136,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         return if (viewer is ITextViewerExtension6) viewer.getUndoManager() else null
     }
     
-    fun beginRenameRefactoring(sourceDeclaration: SourceDeclaration, selectedElement: JetElement, editor: KotlinFileEditor) {
+    fun beginRenameRefactoring(sourceDeclaration: VisibilityScopeDeclaration, selectedElement: JetElement, editor: KotlinFileEditor) {
         val linkedPositionGroup = LinkedPositionGroup()
         val offsetInDocument = selectedElement.getTextDocumentOffset(editor.document)
         
@@ -180,8 +179,8 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
 }
 
 
-fun doRename(sourceDeclaration: SourceDeclaration, newName: String, editor: KotlinFileEditor) {
-    fun renameByJavaElement(declaration: JavaScopeDeclaration) {
+fun doRename(sourceDeclaration: VisibilityScopeDeclaration, newName: String, editor: KotlinFileEditor) {
+    fun renameByJavaElement(declaration: JavaAndKotlinScopeDeclaration) {
         val javaElement = declaration.javaElements[0]
         
         val updateStrategy = RenameSupport.UPDATE_REFERENCES
@@ -204,7 +203,7 @@ fun doRename(sourceDeclaration: SourceDeclaration, newName: String, editor: Kotl
         }
     }
     
-    fun renameLocalKotlinElement(declaration: KotlinLocalScopeDeclaration) {
+    fun renameLocalKotlinElement(declaration: KotlinOnlyScopeDeclaration) {
         val helper = RefactoringExecutionHelper(
                 RenameRefactoring(KotlinRenameProcessor(declaration.jetDeclaration, newName)), 
                 RefactoringCore.getConditionCheckingFailedSeverity(),
@@ -219,8 +218,8 @@ fun doRename(sourceDeclaration: SourceDeclaration, newName: String, editor: Kotl
     }
     
     when (sourceDeclaration) {
-        is JavaScopeDeclaration -> renameByJavaElement(sourceDeclaration)
-        is KotlinLocalScopeDeclaration -> renameLocalKotlinElement(sourceDeclaration)
+        is JavaAndKotlinScopeDeclaration -> renameByJavaElement(sourceDeclaration)
+        is KotlinOnlyScopeDeclaration -> renameLocalKotlinElement(sourceDeclaration)
     }
     
     editor.getFile()!!.getProject().refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
