@@ -62,50 +62,50 @@ public fun getReferenceExpression(element: PsiElement): JetReferenceExpression? 
 	return PsiTreeUtil.getNonStrictParentOfType(element, JetReferenceExpression::class.java)
 }
 
-sealed class SourceDeclaration private constructor() {
+sealed class VisibilityScopeDeclaration private constructor() {
     // Represents Java elements and Kotlin light elements 
-    class JavaScopeDeclaration(val javaElements: List<IJavaElement>) : SourceDeclaration()
+    class JavaAndKotlinScopeDeclaration(val javaElements: List<IJavaElement>) : VisibilityScopeDeclaration()
     
-    class KotlinLocalScopeDeclaration(val jetDeclaration: JetDeclaration) : SourceDeclaration()
+    class KotlinOnlyScopeDeclaration(val jetDeclaration: JetDeclaration) : VisibilityScopeDeclaration()
     
-    object NoSourceDeclaration : SourceDeclaration()
+    object NoDeclaration : VisibilityScopeDeclaration()
 }
 
-public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): SourceDeclaration {
+public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): VisibilityScopeDeclaration {
     val jetElement = this
     return when (jetElement) {
         is JetObjectDeclarationName -> {
             val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, JetObjectDeclaration::class.java)
-            objectDeclaration?.let { it.resolveToSourceDeclaration(javaProject) } ?: SourceDeclaration.NoSourceDeclaration
+            objectDeclaration?.let { it.resolveToSourceDeclaration(javaProject) } ?: VisibilityScopeDeclaration.NoDeclaration
         }
         
         is JetDeclaration -> {
             val lightElements = jetElement.toLightElements(javaProject)
             if (lightElements.isNotEmpty()) {
-                SourceDeclaration.JavaScopeDeclaration(lightElements)
+                VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration(lightElements)
             } else {
                 // Element should present only in Kotlin as there is no corresponding light element
-                SourceDeclaration.KotlinLocalScopeDeclaration(jetElement)
+                VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration(jetElement)
             }
         }
         
         else -> {
             // Try search usages by reference
             val referenceExpression = getReferenceExpression(jetElement)
-            if (referenceExpression == null) return SourceDeclaration.NoSourceDeclaration
+            if (referenceExpression == null) return VisibilityScopeDeclaration.NoDeclaration
             
             val reference = createReference(referenceExpression)
             val sourceElements = reference.resolveToSourceElements()
             val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
             if (lightElements.isNotEmpty()) {
-                SourceDeclaration.JavaScopeDeclaration(lightElements)
+                VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration(lightElements)
             } else {
                 if (sourceElements.size() > 1) {
                     KotlinLogger.logWarning("There are more than one elements for ${referenceExpression.getText()}")
                 }
                 
                 val kotlinSourceElement = sourceElements[0] as KotlinSourceElement
-                SourceDeclaration.KotlinLocalScopeDeclaration(kotlinSourceElement.psi as JetDeclaration)
+                VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration(kotlinSourceElement.psi as JetDeclaration)
             }
         } 
     }
