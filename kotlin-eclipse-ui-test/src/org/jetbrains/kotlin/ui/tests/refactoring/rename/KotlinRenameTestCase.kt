@@ -19,8 +19,6 @@ import org.eclipse.jface.text.ITextSelection
 import org.eclipse.jdt.core.IType
 import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
 import org.jetbrains.kotlin.ui.refactorings.rename.doRename
-import com.google.gson.JsonParser
-import com.google.gson.JsonObject
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 
 abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
@@ -30,24 +28,24 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
     }
     
     protected fun doTest(testInfo: String) {
-        val fileInfoText = KotlinTestUtils.getText(testInfo)
-        val jsonParser = JsonParser()
-        
-        val renameObject = jsonParser.parse(fileInfoText) as JsonObject
-        
-        val rootFolder = Path(testInfo).removeLastSegments(1)
-        val loadedFiles = loadFiles(rootFolder.append("before").toFile())
-        
-        val editor = openMainFile(renameObject)
-        
-        val selection = findSelectionToRename(renameObject, editor)
-        Assert.assertTrue("Element to rename was not found", selection.getOffset() > 0)
-        
-        KotlinTestUtils.waitUntilIndexesReady()
-        
-        performRename(selection, renameObject["newName"].asString, editor)
-        
-        checkResult(rootFolder.append("after").toFile(), loadedFiles)
+//        val fileInfoText = KotlinTestUtils.getText(testInfo)
+//        val jsonParser = JsonParser()
+//        
+//        val renameObject = jsonParser.parse(fileInfoText) as JsonObject
+//        
+//        val rootFolder = Path(testInfo).removeLastSegments(1)
+//        val loadedFiles = loadFiles(rootFolder.append("before").toFile())
+//        
+//        val editor = openMainFile(renameObject)
+//        
+//        val selection = findSelectionToRename(renameObject, editor)
+//        Assert.assertTrue("Element to rename was not found", selection.getOffset() > 0)
+//        
+//        KotlinTestUtils.waitUntilIndexesReady()
+//        
+//        performRename(selection, renameObject["newName"].asString, editor)
+//        
+//        checkResult(rootFolder.append("after").toFile(), loadedFiles)
     }
     
     fun performRename(selection: ITextSelection, newName: String, editor: KotlinFileEditor) {
@@ -69,19 +67,19 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         }
     }
     
-    private fun findSelectionToRename(renameObject: JsonObject, editor: KotlinFileEditor): TextSelection {
-        val document = editor.document
-        val position = document.get().indexOf(renameObject["oldName"].asString) + 1
-        return TextSelection(document, position, 0)
-    }
+//    private fun findSelectionToRename(renameObject: JsonObject, editor: KotlinFileEditor): TextSelection {
+//        val document = editor.document
+//        val position = document.get().indexOf(renameObject["oldName"].asString) + 1
+//        return TextSelection(document, position, 0)
+//    }
     
-    private fun openMainFile(renameObject: JsonObject): KotlinFileEditor {
-        val mainFile = KotlinPsiManager.INSTANCE.getFilesByProject(getTestProject().getJavaProject().getProject()).find { 
-            it.getName() == renameObject["mainFile"].asString
-        }
-        val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-        return IDE.openEditor(page, mainFile, false) as KotlinFileEditor
-    }
+//    private fun openMainFile(renameObject: JsonObject): KotlinFileEditor {
+//        val mainFile = KotlinPsiManager.INSTANCE.getFilesByProject(getTestProject().getJavaProject().getProject()).find { 
+//            it.getName() == renameObject["mainFile"].asString
+//        }
+//        val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+//        return IDE.openEditor(page, mainFile, false) as KotlinFileEditor
+//    }
     
     private fun loadFiles(sourceRoot: File): List<IFile> {
         val loadedFiles = arrayListOf<IFile>()
