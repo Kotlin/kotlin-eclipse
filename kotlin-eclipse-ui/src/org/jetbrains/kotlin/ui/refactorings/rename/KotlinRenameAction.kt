@@ -205,7 +205,12 @@ fun doRename(sourceDeclaration: SourceDeclaration, newName: String, editor: Kotl
     }
     
     fun renameLocalKotlinElement(declaration: KotlinLocalScopeDeclaration) {
-        val helper = createHelper(declaration.jetDeclaration, newName, editor)
+        val helper = RefactoringExecutionHelper(
+                RenameRefactoring(KotlinRenameProcessor(declaration.jetDeclaration, newName)), 
+                RefactoringCore.getConditionCheckingFailedSeverity(),
+                RefactoringSaveHelper.SAVE_REFACTORING,
+                editor.getSite().getShell(),
+                editor.getSite().getWorkbenchWindow())
         try {
             helper.perform(true, true)
         } catch (e: InterruptedException) {
@@ -219,13 +224,4 @@ fun doRename(sourceDeclaration: SourceDeclaration, newName: String, editor: Kotl
     }
     
     editor.getFile()!!.getProject().refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
-}
-
-fun createHelper(jetElement: JetDeclaration, newName: String, editor: KotlinFileEditor): RefactoringExecutionHelper {
-    return RefactoringExecutionHelper(
-            RenameRefactoring(KotlinRenameProcessor(jetElement, newName)), 
-            RefactoringCore.getConditionCheckingFailedSeverity(),
-            RefactoringSaveHelper.SAVE_REFACTORING,
-            editor.getSite().getShell(),
-            editor.getSite().getWorkbenchWindow())
 }
