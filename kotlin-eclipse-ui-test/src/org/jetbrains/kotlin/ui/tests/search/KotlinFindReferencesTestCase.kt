@@ -64,7 +64,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
     protected fun doTest(filePath: String) {
         val (editor, sourceFiles, resultFile) = configureSourceFiles(filePath)
         
-        KotlinTestUtils.waitUntilIndexesReady()
+        KotlinTestUtils.joinBuildThread()
         
         val scope = SearchEngine.createWorkspaceScope()
         
