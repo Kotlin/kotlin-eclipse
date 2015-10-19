@@ -80,8 +80,6 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
     override public fun childNames(options: Int, monitor: IProgressMonitor?): Array<String> {
         val folder = findFolderInWorkspace()
         if (folder != null && folder.exists()) {
-            val javaProject = JavaCore.create(folder.getProject())
-            KotlinLightClassGeneration.updateLightClasses(javaProject, Collections.emptySet<IFile>())
             return folder.members()
                     .map { it.getName() }
                     .toTypedArray()
