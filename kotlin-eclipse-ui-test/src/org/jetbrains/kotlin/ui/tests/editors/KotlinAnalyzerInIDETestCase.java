@@ -39,10 +39,16 @@ import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
 import org.junit.Assert;
+import org.junit.Before;
 
 import com.google.common.collect.Lists;
 
 public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCase {
+    
+    @Before
+    public void before() {
+        configureProjectWithStdLib();
+    }
     
     private static final String ANALYZER_TEST_DATA_PATH_SEGMENT = "ide_analyzer";
     
@@ -74,11 +80,10 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     
     private void loadFilesToProjectAndDoTest(@NotNull List<File> files) {
 		List<Pair<IFile, String>> filesWithExpectedData = loadFilesToProject(files);
-		configureProjectWithStdLibAndBuilder();
 		
 		KotlinTestUtils.joinBuildThread();
 		
-		IJavaProject javaProject = testEditor.getTestJavaProject().getJavaProject();
+		IJavaProject javaProject = getTestProject().getJavaProject();
 		BindingContext bindingContext = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject).getBindingContext();
 		Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(bindingContext.getDiagnostics());
 		
@@ -96,11 +101,11 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     private List<Pair<IFile, String>> loadFilesToProject(@NotNull List<File> files) {
         List<Pair<IFile, String>> filesWithExpectedData = Lists.newArrayList(); 
         for (File file : files) {
-            String input = getText(file);
-            String resolvedInput = resolveTestTags(input);
+            String input = KotlinTestUtils.getText(file.getAbsolutePath());
+            String resolvedInput = KotlinTestUtils.resolveTestTags(input);
             filesWithExpectedData.add(new Pair<IFile, String>(
                     createSourceFile(SourceFileData.getPackageFromContent(resolvedInput), file.getName(), 
-                            resolveTestTags(resolvedInput)), 
+                            KotlinTestUtils.resolveTestTags(resolvedInput)), 
                     input));
         }
         
@@ -108,7 +113,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     }
     
     private String loadEclipseFile(IFile file) {
-        return getText(file.getLocation().toFile());
+        return KotlinTestUtils.getText(file.getLocation().toOSString());
     }
     
     private static String insertTagsForErrors(String fileText, IMarker[] markers) throws CoreException {
@@ -120,8 +125,8 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
         		continue;
         	}
         	
-        	offset += insertTagByOffset(result, ERROR_TAG_OPEN, getTagStartOffset(marker, IMarker.CHAR_START), offset);
-        	offset += insertTagByOffset(result, ERROR_TAG_CLOSE, getTagStartOffset(marker, IMarker.CHAR_END), offset);
+        	offset += insertTagByOffset(result, KotlinTestUtils.ERROR_TAG_OPEN, getTagStartOffset(marker, IMarker.CHAR_START), offset);
+        	offset += insertTagByOffset(result, KotlinTestUtils.ERROR_TAG_CLOSE, getTagStartOffset(marker, IMarker.CHAR_END), offset);
         }
         
         return result.toString();
@@ -140,13 +145,5 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     @Override
     protected String getTestDataRelativePath() {
         return ANALYZER_TEST_DATA_PATH_SEGMENT;
-    }
-    
-    private void configureProjectWithStdLibAndBuilder() {
-        try {
-            testEditor.getTestJavaProject().addKotlinRuntime();
-        } catch (CoreException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

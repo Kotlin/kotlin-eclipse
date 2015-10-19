@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 
 public abstract class KotlinEditorSequentialAutoTestCase extends
 		KotlinEditorAutoTestCase {
@@ -18,6 +19,12 @@ public abstract class KotlinEditorSequentialAutoTestCase extends
 	abstract protected void performSingleOperation();
 	
 	abstract protected String getInitialFileName();
+	
+	private TextEditorTest testEditor;
+	
+	protected TextEditorTest getTestEditor() {
+	    return testEditor;
+	}
 	
 	@Override
 	protected void doMultiFileAutoTest(File testFolder) {		
@@ -37,7 +44,7 @@ public abstract class KotlinEditorSequentialAutoTestCase extends
 	}
 
 	protected String getInitialFileContent(File testFolder) {
-		return getText(testFolder.getAbsolutePath()+File.separator+getInitialFileName());
+		return KotlinTestUtils.getText(testFolder.getAbsolutePath() + File.separator + getInitialFileName());
 	}
 
 	abstract protected ArrayList<String> getAfterFilesPaths(File testFolder);

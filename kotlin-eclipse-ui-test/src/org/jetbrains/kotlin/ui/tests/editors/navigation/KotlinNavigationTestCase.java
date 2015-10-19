@@ -27,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 
 import com.intellij.openapi.util.Condition;
@@ -91,7 +92,14 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         }
     }
     
+    private TextEditorTest testEditor;
+    
+    protected TextEditorTest getTestEditor() {
+        return testEditor;
+    }
+    
     protected void performTest(String contentAfter) {
+        KotlinTestUtils.joinBuildThread();
         testEditor.runOpenDeclarationAction();
         
         JavaEditor activeEditor = (JavaEditor) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
@@ -100,14 +108,13 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
     
     @Override
     protected void doSingleFileAutoTest(String testPath) {
-        String fileText = getText(testPath);
+        String fileText = KotlinTestUtils.getText(testPath);
         testEditor = configureEditor(
-                getNameByPath(testPath),
+                KotlinTestUtils.getNameByPath(testPath),
                 fileText,
-                TextEditorTest.TEST_PROJECT_NAME,
                 NavigationSourceFileData.getPackageFromContent(fileText));
         
-        performTest(getText(testPath + AFTER_FILE_EXTENSION));
+        performTest(KotlinTestUtils.getText(testPath + AFTER_FILE_EXTENSION));
     }
     
     @Override
@@ -120,7 +127,6 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         testEditor = configureEditor(
                 target.getFileName().replace(BEFORE_FILE_EXTENSION, ""),
                 target.getContent(),
-                TextEditorTest.TEST_PROJECT_NAME,
                 target.getPackageName());
         
         NavigationSourceFileData targetAfter = NavigationSourceFileData.getFileByPredicate(

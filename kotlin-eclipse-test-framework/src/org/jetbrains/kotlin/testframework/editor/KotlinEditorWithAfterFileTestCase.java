@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
 
@@ -71,7 +73,7 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
                 throw new RuntimeException(String.format(NO_TARGET_FILE_FOUND_FOR_AFTER_FILE_ERROR_MESSAGE_FORMAT, targetAfterFile.getAbsolutePath()));
             }
             
-            target.contentAfter = getText(targetAfterFile);
+            target.contentAfter = KotlinTestUtils.getText(targetAfterFile.getAbsolutePath());
             
             return result.values();
         }
@@ -81,15 +83,21 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
         }
     }
     
+    private TextEditorTest testEditor;
+    
     protected abstract void performTest(String fileText, String expectedFileText);
+    
+    protected TextEditorTest getTestEditor() {
+        return testEditor;
+    }
     
     @Override
     protected void doSingleFileAutoTest(String testPath) {
-        String fileText = getText(testPath);
-        testEditor = configureEditor(getNameByPath(testPath), fileText,
+        String fileText = KotlinTestUtils.getText(testPath);
+        testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText,
                 WithAfterSourceFileData.getPackageFromContent(fileText));
         
-        performTest(fileText, getText(testPath + AFTER_FILE_EXTENSION));
+        performTest(fileText, KotlinTestUtils.getText(testPath + AFTER_FILE_EXTENSION));
     }
     
     @Override

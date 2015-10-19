@@ -1,6 +1,8 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
@@ -46,6 +48,15 @@ public class KotlinProjectTestCase {
             testJavaProject.clean();
             testJavaProject.setDefaultSettings();
         }
+        
+        try {
+            IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+            for (IProject project : projects) {
+                project.delete(true, true, null);
+            }
+        } catch (CoreException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     protected void configureProject() {
@@ -80,7 +91,8 @@ public class KotlinProjectTestCase {
     
     public IFile createSourceFile(String pkg, String fileName, String content) {
         try {
-            return testJavaProject.createSourceFile(pkg, fileName, content);
+            
+            return testJavaProject.createSourceFile(pkg, fileName, KotlinEditorTestCase.removeTags(content));
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
@@ -91,8 +103,12 @@ public class KotlinProjectTestCase {
     }
     
     protected TextEditorTest configureEditor(String fileName, String content) {
+        return configureEditor(fileName, content, "");
+    }
+    
+    protected TextEditorTest configureEditor(String fileName, String content, String pkg) {
         TextEditorTest testEditor = new TextEditorTest(testJavaProject);
-        testEditor.createEditor(fileName, content, "");
+        testEditor.createEditor(fileName, content, pkg);
         
         return testEditor;
     }

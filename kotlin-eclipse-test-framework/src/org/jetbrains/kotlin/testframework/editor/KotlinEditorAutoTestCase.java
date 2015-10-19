@@ -17,15 +17,22 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import java.io.File;
-import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 
-public abstract class KotlinEditorAutoTestCase extends KotlinEditorTestCase {
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+import org.jetbrains.kotlin.testframework.utils.SourceFileData;
+import org.junit.Rule;
+import org.junit.rules.TestName;
+
+public abstract class KotlinEditorAutoTestCase extends KotlinProjectTestCase {
     
     protected abstract static class EditorSourceFileData extends SourceFileData {
         public EditorSourceFileData(File file) {
-            super(file.getName(), getText(file));
+            super(file.getName(), KotlinTestUtils.getText(file.getAbsolutePath()));
         }
     }
+    
+    @Rule
+    public TestName name = new TestName();
     
     private static final String TEST_DATA_PATH = "testData";
     

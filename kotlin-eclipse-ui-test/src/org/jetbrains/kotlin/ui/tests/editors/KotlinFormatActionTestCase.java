@@ -24,23 +24,29 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.junit.Assert;
+import org.junit.Before;
 
 public class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCase {
     
     private static final String FORMAT_ACTION_TEST_DATA_SEGMENT = "format";
     
+    @Before
+    public void before() {
+        configureProject();
+    }
+    
     @Override
     protected void performTest(String fileText, String content) {
-    	String expectedLineDelimiter = TextUtilities.getDefaultLineDelimiter(testEditor.getDocument());
+    	String expectedLineDelimiter = TextUtilities.getDefaultLineDelimiter(getTestEditor().getDocument());
     	
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, 4);
         
-        testEditor.runFormatAction();
+        getTestEditor().runFormatAction();
         
         
-        EditorTestUtils.assertByEditor(getEditor(), content);
-        assertLineDelimiters(expectedLineDelimiter, testEditor.getDocument());
+        EditorTestUtils.assertByEditor(getTestEditor().getEditor(), content);
+        assertLineDelimiters(expectedLineDelimiter, getTestEditor().getDocument());
     }
     
     @Override

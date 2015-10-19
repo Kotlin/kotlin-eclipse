@@ -16,9 +16,15 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.navigation;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class KotlinNavigationTest extends KotlinNavigationTestCase {
+    @Before
+    public void before() {
+        configureProjectWithStdLib();
+    }
+    
 	@Override
     protected String getTestDataRelativePath() {
         return "navigation";

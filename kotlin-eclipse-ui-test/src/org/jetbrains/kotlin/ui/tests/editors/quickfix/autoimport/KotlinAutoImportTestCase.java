@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.TextInvocationContext;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
@@ -29,6 +30,7 @@ import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinCorrectionProcessor;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinAutoImportAssistProposal;
 import org.junit.Assert;
+import org.junit.Before;
 
 public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFileTestCase {
     
@@ -37,8 +39,14 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
     private static final String COUNT_ASSERTION_ERROR_MESSAGE = "Number of actual proposals differs from the number of expected proposals";
     private static final String EXISTENCE_ASSERTION_ERROR_MESSAGE_FORMAT = "List of actual proposals doesn't contain expected proposal: %s";
     
+    @Before
+    public void before() {
+        configureProjectWithStdLib();
+    }
+    
     private List<ICompletionProposal> createProposals() {
-        return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(new TextInvocationContext(getEditor().getViewer(), getCaret(), -1)));
+        return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(
+                new TextInvocationContext(getEditor().getViewer(), KotlinTestUtils.getCaret(getEditor()), -1)));
     }
     
     @Override
@@ -89,5 +97,9 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
         }
         
         return result;
+    }
+    
+    private JavaEditor getEditor() {
+        return getTestEditor().getEditor();
     }
 }
