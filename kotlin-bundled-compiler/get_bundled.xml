@@ -12,7 +12,7 @@
 	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
 	<property name="test-data-file" value="kotlin-test-data.zip" />
-	<property name="testData.lib" value="../kotlin-eclipse-ui-test/lib" />
+	<property name="testModule.lib" value="../kotlin-eclipse-ui-test/lib" />
 	
 	<condition property="branch" value="?branch=${bootstrap_branch}" else="">
 	    <length string="${bootstrap_branch}" trim="true" when="greater" length="0" />
@@ -56,14 +56,14 @@
 	</target>
 	
     <target name="download_test_framework_dependencies">
-        <mkdir dir="${testData.lib}" />
+        <mkdir dir="${testModule.lib}" />
         <delete includeemptydirs="true">
-            <fileset dir="${testData.lib}" includes="**/*" />
+            <fileset dir="${testModule.lib}" includes="**/*" />
         </delete>
         
         <get 
             src="http://central.maven.org/maven2/com/google/code/gson/gson/2.3.1/gson-2.3.1.jar" 
-            dest="${testData.lib}/gson-2.3.1.jar" 
+            dest="${testModule.lib}/gson-2.3.1.jar" 
             usetimestamp="true"/>
     </target>
 
