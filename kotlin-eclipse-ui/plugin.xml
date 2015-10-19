@@ -615,9 +615,9 @@
          </enablement>
       </renameParticipant>
       <renameParticipant
-            class="org.jetbrains.kotlin.ui.refactorings.rename.KotlinLocalPropertyRenameParticipant"
-            id="org.jetbrains.kotlin.ui.refacotrings.renameLocalProperty"
-            name="Kotlin Local Variable Rename Participant">
+            class="org.jetbrains.kotlin.ui.refactorings.rename.KotlinLocalRenameParticipant"
+            id="org.jetbrains.kotlin.ui.refacotrings.renameLocalElement"
+            name="Kotlin Local Rename Participant">
          <enablement>
             <with
                   variable="affectedNatures">
