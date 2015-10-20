@@ -175,13 +175,15 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
     fun createFindReferencesQuery(declaration: JavaAndKotlinScopeDeclaration): QuerySpecification {
         val elements = declaration.javaElements
         return when (elements.size()) {
-            1 -> ElementQuerySpecification(elements[0], IJavaSearchConstants.REFERENCES, scope, description)
+            1 -> ElementQuerySpecification(elements.first(), IJavaSearchConstants.REFERENCES, scope, description)
             else -> {
-                val isJetElementIsDistinct = elements.all { it.getElementName() != jetElement.getName() }
+                val queries = declaration.javaElements.map { 
+                    ElementQuerySpecification(it, IJavaSearchConstants.REFERENCES, scope, description) 
+                }
+                
                 KotlinCompositeQuerySpecification(
-                        JavaAndKotlinScopeDeclaration(elements), 
-                        if (isJetElementIsDistinct) KotlinOnlyScopeDeclaration(jetElement as JetDeclaration) else null,
-                        scope,
+                        queries, 
+                        emptyList(), // TODO: add kotlin element when searching for property
                         description)
             }
         }

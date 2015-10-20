@@ -62,6 +62,7 @@ import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclarationName
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
@@ -103,18 +104,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             }
         }
         
-        val specifications = arrayListOf<QuerySpecification>()
-        specification.javaAndKotlinScopeDeclaration.javaElements.mapTo(specifications) { 
-            ElementQuerySpecification(it, 
-                specification.getLimitTo(), 
-                specification.getScope(), 
-                specification.getScopeDescription())
-        }
-        specification.kotlinDeclaration?.let {
-            specifications.add(KotlinLocalQuerySpecification(it, specification.getLimitTo(), specification.getScopeDescription()))
-        }
-        
-        specifications.forEach {
+        (specification.javaSearchQueries + specification.kotlinSearchQueries).forEach {
             val searchQuery = JavaSearchQuery(it)
             searchQuery.run(monitor)
             reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
@@ -177,14 +167,21 @@ public class KotlinQueryParticipant : IQueryParticipant {
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
 //        We can significantly reduce scope to one file when there are no light elements in query specification.
 //        In this case search elements are not visible from Java and other Kotlin files
-        return if (querySpecification is KotlinLocalQuerySpecification) {
+        return when (querySpecification) {
+            is KotlinLocalQuerySpecification -> 
                 listOf(KotlinPsiManager.getEclispeFile(querySpecification.kotlinDeclaration.jetDeclaration.getContainingJetFile())!!)
-            } else {
+            
+            is ElementQuerySpecification -> {
                 querySpecification.getScope().enclosingProjectsAndJars()
                     .map { JavaModel.getTarget(it, true) }
                     .filterIsInstance(IProject::class.java)
                     .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
             }
+            
+            is KotlinQuerySpecification -> querySpecification.searchScope.map { KotlinPsiManager.getEclispeFile(it)!! }
+            
+            else -> emptyList()
+        }
     }
 }
 
