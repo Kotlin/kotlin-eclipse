@@ -93,8 +93,6 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         }
     }
     
-    override protected fun isMarkingOccurrences(): Boolean = false
-    
     override protected fun isTabsToSpacesConversionEnabled(): Boolean = IndenterUtil.isSpacesForTabs()
     
     override protected fun createActions() {

@@ -32,21 +32,55 @@ import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 
 interface SearchFilter {
     fun isApplicable(jetElement: JetElement): Boolean
 }
 
 interface SearchFilterAfterResolve {
-    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: KotlinLocalQuerySpecification): Boolean
+    fun isApplicable(declaration: KotlinOnlyScopeDeclaration, originalDeclaration: KotlinOnlyScopeDeclaration): Boolean
     
-    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: ElementQuerySpecification): Boolean
+    fun isApplicable(declaration: JavaAndKotlinScopeDeclaration, originalElement: IJavaElement): Boolean
     
-    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: QuerySpecification): Boolean {
-        return when (querySpecification) {
-            is KotlinLocalQuerySpecification -> isApplicable(sourceDeclaration, querySpecification)
-            is ElementQuerySpecification -> isApplicable(sourceDeclaration, querySpecification)
-            else -> throw IllegalStateException("Cannot apply filter for $querySpecification")
+    fun isApplicable(declaration: VisibilityScopeDeclaration, originDeclaration: VisibilityScopeDeclaration): Boolean {
+        return when (declaration) {
+            is KotlinOnlyScopeDeclaration -> {
+                (originDeclaration as? KotlinOnlyScopeDeclaration)?.let { isApplicable(declaration, it) } ?: false
+            }
+            
+            is JavaAndKotlinScopeDeclaration -> {
+                (originDeclaration as? JavaAndKotlinScopeDeclaration)?.let { origin -> 
+                    origin.javaElements.any { isApplicable(declaration, it) }
+                } ?: false
+            }
+            
+            is NoDeclaration -> false
+        }
+    }
+    
+    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, query: QuerySpecification): Boolean {
+        return when (query) {
+            is ElementQuerySpecification -> {
+                if (sourceDeclaration is JavaAndKotlinScopeDeclaration) {
+                    isApplicable(sourceDeclaration, query.getElement())
+                } else {
+                    false
+                }
+            }
+            
+            is KotlinLocalQuerySpecification -> {
+                if (sourceDeclaration is KotlinOnlyScopeDeclaration) {
+                    isApplicable(sourceDeclaration, query.kotlinDeclaration)
+                } else {
+                    false
+                }
+            }
+            
+            is KotlinQuerySpecification -> isApplicable(sourceDeclaration, query.sourceDeclaration)
+            
+            else -> throw IllegalArgumentException("Cannot apply filter for $query")
         }
     }
 }
@@ -61,7 +95,9 @@ fun getBeforeResolveFilters(querySpecification: QuerySpecification): List<Search
     return filters
 }
 
-fun getAfterResolveFilters(): List<SearchFilterAfterResolve> = listOf(ResolvedReferenceFilter())
+fun getAfterResolveFilters(): List<SearchFilterAfterResolve> {
+    return listOf(ResolvedReferenceFilter())
+}
 
 class ReferenceFilter : SearchFilter {
     override fun isApplicable(jetElement: JetElement): Boolean = jetElement is JetReferenceExpression
@@ -74,14 +110,12 @@ class NonImportFilter : SearchFilter {
 }
 
 class ResolvedReferenceFilter : SearchFilterAfterResolve {
-    override fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: KotlinLocalQuerySpecification): Boolean {
-        return (sourceDeclaration as? KotlinOnlyScopeDeclaration) == querySpecification.kotlinDeclaration
+    override fun isApplicable(declaration: KotlinOnlyScopeDeclaration, originalDeclaration: KotlinOnlyScopeDeclaration): Boolean {
+        return declaration == originalDeclaration
     }
     
-    override fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: ElementQuerySpecification): Boolean {
-        return (sourceDeclaration as JavaAndKotlinScopeDeclaration).javaElements.any { lightElement -> 
-            referenceFilter(lightElement, querySpecification.getElement())
-        }
+    override fun isApplicable(declaration: JavaAndKotlinScopeDeclaration, originalElement: IJavaElement): Boolean {
+        return declaration.javaElements.any { referenceFilter(it, originalElement) }
     }
     
     private fun referenceFilter(potentialElement: IJavaElement, originElement: IJavaElement): Boolean {

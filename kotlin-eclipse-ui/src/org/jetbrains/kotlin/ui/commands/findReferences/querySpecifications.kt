@@ -42,6 +42,9 @@ open class KotlinDummyQuerySpecification(
             searchScope, 
             description)
 
+//inline fun <reified T : VisibilityScopeDeclaration> withElement(action: ) {
+//} 
+
 object EmptyJavaSearchScope : IJavaSearchScope {
     override fun setIncludesClasspaths(includesClasspaths: Boolean) {
     }

@@ -70,7 +70,7 @@ sealed class VisibilityScopeDeclaration private constructor() {
         override fun hashCode(): Int = jetDeclaration.hashCode()
     
         override fun equals(other: Any?): Boolean {
-            if (this == other) return true
+            if (this === other) return true
             if (other !is KotlinOnlyScopeDeclaration) return false
             return jetDeclaration == other.jetDeclaration
         }

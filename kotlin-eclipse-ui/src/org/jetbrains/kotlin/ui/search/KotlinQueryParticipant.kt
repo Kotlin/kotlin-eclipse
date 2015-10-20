@@ -63,6 +63,9 @@ import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclarationName
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
@@ -114,16 +117,27 @@ public class KotlinQueryParticipant : IQueryParticipant {
     private fun searchTextOccurrences(querySpecification: QuerySpecification, filesScope: List<IFile>): ISearchResult? {
         val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null, false)
         val searchText = when (querySpecification) {
-            is KotlinLocalQuerySpecification -> querySpecification.kotlinDeclaration.jetDeclaration.getName()!!
+            is KotlinLocalQuerySpecification -> querySpecification.kotlinDeclaration.jetDeclaration.getName()
             is ElementQuerySpecification -> querySpecification.getElement().getElementName()
+            is KotlinQuerySpecification -> getSearchText(querySpecification.sourceDeclaration)
             else -> return null
         }
+        
+        if (searchText == null) return null
         
         val query = FileSearchQuery(searchText, false, true, true, scope)
         
         query.run(null)
         
         return query.getSearchResult()
+    }
+    
+    private fun getSearchText(sourceDeclaration: VisibilityScopeDeclaration): String? {
+        return when (sourceDeclaration) {
+            is JavaAndKotlinScopeDeclaration -> sourceDeclaration.javaElements[0].getElementName()
+            is KotlinOnlyScopeDeclaration -> sourceDeclaration.jetDeclaration.getName()
+            else -> null
+        }
     }
     
     private fun resolveElementsAndMatch(elements: List<JetElement>, querySpecification: QuerySpecification): List<JetElement> {
