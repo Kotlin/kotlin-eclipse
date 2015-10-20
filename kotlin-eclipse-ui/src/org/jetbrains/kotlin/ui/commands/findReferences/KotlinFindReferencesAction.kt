@@ -187,7 +187,7 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
     }
     
     fun createFindReferencesQuery(element: JetElement): KotlinLocalQuerySpecification {
-        return KotlinLocalQuerySpecification(element, IJavaSearchConstants.REFERENCES, scope, description)
+        return KotlinLocalQuerySpecification(element, IJavaSearchConstants.REFERENCES, description)
     }
     
     val sourceDeclaration = jetElement.resolveToSourceDeclaration(javaProject)
@@ -197,28 +197,3 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
         is NoDeclaration -> null
     }
 }
-
-// This pattern is using to run composite search which is described in KotlinQueryParticipant.
-class KotlinCompositeQuerySpecification(
-        val lightElements: List<IJavaElement>, 
-        val jetElement: JetElement?, 
-        searchScope: IJavaSearchScope, 
-        description: String) : KotlinDummyQuerySpecification(searchScope, description)
-
-// Using of this pattern assumes that elements presents only in Kotlin
-class KotlinLocalQuerySpecification(
-        val jetElement: JetElement, 
-        limitTo: Int,
-        searchScope: IJavaSearchScope, 
-        description: String) : KotlinDummyQuerySpecification(searchScope, description, limitTo)
-
-// After passing this query specification to java, it will try to find some usages and to ensure that nothing will found
-// before KotlinQueryParticipant here is using dummy element '------------'
-open class KotlinDummyQuerySpecification(searchScope: IJavaSearchScope, description: String, limitTo: Int = IJavaSearchConstants.REFERENCES) : PatternQuerySpecification(
-        "Kotlin Find References", 
-        IJavaSearchConstants.CLASS, 
-        true, 
-        limitTo, 
-        searchScope, 
-        description
-)
