@@ -13,6 +13,7 @@ public aspect KotlinBinaryReferencesAspect {
         args(status)
         && execution(void ReferencesInBinaryContext.addErrorIfNecessary(RefactoringStatus));
     
+    // JDT report about error if there are binary references for rename
     @SuppressAjWarnings({"adviceDidNotMatch"})
     void around(RefactoringStatus status) : addErrorIfNecessary(status) {
         ReferencesInBinaryContext targetObject = (ReferencesInBinaryContext) thisJoinPoint.getTarget();

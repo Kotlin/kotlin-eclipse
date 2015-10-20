@@ -13,6 +13,8 @@ public aspect KotlinBreakpointRenamingParticipantAspect {
                 args(parent, element) 
                 && execution(IJavaElement BreakpointChange.findElement(IJavaElement, IJavaElement));
 
+    // BreakpointRenameParticipant operates with compilation unit to rename breakpoint configuration
+    // Thus we disable it for Kotlin files
     @SuppressAjWarnings({"adviceDidNotMatch"})
     IJavaElement around(IJavaElement parent, IJavaElement element): findElement(parent, element) {
         IResource resource = parent.getResource();

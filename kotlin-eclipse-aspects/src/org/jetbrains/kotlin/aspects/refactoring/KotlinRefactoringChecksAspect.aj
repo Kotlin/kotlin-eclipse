@@ -11,6 +11,7 @@ public aspect KotlinRefactoringChecksAspect {
         args(member)
         && execution(RefactoringStatus Checks.checkIfCuBroken(IMember));
     
+    // Disable checking of compilation unit for Kotlin files
     @SuppressAjWarnings({"adviceDidNotMatch"})
     RefactoringStatus around(IMember member) : checkIfCuBroken(member) {
         if (EclipseJavaElementUtil.isKotlinLightClass(member)) {

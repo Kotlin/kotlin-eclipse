@@ -11,6 +11,7 @@ public aspect KotlinRemoveDeclarationUpdateAspect {
         args(manager)
         && execution(void RenameNonVirtualMethodProcessor.addDeclarationUpdate(TextChangeManager));
     
+    // Prohibit renaming Kotlin method declaration from JDT
     @SuppressAjWarnings({"adviceDidNotMatch"})
     void around(TextChangeManager manager) : addDeclarationUpdate(manager) {
         RenameNonVirtualMethodProcessor processor = (RenameNonVirtualMethodProcessor) thisJoinPoint.getTarget();
