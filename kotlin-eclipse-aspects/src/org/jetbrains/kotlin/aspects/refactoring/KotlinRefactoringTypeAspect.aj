@@ -15,6 +15,7 @@ public aspect KotlinRefactoringTypeAspect {
         args(manager)
         && execution(void RenameTypeProcessor.addTypeDeclarationUpdate(TextChangeManager));
     
+    // Prohibit renaming Kotlin type declaration from JDT
     @SuppressAjWarnings({"adviceDidNotMatch"})
     void around(TextChangeManager manager) : addTypeDeclarationUpdate(manager) {
         try {
