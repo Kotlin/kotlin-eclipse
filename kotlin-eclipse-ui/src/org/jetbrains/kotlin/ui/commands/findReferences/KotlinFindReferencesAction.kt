@@ -172,28 +172,31 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
 fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, scope: IJavaSearchScope, 
         description: String): QuerySpecification? {
     
-    fun createFindReferencesQuery(elements: List<IJavaElement>): QuerySpecification {
+    fun createFindReferencesQuery(declaration: JavaAndKotlinScopeDeclaration): QuerySpecification {
+        val elements = declaration.javaElements
         return when (elements.size()) {
             1 -> ElementQuerySpecification(elements[0], IJavaSearchConstants.REFERENCES, scope, description)
             else -> {
                 val isJetElementIsDistinct = elements.all { it.getElementName() != jetElement.getName() }
                 KotlinCompositeQuerySpecification(
-                        elements, 
-                        if (isJetElementIsDistinct) jetElement else null,
+                        JavaAndKotlinScopeDeclaration(elements), 
+                        if (isJetElementIsDistinct) KotlinOnlyScopeDeclaration(jetElement as JetDeclaration) else null,
                         scope,
                         description)
             }
         }
     }
     
-    fun createFindReferencesQuery(element: JetElement): KotlinLocalQuerySpecification {
-        return KotlinLocalQuerySpecification(element, IJavaSearchConstants.REFERENCES, description)
+    fun createFindReferencesQuery(declaration: KotlinOnlyScopeDeclaration): KotlinLocalQuerySpecification {
+        return KotlinLocalQuerySpecification(
+                declaration, 
+                IJavaSearchConstants.REFERENCES, description)
     }
     
     val sourceDeclaration = jetElement.resolveToSourceDeclaration(javaProject)
     return when (sourceDeclaration) {
-        is JavaAndKotlinScopeDeclaration -> createFindReferencesQuery(sourceDeclaration.javaElements)
-        is KotlinOnlyScopeDeclaration -> createFindReferencesQuery(sourceDeclaration.jetDeclaration)
+        is JavaAndKotlinScopeDeclaration -> createFindReferencesQuery(sourceDeclaration)
+        is KotlinOnlyScopeDeclaration -> createFindReferencesQuery(sourceDeclaration)
         is NoDeclaration -> null
     }
 }
