@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.eclipse.jdt.ui.search.QuerySpecification
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQueryPatternSpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLocalQuerySpecification
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.jetbrains.kotlin.core.model.toLightElements
@@ -38,13 +38,13 @@ interface SearchFilter {
 }
 
 interface SearchFilterAfterResolve {
-    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: KotlinQueryPatternSpecification): Boolean
+    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: KotlinLocalQuerySpecification): Boolean
     
     fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: ElementQuerySpecification): Boolean
     
     fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: QuerySpecification): Boolean {
         return when (querySpecification) {
-            is KotlinQueryPatternSpecification -> isApplicable(sourceDeclaration, querySpecification)
+            is KotlinLocalQuerySpecification -> isApplicable(sourceDeclaration, querySpecification)
             is ElementQuerySpecification -> isApplicable(sourceDeclaration, querySpecification)
             else -> throw IllegalStateException("Cannot apply filter for $querySpecification")
         }
@@ -74,7 +74,7 @@ class NonImportFilter : SearchFilter {
 }
 
 class ResolvedReferenceFilter : SearchFilterAfterResolve {
-    override fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: KotlinQueryPatternSpecification): Boolean {
+    override fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: KotlinLocalQuerySpecification): Boolean {
         return (sourceDeclaration as? KotlinOnlyScopeDeclaration)?.jetDeclaration == querySpecification.jetElement
     }
     

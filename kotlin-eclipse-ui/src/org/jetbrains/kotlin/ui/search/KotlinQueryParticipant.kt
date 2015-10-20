@@ -44,7 +44,7 @@ import org.eclipse.jdt.core.IMember
 import org.eclipse.jdt.core.search.SearchPattern
 import org.eclipse.jdt.core.IType
 import org.eclipse.jdt.core.IField
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQueryPatternSpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLocalQuerySpecification
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.descriptors.SourceElement
@@ -111,7 +111,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 specification.getScopeDescription())
         }
         specification.jetElement?.let {
-            specifications.add(KotlinQueryPatternSpecification(it, specification.getLimitTo(), specification.getScope(), 
+            specifications.add(KotlinLocalQuerySpecification(it, specification.getLimitTo(), specification.getScope(), 
                     specification.getScopeDescription()))
         }
         
@@ -125,7 +125,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     private fun searchTextOccurrences(querySpecification: QuerySpecification, filesScope: List<IFile>): ISearchResult? {
         val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null, false)
         val searchText = when (querySpecification) {
-            is KotlinQueryPatternSpecification -> querySpecification.jetElement.getName()!!
+            is KotlinLocalQuerySpecification -> querySpecification.jetElement.getName()!!
             is ElementQuerySpecification -> querySpecification.getElement().getElementName()
             else -> return null
         }
@@ -178,7 +178,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
 //        We can significantly reduce scope to one file when there are no light elements in query specification.
 //        In this case search elements are not visible from Java and other Kotlin files
-        return if (querySpecification is KotlinQueryPatternSpecification) {
+        return if (querySpecification is KotlinLocalQuerySpecification) {
                 listOf(KotlinPsiManager.getEclispeFile(querySpecification.jetElement.getContainingJetFile())!!)
             } else {
                 querySpecification.getScope().enclosingProjectsAndJars()

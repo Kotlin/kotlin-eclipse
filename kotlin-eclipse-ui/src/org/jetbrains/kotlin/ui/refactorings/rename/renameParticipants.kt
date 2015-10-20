@@ -19,7 +19,7 @@ package org.jetbrains.kotlin.ui.refactorings.rename
 import org.eclipse.jdt.ui.search.QuerySpecification
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQueryPatternSpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLocalQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 
 public class KotlinTypeRenameParticipant : KotlinRenameParticipant()
@@ -30,7 +30,7 @@ public class KotlinLocalRenameParticipant : KotlinRenameParticipant() {
     override fun createSearchQuery(): QuerySpecification {
         val jetDeclaration = element as JetDeclaration
         val factory = JavaSearchScopeFactory.getInstance()
-        return KotlinQueryPatternSpecification(
+        return KotlinLocalQuerySpecification(
                 jetDeclaration, 
                 IJavaSearchConstants.ALL_OCCURRENCES,
                 factory.createWorkspaceScope(false), 
