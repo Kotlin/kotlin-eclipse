@@ -132,11 +132,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     }
     
     private void addMarkersToProject(Map<IFile, List<DiagnosticAnnotation>> annotations, IProject project) throws CoreException {
-        for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
-            if (file.exists()) {
-                file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
-            }
-        }
+        AnnotationManager.INSTANCE$.clearAllMarkersFromProject(project);
         
         for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getProject())) {
             DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);

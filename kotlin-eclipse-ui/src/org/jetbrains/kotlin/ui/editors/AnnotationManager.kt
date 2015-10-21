@@ -37,6 +37,7 @@ import com.google.common.collect.Lists
 import org.eclipse.ui.texteditor.MarkerAnnotation
 import org.eclipse.ui.texteditor.MarkerUtilities
 import org.eclipse.jface.text.ISynchronizable
+import org.eclipse.ui.PlatformUI
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
@@ -57,9 +58,9 @@ public object AnnotationManager {
         }
     }
     
-    public fun clearAllMarkersFromProject(javaProject: IJavaProject) {
+    public fun clearAllMarkersFromProject(project: IProject) {
         try {
-            KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.getProject()).forEach { 
+            KotlinPsiManager.INSTANCE.getFilesByProject(project).forEach { 
                 it.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE) 
             }
         } catch (e: CoreException) {
