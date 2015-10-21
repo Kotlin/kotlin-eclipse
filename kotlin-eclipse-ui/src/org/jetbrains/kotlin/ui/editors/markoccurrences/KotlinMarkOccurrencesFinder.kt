@@ -25,6 +25,7 @@ import org.eclipse.jface.text.source.Annotation
 import org.eclipse.jface.text.source.IAnnotationModel
 import org.eclipse.jface.text.ISynchronizable
 import org.eclipse.jface.text.source.IAnnotationModelExtension
+import org.jetbrains.kotlin.ui.editors.withLock
 
 public class KotlinMarkOccurrencesFinder(val editor: KotlinFileEditor) : ISelectionListener {
     private var occurrenceAnnotations = setOf<Annotation>()
@@ -61,18 +62,6 @@ public class KotlinMarkOccurrencesFinder(val editor: KotlinFileEditor) : ISelect
             val length = getLengthOfIdentifier(element)!!
             val offset = element.getTextDocumentOffset(editor.document)
             Position(offset, length)
-        }
-    }
-    
-    private fun <T> IAnnotationModel.withLock(action: () -> T): T {
-        return if (this is ISynchronizable) {
-            synchronized (this.getLockObject()) {
-                action()
-            }
-        } else {
-            synchronized (this) {
-                action()
-            }
         }
     }
 }
