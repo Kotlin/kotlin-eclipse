@@ -56,7 +56,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
         try {
         	file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
         	for (DiagnosticAnnotation annotation : annotations) {
-        		AnnotationManager.addProblemMarker(annotation, file);
+        		AnnotationManager.INSTANCE$.addProblemMarker(annotation, file);
         	}
         	
             IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
