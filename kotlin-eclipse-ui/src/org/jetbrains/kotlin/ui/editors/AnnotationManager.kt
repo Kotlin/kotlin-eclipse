@@ -34,6 +34,8 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import com.google.common.base.Predicate
 import com.google.common.collect.Lists
+import org.eclipse.ui.texteditor.MarkerAnnotation
+import org.eclipse.ui.texteditor.MarkerUtilities
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
@@ -43,13 +45,12 @@ public object AnnotationManager {
     val IS_UNRESOLVED_REFERENCE = "isUnresolvedReference"
     val MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER
     
-    public fun updateAnnotations(editor: AbstractTextEditor, annotations: List<DiagnosticAnnotation>,
-            replacementAnnotationsPredicate: Predicate<Annotation>) {
+    public fun updateAnnotations(editor: AbstractTextEditor, annotations: List<DiagnosticAnnotation>) {
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
         if (annotationModel !is IAnnotationModelExtension) return
         
         val newAnnotations = annotations.toMap({ it }, { it.getPosition() })
-        val oldAnnotations = getAnnotations(annotationModel, replacementAnnotationsPredicate)
+        val oldAnnotations = getLineMarkerAnnotations(annotationModel)
         annotationModel.replaceAnnotations(oldAnnotations.toTypedArray(), newAnnotations)
     }
     
@@ -78,10 +79,18 @@ public object AnnotationManager {
         }
     }
     
-    private fun getAnnotations(model: IAnnotationModel, predicate: Predicate<Annotation>): List<Annotation> {
+    private fun getLineMarkerAnnotations(model: IAnnotationModel): List<Annotation> {
+        fun isLineMarkerAnnotation(ann: Annotation): Boolean {
+            return when (ann) {
+                is DiagnosticAnnotation -> true
+                is MarkerAnnotation -> MarkerUtilities.isMarkerType(ann.getMarker(), IMarker.PROBLEM)
+                else -> false
+            }
+        }
+        
         val annotations = arrayListOf<Annotation>()
         model.getAnnotationIterator().forEach { 
-            if (it is Annotation && predicate.apply(it)) {
+            if (it is Annotation && isLineMarkerAnnotation(it)) {
                 annotations.add(it)
             }
         }
