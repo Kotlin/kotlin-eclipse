@@ -144,7 +144,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         
         for (Map.Entry<IFile, List<DiagnosticAnnotation>> entry : annotations.entrySet()) {
             for (DiagnosticAnnotation annotation : entry.getValue()) {
-                AnnotationManager.addProblemMarker(annotation, entry.getKey());
+                AnnotationManager.INSTANCE$.addProblemMarker(annotation, entry.getKey());
             }
         }
     }

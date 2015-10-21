@@ -168,20 +168,16 @@ public class DiagnosticAnnotationUtil {
             @NotNull AbstractTextEditor editor, 
             @NotNull Map<IFile, List<DiagnosticAnnotation>> annotations,
             @NotNull Predicate<Annotation> replacementAnnotationsPredicate) {
-        try {
-            List<DiagnosticAnnotation> newAnnotations;
-            IFile file = EditorUtil.getFile(editor);
-            if (file != null && annotations.containsKey(file)) {
-                newAnnotations = annotations.get(file);
-                assert newAnnotations != null : "Null element in annotations map for file " + file.getName();
-            } else {
-                newAnnotations = Collections.emptyList();
-            }
-            
-            AnnotationManager.updateAnnotations(editor, newAnnotations, replacementAnnotationsPredicate);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
+        List<DiagnosticAnnotation> newAnnotations;
+        IFile file = EditorUtil.getFile(editor);
+        if (file != null && annotations.containsKey(file)) {
+            newAnnotations = annotations.get(file);
+            assert newAnnotations != null : "Null element in annotations map for file " + file.getName();
+        } else {
+            newAnnotations = Collections.emptyList();
         }
+        
+        AnnotationManager.INSTANCE$.updateAnnotations(editor, newAnnotations, replacementAnnotationsPredicate);
     }
     
     @Nullable
