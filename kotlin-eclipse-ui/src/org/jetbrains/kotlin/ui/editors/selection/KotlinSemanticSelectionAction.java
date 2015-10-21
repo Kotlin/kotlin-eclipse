@@ -61,7 +61,7 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     }
     
     @Nullable
-    protected PsiElement getEnclosingElementForSelection(PsiFile parsedCode, TextRange selectedRange) {
+    public static PsiElement getEnclosingElementForSelection(PsiFile parsedCode, TextRange selectedRange) {
         PsiElement selectedElement = parsedCode.findElementAt(selectedRange.getStartOffset());
         if (selectedElement instanceof PsiWhiteSpace) {
             PsiElement shiftedElement = parsedCode.findElementAt(selectedRange.getStartOffset() - 1);
@@ -80,7 +80,7 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     abstract protected TextRange runInternalSelection(PsiElement enclosingElement, TextRange selectedRange,
             String selectedText);
     
-    protected ElementSelection checkSelection(PsiElement element, TextRange selectedRange) {
+    static ElementSelection checkSelection(PsiElement element, TextRange selectedRange) {
         TextRange elementRange = element.getTextRange();
         
         int selectionStartOffset = selectedRange.getStartOffset();

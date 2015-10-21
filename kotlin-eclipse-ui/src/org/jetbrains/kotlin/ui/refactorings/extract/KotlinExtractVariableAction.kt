@@ -23,6 +23,13 @@ import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jface.text.ITextSelection
+import org.eclipse.jdt.internal.ui.refactoring.actions.RefactoringStarter
+import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper
+import com.intellij.openapi.util.TextRange
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction
+import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction
+import org.jetbrains.kotlin.psi.JetExpression
 
 public class KotlinExtractVariableAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
@@ -33,5 +40,19 @@ public class KotlinExtractVariableAction(val editor: KotlinFileEditor) : Selecti
     
     companion object {
         val ACTION_ID = "ExtractLocalVariable"
+    }
+    
+    override fun run(selection: ITextSelection) {
+        val crRange = TextRange(selection.getOffset(), selection.getOffset() + selection.getLength());
+        val selectedRange = LineEndUtil.lfRangeFromCrRange(crRange, editor.document);
+        val enclosingElement = KotlinSemanticSelectionAction.getEnclosingElementForSelection(editor.parsedFile, selectedRange)
+        
+        if (enclosingElement !is JetExpression) return
+        
+        RefactoringStarter().activate(
+                KotlinExtractVariableWizard(KotlinExtractVariableRefactoring(enclosingElement)), 
+                getShell(), 
+                RefactoringMessages.ExtractTempAction_extract_temp, 
+                RefactoringSaveHelper.SAVE_NOTHING)
     }
 }
