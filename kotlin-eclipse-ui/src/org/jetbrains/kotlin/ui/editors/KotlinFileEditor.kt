@@ -57,6 +57,7 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInPro
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWorkspaceAction
 import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
 import org.jetbrains.kotlin.ui.editors.occurrences.KotlinMarkOccurrences
+import org.jetbrains.kotlin.ui.refactorings.extract.KotlinExtractVariableAction
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -127,6 +128,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setAction(KotlinFindReferencesInWorkspaceAction.ACTION_ID, KotlinFindReferencesInWorkspaceAction(this))
         
         setAction(KotlinRenameAction.ACTION_ID, KotlinRenameAction(this))
+        
+        setAction(KotlinExtractVariableAction.ACTION_ID, KotlinExtractVariableAction(this))
     }
     
     override public fun dispose() {
