@@ -182,17 +182,21 @@ public class AlignmentStrategy {
     }
     
     public static int updateIndent(ASTNode node, int indent) {
+        return isBlockElement(node) ? indent + 1 : indent;
+    }
+    
+    public static boolean isBlockElement(ASTNode node) {
         IElementType elementType = node.getElementType();
         if ("BLOCK".equals(elementType.toString())) {
             PsiElement parent = node.getPsi().getParent();
             if (parent instanceof KtFunction || parent instanceof KtClass || parent instanceof KtClassInitializer 
                     || parent instanceof KtPropertyAccessor) {
-                return indent + 1;
+                return true;
             } 
         } else if (BLOCK_ELEMENT_TYPES.contains(elementType.toString())) {
-            return indent + 1;
+            return true;
         }
         
-        return indent;
+        return false;
     }
 }
