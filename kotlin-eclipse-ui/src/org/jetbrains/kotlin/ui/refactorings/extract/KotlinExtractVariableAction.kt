@@ -30,6 +30,9 @@ import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction
 import org.jetbrains.kotlin.psi.JetExpression
+import org.jetbrains.kotlin.core.references.getReferenceExpression
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import com.intellij.psi.util.PsiTreeUtil
 
 public class KotlinExtractVariableAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
@@ -43,14 +46,13 @@ public class KotlinExtractVariableAction(val editor: KotlinFileEditor) : Selecti
     }
     
     override fun run(selection: ITextSelection) {
-        val crRange = TextRange(selection.getOffset(), selection.getOffset() + selection.getLength());
-        val selectedRange = LineEndUtil.lfRangeFromCrRange(crRange, editor.document);
-        val enclosingElement = KotlinSemanticSelectionAction.getEnclosingElementForSelection(editor.parsedFile, selectedRange)
+        val jetElement = EditorUtil.getJetElement(editor, selection.getOffset())
+        val expression = PsiTreeUtil.getNonStrictParentOfType(jetElement, JetExpression::class.java)
         
-        if (enclosingElement !is JetExpression) return
+        if (expression == null) return
         
         RefactoringStarter().activate(
-                KotlinExtractVariableWizard(KotlinExtractVariableRefactoring(enclosingElement)), 
+                KotlinExtractVariableWizard(KotlinExtractVariableRefactoring(expression, editor)), 
                 getShell(), 
                 RefactoringMessages.ExtractTempAction_extract_temp, 
                 RefactoringSaveHelper.SAVE_NOTHING)
