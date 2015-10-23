@@ -46,13 +46,8 @@ public class KotlinExtractVariableAction(val editor: KotlinFileEditor) : Selecti
     }
     
     override fun run(selection: ITextSelection) {
-        val jetElement = EditorUtil.getJetElement(editor, selection.getOffset())
-        val expression = PsiTreeUtil.getNonStrictParentOfType(jetElement, JetExpression::class.java)
-        
-        if (expression == null) return
-        
         RefactoringStarter().activate(
-                KotlinExtractVariableWizard(KotlinExtractVariableRefactoring(expression, editor)), 
+                KotlinExtractVariableWizard(KotlinExtractVariableRefactoring(selection, editor)), 
                 getShell(), 
                 RefactoringMessages.ExtractTempAction_extract_temp, 
                 RefactoringSaveHelper.SAVE_NOTHING)
