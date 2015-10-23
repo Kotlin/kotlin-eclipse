@@ -26,18 +26,31 @@ import org.eclipse.jface.text.source.IAnnotationModel
 import org.eclipse.jface.text.ISynchronizable
 import org.eclipse.jface.text.source.IAnnotationModelExtension
 import org.jetbrains.kotlin.ui.editors.withLock
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.resources.ResourcesPlugin
 
 public class KotlinMarkOccurrencesFinder(val editor: KotlinFileEditor) : ISelectionListener {
-    private var occurrenceAnnotations = setOf<Annotation>()
+    private @Volatile var occurrenceAnnotations = setOf<Annotation>()
     
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
-        if (part is KotlinFileEditor && selection is ITextSelection) {
-            val jetElement = EditorUtil.getJetElement(part, selection.getOffset())
-            if (jetElement == null) return
-            
-            val occurrences = findOccurrences(jetElement, part.parsedFile!!)
-            updateOccurrences(occurrences)
+        val job = object : Job("Mark occurrences") {
+            override fun run(monitor: IProgressMonitor?): IStatus? {
+                if (part is KotlinFileEditor && selection is ITextSelection) {
+                    val jetElement = EditorUtil.getJetElement(part, selection.getOffset())
+                    if (jetElement == null) return Status.OK_STATUS
+                            
+                    val occurrences = findOccurrences(jetElement, part.parsedFile!!)
+                    updateOccurrences(occurrences)
+                }
+                
+                return Status.OK_STATUS
+            }
         }
+        
+        job.schedule()
     }
     
     private fun updateOccurrences(occurrences: List<Position>) {
@@ -58,10 +71,16 @@ public class KotlinMarkOccurrencesFinder(val editor: KotlinFileEditor) : ISelect
         KotlinQueryParticipant().search({ occurrences.add(it) }, querySpecification, NullProgressMonitor())
         
         return occurrences.map { 
-            val element = (it as KotlinElementMatch).jetElement
-            val length = getLengthOfIdentifier(element)!!
-            val offset = element.getTextDocumentOffset(editor.document)
-            Position(offset, length)
-        }
+            if (it is KotlinElementMatch) {
+                val element = it.jetElement
+                val length = getLengthOfIdentifier(element)
+                if (length == null) return@map null
+                
+                val offset = element.getTextDocumentOffset(editor.document)
+                return@map Position(offset, length)
+            }
+            
+            return@map null
+        }.filterNotNull()
     }
 }
