@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.refactorings.rename.FileEdit
 import org.eclipse.text.edits.TextEdit
@@ -31,14 +32,26 @@ import org.eclipse.jface.text.TextUtilities
 import org.eclipse.ltk.core.refactoring.TextFileChange
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
+import org.eclipse.jface.text.ITextSelection
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.bindingContextUtil.isUsedAsStatement
 
-public class KotlinExtractVariableRefactoring(val expression: JetExpression, val editor: KotlinFileEditor) : Refactoring() {
+public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
-    private val psiFactory = JetPsiFactory(expression)
-    
+    private lateinit var expression: JetExpression
     override fun checkFinalConditions(pm: IProgressMonitor?): RefactoringStatus = RefactoringStatus()
     
-    override fun checkInitialConditions(pm: IProgressMonitor?): RefactoringStatus? = RefactoringStatus()
+    override fun checkInitialConditions(pm: IProgressMonitor?): RefactoringStatus {
+        val startOffset = LineEndUtil.convertCrToDocumentOffset(editor.document, selection.getOffset())
+        val selectedExpression = PsiTreeUtil.findElementOfClassAtRange(editor.parsedFile!!, startOffset, 
+            startOffset + selection.getLength(), JetExpression::class.java)
+        return if (selectedExpression != null) {
+            expression = selectedExpression
+            RefactoringStatus()
+        } else {
+            RefactoringStatus.createErrorStatus("Could not extract variable")
+        }
+    }
     
     override fun getName(): String = RefactoringCoreMessages.ExtractTempRefactoring_name
     
@@ -50,39 +63,44 @@ public class KotlinExtractVariableRefactoring(val expression: JetExpression, val
         return fileChange
     }
     
-//    private fun doRefactoring() {
-//        val javaProject = KotlinPsiManager.getJavaProject(expression)
-//        if (javaProject == null) return
-//        
-//        val analysisResult = KotlinAnalysisFileCache.getAnalysisResult(expression.getContainingJetFile(), javaProject).analysisResult
-//        val bindingContext = analysisResult.bindingContext
-//        val expressionType = bindingContext.getType(expression)
-//        
-//        
-//    }
+    private fun getBindingContext(): BindingContext {
+        val javaProject = KotlinPsiManager.getJavaProject(expression)!!
+        val analysisResult = KotlinAnalysisFileCache.getAnalysisResult(expression.getContainingJetFile(), javaProject).analysisResult
+        return analysisResult.bindingContext
+    }
     
     private fun introduceVariable(): List<FileEdit> {
-        val commonParent = PsiTreeUtil.findCommonParent(listOf(expression))
+        val allReplaces = listOf(expression)
+        val commonParent = PsiTreeUtil.findCommonParent(allReplaces)
         if (commonParent == null) return emptyList()
         
         val commonContainer = getContainer(commonParent)
         if (commonContainer == null) return emptyList()
         
-        val anchor = calculateAnchor(commonParent, commonContainer, listOf(expression))
+        val anchor = calculateAnchor(commonParent, commonContainer, allReplaces)
         if (anchor == null) return emptyList()
         
-        val newLine = psiFactory.createNewLine()
-        val indent = AlignmentStrategy.computeIndent(expression.getNode())
+        val newLine = JetPsiFactory(expression).createNewLine()
+        val indent = AlignmentStrategy.computeIndent(commonContainer.getFirstChild().getNode())
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
         val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
         
         val variableText = "val $newName = ${expression.getText()}${newLineWithShift}"
         
-        return listOf(insertBefore(anchor, variableText))
+        return listOf(insertBefore(anchor, variableText)) + listOf(replaceExpression())
+    }
+    
+    private fun shouldReplaceInitialExpression(context: BindingContext): Boolean {
+        return expression.isUsedAsStatement(context)
+    }
+    
+    private fun replaceExpression(): FileEdit {
+        val offset = expression.getTextDocumentOffset(editor.document)
+        return FileEdit(editor.getFile()!!, ReplaceEdit(offset, expression.getTextLength(), newName))
     }
     
     private fun insertBefore(psiElement: PsiElement, text: String): FileEdit {
-        val startOffset = psiElement.getTextDocumentOffset(editor.document)
+        val startOffset = psiElement.getOffsetByDocument(editor.document, psiElement.getTextRange().getStartOffset())
         return FileEdit(editor.getFile()!!, ReplaceEdit(startOffset, 0, text))
     }
 }

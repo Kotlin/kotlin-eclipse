@@ -63,4 +63,5 @@ Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui.navigation,
  org.jetbrains.kotlin.ui.search,
  org.jetbrains.kotlin.ui.overrideImplement,
- org.jetbrains.kotlin.ui.refactorings.rename
+ org.jetbrains.kotlin.ui.refactorings.rename,
+ org.jetbrains.kotlin.ui.refactorings.extract
