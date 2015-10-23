@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.psi.JetPsiFactory
 import org.eclipse.jface.text.TextUtilities
 import org.eclipse.ltk.core.refactoring.TextFileChange
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
+import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 
 public class KotlinExtractVariableRefactoring(val expression: JetExpression, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
@@ -70,8 +71,12 @@ public class KotlinExtractVariableRefactoring(val expression: JetExpression, val
         val anchor = calculateAnchor(commonParent, commonContainer, listOf(expression))
         if (anchor == null) return emptyList()
         
-        val newLine = TextUtilities.getDefaultLineDelimiter(editor.document)
-        val variableText = "val $newName = ${expression.getText()}${newLine}"
+        val newLine = psiFactory.createNewLine()
+        val indent = AlignmentStrategy.computeIndent(expression.getNode())
+        val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
+        val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
+        
+        val variableText = "val $newName = ${expression.getText()}${newLineWithShift}"
         
         return listOf(insertBefore(anchor, variableText))
     }
