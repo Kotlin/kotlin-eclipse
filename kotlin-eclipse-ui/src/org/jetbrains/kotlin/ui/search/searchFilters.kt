@@ -75,7 +75,7 @@ class NonImportFilter : SearchFilter {
 
 class ResolvedReferenceFilter : SearchFilterAfterResolve {
     override fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: KotlinLocalQuerySpecification): Boolean {
-        return (sourceDeclaration as? KotlinOnlyScopeDeclaration)?.jetDeclaration == querySpecification.jetElement
+        return sourceDeclaration as? KotlinOnlyScopeDeclaration == querySpecification.localDeclaration
     }
     
     override fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: ElementQuerySpecification): Boolean {

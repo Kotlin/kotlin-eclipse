@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.psi.JetDeclaration
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLocalQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchConstants
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
 
 public class KotlinTypeRenameParticipant : KotlinRenameParticipant()
 
@@ -30,7 +31,7 @@ public class KotlinLocalRenameParticipant : KotlinRenameParticipant() {
     override fun createSearchQuery(): QuerySpecification {
         val jetDeclaration = element as JetDeclaration
         return KotlinLocalQuerySpecification(
-                jetDeclaration, 
+                KotlinOnlyScopeDeclaration(jetDeclaration), 
                 IJavaSearchConstants.ALL_OCCURRENCES,
                 JavaSearchScopeFactory.getInstance().getWorkspaceScopeDescription(false))
     }

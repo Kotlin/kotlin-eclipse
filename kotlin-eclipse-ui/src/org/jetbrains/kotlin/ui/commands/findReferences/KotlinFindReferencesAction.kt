@@ -187,7 +187,8 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
     }
     
     fun createFindReferencesQuery(element: JetElement): KotlinLocalQuerySpecification {
-        return KotlinLocalQuerySpecification(element, IJavaSearchConstants.REFERENCES, description)
+        val declaration = KotlinOnlyScopeDeclaration(element as JetDeclaration)
+        return KotlinLocalQuerySpecification(declaration, IJavaSearchConstants.REFERENCES, description)
     }
     
     val sourceDeclaration = jetElement.resolveToSourceDeclaration(javaProject)

@@ -6,6 +6,7 @@ import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.jetbrains.kotlin.psi.JetElement
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.core.runtime.IPath
+import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
 
 // This pattern is using to run composite search which is described in KotlinQueryParticipant.
 class KotlinCompositeQuerySpecification(
@@ -16,7 +17,7 @@ class KotlinCompositeQuerySpecification(
 
 // Using of this pattern assumes that elements presents only in Kotlin
 class KotlinLocalQuerySpecification(
-        val jetElement: JetElement, 
+        val localDeclaration: KotlinOnlyScopeDeclaration, 
         limitTo: Int,
         description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo)
 
