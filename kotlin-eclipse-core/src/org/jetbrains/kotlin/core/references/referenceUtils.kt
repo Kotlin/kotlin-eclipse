@@ -66,7 +66,7 @@ sealed class VisibilityScopeDeclaration private constructor() {
     // Represents Java elements and Kotlin light elements 
     class JavaAndKotlinScopeDeclaration(
             val javaElements: List<IJavaElement>, 
-            val kotlinElements: List<JetDeclaration>) : VisibilityScopeDeclaration() {
+            val kotlinElements: List<JetDeclaration> = emptyList()) : VisibilityScopeDeclaration() {
     }
     
     class KotlinOnlyScopeDeclaration(val jetDeclaration: JetDeclaration) : VisibilityScopeDeclaration() {
