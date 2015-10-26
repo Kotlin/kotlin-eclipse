@@ -186,8 +186,8 @@ fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, 
         }
     }
     
-    fun createFindReferencesQuery(element: JetElement): KotlinQueryPatternSpecification {
-        return KotlinQueryPatternSpecification(element, IJavaSearchConstants.REFERENCES, scope, description)
+    fun createFindReferencesQuery(element: JetElement): KotlinLocalQuerySpecification {
+        return KotlinLocalQuerySpecification(element, IJavaSearchConstants.REFERENCES, scope, description)
     }
     
     val sourceDeclaration = jetElement.resolveToSourceDeclaration(javaProject)
@@ -206,7 +206,7 @@ class KotlinCompositeQuerySpecification(
         description: String) : KotlinDummyQuerySpecification(searchScope, description)
 
 // Using of this pattern assumes that elements presents only in Kotlin
-class KotlinQueryPatternSpecification(
+class KotlinLocalQuerySpecification(
         val jetElement: JetElement, 
         limitTo: Int,
         searchScope: IJavaSearchScope, 
