@@ -127,7 +127,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 specification.getScopeDescription())
         }
         specification.jetElement?.let {
-            specifications.add(KotlinLocalQuerySpecification(it, specification.getLimitTo(), specification.getScope(), 
+            specifications.add(KotlinLocalQuerySpecification(it, specification.getLimitTo(), 
                     specification.getScopeDescription()))
         }
         

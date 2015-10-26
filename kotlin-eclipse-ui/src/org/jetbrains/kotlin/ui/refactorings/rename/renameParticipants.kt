@@ -29,11 +29,9 @@ public class KotlinFunctionRenameParticipant : KotlinRenameParticipant()
 public class KotlinLocalRenameParticipant : KotlinRenameParticipant() {
     override fun createSearchQuery(): QuerySpecification {
         val jetDeclaration = element as JetDeclaration
-        val factory = JavaSearchScopeFactory.getInstance()
         return KotlinLocalQuerySpecification(
                 jetDeclaration, 
                 IJavaSearchConstants.ALL_OCCURRENCES,
-                factory.createWorkspaceScope(false), 
-                factory.getWorkspaceScopeDescription(false))
+                JavaSearchScopeFactory.getInstance().getWorkspaceScopeDescription(false))
     }
 }
