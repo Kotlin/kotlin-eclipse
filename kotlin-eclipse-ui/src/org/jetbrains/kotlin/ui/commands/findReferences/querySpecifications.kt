@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKo
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.core.resources.IFile
 
 // This pattern is using to run composite search which is described in KotlinQueryParticipant.
 class KotlinCompositeQuerySpecification(
@@ -25,7 +26,7 @@ class KotlinCompositeQuerySpecification(
 
 class KotlinQuerySpecification(
         val declaration: VisibilityScopeDeclaration,
-        val searchScope: List<JetFile>,
+        val searchScope: List<IFile>,
         limitTo: Int,
         description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo) {
     override fun getSearchText(): String {

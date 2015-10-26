@@ -64,7 +64,10 @@ public fun getReferenceExpression(element: PsiElement): JetReferenceExpression? 
 
 sealed class VisibilityScopeDeclaration private constructor() {
     // Represents Java elements and Kotlin light elements 
-    class JavaAndKotlinScopeDeclaration(val javaElements: List<IJavaElement>) : VisibilityScopeDeclaration()
+    class JavaAndKotlinScopeDeclaration(
+            val javaElements: List<IJavaElement>, 
+            val kotlinElements: List<JetDeclaration>) : VisibilityScopeDeclaration() {
+    }
     
     class KotlinOnlyScopeDeclaration(val jetDeclaration: JetDeclaration) : VisibilityScopeDeclaration() {
         override fun hashCode(): Int = jetDeclaration.hashCode()
@@ -90,7 +93,13 @@ public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): Vis
         is JetDeclaration -> {
             val lightElements = jetElement.toLightElements(javaProject)
             if (lightElements.isNotEmpty()) {
-                VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration(lightElements)
+                val lightElementNames = lightElements.map { it.getElementName() }
+                val kotlinElement = if (jetElement.getName() !in lightElementNames) {
+                    listOf(jetElement)
+                } else {
+                    emptyList()
+                }
+                VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration(lightElements, kotlinElement)
             } else {
                 // Element should present only in Kotlin as there is no corresponding light element
                 VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration(jetElement)
@@ -108,7 +117,12 @@ public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): Vis
             
             val lightElements = sourceElementsToLightElements(sourceElements, javaProject)
             if (lightElements.isNotEmpty()) {
-                VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration(lightElements)
+                val lightElementNames = lightElements.map { it.getElementName() }
+                val kotlinElements = sourceElements
+                        .filterIsInstance(KotlinSourceElement::class.java)
+                        .filter { it.psi.getName() !in lightElementNames }
+                        .map { it.psi as JetDeclaration }
+                VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration(lightElements, kotlinElements)
             } else {
                 if (sourceElements.size() > 1) {
                     KotlinLogger.logWarning("There are more than one elements for ${referenceExpression.getText()}")

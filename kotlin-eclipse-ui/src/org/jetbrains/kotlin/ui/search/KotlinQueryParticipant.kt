@@ -81,6 +81,7 @@ import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclara
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinTextSearchable
+import org.eclipse.jdt.core.search.IJavaSearchScope
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
@@ -189,18 +190,20 @@ public class KotlinQueryParticipant : IQueryParticipant {
             is KotlinLocalQuerySpecification -> 
                 listOf(KotlinPsiManager.getEclispeFile(querySpecification.localDeclaration.jetDeclaration.getContainingJetFile())!!)
             
-            is ElementQuerySpecification -> {
-                querySpecification.getScope().enclosingProjectsAndJars()
-                    .map { JavaModel.getTarget(it, true) }
-                    .filterIsInstance(IProject::class.java)
-                    .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
-            }
+            is ElementQuerySpecification -> querySpecification.getScope().getKotlinFiles()
             
-            is KotlinQuerySpecification -> querySpecification.searchScope.map { KotlinPsiManager.getEclispeFile(it)!! }
+            is KotlinQuerySpecification -> querySpecification.searchScope
             
             else -> emptyList()
         }
     }
+}
+
+fun IJavaSearchScope.getKotlinFiles(): List<IFile> {
+    return enclosingProjectsAndJars()
+            .map { JavaModel.getTarget(it, true) }
+            .filterIsInstance(IProject::class.java)
+            .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
 }
 
 public class KotlinElementMatch(val jetElement: JetElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(), 
