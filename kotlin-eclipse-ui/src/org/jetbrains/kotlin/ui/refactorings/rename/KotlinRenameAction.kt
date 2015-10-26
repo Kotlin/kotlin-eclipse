@@ -80,6 +80,7 @@ import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 
 public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
@@ -186,13 +187,21 @@ fun doRename(sourceDeclaration: VisibilityScopeDeclaration, newName: String, edi
         val updateStrategy = RenameSupport.UPDATE_REFERENCES
         val renameSupport = when (javaElement) {
             is IType -> {
-                val lightType = KotlinLightType(javaElement, editor)
-                RenameSupport.create(lightType, newName, updateStrategy)
+                val element = if (EclipseJavaElementUtil.isKotlinLightClass(javaElement)) {
+                    KotlinLightType(javaElement, editor)
+                } else {
+                    javaElement
+                }
+                RenameSupport.create(element, newName, updateStrategy)
             }
             
             is IMethod -> {
-                val lightMethod = KotlinLightFunction(javaElement, editor)
-                RenameSupport.create(lightMethod, newName, updateStrategy)
+                val element = if (EclipseJavaElementUtil.isKotlinLightClass(javaElement)) {
+                    KotlinLightFunction(javaElement, editor)
+                } else {
+                    javaElement
+                }
+                RenameSupport.create(element, newName, updateStrategy)
             }
             
             else -> throw UnsupportedOperationException("Rename refactoring for ${javaElement} is not supported")

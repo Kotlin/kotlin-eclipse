@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.ui.refactorings.rename.doRename
 import com.google.gson.JsonParser
 import com.google.gson.JsonObject
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
+import org.eclipse.core.runtime.IPath
 
 abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
     @Before
@@ -36,18 +37,19 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         val renameObject = jsonParser.parse(fileInfoText) as JsonObject
         
         val rootFolder = Path(testInfo).removeLastSegments(1)
-        val loadedFiles = loadFiles(rootFolder.append("before").toFile())
+        loadFiles(rootFolder.append("before").toFile())
         
         val editor = openMainFile(renameObject)
         
         val selection = findSelectionToRename(renameObject, editor)
         Assert.assertTrue("Element to rename was not found", selection.getOffset() > 0)
         
-        KotlinTestUtils.waitUntilIndexesReady()
+        KotlinTestUtils.joinBuildThread()
         
         performRename(selection, renameObject["newName"].asString, editor)
         
-        checkResult(rootFolder.append("after").toFile(), loadedFiles)
+        val base = rootFolder.append("after")
+        checkResult(base.toFile(), base)
     }
     
     fun performRename(selection: ITextSelection, newName: String, editor: KotlinFileEditor) {
@@ -58,14 +60,24 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         doRename(sourceDeclaration, newName, editor)
     }
     
-    private fun checkResult(sourceFolderAfter: File, actualFiles: List<IFile>) {
+    private fun checkResult(sourceFolderAfter: File, base: IPath) {
+        val actualFiles = KotlinPsiManager.INSTANCE.getFilesByProject(getTestProject().getJavaProject().getProject())
         for (expectedFile in sourceFolderAfter.listFiles()) {
-            val expectedSource = KotlinTestUtils.getText(expectedFile.getAbsolutePath())
-            
-            val actualFile = actualFiles.find { it.getName() == expectedFile.getName() }!!
-            val actualSource = EditorUtil.getDocument(actualFile).get()
-            
-            Assert.assertEquals("${expectedFile.getName()} and ${actualFile.getName()} are not equals", expectedSource, actualSource)
+            if (expectedFile.isFile()) {
+                val expectedSource = KotlinTestUtils.getText(expectedFile.getAbsolutePath())
+                val actualSource = if (expectedFile.extension == "kt") {
+                    val actualFile = actualFiles.find { it.getName() == expectedFile.getName() }!!
+                    EditorUtil.getDocument(actualFile).get()
+                } else {
+                    val relative = Path(expectedFile.getPath()).makeRelativeTo(base)
+                    val element = getTestProject().getJavaProject().findElement(relative)
+                    EditorUtil.getDocument(element.getResource() as IFile).get()
+                }
+                
+                Assert.assertEquals("Expected and actual files for ${expectedFile.getName()} are not equals", expectedSource, actualSource)
+            } else if (expectedFile.isDirectory()) {
+                checkResult(expectedFile, base)
+            }
         }
     }
     
@@ -83,13 +95,15 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         return IDE.openEditor(page, mainFile, false) as KotlinFileEditor
     }
     
-    private fun loadFiles(sourceRoot: File): List<IFile> {
+    private fun loadFiles(sourceRoot: File) {
         val loadedFiles = arrayListOf<IFile>()
         for (file in sourceRoot.listFiles()) {
-            val fileContent = KotlinTestUtils.getText(file.getAbsolutePath())
-            loadedFiles.add(createSourceFile(file.getName(), fileContent))
+            if (file.isFile()) {
+                val fileContent = KotlinTestUtils.getText(file.getAbsolutePath())
+                loadedFiles.add(createSourceFile(file.getName(), fileContent))
+            } else if (file.isDirectory()) {
+                loadFiles(file)
+            }
         }
-        
-        return loadedFiles
     }
 }

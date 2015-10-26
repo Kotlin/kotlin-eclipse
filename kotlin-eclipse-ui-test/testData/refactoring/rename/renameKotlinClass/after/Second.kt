@@ -4,7 +4,7 @@ import testing.rename.Third
 import testing.rename
 import java.util.ArrayList
 
-// Extends testing.rename.Third
+// Extends testing.rename.First
 public class Second : Third() {
   val temp : testing.rename.Third = Third()
 

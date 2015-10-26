@@ -134,17 +134,17 @@ public class TestJavaProject {
     public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
     	String ext = FileUtilRt.getExtension(fileName);
     	String refinedFileName;
-//    	if ("java".equals(ext)) {
-//    		refinedFileName = getJavaClassName(content);
-//    		if (refinedFileName != null) {
-//    		    refinedFileName += ".java";
-//    		} else {
-//    		    refinedFileName = fileName;
-//    		}
-//    	} else {
-//    		refinedFileName = fileName;
-//    	}
-    	refinedFileName = fileName;
+    	if ("java".equals(ext)) {
+    		refinedFileName = getJavaClassName(content);
+    		if (refinedFileName != null) {
+    		    refinedFileName += ".java";
+    		} else {
+    		    refinedFileName = fileName;
+    		}
+    		pkg = SourceFileData.getPackageFromContent(content);
+    	} else {
+    		refinedFileName = fileName;
+    	}
     	
     	
         IPackageFragment fragment = createPackage(pkg);
