@@ -9,6 +9,7 @@ public class KotlinRenameTest extends KotlinRenameTestCase {
         doTest("testData/refactoring/rename/simple/info.test");
     }
     
+    @Ignore("Disable because of blocking UI")
     @Test
     public void testAutomaticRenamer() {
         doTest("testData/refactoring/rename/automaticRenamer/simple.test");
@@ -35,11 +36,13 @@ public class KotlinRenameTest extends KotlinRenameTestCase {
         doTest("testData/refactoring/rename/renameJavaMethod/kotlinOverridenMethod.test");
     }
     
+    @Ignore("Disable because of blocking UI")
     @Test
     public void testRenameKotlinClass() {
         doTest("testData/refactoring/rename/renameKotlinClass/kotlinClass.test");
     }
     
+    @Ignore("Disable because of blocking UI")
     @Test
     public void testRenameKotlinMethod() {
         doTest("testData/refactoring/rename/renameKotlinMethod/renameKotlinMethod.test");
