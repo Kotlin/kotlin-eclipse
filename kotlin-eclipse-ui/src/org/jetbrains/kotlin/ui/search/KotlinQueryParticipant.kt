@@ -122,20 +122,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             }
         }
         
-        val specifications = arrayListOf<QuerySpecification>()
-        specification.lightElements.mapTo(specifications) { 
-            ElementQuerySpecification(it, 
-                specification.getLimitTo(), 
-                specification.getScope(), 
-                specification.getScopeDescription())
-        }
-        specification.jetElement?.let {
-            specifications.add(KotlinLocalQuerySpecification(KotlinOnlyScopeDeclaration(it as JetDeclaration), 
-                    specification.getLimitTo(), 
-                    specification.getScopeDescription()))
-        }
-        
-        specifications.forEach {
+        (specification.javaQueries + specification.kotlinQueries).forEach { 
             val searchQuery = JavaSearchQuery(it)
             searchQuery.run(monitor)
             reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
