@@ -72,22 +72,23 @@ interface SearchFilterAfterResolve {
         }
     }
     
-    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: QuerySpecification): Boolean {
-        return when (querySpecification) {
-            is KotlinLocalQuerySpecification -> isApplicable(sourceDeclaration, querySpecification.localDeclaration)
-            is ElementQuerySpecification -> {
-                isApplicable(sourceDeclaration, JavaAndKotlinScopeDeclaration(listOf(querySpecification.getElement())))
-            }
-            is KotlinQuerySpecification -> {
-                val originDeclaration = querySpecification.declaration
-                when (originDeclaration) {
-                    is KotlinOnlyScopeDeclaration -> isApplicable(sourceDeclaration, originDeclaration)
-                    is JavaAndKotlinScopeDeclaration -> isApplicable(sourceDeclaration, originDeclaration)
-                    is NoDeclaration -> false
-                }
-            }
-            else -> throw IllegalStateException("Cannot apply filter for $querySpecification")
-        }
+    fun isApplicable(sourceElement: SourceElement, querySpecification: QuerySpecification): Boolean {
+//        return when (querySpecification) {
+//            is KotlinLocalQuerySpecification -> isApplicable(sourceDeclaration, querySpecification.localDeclaration)
+//            is ElementQuerySpecification -> {
+//                isApplicable(sourceDeclaration, JavaAndKotlinScopeDeclaration(listOf(querySpecification.getElement())))
+//            }
+//            is KotlinQuerySpecification -> {
+//                val originDeclaration = querySpecification.declaration
+//                when (originDeclaration) {
+//                    is KotlinOnlyScopeDeclaration -> isApplicable(sourceDeclaration, originDeclaration)
+//                    is JavaAndKotlinScopeDeclaration -> isApplicable(sourceDeclaration, originDeclaration)
+//                    is NoDeclaration -> false
+//                }
+//            }
+//            else -> throw IllegalStateException("Cannot apply filter for $querySpecification")
+//        }
+        return false
     }
 }
 

@@ -14,27 +14,27 @@ import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclara
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
+import org.jetbrains.kotlin.descriptors.SourceElement
 
 // This pattern is using to run composite search which is described in KotlinQueryParticipant.
 class KotlinCompositeQuerySpecification(
         val javaQueries: List<ElementQuerySpecification>, 
-        val kotlinQueries: List<KotlinQuerySpecification>) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, "Composite Query") {
-    override fun getSearchText(): String {
-        throw IllegalStateException("This method should not be called")
-    }
-}
+        val kotlinQueries: List<KotlinQuerySpecification>) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, "Composite Query")
+
+class KotlinJavaQuerySpecification(
+        val sourceElements: List<SourceElement>,
+        limitTo: Int,
+        searchScope: IJavaSearchScope,
+        description: String) :
+        KotlinDummyQuerySpecification(searchScope, description, limitTo)
 
 class KotlinQuerySpecification(
-        val declaration: VisibilityScopeDeclaration,
+        val sourceElements: List<SourceElement>,
         val searchScope: List<IFile>,
         limitTo: Int,
-        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo) {
+        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo), KotlinTextSearchable {
     override fun getSearchText(): String {
-        return when (declaration) {
-            is KotlinOnlyScopeDeclaration -> declaration.getSearchText()
-            is JavaAndKotlinScopeDeclaration -> declaration.javaElements.first().getElementName()
-            is NoDeclaration -> throw IllegalStateException("Cannot get search text for $declaration")
-        }
+        return ""
     }
 }
 
@@ -42,7 +42,7 @@ class KotlinQuerySpecification(
 class KotlinLocalQuerySpecification(
         val localDeclaration: KotlinOnlyScopeDeclaration, 
         limitTo: Int,
-        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo) {
+        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo), KotlinTextSearchable {
     override fun getSearchText(): String {
         return localDeclaration.getSearchText()
     }
@@ -61,7 +61,7 @@ abstract class KotlinDummyQuerySpecification(
             true, 
             limitTo, 
             searchScope, 
-            description), KotlinTextSearchable
+            description)
 
 interface KotlinTextSearchable {
     fun getSearchText(): String

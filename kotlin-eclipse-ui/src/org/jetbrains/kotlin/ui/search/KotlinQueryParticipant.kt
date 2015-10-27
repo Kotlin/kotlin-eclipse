@@ -160,10 +160,12 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val javaProject = KotlinPsiManager.getJavaProject(element)
             if (javaProject == null) return@filter false
             
-            val sourceDeclaration = element.resolveToSourceDeclaration(javaProject)
-            if (sourceDeclaration is NoDeclaration) return@filter false
+            val sourceElements = element.resolveToSourceDeclaration(javaProject)
+            if (sourceElements.isEmpty()) return@filter false
             
-            return@filter afterResolveFilters.all { it.isApplicable(sourceDeclaration, querySpecification) }
+            return@filter sourceElements.any { sourceElement ->
+                afterResolveFilters.all { it.isApplicable(sourceElement, querySpecification) }
+            }
         }
     }
     
