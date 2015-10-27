@@ -56,6 +56,7 @@ import org.jetbrains.kotlin.ui.overrideImplement.KotlinOverrideMembersAction
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInProjectAction
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWorkspaceAction
 import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
+import org.jetbrains.kotlin.ui.editors.occurrences.KotlinMarkOccurrences
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -67,6 +68,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val kotlinToggleBreakpointAdapter by lazy { KotlinToggleBreakpointAdapter() }
     
     private val kotlinRunToLineAdapter by lazy { KotlinRunToLineAdapter() }
+    
+    private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences(this) }
     
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
@@ -89,8 +92,6 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
             sourceViewer.prependVerifyKeyListener(bracketInserter)
         }
     }
-    
-    override protected fun isMarkingOccurrences(): Boolean = false
     
     override protected fun isTabsToSpacesConversionEnabled(): Boolean = IndenterUtil.isSpacesForTabs()
     
@@ -147,6 +148,14 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setKeyBindingScopes(arrayOf<String>(
                 "org.jetbrains.kotlin.eclipse.ui.kotlinEditorScope", 
                 "org.eclipse.jdt.ui.javaEditorScope"))
+    }
+    
+    override fun installOccurrencesFinder(forceUpdate: Boolean) {
+        getEditorSite().getPage().addPostSelectionListener(kotlinMarkOccurrences)
+    }
+    
+    override fun uninstallOccurrencesFinder() {
+        getEditorSite().getPage().removePostSelectionListener(kotlinMarkOccurrences)
     }
     
     public fun getFile(): IFile? = getEditorInput().getAdapter(IFile::class.java) as? IFile
