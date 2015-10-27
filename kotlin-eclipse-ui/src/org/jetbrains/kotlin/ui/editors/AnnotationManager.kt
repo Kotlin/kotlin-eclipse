@@ -36,6 +36,7 @@ import com.google.common.base.Predicate
 import com.google.common.collect.Lists
 import org.eclipse.ui.texteditor.MarkerAnnotation
 import org.eclipse.ui.texteditor.MarkerUtilities
+import org.eclipse.jface.text.ISynchronizable
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
@@ -51,7 +52,9 @@ public object AnnotationManager {
         
         val newAnnotations = annotations.toMap({ it }, { it.getPosition() })
         val oldAnnotations = getLineMarkerAnnotations(annotationModel)
-        annotationModel.replaceAnnotations(oldAnnotations.toTypedArray(), newAnnotations)
+        annotationModel.withLock<Unit> { 
+            annotationModel.replaceAnnotations(oldAnnotations.toTypedArray(), newAnnotations)
+        }
     }
     
     public fun clearAllMarkersFromProject(javaProject: IJavaProject) {
@@ -96,5 +99,17 @@ public object AnnotationManager {
         }
         
         return annotations
+    }
+}
+
+fun <T> IAnnotationModel.withLock(action: () -> T): T {
+    return if (this is ISynchronizable) {
+        synchronized (this.getLockObject()) {
+            action()
+        }
+    } else {
+        synchronized (this) {
+            action()
+        }
     }
 }

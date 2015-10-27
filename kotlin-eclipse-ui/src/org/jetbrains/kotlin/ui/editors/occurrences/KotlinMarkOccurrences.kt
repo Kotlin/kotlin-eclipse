@@ -48,6 +48,7 @@ import org.eclipse.core.runtime.Status
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
+import org.jetbrains.kotlin.ui.editors.withLock
 
 public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionListener {
     private @Volatile var occurrenceAnnotations = setOf<Annotation>()
@@ -101,17 +102,5 @@ public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionLis
             
             Position(element.getTextDocumentOffset(editor.document), length)
         }.filterNotNull()
-    }
-}
-
-fun <T> IAnnotationModel.withLock(action: () -> T): T {
-    return if (this is ISynchronizable) {
-        synchronized (this.getLockObject()) {
-            action()
-        }
-    } else {
-        synchronized (this) {
-            action()
-        }
     }
 }
