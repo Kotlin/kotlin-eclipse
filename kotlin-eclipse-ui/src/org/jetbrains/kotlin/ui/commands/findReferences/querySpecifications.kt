@@ -16,11 +16,6 @@ import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.descriptors.SourceElement
 
-// This pattern is using to run composite search which is described in KotlinQueryParticipant.
-class KotlinCompositeQuerySpecification(
-        val javaQueries: List<ElementQuerySpecification>, 
-        val kotlinQueries: List<KotlinQuerySpecification>) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, "Composite Query")
-
 class KotlinJavaQuerySpecification(
         val sourceElements: List<SourceElement>,
         limitTo: Int,

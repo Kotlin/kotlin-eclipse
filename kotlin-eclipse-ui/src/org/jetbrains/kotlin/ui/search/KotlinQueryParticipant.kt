@@ -68,7 +68,6 @@ import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jface.util.SafeRunnable
 import org.eclipse.core.runtime.ISafeRunnable
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinCompositeQuerySpecification
 import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
 import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
@@ -82,14 +81,10 @@ import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnl
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinTextSearchable
 import org.eclipse.jdt.core.search.IJavaSearchScope
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinJavaQuerySpecification
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
-        if (querySpecification is KotlinCompositeQuerySpecification) {
-            runCompositeSearch(requestor, querySpecification, monitor)
-            return
-        }
-        
         SafeRunnable.run(object : ISafeRunnable {
             override fun run() {
                 val files = getKotlinFilesByScope(querySpecification)
@@ -114,7 +109,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     
     override public fun getUIParticipant() = KotlinReferenceMatchPresentation()
     
-    private fun runCompositeSearch(requestor: ISearchRequestor, specification: KotlinCompositeQuerySpecification, 
+    private fun runCompositeSearch(requestor: ISearchRequestor, specification: Kotlin, 
             monitor: IProgressMonitor?) {
         
         fun reportSearchResults(result: AbstractJavaSearchResult) {
