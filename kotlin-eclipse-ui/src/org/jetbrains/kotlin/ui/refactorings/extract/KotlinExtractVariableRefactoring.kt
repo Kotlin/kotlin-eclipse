@@ -85,16 +85,26 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
         val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
         
-        val variableText = "val $newName = ${expression.getText()}${newLineWithShift}"
+        val variableText = "val $newName = ${expression.getText()}"
         
-        return listOf(insertBefore(anchor, variableText)) + listOf(replaceExpression())
+        val bindingContext = getBindingContext()
+        return if (expression.isUsedAsStatement(bindingContext)) {
+            listOf(replaceExpressionWithVariableDeclaration(variableText))
+        } else {
+            listOf(insertBefore(anchor, "$variableText${newLineWithShift}")) + listOf(replaceOccurrence())
+        }
     }
     
     private fun shouldReplaceInitialExpression(context: BindingContext): Boolean {
         return expression.isUsedAsStatement(context)
     }
     
-    private fun replaceExpression(): FileEdit {
+    private fun replaceExpressionWithVariableDeclaration(variableText: String): FileEdit {
+        val offset = expression.getTextDocumentOffset(editor.document)
+        return FileEdit(editor.getFile()!!, ReplaceEdit(offset, expression.getTextLength(), variableText))
+    }
+    
+    private fun replaceOccurrence(): FileEdit {
         val offset = expression.getTextDocumentOffset(editor.document)
         return FileEdit(editor.getFile()!!, ReplaceEdit(offset, expression.getTextLength(), newName))
     }
