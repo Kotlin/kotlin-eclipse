@@ -49,6 +49,7 @@ import org.jetbrains.kotlin.psi.JetProperty
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public object KotlinJavaManager {
     public val KOTLIN_BIN_FOLDER: Path = Path("kotlin_bin")
@@ -101,7 +102,13 @@ public object KotlinJavaManager {
     }
 }
 
-public fun JetElement.toLightElements(javaProject: IJavaProject): List<IJavaElement> {
+public fun JetElement.toLightElements(): List<IJavaElement> {
+    val javaProject = KotlinPsiManager.getJavaProject(this)
+    if (javaProject == null) {
+        KotlinLogger.logWarning("Cannot resolve jetElement ($this) to light elements: there is no corresponding java project")
+        return emptyList()
+    }
+    
     return when (this) {
         is JetClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
         is JetNamedFunction,
@@ -112,16 +119,16 @@ public fun JetElement.toLightElements(javaProject: IJavaProject): List<IJavaElem
     }
 }
 
-public fun SourceElement.toLightElements(javaProject: IJavaProject): List<IJavaElement> {
+public fun SourceElement.toLightElements(): List<IJavaElement> {
     return when (this) {
         is EclipseJavaSourceElement -> obtainJavaElement(this.getElementBinding()).singletonOrEmptyList()
-        is KotlinSourceElement -> this.psi.toLightElements(javaProject)
+        is KotlinSourceElement -> this.psi.toLightElements()
         else -> emptyList<IJavaElement>()
     }
 }
 
-public fun sourceElementsToLightElements(sourceElements: List<SourceElement>, javaProject: IJavaProject): List<IJavaElement> {
-    return sourceElements.flatMap { it.toLightElements(javaProject) }
+public fun sourceElementsToLightElements(sourceElements: List<SourceElement>): List<IJavaElement> {
+    return sourceElements.flatMap { it.toLightElements() }
 }
 
 private fun obtainJavaElement(binding: IBinding): IJavaElement? {

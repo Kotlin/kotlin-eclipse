@@ -65,9 +65,6 @@ import org.eclipse.jdt.internal.ui.JavaPluginImages
 import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 import org.jetbrains.kotlin.ui.search.getKotlinFiles
 
 abstract class KotlinFindReferencesHandler : AbstractHandler() {
@@ -109,7 +106,7 @@ public class KotlinFindReferencesInProjectAction(editor: KotlinFileEditor) : Kot
         val ACTION_ID = "SearchReferencesInProject"
     }
     
-    override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification? {
+    override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification {
         val factory = JavaSearchScopeFactory.getInstance()
         return createQuerySpecification(
                 jetElement,
@@ -132,7 +129,7 @@ public class KotlinFindReferencesInWorkspaceAction(editor: KotlinFileEditor) : K
         val ACTION_ID = "SearchReferencesInWorkspace"
     }
     
-    override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification? {
+    override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification {
         val factory = JavaSearchScopeFactory.getInstance()
         return createQuerySpecification(
                 jetElement,
@@ -155,14 +152,12 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
         if (jetElement == null) return
         
         val querySpecification = createScopeQuerySpecification(jetElement)
-        if (querySpecification == null) return
-        
         val query = JavaSearchQuery(querySpecification)
         
         SearchUtil.runQueryInBackground(query)
     }
     
-    abstract fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification?
+    abstract fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification
     
     private fun getFile(event: ExecutionEvent): IFile? {
         val activeEditor = HandlerUtil.getActiveEditor(event)
@@ -171,32 +166,7 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
 }
 
 fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, scope: IJavaSearchScope, 
-        description: String): QuerySpecification? {
-    
-    fun createFindReferencesQuery(declaration: JavaAndKotlinScopeDeclaration): QuerySpecification {
-        return if (declaration.javaElements.size() == 1 && declaration.kotlinElements.isEmpty()) {
-            ElementQuerySpecification(declaration.javaElements.first(), IJavaSearchConstants.REFERENCES, scope, description)
-        } else {
-            val javaQueries = declaration.javaElements.map { 
-                ElementQuerySpecification(it, IJavaSearchConstants.REFERENCES, scope, description) 
-            }
-            
-            val kotlinQueries = declaration.kotlinElements.map { 
-                KotlinQuerySpecification(KotlinOnlyScopeDeclaration(it), scope.getKotlinFiles(), IJavaSearchConstants.REFERENCES, description)
-            }
-            
-            KotlinCompositeQuerySpecification(javaQueries, kotlinQueries) // TODO: add kotlin element when searching for property
-        }
-    }
-    
-    fun createFindReferencesQuery(declaration: KotlinOnlyScopeDeclaration): KotlinLocalQuerySpecification {
-        return KotlinLocalQuerySpecification(declaration, IJavaSearchConstants.REFERENCES, description)
-    }
-    
-    val sourceDeclaration = jetElement.resolveToSourceDeclaration(javaProject)
-    return when (sourceDeclaration) {
-        is JavaAndKotlinScopeDeclaration -> createFindReferencesQuery(sourceDeclaration)
-        is KotlinOnlyScopeDeclaration -> createFindReferencesQuery(sourceDeclaration)
-        is NoDeclaration -> null
-    }
+        description: String): QuerySpecification {
+    val sourceElements = jetElement.resolveToSourceDeclaration(javaProject)
+    return KotlinJavaQuerySpecification(sourceElements, IJavaSearchConstants.REFERENCES, scope, description)
 }

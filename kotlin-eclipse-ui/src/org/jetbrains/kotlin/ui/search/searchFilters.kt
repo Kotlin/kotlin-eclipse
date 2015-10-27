@@ -22,71 +22,36 @@ import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.eclipse.jdt.ui.search.QuerySpecification
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLocalQuerySpecification
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.jetbrains.kotlin.core.model.toLightElements
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.search.IJavaSearchConstants
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
 import org.jetbrains.kotlin.psi.JetDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
+import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 interface SearchFilter {
     fun isApplicable(jetElement: JetElement): Boolean
 }
 
 interface SearchFilterAfterResolve {
-    fun isApplicable(sourceElement: JetDeclaration, originElement: JetDeclaration): Boolean
+    fun isApplicable(sourceElement: JetElement, originElement: JetElement): Boolean
     
     fun isApplicable(sourceElement: IJavaElement, originElement: IJavaElement): Boolean
     
-    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, origin: KotlinOnlyScopeDeclaration): Boolean {
-        return when (sourceDeclaration) {
-            is KotlinOnlyScopeDeclaration -> isApplicable(sourceDeclaration.jetDeclaration, origin.jetDeclaration)
-            is JavaAndKotlinScopeDeclaration -> sourceDeclaration.kotlinElements.any { isApplicable(it, origin.jetDeclaration) }
-            NoDeclaration -> false
-        }
-    }
-    
-    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, origin: JavaAndKotlinScopeDeclaration): Boolean {
-        return when (sourceDeclaration) {
-            is JavaAndKotlinScopeDeclaration -> {
-                for (javaSourceElement in sourceDeclaration.javaElements) {
-                    val applicable = origin.javaElements.any { isApplicable(javaSourceElement, it) }
-                    if (applicable) return true
-                }
-                
-                for (kotlinSourceElement in sourceDeclaration.kotlinElements) {
-                    val applicable = origin.kotlinElements.any { isApplicable(kotlinSourceElement, it) }
-                    if (applicable) return true
-                }
-                
+    fun isApplicable(sourceElements: List<SourceElement>, originElement: SearchElement): Boolean {
+        val (javaElements, kotlinElements) = getJavaAndKotlinElements(sourceElements)
+        val origin = originElement.getElement()
+        return when (origin) {
+            is IJavaElement -> javaElements.any { isApplicable(it, origin) }
+            is JetElement -> kotlinElements.any { isApplicable(it, origin) }
+            else -> {
+                KotlinLogger.logWarning("Cannot apply filter for $origin")
                 false
             }
-            else -> false
-        }
-    }
-    
-    fun isApplicable(sourceDeclaration: VisibilityScopeDeclaration, querySpecification: QuerySpecification): Boolean {
-        return when (querySpecification) {
-            is KotlinLocalQuerySpecification -> isApplicable(sourceDeclaration, querySpecification.localDeclaration)
-            is ElementQuerySpecification -> {
-                isApplicable(sourceDeclaration, JavaAndKotlinScopeDeclaration(listOf(querySpecification.getElement())))
-            }
-            is KotlinQuerySpecification -> {
-                val originDeclaration = querySpecification.declaration
-                when (originDeclaration) {
-                    is KotlinOnlyScopeDeclaration -> isApplicable(sourceDeclaration, originDeclaration)
-                    is JavaAndKotlinScopeDeclaration -> isApplicable(sourceDeclaration, originDeclaration)
-                    is NoDeclaration -> false
-                }
-            }
-            else -> throw IllegalStateException("Cannot apply filter for $querySpecification")
         }
     }
 }
@@ -114,7 +79,7 @@ class NonImportFilter : SearchFilter {
 }
 
 class ResolvedReferenceFilter : SearchFilterAfterResolve {
-    override fun isApplicable(sourceElement: JetDeclaration, originElement: JetDeclaration): Boolean {
+    override fun isApplicable(sourceElement: JetElement, originElement: JetElement): Boolean {
         return sourceElement == originElement
     }
     

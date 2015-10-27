@@ -47,7 +47,6 @@ import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 import org.jetbrains.kotlin.ui.editors.withLock
 
 public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionListener {
@@ -84,10 +83,10 @@ public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionLis
     }
     
     private @Synchronized fun findOccurrences(jetElement: JetElement, file: IFile): List<Position> {
-        val sourceDeclaration = jetElement.resolveToSourceDeclaration(editor.javaProject!!)
-        if (sourceDeclaration is NoDeclaration) return emptyList()
+        val sourceElements = jetElement.resolveToSourceDeclaration(editor.javaProject!!)
+        if (sourceElements.isEmpty()) return emptyList()
         
-        val querySpecification = KotlinQuerySpecification(sourceDeclaration, listOf(file), 
+        val querySpecification = KotlinQuerySpecification(sourceElements, listOf(file), 
                 IJavaSearchConstants.ALL_OCCURRENCES, "Searching in ${file.getName()}")
         
         val occurrences = arrayListOf<Match>()

@@ -29,9 +29,12 @@ import org.eclipse.jdt.internal.corext.refactoring.tagging.INameUpdating
 import org.eclipse.ltk.core.refactoring.participants.ParticipantManager
 import org.eclipse.jdt.internal.corext.refactoring.participants.JavaProcessors
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 
-public class KotlinRenameProcessor(val jetDeclaration: JetDeclaration, val newName: String) : RenameProcessor() {
-    val project = KotlinPsiManager.getJavaProject(jetDeclaration)
+public class KotlinRenameProcessor(element: KotlinSourceElement, val newName: String) : RenameProcessor() {
+    val jetElement = element.psi
+    
+    val project = KotlinPsiManager.getJavaProject(jetElement)
     
     override fun isApplicable(): Boolean = true
     
@@ -39,7 +42,7 @@ public class KotlinRenameProcessor(val jetDeclaration: JetDeclaration, val newNa
         return ParticipantManager.loadRenameParticipants(
                 status, 
                 this, 
-                jetDeclaration, 
+                jetElement, 
                 RenameArguments(newName, true), 
                 JavaProcessors.computeAffectedNatures(project),
                 sharedParticipants)
@@ -57,5 +60,5 @@ public class KotlinRenameProcessor(val jetDeclaration: JetDeclaration, val newNa
     
     override fun createChange(pm: IProgressMonitor?): Change? = null
     
-    override fun getElements(): Array<Any> = arrayOf(jetDeclaration)
+    override fun getElements(): Array<Any> = arrayOf(jetElement)
 }
