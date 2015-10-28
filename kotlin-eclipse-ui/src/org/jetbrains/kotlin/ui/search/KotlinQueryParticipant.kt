@@ -79,6 +79,8 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecific
 import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinJavaQuerySpecification
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinAndJavaSearchable
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScoped
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
@@ -87,7 +89,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 val searchElements = getSearchElements(querySpecification)
                 if (searchElements.isEmpty()) return
                 
-                if (querySpecification !is ElementQuerySpecification && querySpecification !is KotlinOnlyQuerySpecification) {
+                if (querySpecification !is ElementQuerySpecification && querySpecification !is KotlinScoped) {
                     runCompositeSearch(searchElements, requestor, querySpecification, monitor)
                     return
                 }
@@ -167,13 +169,15 @@ public class KotlinQueryParticipant : IQueryParticipant {
     inline private fun <reified T> List<SearchElement>.getElements(): List<T> = map { it.getElement() }.filterIsInstance()
     
     private fun getSearchElements(querySpecification: QuerySpecification): List<SearchElement> {
+        fun obtainSearchElements(sourceElements: List<SourceElement>): List<SearchElement> {
+            val (javaElements, kotlinElements) = getJavaAndKotlinElements(sourceElements)
+            return javaElements.map(::SearchElement) + kotlinElements.map(::SearchElement)
+        }
+        
         return when (querySpecification) {
             is ElementQuerySpecification -> listOf(SearchElement(querySpecification.getElement()))
             is KotlinOnlyQuerySpecification -> listOf(SearchElement(querySpecification.kotlinElement))
-            is KotlinJavaQuerySpecification -> {
-                val (javaElements, kotlinElements) = getJavaAndKotlinElements(querySpecification.sourceElements)
-                javaElements.map(::SearchElement) + kotlinElements.map(::SearchElement)
-            }
+            is KotlinAndJavaSearchable -> obtainSearchElements(querySpecification.sourceElements)
             else -> emptyList()
         }
     }
@@ -233,8 +237,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
         return when (querySpecification) {
             is ElementQuerySpecification -> querySpecification.getScope().getKotlinFiles()
             is KotlinJavaQuerySpecification -> querySpecification.getScope().getKotlinFiles()
-            is KotlinOnlyQuerySpecification -> querySpecification.searchScope
-            is KotlinScopedQuerySpecification -> querySpecification.searchScope
+            is KotlinScoped -> querySpecification.searchScope
             else -> emptyList()
         }
     }
