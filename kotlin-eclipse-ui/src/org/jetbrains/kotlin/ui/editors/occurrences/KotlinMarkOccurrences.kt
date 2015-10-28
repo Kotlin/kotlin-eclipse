@@ -49,6 +49,7 @@ import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.ui.editors.withLock
 import org.eclipse.jface.text.source.AnnotationModel
+import org.eclipse.ui.progress.UIJob
 
 public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionListener {
     companion object {
@@ -56,8 +57,8 @@ public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionLis
     }
     
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
-        val job = object : Job("Mark occurrences") {
-            override fun run(monitor: IProgressMonitor?): IStatus? {
+        val job = object : UIJob("Mark occurrences") {
+            override fun runInUIThread(monitor: IProgressMonitor?): IStatus? {
                 if (part is KotlinFileEditor && selection is ITextSelection) {
                     val jetElement = EditorUtil.getJetElement(part, selection.getOffset())
                     if (jetElement == null) return Status.CANCEL_STATUS
