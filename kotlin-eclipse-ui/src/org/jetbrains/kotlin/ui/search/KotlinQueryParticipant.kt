@@ -82,19 +82,29 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinTextSearchable
 import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinJavaQuerySpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecification
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
         SafeRunnable.run(object : ISafeRunnable {
             override fun run() {
+                val searchElements = getSearchElements(querySpecification)
+                if (searchElements.isEmpty()) return
+                
+                if (querySpecification !is ElementQuerySpecification && querySpecification !is KotlinOnlyQuerySpecification) {
+                    runCompositeSearch(searchElements, requestor, querySpecification, monitor)
+                    return
+                }
+                
                 val files = getKotlinFilesByScope(querySpecification)
                 if (files.isEmpty()) return
                 
-                val searchResult = searchTextOccurrences(querySpecification, files)
+                val searchElement = searchElements.first()
+                val searchResult = searchTextOccurrences(searchElement, files)
                 if (searchResult == null) return
                 
                 val elements = obtainElements(searchResult as FileSearchResult, files)
-                val matchedReferences = resolveElementsAndMatch(elements, querySpecification)
+                val matchedReferences = resolveElementsAndMatch(elements, searchElement, querySpecification)
                 
                 matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it)) }
             }
@@ -109,7 +119,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     
     override public fun getUIParticipant() = KotlinReferenceMatchPresentation()
     
-    private fun runCompositeSearch(requestor: ISearchRequestor, specification: Kotlin, 
+    private fun runCompositeSearch(elements: List<SearchElement>, requestor: ISearchRequestor, specification: QuerySpecification, 
             monitor: IProgressMonitor?) {
         
         fun reportSearchResults(result: AbstractJavaSearchResult) {
@@ -118,20 +128,64 @@ public class KotlinQueryParticipant : IQueryParticipant {
             }
         }
         
-        (specification.javaQueries + specification.kotlinQueries).forEach { 
+        val specifications = 
+            elements.getElements<IJavaElement>().map { 
+                ElementQuerySpecification(
+                    it, 
+                    specification.getLimitTo(), 
+                    specification.getScope(), 
+                    specification.getScopeDescription()) 
+            } + elements.getElements<JetElement>().map { 
+                KotlinOnlyQuerySpecification(
+                    it,
+                    specification.getScope().getKotlinFiles(), 
+                    specification.getLimitTo(), 
+                    specification.getScopeDescription())
+            }
+        
+        
+        specifications.forEach { 
             val searchQuery = JavaSearchQuery(it)
             searchQuery.run(monitor)
             reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
         }
     }
     
-    private fun searchTextOccurrences(querySpecification: QuerySpecification, filesScope: List<IFile>): ISearchResult? {
-        val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null, false)
-        val searchText = when (querySpecification) {
-            is KotlinTextSearchable -> querySpecification.getSearchText()
-            is ElementQuerySpecification -> querySpecification.getElement().getElementName()
-            else -> return null
+    class SearchElement private constructor(private val javaElement: IJavaElement?, private val kotlinElement: JetElement?) {
+        constructor(element: IJavaElement) : this(element, null)
+        constructor(element: JetElement) : this(null, element)
+        
+        fun getElement(): Any = javaElement ?: kotlinElement!!
+        
+        fun getSearchText(): String? {
+            return if (javaElement != null) {
+                javaElement.getElementName()
+            } else if (kotlinElement != null) {
+                kotlinElement.getName()
+            } else {
+                null
+            }
         }
+    }
+    
+    inline private fun <reified T> List<SearchElement>.getElements(): List<T> = map { it.getElement() }.filterIsInstance()
+    
+    private fun getSearchElements(querySpecification: QuerySpecification): List<SearchElement> {
+        return when (querySpecification) {
+            is ElementQuerySpecification -> listOf(SearchElement(querySpecification.getElement()))
+            is KotlinOnlyQuerySpecification -> listOf(SearchElement(querySpecification.kotlinElement))
+            is KotlinJavaQuerySpecification -> {
+                val (javaElements, kotlinElements) = getJavaAndKotlinElements(querySpecification.sourceElements)
+                javaElements.map(::SearchElement) + kotlinElements.map(::SearchElement)
+            }
+            else -> emptyList()
+        }
+    }
+    
+    private fun searchTextOccurrences(searchElement: SearchElement, filesScope: List<IFile>): ISearchResult? {
+        val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null, false)
+        val searchText = searchElement.getSearchText()
+        if (searchText == null) return null
         
         val query = FileSearchQuery(searchText, false, true, true, scope)
         
@@ -140,7 +194,8 @@ public class KotlinQueryParticipant : IQueryParticipant {
         return query.getSearchResult()
     }
     
-    private fun resolveElementsAndMatch(elements: List<JetElement>, querySpecification: QuerySpecification): List<JetElement> {
+    private fun resolveElementsAndMatch(elements: List<JetElement>, searchElement: SearchElement, 
+            querySpecification: QuerySpecification): List<JetElement> {
         val beforeResolveFilters = getBeforeResolveFilters(querySpecification)
         val afterResolveFilters = getAfterResolveFilters()
         
@@ -158,9 +213,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val sourceElements = element.resolveToSourceDeclaration(javaProject)
             if (sourceElements.isEmpty()) return@filter false
             
-            return@filter sourceElements.any { sourceElement ->
-                afterResolveFilters.all { it.isApplicable(sourceElement, querySpecification) }
-            }
+            return@filter afterResolveFilters.all { it.isApplicable(sourceElements, searchElement) }
         }
     }
     
@@ -181,19 +234,29 @@ public class KotlinQueryParticipant : IQueryParticipant {
     }
     
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
-//        We can significantly reduce scope to one file when there are no light elements in query specification.
-//        In this case search elements are not visible from Java and other Kotlin files
         return when (querySpecification) {
-            is KotlinLocalQuerySpecification -> 
-                listOf(KotlinPsiManager.getEclispeFile(querySpecification.localDeclaration.jetDeclaration.getContainingJetFile())!!)
-            
             is ElementQuerySpecification -> querySpecification.getScope().getKotlinFiles()
-            
+            is KotlinJavaQuerySpecification -> querySpecification.getScope().getKotlinFiles()
+            is KotlinOnlyQuerySpecification -> querySpecification.searchScope
             is KotlinQuerySpecification -> querySpecification.searchScope
-            
             else -> emptyList()
         }
     }
+}
+
+internal fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair<List<IJavaElement>, List<JetElement>> {
+    val javaElements = sourceElementsToLightElements(sourceElements)
+    val kotlinElements = sourceElementsToKotlinElements(sourceElements).filterNot { kotlinElement -> 
+        javaElements.any { it.getElementName() == kotlinElement.getName() }
+    }
+    
+    return Pair(javaElements, kotlinElements)
+}
+
+private fun sourceElementsToKotlinElements(sourceElements: List<SourceElement>): List<JetElement> {
+    return sourceElements
+            .filterIsInstance(KotlinSourceElement::class.java)
+            .map { it.psi }
 }
 
 fun IJavaSearchScope.getKotlinFiles(): List<IFile> {

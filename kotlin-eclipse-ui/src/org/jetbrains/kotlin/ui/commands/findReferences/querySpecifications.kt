@@ -20,8 +20,7 @@ class KotlinJavaQuerySpecification(
         val sourceElements: List<SourceElement>,
         limitTo: Int,
         searchScope: IJavaSearchScope,
-        description: String) :
-        KotlinDummyQuerySpecification(searchScope, description, limitTo)
+        description: String) : KotlinDummyQuerySpecification(searchScope, description, limitTo)
 
 class KotlinQuerySpecification(
         val sourceElements: List<SourceElement>,
@@ -32,6 +31,12 @@ class KotlinQuerySpecification(
         return ""
     }
 }
+
+class KotlinOnlyQuerySpecification(
+        val kotlinElement: JetElement,
+        val searchScope: List<IFile>,
+        limitTo: Int,
+        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo)
 
 // Using of this pattern assumes that elements presents only in Kotlin
 class KotlinLocalQuerySpecification(
