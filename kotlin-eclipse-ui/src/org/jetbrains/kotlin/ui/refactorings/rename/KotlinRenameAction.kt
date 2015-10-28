@@ -230,7 +230,7 @@ fun doRename(sourceElements: List<SourceElement>, newName: String, editor: Kotli
         }
     }
     
-    val lightElements = sourceElementsToLightElements(sourceElements, editor.javaProject!!)
+    val lightElements = sourceElementsToLightElements(sourceElements)
     if (lightElements.isNotEmpty()) {
         renameByJavaElement(lightElements)
         editor.getFile()!!.getProject().refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())

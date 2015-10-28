@@ -64,7 +64,7 @@ private fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelectio
     if (expression == null) return
     
     val sourceElements = createReference(expression).resolveToSourceElements()
-    val javaElements = sourceElementsToLightElements(sourceElements, editor.javaProject!!)
+    val javaElements = sourceElementsToLightElements(sourceElements)
     if (javaElements.size() > 1) {
         KotlinLogger.logWarning("There are more than one java element for $sourceElements")
         return
