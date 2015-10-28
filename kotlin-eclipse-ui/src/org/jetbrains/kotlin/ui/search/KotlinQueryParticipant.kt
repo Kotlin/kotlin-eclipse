@@ -75,7 +75,7 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclarationName
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinJavaQuerySpecification
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecification
@@ -234,7 +234,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             is ElementQuerySpecification -> querySpecification.getScope().getKotlinFiles()
             is KotlinJavaQuerySpecification -> querySpecification.getScope().getKotlinFiles()
             is KotlinOnlyQuerySpecification -> querySpecification.searchScope
-            is KotlinQuerySpecification -> querySpecification.searchScope
+            is KotlinScopedQuerySpecification -> querySpecification.searchScope
             else -> emptyList()
         }
     }

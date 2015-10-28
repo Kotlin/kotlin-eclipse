@@ -30,7 +30,7 @@ import org.eclipse.search.ui.text.Match
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.jetbrains.kotlin.ui.search.KotlinElementMatch
 import org.jetbrains.kotlin.ui.refactorings.rename.getLengthOfIdentifier
@@ -86,7 +86,7 @@ public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionLis
         val sourceElements = jetElement.resolveToSourceDeclaration(editor.javaProject!!)
         if (sourceElements.isEmpty()) return emptyList()
         
-        val querySpecification = KotlinQuerySpecification(sourceElements, listOf(file), 
+        val querySpecification = KotlinScopedQuerySpecification(sourceElements, listOf(file), 
                 IJavaSearchConstants.ALL_OCCURRENCES, "Searching in ${file.getName()}")
         
         val occurrences = arrayListOf<Match>()
