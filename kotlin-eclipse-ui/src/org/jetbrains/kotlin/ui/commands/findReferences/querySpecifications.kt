@@ -18,7 +18,7 @@ class KotlinJavaQuerySpecification(
         searchScope: IJavaSearchScope,
         description: String) : KotlinDummyQuerySpecification(searchScope, description, limitTo)
 
-class KotlinQuerySpecification(
+class KotlinScopedQuerySpecification(
         val sourceElements: List<SourceElement>,
         val searchScope: List<IFile>,
         limitTo: Int,

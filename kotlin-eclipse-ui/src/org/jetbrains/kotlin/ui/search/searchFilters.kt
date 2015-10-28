@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.core.model.toLightElements
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.search.IJavaSearchConstants
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement
 import org.jetbrains.kotlin.core.log.KotlinLogger
