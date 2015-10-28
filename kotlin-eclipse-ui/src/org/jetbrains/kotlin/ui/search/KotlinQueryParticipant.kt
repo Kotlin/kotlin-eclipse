@@ -60,7 +60,6 @@ import org.eclipse.jdt.core.IMember
 import org.eclipse.jdt.core.search.SearchPattern
 import org.eclipse.jdt.core.IType
 import org.eclipse.jdt.core.IField
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLocalQuerySpecification
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.descriptors.SourceElement
@@ -76,10 +75,7 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.psi.JetObjectDeclarationName
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinTextSearchable
 import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinJavaQuerySpecification
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecification

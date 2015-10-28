@@ -22,19 +22,14 @@ import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.eclipse.jdt.ui.search.QuerySpecification
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLocalQuerySpecification
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.jetbrains.kotlin.core.model.toLightElements
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.search.IJavaSearchConstants
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinQuerySpecification
 import org.jetbrains.kotlin.psi.JetDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement
 import org.jetbrains.kotlin.core.log.KotlinLogger
 

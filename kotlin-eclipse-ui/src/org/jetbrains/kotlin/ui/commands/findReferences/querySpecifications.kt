@@ -6,11 +6,7 @@ import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.jetbrains.kotlin.psi.JetElement
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.core.runtime.IPath
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
 import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
@@ -26,29 +22,13 @@ class KotlinQuerySpecification(
         val sourceElements: List<SourceElement>,
         val searchScope: List<IFile>,
         limitTo: Int,
-        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo), KotlinTextSearchable {
-    override fun getSearchText(): String {
-        return ""
-    }
-}
+        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo)
 
 class KotlinOnlyQuerySpecification(
         val kotlinElement: JetElement,
         val searchScope: List<IFile>,
         limitTo: Int,
         description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo)
-
-// Using of this pattern assumes that elements presents only in Kotlin
-class KotlinLocalQuerySpecification(
-        val localDeclaration: KotlinOnlyScopeDeclaration, 
-        limitTo: Int,
-        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo), KotlinTextSearchable {
-    override fun getSearchText(): String {
-        return localDeclaration.getSearchText()
-    }
-}
-
-fun KotlinOnlyScopeDeclaration.getSearchText(): String = this.jetDeclaration.getName()!!
 
 // After passing this query specification to java, it will try to find some usages and to ensure that nothing will found
 // before KotlinQueryParticipant here is using dummy element '------------'
@@ -62,10 +42,6 @@ abstract class KotlinDummyQuerySpecification(
             limitTo, 
             searchScope, 
             description)
-
-interface KotlinTextSearchable {
-    fun getSearchText(): String
-}
 
 object EmptyJavaSearchScope : IJavaSearchScope {
     override fun setIncludesClasspaths(includesClasspaths: Boolean) {

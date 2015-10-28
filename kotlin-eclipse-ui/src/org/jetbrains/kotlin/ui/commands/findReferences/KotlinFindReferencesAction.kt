@@ -65,9 +65,6 @@ import org.eclipse.jdt.internal.ui.JavaPluginImages
 import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 import org.jetbrains.kotlin.ui.search.getKotlinFiles
 
 abstract class KotlinFindReferencesHandler : AbstractHandler() {

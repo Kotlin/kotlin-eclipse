@@ -77,9 +77,6 @@ import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.JavaAndKotlinScopeDeclaration
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
@@ -216,9 +213,9 @@ fun doRename(sourceElements: List<SourceElement>, newName: String, editor: Kotli
         }
     }
     
-    fun renameLocalKotlinElement(element: JetDeclaration) {
+    fun renameLocalKotlinElement(sourceElement: KotlinSourceElement) {
         val helper = RefactoringExecutionHelper(
-                RenameRefactoring(KotlinRenameProcessor(element, newName)), 
+                RenameRefactoring(KotlinRenameProcessor(sourceElement, newName)), 
                 RefactoringCore.getConditionCheckingFailedSeverity(),
                 RefactoringSaveHelper.SAVE_REFACTORING,
                 editor.getSite().getShell(),
@@ -238,7 +235,7 @@ fun doRename(sourceElements: List<SourceElement>, newName: String, editor: Kotli
         if (sourceElements.isNotEmpty()) {
             val element = sourceElements.first()
             if (element is KotlinSourceElement) {
-                renameLocalKotlinElement(element.psi as JetDeclaration)
+                renameLocalKotlinElement(element)
             }
         }
     }

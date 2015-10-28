@@ -62,26 +62,6 @@ public fun getReferenceExpression(element: PsiElement): JetReferenceExpression? 
 	return PsiTreeUtil.getNonStrictParentOfType(element, JetReferenceExpression::class.java)
 }
 
-sealed class VisibilityScopeDeclaration private constructor() {
-    // Represents Java elements and Kotlin light elements 
-    class JavaAndKotlinScopeDeclaration(
-            val javaElements: List<IJavaElement>, 
-            val kotlinElements: List<JetDeclaration> = emptyList()) : VisibilityScopeDeclaration() {
-    }
-    
-    class KotlinOnlyScopeDeclaration(val jetDeclaration: JetDeclaration) : VisibilityScopeDeclaration() {
-        override fun hashCode(): Int = jetDeclaration.hashCode()
-    
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is KotlinOnlyScopeDeclaration) return false
-            return jetDeclaration == other.jetDeclaration
-        }
-    }
-    
-    object NoDeclaration : VisibilityScopeDeclaration()
-}
-
 public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): List<SourceElement> {
     val jetElement = this
     return when (jetElement) {

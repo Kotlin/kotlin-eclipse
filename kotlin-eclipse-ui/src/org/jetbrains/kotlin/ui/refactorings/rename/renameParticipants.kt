@@ -19,9 +19,10 @@ package org.jetbrains.kotlin.ui.refactorings.rename
 import org.eclipse.jdt.ui.search.QuerySpecification
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinLocalQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchConstants
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.KotlinOnlyScopeDeclaration
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecification
+import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public class KotlinTypeRenameParticipant : KotlinRenameParticipant()
 
@@ -29,9 +30,10 @@ public class KotlinFunctionRenameParticipant : KotlinRenameParticipant()
 
 public class KotlinLocalRenameParticipant : KotlinRenameParticipant() {
     override fun createSearchQuery(): QuerySpecification {
-        val jetDeclaration = element as JetDeclaration
-        return KotlinLocalQuerySpecification(
-                KotlinOnlyScopeDeclaration(jetDeclaration), 
+        val jetElement = element as JetElement
+        return KotlinOnlyQuerySpecification(
+                jetElement,
+                listOf(KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())!!), 
                 IJavaSearchConstants.ALL_OCCURRENCES,
                 JavaSearchScopeFactory.getInstance().getWorkspaceScopeDescription(false))
     }

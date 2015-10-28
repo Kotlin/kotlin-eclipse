@@ -47,7 +47,6 @@ import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.core.references.VisibilityScopeDeclaration.NoDeclaration
 import org.jetbrains.kotlin.ui.editors.withLock
 
 public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionListener {
