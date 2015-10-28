@@ -48,9 +48,12 @@ import org.eclipse.core.runtime.Status
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.ui.editors.withLock
+import org.eclipse.jface.text.source.AnnotationModel
 
 public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionListener {
-    private @Volatile var occurrenceAnnotations = setOf<Annotation>()
+    companion object {
+        private val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
+    }
     
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
         val job = object : Job("Mark occurrences") {
@@ -73,16 +76,27 @@ public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionLis
         job.schedule()
     }
     
-    private @Synchronized fun updateOccurrences(occurrences: List<Position>) {
-        val annotationMap = occurrences.toMap { Annotation("org.eclipse.jdt.ui.occurrences", false, "description") }
+    private fun updateOccurrences(occurrences: List<Position>) {
+        val annotationMap = occurrences.toMap { Annotation(ANNOTATION_TYPE, false, "description") }
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
+        val oldAnnotations = getOldOccurrenceAnnotations(annotationModel)
         annotationModel.withLock { 
-            (annotationModel as IAnnotationModelExtension).replaceAnnotations(occurrenceAnnotations.toTypedArray(), annotationMap)
-            occurrenceAnnotations = annotationMap.keySet()
+            (annotationModel as IAnnotationModelExtension).replaceAnnotations(oldAnnotations.toTypedArray(), annotationMap)
         }
     }
     
-    private @Synchronized fun findOccurrences(jetElement: JetElement, file: IFile): List<Position> {
+    private fun getOldOccurrenceAnnotations(model: IAnnotationModel): List<Annotation> {
+        val annotations = arrayListOf<Annotation>()
+        for (annotation in model.getAnnotationIterator()) {
+            if (annotation is Annotation && annotation.getType() == ANNOTATION_TYPE) {
+                annotations.add(annotation)
+            }
+        }
+        
+        return annotations
+    }
+    
+    private fun findOccurrences(jetElement: JetElement, file: IFile): List<Position> {
         val sourceElements = jetElement.resolveToSourceDeclaration(editor.javaProject!!)
         if (sourceElements.isEmpty()) return emptyList()
         
