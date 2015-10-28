@@ -12,23 +12,32 @@ import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.descriptors.SourceElement
 
+interface KotlinAndJavaSearchable {
+    val sourceElements: List<SourceElement>
+}
+
+interface KotlinScoped {
+    val searchScope: List<IFile>
+}
+
 class KotlinJavaQuerySpecification(
-        val sourceElements: List<SourceElement>,
+        override val sourceElements: List<SourceElement>,
         limitTo: Int,
         searchScope: IJavaSearchScope,
-        description: String) : KotlinDummyQuerySpecification(searchScope, description, limitTo)
+        description: String) : KotlinDummyQuerySpecification(searchScope, description, limitTo), KotlinAndJavaSearchable
 
 class KotlinScopedQuerySpecification(
-        val sourceElements: List<SourceElement>,
-        val searchScope: List<IFile>,
+        override val sourceElements: List<SourceElement>,
+        override val searchScope: List<IFile>,
         limitTo: Int,
-        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo)
+        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo), 
+            KotlinAndJavaSearchable, KotlinScoped
 
 class KotlinOnlyQuerySpecification(
         val kotlinElement: JetElement,
-        val searchScope: List<IFile>,
+        override val searchScope: List<IFile>,
         limitTo: Int,
-        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo)
+        description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo), KotlinScoped
 
 // After passing this query specification to java, it will try to find some usages and to ensure that nothing will found
 // before KotlinQueryParticipant here is using dummy element '------------'
