@@ -49,14 +49,15 @@ import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.ui.editors.withLock
 import org.eclipse.jface.text.source.AnnotationModel
+import org.eclipse.ui.progress.UIJob
 
-public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionListener {
+public class KotlinMarkOccurrences : ISelectionListener {
     companion object {
         private val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
     }
     
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
-        val job = object : Job("Mark occurrences") {
+        val job = object : Job("Update occurrence annotations") {
             override fun run(monitor: IProgressMonitor?): IStatus? {
                 if (part is KotlinFileEditor && selection is ITextSelection) {
                     val jetElement = EditorUtil.getJetElement(part, selection.getOffset())
@@ -65,18 +66,19 @@ public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionLis
                     val file = part.getFile()
                     if (file == null) return Status.CANCEL_STATUS
                     
-                    val occurrences = findOccurrences(jetElement, file)
-                    updateOccurrences(occurrences)
+                    val occurrences = findOccurrences(part, jetElement, file)
+                    updateOccurrences(part, occurrences)
                 }
                 
                 return Status.OK_STATUS
             }
         }
         
+        job.setPriority(Job.DECORATE)
         job.schedule()
     }
     
-    private fun updateOccurrences(occurrences: List<Position>) {
+    private fun updateOccurrences(editor: KotlinFileEditor, occurrences: List<Position>) {
         val annotationMap = occurrences.toMap { Annotation(ANNOTATION_TYPE, false, "description") }
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
         val oldAnnotations = getOldOccurrenceAnnotations(annotationModel)
@@ -96,7 +98,7 @@ public class KotlinMarkOccurrences(val editor: KotlinFileEditor) : ISelectionLis
         return annotations
     }
     
-    private fun findOccurrences(jetElement: JetElement, file: IFile): List<Position> {
+    private fun findOccurrences(editor: KotlinFileEditor, jetElement: JetElement, file: IFile): List<Position> {
         val sourceElements = jetElement.resolveToSourceDeclaration(editor.javaProject!!)
         if (sourceElements.isEmpty()) return emptyList()
         

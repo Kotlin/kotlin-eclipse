@@ -69,7 +69,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val kotlinRunToLineAdapter by lazy { KotlinRunToLineAdapter() }
     
-    private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences(this) }
+    private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences() }
     
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
