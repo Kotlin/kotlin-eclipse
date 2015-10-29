@@ -29,12 +29,11 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.fileClasses.FileClassesPackage;
+import org.jetbrains.kotlin.fileClasses.FileClasses;
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider;
-import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
-import org.jetbrains.kotlin.psi.JetClassOrObject;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtClassOrObject;
+import org.jetbrains.kotlin.psi.KtFile;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -101,21 +100,21 @@ public class KotlinLightClassManager {
         cleanOutdatedLightClasses(project);
     }
     
-    public List<JetFile> getSourceFiles(@NotNull File file) {
+    public List<KtFile> getSourceFiles(@NotNull File file) {
         if (sourceFiles.isEmpty()) {
             computeLightClassesSources();
         }
         
-        return getSourceJetFiles(file);
+        return getSourceKtFiles(file);
     }
     
     @NotNull
-    private List<JetFile> getSourceJetFiles(@NotNull File lightClass) {
+    private List<KtFile> getSourceKtFiles(@NotNull File lightClass) {
         Set<IFile> sourceIOFiles = sourceFiles.get(lightClass);
         if (sourceIOFiles != null) {
-            List<JetFile> jetSourceFiles = Lists.newArrayList();
+            List<KtFile> jetSourceFiles = Lists.newArrayList();
             for (IFile sourceFile : sourceIOFiles) {
-                JetFile jetFile = KotlinPsiManager.getKotlinParsedFile(sourceFile);
+                KtFile jetFile = KotlinPsiManager.getKotlinParsedFile(sourceFile);
                 if (jetFile != null) {
                     jetSourceFiles.add(jetFile);
                 }
@@ -124,29 +123,25 @@ public class KotlinLightClassManager {
             return jetSourceFiles;
         }
         
-        return Collections.<JetFile>emptyList();
+        return Collections.<KtFile>emptyList();
     }
 
     @NotNull
     private List<IPath> getLightClassesPaths(@NotNull IFile sourceFile) {
         List<IPath> lightClasses = new ArrayList<IPath>();
         
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
-        for (JetClassOrObject classOrObject : PsiTreeUtil.findChildrenOfType(jetFile, JetClassOrObject.class)) {
-            String internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(classOrObject, NoResolveFileClassesProvider.INSTANCE$);
+        KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
+        for (KtClassOrObject classOrObject : PsiTreeUtil.findChildrenOfType(jetFile, KtClassOrObject.class)) {
+            String internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(classOrObject, NoResolveFileClassesProvider.INSTANCE);
             if (internalName != null) {
                 lightClasses.add(computePathByInternalName(internalName));
             }
         }
         
         if (PackagePartClassUtils.fileHasTopLevelCallables(jetFile)) {
-            String newFacadeInternalName = FileClassesPackage.getFileClassInternalName(
-                    NoResolveFileClassesProvider.INSTANCE$, jetFile);
+            String newFacadeInternalName = FileClasses.getFileClassInternalName(
+                    NoResolveFileClassesProvider.INSTANCE, jetFile);
             lightClasses.add(computePathByInternalName(newFacadeInternalName));
-            
-//            TODO: remove this after M13
-            String oldFacadeInternalName = PackageClassUtils.getPackageClassInternalName(jetFile.getPackageFqName());
-            lightClasses.add(computePathByInternalName(oldFacadeInternalName));
         }
         
         return lightClasses;
