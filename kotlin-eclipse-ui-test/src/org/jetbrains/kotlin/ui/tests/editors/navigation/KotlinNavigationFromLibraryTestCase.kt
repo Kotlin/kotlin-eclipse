@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.ui.tests.editors.navigation.library.getTestLibrary;
 import org.jetbrains.kotlin.ui.tests.editors.navigation.library.clean;
 import org.eclipse.jdt.core.IPackageFragment
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
-import org.jetbrains.kotlin.psi.JetNamedFunction
+import org.jetbrains.kotlin.psi.KtNamedFunction
 import com.intellij.psi.PsiComment
 import com.intellij.psi.util.PsiTreeUtil
 import org.junit.Assert
@@ -24,7 +24,7 @@ import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.eclipse.jdt.ui.JavaUI
 import org.eclipse.ui.IEditorPart
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.ui.tests.editors.navigation.library.TestLibraryData
 
 open public class KotlinNavigationFromLibraryTestCase: KotlinProjectTestCase() {
@@ -82,8 +82,8 @@ open public class KotlinNavigationFromLibraryTestCase: KotlinProjectTestCase() {
         assertWithEditor(activeEditor, testData.targetFilePath, testData.targetSymbol)
     }
 
-    private fun getTestData(parsedFile: JetFile, functionName: String): TestData {
-        val functionToTest = parsedFile.findChildrenByClass(JetNamedFunction::class.java)
+    private fun getTestData(parsedFile: KtFile, functionName: String): TestData {
+        val functionToTest = parsedFile.findChildrenByClass(KtNamedFunction::class.java)
             .filter {functionName == it.name}.firstOrNull()
         Assert.assertNotNull("Can't find a function to test: "+functionName, functionName)
 
@@ -128,7 +128,7 @@ open public class KotlinNavigationFromLibraryTestCase: KotlinProjectTestCase() {
         }
     }
 
-    private data class TestData(val functionToTest: JetNamedFunction,
+    private data class TestData(val functionToTest: KtNamedFunction,
                                 val referenceText: String,
                                 val targetFilePath: String,
                                 val targetSymbol: String)

@@ -5,13 +5,12 @@ import org.eclipse.jface.text.TextAttribute
 import org.eclipse.jdt.ui.text.IColorManager
 import org.eclipse.swt.SWT
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import org.jetbrains.kotlin.lexer.JetTokens
+import org.jetbrains.kotlin.lexer.KtTokens
 import com.intellij.psi.PsiElement
 import org.eclipse.jface.preference.PreferenceConverter
 import org.eclipse.jface.preference.IPreferenceStore
 import org.eclipse.jdt.ui.PreferenceConstants
 import org.eclipse.jface.text.rules.Token
-import org.jetbrains.kotlin.psi.JetPsiUtil
 import org.jetbrains.kotlin.kdoc.lexer.KDocTokens
 
 class KotlinTokensFactory(val preferenceStore: IPreferenceStore, val colorManager: IColorManager) {
@@ -28,21 +27,21 @@ class KotlinTokensFactory(val preferenceStore: IPreferenceStore, val colorManage
 
         val elementType = leafElement.getElementType()
         return when {
-            elementType in JetTokens.KEYWORDS,
-            elementType in JetTokens.SOFT_KEYWORDS,
-            elementType in JetTokens.MODIFIER_KEYWORDS -> keywordToken
+            elementType in KtTokens.KEYWORDS,
+            elementType in KtTokens.SOFT_KEYWORDS,
+            elementType in KtTokens.MODIFIER_KEYWORDS -> keywordToken
 
-            JetTokens.IDENTIFIER == elementType -> identifierToken
+            KtTokens.IDENTIFIER == elementType -> identifierToken
 
-            elementType in JetTokens.STRINGS,
-            JetTokens.OPEN_QUOTE == elementType,
-            JetTokens.CLOSING_QUOTE == elementType -> stringToken
+            elementType in KtTokens.STRINGS,
+            KtTokens.OPEN_QUOTE == elementType,
+            KtTokens.CLOSING_QUOTE == elementType -> stringToken
 
-            elementType in JetTokens.WHITESPACES -> whitespaceToken
+            elementType in KtTokens.WHITESPACES -> whitespaceToken
 
-            elementType == JetTokens.EOL_COMMENT -> singleLineCommentToken
+            elementType == KtTokens.EOL_COMMENT -> singleLineCommentToken
 
-            elementType in JetTokens.COMMENTS,
+            elementType in KtTokens.COMMENTS,
             elementType in KDocTokens.KDOC_HIGHLIGHT_TOKENS -> multiLineCommentToken
 
             KDocTokens.TAG_NAME == elementType -> kdocTagNameToken

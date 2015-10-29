@@ -30,7 +30,6 @@ import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.jetbrains.kotlin.psi.JetFile
 
 public class KotlinFileStore(file: File) : LocalFile(file) {
     override public fun openInputStream(options: Int, monitor: IProgressMonitor?): InputStream {

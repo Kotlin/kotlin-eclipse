@@ -1,8 +1,8 @@
 <project default="get_bundled">
 	<property name="idea-sources-build-id" value="586670"/>
-	<property name="compiler.tag" value="for_eclipse" />
-	<property name="bootstrap_branch" value="M13"/>
-	<property name="idea-version" value="142.4675.3"/>
+	<property name="compiler.tag" value="pre_release" />
+	<property name="bootstrap_branch" value="M15"/>
+	<property name="idea-version" value="143.379.11"/>
 	
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
 	

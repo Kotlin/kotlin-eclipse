@@ -35,7 +35,6 @@ import com.intellij.psi.PsiElement
 import org.eclipse.search.internal.ui.text.FileSearchResult
 import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import java.util.ArrayList
@@ -45,13 +44,11 @@ import org.eclipse.search.ui.text.Match
 import org.eclipse.jface.viewers.ILabelProvider
 import org.jetbrains.kotlin.ui.editors.outline.PsiLabelProvider
 import org.eclipse.jface.viewers.LabelProvider
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jdt.internal.core.JavaModel
 import org.eclipse.core.resources.IProject
 import org.jetbrains.kotlin.core.references.createReference
 import org.eclipse.core.runtime.IAdaptable
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetClassOrObject
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
 import org.eclipse.jdt.core.IJavaProject
@@ -70,11 +67,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
 import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
-import org.jetbrains.kotlin.psi.JetDeclaration
-import org.jetbrains.kotlin.psi.JetObjectDeclaration
-import org.jetbrains.kotlin.psi.JetObjectDeclarationName
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinJavaQuerySpecification
@@ -101,7 +94,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
                     KotlinLogger.logWarning("There are more than one elements to search: $searchElements")
                 }
                 
-                // We assume that there is only one search element, it could be IJavaElement or JetElement
+                // We assume that there is only one search element, it could be IJavaElement or KtElement
                 val searchElement = searchElements.first()
                 val searchResult = searchTextOccurrences(searchElement, kotlinFiles)
                 if (searchResult == null) return
@@ -164,7 +157,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             override fun getSearchText(): String = javaElement.getElementName()
         }
         
-        class KotlinSearchElement(val kotlinElement: JetElement) : SearchElement() {
+        class KotlinSearchElement(val kotlinElement: KtElement) : SearchElement() {
             override fun getSearchText(): String? = kotlinElement.getName()
         }
     }
@@ -196,8 +189,8 @@ public class KotlinQueryParticipant : IQueryParticipant {
         return query.getSearchResult()
     }
     
-    private fun resolveElementsAndMatch(elements: List<JetElement>, searchElement: SearchElement, 
-            querySpecification: QuerySpecification): List<JetElement> {
+    private fun resolveElementsAndMatch(elements: List<KtElement>, searchElement: SearchElement, 
+            querySpecification: QuerySpecification): List<KtElement> {
         val beforeResolveFilters = getBeforeResolveFilters(querySpecification)
         val afterResolveFilters = getAfterResolveFilters()
         
@@ -219,8 +212,8 @@ public class KotlinQueryParticipant : IQueryParticipant {
         }
     }
     
-    private fun obtainElements(searchResult: FileSearchResult, files: List<IFile>): List<JetElement> {
-        val elements = ArrayList<JetElement>()
+    private fun obtainElements(searchResult: FileSearchResult, files: List<IFile>): List<KtElement> {
+        val elements = ArrayList<KtElement>()
         for (file in files) {
             val matches = searchResult.getMatches(file)
             val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
@@ -228,7 +221,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             
             matches
                 .map { jetFile.findElementByDocumentOffset(it.getOffset(), document) }
-                .mapNotNull { PsiTreeUtil.getNonStrictParentOfType(it, JetElement::class.java) }
+                .mapNotNull { PsiTreeUtil.getNonStrictParentOfType(it, KtElement::class.java) }
                 .filterNotNullTo(elements)
         }
         
@@ -245,7 +238,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     }
 }
 
-internal fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair<List<IJavaElement>, List<JetElement>> {
+internal fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair<List<IJavaElement>, List<KtElement>> {
     val javaElements = sourceElementsToLightElements(sourceElements)
     
     // Filter out Kotlin elements which have light elements because Javas search will call KotlinQueryParticipant
@@ -257,7 +250,7 @@ internal fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair
     return Pair(javaElements, kotlinElements)
 }
 
-private fun sourceElementsToKotlinElements(sourceElements: List<SourceElement>): List<JetElement> {
+private fun sourceElementsToKotlinElements(sourceElements: List<SourceElement>): List<KtElement> {
     return sourceElements
             .filterIsInstance(KotlinSourceElement::class.java)
             .map { it.psi }
@@ -270,10 +263,10 @@ fun IJavaSearchScope.getKotlinFiles(): List<IFile> {
             .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
 }
 
-public class KotlinElementMatch(val jetElement: JetElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(), 
+public class KotlinElementMatch(val jetElement: KtElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(), 
         jetElement.getTextOffset())
 
-class KotlinAdaptableElement(val jetElement: JetElement): IAdaptable {
+class KotlinAdaptableElement(val jetElement: KtElement): IAdaptable {
     override fun getAdapter(adapter: Class<*>?): Any? {
         return when {
             IResource::class.java == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())

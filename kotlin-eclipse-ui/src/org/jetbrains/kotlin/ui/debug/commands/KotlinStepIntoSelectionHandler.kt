@@ -38,7 +38,6 @@ import org.jetbrains.kotlin.ui.debug.findTopmostType
 import org.eclipse.jdt.internal.debug.ui.actions.StepIntoSelectionUtils
 import org.eclipse.ui.IEditorPart
 import org.eclipse.debug.core.model.IThread
-import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.core.log.KotlinLogger
 
 public class KotlinStepIntoSelectionHandler : AbstractHandler() {

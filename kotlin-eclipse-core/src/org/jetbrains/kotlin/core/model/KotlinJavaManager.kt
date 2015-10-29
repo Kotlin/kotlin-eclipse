@@ -25,30 +25,28 @@ import org.eclipse.jdt.core.JavaModelException
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.psi.JetClass
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
 import org.eclipse.jdt.core.IJavaElement
 import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.psi.KtDeclaration
 import com.intellij.psi.PsiElement
 import org.eclipse.jdt.core.IMethod
 import org.jetbrains.kotlin.core.asJava.equalsJvmSignature
 import org.jetbrains.kotlin.core.asJava.getTypeFqName
 import org.eclipse.jdt.core.dom.IBinding
 import org.eclipse.jdt.core.dom.IMethodBinding
-import org.jetbrains.kotlin.psi.JetClassOrObject
-import org.jetbrains.kotlin.psi.JetElement
-import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
-import org.jetbrains.kotlin.psi.JetNamedFunction
-import org.jetbrains.kotlin.psi.JetSecondaryConstructor
-import org.jetbrains.kotlin.psi.JetFunction
-import org.jetbrains.kotlin.psi.JetPropertyAccessor
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtSecondaryConstructor
+import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.eclipse.jdt.core.IMember
-import org.jetbrains.kotlin.psi.JetProperty
+import org.jetbrains.kotlin.psi.KtProperty
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.JetObjectDeclaration
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtObjectDeclaration
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public object KotlinJavaManager {
@@ -56,16 +54,16 @@ public object KotlinJavaManager {
     
     public fun getKotlinBinFolderFor(project: IProject): IFolder = project.getFolder(KOTLIN_BIN_FOLDER)
     
-    public fun findEclipseType(jetClass: JetClassOrObject, javaProject: IJavaProject): IType? {
+    public fun findEclipseType(jetClass: KtClassOrObject, javaProject: IJavaProject): IType? {
         return jetClass.getFqName().let {
             if (it != null) javaProject.findType(it.asString()) else null
         }
     }
     
-    public fun <T : IMember> findEclipseMembers(declaration: JetDeclaration, javaProject: IJavaProject, 
+    public fun <T : IMember> findEclipseMembers(declaration: KtDeclaration, javaProject: IJavaProject, 
             klass: Class<T>): List<IMember> {
-        val containingElement = PsiTreeUtil.getParentOfType(declaration, JetClassOrObject::class.java, JetFile::class.java)
-        val seekInParent: Boolean = containingElement is JetObjectDeclaration && containingElement.isCompanion()
+        val containingElement = PsiTreeUtil.getParentOfType(declaration, KtClassOrObject::class.java, KtFile::class.java)
+        val seekInParent: Boolean = containingElement is KtObjectDeclaration && containingElement.isCompanion()
         
         if (containingElement == null) return emptyList()
         
@@ -89,7 +87,7 @@ public object KotlinJavaManager {
         return folder.isLinked() && KotlinFileSystem.SCHEME == folder.getLocationURI().getScheme()
     }
     
-    private fun <T : IMember> findMembersIn(eclipseType: IType, declaration: JetDeclaration, klass: Class<T>): List<IMember> {
+    private fun <T : IMember> findMembersIn(eclipseType: IType, declaration: KtDeclaration, klass: Class<T>): List<IMember> {
         
         fun check(member: IMember): Boolean { 
             return klass.isAssignableFrom(member.javaClass) && equalsJvmSignature(declaration, member)
@@ -102,7 +100,7 @@ public object KotlinJavaManager {
     }
 }
 
-public fun JetElement.toLightElements(): List<IJavaElement> {
+public fun KtElement.toLightElements(): List<IJavaElement> {
     val javaProject = KotlinPsiManager.getJavaProject(this)
     if (javaProject == null) {
         KotlinLogger.logWarning("Cannot resolve jetElement ($this) to light elements: there is no corresponding java project")
@@ -110,11 +108,11 @@ public fun JetElement.toLightElements(): List<IJavaElement> {
     }
     
     return when (this) {
-        is JetClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
-        is JetNamedFunction,
-        is JetSecondaryConstructor,
-        is JetPropertyAccessor -> KotlinJavaManager.findEclipseMembers(this as JetDeclaration, javaProject, IMethod::class.java)
-        is JetProperty -> KotlinJavaManager.findEclipseMembers(this, javaProject, IMember::class.java) 
+        is KtClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
+        is KtNamedFunction,
+        is KtSecondaryConstructor,
+        is KtPropertyAccessor -> KotlinJavaManager.findEclipseMembers(this as KtDeclaration, javaProject, IMethod::class.java)
+        is KtProperty -> KotlinJavaManager.findEclipseMembers(this, javaProject, IMember::class.java) 
         else -> emptyList()
     }
 }

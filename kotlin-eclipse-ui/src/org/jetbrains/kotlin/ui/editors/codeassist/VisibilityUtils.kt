@@ -2,30 +2,30 @@ package org.jetbrains.kotlin.ui.editors.codeassist
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.scopes.JetScope
 import com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.psi.JetExpression
-import org.jetbrains.kotlin.psi.JetClassBody
+import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.descriptors.ClassDescriptorWithResolutionScopes
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.resolve.scopes.receivers.ExpressionReceiver
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingUtils
-import org.jetbrains.kotlin.psi.JetQualifiedExpression
-import org.jetbrains.kotlin.psi.JetImportDirective
-import org.jetbrains.kotlin.psi.JetCallExpression
-import org.jetbrains.kotlin.psi.JetBinaryExpression
+import org.jetbrains.kotlin.psi.KtQualifiedExpression
+import org.jetbrains.kotlin.psi.KtImportDirective
+import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtBinaryExpression
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
-import org.jetbrains.kotlin.psi.JetUnaryExpression
-import org.jetbrains.kotlin.psi.JetUserType
+import org.jetbrains.kotlin.psi.KtUnaryExpression
+import org.jetbrains.kotlin.psi.KtUserType
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.resolve.scopes.utils.asLexicalScope
+import org.jetbrains.kotlin.types
 import org.jetbrains.kotlin.resolve.scopes.LexicalScope
+import org.jetbrains.kotlin.psi.KtElement
 
 // from compiler/frontend/src/org/jetbrains/kotlin/psi/psiUtil/psiUtils.kt
     public val PsiElement.parentsWithSelf: Sequence<PsiElement>
@@ -34,31 +34,30 @@ import org.jetbrains.kotlin.resolve.scopes.LexicalScope
 // from idea/idea-core/src/org/jetbrains/kotlin/idea/core/Utils.kt but without the second parameter
 public fun PsiElement.getResolutionScope(bindingContext: BindingContext): LexicalScope {
     for (parent in parentsWithSelf) {
-        if (parent is JetExpression) {
-            val scope = bindingContext[BindingContext.LEXICAL_SCOPE, parent] ?:
-                        bindingContext[BindingContext.RESOLUTION_SCOPE, parent]?.asLexicalScope()
+        if (parent is KtElement) {
+            val scope = bindingContext[BindingContext.LEXICAL_SCOPE, parent]
             if (scope != null) return scope
         }
 
-        if (parent is JetClassBody) {
+        if (parent is KtClassBody) {
             val classDescriptor = bindingContext[BindingContext.CLASS, parent.getParent()] as? ClassDescriptorWithResolutionScopes
             if (classDescriptor != null) {
                 return classDescriptor.getScopeForMemberDeclarationResolution()
             }
         }
 
-        if (parent is JetFile) {
-            return bindingContext[BindingContext.FILE_TO_PACKAGE_FRAGMENT, parent]!!.getMemberScope().asLexicalScope()
+        if (parent is KtFile) {
+            return bindingContext[BindingContext.LEXICAL_SCOPE, parent]!!
         }
     }
-    error("Not in JetFile")
+    error("Not in KtFile")
 }
 
 //from idea/idea-core/src/org/jetbrains/kotlin/idea/core/descriptorUtils.kt
 public fun DeclarationDescriptorWithVisibility.isVisible(
 from: DeclarationDescriptor,
 bindingContext: BindingContext? = null,
-element: JetSimpleNameExpression? = null
+element: KtSimpleNameExpression? = null
 ): Boolean {
     if (Visibilities.isVisible(ReceiverValue.IRRELEVANT_RECEIVER, this, from)) return true
     if (bindingContext == null || element == null) return false
@@ -89,34 +88,34 @@ element: JetSimpleNameExpression? = null
 }
 
 //from compiler/frontend/src/org/jetbrains/kotlin/psi/psiUtil/jetPsiUtil.kt
-public fun JetSimpleNameExpression.getReceiverExpression(): JetExpression? {
+public fun KtSimpleNameExpression.getReceiverExpression(): KtExpression? {
     val parent = getParent()
     when {
-        parent is JetQualifiedExpression && !isImportDirectiveExpression() -> {
+        parent is KtQualifiedExpression && !isImportDirectiveExpression() -> {
         val receiverExpression = parent.getReceiverExpression()
         // Name expression can't be receiver for itself
         if (receiverExpression != this) {
             return receiverExpression
         }
     }
-        parent is JetCallExpression -> {
+        parent is KtCallExpression -> {
         //This is in case `a().b()`
         val callExpression = parent
         val grandParent = callExpression.getParent()
-        if (grandParent is JetQualifiedExpression) {
+        if (grandParent is KtQualifiedExpression) {
             val parentsReceiver = grandParent.getReceiverExpression()
             if (parentsReceiver != callExpression) {
                 return parentsReceiver
             }
         }
     }
-        parent is JetBinaryExpression && parent.getOperationReference() == this -> {
+        parent is KtBinaryExpression && parent.getOperationReference() == this -> {
         return if (parent.getOperationToken() in OperatorConventions.IN_OPERATIONS) parent.getRight() else parent.getLeft()
     }
-        parent is JetUnaryExpression && parent.getOperationReference() == this -> {
+        parent is KtUnaryExpression && parent.getOperationReference() == this -> {
         return parent.getBaseExpression()!!
     }
-        parent is JetUserType -> {
+        parent is KtUserType -> {
         val qualifier = parent.getQualifier()
         if (qualifier != null) {
             return qualifier.getReferenceExpression()!!
@@ -127,13 +126,13 @@ public fun JetSimpleNameExpression.getReceiverExpression(): JetExpression? {
 }
 
 // from compiler/frontend/src/org/jetbrains/kotlin/psi/psiUtil/jetPsiUtil.kt
-public fun JetSimpleNameExpression.isImportDirectiveExpression(): Boolean {
+public fun KtSimpleNameExpression.isImportDirectiveExpression(): Boolean {
     val parent = getParent()
     if (parent == null) {
         return false
     }
         else {
-        return parent is JetImportDirective || parent.getParent() is JetImportDirective
+        return parent is KtImportDirective || parent.getParent() is KtImportDirective
     }
 }
 

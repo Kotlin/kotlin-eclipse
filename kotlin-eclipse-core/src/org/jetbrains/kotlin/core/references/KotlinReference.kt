@@ -17,42 +17,41 @@
 package org.jetbrains.kotlin.core.references
 
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.psi.JetReferenceExpression
+import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.psi.JetCallExpression
+import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.VariableAsFunctionResolvedCall
 import org.jetbrains.kotlin.psi.Call
-import org.jetbrains.kotlin.psi.JetExpression
-import org.jetbrains.kotlin.psi.JetConstructorDelegationReferenceExpression
+import org.jetbrains.kotlin.psi.KtConstructorDelegationReferenceExpression
 import org.eclipse.jdt.core.IJavaProject
 
-public fun createReference(element: JetReferenceExpression): KotlinReference {
+public fun createReference(element: KtReferenceExpression): KotlinReference {
     return when(element) {
-        is JetSimpleNameExpression -> KotlinSimpleNameReference(element)
-        is JetCallExpression -> KotlinInvokeFunctionReference(element)
-        is JetConstructorDelegationReferenceExpression -> KotlinConstructorDelegationReference(element)
+        is KtSimpleNameExpression -> KotlinSimpleNameReference(element)
+        is KtCallExpression -> KotlinInvokeFunctionReference(element)
+        is KtConstructorDelegationReferenceExpression -> KotlinConstructorDelegationReference(element)
         else -> throw UnsupportedOperationException("Reference for $element is not supported")
     }
 }
 
 public interface KotlinReference {
-    val expression: JetReferenceExpression
+    val expression: KtReferenceExpression
     
     fun getTargetDescriptors(context: BindingContext): Collection<DeclarationDescriptor>
 }
 
-public class KotlinSimpleNameReference(override val expression: JetSimpleNameExpression) : KotlinReference {
+public class KotlinSimpleNameReference(override val expression: KtSimpleNameExpression) : KotlinReference {
     override fun getTargetDescriptors(context: BindingContext) = expression.getReferenceTargets(context)
 }
 
-public class KotlinInvokeFunctionReference(override val expression: JetCallExpression) : KotlinReference {
+public class KotlinInvokeFunctionReference(override val expression: KtCallExpression) : KotlinReference {
     override fun getTargetDescriptors(context: BindingContext): Collection<DeclarationDescriptor> {
         val call = expression.getCall(context)
         val resolvedCall = call.getResolvedCall(context)
@@ -64,11 +63,11 @@ public class KotlinInvokeFunctionReference(override val expression: JetCallExpre
     }
 }
 
-public class KotlinConstructorDelegationReference(override val expression: JetConstructorDelegationReferenceExpression) : KotlinReference {
+public class KotlinConstructorDelegationReference(override val expression: KtConstructorDelegationReferenceExpression) : KotlinReference {
     override fun getTargetDescriptors(context: BindingContext) = expression.getReferenceTargets(context)
 }
 
-fun JetReferenceExpression.getReferenceTargets(context: BindingContext): Collection<DeclarationDescriptor> {
+fun KtReferenceExpression.getReferenceTargets(context: BindingContext): Collection<DeclarationDescriptor> {
     val targetDescriptor = context[BindingContext.REFERENCE_TARGET, this]
     return if (targetDescriptor != null) {
             listOf(targetDescriptor) 

@@ -53,9 +53,8 @@ import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.text.edits.UndoEdit
 import org.eclipse.jdt.core.compiler.CharOperation
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit as ContentProviderCompilationUnit
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.core.model.toLightElements
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.log.KotlinLogger
@@ -64,13 +63,10 @@ import org.eclipse.jface.text.IUndoManagerExtension
 import org.eclipse.core.commands.operations.OperationHistoryFactory
 import org.eclipse.core.commands.operations.IUndoableOperation
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.eclipse.jface.text.source.ISourceViewer
 import org.eclipse.jface.text.IUndoManager
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
 import org.eclipse.core.runtime.NullProgressMonitor
-import org.jetbrains.kotlin.psi.JetObjectDeclarationName
-import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper
@@ -98,7 +94,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         performRefactoring(jetElement, javaProject)
     }
     
-    fun performRefactoring(jetElement: JetElement, javaProject: IJavaProject) {
+    fun performRefactoring(jetElement: KtElement, javaProject: IJavaProject) {
         val sourceElements = jetElement.resolveToSourceDeclaration(javaProject)
         if (sourceElements.isEmpty()) return
         
@@ -138,7 +134,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         return if (viewer is ITextViewerExtension6) viewer.getUndoManager() else null
     }
     
-    fun beginRenameRefactoring(sourceElements: List<SourceElement>, selectedElement: JetElement, editor: KotlinFileEditor) {
+    fun beginRenameRefactoring(sourceElements: List<SourceElement>, selectedElement: KtElement, editor: KotlinFileEditor) {
         val linkedPositionGroup = LinkedPositionGroup()
         val offsetInDocument = selectedElement.getTextDocumentOffset(editor.document)
         

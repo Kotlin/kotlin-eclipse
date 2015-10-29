@@ -8,13 +8,13 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.ui.tests.editors.navigation.library.getTestLibrary
 import org.jetbrains.kotlin.ui.tests.editors.navigation.library.clean
 import org.junit.AfterClass
 
 public open class KotlinNavigationToLibraryTestCase: KotlinSourcesNavigationTestCase() {
-    override fun getParsedFile(editor: KotlinEditor): JetFile =
+    override fun getParsedFile(editor: KotlinEditor): KtFile =
             editor.parsedFile!!
 
     override val testDataPath: String =

@@ -16,35 +16,32 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.navigation
 
-import org.jetbrains.kotlin.psi.JetVisitorVoid
+import org.jetbrains.kotlin.psi.KtVisitorVoid
 import com.intellij.psi.PsiElement
 import org.eclipse.jdt.core.IJavaElement
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jdt.core.IType
-import org.jetbrains.kotlin.psi.JetVisitor
-import org.jetbrains.kotlin.psi.JetClass
+import org.jetbrains.kotlin.psi.KtClass
 import org.eclipse.jdt.core.IMethod
-import org.jetbrains.kotlin.psi.JetNamedFunction
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtFile
 import kotlin.MutableList
 import java.util.ArrayList
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils
-import org.jetbrains.kotlin.psi.JetClassBody
-import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.psi.KtClassBody
+import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.name.FqName
 import org.eclipse.jdt.core.IField
-import org.jetbrains.kotlin.psi.JetProperty
+import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.core.asJava.LightClassBuilderFactory
-import org.jetbrains.kotlin.psi.JetPropertyAccessor
-import org.jetbrains.kotlin.psi.JetSecondaryConstructor
+import org.jetbrains.kotlin.psi.KtPropertyAccessor
+import org.jetbrains.kotlin.psi.KtSecondaryConstructor
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.JetClassOrObject
-import org.jetbrains.kotlin.psi.JetNamedDeclaration
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.eclipse.jdt.core.IMember
-import org.jetbrains.kotlin.psi.JetDeclaration
-import org.jetbrains.kotlin.psi.JetEnumEntry
-import org.jetbrains.kotlin.psi.JetPrimaryConstructor
-import org.jetbrains.kotlin.psi.JetConstructor
+import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtEnumEntry
+import org.jetbrains.kotlin.psi.KtPrimaryConstructor
 import org.jetbrains.kotlin.core.asJava.equalsJvmSignature
 import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName
 import org.eclipse.core.resources.IFile
@@ -55,7 +52,7 @@ import org.eclipse.compare.internal.ListContentProvider
 import org.eclipse.jface.window.Window
 import org.eclipse.ui.PlatformUI
 
-fun chooseSourceFile(sourceFiles: List<JetFile>): IFile? {
+fun chooseSourceFile(sourceFiles: List<KtFile>): IFile? {
     return when {
         sourceFiles.isEmpty() -> null
         sourceFiles.size() == 1 -> KotlinPsiManager.getEclispeFile(sourceFiles.first())
@@ -63,7 +60,7 @@ fun chooseSourceFile(sourceFiles: List<JetFile>): IFile? {
     }
 }
 
-fun chooseFile(jetFiles: List<JetFile>): IFile? {
+fun chooseFile(jetFiles: List<KtFile>): IFile? {
     val eclipseFiles = jetFiles.map(KotlinPsiManager::getEclispeFile)
     
     val dialog = ListDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell())
@@ -82,12 +79,12 @@ fun chooseFile(jetFiles: List<JetFile>): IFile? {
     return dialog.getResult().firstOrNull() as? IFile
 }
 
-fun findNavigationFileFromSources(element: IJavaElement, sourceFiles: List<JetFile>): JetFile? {
+fun findNavigationFileFromSources(element: IJavaElement, sourceFiles: List<KtFile>): KtFile? {
     return sourceFiles.firstOrNull { findKotlinDeclaration(element, it) != null }
 }
 
-fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? {
-    val result = ArrayList<JetElement>()
+fun findKotlinDeclaration(element: IJavaElement, jetFile: KtFile): KtElement? {
+    val result = ArrayList<KtElement>()
     val visitor = makeVisitor(element, result)
     if (visitor != null) {
         jetFile.acceptChildren(visitor)
@@ -96,10 +93,10 @@ fun findKotlinDeclaration(element: IJavaElement, jetFile: JetFile): JetElement? 
     return result.firstOrNull()
 }
 
-fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisitorVoid? {
+fun makeVisitor(element: IJavaElement, result: MutableList<KtElement>): KtVisitorVoid? {
     return when (element) {
         is IType -> object : JetAllVisitor() {
-            override fun visitClassOrObject(jetClassOrObject: JetClassOrObject) {
+            override fun visitClassOrObject(jetClassOrObject: KtClassOrObject) {
                 if (jetClassOrObject.getFqName() == element.getFqName()) {
                     result.add(jetClassOrObject)
                     return
@@ -110,20 +107,20 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
         }
         
         is IField -> object: JetAllVisitor() {
-            override fun visitObjectDeclaration(declaration: JetObjectDeclaration) {
+            override fun visitObjectDeclaration(declaration: KtObjectDeclaration) {
                 visitExplicitDeclaration(declaration)
                 declaration.acceptChildren(this)
             }
 
-            override fun visitEnumEntry(enumEntry: JetEnumEntry) {
+            override fun visitEnumEntry(enumEntry: KtEnumEntry) {
                 visitExplicitDeclaration(enumEntry)
             }
 
-            override fun visitProperty(property: JetProperty) {
+            override fun visitProperty(property: KtProperty) {
                 visitExplicitDeclaration(property)
             }
 
-            fun visitExplicitDeclaration(declaration: JetDeclaration) {
+            fun visitExplicitDeclaration(declaration: KtDeclaration) {
                 if (equalsJvmSignature(declaration, element)) {
                     result.add(declaration)
                 }
@@ -131,29 +128,29 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
         }
         
         is IMethod -> object : JetAllVisitor() {
-            override fun visitNamedFunction(function: JetNamedFunction) {
+            override fun visitNamedFunction(function: KtNamedFunction) {
                 visitExplicitDeclaration(function)
             }
 
-            override fun visitProperty(property: JetProperty) {
+            override fun visitProperty(property: KtProperty) {
                 visitExplicitDeclaration(property)
                 property.acceptChildren(this)
             }
 
-            override fun visitPropertyAccessor(accessor: JetPropertyAccessor) {
+            override fun visitPropertyAccessor(accessor: KtPropertyAccessor) {
                 visitExplicitDeclaration(accessor)
             }
 
-            override fun visitSecondaryConstructor(constructor: JetSecondaryConstructor) {
+            override fun visitSecondaryConstructor(constructor: KtSecondaryConstructor) {
                 visitExplicitDeclaration(constructor)
             }
 
-            override fun visitPrimaryConstructor(constructor: JetPrimaryConstructor) {
+            override fun visitPrimaryConstructor(constructor: KtPrimaryConstructor) {
                 visitExplicitDeclaration(constructor)
             }
 
 //          Check primary constructor when there are no secondary constructors
-            override fun visitClass(jetClass: JetClass) {
+            override fun visitClass(jetClass: KtClass) {
                 if (equalsJvmSignature(jetClass, element) && (jetClass.getFqName() == element.getDeclaringType().getFqName())) {
                     result.add(jetClass)
                     return
@@ -162,7 +159,7 @@ fun makeVisitor(element: IJavaElement, result: MutableList<JetElement>): JetVisi
                 jetClass.acceptChildren(this)
             }
 
-            fun visitExplicitDeclaration(declaration: JetDeclaration) {
+            fun visitExplicitDeclaration(declaration: KtDeclaration) {
                 if (equalsJvmSignature(declaration, element) && equalsDeclaringTypes(declaration, element)) {
                     result.add(declaration)
                 }
@@ -176,13 +173,13 @@ fun IType.getFqName(): FqName {
     return FqName(this.getFullyQualifiedName('.'))
 }
 
-fun equalsDeclaringTypes(jetElement: JetElement, javaMember: IMember): Boolean  {
+fun equalsDeclaringTypes(jetElement: KtElement, javaMember: IMember): Boolean  {
     val typeNameInfo = getDeclaringTypeFqName(jetElement)
     val javaTypeFqName = javaMember.getDeclaringType().getFqName() 
     return typeNameInfo.className == javaTypeFqName || typeNameInfo.filePartName == javaTypeFqName
 }
 
-open class JetAllVisitor() : JetVisitorVoid() {
+open class JetAllVisitor() : KtVisitorVoid() {
     override fun visitElement(element: PsiElement) {
         element.acceptChildren(this)
     }

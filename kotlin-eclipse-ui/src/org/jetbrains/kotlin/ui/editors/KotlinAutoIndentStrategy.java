@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.lexer.JetTokens;
+import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 
 import com.intellij.lang.ASTNode;
@@ -87,7 +87,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 return 0;
             }
             
-            if (leaf.getNode().getElementType() != JetTokens.WHITE_SPACE) {
+            if (leaf.getNode().getElementType() != KtTokens.WHITE_SPACE) {
                 leaf = parsedDocument.findElementAt(offset - 1);
             }
             

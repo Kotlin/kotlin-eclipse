@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -71,7 +71,7 @@ public class KotlinApplicableTemplateContext {
             }
         } else {
             psiElement = psiElement.getParent();
-            if (psiElement instanceof JetFile) {
+            if (psiElement instanceof KtFile) {
                 if (KotlinTemplateContextType.KOTLIN_ID_TOP_LEVEL_DECLARATIONS.equals(contextType)) {
                     return true;
                 }

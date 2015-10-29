@@ -23,7 +23,6 @@ import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext
 import org.eclipse.ltk.core.refactoring.Change
-import org.jetbrains.kotlin.psi.JetDeclaration
 import org.eclipse.ltk.core.refactoring.participants.RenameArguments
 import org.eclipse.jdt.internal.corext.refactoring.tagging.INameUpdating
 import org.eclipse.ltk.core.refactoring.participants.ParticipantManager

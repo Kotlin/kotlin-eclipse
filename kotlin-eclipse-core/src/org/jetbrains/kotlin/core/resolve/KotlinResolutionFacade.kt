@@ -19,17 +19,18 @@ package org.jetbrains.kotlin.core.resolve
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import com.intellij.openapi.project.Project
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
+import org.jetbrains.kotlin.container.ComponentProvider
 
 public class KotlinResolutionFacade(val javaProject: IJavaProject, val componentProvider: ComponentProvider) : ResolutionFacade {
     override val moduleDescriptor: ModuleDescriptor
@@ -38,11 +39,11 @@ public class KotlinResolutionFacade(val javaProject: IJavaProject, val component
     override val project: Project
         get() = KotlinEnvironment.getEnvironment(javaProject).getProject()
     
-    override fun analyze(element: JetElement, bodyResolveMode: BodyResolveMode): BindingContext {
+    override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()
     }
     
-    override fun analyzeFullyAndGetResult(elements: Collection<JetElement>): AnalysisResult {
+    override fun analyzeFullyAndGetResult(elements: Collection<KtElement>): AnalysisResult {
         throw UnsupportedOperationException()
     }
     
@@ -60,7 +61,7 @@ public class KotlinResolutionFacade(val javaProject: IJavaProject, val component
         throw UnsupportedOperationException()
     }
     
-    override fun resolveToDescriptor(declaration: JetDeclaration): DeclarationDescriptor {
+    override fun resolveToDescriptor(declaration: KtDeclaration): DeclarationDescriptor {
         throw UnsupportedOperationException()
     }
 }

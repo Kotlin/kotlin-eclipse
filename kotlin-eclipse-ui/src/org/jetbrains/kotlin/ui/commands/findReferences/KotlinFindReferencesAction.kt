@@ -22,10 +22,9 @@ import org.eclipse.jdt.core.JavaCore
 import org.eclipse.ui.handlers.HandlerUtil
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.eclipse.jdt.core.IJavaElement
-import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.jdt.ui.actions.FindReferencesAction
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jface.text.ITextSelection
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.eclipse.core.resources.IFile
@@ -50,12 +49,9 @@ import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.eclipse.jdt.ui.search.PatternQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchScope
-import org.jetbrains.kotlin.psi.JetDeclaration
 import kotlin.properties.Delegates
 import org.eclipse.jdt.ui.search.QuerySpecification
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
-import org.jetbrains.kotlin.psi.JetObjectDeclarationName
-import org.jetbrains.kotlin.psi.JetObjectDeclaration
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
@@ -106,7 +102,7 @@ public class KotlinFindReferencesInProjectAction(editor: KotlinFileEditor) : Kot
         val ACTION_ID = "SearchReferencesInProject"
     }
     
-    override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification {
+    override fun createScopeQuerySpecification(jetElement: KtElement): QuerySpecification {
         val factory = JavaSearchScopeFactory.getInstance()
         return createQuerySpecification(
                 jetElement,
@@ -129,7 +125,7 @@ public class KotlinFindReferencesInWorkspaceAction(editor: KotlinFileEditor) : K
         val ACTION_ID = "SearchReferencesInWorkspace"
     }
     
-    override fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification {
+    override fun createScopeQuerySpecification(jetElement: KtElement): QuerySpecification {
         val factory = JavaSearchScopeFactory.getInstance()
         return createQuerySpecification(
                 jetElement,
@@ -157,7 +153,7 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
         SearchUtil.runQueryInBackground(query)
     }
     
-    abstract fun createScopeQuerySpecification(jetElement: JetElement): QuerySpecification
+    abstract fun createScopeQuerySpecification(jetElement: KtElement): QuerySpecification
     
     private fun getFile(event: ExecutionEvent): IFile? {
         val activeEditor = HandlerUtil.getActiveEditor(event)
@@ -165,7 +161,7 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
     }
 }
 
-fun createQuerySpecification(jetElement: JetElement, javaProject: IJavaProject, scope: IJavaSearchScope, 
+fun createQuerySpecification(jetElement: KtElement, javaProject: IJavaProject, scope: IJavaSearchScope, 
         description: String): QuerySpecification {
     val sourceElements = jetElement.resolveToSourceDeclaration(javaProject)
     return KotlinJavaQuerySpecification(sourceElements, IJavaSearchConstants.REFERENCES, scope, description)

@@ -20,14 +20,14 @@ import com.intellij.psi.PsiElement
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.diagnostics.Errors
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.JetCallableDeclaration
-import org.jetbrains.kotlin.psi.JetCodeFragment
-import org.jetbrains.kotlin.psi.JetFunctionLiteral
-import org.jetbrains.kotlin.psi.JetConstructor
-import org.jetbrains.kotlin.psi.JetFunction
-import org.jetbrains.kotlin.psi.JetNamedFunction
-import org.jetbrains.kotlin.psi.JetWithExpressionInitializer
-import org.jetbrains.kotlin.types.JetType
+import org.jetbrains.kotlin.psi.KtCallableDeclaration
+import org.jetbrains.kotlin.psi.KtCodeFragment
+import org.jetbrains.kotlin.psi.KtFunctionLiteral
+import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
+import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -35,34 +35,34 @@ import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.types.ErrorUtils
 import kotlin.properties.Delegates
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
-import org.jetbrains.kotlin.psi.JetProperty
-import org.jetbrains.kotlin.psi.JetParameter
+import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
 public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
     private var displayString: String? = null
     
     override fun isApplicable(psiElement: PsiElement): Boolean {
-        val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, JetCallableDeclaration::class.java)
+        val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, KtCallableDeclaration::class.java)
         if (element == null) return false
         
-        if (element.getContainingFile() is JetCodeFragment) return false
-        if (element is JetFunctionLiteral) return false
-        if (element is JetConstructor<*>) return false
+        if (element.getContainingFile() is KtCodeFragment) return false
+        if (element is KtFunctionLiteral) return false
+        if (element is KtConstructor<*>) return false
         if (element.getTypeReference() != null) return false
         
         val editor = getActiveEditor()
         if (editor == null) return false
         val caretOffset = getCaretOffsetInPSI(editor, editor.document)
         
-        val initializer = (element as? JetWithExpressionInitializer)?.getInitializer()
+        val initializer = (element as? KtWithExpressionInitializer)?.getInitializer()
         if (initializer != null && initializer.getTextRange().containsOffset(caretOffset)) return false
 
-        if (element is JetNamedFunction && element.hasBlockBody()) return false
+        if (element is KtNamedFunction && element.hasBlockBody()) return false
         
         if (getTypeForDeclaration(element).isError()) return false
 
-        displayString = if (element is JetFunction) "Specify return type explicitly" else "Specify type explicitly"
+        displayString = if (element is KtFunction) "Specify return type explicitly" else "Specify type explicitly"
         
         return true
     }
@@ -72,7 +72,7 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
     }
     
     override fun apply(document: IDocument, psiElement: PsiElement) {
-        val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, JetCallableDeclaration::class.java)!!
+        val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, KtCallableDeclaration::class.java)!!
         val type = getTypeForDeclaration(element)
         val anchor = getAnchor(element)
         
@@ -85,7 +85,7 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
         }
     }
     
-    private fun addTypeAnnotation(editor: KotlinFileEditor, document: IDocument, element: PsiElement, type: JetType): Int {
+    private fun addTypeAnnotation(editor: KotlinFileEditor, document: IDocument, element: PsiElement, type: KotlinType): Int {
         val offset = getEndOffset(element, editor)
         val text = ": ${IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.renderType(type)}"
         document.replace(getEndOffset(element, editor), 0, text)
@@ -93,7 +93,7 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
         return offset + text.length()
     }
     
-    private fun getTypeForDeclaration(declaration: JetCallableDeclaration): JetType {
+    private fun getTypeForDeclaration(declaration: KtCallableDeclaration): KotlinType {
         val bindingContext = getBindingContext(declaration.getContainingJetFile())
         if (bindingContext == null) return ErrorUtils.createErrorType("null type")
         
@@ -103,11 +103,11 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
     }
 }
 
-fun getAnchor(element: JetCallableDeclaration): PsiElement? {
+fun getAnchor(element: KtCallableDeclaration): PsiElement? {
     return when (element){
-        is JetProperty -> element.getNameIdentifier()
-        is JetNamedFunction -> element.getValueParameterList()
-        is JetParameter -> element.getNameIdentifier()
+        is KtProperty -> element.getNameIdentifier()
+        is KtNamedFunction -> element.getValueParameterList()
+        is KtParameter -> element.getNameIdentifier()
         else -> null
     }
 }

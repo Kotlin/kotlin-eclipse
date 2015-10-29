@@ -18,7 +18,6 @@
 package org.jetbrains.kotlin.ui.refactorings.rename
 
 import org.eclipse.jdt.core.IType
-import org.jetbrains.kotlin.psi.JetElement
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.eclipse.jdt.core.ISourceRange
 import org.eclipse.jdt.core.ICompilationUnit

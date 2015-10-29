@@ -16,23 +16,22 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.asJava
 
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jdt.core.IMember
 import org.eclipse.jdt.core.IField
 import org.eclipse.jdt.core.IMethod
-import org.jetbrains.kotlin.psi.JetClass
-import org.jetbrains.kotlin.psi.JetConstructor
+import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetClassOrObject
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.name.FqName
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
 
-fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
-    val jetSignatures = jetElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)
+fun equalsJvmSignature(KtElement: KtElement, javaMember: IMember): Boolean {
+    val jetSignatures = KtElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)
     if (jetSignatures == null) return false
     
     val memberSignature = when (javaMember) {
@@ -45,7 +44,7 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
         if (it.first == memberSignature) {
             return@any when {
                 javaMember is IMethod && javaMember.isConstructor() -> 
-                jetElement is JetClass || jetElement is JetConstructor<*>
+                KtElement is KtClass || KtElement is KtConstructor<*>
                 else -> it.second == javaMember.getElementName()
             }
         }
@@ -54,17 +53,17 @@ fun equalsJvmSignature(jetElement: JetElement, javaMember: IMember): Boolean {
     }
 }
 
-fun getDeclaringTypeFqName(jetElement: JetElement): KotlinClassNameInfo {
-    val parent = PsiTreeUtil.getParentOfType(jetElement, JetClassOrObject::class.java, JetFile::class.java)
+fun getDeclaringTypeFqName(KtElement: KtElement): KotlinClassNameInfo {
+    val parent = PsiTreeUtil.getParentOfType(KtElement, KtClassOrObject::class.java, KtFile::class.java)
     return if (parent != null) getTypeFqName(parent) else KotlinClassNameInfo.EMPTY
 }
 
 fun getTypeFqName(element: PsiElement): KotlinClassNameInfo {
     return when (element) {
-        is JetClassOrObject -> KotlinClassNameInfo(element.getFqName())
-        is JetFile -> 
+        is KtClassOrObject -> KotlinClassNameInfo(element.getFqName())
+        is KtFile -> 
             KotlinClassNameInfo(PackageClassUtils.getPackageClassFqName(element.getPackageFqName()), 
-                NoResolveFileClassesProvider.getFileClassInfo(element).fileClassFqName)
+                NoResolveFileClassesProvider.INSTANCE.getFileClassInfo(element).fileClassFqName)
         else -> KotlinClassNameInfo.EMPTY
     }
 }

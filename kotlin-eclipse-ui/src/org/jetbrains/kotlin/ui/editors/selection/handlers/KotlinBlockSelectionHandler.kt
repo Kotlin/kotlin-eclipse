@@ -1,15 +1,15 @@
 package org.jetbrains.kotlin.ui.editors.selection.handlers
 
-import org.jetbrains.kotlin.psi.JetWhenExpression
-import org.jetbrains.kotlin.psi.JetBlockExpression
+import org.jetbrains.kotlin.psi.KtWhenExpression
+import org.jetbrains.kotlin.psi.KtBlockExpression
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.lexer.JetTokens
+import org.jetbrains.kotlin.lexer.KtTokens
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.openapi.util.TextRange
 
 public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
 	override fun canSelect(enclosingElement: PsiElement)
-		= enclosingElement is JetBlockExpression || enclosingElement is JetWhenExpression
+		= enclosingElement is KtBlockExpression || enclosingElement is KtWhenExpression
 
 	override fun selectEnclosing(enclosingElement: PsiElement, selectedRange: TextRange): TextRange {
 		val elementStart = findBlockContentStart(enclosingElement);
@@ -25,14 +25,14 @@ public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
 	}
 
 	override fun selectPrevious(enclosingElement: PsiElement, selectionCandidate: PsiElement, selectedRange: TextRange): TextRange {
-		if (selectionCandidate.getNode().getElementType() == JetTokens.LBRACE) {
+		if (selectionCandidate.getNode().getElementType() == KtTokens.LBRACE) {
 			return selectEnclosing(enclosingElement, selectedRange)
 		}
 		return selectionWithElementAppendedToBeginning(selectedRange, selectionCandidate)
 	}
 
 	override fun selectNext(enclosingElement: PsiElement, selectionCandidate: PsiElement, selectedRange: TextRange): TextRange {
-		if (selectionCandidate.getNode().getElementType() == JetTokens.RBRACE) {
+		if (selectionCandidate.getNode().getElementType() == KtTokens.RBRACE) {
 			return selectEnclosing(enclosingElement, selectedRange)
 		}
 		return selectionWithElementAppendedToEnd(selectedRange, selectionCandidate)
@@ -40,7 +40,7 @@ public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
 
 	private fun findBlockContentStart(block: PsiElement): Int {
 	    val element = block.allChildren
-        .dropWhile { it.getNode().getElementType() != JetTokens.LBRACE }
+        .dropWhile { it.getNode().getElementType() != KtTokens.LBRACE }
         .drop(1)
         .dropWhile { it is PsiWhiteSpace }
         .firstOrNull() ?: block
@@ -52,7 +52,7 @@ public class KotlinBlockSelectionHandler: KotlinDefaultSelectionHandler() {
             .toList()
             .reversed()
             .asSequence()
-            .dropWhile { it.getNode().getElementType() != JetTokens.RBRACE }
+            .dropWhile { it.getNode().getElementType() != KtTokens.RBRACE }
             .drop(1)
             .dropWhile { it is PsiWhiteSpace }
             .firstOrNull() ?: block

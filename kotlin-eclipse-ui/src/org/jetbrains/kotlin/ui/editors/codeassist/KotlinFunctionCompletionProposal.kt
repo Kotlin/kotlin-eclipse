@@ -3,13 +3,8 @@ package org.jetbrains.kotlin.ui.editors.codeassist
 import org.eclipse.jface.text.contentassist.ICompletionProposal
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension
 import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.types.JetType
-import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.psi.JetImportDirective
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.lexer.JetTokens
-import org.jetbrains.kotlin.psi.JetTypeArgumentList
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2014 KtBrains s.r.o.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,25 +21,25 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.JetDeclaration;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.psi.JetNamedFunction;
-import org.jetbrains.kotlin.psi.JetParameter;
-import org.jetbrains.kotlin.psi.JetTypeReference;
+import org.jetbrains.kotlin.psi.KtDeclaration;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtNamedFunction;
+import org.jetbrains.kotlin.psi.KtParameter;
+import org.jetbrains.kotlin.psi.KtTypeReference;
 
 public class JetMainDetector {
     private JetMainDetector() {
     }
 
-    public static boolean hasMain(@NotNull List<JetDeclaration> declarations) {
+    public static boolean hasMain(@NotNull List<KtDeclaration> declarations) {
         return findMainFunction(declarations) != null;
     }
 
-    public static boolean isMain(@NotNull JetNamedFunction function) {
+    public static boolean isMain(@NotNull KtNamedFunction function) {
         if ("main".equals(function.getName())) {
-            List<JetParameter> parameters = function.getValueParameters();
+            List<KtParameter> parameters = function.getValueParameters();
             if (parameters.size() == 1) {
-                JetTypeReference reference = parameters.get(0).getTypeReference();
+                KtTypeReference reference = parameters.get(0).getTypeReference();
                 if (reference != null && reference.getText().equals("Array<String>")) {  // TODO correct check
                     return true;
                 }
@@ -50,9 +50,9 @@ public class JetMainDetector {
     }
 
     @Nullable
-    public static JetNamedFunction getMainFunction(@NotNull Collection<JetFile> files) {
-        for (JetFile file : files) {
-            JetNamedFunction mainFunction = findMainFunction(file.getDeclarations());
+    public static KtNamedFunction getMainFunction(@NotNull Collection<KtFile> files) {
+        for (KtFile file : files) {
+            KtNamedFunction mainFunction = findMainFunction(file.getDeclarations());
             if (mainFunction != null) {
                 return mainFunction;
             }
@@ -62,10 +62,10 @@ public class JetMainDetector {
     }
 
     @Nullable
-    private static JetNamedFunction findMainFunction(@NotNull List<JetDeclaration> declarations) {
-        for (JetDeclaration declaration : declarations) {
-            if (declaration instanceof JetNamedFunction) {
-                JetNamedFunction candidateFunction = (JetNamedFunction) declaration;
+    private static KtNamedFunction findMainFunction(@NotNull List<KtDeclaration> declarations) {
+        for (KtDeclaration declaration : declarations) {
+            if (declaration instanceof KtNamedFunction) {
+                KtNamedFunction candidateFunction = (KtNamedFunction) declaration;
                 if (isMain(candidateFunction)) {
                     return candidateFunction;
                 }

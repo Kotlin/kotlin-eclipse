@@ -22,24 +22,24 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 
 public class KotlinAnalyzer {
     @NotNull
-    public static AnalysisResultWithProvider analyzeFile(@NotNull IJavaProject javaProject, @NotNull JetFile jetFile) {
+    public static AnalysisResultWithProvider analyzeFile(@NotNull IJavaProject javaProject, @NotNull KtFile jetFile) {
         return KotlinAnalysisFileCache.INSTANCE$.getAnalysisResult(jetFile, javaProject);
     }
     
     @NotNull
     private static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
-            @NotNull Collection<JetFile> filesToAnalyze) {
+            @NotNull Collection<KtFile> filesToAnalyze) {
         return EclipseAnalyzerFacadeForJVM.INSTANCE$.analyzeFilesWithJavaIntegration(
                 javaProject, 
                 kotlinEnvironment.getProject(), 
                 filesToAnalyze);
     }
     
-    public static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull Collection<JetFile> filesToAnalyze) {
+    public static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull Collection<KtFile> filesToAnalyze) {
         if (filesToAnalyze.size() == 1) {
             return analyzeFile(javaProject, filesToAnalyze.iterator().next());
         }

@@ -18,41 +18,41 @@ package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
 import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.psi.JetCallableDeclaration
+import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.JetCodeFragment
-import org.jetbrains.kotlin.psi.JetWithExpressionInitializer
-import org.jetbrains.kotlin.psi.JetProperty
-import org.jetbrains.kotlin.psi.JetNamedFunction
-import org.jetbrains.kotlin.psi.JetParameter
+import org.jetbrains.kotlin.psi.KtCodeFragment
+import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
+import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.JavaCore
-import org.jetbrains.kotlin.psi.JetTypeReference
+import org.jetbrains.kotlin.psi.KtTypeReference
 
 public class KotlinRemoveExplicitTypeAssistProposal : KotlinQuickAssistProposal() {
     private var _displayString: String? = null
     
     override fun isApplicable(psiElement: PsiElement): Boolean {
-        val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, JetCallableDeclaration::class.java)
+        val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, KtCallableDeclaration::class.java)
         if (element == null) return false
         
-        if (element.getContainingFile() is JetCodeFragment) return false
+        if (element.getContainingFile() is KtCodeFragment) return false
         if (element.getTypeReference() == null) return false
 
         val editor = getActiveEditor()
         if (editor == null) return false
         val caretOffset = getCaretOffsetInPSI(editor, editor.document)
         
-        val initializer = (element as? JetWithExpressionInitializer)?.getInitializer()
+        val initializer = (element as? KtWithExpressionInitializer)?.getInitializer()
         if (initializer != null && initializer.getTextRange().containsOffset(caretOffset)) return false
         
         val bindingContext = getBindingContext(element.getContainingJetFile())
         if (bindingContext == null) return false
         
         return when (element) {
-            is JetProperty -> initializer != null
-            is JetNamedFunction -> !element.hasBlockBody() && initializer != null
-            is JetParameter -> element.isLoopParameter()
+            is KtProperty -> initializer != null
+            is KtNamedFunction -> !element.hasBlockBody() && initializer != null
+            is KtParameter -> element.isLoopParameter()
             else -> false
         }
     }
@@ -62,7 +62,7 @@ public class KotlinRemoveExplicitTypeAssistProposal : KotlinQuickAssistProposal(
     }
     
     override fun apply(document: IDocument, psiElement: PsiElement) {
-        val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, JetCallableDeclaration::class.java)!!
+        val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, KtCallableDeclaration::class.java)!!
         val anchor = getAnchor(element)
         
         if (anchor == null) return
@@ -70,7 +70,7 @@ public class KotlinRemoveExplicitTypeAssistProposal : KotlinQuickAssistProposal(
         removeTypeAnnotation(document, anchor, element.getTypeReference()!!)
     }
     
-    private fun removeTypeAnnotation(document: IDocument, removeAfter: PsiElement, typeReference: JetTypeReference) {
+    private fun removeTypeAnnotation(document: IDocument, removeAfter: PsiElement, typeReference: KtTypeReference) {
         val editor = getActiveEditor()
         if (editor == null) return
         

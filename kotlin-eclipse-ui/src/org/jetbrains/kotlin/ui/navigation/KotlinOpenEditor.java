@@ -21,8 +21,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.JetElement;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditorInput;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
@@ -32,8 +31,8 @@ public class KotlinOpenEditor {
 	@Nullable
 	public static IEditorPart openKotlinEditor(@NotNull IJavaElement element, boolean activate) {
 	    File lightClass = element.getResource().getFullPath().toFile();
-	    List<JetFile> sourceFiles = KotlinLightClassManager.getInstance(element.getJavaProject()).getSourceFiles(lightClass);
-	    JetFile navigationFile = NavigationPackage.findNavigationFileFromSources(element, sourceFiles);
+	    List<KtFile> sourceFiles = KotlinLightClassManager.getInstance(element.getJavaProject()).getSourceFiles(lightClass);
+	    KtFile navigationFile = KotlinOpenEditorUtilsKt.findNavigationFileFromSources(element, sourceFiles);
 	    
 	    IFile kotlinFile;
 	    if (navigationFile != null) {
@@ -54,7 +53,7 @@ public class KotlinOpenEditor {
 	}
 	
 	public static void revealKotlinElement(@NotNull KotlinEditor kotlinEditor, @NotNull IJavaElement javaElement) {
-        JetFile jetFile = kotlinEditor.getParsedFile();
+        KtFile jetFile = kotlinEditor.getParsedFile();
         
         if (jetFile == null) {
             return;

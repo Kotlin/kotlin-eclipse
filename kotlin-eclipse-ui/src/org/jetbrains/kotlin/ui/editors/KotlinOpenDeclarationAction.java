@@ -65,10 +65,9 @@ import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClass;
 import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader;
-import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader.Kind;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.psi.JetReferenceExpression;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtReferenceExpression;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement;
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor;
@@ -98,7 +97,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Override
     public void run(ITextSelection selection) {
-        JetFile file = editor.getParsedFile();
+        KtFile file = editor.getParsedFile();
         
         if (file == null) {
             return;
@@ -110,7 +109,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             return;
         }
         
-        JetReferenceExpression selectedExpression = getSelectedExpressionWithParsedFile(editor, file, selection.getOffset());
+        KtReferenceExpression selectedExpression = getSelectedExpressionWithParsedFile(editor, file, selection.getOffset());
         if (selectedExpression == null) {
             return;
         }
@@ -130,7 +129,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private SourceElement getTargetElement(@NotNull KotlinReference reference, @NotNull JetFile file, @NotNull IJavaProject javaProject) {
+    private SourceElement getTargetElement(@NotNull KotlinReference reference, @NotNull KtFile file, @NotNull IJavaProject javaProject) {
         List<SourceElement> sourceElements = ReferencesPackage.resolveToSourceElements(reference);
         return sourceElements.size() == 1 ? sourceElements.get(0) : null; 
     }
@@ -149,7 +148,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     private void gotoElementInBinaryClass(KotlinJvmBinaryClass binaryClass, KotlinReference kotlinReference, IJavaProject javaProject) throws JavaModelException, PartInitException {
-        JetFile jetFile = kotlinReference.getExpression().getContainingJetFile();
+        KtFile jetFile = kotlinReference.getExpression().getContainingJetFile();
         BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getAnalysisResult().getBindingContext();
         Collection<DeclarationDescriptor> descriptors = kotlinReference.getTargetDescriptors(context);
         if (descriptors.isEmpty()) {
@@ -336,12 +335,12 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    public static JetReferenceExpression getSelectedExpression(@NotNull KotlinEditor editor, @NotNull IFile file, int offset) {
+    public static KtReferenceExpression getSelectedExpression(@NotNull KotlinEditor editor, @NotNull IFile file, int offset) {
         return getSelectedExpressionWithParsedFile(editor, KotlinPsiManager.INSTANCE.getParsedFile(file), offset);
     }
     
     @Nullable
-    public static JetReferenceExpression getSelectedExpressionWithParsedFile(@NotNull KotlinEditor editor, @NotNull JetFile file, int offset) {
+    public static KtReferenceExpression getSelectedExpressionWithParsedFile(@NotNull KotlinEditor editor, @NotNull KtFile file, int offset) {
         offset = LineEndUtil.convertCrToDocumentOffset(editor.getJavaEditor().getViewer().getDocument(), offset);
         
         PsiElement psiExpression = file.findElementAt(offset);

@@ -8,7 +8,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
 import org.jetbrains.kotlin.idea.MainFunctionDetector;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.resolve.BindingContext;
 
 public class KotlinLaunchableTester extends PropertyTester {
@@ -17,7 +17,7 @@ public class KotlinLaunchableTester extends PropertyTester {
         if (receiver instanceof IAdaptable) {
             IFile file = (IFile) ((IAdaptable) receiver).getAdapter(IFile.class);
             if (file != null) {
-                JetFile jetFile = KotlinPsiManager.getKotlinParsedFile(file);
+                KtFile jetFile = KotlinPsiManager.getKotlinParsedFile(file);
                 if (jetFile == null) {
                     return false;
                 }

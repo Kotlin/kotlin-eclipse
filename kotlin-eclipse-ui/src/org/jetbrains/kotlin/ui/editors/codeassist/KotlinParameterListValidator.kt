@@ -23,14 +23,13 @@ import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.TextPresentation
 import kotlin.properties.Delegates
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.psi.JetValueArgumentList
+import org.jetbrains.kotlin.psi.KtValueArgumentList
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.jetbrains.kotlin.psi.JetValueArgument
 import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.StyleRange
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.lexer.JetTokens
+import org.jetbrains.kotlin.lexer.KtTokens
 import com.intellij.psi.PsiErrorElement
 
 public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IContextInformationValidator, 
@@ -98,14 +97,14 @@ public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IConte
 //    Copied with some changes from JetFunctionParameterInfoHandler.java
     private fun getCurrentArgumentIndex(offset: Int): Int? {
         val psiElement = EditorUtil.getPsiElement(editor, offset)
-        val argumentList = PsiTreeUtil.getNonStrictParentOfType(psiElement, JetValueArgumentList::class.java)
+        val argumentList = PsiTreeUtil.getNonStrictParentOfType(psiElement, KtValueArgumentList::class.java)
         if (argumentList == null) return null
         
         val offsetInPSI = LineEndUtil.convertCrToDocumentOffset(editor.document, offset)
         var child = argumentList.getNode().getFirstChildNode()
         var index = 0
         while (child != null && child.getStartOffset() < offsetInPSI) {
-            if (child.getElementType() == JetTokens.COMMA || 
+            if (child.getElementType() == KtTokens.COMMA || 
                 (child.getText() == "," && child is PsiErrorElement)) ++index
             child = child.getTreeNext()
         }

@@ -16,8 +16,8 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.psi.JetPsiFactory;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtPsiFactory;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
@@ -27,7 +27,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 public class KotlinTokenScanner implements ITokenScanner {
     private final KotlinTokensFactory kotlinTokensFactory;
     
-    private JetFile jetFile = null;
+    private KtFile jetFile = null;
     private int offset = 0;
     private int rangeEnd = 0;
     private PsiElement lastElement = null;
@@ -85,11 +85,11 @@ public class KotlinTokenScanner implements ITokenScanner {
     }
     
     @Nullable
-    private static JetFile createJetFile(@NotNull IDocument document) {
+    private static KtFile createJetFile(@NotNull IDocument document) {
         KotlinEnvironment environment = getAnyKotlinEnvironment();
         if (environment != null) {
             Project ideaProject = environment.getProject();
-            return new JetPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get()));
+            return new KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get()));
         }
         
         return null;

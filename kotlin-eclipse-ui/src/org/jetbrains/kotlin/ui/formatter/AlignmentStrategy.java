@@ -22,13 +22,13 @@ import java.util.Set;
 
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.lexer.JetTokens;
-import org.jetbrains.kotlin.psi.JetClass;
-import org.jetbrains.kotlin.psi.JetClassInitializer;
-import org.jetbrains.kotlin.psi.JetFunction;
-import org.jetbrains.kotlin.psi.JetImportList;
-import org.jetbrains.kotlin.psi.JetPackageDirective;
-import org.jetbrains.kotlin.psi.JetPropertyAccessor;
+import org.jetbrains.kotlin.lexer.KtTokens;
+import org.jetbrains.kotlin.psi.KtClass;
+import org.jetbrains.kotlin.psi.KtClassInitializer;
+import org.jetbrains.kotlin.psi.KtFunction;
+import org.jetbrains.kotlin.psi.KtImportList;
+import org.jetbrains.kotlin.psi.KtPackageDirective;
+import org.jetbrains.kotlin.psi.KtPropertyAccessor;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
@@ -109,7 +109,7 @@ public class AlignmentStrategy {
         
         if (leafPsiElement != null) {
             IElementType elementType = leafPsiElement.getElementType();
-            if (elementType == JetTokens.LBRACE || elementType == JetTokens.RBRACE) {
+            if (elementType == KtTokens.LBRACE || elementType == KtTokens.RBRACE) {
                 return true;
             }
         }
@@ -122,7 +122,7 @@ public class AlignmentStrategy {
         
         if (leafPsiElement != null) {
             IElementType elementType = leafPsiElement.getElementType();
-            if (elementType == JetTokens.LBRACE) {
+            if (elementType == KtTokens.LBRACE) {
                 return true;
             }
         }
@@ -170,11 +170,11 @@ public class AlignmentStrategy {
         
         if (prevSibling == null || nextSibling == null) return false;
         
-        if (prevSibling instanceof JetPackageDirective) {
+        if (prevSibling instanceof KtPackageDirective) {
             return !prevSibling.getText().isEmpty();
         }
         
-        if (prevSibling instanceof JetImportList) {
+        if (prevSibling instanceof KtImportList) {
             return !prevSibling.getText().isEmpty();
         }
         
@@ -185,8 +185,8 @@ public class AlignmentStrategy {
         IElementType elementType = node.getElementType();
         if ("BLOCK".equals(elementType.toString())) {
             PsiElement parent = node.getPsi().getParent();
-            if (parent instanceof JetFunction || parent instanceof JetClass || parent instanceof JetClassInitializer 
-                    || parent instanceof JetPropertyAccessor) {
+            if (parent instanceof KtFunction || parent instanceof KtClass || parent instanceof KtClassInitializer 
+                    || parent instanceof KtPropertyAccessor) {
                 return indent + 1;
             } 
         } else if (BLOCK_ELEMENT_TYPES.contains(elementType.toString())) {

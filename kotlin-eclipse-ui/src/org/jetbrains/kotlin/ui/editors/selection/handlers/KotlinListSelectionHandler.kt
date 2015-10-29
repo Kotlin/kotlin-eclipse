@@ -1,22 +1,22 @@
 package org.jetbrains.kotlin.ui.editors.selection.handlers
 
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.JetParameterList
-import org.jetbrains.kotlin.psi.JetValueArgumentList
-import org.jetbrains.kotlin.psi.JetTypeParameterList
-import org.jetbrains.kotlin.psi.JetTypeArgumentList
+import org.jetbrains.kotlin.psi.KtParameterList
+import org.jetbrains.kotlin.psi.KtValueArgumentList
+import org.jetbrains.kotlin.psi.KtTypeParameterList
+import org.jetbrains.kotlin.psi.KtTypeArgumentList
 import com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.psi.JetValueArgument
-import org.jetbrains.kotlin.psi.JetParameter
-import org.jetbrains.kotlin.psi.JetTypeParameter
-import org.jetbrains.kotlin.psi.JetTypeProjection
+import org.jetbrains.kotlin.psi.KtValueArgument
+import org.jetbrains.kotlin.psi.KtParameter
+import org.jetbrains.kotlin.psi.KtTypeParameter
+import org.jetbrains.kotlin.psi.KtTypeProjection
 
 public class KotlinListSelectionHandler: KotlinDefaultSelectionHandler() {
     override fun canSelect(enclosingElement: PsiElement) =
-	    enclosingElement is JetParameterList ||
-	    enclosingElement is JetValueArgumentList ||
-	    enclosingElement is JetTypeParameterList ||
-	    enclosingElement is JetTypeArgumentList
+	    enclosingElement is KtParameterList ||
+	    enclosingElement is KtValueArgumentList ||
+	    enclosingElement is KtTypeParameterList ||
+	    enclosingElement is KtTypeArgumentList
 
     override fun selectEnclosing(enclosingElement: PsiElement, selectedRange: TextRange): TextRange {
         val elementRange = enclosingElement.getTextRange();
@@ -29,8 +29,8 @@ public class KotlinListSelectionHandler: KotlinDefaultSelectionHandler() {
     }
 
     private fun isElementOfListPartType(element: PsiElement): Boolean =
-	    element is JetValueArgument || element is JetParameter ||
-	    element is JetTypeParameter || element is JetTypeProjection
+	    element is KtValueArgument || element is KtParameter ||
+	    element is KtTypeParameter || element is KtTypeProjection
 
     override fun selectPrevious(enclosingElement: PsiElement, selectionCandidate: PsiElement, selectedRange: TextRange): TextRange {
         var elementToSelect = selectionCandidate.siblings(forward = false, withItself = true)

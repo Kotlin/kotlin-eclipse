@@ -43,7 +43,7 @@ import org.jetbrains.kotlin.diagnostics.Severity;
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 
@@ -98,7 +98,7 @@ public class DiagnosticAnnotationUtil {
     
     @NotNull
     public List<DiagnosticAnnotation> createParsingDiagnosticAnnotations(@NotNull IFile file) {
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         List<DiagnosticAnnotation> result = new ArrayList<DiagnosticAnnotation>();
         for (PsiErrorElement syntaxError : AnalyzingUtils.getSyntaxErrorRanges(jetFile)) {
             result.add(createKotlinAnnotation(syntaxError, file));

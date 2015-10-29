@@ -49,7 +49,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
 import org.jetbrains.kotlin.name.FqName;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.osgi.framework.Bundle;
 
 import com.google.common.base.Predicate;
@@ -69,7 +69,7 @@ public class ProjectUtils {
     
     public static IFile findFilesWithMain(Collection<IFile> files) {
         for (IFile file : files) {
-            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+            KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
             if (JetMainDetector.hasMain(jetFile.getDeclarations())) {
                 return file;
             }
@@ -94,7 +94,7 @@ public class ProjectUtils {
     
     @Nullable
     public static String getPackageByFile(IFile file) {
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
         assert jetFile != null;
         
@@ -143,10 +143,10 @@ public class ProjectUtils {
     }
     
     @NotNull
-    public static List<JetFile> getSourceFiles(@NotNull IProject project) {
-        List<JetFile> jetFiles = new ArrayList<JetFile>();
+    public static List<KtFile> getSourceFiles(@NotNull IProject project) {
+        List<KtFile> jetFiles = new ArrayList<KtFile>();
         for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
-            JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+            KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
             jetFiles.add(jetFile);
         }
         
@@ -154,9 +154,9 @@ public class ProjectUtils {
     }
     
     @NotNull
-    public static List<JetFile> getSourceFilesWithDependencies(@NotNull IJavaProject javaProject) {
+    public static List<KtFile> getSourceFilesWithDependencies(@NotNull IJavaProject javaProject) {
         try {
-            List<JetFile> jetFiles = Lists.newArrayList();
+            List<KtFile> jetFiles = Lists.newArrayList();
             for (IProject project : getDependencyProjects(javaProject)) {
                 jetFiles.addAll(getSourceFiles(project));
             }

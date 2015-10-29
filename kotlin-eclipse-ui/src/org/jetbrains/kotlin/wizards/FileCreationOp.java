@@ -35,11 +35,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.idea.JetFileType;
+import org.jetbrains.kotlin.idea.KotlinFileType;
 
 public class FileCreationOp implements IRunnableWithProgress {
     
-    private final static String EXT = "." + JetFileType.INSTANCE.getDefaultExtension();
+    private final static String EXT = "." + KotlinFileType.INSTANCE.getDefaultExtension();
     
     private final IPackageFragmentRoot sourceDir;
     private final IPackageFragment packageFragment;

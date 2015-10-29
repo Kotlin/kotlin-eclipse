@@ -18,7 +18,7 @@ package org.jetbrains.kotlin.ui.editors.outline;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
-import org.jetbrains.kotlin.psi.JetDeclarationContainer;
+import org.jetbrains.kotlin.psi.KtDeclarationContainer;
 
 public class PsiContentProvider implements ITreeContentProvider {
 
@@ -37,8 +37,8 @@ public class PsiContentProvider implements ITreeContentProvider {
 
     @Override
     public Object[] getChildren(Object parentElement) {
-        if (parentElement instanceof JetDeclarationContainer) {
-            return ((JetDeclarationContainer) parentElement).getDeclarations().toArray();
+        if (parentElement instanceof KtDeclarationContainer) {
+            return ((KtDeclarationContainer) parentElement).getDeclarations().toArray();
         }
         
         return new Object[] {};

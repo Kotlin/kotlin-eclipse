@@ -22,14 +22,14 @@ import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
-import org.jetbrains.kotlin.psi.JetClass;
-import org.jetbrains.kotlin.psi.JetClassInitializer;
-import org.jetbrains.kotlin.psi.JetElement;
-import org.jetbrains.kotlin.psi.JetFunction;
-import org.jetbrains.kotlin.psi.JetPackageDirective;
-import org.jetbrains.kotlin.psi.JetParameter;
-import org.jetbrains.kotlin.psi.JetProperty;
-import org.jetbrains.kotlin.psi.JetTypeReference;
+import org.jetbrains.kotlin.psi.KtClass;
+import org.jetbrains.kotlin.psi.KtClassInitializer;
+import org.jetbrains.kotlin.psi.KtElement;
+import org.jetbrains.kotlin.psi.KtFunction;
+import org.jetbrains.kotlin.psi.KtPackageDirective;
+import org.jetbrains.kotlin.psi.KtParameter;
+import org.jetbrains.kotlin.psi.KtProperty;
+import org.jetbrains.kotlin.psi.KtTypeReference;
 
 public class PsiLabelProvider extends LabelProvider {
     
@@ -37,8 +37,8 @@ public class PsiLabelProvider extends LabelProvider {
     
     @Override
     public String getText(Object element) {
-        if (element instanceof JetElement) {
-            return getPresentableElement((JetElement) element);
+        if (element instanceof KtElement) {
+            return getPresentableElement((KtElement) element);
         }
         
         return "";
@@ -47,17 +47,17 @@ public class PsiLabelProvider extends LabelProvider {
     @Override
     public Image getImage(Object element) {
         String imageName = null;
-        if (element instanceof JetClass) {
-            if (((JetClass) element).isInterface()) {
+        if (element instanceof KtClass) {
+            if (((KtClass) element).isInterface()) {
                 imageName = ISharedImages.IMG_OBJS_INTERFACE;
             } else {
                 imageName = ISharedImages.IMG_OBJS_CLASS;
             }
-        } else if (element instanceof JetPackageDirective) {
+        } else if (element instanceof KtPackageDirective) {
             imageName = ISharedImages.IMG_OBJS_PACKAGE;
-        } else if (element instanceof JetFunction) {
+        } else if (element instanceof KtFunction) {
             imageName = ISharedImages.IMG_OBJS_PUBLIC;
-        } else if (element instanceof JetProperty) {
+        } else if (element instanceof KtProperty) {
             imageName = ISharedImages.IMG_FIELD_PUBLIC;
         }
         
@@ -69,38 +69,38 @@ public class PsiLabelProvider extends LabelProvider {
     }
     
     // Source code is taken from org.jetbrains.kotlin.idea.projectView.JetDeclarationTreeNode, updateImple()
-    private String getPresentableElement(JetElement declaration) {
+    private String getPresentableElement(KtElement declaration) {
         String text = "";
         if (declaration != null) {
             text = declaration.getName();
             if (text == null) return "";
-            if (declaration instanceof JetClassInitializer) {
+            if (declaration instanceof KtClassInitializer) {
                 text = CLASS_INITIALIZER;
-            } else if (declaration instanceof JetProperty) {
-                JetProperty property = (JetProperty) declaration;
-                JetTypeReference ref = property.getTypeReference();
+            } else if (declaration instanceof KtProperty) {
+                KtProperty property = (KtProperty) declaration;
+                KtTypeReference ref = property.getTypeReference();
                 if (ref != null) {
                     text += " ";
                     text += ":";
                     text += " ";
                     text += ref.getText();
                 }
-            } else if (declaration instanceof JetFunction) {
-                JetFunction function = (JetFunction) declaration;
-                JetTypeReference receiverTypeRef = function.getReceiverTypeReference();
+            } else if (declaration instanceof KtFunction) {
+                KtFunction function = (KtFunction) declaration;
+                KtTypeReference receiverTypeRef = function.getReceiverTypeReference();
                 if (receiverTypeRef != null) {
                     text = receiverTypeRef.getText() + "." + text;
                 }
                 text += "(";
-                List<JetParameter> parameters = function.getValueParameters();
-                for (JetParameter parameter : parameters) {
+                List<KtParameter> parameters = function.getValueParameters();
+                for (KtParameter parameter : parameters) {
                     if (parameter.getName() != null) {
                         text += parameter.getName();
                         text += " ";
                         text += ":";
                         text += " ";
                     }
-                    JetTypeReference typeReference = parameter.getTypeReference();
+                    KtTypeReference typeReference = parameter.getTypeReference();
                     if (typeReference != null) {
                         text += typeReference.getText();
                     }
@@ -108,7 +108,7 @@ public class PsiLabelProvider extends LabelProvider {
                 }
                 if (parameters.size() > 0) text = text.substring(0, text.length() - 2);
                 text += ")";
-                JetTypeReference typeReference = function.getTypeReference();
+                KtTypeReference typeReference = function.getTypeReference();
                 if (typeReference != null) {
                     text += " ";
                     text += ":";

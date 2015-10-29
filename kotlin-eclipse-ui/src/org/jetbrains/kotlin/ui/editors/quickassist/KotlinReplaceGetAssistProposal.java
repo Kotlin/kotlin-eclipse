@@ -16,15 +16,14 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
-import org.jetbrains.kotlin.psi.JetCallExpression;
-import org.jetbrains.kotlin.psi.JetExpression;
-import org.jetbrains.kotlin.psi.JetQualifiedExpression;
-import org.jetbrains.kotlin.psi.JetSuperExpression;
-import org.jetbrains.kotlin.psi.JetValueArgument;
-import org.jetbrains.kotlin.psi.PsiPackage;
+import org.jetbrains.kotlin.psi.KtCallExpression;
+import org.jetbrains.kotlin.psi.KtExpression;
+import org.jetbrains.kotlin.psi.KtQualifiedExpression;
+import org.jetbrains.kotlin.psi.KtSuperExpression;
+import org.jetbrains.kotlin.psi.KtValueArgument;
 import org.jetbrains.kotlin.psi.ValueArgument;
 import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilPackage;
+import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilKt;
 import org.jetbrains.kotlin.resolve.calls.model.DefaultValueArgument;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedValueArgument;
@@ -38,12 +37,12 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     
     @Override
     public void apply(@NotNull IDocument document, @NotNull PsiElement psiElement) {
-        JetCallExpression callElement = PsiTreeUtil.getParentOfType(psiElement, JetCallExpression.class);
+        KtCallExpression callElement = PsiTreeUtil.getParentOfType(psiElement, KtCallExpression.class);
         if (callElement == null) {
             return;
         }
         
-        JetQualifiedExpression qualifiedExpression = PsiTreeUtil.getParentOfType(psiElement, JetQualifiedExpression.class);
+        KtQualifiedExpression qualifiedExpression = PsiTreeUtil.getParentOfType(psiElement, KtQualifiedExpression.class);
         if (qualifiedExpression == null) {
             return; 
         }
@@ -67,7 +66,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         replaceGetForElement(qualifiedExpression, arguments);
     }
     
-    private void replaceGetForElement(@NotNull JetQualifiedExpression element, @NotNull String arguments) {
+    private void replaceGetForElement(@NotNull KtQualifiedExpression element, @NotNull String arguments) {
         KotlinFileEditor editor = getActiveEditor();
         if (editor == null) {
             return;
@@ -76,9 +75,6 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         IDocument document = editor.getViewer().getDocument();
         
         try {
-            JetExpression indexExpression = PsiPackage.JetPsiFactory(element).createExpression(
-                    element.getReceiverExpression().getText() + "[" + arguments + "]");
-            
             int textLength = element.getTextLength();
             if (TextUtilities.getDefaultLineDelimiter(document).length() > 1) {
                 textLength += IndenterUtil.getLineSeparatorsOccurences(element.getText());
@@ -86,14 +82,14 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             document.replace(
                     getStartOffset(element, editor), 
                     textLength, 
-                    indexExpression.getText());
+                    element.getReceiverExpression().getText() + "[" + arguments + "]");
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
     }
     
     @Nullable
-    private String getArguments(@NotNull JetQualifiedExpression element, @NotNull IFile file) {
+    private String getArguments(@NotNull KtQualifiedExpression element, @NotNull IFile file) {
         StringBuilder buffer = new StringBuilder();
         List<ValueArgument> valueArguments = getPositionalArguments(element, file);
         
@@ -104,7 +100,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             if (!firstArgument) buffer.append(", ");
             firstArgument = false;
             
-            JetExpression argumentExpression = valueArgument.getArgumentExpression();
+            KtExpression argumentExpression = valueArgument.getArgumentExpression();
             if (argumentExpression == null) continue;
             buffer.append(argumentExpression.getText());
         }
@@ -113,7 +109,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     }
     
     @Nullable
-    public static List<ValueArgument> getPositionalArguments(@NotNull JetQualifiedExpression element, @NotNull IFile file) {
+    public static List<ValueArgument> getPositionalArguments(@NotNull KtQualifiedExpression element, @NotNull IFile file) {
         ResolvedCall<?> resolvedCall = getResolvedCall(element, file);
         if (resolvedCall == null) return null;
         
@@ -148,22 +144,22 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     }
     
     @Nullable
-    private static ResolvedCall<?> getResolvedCall(@NotNull JetQualifiedExpression element, @NotNull IFile file) {
-        JetExpression call = element.getSelectorExpression();
-        if (!(call instanceof JetCallExpression)) return null;
+    private static ResolvedCall<?> getResolvedCall(@NotNull KtQualifiedExpression element, @NotNull IFile file) {
+        KtExpression call = element.getSelectorExpression();
+        if (!(call instanceof KtCallExpression)) return null;
         
-        JetCallExpression jetCallExpression = (JetCallExpression) call; 
+        KtCallExpression jetCallExpression = (KtCallExpression) call; 
         
         BindingContext bindingContext = getBindingContext(element, file);
         
         return bindingContext != null ? 
-                CallUtilPackage.getResolvedCall(jetCallExpression.getCalleeExpression(), bindingContext) : null;
+                CallUtilKt.getResolvedCall(jetCallExpression.getCalleeExpression(), bindingContext) : null;
     }
     
     @Nullable
-    private static BindingContext getBindingContext(@NotNull JetQualifiedExpression element, @NotNull IFile file) {
-        JetExpression call = element.getSelectorExpression();
-        if (!(call instanceof JetCallExpression)) return null;
+    private static BindingContext getBindingContext(@NotNull KtQualifiedExpression element, @NotNull IFile file) {
+        KtExpression call = element.getSelectorExpression();
+        if (!(call instanceof KtCallExpression)) return null;
         
         IJavaProject javaProject = JavaCore.create(file.getProject());
         BindingContext bindingContext = KotlinAnalyzer
@@ -176,27 +172,27 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     
     @Override
     public boolean isApplicable(@NotNull PsiElement psiElement) {
-        JetCallExpression callExpression = PsiTreeUtil.getParentOfType(psiElement, JetCallExpression.class);
+        KtCallExpression callExpression = PsiTreeUtil.getParentOfType(psiElement, KtCallExpression.class);
         if (callExpression == null) {
             return false;
         }
         
-        JetExpression calleeExpression = callExpression.getCalleeExpression();
+        KtExpression calleeExpression = callExpression.getCalleeExpression();
 
         if (calleeExpression == null) {
             return false;
         }
         
-        List<JetValueArgument> valueArguments = callExpression.getValueArguments();
+        List<KtValueArgument> valueArguments = callExpression.getValueArguments();
         if (valueArguments.isEmpty()) return false;
         
-        for (JetValueArgument argument : valueArguments) {
+        for (KtValueArgument argument : valueArguments) {
             if (argument.isNamed()) {
                 return false;
             }
         }
         
-        JetQualifiedExpression qualifiedExpression = PsiTreeUtil.getParentOfType(psiElement, JetQualifiedExpression.class);
+        KtQualifiedExpression qualifiedExpression = PsiTreeUtil.getParentOfType(psiElement, KtQualifiedExpression.class);
         if (qualifiedExpression != null && !isReceiverExpressionWithValue(qualifiedExpression)) {
             return false;
         }
@@ -205,9 +201,9 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
                 valueArguments.size() + callExpression.getFunctionLiteralArguments().size() > 0;
     }
     
-    private boolean isReceiverExpressionWithValue(@NotNull JetQualifiedExpression expression) {
-        JetExpression receiver = expression.getReceiverExpression();
-        if (receiver instanceof JetSuperExpression) return false;
+    private boolean isReceiverExpressionWithValue(@NotNull KtQualifiedExpression expression) {
+        KtExpression receiver = expression.getReceiverExpression();
+        if (receiver instanceof KtSuperExpression) return false;
         
         KotlinFileEditor editor = getActiveEditor();
         if (editor == null) return false;

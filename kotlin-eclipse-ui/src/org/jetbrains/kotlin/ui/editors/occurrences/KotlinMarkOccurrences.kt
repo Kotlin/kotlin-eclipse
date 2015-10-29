@@ -22,8 +22,7 @@ import org.eclipse.ui.IWorkbenchPart
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.eclipse.jface.text.ITextSelection
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant
 import org.eclipse.search.ui.text.Match
@@ -56,7 +55,7 @@ public class KotlinMarkOccurrences : ISelectionListener {
         private val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
     }
     
-    private @Volatile var previousElement: JetElement? = null
+    private @Volatile var previousElement: KtElement? = null
     
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
         val job = object : Job("Update occurrence annotations") {
@@ -105,7 +104,7 @@ public class KotlinMarkOccurrences : ISelectionListener {
         return annotations
     }
     
-    private fun findOccurrences(editor: KotlinFileEditor, jetElement: JetElement, file: IFile): List<Position> {
+    private fun findOccurrences(editor: KotlinFileEditor, jetElement: KtElement, file: IFile): List<Position> {
         val sourceElements = jetElement.resolveToSourceDeclaration(editor.javaProject!!)
         if (sourceElements.isEmpty()) return emptyList()
         

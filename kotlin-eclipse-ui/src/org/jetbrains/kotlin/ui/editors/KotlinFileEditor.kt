@@ -39,8 +39,8 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetPsiFactory
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.ui.debug.KotlinToggleBreakpointAdapter
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction
@@ -162,7 +162,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     override val javaEditor: JavaEditor = this
     
-    override val parsedFile: JetFile?
+    override val parsedFile: KtFile?
         get() = computeJetFile()
     
     override val javaProject: IJavaProject? by lazy {
@@ -174,7 +174,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
     
-    private fun computeJetFile(): JetFile? {
+    private fun computeJetFile(): KtFile? {
         val file = getFile()
         if (file != null) {
             return KotlinPsiManager.INSTANCE.getParsedFile(file)
@@ -186,6 +186,6 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         
         val environment = KotlinEnvironment.getEnvironment(javaProject!!)
         val ideaProject = environment.getProject()
-        return JetPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(), "\n"))
+        return KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(), "\n"))
     }
 }

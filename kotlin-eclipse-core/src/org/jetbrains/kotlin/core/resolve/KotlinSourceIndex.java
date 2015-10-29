@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.sources.LibrarySourcesIndex;
-import org.jetbrains.kotlin.idea.JetFileType;
+import org.jetbrains.kotlin.idea.KotlinFileType;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
@@ -29,7 +29,7 @@ public class KotlinSourceIndex {
     }
     
     public static boolean isKotlinSource(String shortFileName) {
-        return JetFileType.EXTENSION.equals(new Path(shortFileName).getFileExtension());
+        return KotlinFileType.EXTENSION.equals(new Path(shortFileName).getFileExtension());
     }
     
     @Nullable

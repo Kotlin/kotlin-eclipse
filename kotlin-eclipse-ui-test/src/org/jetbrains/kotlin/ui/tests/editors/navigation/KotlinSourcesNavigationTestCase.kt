@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.PsiComment
 import java.io.File
@@ -80,7 +80,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         assertWithEditor(initialFile, activeEditor)
     }
 
-    private fun assertWithEditor(initialFile: JetFile, editor: KotlinEditor) {
+    private fun assertWithEditor(initialFile: KtFile, editor: KotlinEditor) {
         val comments = PsiTreeUtil.getChildrenOfTypeAsList(initialFile, javaClass<PsiComment>())
         val expectedTarget = comments.get(comments.size() - 1).getText().substring(2).split(":")
         Assert.assertEquals(2, expectedTarget.size())
@@ -97,7 +97,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         Assert.assertEquals(expectedName, expression?.getName())
     }
     
-    abstract fun getParsedFile(editor: KotlinEditor): JetFile
+    abstract fun getParsedFile(editor: KotlinEditor): KtFile
     
     private fun getReferenceOffset(fileText: String) =
             fileText.indexOf(KotlinEditorTestCase.REFERENCE_TAG);

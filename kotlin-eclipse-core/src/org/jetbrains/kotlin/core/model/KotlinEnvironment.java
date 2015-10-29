@@ -31,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.asJava.KotlinLightClassForFacade;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
-import org.jetbrains.kotlin.cli.jvm.compiler.CoreExternalAnnotationsManager;
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
@@ -41,15 +40,13 @@ import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider;
-import org.jetbrains.kotlin.idea.JetFileType;
+import org.jetbrains.kotlin.idea.KotlinFileType;
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.kotlin.parsing.JetParserDefinition;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
-import org.jetbrains.kotlin.utils.PathUtil;
 
 import com.intellij.codeInsight.ContainerProvider;
-import com.intellij.codeInsight.ExternalAnnotationsManager;
 import com.intellij.codeInsight.NullableNotNullManager;
 import com.intellij.codeInsight.runner.JavaMainMethodProvider;
 import com.intellij.core.CoreApplicationEnvironment;
@@ -108,8 +105,6 @@ public class KotlinEnvironment {
         
         PsiManager psiManager = project.getComponent(PsiManager.class);
         assert (psiManager != null);
-        CoreExternalAnnotationsManager annotationsManager = new CoreExternalAnnotationsManager(psiManager);
-        project.registerService(ExternalAnnotationsManager.class, annotationsManager);
         project.registerService(CoreJavaFileManager.class,
                 (CoreJavaFileManager) ServiceManager.getService(project, JavaFileManager.class));
         
@@ -124,9 +119,6 @@ public class KotlinEnvironment {
         project.registerService(BuiltInsReferenceResolver.class, new BuiltInsReferenceResolver(project));
         project.registerService(KotlinSourceIndex.class, new KotlinSourceIndex());
         
-        VirtualFile ktJDKAnnotations = PathUtil.jarFileOrDirectoryToVirtualFile(new File(KT_JDK_ANNOTATIONS_PATH));
-        annotationsManager.addExternalAnnotationsRoot(ktJDKAnnotations);
-
         configureClasspath();
         
         project.registerService(JvmVirtualFileFinderFactory.class, new EclipseVirtualFileFinder(javaProject));
@@ -190,9 +182,9 @@ public class KotlinEnvironment {
         // ability to get text from annotations xml files
         javaApplicationEnvironment.registerFileType(PlainTextFileType.INSTANCE, "xml");
         
-        javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "kt");
-        javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "jet");
-        javaApplicationEnvironment.registerFileType(JetFileType.INSTANCE, "ktm");
+        javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, "kt");
+        javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, "jet");
+        javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, "ktm");
         
         javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
         

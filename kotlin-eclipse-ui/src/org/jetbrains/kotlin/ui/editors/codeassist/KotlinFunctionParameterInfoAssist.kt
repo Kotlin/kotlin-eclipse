@@ -19,10 +19,10 @@ package org.jetbrains.kotlin.ui.editors.codeassist
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.JetValueArgumentList
+import org.jetbrains.kotlin.psi.KtValueArgumentList
 import org.eclipse.jface.text.contentassist.IContextInformation
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression
-import org.jetbrains.kotlin.psi.JetCallElement
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
+import org.jetbrains.kotlin.psi.KtCallElement
 import org.jetbrains.kotlin.psi.psiUtil.getCallNameExpression
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
@@ -33,14 +33,13 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.eclipse.swt.graphics.Image
 import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.jetbrains.kotlin.types.JetType
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.descriptorUtil.hasDefaultValue
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
-import org.jetbrains.kotlin.psi.JetParameter
+import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.core.references.createReference
 
@@ -68,13 +67,13 @@ public object KotlinFunctionParameterInfoAssist {
     }
 }
 
-fun getCallSimpleNameExpression(editor: KotlinFileEditor, offset: Int): JetSimpleNameExpression? {
+fun getCallSimpleNameExpression(editor: KotlinFileEditor, offset: Int): KtSimpleNameExpression? {
     val psiElement = EditorUtil.getPsiElement(editor, offset)
-    val argumentList = PsiTreeUtil.getParentOfType(psiElement, JetValueArgumentList::class.java)
+    val argumentList = PsiTreeUtil.getParentOfType(psiElement, KtValueArgumentList::class.java)
     if (argumentList == null) return null
     
     val argumentListParent = argumentList.getParent()
-    return if (argumentListParent is JetCallElement) argumentListParent.getCallNameExpression() else null
+    return if (argumentListParent is KtCallElement) argumentListParent.getCallNameExpression() else null
 }
 
 public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescriptor) : IContextInformation {
@@ -111,7 +110,7 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
     private fun getDefaultExpressionString(parameterDeclaration: SourceElement): String {
         val parameterText: String? = if (parameterDeclaration is KotlinSourceElement) {
                 val parameter = parameterDeclaration.psi
-                (parameter as? JetParameter)?.getDefaultValue()?.getText()
+                (parameter as? KtParameter)?.getDefaultValue()?.getText()
             } else {
                 null
             }

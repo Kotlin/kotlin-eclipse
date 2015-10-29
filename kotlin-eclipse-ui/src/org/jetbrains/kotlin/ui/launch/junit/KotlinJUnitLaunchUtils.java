@@ -22,24 +22,24 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
-import org.jetbrains.kotlin.psi.JetClass;
-import org.jetbrains.kotlin.psi.JetDeclaration;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtClass;
+import org.jetbrains.kotlin.psi.KtDeclaration;
+import org.jetbrains.kotlin.psi.KtFile;
 
 public class KotlinJUnitLaunchUtils {
     @Nullable
-    public static JetClass getSingleJetClass(@NotNull IFile file) {
+    public static KtClass getSingleJetClass(@NotNull IFile file) {
         if (!KotlinPsiManager.INSTANCE.exists(file)) return null;
         
-        JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
+        KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
-        JetClass jetClass = null;
-        for (JetDeclaration declaration : jetFile.getDeclarations()) {
-            if (declaration instanceof JetClass) {
+        KtClass jetClass = null;
+        for (KtDeclaration declaration : jetFile.getDeclarations()) {
+            if (declaration instanceof KtClass) {
                 if (jetClass != null) {
                     return null;
                 } else {
-                    jetClass = (JetClass) declaration;
+                    jetClass = (KtClass) declaration;
                 }
             }
         }
@@ -49,7 +49,7 @@ public class KotlinJUnitLaunchUtils {
     
     @Nullable
     public static IType getEclipseTypeForSingleClass(@NotNull IFile file) {
-        JetClass jetClass = getSingleJetClass(file);
+        KtClass jetClass = getSingleJetClass(file);
         return jetClass != null ? KotlinJavaManager.INSTANCE$.findEclipseType(jetClass, JavaCore.create(file.getProject())) : null;
     }    
 }

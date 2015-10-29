@@ -14,10 +14,8 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetImportDirective
-import org.jetbrains.kotlin.psi.JetImportList
-import org.jetbrains.kotlin.psi.JetPackageDirective
+import org.jetbrains.kotlin.psi.KtImportList
+import org.jetbrains.kotlin.psi.KtPackageDirective
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -63,9 +61,9 @@ public class KotlinAutoImportAssistProposal(val proposalType: IType) : KotlinQui
 	}
 	
 	private fun computeBreakLineAfterImport(element: PsiElement): Int {
-		if (element is JetPackageDirective) {
+		if (element is KtPackageDirective) {
 			val nextSibling = element.getNextSibling()
-			if (nextSibling is JetImportList) {
+			if (nextSibling is KtImportList) {
 				val importList = nextSibling
 				if (importList.getImports().isNotEmpty()) {
 					return 2
@@ -92,7 +90,7 @@ public class KotlinAutoImportAssistProposal(val proposalType: IType) : KotlinQui
 	}
 	
 	private fun computeBreakLineBeforeImport(element:PsiElement):Int {
-		if (element is JetPackageDirective) {
+		if (element is KtPackageDirective) {
 			return when {
 				element.isRoot() -> 0
 				else -> 2

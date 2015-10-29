@@ -15,7 +15,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
 import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
@@ -55,7 +55,7 @@ public abstract class KotlinQuickAssist {
         
         if (file != null) {
             IDocument document = kotlinEditor.getDocument();
-            JetFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
+            KtFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
             if (jetFile == null) return null;
             
             int caretOffset = LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(kotlinEditor));

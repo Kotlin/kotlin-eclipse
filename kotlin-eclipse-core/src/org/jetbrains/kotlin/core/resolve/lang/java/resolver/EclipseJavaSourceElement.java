@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.core.resolve.lang.java.resolver;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
+import org.jetbrains.kotlin.descriptors.SourceFile;
 import org.jetbrains.kotlin.load.java.sources.JavaSourceElement;
 import org.jetbrains.kotlin.load.java.structure.JavaElement;
 
@@ -38,5 +39,11 @@ public class EclipseJavaSourceElement implements JavaSourceElement {
     @NotNull
     public IBinding getElementBinding() {
         return ((EclipseJavaElement<?>) javaElement).getBinding();
+    }
+
+    @Override
+    @NotNull
+    public SourceFile getContainingFile() {
+        return SourceFile.NO_SOURCE_FILE;
     }
 }

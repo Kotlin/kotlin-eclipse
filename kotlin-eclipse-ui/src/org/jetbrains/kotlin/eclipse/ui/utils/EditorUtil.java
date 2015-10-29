@@ -27,8 +27,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.psi.JetElement;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtElement;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
@@ -73,7 +73,7 @@ public class EditorUtil {
     
     @Nullable
     public static PsiElement getPsiElement(@NotNull KotlinEditor editor, int offset) {
-        JetFile jetFile = editor.getParsedFile();
+        KtFile jetFile = editor.getParsedFile();
         if (jetFile != null) {
             int caretOffset = LineEndUtil.convertCrToDocumentOffset(editor.getDocument(), offset);
             return jetFile.findElementAt(caretOffset);
@@ -86,13 +86,13 @@ public class EditorUtil {
     
     @SuppressWarnings("unchecked")
     @Nullable
-    public static JetElement getJetElement(@NotNull KotlinEditor editor, int offset) {
+    public static KtElement getJetElement(@NotNull KotlinEditor editor, int offset) {
         PsiElement psiElement = getPsiElement(editor, offset);
-        return psiElement != null ? PsiTreeUtil.getNonStrictParentOfType(psiElement, JetElement.class) : null;
+        return psiElement != null ? PsiTreeUtil.getNonStrictParentOfType(psiElement, KtElement.class) : null;
     }
     
     @Nullable
-    public static JetFile updatePsiFile(@NotNull KotlinFileEditor editor) {
+    public static KtFile updatePsiFile(@NotNull KotlinFileEditor editor) {
         IFile file = editor.getFile();
         return file != null ? KotlinPsiManager.getKotlinFileIfExist(file, editor.getDocument().get()) : null;
     }

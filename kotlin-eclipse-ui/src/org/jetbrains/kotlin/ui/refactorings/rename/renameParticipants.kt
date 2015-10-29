@@ -17,11 +17,10 @@
 package org.jetbrains.kotlin.ui.refactorings.rename
 
 import org.eclipse.jdt.ui.search.QuerySpecification
-import org.jetbrains.kotlin.psi.JetDeclaration
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecification
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public class KotlinTypeRenameParticipant : KotlinRenameParticipant()
@@ -30,7 +29,7 @@ public class KotlinFunctionRenameParticipant : KotlinRenameParticipant()
 
 public class KotlinLocalRenameParticipant : KotlinRenameParticipant() {
     override fun createSearchQuery(): QuerySpecification {
-        val jetElement = element as JetElement
+        val jetElement = element as KtElement
         return KotlinOnlyQuerySpecification(
                 jetElement,
                 listOf(KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())!!), 

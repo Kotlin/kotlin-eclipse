@@ -16,27 +16,27 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.quickassist
 
-import org.jetbrains.kotlin.psi.JetNamedDeclaration
-import org.jetbrains.kotlin.lexer.JetTokens
+import org.jetbrains.kotlin.psi.KtNamedDeclaration
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.resolve.BindingContextUtils
 import org.jetbrains.kotlin.psi.psiUtil.getElementTextWithContext
 
-fun JetNamedDeclaration.canRemoveTypeSpecificationByVisibility(bindingContext: BindingContext): Boolean {
-    val isOverride = getModifierList()?.hasModifier(JetTokens.OVERRIDE_KEYWORD) ?: false
+fun KtNamedDeclaration.canRemoveTypeSpecificationByVisibility(bindingContext: BindingContext): Boolean {
+    val isOverride = getModifierList()?.hasModifier(KtTokens.OVERRIDE_KEYWORD) ?: false
     if (isOverride) return true
 
     val descriptor = bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, this]
     return descriptor !is DeclarationDescriptorWithVisibility || !descriptor.getVisibility().isPublicAPI
 }
 
-fun JetElement.resolveToDescriptor(): DeclarationDescriptor {
+fun KtElement.resolveToDescriptor(): DeclarationDescriptor {
     val jetFile = this.getContainingJetFile()
     val project = KotlinPsiManager.getEclispeFile(jetFile)!!.getProject()
     val analysisResult = KotlinAnalyzer.analyzeFile(JavaCore.create(project), jetFile).analysisResult

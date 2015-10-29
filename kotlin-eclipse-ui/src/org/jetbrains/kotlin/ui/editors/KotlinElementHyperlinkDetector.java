@@ -23,7 +23,7 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 
 public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
     
@@ -46,7 +46,7 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         
-        JetFile parsedFile = editor.getParsedFile();
+        KtFile parsedFile = editor.getParsedFile();
         
         if (parsedFile == null) {
             return null;

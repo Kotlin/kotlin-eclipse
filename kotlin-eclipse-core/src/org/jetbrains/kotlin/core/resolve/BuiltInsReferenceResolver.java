@@ -16,9 +16,6 @@
 
 package org.jetbrains.kotlin.core.resolve;
 
-import static org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilPackage.getClassId;
-import static org.jetbrains.kotlin.serialization.deserialization.DeserializationPackage.findClassAcrossModuleDependencies;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,12 +25,13 @@ import java.util.List;
 import java.util.Set;
 
 import kotlin.KotlinPackage;
+import kotlin.reflect.jvm.internal.impl.platform.JvmBuiltIns;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
-import org.jetbrains.kotlin.context.ContextPackage;
+import org.jetbrains.kotlin.context.ContextKt;
 import org.jetbrains.kotlin.context.MutableModuleContext;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
@@ -45,16 +43,15 @@ import org.jetbrains.kotlin.descriptors.ModuleDescriptor;
 import org.jetbrains.kotlin.descriptors.ModuleParameters;
 import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor;
 import org.jetbrains.kotlin.descriptors.PackageViewDescriptor;
-import org.jetbrains.kotlin.frontend.di.DiPackage;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.kotlin.resolve.TargetPlatform;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
-import org.jetbrains.kotlin.resolve.scopes.JetScope;
+import org.jetbrains.kotlin.resolve.scopes.KtScope;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
@@ -93,13 +90,13 @@ public class BuiltInsReferenceResolver {
             return;
         }
         
-        Set<JetFile> jetBuiltInsFiles = getBuiltInSourceFiles();
+        Set<KtFile> jetBuiltInsFiles = getBuiltInSourceFiles();
         
         //if the sources are present, then the value cannot be null
         assert (jetBuiltInsFiles != null);
         
-        MutableModuleContext newModuleContext = ContextPackage.ContextForNewModule(myProject,
-                Name.special("<built-ins resolver module>"), ModuleParameters.Empty.INSTANCE$);
+        MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(myProject,
+                Name.special("<built-ins resolver module>"), ModuleParameters.Empty.INSTANCE, JvmBuiltIns.getInstance());
         newModuleContext.setDependencies(newModuleContext.getModule());
         
         FileBasedDeclarationProviderFactory declarationFactory = new FileBasedDeclarationProviderFactory(
@@ -119,7 +116,7 @@ public class BuiltInsReferenceResolver {
     }
 
     @Nullable
-    private Set<JetFile> getBuiltInSourceFiles() {
+    private Set<KtFile> getBuiltInSourceFiles() {
         URL url;
         try {
             url = new URL(RUNTIME_SRC_DIR);
@@ -131,10 +128,10 @@ public class BuiltInsReferenceResolver {
         
         PsiDirectory psiDirectory = PsiManager.getInstance(myProject).findDirectory(vf);
         assert psiDirectory != null : "No PsiDirectory for " + vf;
-        return new HashSet<JetFile>(ContainerUtil.mapNotNull(psiDirectory.getFiles(), new Function<PsiFile, JetFile>() {
+        return new HashSet<KtFile>(ContainerUtil.mapNotNull(psiDirectory.getFiles(), new Function<PsiFile, KtFile>() {
             @Override
-            public JetFile fun(PsiFile file) {
-                return file instanceof JetFile ? (JetFile) file : null;
+            public KtFile fun(PsiFile file) {
+                return file instanceof KtFile ? (KtFile) file : null;
             }
         }));
     }
@@ -187,7 +184,7 @@ public class BuiltInsReferenceResolver {
     @Nullable
     private DeclarationDescriptor findCurrentDescriptorForMember(@NotNull MemberDescriptor originalDescriptor) {
         DeclarationDescriptor containingDeclaration = findCurrentDescriptor(originalDescriptor.getContainingDeclaration());
-        JetScope memberScope = getMemberScope(containingDeclaration);
+        KtScope memberScope = getMemberScope(containingDeclaration);
         if (memberScope == null) return null;
 
         String renderedOriginal = DescriptorRenderer.FQ_NAMES_IN_TYPES.render(originalDescriptor);
@@ -237,11 +234,11 @@ public class BuiltInsReferenceResolver {
     public static boolean isFromBuiltinModule(@NotNull DeclarationDescriptor originalDescriptor) {
         // TODO This is optimization only
         // It should be rewritten by checking declarationDescriptor.getSource(), when the latter returns something non-trivial for builtins.
-        return KotlinBuiltIns.getInstance().getBuiltInsModule() == DescriptorUtils.getContainingModule(originalDescriptor);
+        return JvmBuiltIns.getInstance().getBuiltInsModule() == DescriptorUtils.getContainingModule(originalDescriptor);
     }
 
     @Nullable
-    private static JetScope getMemberScope(@Nullable DeclarationDescriptor parent) {
+    private static KtScope getMemberScope(@Nullable DeclarationDescriptor parent) {
         if (parent instanceof ClassDescriptor) {
             return ((ClassDescriptor) parent).getDefaultType().getMemberScope();
         }

@@ -25,8 +25,8 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
@@ -41,7 +41,6 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
 import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
-import org.jetbrains.kotlin.resolve.scopes.JetScope
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 
 public object KotlinCompletionUtils {
@@ -62,7 +61,7 @@ public object KotlinCompletionUtils {
             }
     }
     
-    public fun getReferenceVariants(simpleNameExpression: JetSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
+    public fun getReferenceVariants(simpleNameExpression: KtSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
             Collection<DeclarationDescriptor> {
         val javaProject = JavaCore.create(file.getProject())
         val (analysisResult, container) = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingJetFile())
@@ -94,10 +93,10 @@ public object KotlinCompletionUtils {
                 simpleNameExpression, DescriptorKindFilter.ALL, nameFilter)
     }
     
-    public fun getSimpleNameExpression(editor: JavaEditor, identOffset: Int): JetSimpleNameExpression? {
+    public fun getSimpleNameExpression(editor: JavaEditor, identOffset: Int): KtSimpleNameExpression? {
         val sourceCode = EditorUtil.getSourceCode(editor)
         val sourceCodeWithMarker = StringBuilder(sourceCode).insert(identOffset, KOTLIN_DUMMY_IDENTIFIER).toString()
-        val jetFile: JetFile?
+        val jetFile: KtFile?
         val file = EditorUtil.getFile(editor)
         if (file != null) {
             jetFile = KotlinPsiManager.INSTANCE.parseText(StringUtilRt.convertLineSeparators(sourceCodeWithMarker), file)
@@ -110,7 +109,7 @@ public object KotlinCompletionUtils {
         
         val offsetWithourCR = LineEndUtil.convertCrToDocumentOffset(sourceCodeWithMarker, identOffset, EditorUtil.getDocument(editor))
         val psiElement = jetFile.findElementAt(offsetWithourCR)
-        return PsiTreeUtil.getParentOfType(psiElement, JetSimpleNameExpression::class.java)
+        return PsiTreeUtil.getParentOfType(psiElement, KtSimpleNameExpression::class.java)
     }
     
     public fun replaceMarkerInIdentifier(identifier: String): String {

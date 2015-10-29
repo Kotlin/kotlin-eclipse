@@ -48,10 +48,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinNature;
-import org.jetbrains.kotlin.j2k.J2kPackage;
 import org.jetbrains.kotlin.j2k.JavaToKotlinTranslator;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.psi.JetPsiFactory;
+import org.jetbrains.kotlin.j2k.JavaToKotlinTranslatorKt;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtPsiFactory;
 import org.jetbrains.kotlin.ui.Activator;
 import org.jetbrains.kotlin.ui.commands.CommandsPackage;
 import org.jetbrains.kotlin.ui.commands.ConvertedKotlinData;
@@ -202,8 +202,8 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         Project ideaProject = KotlinEnvironment.getEnvironment(compilationUnit.getJavaProject()).getProject();
         
         String translatedCode = JavaToKotlinTranslator.INSTANCE$.prettify(
-                J2kPackage.translateToKotlin(contents, ideaProject));
-        JetFile jetFile = getJetFile(translatedCode, compilationUnit.getJavaProject());
+                JavaToKotlinTranslatorKt.translateToKotlin(contents, ideaProject));
+        KtFile jetFile = getJetFile(translatedCode, compilationUnit.getJavaProject());
         String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode(), getDefaultLineDelimiter(compilationUnit))
                 .replaceAll(Pattern.quote(DOC_ESCAPE_START), DOC_START);
         
@@ -234,8 +234,8 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         return null;
     }
     
-    private JetFile getJetFile(@NotNull String sourceCode, @NotNull IJavaProject javaProject) {
+    private KtFile getJetFile(@NotNull String sourceCode, @NotNull IJavaProject javaProject) {
         Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
-        return new JetPsiFactory(ideaProject).createFile(sourceCode);
+        return new KtPsiFactory(ideaProject).createFile(sourceCode);
     }
 }

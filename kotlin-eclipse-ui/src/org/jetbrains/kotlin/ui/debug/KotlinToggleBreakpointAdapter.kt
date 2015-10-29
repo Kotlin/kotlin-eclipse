@@ -32,12 +32,10 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.load.kotlin.PackageClassUtils
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.psi.JetClass
-import org.jetbrains.kotlin.psi.JetFile
-import org.jetbrains.kotlin.psi.JetPsiUtil
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtPsiUtil
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.JetClassOrObject
-import org.jetbrains.kotlin.psi.JetObjectDeclaration
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
 
 public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
@@ -84,11 +82,11 @@ fun findTopmostTypeName(document: IDocument, lineNumber: Int, file: IFile): FqNa
     return findTopmostType(document.getLineOffset(lineNumber - 1), kotlinParsedFile)
 }
 
-fun findTopmostType(offset: Int, jetFile: JetFile): FqName? {
+fun findTopmostType(offset: Int, jetFile: KtFile): FqName? {
     val element = jetFile.findElementAt(offset)
-    val jetClassOrObject = JetPsiUtil.getTopmostParentOfTypes(element, JetClassOrObject::class.java)
+    val jetClassOrObject = KtPsiUtil.getTopmostParentOfTypes(element, KtClassOrObject::class.java)
     if (jetClassOrObject != null) {
-        val classOrObject = jetClassOrObject as JetClassOrObject
+        val classOrObject = jetClassOrObject as KtClassOrObject
         val fqName = classOrObject.getFqName()
         if (fqName != null) return fqName
     }

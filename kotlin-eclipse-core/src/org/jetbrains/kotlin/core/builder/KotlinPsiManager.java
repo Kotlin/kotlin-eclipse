@@ -41,10 +41,10 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinLightVirtualFile;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.UtilsPackage;
-import org.jetbrains.kotlin.idea.JetFileType;
-import org.jetbrains.kotlin.idea.JetLanguage;
-import org.jetbrains.kotlin.psi.JetElement;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.idea.KotlinFileType;
+import org.jetbrains.kotlin.idea.KotlinLanguage;
+import org.jetbrains.kotlin.psi.KtElement;
+import org.jetbrains.kotlin.psi.KtFile;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -62,7 +62,7 @@ public class KotlinPsiManager {
     public static final KotlinPsiManager INSTANCE = new KotlinPsiManager();
     
     private final Map<IProject, Set<IFile>> projectFiles = new HashMap<>();
-    private final Map<IFile, JetFile> cachedJetFiles = new HashMap<>();
+    private final Map<IFile, KtFile> cachedKtFiles = new HashMap<>();
     
     private final Object mapOperationLock = new Object();
     
@@ -109,7 +109,7 @@ public class KotlinPsiManager {
             Set<IFile> files = getFilesByProject(project);
             projectFiles.remove(project);
             for (IFile file : files) {
-                cachedJetFiles.remove(file);
+                cachedKtFiles.remove(file);
             }
         }
     }
@@ -134,7 +134,7 @@ public class KotlinPsiManager {
             
             IProject project = file.getProject();
             
-            cachedJetFiles.remove(file);
+            cachedKtFiles.remove(file);
             projectFiles.get(project).remove(file);
         }
     }
@@ -151,16 +151,16 @@ public class KotlinPsiManager {
     }
     
     @NotNull
-    public JetFile getParsedFile(@NotNull IFile file) {
+    public KtFile getParsedFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
             assert exists(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
-            if (!cachedJetFiles.containsKey(file)) {
-                JetFile jetFile = parseFile(file);
-                cachedJetFiles.put(file, jetFile);
+            if (!cachedKtFiles.containsKey(file)) {
+                KtFile jetFile = parseFile(file);
+                cachedKtFiles.put(file, jetFile);
             }
             
-            return cachedJetFiles.get(file);
+            return cachedKtFiles.get(file);
         }
     }
     
@@ -185,7 +185,7 @@ public class KotlinPsiManager {
     }
     
     public boolean isKotlinSourceFile(@NotNull IResource resource, @NotNull IJavaProject javaProject) throws JavaModelException {
-        if (!(resource instanceof IFile) || !JetFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
+        if (!(resource instanceof IFile) || !KotlinFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
             return false;
         }
 
@@ -211,11 +211,11 @@ public class KotlinPsiManager {
     }
     
     public static boolean isKotlinFile(@NotNull IFile file) {
-        return JetFileType.INSTANCE.getDefaultExtension().equals(file.getFileExtension());
+        return KotlinFileType.INSTANCE.getDefaultExtension().equals(file.getFileExtension());
     }
     
     @Nullable
-    private JetFile parseFile(@NotNull IFile file) {
+    private KtFile parseFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
             try {
                 File ioFile = new File(file.getRawLocation().toOSString());
@@ -229,7 +229,7 @@ public class KotlinPsiManager {
     }
     
     @NotNull
-    private JetFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
+    private KtFile getParsedFile(@NotNull IFile file, @NotNull String expectedSourceCode) {
         synchronized (mapOperationLock) {
             updatePsiFile(file, expectedSourceCode);
             return getParsedFile(file);
@@ -243,14 +243,14 @@ public class KotlinPsiManager {
             
             PsiFile currentParsedFile = getParsedFile(file);
             if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
-                JetFile jetFile = parseText(sourceCodeWithouCR, file);
-                cachedJetFiles.put(file, jetFile);
+                KtFile jetFile = parseText(sourceCodeWithouCR, file);
+                cachedKtFiles.put(file, jetFile);
             }
         }
     }
     
     @Nullable
-    public JetFile parseText(@NotNull String text, @NotNull IFile file) {
+    public KtFile parseText(@NotNull String text, @NotNull IFile file) {
         StringUtil.assertValidSeparators(text);
         
         IJavaProject javaProject = JavaCore.create(file.getProject());
@@ -261,28 +261,28 @@ public class KotlinPsiManager {
         
         PsiFileFactoryImpl psiFileFactory = (PsiFileFactoryImpl) PsiFileFactory.getInstance(project);
         
-        return (JetFile) psiFileFactory.trySetupPsiForFile(virtualFile, JetLanguage.INSTANCE, true, false);
+        return (KtFile) psiFileFactory.trySetupPsiForFile(virtualFile, KotlinLanguage.INSTANCE, true, false);
     }
     
     @Nullable
-    public static JetFile getKotlinParsedFile(@NotNull IFile file) {
+    public static KtFile getKotlinParsedFile(@NotNull IFile file) {
         return INSTANCE.exists(file) ? INSTANCE.getParsedFile(file) : null;
     }
     
     @Nullable
-    public static JetFile getKotlinFileIfExist(@NotNull IFile file, @NotNull String sourceCode) {
+    public static KtFile getKotlinFileIfExist(@NotNull IFile file, @NotNull String sourceCode) {
         return INSTANCE.exists(file) ? INSTANCE.getParsedFile(file, sourceCode) : null;
     }
     
     @Nullable
-    public static IFile getEclispeFile(@NotNull JetFile jetFile) {
+    public static IFile getEclispeFile(@NotNull KtFile jetFile) {
         VirtualFile virtualFile = jetFile.getVirtualFile();
         return virtualFile != null ? 
                 ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath())) : null;
     }
     
     @Nullable
-    public static IJavaProject getJavaProject(@NotNull JetElement jetElement) {
+    public static IJavaProject getJavaProject(@NotNull KtElement jetElement) {
         IFile eclipseFile = getEclispeFile(jetElement.getContainingJetFile());
         return eclipseFile != null ? JavaCore.create(eclipseFile.getProject()) : null;
     }

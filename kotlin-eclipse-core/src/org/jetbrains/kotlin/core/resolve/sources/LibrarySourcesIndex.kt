@@ -10,7 +10,6 @@ import java.util.zip.ZipEntry
 import java.io.BufferedInputStream
 import java.io.InputStreamReader
 import java.io.BufferedReader
-import org.jetbrains.kotlin.idea.JetFileType
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import kotlin.io.use
 import org.eclipse.core.resources.ResourcesPlugin

@@ -23,7 +23,7 @@ import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jdt.internal.ui.actions.ActionMessages
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.eclipse.ui.PlatformUI
-import org.jetbrains.kotlin.psi.JetClassOrObject
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import java.util.LinkedHashSet
@@ -61,7 +61,7 @@ public class KotlinOverrideMembersAction(
     }
     
     override fun run(selection: ITextSelection) {
-        val jetClassOrObject = getJetClassOrObject(selection)
+        val jetClassOrObject = getKtClassOrObject(selection)
         if (jetClassOrObject == null) return
         
         val generatedMembers = collectMembersToGenerate(jetClassOrObject)
@@ -76,10 +76,10 @@ public class KotlinOverrideMembersAction(
         KotlinImplementMethodsProposal().generateMethods(editor.document, jetClassOrObject, selectedMembers.toSet())
     }
     
-    private fun getJetClassOrObject(selection: ITextSelection): JetClassOrObject? {
+    private fun getKtClassOrObject(selection: ITextSelection): KtClassOrObject? {
         val psiElement = EditorUtil.getPsiElement(editor, selection.getOffset())
         return if (psiElement != null) {
-                PsiTreeUtil.getNonStrictParentOfType(psiElement, JetClassOrObject::class.java)
+                PsiTreeUtil.getNonStrictParentOfType(psiElement, KtClassOrObject::class.java)
             } else {
                 null
             }
@@ -106,7 +106,7 @@ public class KotlinOverrideMembersAction(
         return selected?.toSet() ?: emptySet()
     }
     
-    private fun collectMembersToGenerate(classOrObject: JetClassOrObject): Set<CallableMemberDescriptor> {
+    private fun collectMembersToGenerate(classOrObject: KtClassOrObject): Set<CallableMemberDescriptor> {
         val descriptor = classOrObject.resolveToDescriptor()
         if (descriptor !is ClassDescriptor) return emptySet()
         

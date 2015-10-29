@@ -17,11 +17,11 @@
 package org.jetbrains.kotlin.core.model
 
 import com.intellij.testFramework.LightVirtualFile
-import org.jetbrains.kotlin.idea.JetLanguage
+import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.eclipse.core.resources.IFile
 
 public class KotlinLightVirtualFile(file: IFile, text: String) : 
-        LightVirtualFile(file.getName(), JetLanguage.INSTANCE, text) {
+        LightVirtualFile(file.getName(), KotlinLanguage.INSTANCE, text) {
     private val path = file.getRawLocation().toOSString()
     
     override fun getPath(): String = path

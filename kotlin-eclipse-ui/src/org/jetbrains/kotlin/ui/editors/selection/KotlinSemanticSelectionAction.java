@@ -8,7 +8,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.openapi.util.TextRange;
@@ -36,7 +36,7 @@ abstract public class KotlinSemanticSelectionAction extends SelectionDispatchAct
     @Override
     public void run(ITextSelection selection) {
         IDocument document = editor.getDocument();
-        JetFile jetFile = editor.getParsedFile();
+        KtFile jetFile = editor.getParsedFile();
         
         if (jetFile == null) {
             return;

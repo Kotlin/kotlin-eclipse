@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.core.references.*
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.eclipse.ui.utils.*
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest
-import org.jetbrains.kotlin.psi.JetReferenceExpression
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.core.search.SearchEngine
 import org.eclipse.jdt.core.search.SearchPattern
@@ -27,7 +26,7 @@ import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
 import org.eclipse.search.ui.ISearchResult
 import org.eclipse.core.runtime.NullProgressMonitor
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.search.ui.text.AbstractTextSearchResult
 import org.eclipse.search.ui.text.Match
 import org.eclipse.jdt.internal.ui.search.JavaElementMatch
@@ -68,7 +67,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         
         val scope = SearchEngine.createWorkspaceScope()
         
-        val querySpecification = createQuerySpecificationBy(editor, scope)!!
+        val querySpecification = createQuerySpecificationBy(editor, scope)
         val searchQuery = JavaSearchQuery(querySpecification)
         searchQuery.run(NullProgressMonitor())
         
@@ -85,7 +84,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         } else {
             val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(editor.getEditingFile())
             val element = jetFile.findElementByDocumentOffset(editor.getCaretOffset(), editor.getDocument())!!
-            val jetElement = PsiTreeUtil.getNonStrictParentOfType(element, JetElement::class.java)!!
+            val jetElement = PsiTreeUtil.getNonStrictParentOfType(element, KtElement::class.java)!!
             
             createQuerySpecification(jetElement, editor.getTestJavaProject().getJavaProject(), scope, "")
         }
@@ -131,10 +130,10 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         return FileUtil.loadFile(resultFile).splitToSequence("\n")
             .filter { it.isNotBlank() }
             .map { line ->
-                val fileNameMatch = fileNameRegex.match(line)
+                val fileNameMatch = fileNameRegex.match(line, 0)
                 val fileName = if (fileNameMatch != null) fileNameMatch.groups[1]?.value as String else null
                 
-                val offsetMatch= offsetRegex.match(line)!!
+                val offsetMatch= offsetRegex.match(line, 0)!!
 	            TestResult(
 	                fileName, 
 	                offsetMatch.groups[1]!!.value.toInt(), 
@@ -142,7 +141,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         	}.toList()
     }
     
-    private fun renderKotlinReference(testFile: TestFile, jetElement: JetElement): TestResult {
+    private fun renderKotlinReference(testFile: TestFile, jetElement: KtElement): TestResult {
         val document = EditorUtil.getDocument(testFile.file)
         return renderReference(testFile, jetElement.getTextDocumentOffset(document))
     }

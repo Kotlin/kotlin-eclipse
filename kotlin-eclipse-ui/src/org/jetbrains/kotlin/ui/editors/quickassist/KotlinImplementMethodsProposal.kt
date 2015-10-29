@@ -2,11 +2,11 @@ package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
 import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.psi.JetClassOrObject
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.resolve.BindingContextUtils
@@ -15,16 +15,15 @@ import org.jetbrains.kotlin.psi.psiUtil.getElementTextWithContext
 import org.jetbrains.kotlin.resolve.OverrideResolver
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.dialogs.MessageDialog
-import org.jetbrains.kotlin.psi.JetFile
 import java.util.ArrayList
-import org.jetbrains.kotlin.psi.JetPsiFactory
-import org.jetbrains.kotlin.psi.JetClassBody
+import org.jetbrains.kotlin.psi.KtPsiFactory
+import org.jetbrains.kotlin.psi.KtClassBody
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.openapi.util.text.StringUtil
 import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.psi.JetNamedFunction
+import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
@@ -34,8 +33,7 @@ import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
-import org.jetbrains.kotlin.psi.JetNamedDeclaration
-import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
 import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
@@ -52,7 +50,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     }
 	
 	override fun apply(document: IDocument, psiElement: PsiElement) {
-        val classOrObject = PsiTreeUtil.getParentOfType(psiElement, JetClassOrObject::class.java, false)
+        val classOrObject = PsiTreeUtil.getParentOfType(psiElement, KtClassOrObject::class.java, false)
         if (classOrObject == null) return
         
         val missingImplementations = collectMethodsToGenerate(classOrObject)
@@ -66,7 +64,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 	override fun getDisplayString(): String = "Implement Members"
 	
 	override fun isApplicable(psiElement: PsiElement): Boolean {
-		val classOrObject = PsiTreeUtil.getParentOfType(psiElement, JetClassOrObject::class.java, false)
+		val classOrObject = PsiTreeUtil.getParentOfType(psiElement, KtClassOrObject::class.java, false)
 		if (classOrObject != null) {
 			return collectMethodsToGenerate(classOrObject).isNotEmpty()
 		}
@@ -74,10 +72,10 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 		return false
 	}
     
-	public fun generateMethods(document: IDocument, classOrObject: JetClassOrObject, selectedElements: Set<CallableMemberDescriptor>) {
+	public fun generateMethods(document: IDocument, classOrObject: KtClassOrObject, selectedElements: Set<CallableMemberDescriptor>) {
 		var body = classOrObject.getBody()
 		val editor = getActiveEditor()!!
-		val psiFactory = JetPsiFactory(classOrObject)
+		val psiFactory = KtPsiFactory(classOrObject.getProject())
         if (body == null) {
             val bodyText = "${psiFactory.createWhiteSpace().getText()}${psiFactory.createEmptyClassBody().getText()}"
             insertAfter(classOrObject, bodyText)
@@ -109,11 +107,11 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         document.replace(insertOffset, 0, generatedText.toString())
 	}
     
-    private fun removeWhitespaceAfterLBrace(body: JetClassBody, document: IDocument, editor: KotlinFileEditor) {
+    private fun removeWhitespaceAfterLBrace(body: KtClassBody, document: IDocument, editor: KotlinFileEditor) {
         val lBrace = body.getLBrace()
         if (lBrace != null) {
             val sibling = lBrace.getNextSibling()
-            val needNewLine = sibling.getNextSibling() is JetDeclaration
+            val needNewLine = sibling.getNextSibling() is KtDeclaration
             if (sibling is PsiWhiteSpace && !needNewLine) {
             	document.replace(getStartOffset(sibling, editor), sibling.getTextLength(), "")
             }
@@ -130,8 +128,8 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     }
 	
     private fun generateOverridingMembers(selectedElements: Set<CallableMemberDescriptor>,
-                                          classOrObject: JetClassOrObject): List<JetElement> {
-        val overridingMembers = ArrayList<JetElement>()
+                                          classOrObject: KtClassOrObject): List<KtElement> {
+        val overridingMembers = ArrayList<KtElement>()
         for (selectedElement in selectedElements) {
             if (selectedElement is SimpleFunctionDescriptor) {
                 overridingMembers.add(overrideFunction(classOrObject, selectedElement))
@@ -142,7 +140,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         return overridingMembers
     }
 
-    private fun overrideFunction(classOrObject: JetClassOrObject, descriptor: FunctionDescriptor): JetNamedFunction {
+    private fun overrideFunction(classOrObject: KtClassOrObject, descriptor: FunctionDescriptor): KtNamedFunction {
         val newDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
                                             descriptor.getKind(), /* copyOverrides = */ true)
         newDescriptor.addOverriddenDescriptor(descriptor)
@@ -155,10 +153,10 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 
         val body = "{\n" + (if (returnsNotUnit && !isAbstract) "return " else "") + delegation + "\n}"
 
-        return JetPsiFactory(classOrObject.getProject()).createFunction(OVERRIDE_RENDERER.render(newDescriptor) + body)
+        return KtPsiFactory(classOrObject.getProject()).createFunction(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
 	
-    private fun overrideProperty(classOrObject: JetClassOrObject, descriptor: PropertyDescriptor): JetElement {
+    private fun overrideProperty(classOrObject: KtClassOrObject, descriptor: PropertyDescriptor): KtElement {
         val newDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
                                             descriptor.getKind(), /* copyOverrides = */ true) as PropertyDescriptor
         newDescriptor.addOverriddenDescriptor(descriptor)
@@ -170,11 +168,11 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         if (descriptor.isVar()) {
             body.append("\nset(value) {\n}")
         }
-        return JetPsiFactory(classOrObject.getProject()).createProperty(OVERRIDE_RENDERER.render(newDescriptor) + body)
+        return KtPsiFactory(classOrObject.getProject()).createProperty(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
 
 	
-    private fun generateUnsupportedOrSuperCall(classOrObject: JetClassOrObject, descriptor: CallableMemberDescriptor): String {
+    private fun generateUnsupportedOrSuperCall(classOrObject: KtClassOrObject, descriptor: CallableMemberDescriptor): String {
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
         if (isAbstract) {
             return "throw UnsupportedOperationException()"
@@ -200,7 +198,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     }
 
 	
-    private fun findInsertAfterAnchor(body: JetClassBody): PsiElement? {
+    private fun findInsertAfterAnchor(body: KtClassBody): PsiElement? {
         val afterAnchor = body.getLBrace()
         if (afterAnchor == null) return null
 
@@ -229,7 +227,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
                 beforeWhiteSpaceText += "\n"
             }
 
-            val factory = JetPsiFactory(whiteSpace.getProject())
+            val factory = KtPsiFactory(whiteSpace.getProject())
 
             val insertAfter = whiteSpace.getPrevSibling()
             whiteSpace.delete()
@@ -243,7 +241,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         return whiteSpace
     }
 
-	public fun collectMethodsToGenerate(classOrObject: JetClassOrObject): Set<CallableMemberDescriptor> {
+	public fun collectMethodsToGenerate(classOrObject: KtClassOrObject): Set<CallableMemberDescriptor> {
         val descriptor = classOrObject.resolveToDescriptor()
         if (descriptor is ClassDescriptor) {
             return OverrideResolver.getMissingImplementations(descriptor)

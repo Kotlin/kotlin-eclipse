@@ -23,16 +23,15 @@ import java.lang.Class
 import org.eclipse.jdt.core.IClassFile
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.psi.JetPsiFactory
+import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.util.text.StringUtil
 import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtFile
 import org.eclipse.ui.IEditorInput
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.psi.JetClassOrObject
-import org.jetbrains.kotlin.psi.JetTreeVisitorVoid
-import org.jetbrains.kotlin.psi.JetVisitor
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtVisitor
+import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jface.text.source.SourceViewerConfiguration
 import org.jetbrains.kotlin.core.references.FILE_PROJECT
 
@@ -41,11 +40,11 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
 
     override val javaEditor = this
 
-    override val parsedFile: JetFile 
+    override val parsedFile: KtFile 
         get() {
             val environment = KotlinEnvironment.getEnvironment(javaProject);
             val ideaProject = environment.getProject();
-            val jetFile = JetPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(),"\n"))
+            val jetFile = KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(),"\n"))
             jetFile.putUserData(FILE_PROJECT, javaProject)
             return jetFile
         }
@@ -122,30 +121,30 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
     
-    private fun findDeclarationInFile(classFile: IClassFile): JetClassOrObject? {
+    private fun findDeclarationInFile(classFile: IClassFile): KtClassOrObject? {
         val fqName = classFile.getType().getFullyQualifiedName()
-        return parsedFile.accept(object: JetVisitor<JetClassOrObject?, String>() {
-            override fun visitClassOrObject(classOrObject: JetClassOrObject, classFqName: String): JetClassOrObject? =
+        return parsedFile.accept(object: KtVisitor<KtClassOrObject?, String>() {
+            override fun visitClassOrObject(classOrObject: KtClassOrObject, classFqName: String): KtClassOrObject? =
                     if (classOrObject.getFqName().toString() == classFqName) {
                         classOrObject
                     } else {
                         super.visitClassOrObject(classOrObject, classFqName)
                     }
             
-            override fun visitJetElement(element: JetElement, classFqName: String): JetClassOrObject? =
+            override fun visitJetElement(element: KtElement, classFqName: String): KtClassOrObject? =
                     element.getChildren().asSequence().map { 
                         when(it) {
-                            is JetElement -> it.accept(this, classFqName)
+                            is KtElement -> it.accept(this, classFqName)
                             else -> null
                         }
                      }.filterNotNull().firstOrNull()
                 
-            override fun visitJetFile(file: JetFile, classFqName: String): JetClassOrObject? = 
+            override fun visitJetFile(file: KtFile, classFqName: String): KtClassOrObject? = 
                     visitJetElement(file, classFqName)
         }, fqName)
     }
 
-    private fun revealClassInFile(classDeclaration: JetClassOrObject?) {
+    private fun revealClassInFile(classDeclaration: KtClassOrObject?) {
         if (classDeclaration != null) {
             val correctedOffset = LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), classDeclaration.getTextOffset(), document);
             selectAndReveal(correctedOffset, 0);

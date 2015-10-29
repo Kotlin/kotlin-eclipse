@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.refactorings.rename.doRename
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
-import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 
 abstract class KotlinLocalRenameTestCase : KotlinProjectTestCase() {

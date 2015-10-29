@@ -20,7 +20,7 @@ import org.eclipse.jdt.ui.search.IMatchPresentation
 import org.eclipse.jface.viewers.ILabelProvider
 import org.eclipse.search.ui.text.Match
 import org.eclipse.jface.viewers.LabelProvider
-import org.jetbrains.kotlin.psi.JetReferenceExpression
+import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.eclipse.swt.graphics.Image
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jdt.ui.JavaUI
@@ -37,15 +37,15 @@ import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.Viewer
 import org.eclipse.jdt.ui.JavaElementLabels
 import org.eclipse.jdt.internal.corext.util.Strings
-import org.jetbrains.kotlin.psi.JetElement
-import org.jetbrains.kotlin.psi.JetNamedDeclaration
-import org.jetbrains.kotlin.psi.JetClass
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtNamedDeclaration
+import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
-import org.jetbrains.kotlin.psi.JetNamedFunction
-import org.jetbrains.kotlin.psi.JetClassOrObject
-import org.jetbrains.kotlin.psi.JetProperty
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.core.asJava.getTypeFqName
 
 public class KotlinReferenceMatchPresentation : IMatchPresentation {
@@ -78,12 +78,12 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
         
         val declaration = getContainingDeclaration(element.jetElement)
         return when (declaration) {
-            is JetNamedDeclaration -> declaration.let { 
+            is KtNamedDeclaration -> declaration.let { 
                 with (it) {
                     getFqName()?.asString() ?: getNameAsSafeName().asString()
                 }
             }
-            is JetFile -> {
+            is KtFile -> {
                 val typeFqNameInfo = getTypeFqName(declaration)
                 var typeFqName = typeFqNameInfo.className?.asString()
                 if (typeFqNameInfo.filePartName != null) {
@@ -101,11 +101,11 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
         return containingDeclaration?.let { KotlinImageProvider.getImage(it) } ?: null
     }
     
-    private fun getContainingDeclaration(jetElement: JetElement): JetElement? {
+    private fun getContainingDeclaration(jetElement: KtElement): KtElement? {
         return PsiTreeUtil.getNonStrictParentOfType(jetElement, 
-                JetNamedFunction::class.java,
-                JetProperty::class.java,
-                JetClassOrObject::class.java,
-                JetFile::class.java)
+                KtNamedFunction::class.java,
+                KtProperty::class.java,
+                KtClassOrObject::class.java,
+                KtFile::class.java)
     }
 }

@@ -37,7 +37,7 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage;
 
@@ -89,7 +89,7 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     
     private void updateLineAnnotations(IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        JetFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor));
+        KtFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor));
         if (jetFile == null) {
             return;
         }

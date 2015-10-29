@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.name.FqName;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 
 public class KotlinSourceLookupNavigator {
 	public static final KotlinSourceLookupNavigator INSTANCE = new KotlinSourceLookupNavigator();
@@ -87,7 +87,7 @@ public class KotlinSourceLookupNavigator {
 	private boolean fileMatches(@NotNull IFile kotlinFile, @NotNull FqName packageName, @NotNull String sourceName) {
 		boolean isKotlinSourceFile = kotlinFile.getName().equals(sourceName) && KotlinPsiManager.INSTANCE.exists(kotlinFile);
         if (isKotlinSourceFile) {
-		    JetFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(kotlinFile);
+		    KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(kotlinFile);
 		    if (jetFile.getPackageFqName().equalsTo(packageName)) {
 		        return true;
 		    }

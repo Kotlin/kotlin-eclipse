@@ -36,11 +36,11 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.idea.JetFileType;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.idea.KotlinFileType;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 public class KotlinLaunchShortcut implements ILaunchShortcut {
@@ -150,7 +150,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
         switch (resource.getType()) {
             case IResource.FILE:
                 IFile file = (IFile) resource;
-                if (resource.getFileExtension().equals(JetFileType.INSTANCE.getDefaultExtension())) {
+                if (resource.getFileExtension().equals(KotlinFileType.INSTANCE.getDefaultExtension())) {
                     files.add(file);
                 }
                 

@@ -2,32 +2,30 @@ package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
 import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.psi.JetDeclarationWithBody
-import org.jetbrains.kotlin.psi.JetExpression
-import org.jetbrains.kotlin.psi.JetFunctionLiteral
-import org.jetbrains.kotlin.psi.JetBlockExpression
-import org.jetbrains.kotlin.psi.JetReturnExpression
-import org.jetbrains.kotlin.psi.JetDeclaration
-import org.jetbrains.kotlin.psi.JetLoopExpression
-import org.jetbrains.kotlin.psi.JetBinaryExpression
-import org.jetbrains.kotlin.lexer.JetTokens
+import org.jetbrains.kotlin.psi.KtDeclarationWithBody
+import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtFunctionLiteral
+import org.jetbrains.kotlin.psi.KtBlockExpression
+import org.jetbrains.kotlin.psi.KtReturnExpression
+import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtLoopExpression
+import org.jetbrains.kotlin.psi.KtBinaryExpression
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.psi.JetNamedFunction
-import org.jetbrains.kotlin.psi.JetPropertyAccessor
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtPropertyAccessor
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.types.JetType
-import org.jetbrains.kotlin.psi.JetPsiFactory
+import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.JetCallableDeclaration
+import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
-import org.jetbrains.kotlin.psi.JetFile
 import com.intellij.openapi.util.TextRange
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.analyzer.*
-import org.jetbrains.kotlin.types.checker.JetTypeChecker
 import com.intellij.psi.PsiWhiteSpace
 import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
@@ -36,16 +34,17 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingServices
-import org.jetbrains.kotlin.resolve.scopes.JetScope
+import org.jetbrains.kotlin.resolve.scopes.KtScope
 import org.jetbrains.kotlin.resolve.scopes.utils.asLexicalScope
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo
 import org.jetbrains.kotlin.resolve.BindingTraceContext
 import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
+import org.jetbrains.kotlin.platform.JvmBuiltIns
 
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
-        val declaration = PsiTreeUtil.getParentOfType(psiElement, JetDeclarationWithBody::class.java) ?: return false
+        val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java) ?: return false
         val context = getBindingContext(declaration.getContainingJetFile()) ?: return false
         val value = calcValue(declaration, context)
         return value != null && !containsReturn(value)
@@ -56,12 +55,12 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
     }
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
-    	val declaration = PsiTreeUtil.getParentOfType(psiElement, JetDeclarationWithBody::class.java)!!
+    	val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
         val (analysisResult, componentProvider) = getAnalysisResultWithProvider(declaration.getContainingJetFile())!!
         val context = analysisResult.bindingContext
         val value = calcValue(declaration, context)!!
 
-        val setUnitType: Boolean = if (!declaration.hasDeclaredReturnType() && declaration is JetNamedFunction) {
+        val setUnitType: Boolean = if (!declaration.hasDeclaredReturnType() && declaration is KtNamedFunction) {
             val valueType = context.getType(value)
             valueType != null && !KotlinBuiltIns.isUnit(valueType)
         } else {
@@ -73,15 +72,15 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         replaceBody(declaration, value, editor)
         
         val omitType = (declaration.hasDeclaredReturnType() || setUnitType) &&
-             declaration is JetCallableDeclaration && canOmitType(declaration, value, context, componentProvider, setUnitType)
+             declaration is KtCallableDeclaration && canOmitType(declaration, value, context, componentProvider, setUnitType)
 
         insertAndSelectType(declaration, setUnitType, omitType, editor)   
 
     }
     
-    private fun replaceBody(declaration: JetDeclarationWithBody, newBody: JetExpression, editor: KotlinFileEditor) {
+    private fun replaceBody(declaration: KtDeclarationWithBody, newBody: KtExpression, editor: KotlinFileEditor) {
         val body = declaration.getBodyExpression()!!
-        val eqToken = JetPsiFactory(declaration).createEQ().getText()
+        val eqToken = KtPsiFactory(declaration).createEQ().getText()
         
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
         val indent = AlignmentStrategy.computeIndent(declaration.getNode())        
@@ -90,11 +89,11 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         replace(body, "$eqToken $valueText")
     }
     
-    private fun insertAndSelectType(declaration: JetDeclarationWithBody, setUnitType: Boolean, omitType:Boolean, editor: KotlinFileEditor) {
+    private fun insertAndSelectType(declaration: KtDeclarationWithBody, setUnitType: Boolean, omitType:Boolean, editor: KotlinFileEditor) {
         val body = declaration.getBodyExpression()!!
         
         if (omitType && !setUnitType) {
-            val callableDeclaration = declaration as JetCallableDeclaration
+            val callableDeclaration = declaration as KtCallableDeclaration
             val typeRef = callableDeclaration.getTypeReference()!!
             val colon = callableDeclaration.getColon()!!
             val range = TextRange(getStartOffset(colon, editor), getEndOffset(typeRef, editor))
@@ -104,7 +103,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
             val elementToPlaceTypeAfter = body.siblings(forward = false, withItself = false).
                 first { it !is PsiWhiteSpace }
             val offset = getEndOffset(elementToPlaceTypeAfter, editor)
-            val stringToInsert = ": ${KotlinBuiltIns.getInstance().getUnitType().toString()}"
+            val stringToInsert = ": ${JvmBuiltIns.getInstance().getUnitType().toString()}"
             insertAfter(elementToPlaceTypeAfter, stringToInsert)
             if (omitType) {
             	editor.selectAndReveal(offset, stringToInsert.length()) 
@@ -112,22 +111,22 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         }   
     }
 
-    private fun calcValue(declaration: JetDeclarationWithBody, context: BindingContext): JetExpression? {
-        if (declaration is JetFunctionLiteral) return null
+    private fun calcValue(declaration: KtDeclarationWithBody, context: BindingContext): KtExpression? {
+        if (declaration is KtFunctionLiteral) return null
         val body = declaration.getBodyExpression()
-        if (!declaration.hasBlockBody() || body !is JetBlockExpression) return null
+        if (!declaration.hasBlockBody() || body !is KtBlockExpression) return null
 
         val statement = body.getStatements().singleOrNull() ?: return null
         when(statement) {
-            is JetReturnExpression -> {
+            is KtReturnExpression -> {
             	return statement.getReturnedExpression()
             }
 
-            //TODO: IMO this is not good code, there should be a way to detect that JetExpression does not have value
-            is JetDeclaration, is JetLoopExpression -> return null // is JetExpression but does not have value
+            //TODO: IMO this is not good code, there should be a way to detect that KtExpression does not have value
+            is KtDeclaration, is KtLoopExpression -> return null // is KtExpression but does not have value
 
             else  -> {
-            	if (statement is JetBinaryExpression && statement.getOperationToken() == JetTokens.EQ) return null // assignment does not have value
+            	if (statement is KtBinaryExpression && statement.getOperationToken() == KtTokens.EQ) return null // assignment does not have value
             	val expressionType = context.getType(statement) ?: return null
             	if (!KotlinBuiltIns.isUnit(expressionType) && !KotlinBuiltIns.isNothing(expressionType)) return null
             	return statement
@@ -136,9 +135,9 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
     }
 
     private fun containsReturn(element: PsiElement): Boolean {
-        if (element is JetReturnExpression) return true
+        if (element is KtReturnExpression) return true
         //TODO: would be better to have some interface of declaration where return can be used
-        if (element is JetNamedFunction || element is JetPropertyAccessor) return false // can happen inside
+        if (element is KtNamedFunction || element is KtPropertyAccessor) return false // can happen inside
 
         var child = element.getFirstChild()
         while (child != null) {
@@ -149,16 +148,16 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         return false
     }
     
-    private fun canOmitType(declaration: JetCallableDeclaration, expression: JetExpression, 
+    private fun canOmitType(declaration: KtCallableDeclaration, expression: KtExpression, 
             bindingContext: BindingContext, provider: ComponentProvider, setUnitType: Boolean): Boolean {
         // Workaround for anonymous objects and similar expressions without resolution scope
         // TODO: This should probably be fixed in front-end so that resolution scope is recorded for anonymous objects as well
-        val scopeExpression = ((declaration as? JetDeclarationWithBody)?.getBodyExpression() as? JetBlockExpression)
+        val scopeExpression = ((declaration as? KtDeclarationWithBody)?.getBodyExpression() as? KtBlockExpression)
                                  ?.getStatements()?.singleOrNull()
                          ?: return false
         
-        val declaredType: JetType = if (setUnitType) {
-            KotlinBuiltIns.getInstance().getUnitType()
+        val declaredType: KotlinType = if (setUnitType) {
+            JvmBuiltIns.getInstance().getUnitType()
         } else {
             (bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration] as? CallableDescriptor)?.getReturnType() ?: return false
         }
@@ -168,7 +167,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
     }
 }
 
-private fun JetExpression.computeTypeInContext(provider: ComponentProvider, scope: JetScope): JetType? {
+private fun KtExpression.computeTypeInContext(provider: ComponentProvider, scope: KtScope): KotlinType? {
     return provider.getService(ExpressionTypingServices::class.java).getTypeInfo(
             scope.asLexicalScope(), 
             this,
@@ -178,8 +177,8 @@ private fun JetExpression.computeTypeInContext(provider: ComponentProvider, scop
             false).type
 }
 
-fun JetCallableDeclaration.setType(type: JetType) {
+fun KtCallableDeclaration.setType(type: KotlinType) {
     if (type.isError()) return
-    val typeReference = JetPsiFactory(getProject()).createType(IdeDescriptorRenderers.SOURCE_CODE.renderType(type))
+    val typeReference = KtPsiFactory(getProject()).createType(IdeDescriptorRenderers.SOURCE_CODE.renderType(type))
     setTypeReference(typeReference)
 }

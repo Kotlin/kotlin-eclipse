@@ -16,10 +16,10 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.search
 
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
-import org.jetbrains.kotlin.psi.JetReferenceExpression
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression
+import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.eclipse.jdt.ui.search.QuerySpecification
 import org.jetbrains.kotlin.descriptors.SourceElement
@@ -29,18 +29,17 @@ import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
-import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement.JavaSearchElement
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement.KotlinSearchElement
 
 interface SearchFilter {
-    fun isApplicable(jetElement: JetElement): Boolean
+    fun isApplicable(jetElement: KtElement): Boolean
 }
 
 interface SearchFilterAfterResolve {
-    fun isApplicable(sourceElement: JetElement, originElement: JetElement): Boolean
+    fun isApplicable(sourceElement: KtElement, originElement: KtElement): Boolean
     
     fun isApplicable(sourceElement: IJavaElement, originElement: IJavaElement): Boolean
     
@@ -66,17 +65,17 @@ fun getBeforeResolveFilters(querySpecification: QuerySpecification): List<Search
 fun getAfterResolveFilters(): List<SearchFilterAfterResolve> = listOf(ResolvedReferenceFilter())
 
 class ReferenceFilter : SearchFilter {
-    override fun isApplicable(jetElement: JetElement): Boolean = jetElement is JetReferenceExpression
+    override fun isApplicable(jetElement: KtElement): Boolean = jetElement is KtReferenceExpression
 }
 
 class NonImportFilter : SearchFilter {
-    override fun isApplicable(jetElement: JetElement): Boolean {
-        return jetElement !is JetSimpleNameExpression || !jetElement.isImportDirectiveExpression()
+    override fun isApplicable(jetElement: KtElement): Boolean {
+        return jetElement !is KtSimpleNameExpression || !jetElement.isImportDirectiveExpression()
     }
 }
 
 class ResolvedReferenceFilter : SearchFilterAfterResolve {
-    override fun isApplicable(sourceElement: JetElement, originElement: JetElement): Boolean {
+    override fun isApplicable(sourceElement: KtElement, originElement: KtElement): Boolean {
         return sourceElement == originElement
     }
     

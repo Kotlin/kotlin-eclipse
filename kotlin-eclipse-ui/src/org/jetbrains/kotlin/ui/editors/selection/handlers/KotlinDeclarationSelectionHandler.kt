@@ -2,13 +2,13 @@ package org.jetbrains.kotlin.ui.editors.selection.handlers
 
 import com.intellij.psi.PsiElement
 import com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.psi.KtDeclaration
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiWhiteSpace
 
 public class KotlinDeclarationSelectionHandler: KotlinDefaultSelectionHandler() {
     override fun canSelect(enclosingElement: PsiElement)
-    = enclosingElement is JetDeclaration
+    = enclosingElement is KtDeclaration
 
     override fun selectNext(enclosingElement: PsiElement, selectionCandidate: PsiElement, selectedRange: TextRange): TextRange {
         val bodyRange = getBodyRange(enclosingElement)

@@ -42,7 +42,6 @@ import org.eclipse.ltk.core.refactoring.participants.RenameArguments
 import org.eclipse.text.edits.TextEdit
 import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
-import org.jetbrains.kotlin.psi.JetNamedDeclaration
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.ui.search.QuerySpecification
 

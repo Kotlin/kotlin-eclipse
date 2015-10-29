@@ -22,22 +22,21 @@ import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.core.references.KotlinReference
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.JetReferenceExpression
+import org.jetbrains.kotlin.psi.KtReferenceExpression
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jdt.core.IJavaElement
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import com.intellij.openapi.util.Key
-import org.jetbrains.kotlin.psi.JetObjectDeclarationName
-import org.jetbrains.kotlin.psi.JetObjectDeclaration
-import org.jetbrains.kotlin.psi.JetDeclaration
+import org.jetbrains.kotlin.psi.KtObjectDeclarationName
+import org.jetbrains.kotlin.psi.KtObjectDeclaration
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.core.model.toLightElements
 import org.jetbrains.kotlin.core.log.KotlinLogger
 
@@ -58,19 +57,19 @@ public fun KotlinReference.resolveToSourceElements(context: BindingContext, proj
     return getTargetDescriptors(context).flatMap { EclipseDescriptorUtils.descriptorToDeclarations(it, project) }
 }
 
-public fun getReferenceExpression(element: PsiElement): JetReferenceExpression? {
-	return PsiTreeUtil.getNonStrictParentOfType(element, JetReferenceExpression::class.java)
+public fun getReferenceExpression(element: PsiElement): KtReferenceExpression? {
+	return PsiTreeUtil.getNonStrictParentOfType(element, KtReferenceExpression::class.java)
 }
 
-public fun JetElement.resolveToSourceDeclaration(javaProject: IJavaProject): List<SourceElement> {
+public fun KtElement.resolveToSourceDeclaration(javaProject: IJavaProject): List<SourceElement> {
     val jetElement = this
     return when (jetElement) {
-        is JetObjectDeclarationName -> {
-            val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, JetObjectDeclaration::class.java)
+        is KtObjectDeclarationName -> {
+            val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, KtObjectDeclaration::class.java)
             objectDeclaration?.let { it.resolveToSourceDeclaration(javaProject) } ?: emptyList()
         }
         
-        is JetDeclaration -> {
+        is KtDeclaration -> {
             listOf(KotlinSourceElement(jetElement))
         }
         

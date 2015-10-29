@@ -1,12 +1,12 @@
 package org.jetbrains.kotlin.ui.editors.selection.handlers
 
-import org.jetbrains.kotlin.psi.JetStringTemplateExpression
+import org.jetbrains.kotlin.psi.KtStringTemplateExpression
 import com.intellij.psi.PsiElement
 import com.intellij.openapi.util.TextRange
 
 public class KotlinStringTemplateSelectionHandler: KotlinDefaultSelectionHandler() {
 	override fun canSelect(enclosingElement: PsiElement)
-		= enclosingElement is JetStringTemplateExpression
+		= enclosingElement is KtStringTemplateExpression
 	
 	override fun selectEnclosing(enclosingElement: PsiElement, selectedRange: TextRange): TextRange {
 		val literalRange = super.selectEnclosing(enclosingElement, selectedRange)

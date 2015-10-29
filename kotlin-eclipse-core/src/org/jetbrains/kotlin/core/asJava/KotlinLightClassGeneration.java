@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.codegen.state.GenerationState;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 
 import com.intellij.openapi.project.Project;
 
@@ -32,7 +32,7 @@ public class KotlinLightClassGeneration {
     }
     
     public static GenerationState buildLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject, 
-            @NotNull List<JetFile> jetFiles) {
+            @NotNull List<KtFile> jetFiles) {
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
         
         GenerationState state = new GenerationState(

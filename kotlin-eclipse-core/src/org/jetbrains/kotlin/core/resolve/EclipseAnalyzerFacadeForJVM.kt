@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.context.ModuleContext
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
 import org.jetbrains.kotlin.frontend.java.di.ContainerForTopDownAnalyzerForJvm
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingTrace
 import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
@@ -45,13 +45,13 @@ import org.jetbrains.kotlin.descriptors.PackagePartProvider
 public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
 public object EclipseAnalyzerFacadeForJVM {
-    public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<JetFile>): AnalysisResultWithProvider {
+    public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
         val filesSet = filesToAnalyze.toSet()
         if (filesSet.size() != filesToAnalyze.size()) {
             KotlinLogger.logWarning("Analyzed files have duplicates")
         }
         
-        val allFiles = LinkedHashSet<JetFile>(filesSet)
+        val allFiles = LinkedHashSet<KtFile>(filesSet)
         val addedFiles = filesSet.map { getPath(it) }.filterNotNull().toSet()
         ProjectUtils.getSourceFilesWithDependencies(javaProject).filterNotTo(allFiles) {
             getPath(it) in addedFiles
@@ -80,5 +80,5 @@ public object EclipseAnalyzerFacadeForJVM {
                 containerAndProvider.second)
     }
     
-    private fun getPath(jetFile: JetFile): String? = jetFile.getVirtualFile()?.getPath()
+    private fun getPath(jetFile: KtFile): String? = jetFile.getVirtualFile()?.getPath()
 }
