@@ -89,19 +89,24 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 val searchElements = getSearchElements(querySpecification)
                 if (searchElements.isEmpty()) return
                 
-                if (querySpecification !is ElementQuerySpecification && querySpecification !is KotlinScoped) {
+                if (querySpecification is KotlinJavaQuerySpecification) {
                     runCompositeSearch(searchElements, requestor, querySpecification, monitor)
                     return
                 }
                 
-                val files = getKotlinFilesByScope(querySpecification)
-                if (files.isEmpty()) return
+                val kotlinFiles = getKotlinFilesByScope(querySpecification)
+                if (kotlinFiles.isEmpty()) return
                 
+                if (searchElements.size() > 1) {
+                    KotlinLogger.logWarning("There are more than one elements to search: $searchElements")
+                }
+                
+                // We assume that there is only one search element, it could be IJavaElement or JetElement
                 val searchElement = searchElements.first()
-                val searchResult = searchTextOccurrences(searchElement, files)
+                val searchResult = searchTextOccurrences(searchElement, kotlinFiles)
                 if (searchResult == null) return
                 
-                val elements = obtainElements(searchResult as FileSearchResult, files)
+                val elements = obtainElements(searchResult as FileSearchResult, kotlinFiles)
                 val matchedReferences = resolveElementsAndMatch(elements, searchElement, querySpecification)
                 
                 matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it)) }
@@ -126,20 +131,23 @@ public class KotlinQueryParticipant : IQueryParticipant {
             }
         }
         
-        val specifications = 
-            elements.getElements<IJavaElement>().map { 
-                ElementQuerySpecification(
-                    it, 
-                    specification.getLimitTo(), 
-                    specification.getScope(), 
-                    specification.getScopeDescription()) 
-            } + elements.getElements<JetElement>().map { 
-                KotlinOnlyQuerySpecification(
-                    it,
-                    specification.getScope().getKotlinFiles(), 
-                    specification.getLimitTo(), 
-                    specification.getScopeDescription())
+        val specifications = elements.map { searchElement -> 
+            when (searchElement) {
+                is SearchElement.JavaSearchElement -> 
+                    ElementQuerySpecification(
+                        searchElement.javaElement, 
+                        specification.getLimitTo(), 
+                        specification.getScope(), 
+                        specification.getScopeDescription())
+                
+                is SearchElement.KotlinSearchElement -> 
+                    KotlinOnlyQuerySpecification(
+                        searchElement.kotlinElement,
+                        specification.getScope().getKotlinFiles(), 
+                        specification.getLimitTo(), 
+                        specification.getScopeDescription())
             }
+        }
         
         
         specifications.forEach { 
@@ -149,34 +157,28 @@ public class KotlinQueryParticipant : IQueryParticipant {
         }
     }
     
-    class SearchElement private constructor(private val javaElement: IJavaElement?, private val kotlinElement: JetElement?) {
-        constructor(element: IJavaElement) : this(element, null)
-        constructor(element: JetElement) : this(null, element)
+    sealed class SearchElement private constructor() {
+        abstract fun getSearchText(): String?
         
-        fun getElement(): Any = javaElement ?: kotlinElement!!
+        class JavaSearchElement(val javaElement: IJavaElement) : SearchElement() {
+            override fun getSearchText(): String = javaElement.getElementName()
+        }
         
-        fun getSearchText(): String? {
-            return if (javaElement != null) {
-                javaElement.getElementName()
-            } else if (kotlinElement != null) {
-                kotlinElement.getName()
-            } else {
-                null
-            }
+        class KotlinSearchElement(val kotlinElement: JetElement) : SearchElement() {
+            override fun getSearchText(): String? = kotlinElement.getName()
         }
     }
-    
-    inline private fun <reified T> List<SearchElement>.getElements(): List<T> = map { it.getElement() }.filterIsInstance()
     
     private fun getSearchElements(querySpecification: QuerySpecification): List<SearchElement> {
         fun obtainSearchElements(sourceElements: List<SourceElement>): List<SearchElement> {
             val (javaElements, kotlinElements) = getJavaAndKotlinElements(sourceElements)
-            return javaElements.map(::SearchElement) + kotlinElements.map(::SearchElement)
+            return javaElements.map { SearchElement.JavaSearchElement(it) } + 
+                   kotlinElements.map { SearchElement.KotlinSearchElement(it) }
         }
         
         return when (querySpecification) {
-            is ElementQuerySpecification -> listOf(SearchElement(querySpecification.getElement()))
-            is KotlinOnlyQuerySpecification -> listOf(SearchElement(querySpecification.kotlinElement))
+            is ElementQuerySpecification -> listOf(SearchElement.JavaSearchElement(querySpecification.getElement()))
+            is KotlinOnlyQuerySpecification -> listOf(SearchElement.KotlinSearchElement(querySpecification.kotlinElement))
             is KotlinAndJavaSearchable -> obtainSearchElements(querySpecification.sourceElements)
             else -> emptyList()
         }
@@ -235,7 +237,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
         return when (querySpecification) {
-            is ElementQuerySpecification -> querySpecification.getScope().getKotlinFiles()
+            is ElementQuerySpecification,
             is KotlinJavaQuerySpecification -> querySpecification.getScope().getKotlinFiles()
             is KotlinScoped -> querySpecification.searchScope
             else -> emptyList()
@@ -245,6 +247,9 @@ public class KotlinQueryParticipant : IQueryParticipant {
 
 internal fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair<List<IJavaElement>, List<JetElement>> {
     val javaElements = sourceElementsToLightElements(sourceElements)
+    
+    // Filter out Kotlin elements which have light elements because Javas search will call KotlinQueryParticipant
+    // to look up for these elements
     val kotlinElements = sourceElementsToKotlinElements(sourceElements).filterNot { kotlinElement -> 
         javaElements.any { it.getElementName() == kotlinElement.getName() }
     }

@@ -32,6 +32,8 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecific
 import org.jetbrains.kotlin.psi.JetDeclaration
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement.JavaSearchElement
+import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement.KotlinSearchElement
 
 interface SearchFilter {
     fun isApplicable(jetElement: JetElement): Boolean
@@ -44,14 +46,9 @@ interface SearchFilterAfterResolve {
     
     fun isApplicable(sourceElements: List<SourceElement>, originElement: SearchElement): Boolean {
         val (javaElements, kotlinElements) = getJavaAndKotlinElements(sourceElements)
-        val origin = originElement.getElement()
-        return when (origin) {
-            is IJavaElement -> javaElements.any { isApplicable(it, origin) }
-            is JetElement -> kotlinElements.any { isApplicable(it, origin) }
-            else -> {
-                KotlinLogger.logWarning("Cannot apply filter for $origin")
-                false
-            }
+        return when (originElement) {
+            is JavaSearchElement -> javaElements.any { isApplicable(it, originElement.javaElement) }
+            is KotlinSearchElement -> kotlinElements.any { isApplicable(it, originElement.kotlinElement) }
         }
     }
 }
