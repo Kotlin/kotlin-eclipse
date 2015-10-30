@@ -7,5 +7,5 @@ fun main(args : Array<String>) {
 	map.<caret>
 }
 
-// EXIST: keySet, get
+// EXIST: keys, get
 // Check that there is no exception 

@@ -32,12 +32,12 @@ public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
 
 	@Test
 	public void testAfterIntSeparatedWithComments() {
-		doTest("testData/completion/basic/common/AfterIntSeparatedWithComments.kt");
+		doTest("common_testData/ide/completion/basic/common/AfterIntSeparatedWithComments.kt");
 	}
 
 	@Test
 	public void testAutoCastAfterIf() {
-		doTest("testData/completion/basic/common/AutoCastAfterIf.kt");
+		doTest("common_testData/ide/completion/basic/common/smartCast/SmartCastAfterIf.kt");
 	}
 
 	@Test
@@ -47,12 +47,12 @@ public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
 
 	@Test
 	public void testAutoCastForThis() {
-		doTest("testData/completion/basic/common/AutoCastForThis.kt");
+		doTest("common_testData/ide/completion/basic/common/smartCast/SmartCastForThis.kt");
 	}
 
 	@Test
 	public void testAutoCastInWhen() {
-		doTest("testData/completion/basic/common/AutoCastInWhen.kt");
+		doTest("common_testData/ide/completion/basic/common/smartCast/SmartCastInWhen.kt");
 	}
 
 	@Test
@@ -72,7 +72,7 @@ public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
 
 	@Test
 	public void testCallLocalLambda() {
-		doTest("testData/completion/basic/common/CallLocalLambda.kt");
+		doTest("common_testData/ide/completion/basic/common/CallLocalLambda.kt");
 	}
 
 	@Test
