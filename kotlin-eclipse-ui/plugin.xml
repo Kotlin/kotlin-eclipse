@@ -631,7 +631,7 @@
             <with
                   variable="element">
                <instanceof
-                     value="org.jetbrains.kotlin.psi.JetElement">
+                     value="org.jetbrains.kotlin.psi.KtElement">
                </instanceof>
             </with>
          </enablement>
