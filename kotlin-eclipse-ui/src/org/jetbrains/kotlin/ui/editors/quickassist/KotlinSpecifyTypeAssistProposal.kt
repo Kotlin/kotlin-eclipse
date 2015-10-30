@@ -90,7 +90,7 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
         val text = ": ${IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.renderType(type)}"
         document.replace(getEndOffset(element, editor), 0, text)
         
-        return offset + text.length()
+        return offset + text.length
     }
     
     private fun getTypeForDeclaration(declaration: KtCallableDeclaration): KotlinType {

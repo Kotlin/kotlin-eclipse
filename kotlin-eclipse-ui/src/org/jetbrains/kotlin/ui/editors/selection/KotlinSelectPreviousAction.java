@@ -26,11 +26,9 @@ public class KotlinSelectPreviousAction extends KotlinSemanticSelectionAction {
             String selectedText) {
         PsiElement selectionCandidate = findSelectionCandidate(enclosingElement,
                 PsiElementChildrenIterable.backwardChildrenIterator(enclosingElement), selectedRange, selectedText);
-        KotlinElementSelectioner elementSelectioner = KotlinElementSelectioner.INSTANCE$;
-        
         if (selectionCandidate == null) {
-            return elementSelectioner.selectEnclosing(enclosingElement, selectedRange);
+            return KotlinElementSelectioner.INSTANCE.selectEnclosing(enclosingElement, selectedRange);
         }
-        return elementSelectioner.selectPrevious(enclosingElement, selectionCandidate, selectedRange);
+        return KotlinElementSelectioner.INSTANCE.selectPrevious(enclosingElement, selectionCandidate, selectedRange);
     }
 }

@@ -55,7 +55,7 @@ import org.eclipse.ui.PlatformUI
 fun chooseSourceFile(sourceFiles: List<KtFile>): IFile? {
     return when {
         sourceFiles.isEmpty() -> null
-        sourceFiles.size() == 1 -> KotlinPsiManager.getEclispeFile(sourceFiles.first())
+        sourceFiles.size == 1 -> KotlinPsiManager.getEclispeFile(sourceFiles.first())
         else -> chooseFile(sourceFiles)
     }
 }

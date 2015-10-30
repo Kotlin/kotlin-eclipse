@@ -17,13 +17,13 @@ public fun withKotlinInsertHandler(
 	return when (descriptor) {
 		is FunctionDescriptor -> {
 			val parameters = descriptor.getValueParameters()
-			when (parameters.size()) {
+			when (parameters.size) {
 				0 -> KotlinFunctionCompletionProposal(proposal, CaretPosition.AFTER_BRACKETS, false)
 				
 				1 -> {
 					val parameterType = parameters.single().getType()
 					if (KotlinBuiltIns.isFunctionOrExtensionFunctionType(parameterType)) {
-						val parameterCount = KotlinBuiltIns.getParameterTypeProjectionsFromFunctionType(parameterType).size()
+						val parameterCount = KotlinBuiltIns.getParameterTypeProjectionsFromFunctionType(parameterType).size
 						if (parameterCount <= 1) {
 							// otherwise additional item with lambda template is to be added
 							return KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, true)

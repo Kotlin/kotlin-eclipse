@@ -23,7 +23,7 @@ public class KotlinLightClassGeneration {
     public static void updateLightClasses(
             @NotNull IJavaProject javaProject,
             @NotNull Set<IFile> affectedFiles) throws CoreException {
-        if (!KotlinJavaManager.INSTANCE$.hasLinkedKotlinBinFolder(javaProject)) {
+        if (!KotlinJavaManager.INSTANCE.hasLinkedKotlinBinFolder(javaProject)) {
             return;
         }
         

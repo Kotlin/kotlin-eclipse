@@ -90,7 +90,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 val kotlinFiles = getKotlinFilesByScope(querySpecification)
                 if (kotlinFiles.isEmpty()) return
                 
-                if (searchElements.size() > 1) {
+                if (searchElements.size > 1) {
                     KotlinLogger.logWarning("There are more than one elements to search: $searchElements")
                 }
                 
@@ -221,8 +221,10 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val document = EditorUtil.getDocument(file)
             
             matches
-                .map { jetFile.findElementByDocumentOffset(it.getOffset(), document) }
-                .mapNotNull { PsiTreeUtil.getNonStrictParentOfType(it, KtElement::class.java) }
+                .map { 
+                    val element = jetFile.findElementByDocumentOffset(it.getOffset(), document) 
+                    element?.let { PsiTreeUtil.getNonStrictParentOfType(it, KtElement::class.java) }
+                }
                 .filterNotNullTo(elements)
         }
         

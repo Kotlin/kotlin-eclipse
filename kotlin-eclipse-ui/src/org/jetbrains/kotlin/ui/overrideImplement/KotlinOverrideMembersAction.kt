@@ -129,7 +129,7 @@ public class KotlinOverrideMembersAction(
                     }
                 }
 
-                val realSupers = byOriginalRealSupers.values().map { it.realSuper }
+                val realSupers = byOriginalRealSupers.values.map { it.realSuper }
                 val nonAbstractRealSupers = realSupers.filter { it.modality != Modality.ABSTRACT }
                 val realSupersToUse = if (nonAbstractRealSupers.isNotEmpty()) {
                     nonAbstractRealSupers
@@ -142,7 +142,7 @@ public class KotlinOverrideMembersAction(
                     val immediateSupers = byOriginalRealSupers[realSuper.original]!!.immediateSupers
                     assert(immediateSupers.isNotEmpty())
 
-                    val immediateSuperToUse = if (immediateSupers.size() == 1) {
+                    val immediateSuperToUse = if (immediateSupers.size == 1) {
                         immediateSupers.single()
                     }
                     else {

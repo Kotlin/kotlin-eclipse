@@ -201,7 +201,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         String contents = new String(compilationUnit.getContents()).replaceAll(Pattern.quote(DOC_START), DOC_ESCAPE_START);
         Project ideaProject = KotlinEnvironment.getEnvironment(compilationUnit.getJavaProject()).getProject();
         
-        String translatedCode = JavaToKotlinTranslator.INSTANCE$.prettify(
+        String translatedCode = JavaToKotlinTranslator.INSTANCE.prettify(
                 JavaToKotlinTranslatorKt.translateToKotlin(contents, ideaProject));
         KtFile jetFile = getJetFile(translatedCode, compilationUnit.getJavaProject());
         String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode(), getDefaultLineDelimiter(compilationUnit))

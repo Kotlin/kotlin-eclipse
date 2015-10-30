@@ -180,7 +180,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         else {
             val builder = StringBuilder()
             builder.append("super")
-            if (classOrObject.getDelegationSpecifiers().size() > 1) {
+            if (classOrObject.getDelegationSpecifiers().size > 1) {
                 builder.append("<").append(descriptor.getContainingDeclaration().escapedName()).append(">")
             }
             builder.append(".").append(descriptor.escapedName())

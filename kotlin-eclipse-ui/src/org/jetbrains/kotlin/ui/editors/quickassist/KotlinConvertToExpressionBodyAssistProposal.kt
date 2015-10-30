@@ -106,7 +106,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
             val stringToInsert = ": ${JvmBuiltIns.Instance.getUnitType().toString()}"
             insertAfter(elementToPlaceTypeAfter, stringToInsert)
             if (omitType) {
-            	editor.selectAndReveal(offset, stringToInsert.length()) 
+            	editor.selectAndReveal(offset, stringToInsert.length) 
             }
         }   
     }

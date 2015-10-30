@@ -39,7 +39,7 @@ public class LibrarySourcesIndex(private val root: IPackageFragmentRoot) {
     
     public fun resolve(shortName: String, packageFragment: IPackageFragment): String? {
         val sourcesList = index.get(shortName) ?: return null
-        if (sourcesList.size() == 1) {
+        if (sourcesList.size == 1) {
             return sourcesList.first().path
         }
         val packageName = packageFragment.getElementName()

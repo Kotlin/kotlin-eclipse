@@ -50,6 +50,6 @@ public class KotlinJUnitLaunchUtils {
     @Nullable
     public static IType getEclipseTypeForSingleClass(@NotNull IFile file) {
         KtClass jetClass = getSingleJetClass(file);
-        return jetClass != null ? KotlinJavaManager.INSTANCE$.findEclipseType(jetClass, JavaCore.create(file.getProject())) : null;
+        return jetClass != null ? KotlinJavaManager.INSTANCE.findEclipseType(jetClass, JavaCore.create(file.getProject())) : null;
     }    
 }

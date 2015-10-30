@@ -23,7 +23,7 @@ open public class KotlinFunctionParameterInfoTestCase : KotlinProjectTestCase() 
         val actualResult = getContextInformation(testEditor.getEditor() as KotlinFileEditor)
         val expectedResult = getExpectedResult(testEditor)
         
-        val agreement = actualResult.size() == expectedResult.size() && 
+        val agreement = actualResult.size == expectedResult.size && 
                 actualResult.all { actualResult ->
                     expectedResult.any { expectedResult ->
                         actualResult == expectedResult
@@ -38,7 +38,7 @@ open public class KotlinFunctionParameterInfoTestCase : KotlinProjectTestCase() 
         val lastChild = jetFile.getLastChild()
         val expectedText = if (lastChild.getNode().getElementType() == KtTokens.BLOCK_COMMENT) {
             val lastChildText = lastChild.getText()
-            lastChildText.substring(2, lastChildText.length() - 2).trim()
+            lastChildText.substring(2, lastChildText.length - 2).trim()
         } else { // EOL_COMMENT
             lastChild.getText().substring(2).trim()
         }
@@ -49,7 +49,7 @@ open public class KotlinFunctionParameterInfoTestCase : KotlinProjectTestCase() 
         val noParametersRegex = "<no parameters>".toRegex()
         return expectedText.split("\n")
             .map { line ->
-                val match = regex.match(line) 
+                val match = regex.find(line) 
                 val displayString = match!!.groups[1]!!.value
                 displayString
                     .replace(beginHighlightRegex, "")

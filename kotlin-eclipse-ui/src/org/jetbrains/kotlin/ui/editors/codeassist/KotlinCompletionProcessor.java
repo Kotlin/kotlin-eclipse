@@ -95,7 +95,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         
         proposals.addAll(
                 collectCompletionProposals(
-                        KotlinCompletionUtils.INSTANCE$.filterCompletionProposals(cachedDescriptors, identifierPart),
+                        KotlinCompletionUtils.INSTANCE.filterCompletionProposals(cachedDescriptors, identifierPart),
                         identOffset,
                         offset - identOffset));
         proposals.addAll(generateKeywordProposals(viewer, identOffset, offset, identifierPart));
@@ -106,7 +106,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     
     @NotNull
     private Collection<DeclarationDescriptor> generateBasicCompletionProposals(final String identifierPart, int identOffset) {
-        KtSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE$.getSimpleNameExpression(editor, identOffset);
+        KtSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE.getSimpleNameExpression(editor, identOffset);
         if (simpleNameExpression == null) {
             return Collections.emptyList();
         }
@@ -117,11 +117,11 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         Function1<Name, Boolean> nameFilter = new Function1<Name, Boolean>() {
             @Override
             public Boolean invoke(Name name) {
-                return KotlinCompletionUtils.INSTANCE$.applicableNameFor(identifierPart, name);
+                return KotlinCompletionUtils.INSTANCE.applicableNameFor(identifierPart, name);
             }
         };
         
-        return KotlinCompletionUtils.INSTANCE$.getReferenceVariants(simpleNameExpression, nameFilter, file);
+        return KotlinCompletionUtils.INSTANCE.getReferenceVariants(simpleNameExpression, nameFilter, file);
     }
     
     private List<ICompletionProposal> collectCompletionProposals(
@@ -131,8 +131,8 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         List<ICompletionProposal> proposals = Lists.newArrayList();
         for (DeclarationDescriptor descriptor : descriptors) {
             String completion = descriptor.getName().getIdentifier();
-            Image image = KotlinImageProvider.INSTANCE$.getImage(descriptor);
-            String presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor);
+            Image image = KotlinImageProvider.INSTANCE.getImage(descriptor);
+            String presentableString = DescriptorRenderer.Companion.getONLY_NAMES_WITH_SHORT_TYPES().render(descriptor);
             assert image != null : "Image for completion must not be null";
             
             KotlinCompletionProposal proposal = new KotlinCompletionProposal(
@@ -224,7 +224,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     
     @Override
     public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
-        return KotlinFunctionParameterInfoAssist.INSTANCE$.computeContextInformation(editor, offset);
+        return KotlinFunctionParameterInfoAssist.INSTANCE.computeContextInformation(editor, offset);
     }
 
     @Override

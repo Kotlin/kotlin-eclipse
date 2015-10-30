@@ -27,13 +27,13 @@ import org.jetbrains.kotlin.psi.KtFile;
 public class KotlinAnalyzer {
     @NotNull
     public static AnalysisResultWithProvider analyzeFile(@NotNull IJavaProject javaProject, @NotNull KtFile jetFile) {
-        return KotlinAnalysisFileCache.INSTANCE$.getAnalysisResult(jetFile, javaProject);
+        return KotlinAnalysisFileCache.INSTANCE.getAnalysisResult(jetFile, javaProject);
     }
     
     @NotNull
     private static AnalysisResultWithProvider analyzeFiles(@NotNull IJavaProject javaProject, @NotNull KotlinEnvironment kotlinEnvironment, 
             @NotNull Collection<KtFile> filesToAnalyze) {
-        return EclipseAnalyzerFacadeForJVM.INSTANCE$.analyzeFilesWithJavaIntegration(
+        return EclipseAnalyzerFacadeForJVM.INSTANCE.analyzeFilesWithJavaIntegration(
                 javaProject, 
                 kotlinEnvironment.getProject(), 
                 filesToAnalyze);

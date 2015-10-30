@@ -62,7 +62,7 @@ private class KotlinSearchDeclarationVisitor(private val descriptor: Declaration
         }
         if (descriptor is CallableDescriptor) {
             if (declaration is KtCallableDeclaration) {
-                return descriptor.getValueParameters().size() == declaration.getValueParameters().size()
+                return descriptor.getValueParameters().size == declaration.getValueParameters().size
             } else {
                 return false
             }

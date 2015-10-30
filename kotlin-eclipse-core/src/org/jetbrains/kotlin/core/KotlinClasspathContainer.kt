@@ -33,6 +33,7 @@ fun newExportedLibraryEntry(path: IPath): IClasspathEntry = JavaCore.newLibraryE
 
 public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspathContainer {
     companion object {
+        @JvmField
         public val CONTAINER_ENTRY: IClasspathEntry = JavaCore.newContainerEntry(runtimeContainerId)
         private val LIB_RUNTIME_NAME = "kotlin-runtime"
         private val LIB_RUNTIME_SRC_NAME = "kotlin-runtime-sources"

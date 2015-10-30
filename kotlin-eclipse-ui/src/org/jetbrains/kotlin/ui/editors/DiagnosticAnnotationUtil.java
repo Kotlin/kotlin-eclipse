@@ -175,7 +175,7 @@ public class DiagnosticAnnotationUtil {
             newAnnotations = Collections.emptyList();
         }
         
-        AnnotationManager.INSTANCE$.updateAnnotations(editor, newAnnotations);
+        AnnotationManager.INSTANCE.updateAnnotations(editor, newAnnotations);
     }
     
     @Nullable

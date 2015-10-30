@@ -85,7 +85,7 @@ public class KotlinMarkOccurrences : ISelectionListener {
     }
     
     private fun updateOccurrences(editor: KotlinFileEditor, occurrences: List<Position>) {
-        val annotationMap = occurrences.toMap { Annotation(ANNOTATION_TYPE, false, "description") }
+        val annotationMap = occurrences.toMapBy { Annotation(ANNOTATION_TYPE, false, "description") }
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
         val oldAnnotations = getOldOccurrenceAnnotations(annotationModel)
         annotationModel.withLock { 

@@ -56,7 +56,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
         try {
         	file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
         	for (DiagnosticAnnotation annotation : annotations) {
-        		AnnotationManager.INSTANCE$.addProblemMarker(annotation, file);
+        		AnnotationManager.INSTANCE.addProblemMarker(annotation, file);
         	}
         	
             IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
@@ -84,7 +84,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
 		KotlinTestUtils.joinBuildThread();
 		
 		IJavaProject javaProject = getTestProject().getJavaProject();
-		BindingContext bindingContext = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject).getBindingContext();
+		BindingContext bindingContext = KotlinAnalysisProjectCache.INSTANCE.getAnalysisResult(javaProject).getBindingContext();
 		Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(bindingContext.getDiagnostics());
 		
 		for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {

@@ -83,8 +83,8 @@ public class KotlinReconcilingStrategy implements IReconcilingStrategy {
     
     private void resetCache(@NotNull IFile file) {
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        KotlinAnalysisProjectCache.INSTANCE$.resetCache(javaProject);
-        KotlinAnalysisFileCache.INSTANCE$.resetCache();
+        KotlinAnalysisProjectCache.INSTANCE.resetCache(javaProject);
+        KotlinAnalysisFileCache.INSTANCE.resetCache();
     }
     
     private void updateLineAnnotations(IFile file) {

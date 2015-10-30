@@ -123,7 +123,7 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
     }
     
     public static boolean isInKotlinBinFolder(@NotNull IType eclipseType) {
-        IFolder kotlinBinFolder = KotlinJavaManager.INSTANCE$.getKotlinBinFolderFor(eclipseType.getJavaProject().getProject());
+        IFolder kotlinBinFolder = KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(eclipseType.getJavaProject().getProject());
         IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) eclipseType.getPackageFragment().getParent();
         return kotlinBinFolder.equals(packageFragmentRoot.getResource());
     }

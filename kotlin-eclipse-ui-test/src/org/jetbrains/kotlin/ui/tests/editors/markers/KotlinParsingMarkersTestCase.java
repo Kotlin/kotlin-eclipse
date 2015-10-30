@@ -50,7 +50,7 @@ public abstract class KotlinParsingMarkersTestCase extends KotlinEditorWithAfter
         
         KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(getTestEditor().getEditor())); // We should update file because problem markers are adding manually
         for (DiagnosticAnnotation annotation : DiagnosticAnnotationUtil.INSTANCE.createParsingDiagnosticAnnotations(file)) {
-            AnnotationManager.INSTANCE$.addProblemMarker(annotation, file);
+            AnnotationManager.INSTANCE.addProblemMarker(annotation, file);
         }
         
         try {

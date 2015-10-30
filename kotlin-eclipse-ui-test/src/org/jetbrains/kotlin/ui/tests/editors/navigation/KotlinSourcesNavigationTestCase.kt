@@ -45,7 +45,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
     
     val inputFileName: String by lazy {
         val inputFileName = name.getMethodName()
-        val filenameAsArray = inputFileName.substring(TEST_PREFIX.length()).toCharArray()
+        val filenameAsArray = inputFileName.substring(TEST_PREFIX.length).toCharArray()
         filenameAsArray[0] = Character.toLowerCase(filenameAsArray[0])
         String(filenameAsArray) + KT_FILE_EXTENSION
     }
@@ -81,9 +81,9 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
     }
 
     private fun assertWithEditor(initialFile: KtFile, editor: KotlinEditor) {
-        val comments = PsiTreeUtil.getChildrenOfTypeAsList(initialFile, javaClass<PsiComment>())
-        val expectedTarget = comments.get(comments.size() - 1).getText().substring(2).split(":")
-        Assert.assertEquals(2, expectedTarget.size())
+        val comments = PsiTreeUtil.getChildrenOfTypeAsList(initialFile, PsiComment::class.java)
+        val expectedTarget = comments.get(comments.size - 1).getText().substring(2).split(":")
+        Assert.assertEquals(2, expectedTarget.size)
         val expectedFile = expectedTarget[0]
         val expectedName = expectedTarget[1]
         
@@ -91,7 +91,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         
         val editorOffset = editor.javaEditor.getViewer().getTextWidget().getCaretOffset()
         
-        val expression = parsedFile.findElementAt(editorOffset)?.getNonStrictParentOfType(javaClass<PsiNamedElement>())
+        val expression = parsedFile.findElementAt(editorOffset)?.getNonStrictParentOfType(PsiNamedElement::class.java)
         
         Assert.assertEquals(expectedFile, editor.javaEditor.getTitleToolTip())
         Assert.assertEquals(expectedName, expression?.getName())

@@ -100,7 +100,7 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
     private fun findFileInWorkspace(): IFile? {
         val files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toURI())
         return if (files != null && files.isNotEmpty()) {
-            assert(files.size() == 1, { "By ${file.toURI()} found more than one file" })
+            assert(files.size == 1, { "By ${file.toURI()} found more than one file" })
             files[0]
         } else {
             null
@@ -110,7 +110,7 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
     private fun findFolderInWorkspace(): IContainer? {
         val containers = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(file.toURI())
         return if (containers != null && containers.isNotEmpty()) {
-            assert(containers.size() == 1, { "By ${file.toURI()} found more than one file" })
+            assert(containers.size == 1, { "By ${file.toURI()} found more than one file" })
             containers[0]
         } else {
             null

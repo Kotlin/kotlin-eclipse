@@ -41,16 +41,16 @@ public class Activator extends Plugin {
     public void start(BundleContext bundleContext) throws Exception {
 		super.start(bundleContext);
 		
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(KotlinAnalysisProjectCache.INSTANCE$,
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(KotlinAnalysisProjectCache.INSTANCE,
 		        IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE | IResourceChangeEvent.PRE_BUILD);
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(KotlinRefreshProjectListener.INSTANCE$,
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(KotlinRefreshProjectListener.INSTANCE,
 		        IResourceChangeEvent.PRE_REFRESH);
 	}
 
 	@Override
     public void stop(BundleContext bundleContext) throws Exception {
-	    ResourcesPlugin.getWorkspace().removeResourceChangeListener(KotlinAnalysisProjectCache.INSTANCE$);
-	    ResourcesPlugin.getWorkspace().removeResourceChangeListener(KotlinRefreshProjectListener.INSTANCE$);
+	    ResourcesPlugin.getWorkspace().removeResourceChangeListener(KotlinAnalysisProjectCache.INSTANCE);
+	    ResourcesPlugin.getWorkspace().removeResourceChangeListener(KotlinRefreshProjectListener.INSTANCE);
 	    
 		plugin = null;
 	}

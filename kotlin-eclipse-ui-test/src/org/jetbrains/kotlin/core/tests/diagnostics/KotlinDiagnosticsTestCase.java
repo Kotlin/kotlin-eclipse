@@ -56,7 +56,6 @@ import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
-import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -189,7 +188,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             List<KtFile> jetFiles = getKtFiles(testFilesInModule, true);
             allKtFiles.addAll(jetFiles);
 
-            AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE$
+            AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE
                     .analyzeFilesWithJavaIntegration(getTestProject().getJavaProject(), getProject(), jetFiles)
                     .getAnalysisResult();
             

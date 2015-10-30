@@ -51,6 +51,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
 
 public object KotlinJavaManager {
+    @JvmField
     public val KOTLIN_BIN_FOLDER: Path = Path("kotlin_bin")
     
     public fun getKotlinBinFolderFor(project: IProject): IFolder = project.getFolder(KOTLIN_BIN_FOLDER)

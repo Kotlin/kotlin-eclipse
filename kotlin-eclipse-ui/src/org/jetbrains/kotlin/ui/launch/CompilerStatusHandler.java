@@ -80,7 +80,7 @@ public class CompilerStatusHandler implements IStatusHandler {
             
             message.append("\t");
             message.append(dataElement.getMessageSeverity().toString() + ": " + dataElement.getMessage());
-            if (!dataElement.getMessageLocation().equals(CompilerMessageLocation.NO_LOCATION)) {
+            if (!dataElement.getMessageLocation().equals(CompilerMessageLocation.getNO_LOCATION())) {
                 message.append(" (" + dataElement.getMessageLocation().getLine() + ", " + dataElement.getMessageLocation().getColumn() + ")");
             }
             

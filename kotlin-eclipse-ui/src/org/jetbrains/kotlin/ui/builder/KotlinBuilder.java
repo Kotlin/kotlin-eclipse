@@ -73,7 +73,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
             KotlinLightClassGeneration.updateLightClasses(javaProject, affectedFiles);
         }
         
-        AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE$.getAnalysisResult(javaProject);
+        AnalysisResult analysisResult = KotlinAnalysisProjectCache.INSTANCE.getAnalysisResult(javaProject);
         updateLineMarkers(analysisResult.getBindingContext().getDiagnostics());
         
         return null;
@@ -132,7 +132,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     }
     
     private void addMarkersToProject(Map<IFile, List<DiagnosticAnnotation>> annotations, IProject project) throws CoreException {
-        AnnotationManager.INSTANCE$.clearAllMarkersFromProject(project);
+        AnnotationManager.INSTANCE.clearAllMarkersFromProject(project);
         
         for (IFile file : KotlinPsiManager.INSTANCE.getFilesByProject(getProject())) {
             DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations);
@@ -140,7 +140,7 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
         
         for (Map.Entry<IFile, List<DiagnosticAnnotation>> entry : annotations.entrySet()) {
             for (DiagnosticAnnotation annotation : entry.getValue()) {
-                AnnotationManager.INSTANCE$.addProblemMarker(annotation, entry.getKey());
+                AnnotationManager.INSTANCE.addProblemMarker(annotation, entry.getKey());
             }
         }
     }

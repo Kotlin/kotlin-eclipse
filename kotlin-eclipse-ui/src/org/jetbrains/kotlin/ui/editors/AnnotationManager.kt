@@ -41,11 +41,12 @@ import org.eclipse.ui.PlatformUI
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
-    val ANNOTATION_ERROR_TYPE = "org.jetbrains.kotlin.ui.annotation.error"
-    val ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning"
+    
+    @JvmField val ANNOTATION_ERROR_TYPE = "org.jetbrains.kotlin.ui.annotation.error"
+    @JvmField val ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning"
     val MARKED_TEXT = "markedText"
-    val IS_UNRESOLVED_REFERENCE = "isUnresolvedReference"
-    val MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER
+    @JvmField val IS_UNRESOLVED_REFERENCE = "isUnresolvedReference"
+    @JvmField val MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER
     
     public fun updateAnnotations(editor: AbstractTextEditor, annotations: List<DiagnosticAnnotation>) {
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())

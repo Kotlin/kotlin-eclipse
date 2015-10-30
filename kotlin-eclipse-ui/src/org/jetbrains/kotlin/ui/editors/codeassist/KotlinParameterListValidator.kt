@@ -82,9 +82,9 @@ public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IConte
         if (start >= 0) {
             presentation.addStyleRange(StyleRange(0, start, null, null, SWT.NORMAL))
             
-            val end = start + renderedParameter.length()
+            val end = start + renderedParameter.length
             presentation.addStyleRange(StyleRange(start, end - start, null, null, SWT.BOLD))
-            presentation.addStyleRange(StyleRange(end, displayString.length() - end, null, null, SWT.NORMAL))
+            presentation.addStyleRange(StyleRange(end, displayString.length - end, null, null, SWT.NORMAL))
             
             return true
         }
@@ -92,7 +92,7 @@ public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IConte
         return true
     }
     
-    private fun isIndexOutOfBound(index: Int): Boolean = info.renderedParameters.size() <= index
+    private fun isIndexOutOfBound(index: Int): Boolean = info.renderedParameters.size <= index
     
 //    Copied with some changes from JetFunctionParameterInfoHandler.java
     private fun getCurrentArgumentIndex(offset: Int): Int? {

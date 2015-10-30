@@ -238,7 +238,6 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             
             
             Class<?> protobufCallable = Class.forName("org.jetbrains.kotlin.serialization.ProtoBuf$Callable");
-            @SuppressWarnings("unchecked")
             Method getExtensionMethod = protobufCallable.getMethod("getExtension", implClassName.getClass());
             Object indexObj = getExtensionMethod.invoke(proto, implClassName);
             

@@ -103,7 +103,7 @@ public class BuiltInsReferenceResolver {
         MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(myProject,
                 Name.special("<built-ins resolver module>"), 
                 ModuleDescriptorKt.ModuleParameters(
-                        JvmPlatform.defaultModuleParameters.getDefaultImports(),
+                        JvmPlatform.INSTANCE.getDefaultModuleParameters().getDefaultImports(),
                         PlatformToKotlinClassMap.EMPTY
                 ), 
                 JvmBuiltIns.getInstance());
@@ -113,7 +113,7 @@ public class BuiltInsReferenceResolver {
                 newModuleContext.getStorageManager(), jetBuiltInsFiles);
         
         ResolveSession resolveSession = InjectionKt.createLazyResolveSession(newModuleContext, declarationFactory,
-                new BindingTraceContext(), TargetPlatform.Default.INSTANCE$);
+                new BindingTraceContext(), TargetPlatform.Default.INSTANCE);
         
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
         
@@ -197,7 +197,7 @@ public class BuiltInsReferenceResolver {
         KtScope memberScope = getMemberScope(containingDeclaration);
         if (memberScope == null) return null;
 
-        String renderedOriginal = DescriptorRenderer.FQ_NAMES_IN_TYPES.render(originalDescriptor);
+        String renderedOriginal = DescriptorRenderer.Companion.getFQ_NAMES_IN_TYPES().render(originalDescriptor);
         Collection<? extends DeclarationDescriptor> descriptors;
         if (originalDescriptor instanceof ConstructorDescriptor && containingDeclaration instanceof ClassDescriptor) {
             descriptors = ((ClassDescriptor) containingDeclaration).getConstructors();
@@ -206,7 +206,7 @@ public class BuiltInsReferenceResolver {
             descriptors = memberScope.getAllDescriptors();
         }
         for (DeclarationDescriptor member : descriptors) {
-            if (renderedOriginal.equals(DescriptorRenderer.FQ_NAMES_IN_TYPES.render(member))) {
+            if (renderedOriginal.equals(DescriptorRenderer.Companion.getFQ_NAMES_IN_TYPES().render(member))) {
                 return member;
             }
         }

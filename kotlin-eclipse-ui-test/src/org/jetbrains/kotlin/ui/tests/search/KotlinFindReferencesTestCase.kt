@@ -130,10 +130,10 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         return FileUtil.loadFile(resultFile).splitToSequence("\n")
             .filter { it.isNotBlank() }
             .map { line ->
-                val fileNameMatch = fileNameRegex.match(line, 0)
+                val fileNameMatch = fileNameRegex.find(line)
                 val fileName = if (fileNameMatch != null) fileNameMatch.groups[1]?.value as String else null
                 
-                val offsetMatch= offsetRegex.match(line, 0)!!
+                val offsetMatch= offsetRegex.find(line)!!
 	            TestResult(
 	                fileName, 
 	                offsetMatch.groups[1]!!.value.toInt(), 

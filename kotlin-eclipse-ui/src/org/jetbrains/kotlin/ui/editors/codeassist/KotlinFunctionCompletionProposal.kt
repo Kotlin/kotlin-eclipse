@@ -82,7 +82,7 @@ public class KotlinFunctionCompletionProposal(
 	
     private fun indexOfSkippingSpace(document: IDocument, ch : Char, startIndex : Int) : Int {
         val text = document.get()
-        for (i in startIndex..text.length() - 1) {
+        for (i in startIndex..text.length - 1) {
             val currentChar = text[i]
             if (ch == currentChar) return i
             if (currentChar != ' ' && currentChar != '\t') return -1

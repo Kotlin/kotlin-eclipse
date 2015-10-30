@@ -46,7 +46,7 @@ public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult,
 public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
         val filesSet = filesToAnalyze.toSet()
-        if (filesSet.size() != filesToAnalyze.size()) {
+        if (filesSet.size != filesToAnalyze.size) {
             KotlinLogger.logWarning("Analyzed files have duplicates")
         }
         

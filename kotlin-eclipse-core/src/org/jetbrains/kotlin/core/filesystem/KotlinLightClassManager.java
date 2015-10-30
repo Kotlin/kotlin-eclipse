@@ -153,7 +153,7 @@ public class KotlinLightClassManager {
     }
     
     private void cleanOutdatedLightClasses(IProject project) {
-        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE$.getKotlinBinFolderFor(project), new Predicate<IResource>() {
+        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), new Predicate<IResource>() {
             @Override
             public boolean apply(IResource resource) {
                 if (resource instanceof IFile) {

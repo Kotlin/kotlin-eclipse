@@ -36,8 +36,6 @@ import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.junit.Assert;
 import org.junit.Before;
 
-import com.google.common.collect.Ordering;
-
 public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCase {
 	@Before
 	public void configure() {

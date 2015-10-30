@@ -112,7 +112,7 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
     }
 
     companion object {
-        public val EDITOR_ID:String = "org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor"
+        @JvmField public val EDITOR_ID:String = "org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor"
     }
 
     private val classFile: IClassFile
