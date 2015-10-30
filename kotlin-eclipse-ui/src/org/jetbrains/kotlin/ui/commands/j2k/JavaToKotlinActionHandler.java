@@ -53,7 +53,7 @@ import org.jetbrains.kotlin.j2k.JavaToKotlinTranslatorKt;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtPsiFactory;
 import org.jetbrains.kotlin.ui.Activator;
-import org.jetbrains.kotlin.ui.commands.CommandsPackage;
+import org.jetbrains.kotlin.ui.commands.CommandsUtilsKt;
 import org.jetbrains.kotlin.ui.commands.ConvertedKotlinData;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
@@ -73,7 +73,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         if (selection instanceof IStructuredSelection) {
             Object[] elements = ((IStructuredSelection) selection).toArray();
             Set<CompilationUnit> elementsToKotlin = collectCompilationUnits(elements);
-            Set<IProject> projects = CommandsPackage.getCorrespondingProjects(elementsToKotlin);
+            Set<IProject> projects = CommandsUtilsKt.getCorrespondingProjects(elementsToKotlin);
             
             Pair<IStatus, List<IFile>> result = convertToKotlin(elementsToKotlin, HandlerUtil.getActiveShell(event));
             if (result.getFirst().isOK()) {
@@ -81,7 +81,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
                 
                 List<IFile> convertedFiles = result.getSecond();
                 if (!convertedFiles.isEmpty()) {
-                    CommandsPackage.openEditor(convertedFiles.get(0));
+                    CommandsUtilsKt.openEditor(convertedFiles.get(0));
                 }
             } else {
                 MessageDialog.openError(HandlerUtil.getActiveShell(event), "Conversion error", result.getFirst().getMessage());
@@ -183,7 +183,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
                 convertedFiles.add(convertedFile.getFile());
             }
                 
-            DeleteResourcesOperation deleteCompilationUnits = CommandsPackage.getDeleteOperation(compilationUnits);
+            DeleteResourcesOperation deleteCompilationUnits = CommandsUtilsKt.getDeleteOperation(compilationUnits);
             compositeOperation.add(deleteCompilationUnits);
             
             closeEditors(compilationUnits);

@@ -16,7 +16,7 @@ import org.eclipse.jdt.internal.junit.launcher.JUnitLaunchConfigurationConstants
 import org.eclipse.jdt.internal.junit.launcher.TestKindRegistry;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.psi.JetClass;
+import org.jetbrains.kotlin.psi.KtClass;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
@@ -53,7 +53,7 @@ public class KotlinJUnitLaunchTestCase extends KotlinProjectTestCase {
 			assertEquals(expectedTestRunnerKind, actualTestRunnerKind);
 			
 			String actualFQName = launchConfiguration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, (String) null);
-			JetClass singleJetClass = KotlinJUnitLaunchUtils.getSingleJetClass(testEditor.getEditingFile());
+			KtClass singleJetClass = KotlinJUnitLaunchUtils.getSingleJetClass(testEditor.getEditingFile());
 			assertEquals(singleJetClass.getFqName().asString(), actualFQName);
 		} catch (CoreException e) {
 			throw new RuntimeException(e);

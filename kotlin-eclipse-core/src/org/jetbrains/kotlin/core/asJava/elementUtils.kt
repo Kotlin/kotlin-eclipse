@@ -63,7 +63,7 @@ fun getTypeFqName(element: PsiElement): KotlinClassNameInfo {
         is KtClassOrObject -> KotlinClassNameInfo(element.getFqName())
         is KtFile -> 
             KotlinClassNameInfo(PackageClassUtils.getPackageClassFqName(element.getPackageFqName()), 
-                NoResolveFileClassesProvider.INSTANCE.getFileClassInfo(element).fileClassFqName)
+                NoResolveFileClassesProvider.getFileClassInfo(element).fileClassFqName)
         else -> KotlinClassNameInfo.EMPTY
     }
 }

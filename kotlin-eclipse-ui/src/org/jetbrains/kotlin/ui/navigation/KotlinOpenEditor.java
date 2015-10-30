@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.psi.KtElement;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditorInput;
@@ -38,7 +39,7 @@ public class KotlinOpenEditor {
 	    if (navigationFile != null) {
 	        kotlinFile = KotlinPsiManager.getEclispeFile(navigationFile);
 	    } else {
-	        kotlinFile = NavigationPackage.chooseSourceFile(sourceFiles);
+	        kotlinFile = KotlinOpenEditorUtilsKt.chooseSourceFile(sourceFiles);
 	    }
 	    
 	    try {
@@ -59,7 +60,7 @@ public class KotlinOpenEditor {
             return;
         }
         
-        JetElement jetElement = NavigationPackage.findKotlinDeclaration(javaElement, jetFile);
+        KtElement jetElement = KotlinOpenEditorUtilsKt.findKotlinDeclaration(javaElement, jetFile);
         if (jetElement == null) {
             jetElement = jetFile;
         }

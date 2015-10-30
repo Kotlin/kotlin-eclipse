@@ -21,7 +21,6 @@ import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.context.GlobalContext
-import org.jetbrains.kotlin.context.GlobalContext
 import org.jetbrains.kotlin.context.ModuleContext
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.descriptors.PackageFragmentProvider

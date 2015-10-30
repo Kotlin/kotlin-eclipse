@@ -24,8 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import kotlin.KotlinPackage;
-import kotlin.reflect.jvm.internal.impl.platform.JvmBuiltIns;
+import kotlin.CollectionsKt;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -40,18 +39,24 @@ import org.jetbrains.kotlin.descriptors.ConstructorDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.MemberDescriptor;
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor;
-import org.jetbrains.kotlin.descriptors.ModuleParameters;
+import org.jetbrains.kotlin.descriptors.ModuleDescriptorKt;
 import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor;
 import org.jetbrains.kotlin.descriptors.PackageViewDescriptor;
+import org.jetbrains.kotlin.frontend.di.InjectionKt;
 import org.jetbrains.kotlin.name.Name;
+import org.jetbrains.kotlin.platform.JvmBuiltIns;
+import org.jetbrains.kotlin.platform.PlatformToKotlinClassMap;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
 import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.kotlin.resolve.TargetPlatform;
+import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 import org.jetbrains.kotlin.resolve.scopes.KtScope;
+import org.jetbrains.kotlin.serialization.deserialization.FindClassInModuleKt;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
@@ -96,13 +101,18 @@ public class BuiltInsReferenceResolver {
         assert (jetBuiltInsFiles != null);
         
         MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(myProject,
-                Name.special("<built-ins resolver module>"), ModuleParameters.Empty.INSTANCE, JvmBuiltIns.getInstance());
+                Name.special("<built-ins resolver module>"), 
+                ModuleDescriptorKt.ModuleParameters(
+                        JvmPlatform.defaultModuleParameters.getDefaultImports(),
+                        PlatformToKotlinClassMap.EMPTY
+                ), 
+                JvmBuiltIns.getInstance());
         newModuleContext.setDependencies(newModuleContext.getModule());
         
         FileBasedDeclarationProviderFactory declarationFactory = new FileBasedDeclarationProviderFactory(
                 newModuleContext.getStorageManager(), jetBuiltInsFiles);
         
-        ResolveSession resolveSession = DiPackage.createLazyResolveSession(newModuleContext, declarationFactory,
+        ResolveSession resolveSession = InjectionKt.createLazyResolveSession(newModuleContext, declarationFactory,
                 new BindingTraceContext(), TargetPlatform.Default.INSTANCE$);
         
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
@@ -112,7 +122,7 @@ public class BuiltInsReferenceResolver {
         List<PackageFragmentDescriptor> fragments = packageView.getFragments();
         
         moduleDescriptor = newModuleContext.getModule();
-        builtinsPackageFragment = KotlinPackage.single(fragments);
+        builtinsPackageFragment = CollectionsKt.single(fragments);
     }
 
     @Nullable
@@ -215,7 +225,9 @@ public class BuiltInsReferenceResolver {
         }
         
         if (originalDescriptor instanceof ClassDescriptor) {
-            return findClassAcrossModuleDependencies(moduleDescriptor, getClassId((ClassDescriptor) originalDescriptor));
+            return FindClassInModuleKt.findClassAcrossModuleDependencies(
+                    moduleDescriptor, 
+                    DescriptorUtilsKt.getClassId((ClassDescriptor) originalDescriptor));
         }
         
         if (originalDescriptor instanceof PackageFragmentDescriptor) {
@@ -234,7 +246,7 @@ public class BuiltInsReferenceResolver {
     public static boolean isFromBuiltinModule(@NotNull DeclarationDescriptor originalDescriptor) {
         // TODO This is optimization only
         // It should be rewritten by checking declarationDescriptor.getSource(), when the latter returns something non-trivial for builtins.
-        return JvmBuiltIns.getInstance().getBuiltInsModule() == DescriptorUtils.getContainingModule(originalDescriptor);
+        return JvmBuiltIns.getInstance().getBuiltInsModule().equals(DescriptorUtils.getContainingModule(originalDescriptor));
     }
 
     @Nullable

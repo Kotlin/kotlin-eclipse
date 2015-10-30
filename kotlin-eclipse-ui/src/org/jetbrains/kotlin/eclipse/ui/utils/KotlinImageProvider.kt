@@ -19,15 +19,14 @@ package org.jetbrains.kotlin.eclipse.ui.utils
 import org.eclipse.jdt.ui.JavaUI
 import org.eclipse.swt.graphics.Image
 import org.eclipse.jdt.ui.ISharedImages
-import org.jetbrains.kotlin.psi.JetVariableDeclaration
-import org.jetbrains.kotlin.psi.JetFunction
-import org.jetbrains.kotlin.psi.JetClassOrObject
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtVariableDeclaration
+import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.psi.JetFile
 
 public object KotlinImageProvider {
     public fun getImage(descriptor: DeclarationDescriptor): Image? {
@@ -39,11 +38,11 @@ public object KotlinImageProvider {
         }
     }
     
-    public fun getImage(element: JetElement): Image? {
+    public fun getImage(element: KtElement): Image? {
         return when(element) {
-            is JetClassOrObject -> getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
-            is JetFunction -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PUBLIC)
-            is JetVariableDeclaration -> getImageFromJavaUI(ISharedImages.IMG_FIELD_PUBLIC)
+            is KtClassOrObject -> getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
+            is KtFunction -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PUBLIC)
+            is KtVariableDeclaration -> getImageFromJavaUI(ISharedImages.IMG_FIELD_PUBLIC)
             else -> null
         }
     }

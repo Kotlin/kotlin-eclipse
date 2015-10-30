@@ -12,9 +12,9 @@ import java.util.regex.Pattern;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.idea.JetLanguage;
-import org.jetbrains.kotlin.utils.UtilsPackage;
+import org.jetbrains.kotlin.idea.KotlinLanguage;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.utils.ExceptionUtilsKt;
 import org.junit.Assert;
 
 import com.google.common.collect.Lists;
@@ -25,8 +25,8 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.psi.PsiFileFactory;
-import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.psi.impl.PsiFileFactoryImpl;
+import com.intellij.testFramework.LightVirtualFile;
 
 public class JetTestUtils {
 	
@@ -57,10 +57,10 @@ public class JetTestUtils {
     }
 	
 	@NotNull
-    public static JetFile createFile(@NotNull @NonNls String name, @NotNull String text, @NotNull Project project) {
-        LightVirtualFile virtualFile = new LightVirtualFile(name, JetLanguage.INSTANCE, text);
+    public static KtFile createFile(@NotNull @NonNls String name, @NotNull String text, @NotNull Project project) {
+        LightVirtualFile virtualFile = new LightVirtualFile(name, KotlinLanguage.INSTANCE, text);
         virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET);
-        return (JetFile) ((PsiFileFactoryImpl) PsiFileFactory.getInstance(project)).trySetupPsiForFile(virtualFile, JetLanguage.INSTANCE, true, false);
+        return (KtFile) ((PsiFileFactoryImpl) PsiFileFactory.getInstance(project)).trySetupPsiForFile(virtualFile, KotlinLanguage.INSTANCE, true, false);
     }
 	
 	private static List<String> parseDependencies(@Nullable String dependencies) {
@@ -92,7 +92,7 @@ public class JetTestUtils {
             }
         }
         catch (IOException e) {
-            throw UtilsPackage.rethrow(e);
+            throw ExceptionUtilsKt.rethrow(e);
         }
     }
 	

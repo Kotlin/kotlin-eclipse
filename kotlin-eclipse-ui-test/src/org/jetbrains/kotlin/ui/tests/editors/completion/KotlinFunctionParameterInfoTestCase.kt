@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.lexer.JetTokens
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest
 import org.junit.Assert
 
@@ -36,7 +36,7 @@ open public class KotlinFunctionParameterInfoTestCase : KotlinProjectTestCase() 
     private fun getExpectedResult(testEditor: TextEditorTest): List<String> {
         val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(testEditor.getEditingFile())
         val lastChild = jetFile.getLastChild()
-        val expectedText = if (lastChild.getNode().getElementType() == JetTokens.BLOCK_COMMENT) {
+        val expectedText = if (lastChild.getNode().getElementType() == KtTokens.BLOCK_COMMENT) {
             val lastChildText = lastChild.getText()
             lastChildText.substring(2, lastChildText.length() - 2).trim()
         } else { // EOL_COMMENT

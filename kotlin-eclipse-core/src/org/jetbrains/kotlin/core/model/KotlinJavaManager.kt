@@ -48,6 +48,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
 
 public object KotlinJavaManager {
     public val KOTLIN_BIN_FOLDER: Path = Path("kotlin_bin")

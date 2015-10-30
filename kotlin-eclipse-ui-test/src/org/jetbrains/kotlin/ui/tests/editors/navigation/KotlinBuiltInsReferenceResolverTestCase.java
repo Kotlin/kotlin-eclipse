@@ -2,8 +2,8 @@ package org.jetbrains.kotlin.ui.tests.editors.navigation;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
-import org.jetbrains.kotlin.psi.JetFile;
-import org.jetbrains.kotlin.psi.JetPsiFactory;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtPsiFactory;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.openapi.project.Project;
@@ -19,11 +19,11 @@ public class KotlinBuiltInsReferenceResolverTestCase extends KotlinSourcesNaviga
     }
 
     @Override
-    public JetFile getParsedFile(KotlinEditor editor) {
+    public KtFile getParsedFile(KotlinEditor editor) {
         IJavaProject javaProject = getTestProject().getJavaProject();
         KotlinEnvironment environment = KotlinEnvironment.getEnvironment(javaProject);
         Project ideaProject = environment.getProject();
-        JetFile jetFile = new JetPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(editor.getJavaEditor().getViewer().getTextWidget().getText()));
+        KtFile jetFile = new KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(editor.getJavaEditor().getViewer().getTextWidget().getText()));
         return jetFile;
     }
 }

@@ -123,7 +123,7 @@ open public class KotlinNavigationFromLibraryTestCase: KotlinProjectTestCase() {
     companion object {
         @AfterClass
         @JvmStatic
-        fun afterAllTests() {
+        fun afterAllNavigationFromLibraryTests() {
             getTestLibrary().clean()
         }
     }

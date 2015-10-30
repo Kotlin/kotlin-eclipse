@@ -26,14 +26,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
-import kotlin.KotlinPackage;
+import kotlin.CollectionsKt;
 import kotlin.jvm.functions.Function1;
 
 import org.eclipse.core.runtime.Path;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
-import org.jetbrains.kotlin.asJava.AsJavaPackage;
+import org.jetbrains.kotlin.asJava.DuplicateJvmSignatureUtilKt;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.TextDiagnostic;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
@@ -46,10 +46,10 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticUtils;
 import org.jetbrains.kotlin.diagnostics.Errors;
 import org.jetbrains.kotlin.diagnostics.Severity;
 import org.jetbrains.kotlin.psi.Call;
-import org.jetbrains.kotlin.psi.JetDeclaration;
-import org.jetbrains.kotlin.psi.JetElement;
-import org.jetbrains.kotlin.psi.JetExpression;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtDeclaration;
+import org.jetbrains.kotlin.psi.KtElement;
+import org.jetbrains.kotlin.psi.KtExpression;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
@@ -150,7 +150,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 });
 
         for (final ModuleAndDependencies moduleAndDependencies : modules.values()) {
-            List<TestModule> dependencies = KotlinPackage.map(
+            List<TestModule> dependencies = CollectionsKt.map(
                     moduleAndDependencies.dependencies,
                     new Function1<String, TestModule>() {
                         @Override
@@ -168,7 +168,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     }
     
     protected void analyzeAndCheck(File testDataFile, List<TestFile> testFiles, String moduleName) {
-        Map<TestModule, List<TestFile>> groupedByModule = KotlinPackage.groupByTo(
+        Map<TestModule, List<TestFile>> groupedByModule = CollectionsKt.groupByTo(
                 testFiles,
                 new LinkedHashMap<TestModule, List<TestFile>>(),
                 new Function1<TestFile, TestModule>() {
@@ -179,15 +179,15 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 }
         );
         
-        List<JetFile> allJetFiles = new ArrayList<JetFile>();
+        List<KtFile> allKtFiles = new ArrayList<KtFile>();
         Map<TestModule, BindingContext> moduleBindings = new HashMap<TestModule, BindingContext>();
 
         for (Map.Entry<TestModule, List<TestFile>> entry : groupedByModule.entrySet()) {
             TestModule testModule = entry.getKey();
             List<? extends TestFile> testFilesInModule = entry.getValue();
 
-            List<JetFile> jetFiles = getJetFiles(testFilesInModule, true);
-            allJetFiles.addAll(jetFiles);
+            List<KtFile> jetFiles = getKtFiles(testFilesInModule, true);
+            allKtFiles.addAll(jetFiles);
 
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE$
                     .analyzeFilesWithJavaIntegration(getTestProject().getJavaProject(), getProject(), jetFiles)
@@ -210,8 +210,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         TestCase.assertTrue("Diagnostics mismatch. See the output above", ok);
     }
     
-    private static void checkAllResolvedCallsAreCompleted(@NotNull List<JetFile> jetFiles, @NotNull BindingContext bindingContext) {
-        for (JetFile file : jetFiles) {
+    private static void checkAllResolvedCallsAreCompleted(@NotNull List<KtFile> jetFiles, @NotNull BindingContext bindingContext) {
+        for (KtFile file : jetFiles) {
             if (!AnalyzingUtils.getSyntaxErrorRanges(file).isEmpty()) {
                 return;
             }
@@ -219,7 +219,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         ImmutableMap<Call,ResolvedCall<?>> resolvedCallsEntries = bindingContext.getSliceContents(BindingContext.RESOLVED_CALL);
         for (Entry<Call, ResolvedCall<?>> entry : resolvedCallsEntries.entrySet()) {
-            JetElement element = entry.getKey().getCallElement();
+            KtElement element = entry.getKey().getCallElement();
             ResolvedCall<?> resolvedCall = entry.getValue();
 
             DiagnosticUtils.LineAndColumn lineAndColumn =
@@ -237,7 +237,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         Set<DiagnosticFactory1<PsiElement, Collection<? extends ResolvedCall<?>>>> diagnosticsStoringResolvedCalls1 = Sets.newHashSet(
                 OVERLOAD_RESOLUTION_AMBIGUITY, NONE_APPLICABLE, CANNOT_COMPLETE_RESOLVE, UNRESOLVED_REFERENCE_WRONG_RECEIVER,
                 ASSIGN_OPERATOR_AMBIGUITY, ITERATOR_AMBIGUITY);
-        Set<DiagnosticFactory2<JetExpression,? extends Comparable<?>,Collection<? extends ResolvedCall<?>>>>
+        Set<DiagnosticFactory2<KtExpression,? extends Comparable<?>,Collection<? extends ResolvedCall<?>>>>
                 diagnosticsStoringResolvedCalls2 = Sets.newHashSet(
                 COMPONENT_FUNCTION_AMBIGUITY, DELEGATE_SPECIAL_FUNCTION_AMBIGUITY, DELEGATE_SPECIAL_FUNCTION_NONE_APPLICABLE);
         
@@ -344,12 +344,12 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                    allCallsAreCompleted);
     }
     
-    protected List<JetFile> getJetFiles(List<? extends TestFile> testFiles, boolean includeExtras) {
+    protected List<KtFile> getKtFiles(List<? extends TestFile> testFiles, boolean includeExtras) {
         boolean declareCheckType = false;
-        List<JetFile> jetFiles = Lists.newArrayList();
+        List<KtFile> jetFiles = Lists.newArrayList();
         for (TestFile testFile : testFiles) {
-            if (testFile.getJetFile() != null) {
-                jetFiles.add(testFile.getJetFile());
+            if (testFile.getKtFile() != null) {
+                jetFiles.add(testFile.getKtFile());
             }
             declareCheckType |= testFile.declareCheckType;
         }
@@ -403,7 +403,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         private final String expectedText;
         private final TestModule module;
         private final String clearText;
-        private final JetFile jetFile;
+        private final KtFile jetFile;
         private final Condition<Diagnostic> whatDiagnosticsToConsider;
         private final boolean markDynamicCalls;
         private final boolean declareCheckType;
@@ -471,7 +471,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             return module;
         }
 
-        public JetFile getJetFile() {
+        public KtFile getKtFile() {
             return jetFile;
         }
         
@@ -496,7 +496,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
             final boolean[] ok = { true };
             List<Diagnostic> diagnostics = ContainerUtil.filter(
-                    KotlinPackage.plus(
+                    CollectionsKt.plus(
                     		CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(bindingContext, jetFile, markDynamicCalls, dynamicCallDescriptors), jvmSignatureDiagnostics),
                     whatDiagnosticsToConsider
             );
@@ -544,9 +544,9 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         private Set<Diagnostic> computeJvmSignatureDiagnostics(BindingContext bindingContext) {
             Set<Diagnostic> jvmSignatureDiagnostics = new HashSet<Diagnostic>();
-            Collection<JetDeclaration> declarations = PsiTreeUtil.findChildrenOfType(jetFile, JetDeclaration.class);
-            for (JetDeclaration declaration : declarations) {
-                Diagnostics diagnostics = AsJavaPackage.getJvmSignatureDiagnostics(declaration, 
+            Collection<KtDeclaration> declarations = PsiTreeUtil.findChildrenOfType(jetFile, KtDeclaration.class);
+            for (KtDeclaration declaration : declarations) {
+                Diagnostics diagnostics = DuplicateJvmSignatureUtilKt.getJvmSignatureDiagnostics(declaration, 
                         bindingContext.getDiagnostics(), GlobalSearchScope.allScope(getProject()));
                 if (diagnostics == null) continue;
                 jvmSignatureDiagnostics.addAll(diagnostics.forElement(declaration));

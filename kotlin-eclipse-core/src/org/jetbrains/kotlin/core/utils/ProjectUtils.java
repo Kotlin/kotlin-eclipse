@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import kotlin.KotlinPackage;
+import kotlin.ArraysKt;
 import kotlin.jvm.functions.Function1;
 
 import org.eclipse.core.resources.IContainer;
@@ -310,7 +310,7 @@ public class ProjectUtils {
     
     private static boolean classpathContainsContainerEntry(@NotNull IClasspathEntry[] entries,
             @NotNull final IClasspathEntry entry) {
-        return KotlinPackage.<IClasspathEntry>any(entries, new Function1<IClasspathEntry, Boolean>() {
+        return ArraysKt.<IClasspathEntry>any(entries, new Function1<IClasspathEntry, Boolean>() {
             @Override
             public Boolean invoke(IClasspathEntry classpathEntry) {
                 return equalsEntriesPaths(classpathEntry, entry);

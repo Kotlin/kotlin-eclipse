@@ -3,10 +3,9 @@ package org.jetbrains.kotlin.ui.commands.findReferences
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.eclipse.jdt.ui.search.PatternQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchScope
-import org.jetbrains.kotlin.psi.JetElement
+import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.core.runtime.IPath
-import org.jetbrains.kotlin.psi.JetFile
 import org.eclipse.jdt.ui.search.ElementQuerySpecification
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
@@ -34,7 +33,7 @@ class KotlinScopedQuerySpecification(
             KotlinAndJavaSearchable, KotlinScoped
 
 class KotlinOnlyQuerySpecification(
-        val kotlinElement: JetElement,
+        val kotlinElement: KtElement,
         override val searchScope: List<IFile>,
         limitTo: Int,
         description: String) : KotlinDummyQuerySpecification(EmptyJavaSearchScope, description, limitTo), KotlinScoped

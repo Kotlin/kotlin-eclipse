@@ -18,7 +18,7 @@ package org.jetbrains.kotlin.eclipse.ui.utils
 
 import com.intellij.psi.PsiElement
 import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.psi.JetFile
+import org.jetbrains.kotlin.psi.KtFile
 
 fun PsiElement.getEndLfOffset(document: IDocument): Int {
 	return LineEndUtil.convertLfToDocumentOffset(this.getContainingFile().getText(), this.getTextRange().getEndOffset(), document)
@@ -32,7 +32,7 @@ fun PsiElement.getOffsetByDocument(document: IDocument, psiOffset: Int): Int {
     return LineEndUtil.convertLfToDocumentOffset(this.getContainingFile().getText(), psiOffset, document)
 }
 
-fun JetFile.findElementByDocumentOffset(offset: Int, document: IDocument): PsiElement? {
+fun KtFile.findElementByDocumentOffset(offset: Int, document: IDocument): PsiElement? {
     val offsetWithoutCr = LineEndUtil.convertCrToDocumentOffset(document, offset);
     return this.findElementAt(offsetWithoutCr)
 }

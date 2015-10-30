@@ -22,7 +22,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jetbrains.kotlin.core.utils.UtilsPackage;
+import org.jetbrains.kotlin.core.utils.KotlinFilesCollectorUtilsKt;
 import org.jetbrains.kotlin.ui.builder.KotlinClassPathListener;
 import org.jetbrains.kotlin.ui.builder.KotlinJavaDeclarationsListener;
 import org.jetbrains.kotlin.ui.builder.ResourceChangeListener;
@@ -50,7 +50,7 @@ public class Activator extends AbstractUIPlugin {
         super.start(context);
         plugin = this;
         
-        UtilsPackage.addFilesToParseFromKotlinProjectsInWorkspace();
+        KotlinFilesCollectorUtilsKt.addFilesToParseFromKotlinProjectsInWorkspace();
         
         ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener, IResourceChangeEvent.POST_CHANGE);
         JavaCore.addElementChangedListener(kotlinClassPathChangedListener);

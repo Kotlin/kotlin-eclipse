@@ -18,7 +18,7 @@ package org.jetbrains.kotlin.eclipse.ui.utils;
 
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
-import org.jetbrains.kotlin.lexer.JetTokens;
+import org.jetbrains.kotlin.lexer.KtTokens;
 
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 
@@ -67,7 +67,7 @@ public class IndenterUtil {
     }
     
     public static boolean isNewLine(LeafPsiElement psiElement) {
-        return psiElement.getElementType() == JetTokens.WHITE_SPACE && psiElement.getText().contains(LineEndUtil.NEW_LINE_STRING);
+        return psiElement.getElementType() == KtTokens.WHITE_SPACE && psiElement.getText().contains(LineEndUtil.NEW_LINE_STRING);
     }
     
     public static int getDefaultIndent() {

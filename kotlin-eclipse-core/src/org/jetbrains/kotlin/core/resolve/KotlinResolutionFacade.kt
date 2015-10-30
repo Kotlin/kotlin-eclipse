@@ -30,7 +30,6 @@ import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
-import org.jetbrains.kotlin.container.ComponentProvider
 
 public class KotlinResolutionFacade(val javaProject: IJavaProject, val componentProvider: ComponentProvider) : ResolutionFacade {
     override val moduleDescriptor: ModuleDescriptor

@@ -103,7 +103,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
             val elementToPlaceTypeAfter = body.siblings(forward = false, withItself = false).
                 first { it !is PsiWhiteSpace }
             val offset = getEndOffset(elementToPlaceTypeAfter, editor)
-            val stringToInsert = ": ${JvmBuiltIns.getInstance().getUnitType().toString()}"
+            val stringToInsert = ": ${JvmBuiltIns.Instance.getUnitType().toString()}"
             insertAfter(elementToPlaceTypeAfter, stringToInsert)
             if (omitType) {
             	editor.selectAndReveal(offset, stringToInsert.length()) 
@@ -157,7 +157,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
                          ?: return false
         
         val declaredType: KotlinType = if (setUnitType) {
-            JvmBuiltIns.getInstance().getUnitType()
+            JvmBuiltIns.Instance.getUnitType()
         } else {
             (bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration] as? CallableDescriptor)?.getReturnType() ?: return false
         }

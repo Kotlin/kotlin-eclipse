@@ -162,6 +162,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
         }
     }
     
+    
     private fun getSearchElements(querySpecification: QuerySpecification): List<SearchElement> {
         fun obtainSearchElements(sourceElements: List<SourceElement>): List<SearchElement> {
             val (javaElements, kotlinElements) = getJavaAndKotlinElements(sourceElements)
@@ -178,7 +179,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     }
     
     private fun searchTextOccurrences(searchElement: SearchElement, filesScope: List<IFile>): ISearchResult? {
-        val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null, false)
+        val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null as Array<String?>?, false)
         val searchText = searchElement.getSearchText()
         if (searchText == null) return null
         
@@ -238,7 +239,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     }
 }
 
-internal fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair<List<IJavaElement>, List<KtElement>> {
+fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair<List<IJavaElement>, List<KtElement>> {
     val javaElements = sourceElementsToLightElements(sourceElements)
     
     // Filter out Kotlin elements which have light elements because Javas search will call KotlinQueryParticipant

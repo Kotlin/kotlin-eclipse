@@ -38,7 +38,7 @@ public open class KotlinNavigationToLibraryTestCase: KotlinSourcesNavigationTest
     companion object {
         @AfterClass
         @JvmStatic
-        fun afterAllTests() {
+        fun afterAllNavigationTests() {
             getTestLibrary().clean()
         }
     }

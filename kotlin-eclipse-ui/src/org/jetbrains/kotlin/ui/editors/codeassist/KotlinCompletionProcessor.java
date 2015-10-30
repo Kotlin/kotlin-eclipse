@@ -45,9 +45,9 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider;
-import org.jetbrains.kotlin.lexer.JetTokens;
+import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.psi.JetSimpleNameExpression;
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils;
@@ -106,7 +106,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
     
     @NotNull
     private Collection<DeclarationDescriptor> generateBasicCompletionProposals(final String identifierPart, int identOffset) {
-        JetSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE$.getSimpleNameExpression(editor, identOffset);
+        KtSimpleNameExpression simpleNameExpression = KotlinCompletionUtils.INSTANCE$.getSimpleNameExpression(editor, identOffset);
         if (simpleNameExpression == null) {
             return Collections.emptyList();
         }
@@ -145,7 +145,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
                     null, 
                     completion);
             
-            ICompletionProposal handler = CodeassistPackage.withKotlinInsertHandler(descriptor, proposal);
+            ICompletionProposal handler = KotlinCompletionProposalKt.withKotlinInsertHandler(descriptor, proposal);
             proposals.add(handler);
         }
         
@@ -195,7 +195,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
             int offset, String identifierPart) {
         List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         if (!identifierPart.isEmpty()) {
-            for (IElementType keywordToken : JetTokens.KEYWORDS.getTypes()) {
+            for (IElementType keywordToken : KtTokens.KEYWORDS.getTypes()) {
                 String keyword = keywordToken.toString();
                 if (keyword.startsWith(identifierPart)) {
                     proposals.add(new CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length()));

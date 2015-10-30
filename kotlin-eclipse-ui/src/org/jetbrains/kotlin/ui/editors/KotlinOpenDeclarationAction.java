@@ -54,7 +54,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.references.KotlinReference;
-import org.jetbrains.kotlin.core.references.ReferencesPackage;
+import org.jetbrains.kotlin.core.references.KotlinReferenceKt;
+import org.jetbrains.kotlin.core.references.ReferenceUtilsKt;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement;
@@ -65,6 +66,7 @@ import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClass;
 import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader;
+import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader.Kind;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtReferenceExpression;
@@ -113,7 +115,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         if (selectedExpression == null) {
             return;
         }
-        KotlinReference reference = ReferencesPackage.createReference(selectedExpression);
+        KotlinReference reference = KotlinReferenceKt.createReference(selectedExpression);
         SourceElement element = getTargetElement(reference, file, javaProject);
         if (element == null) {
             return;
@@ -130,7 +132,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Nullable
     private SourceElement getTargetElement(@NotNull KotlinReference reference, @NotNull KtFile file, @NotNull IJavaProject javaProject) {
-        List<SourceElement> sourceElements = ReferencesPackage.resolveToSourceElements(reference);
+        List<SourceElement> sourceElements = ReferenceUtilsKt.resolveToSourceElements(reference);
         return sourceElements.size() == 1 ? sourceElements.get(0) : null; 
     }
     
@@ -170,7 +172,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         }
         
         
-        int offset = EditorsPackage.findDeclarationInParsedFile(descriptor, targetEditor.getParsedFile());
+        int offset = KotlinSearchDeclarationVisitorKt.findDeclarationInParsedFile(descriptor, targetEditor.getParsedFile());
         int start = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), offset, editor.getDocument());
         targetEditor.selectAndReveal(start, 0);
         
@@ -236,7 +238,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         VirtualFile file = ((VirtualFileKotlinClass)binaryClass).getFile();
         
         String packagePath = file.getParent().getPath();
-        IPackageFragment fragment = javaProject.findPackageFragment(EditorsPackage.pathFromUrlInArchive(packagePath));
+        IPackageFragment fragment = javaProject.findPackageFragment(JarNavigationUtilsKt.pathFromUrlInArchive(packagePath));
         
         String className = file.getName();
         IClassFile classFile = fragment.getClassFile(className);
@@ -267,7 +269,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         
         IFile targetFile = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath()));
         if (targetFile == null) {
-            targetFile = EditorsPackage.getAcrhivedFileFromPath(virtualFile.getPath());
+            targetFile = JarNavigationUtilsKt.getAcrhivedFileFromPath(virtualFile.getPath());
         }
         IEditorPart editorPart = findEditorPart(targetFile, element, javaProject);
         if (!(editorPart instanceof AbstractTextEditor)) {
@@ -348,7 +350,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             return null;
         }
         
-        return ReferencesPackage.getReferenceExpression(psiExpression);
+        return ReferenceUtilsKt.getReferenceExpression(psiExpression);
     }
     
     @Nullable

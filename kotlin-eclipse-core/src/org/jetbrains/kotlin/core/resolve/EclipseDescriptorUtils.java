@@ -52,7 +52,7 @@ public class EclipseDescriptorUtils {
             return new ArrayList<SourceElement>(result);
         }
         //TODO: this returns a source element for containing element with existing .class file. This logic should be moved to a caller.
-        if (ResolvePackage.isDeserialized(descriptor)) {
+        if (DeserializedDescriptorUtilsKt.isDeserialized(descriptor)) {
             DeclarationDescriptor containing = DeserializedDescriptorUtilsKt.getContainingClassOrPackage(descriptor);
             if (containing != null) {
                 return Lists.newArrayList(descriptorToDeclaration(containing));

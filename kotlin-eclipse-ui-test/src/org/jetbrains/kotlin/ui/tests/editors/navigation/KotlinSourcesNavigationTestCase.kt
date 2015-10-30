@@ -58,7 +58,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         KotlinEditorTestCase.removeTags(fileText)
     }
     
-    Before    
+    @Before    
     open fun configure() {
         configureProject()
         createSourceFile(inputFileName, processedFileText)

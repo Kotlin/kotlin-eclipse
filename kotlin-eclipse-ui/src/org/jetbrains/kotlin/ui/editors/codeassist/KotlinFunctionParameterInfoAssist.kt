@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.core.references.createReference
+import org.jetbrains.kotlin.types.KotlinType
 
 public object KotlinFunctionParameterInfoAssist {
     public fun computeContextInformation(editor: KotlinFileEditor, offset: Int): Array<IContextInformation> {
@@ -118,7 +119,7 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
         return parameterText ?: "..."
     }
     
-    private fun getActualParameterType(descriptor: ValueParameterDescriptor): JetType {
+    private fun getActualParameterType(descriptor: ValueParameterDescriptor): KotlinType {
         return descriptor.getVarargElementType() ?: descriptor.getType()
     }
 }

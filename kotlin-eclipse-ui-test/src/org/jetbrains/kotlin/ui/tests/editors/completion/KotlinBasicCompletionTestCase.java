@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import kotlin.CollectionsKt;
+
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -117,7 +119,7 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 		
 		errorMessage.append(message).append("\n");
 		errorMessage.append("Expected: <\n");
-		for (String proposal : Ordering.natural().sortedCopy(expected)) {
+		for (String proposal : CollectionsKt.sorted(expected)) {
 			if (missing.contains(proposal)) {
 				errorMessage.append("-");
 			}
@@ -128,7 +130,7 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 		errorMessage.append("> ");
 		
 		errorMessage.append("but was:<\n");
-		for (String proposal : Ordering.natural().sortedCopy(actual)) {
+		for (String proposal : CollectionsKt.sorted(actual)) {
 			if (added.contains(proposal)) {
 				errorMessage.append("+");
 			}

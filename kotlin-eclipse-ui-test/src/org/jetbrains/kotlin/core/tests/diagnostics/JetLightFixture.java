@@ -3,7 +3,7 @@ package org.jetbrains.kotlin.core.tests.diagnostics;
 import junit.framework.TestCase;
 
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.JetFile;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.junit.Assert;
 
 import com.intellij.openapi.project.Project;
@@ -24,9 +24,9 @@ public class JetLightFixture {
         });
     }
 	
-	protected static JetFile createCheckAndReturnPsiFile(String testName, String fileName, String text, Project project) {
+	protected static KtFile createCheckAndReturnPsiFile(String testName, String fileName, String text, Project project) {
 		text = StringUtilRt.convertLineSeparators(text);
-        JetFile myFile = createPsiFile(testName, fileName, text, project);
+        KtFile myFile = createPsiFile(testName, fileName, text, project);
         ensureParsed(myFile);
         TestCase.assertEquals("light virtual file text mismatch", text, ((LightVirtualFile) myFile.getVirtualFile()).getContent().toString());
         TestCase.assertEquals("virtual file text mismatch", text, ((LightVirtualFile) myFile.getVirtualFile()).getContent());
@@ -36,7 +36,7 @@ public class JetLightFixture {
         return myFile;
     }
 	
-	protected static JetFile createPsiFile(@Nullable String testName, @Nullable String fileName, String text, Project project) {
+	protected static KtFile createPsiFile(@Nullable String testName, @Nullable String fileName, String text, Project project) {
         if (fileName == null) {
             Assert.assertNotNull(testName);
             fileName = testName + ".kt";
