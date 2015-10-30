@@ -51,7 +51,7 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
     
     @Test
     public void testJKInnerClassAllUsages() {
-        doTest("testData/findUsages/java/JKInnerClassAllUsages.0.java");
+        doTest("common_testData/ide/findUsages/java/findJavaClassUsages/JKInnerClassAllUsages.0.java");
     }
     
     @Test

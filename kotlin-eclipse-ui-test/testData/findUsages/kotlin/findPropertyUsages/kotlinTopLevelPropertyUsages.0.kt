@@ -1,3 +1,4 @@
+@file:kotlin.jvm.JvmName("ServerPackage")
 // PSI_ELEMENT: org.jetbrains.kotlin.psi.JetProperty
 // OPTIONS: usages
 package server
