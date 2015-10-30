@@ -31,10 +31,10 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
 
-public class KotlinResolutionFacade(val javaProject: IJavaProject, val componentProvider: ComponentProvider) : ResolutionFacade {
-    override val moduleDescriptor: ModuleDescriptor
-        get() = throw UnsupportedOperationException()
-    
+public class KotlinResolutionFacade(
+        val javaProject: IJavaProject, 
+        val componentProvider: ComponentProvider,
+        override val moduleDescriptor: ModuleDescriptor) : ResolutionFacade {
     override val project: Project
         get() = KotlinEnvironment.getEnvironment(javaProject).getProject()
     
