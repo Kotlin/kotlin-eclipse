@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,10 +53,11 @@ import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.utils.PathUtil;
 
 import com.google.common.collect.Lists;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.CommonClassNames;
 
 public class EclipseJavaElementUtil {
@@ -216,7 +218,9 @@ public class EclipseJavaElementUtil {
         if (classFilePath == null) {
             return false;
         }
-        VirtualFile virtualFile = PathUtil.jarFileOrDirectoryToVirtualFile(classFilePath.toFile());
+        VirtualFile virtualFile = jarFileOrDirectoryToVirtualFile(classFilePath.toFile());
+        if (virtualFile == null) return false;
+        
         String relativePath = classFile.getType().getFullyQualifiedName().replace('.', '/') + ".class";
         VirtualFile archiveRelativeFile = virtualFile.findFileByRelativePath(relativePath);
         if (archiveRelativeFile == null) {
@@ -227,5 +231,21 @@ public class EclipseJavaElementUtil {
             return false;
         }
         return true;
+    }
+    
+    @Nullable
+    public static VirtualFile jarFileOrDirectoryToVirtualFile(@NotNull File file) {
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                return VirtualFileManager.getInstance()
+                        .findFileByUrl("file://" + FileUtil.toSystemIndependentName(file.getAbsolutePath()));
+            }
+            else {
+                return VirtualFileManager.getInstance().findFileByUrl("jar://" + FileUtil.toSystemIndependentName(file.getAbsolutePath()) + "!/");
+            }
+        }
+        else {
+            throw new IllegalStateException("Path " + file + " does not exist.");
+        }
     }
 }
