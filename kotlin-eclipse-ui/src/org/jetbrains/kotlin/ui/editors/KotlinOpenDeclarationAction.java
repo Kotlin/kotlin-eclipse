@@ -63,6 +63,7 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.SourceElement;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
+import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryPackageSourceElement;
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement;
 import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClass;
 import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader;
@@ -145,21 +146,28 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             gotoKotlinDeclaration(psiElement, kotlinReference, javaProject);
         } else if (element instanceof KotlinJvmBinarySourceElement) {
             KotlinJvmBinaryClass binaryClass = ((KotlinJvmBinarySourceElement) element).getBinaryClass();
-            gotoElementInBinaryClass(binaryClass, kotlinReference, javaProject);
+            DeclarationDescriptor descriptor = getDeclarationDescriptor(kotlinReference, javaProject);
+            KtFile kotlinFile = kotlinReference.getExpression().getContainingJetFile();
+            gotoElementInBinaryClass(binaryClass, descriptor, kotlinFile, javaProject);
+        } else if (element instanceof KotlinJvmBinaryPackageSourceElement) {
+            KotlinJvmBinaryPackageSourceElement binaryElement = (KotlinJvmBinaryPackageSourceElement) element;
+            gotoClassByPackageSourceElement(binaryElement, kotlinReference, javaProject);
         }
     }
     
-    private void gotoElementInBinaryClass(KotlinJvmBinaryClass binaryClass, KotlinReference kotlinReference, IJavaProject javaProject) throws JavaModelException, PartInitException {
-        KtFile jetFile = kotlinReference.getExpression().getContainingJetFile();
-        BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getAnalysisResult().getBindingContext();
-        Collection<DeclarationDescriptor> descriptors = kotlinReference.getTargetDescriptors(context);
-        if (descriptors.isEmpty()) {
-            return;
+    private void gotoClassByPackageSourceElement(KotlinJvmBinaryPackageSourceElement sourceElement, KotlinReference kotlinReference, IJavaProject javaProject) throws PartInitException, JavaModelException {
+        DeclarationDescriptor descriptor = getDeclarationDescriptor(kotlinReference, javaProject);
+        if (descriptor instanceof DeserializedCallableMemberDescriptor) {
+            KotlinJvmBinaryClass binaryClass = sourceElement.getContainingBinaryClass((DeserializedCallableMemberDescriptor) descriptor);
+            KtFile kotlinFile = kotlinReference.getExpression().getContainingJetFile();
+            gotoElementInBinaryClass(binaryClass, descriptor, kotlinFile, javaProject);
         }
-        
-        //TODO: popup if there's several descriptors to navigate to
-        DeclarationDescriptor descriptor = descriptors.iterator().next();
-        
+    }
+    
+    
+    
+    private void gotoElementInBinaryClass(KotlinJvmBinaryClass binaryClass, DeclarationDescriptor descriptor, 
+            KtFile kotlinFile, IJavaProject javaProject) throws JavaModelException, PartInitException {
         IClassFile classFile = findImplementingClass(binaryClass, descriptor, javaProject);
         if (classFile == null) {
             return;
@@ -173,9 +181,22 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         
         
         int offset = KotlinSearchDeclarationVisitorKt.findDeclarationInParsedFile(descriptor, targetEditor.getParsedFile());
-        int start = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), offset, editor.getDocument());
+        int start = LineEndUtil.convertLfToDocumentOffset(kotlinFile.getText(), offset, editor.getDocument());
         targetEditor.selectAndReveal(start, 0);
         
+    }
+    
+    @Nullable
+    private DeclarationDescriptor getDeclarationDescriptor(KotlinReference kotlinReference, IJavaProject javaProject) {
+        KtFile jetFile = kotlinReference.getExpression().getContainingJetFile();
+        BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getAnalysisResult().getBindingContext();
+        Collection<DeclarationDescriptor> descriptors = kotlinReference.getTargetDescriptors(context);
+        if (descriptors.isEmpty()) {
+            return null;
+        }
+        
+        //TODO: popup if there's several descriptors to navigate to
+        return descriptors.iterator().next();
     }
 
     private IClassFile findImplementingClass(KotlinJvmBinaryClass binaryClass, DeclarationDescriptor descriptor, IJavaProject javaProject)
