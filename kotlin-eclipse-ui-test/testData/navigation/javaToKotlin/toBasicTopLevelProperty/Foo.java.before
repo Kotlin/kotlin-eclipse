@@ -1,7 +1,7 @@
-import pckg.navigation.NavigationPackage;
+import pckg.navigation.BarKt;
 
 public class Foo {
 	public void some() {
-		NavigationPackage.getTopLevelPro<caret>p();
+		BarKt.getTopLevelPro<caret>p();
 	}
 }

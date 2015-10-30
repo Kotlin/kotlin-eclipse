@@ -2,6 +2,6 @@ package org.jet;
 
 public class SomeJava extends SomeKotlin {
 	public void callKotlin() {
-		JetPackage.someOn<caret>e();
+		BazKt.someOn<caret>e();
 	}
 }
