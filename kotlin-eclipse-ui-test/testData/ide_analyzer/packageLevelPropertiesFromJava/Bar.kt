@@ -1,2 +1,2 @@
 val x = 123
-val inc = { (n: Int) -> n + 1 }
+val inc = { n: Int -> n + 1 }

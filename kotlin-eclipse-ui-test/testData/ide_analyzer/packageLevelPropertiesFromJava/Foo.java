@@ -1,8 +1,8 @@
-import kotlin.Function1;
+import kotlin.jvm.functions.Function1;
 
 public class Foo {
     void foo() {
-        int x = _DefaultPackage.getX();
-        Function1<Integer, Integer> inc = _DefaultPackage.getInc();
+        int x = BarKt.getX();
+        Function1<Integer, Integer> inc = BarKt.getInc();
     }
 }
