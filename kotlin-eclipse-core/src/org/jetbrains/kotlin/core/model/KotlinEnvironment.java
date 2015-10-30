@@ -111,7 +111,6 @@ public class KotlinEnvironment {
         CliLightClassGenerationSupport cliLightClassGenerationSupport = new CliLightClassGenerationSupport(project);
         project.registerService(LightClassGenerationSupport.class, cliLightClassGenerationSupport);
         project.registerService(CliLightClassGenerationSupport.class, cliLightClassGenerationSupport);
-        project.registerService(KotlinLightClassForFacade.PackageFacadeStubCache.class, new KotlinLightClassForFacade.PackageFacadeStubCache(project));
         project.registerService(KotlinLightClassForFacade.FacadeStubCache.class, new KotlinLightClassForFacade.FacadeStubCache(project));
         project.registerService(CodeAnalyzerInitializer.class, cliLightClassGenerationSupport);
         project.registerService(KotlinLightClassManager.class, new KotlinLightClassManager(javaProject));
