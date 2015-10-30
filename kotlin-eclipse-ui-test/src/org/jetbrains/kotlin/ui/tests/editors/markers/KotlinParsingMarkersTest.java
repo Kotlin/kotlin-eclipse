@@ -30,11 +30,6 @@ public class KotlinParsingMarkersTest extends KotlinParsingMarkersTestCase {
     }
     
     @Test
-    public void classDefinitionTypoErrorTest() {
-        doAutoTest();
-    }
-    
-    @Test
     public void missingFunctionBodyErrorTest() {
         doAutoTest();
     }
