@@ -72,7 +72,6 @@ public class KotlinCompiler {
         List<String> command = new ArrayList<String>();
         command.add("-kotlin-home");
         command.add(ProjectUtils.KT_HOME);
-        command.add("-no-jdk-annotations"); // TODO: remove this option when external annotation support will be added
         command.add("-no-jdk");
         command.add("-no-stdlib"); // Because we add runtime into the classpath
         
