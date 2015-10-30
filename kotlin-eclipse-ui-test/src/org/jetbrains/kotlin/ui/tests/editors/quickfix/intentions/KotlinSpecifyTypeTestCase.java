@@ -19,8 +19,15 @@ package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinSpecifyTypeAssistProposal;
+import org.junit.Before;
 
 public abstract class KotlinSpecifyTypeTestCase extends AbstractKotlinQuickAssistTestCase<KotlinSpecifyTypeAssistProposal> {
+    @Override
+    @Before
+    public void configure() {
+        configureProjectWithStdLib();
+    }
+    
 	protected void doTest(String testPath) {
 		doTestFor(testPath, new KotlinSpecifyTypeAssistProposal());
 	}
