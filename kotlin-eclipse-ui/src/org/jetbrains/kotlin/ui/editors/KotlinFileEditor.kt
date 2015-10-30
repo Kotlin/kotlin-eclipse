@@ -57,12 +57,11 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInPro
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWorkspaceAction
 import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
 import org.jetbrains.kotlin.ui.editors.occurrences.KotlinMarkOccurrences
-import org.jetbrains.kotlin.ui.editors.BracketInserter
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
     
-    private val bracketInserter: BracketInserter = BracketInserter()
+    private val bracketInserter: KotlinBracketInserter = KotlinBracketInserter()
     
     private val kotlinOutlinePage by lazy { KotlinOutlinePage(this) }
     

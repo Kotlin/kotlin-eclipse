@@ -28,7 +28,7 @@ import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
-public class BracketInserter implements VerifyKeyListener {
+public class KotlinBracketInserter implements VerifyKeyListener {
     
     private final List<PairConfiguration> bracketConfigurations = new ArrayList<PairConfiguration>();
     private ISourceViewer viewer;
