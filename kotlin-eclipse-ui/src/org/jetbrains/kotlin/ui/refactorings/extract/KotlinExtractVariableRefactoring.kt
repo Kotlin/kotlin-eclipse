@@ -85,13 +85,17 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
         val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
         
-        val variableText = "val $newName = ${expression.getText()}"
+        val variableBodyText = "val $newName = ${expression.getText()}"
+        
+        val needBraces = !(commonContainer is KtBlockExpression)
+        val variableText = if (needBraces) "{\n$variableBodyText" else variableBodyText
         
         val bindingContext = getBindingContext()
         return if (expression.isUsedAsStatement(bindingContext)) {
-            listOf(replaceExpressionWithVariableDeclaration(variableText))
+            val supBraces = if (needBraces) "$variableText\n}" else variableText
+            listOf(replaceExpressionWithVariableDeclaration(supBraces))
         } else {
-            listOf(insertBefore(anchor, "$variableText${newLineWithShift}")) + listOf(replaceOccurrence())
+            listOf(insertBefore(anchor, "$variableText${newLineWithShift}")) + replaceOccurrence() + addBrace(needBraces)
         }
     }
     
@@ -102,6 +106,12 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     private fun replaceExpressionWithVariableDeclaration(variableText: String): FileEdit {
         val offset = expression.getTextDocumentOffset(editor.document)
         return FileEdit(editor.getFile()!!, ReplaceEdit(offset, expression.getTextLength(), variableText))
+    }
+    
+    private fun addBrace(needBrace: Boolean): List<FileEdit> {
+        if (!needBrace) return emptyList() 
+        val offset = expression.getParent().let { it.getOffsetByDocument(editor.document, it.getTextRange().getEndOffset()) }
+        return listOf(FileEdit(editor.getFile()!!, ReplaceEdit(offset + 1, 0, "}")))
     }
     
     private fun replaceOccurrence(): FileEdit {
