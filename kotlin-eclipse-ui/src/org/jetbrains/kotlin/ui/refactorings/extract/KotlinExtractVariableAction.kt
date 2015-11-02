@@ -29,7 +29,6 @@ import com.intellij.openapi.util.TextRange
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction
-import org.jetbrains.kotlin.psi.JetExpression
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import com.intellij.psi.util.PsiTreeUtil

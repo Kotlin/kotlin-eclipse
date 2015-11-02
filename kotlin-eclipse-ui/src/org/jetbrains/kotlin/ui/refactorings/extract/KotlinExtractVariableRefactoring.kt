@@ -5,16 +5,16 @@ import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.ltk.core.refactoring.RefactoringStatus
 import org.eclipse.ltk.core.refactoring.Change
 import org.eclipse.jdt.internal.corext.refactoring.RefactoringCoreMessages
-import org.jetbrains.kotlin.psi.JetExpression
+import org.jetbrains.kotlin.psi.KtExpression
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.JetBlockExpression
-import org.jetbrains.kotlin.psi.JetContainerNode
-import org.jetbrains.kotlin.psi.JetWhenEntry
-import org.jetbrains.kotlin.psi.JetDeclarationWithBody
-import org.jetbrains.kotlin.psi.JetIfExpression
-import org.jetbrains.kotlin.psi.JetLoopExpression
-import org.jetbrains.kotlin.psi.JetArrayAccessExpression
+import org.jetbrains.kotlin.psi.KtBlockExpression
+import org.jetbrains.kotlin.psi.KtContainerNode
+import org.jetbrains.kotlin.psi.KtWhenEntry
+import org.jetbrains.kotlin.psi.KtDeclarationWithBody
+import org.jetbrains.kotlin.psi.KtIfExpression
+import org.jetbrains.kotlin.psi.KtLoopExpression
+import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.ltk.core.refactoring.NullChange
@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.refactorings.rename.FileEdit
 import org.eclipse.text.edits.TextEdit
 import org.eclipse.text.edits.ReplaceEdit
-import org.jetbrains.kotlin.psi.JetPsiFactory
+import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.eclipse.jface.text.TextUtilities
 import org.eclipse.ltk.core.refactoring.TextFileChange
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
@@ -38,13 +38,13 @@ import org.jetbrains.kotlin.resolve.bindingContextUtil.isUsedAsStatement
 
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
-    private lateinit var expression: JetExpression
+    private lateinit var expression: KtExpression
     override fun checkFinalConditions(pm: IProgressMonitor?): RefactoringStatus = RefactoringStatus()
     
     override fun checkInitialConditions(pm: IProgressMonitor?): RefactoringStatus {
         val startOffset = LineEndUtil.convertCrToDocumentOffset(editor.document, selection.getOffset())
         val selectedExpression = PsiTreeUtil.findElementOfClassAtRange(editor.parsedFile!!, startOffset, 
-            startOffset + selection.getLength(), JetExpression::class.java)
+            startOffset + selection.getLength(), KtExpression::class.java)
         return if (selectedExpression != null) {
             expression = selectedExpression
             RefactoringStatus()
@@ -80,7 +80,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         val anchor = calculateAnchor(commonParent, commonContainer, allReplaces)
         if (anchor == null) return emptyList()
         
-        val newLine = JetPsiFactory(expression).createNewLine()
+        val newLine = KtPsiFactory(expression).createNewLine()
         val indent = AlignmentStrategy.computeIndent(commonContainer.getFirstChild().getNode())
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
         val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
@@ -116,7 +116,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
 }
 
 
-private fun calculateAnchor(commonParent: PsiElement, commonContainer: PsiElement, allReplaces: List<JetExpression>): PsiElement? {
+private fun calculateAnchor(commonParent: PsiElement, commonContainer: PsiElement, allReplaces: List<KtExpression>): PsiElement? {
     var anchor = commonParent
     if (anchor != commonContainer) {
         while (anchor.getParent() != commonContainer) {
@@ -140,22 +140,22 @@ private fun calculateAnchor(commonParent: PsiElement, commonContainer: PsiElemen
 }
 
 private fun getContainer(place: PsiElement): PsiElement? {
-    if (place is JetBlockExpression) return place
+    if (place is KtBlockExpression) return place
     
     var container = place
     while (container != null) {
         val parent = container.getParent()
-        if (parent is JetContainerNode) {
+        if (parent is KtContainerNode) {
             if (!isBadContainerNode(parent, container)) {
                 return parent
             }
         }
         
-        if (parent is JetBlockExpression || (parent is JetWhenEntry && container == parent.getExpression())) {
+        if (parent is KtBlockExpression || (parent is KtWhenEntry && container == parent.getExpression())) {
             return parent
         }
         
-        if (parent is JetDeclarationWithBody && parent.getBodyExpression() == container) {
+        if (parent is KtDeclarationWithBody && parent.getBodyExpression() == container) {
             return parent
         }
         
@@ -165,12 +165,12 @@ private fun getContainer(place: PsiElement): PsiElement? {
     return null
 }
 
-private fun isBadContainerNode(parent: JetContainerNode, place: PsiElement): Boolean {
-    if (parent.getParent() is JetIfExpression && (parent.getParent() as JetIfExpression).getCondition() == place) {
+private fun isBadContainerNode(parent: KtContainerNode, place: PsiElement): Boolean {
+    if (parent.getParent() is KtIfExpression && (parent.getParent() as KtIfExpression).getCondition() == place) {
         return true
-    } else if (parent.getParent() is JetLoopExpression && (parent.getParent() as JetLoopExpression).getBody() != place) {
+    } else if (parent.getParent() is KtLoopExpression && (parent.getParent() as KtLoopExpression).getBody() != place) {
         return true
-    } else if (parent.getParent() is JetArrayAccessExpression) {
+    } else if (parent.getParent() is KtArrayAccessExpression) {
         return true
     }
     
