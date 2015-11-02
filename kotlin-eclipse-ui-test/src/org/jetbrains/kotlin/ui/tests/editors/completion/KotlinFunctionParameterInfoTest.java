@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.editors.completion;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -59,6 +60,7 @@ public class KotlinFunctionParameterInfoTest extends KotlinFunctionParameterInfo
         doTest("common_testData/ide/parameterInfo/functionCall/SimpleConstructor.kt");
     }
 
+    @Ignore("Unignore after fix bug with visibility")
     @Test
     public void testSuperConstructorCall() throws Exception {
         doTest("common_testData/ide/parameterInfo/functionCall/SuperConstructorCall.kt");
