@@ -81,7 +81,7 @@ public class KotlinHighlightingTest extends KotlinHighlightingTestCase {
 	}
 	
 	@Test
-	public void trait() {
+	public void interfaceKeyword() {
 		doAutoTest();
 	}
 	

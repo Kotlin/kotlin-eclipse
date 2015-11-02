@@ -1,0 +1,3 @@
+<keyword>interface</keyword> Some {
+	
+}
