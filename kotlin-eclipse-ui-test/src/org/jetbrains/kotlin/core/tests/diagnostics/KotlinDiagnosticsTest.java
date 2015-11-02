@@ -500,11 +500,6 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
 	}
 	
 	@Test
-	public void testDeprecatedTraitKeyword() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/DeprecatedTraitKeyword.kt");
-	}
-	
-	@Test
 	public void testDelegationExpectedType() throws Exception {
 		doTest("common_testData/compiler/diagnostics/tests/delegation/DelegationExpectedType.kt");
 	}

@@ -98,7 +98,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             "\nfun <T> checkSubtype(t: T) = t" +
             "\nclass Inv<T>" +
             "\nfun <E> Inv<E>._() {}" +
-            "\nfun <T> T.checkType(f: Inv<T>.() -> Unit) {}";
+            "\ninfix fun <T> T.checkType(f: Inv<T>.() -> Unit) {}";
     
     public static final String CHECK_TYPE_IMPORT = "import " + CHECK_TYPE_PACKAGE + ".*";
     
