@@ -164,8 +164,6 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         }
     }
     
-    
-    
     private void gotoElementInBinaryClass(KotlinJvmBinaryClass binaryClass, DeclarationDescriptor descriptor, 
             KtFile kotlinFile, IJavaProject javaProject) throws JavaModelException, PartInitException {
         IClassFile classFile = findImplementingClass(binaryClass, descriptor, javaProject);

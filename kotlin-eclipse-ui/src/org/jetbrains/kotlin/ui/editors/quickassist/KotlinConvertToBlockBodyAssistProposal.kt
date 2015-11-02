@@ -52,8 +52,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
             && !KotlinBuiltIns.isUnit(declaration.returnType(context)!!)
 
         val editor = getActiveEditor() ?: return
-        val project = KotlinEnvironment.getEnvironment(editor.javaProject!!).getProject()
-        val factory = KtPsiFactory(project)
+        val factory = KtPsiFactory(declaration)
 
         replaceBody(declaration, factory, context, editor)
 
