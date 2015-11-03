@@ -65,7 +65,7 @@ public class KotlinExtractVariableTest extends KotlinExtractVariableTestCase {
     
     @Test
     public void testIfThenAddBlock() {
-        doTest("common_testData/ide/refactoring/introduceVariable/IfCondition.kt");
+        doTest("common_testData/ide/refactoring/introduceVariable/IfCondition.kt", "b");
     }
     
     @Test
