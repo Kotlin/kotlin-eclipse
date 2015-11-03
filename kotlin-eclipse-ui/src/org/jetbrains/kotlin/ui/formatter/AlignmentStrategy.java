@@ -43,8 +43,8 @@ public class AlignmentStrategy {
     private final String lineDelimiter;
     
     private static final Set<String> BLOCK_ELEMENT_TYPES = new HashSet<String>(Arrays.asList(
-            "IF", "FOR", "WHILE", "CLASS_BODY", "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", 
-            "WHEN", "WHEN_ENTRY", "DO_WHILE"));
+            "IF", "FOR", "WHILE", "CLASS_BODY", "FUNCTION_LITERAL_EXPRESSION", 
+            "WHEN", "WHEN_ENTRY", "DO_WHILE", "PROPERTY_ACCESSOR"));
     
     public AlignmentStrategy(ASTNode parsedFile, int lineIndentation, String lineDelimiter) {
         this.parsedFile = parsedFile;
@@ -77,6 +77,10 @@ public class AlignmentStrategy {
                 
                 int lineSeparatorsOccurences = IndenterUtil.getLineSeparatorsOccurences(text);
                 edit.append(IndenterUtil.createWhiteSpace(shift, lineSeparatorsOccurences, lineDelimiter));
+                
+                if (isAdditionalShiftNeeded(psiElement.getNextSibling())) {
+                    edit.append(IndenterUtil.getIndentString());
+                }
             } else {
                 if (isWhiteSpaceNeeded(psiElement)) {
                     edit.append(" ");
@@ -93,6 +97,18 @@ public class AlignmentStrategy {
         for (ASTNode child : node.getChildren(null)) {
             buildFormattedCode(child, indent);
         }
+    }
+    
+    private boolean isAdditionalShiftNeeded(PsiElement psiElement) {
+        LeafPsiElement leafPsiElement = getFirstLeaf(psiElement);
+        if (leafPsiElement != null) {
+            IElementType elementType = leafPsiElement.getElementType();
+            if (elementType == KtTokens.GET_KEYWORD || elementType == KtTokens.SET_KEYWORD) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private boolean isWhiteSpaceNeeded(PsiElement psiElement) {
