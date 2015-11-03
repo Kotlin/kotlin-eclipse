@@ -74,4 +74,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void withMutableVariable() {
     	doAutoTest();
     }
+    
+    @Test
+    public void indentInWhenEntry() {
+        doAutoTest();
+    }
 }
