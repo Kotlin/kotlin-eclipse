@@ -43,7 +43,8 @@ public class AlignmentStrategy {
     private final String lineDelimiter;
     
     private static final Set<String> BLOCK_ELEMENT_TYPES = new HashSet<String>(Arrays.asList(
-            "IF", "FOR", "WHILE", "CLASS_BODY", "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", "WHEN", "WHEN_ENTRY"));
+            "IF", "FOR", "WHILE", "CLASS_BODY", "FUNCTION_LITERAL_EXPRESSION", "PROPERTY", 
+            "WHEN", "WHEN_ENTRY", "DO_WHILE"));
     
     public AlignmentStrategy(ASTNode parsedFile, int lineIndentation, String lineDelimiter) {
         this.parsedFile = parsedFile;
