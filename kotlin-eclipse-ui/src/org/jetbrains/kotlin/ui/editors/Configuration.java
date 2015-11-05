@@ -21,11 +21,11 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
+import org.eclipse.jdt.internal.ui.text.java.hover.AnnotationHover;
 import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
 import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -80,6 +80,11 @@ public class Configuration extends JavaSourceViewerConfiguration {
     }
 
     @Override
+    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType, int stateMask) {
+        return new AnnotationHover();
+    }
+
+    @Override
     public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer, boolean doCodeResolve) {
         InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
             @Override
@@ -94,11 +99,6 @@ public class Configuration extends JavaSourceViewerConfiguration {
         presenter.setSizeConstraints(45, 15, true, false);
         
         return presenter;
-    }
-    
-    @Override
-    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-        return new DefaultTextHover(sourceViewer);
     }
     
     @Override
