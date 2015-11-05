@@ -47,10 +47,6 @@ public class EditorUtil {
         return editor.getViewer().getDocument().get();
     }
     
-    public static int getOffsetInEditor(@NotNull KotlinEditor editor, int offset) {
-        return LineEndUtil.convertCrToDocumentOffset(editor.getDocument(), offset);
-    }
-    
     @NotNull
     public static IDocument getDocument(@NotNull AbstractTextEditor editor) {
         return editor.getDocumentProvider().getDocument(editor.getEditorInput());

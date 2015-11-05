@@ -21,7 +21,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.OffsetUtilsKt;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
@@ -55,7 +55,7 @@ public class KotlinOutlinePage extends ContentOutlinePage {
         if (!treeSelection.isEmpty()) {
             PsiElement psiElement = (PsiElement) treeSelection.getFirstElement();
             
-            int offset = EditorUtil.getOffsetInEditor(editor, psiElement.getTextOffset());
+            int offset = OffsetUtilsKt.getTextDocumentOffset(psiElement, editor.getDocument());
              
             editor.getJavaEditor().selectAndReveal(offset, 0); //TODO: reveal Kotlin Element?
        }

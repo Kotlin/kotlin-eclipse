@@ -41,7 +41,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.OffsetUtilsKt;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.intellij.psi.PsiElement;
@@ -178,7 +178,7 @@ public class KotlinOutlinePopup extends PopupDialog implements IInformationContr
         Object treeSelection = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
         if (treeSelection instanceof PsiElement) {
             PsiElement psiElement = (PsiElement) treeSelection;
-            int offset = EditorUtil.getOffsetInEditor(editor, psiElement.getTextOffset());
+            int offset = OffsetUtilsKt.getTextDocumentOffset(psiElement, editor.getDocument());
              
             editor.getJavaEditor().selectAndReveal(offset, 0);
             close();
