@@ -38,7 +38,13 @@ import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 
+interface KotlinReconcilingListener {
+    fun reconcile(file: IFile, editor: KotlinFileEditor)
+}
+
 class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStrategy {
+    private val reconcilingListeners = arrayListOf<KotlinReconcilingListener>()
+    
     override fun setDocument(document: IDocument?) {}
     
     override fun reconcile(dirtyRegion: DirtyRegion?, subRegion: IRegion?) {}
@@ -49,8 +55,8 @@ class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStra
                 val file = EditorUtil.getFile(editor)
                 if (file != null) {
                     resetCache(file)
-                    updateLineAnnotations(file)
-                    updateOutlinePage()
+                    
+                    reconcilingListeners.forEach { it.reconcile(file, editor) }
                 } else {
                     KotlinLogger.logError("Failed to retrieve IFile from editor $editor", null)
                 }
@@ -62,31 +68,17 @@ class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStra
         })
     }
     
+    fun addListener(listener: KotlinReconcilingListener) {
+        reconcilingListeners.add(listener)
+    }
+    
+    fun removeListener(listener: KotlinReconcilingListener) {
+        reconcilingListeners.remove(listener)
+    }
+    
     private fun resetCache(file: IFile) {
         val javaProject = JavaCore.create(file.getProject())
         KotlinAnalysisProjectCache.resetCache(javaProject)
         KotlinAnalysisFileCache.resetCache()
-    }
-    
-    private fun updateLineAnnotations(file: IFile) {
-        val javaProject = JavaCore.create(file.getProject())
-        val jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor))
-        if (jetFile == null) {
-            return
-        }
-        
-        val diagnostics = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getAnalysisResult().getBindingContext().getDiagnostics()
-        val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics)
-        DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)
-        DiagnosticAnnotationUtil.INSTANCE.updateAnnotations(editor, annotations)
-    }
-    
-    private fun updateOutlinePage() {
-        Display.getDefault().asyncExec {
-            val outlinePage = editor.getAdapter(IContentOutlinePage::class.java) as IContentOutlinePage
-            if (outlinePage is KotlinOutlinePage) {
-                outlinePage.refresh()
-            }
-        }
     }
 }

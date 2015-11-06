@@ -31,6 +31,8 @@ import org.eclipse.jface.text.IDocument
 import org.eclipse.jdt.ui.PreferenceConstants
 import org.eclipse.jface.preference.PreferenceConverter
 import org.eclipse.swt.graphics.Color
+import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
+import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage.OutlinPageReconciler
 
 public class FileEditorConfiguration(colorManager: IColorManager,
         private val fileEditor: KotlinFileEditor,
@@ -43,8 +45,12 @@ public class FileEditorConfiguration(colorManager: IColorManager,
         return quickAssist
     }
 
-    override fun getReconciler(sourceViewer: ISourceViewer) =
-            MonoReconciler(KotlinReconcilingStrategy(fileEditor), false)
+    override fun getReconciler(sourceViewer: ISourceViewer): IReconciler {
+        val reconcilingStrategy = KotlinReconcilingStrategy(fileEditor)
+        reconcilingStrategy.addListener(KotlinLineAnnotationsReconciler)
+        reconcilingStrategy.addListener(OutlinPageReconciler)
+        return MonoReconciler(reconcilingStrategy, false)
+    }
 
     override fun getAutoEditStrategies(sourceViewer: ISourceViewer, contentType: String) =
             arrayOf(KotlinAutoIndentStrategy(fileEditor))
