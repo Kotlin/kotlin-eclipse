@@ -14,7 +14,7 @@
 * limitations under the License.
 *
 *******************************************************************************/
-package org.jetbrains.kotlin.ui.editors
+package org.jetbrains.kotlin.ui.editors.annotations
 
 import java.util.HashMap
 import org.eclipse.core.resources.IFile

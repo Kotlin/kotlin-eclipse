@@ -16,9 +16,9 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
-import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil;
 
 import com.intellij.psi.PsiElement;
 

@@ -16,8 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
 import org.jetbrains.kotlin.diagnostics.Errors;
-import org.jetbrains.kotlin.ui.editors.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinSearchTypeRequestor;
 
 import com.google.common.collect.Lists;

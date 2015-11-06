@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.editors;
+package org.jetbrains.kotlin.ui.editors.annotations;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.text.Position;

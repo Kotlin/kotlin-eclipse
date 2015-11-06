@@ -35,9 +35,9 @@ import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
-import org.jetbrains.kotlin.ui.editors.AnnotationManager;
-import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
-import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil;
 import org.junit.Assert;
 import org.junit.Before;
 
