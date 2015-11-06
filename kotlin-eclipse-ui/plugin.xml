@@ -321,7 +321,7 @@
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationImageProvider="org.jetbrains.kotlin.ui.editors.KotlinAnnotationImageProvider"
+            annotationImageProvider="org.jetbrains.kotlin.ui.editors.annotations.KotlinAnnotationImageProvider"
             annotationType="org.jetbrains.kotlin.ui.annotation.error"
             colorPreferenceKey="org.jetbrains.kotlin.ui.annotation.error.color"
             colorPreferenceValue="255,0,128"
@@ -338,7 +338,7 @@
             verticalRulerPreferenceValue="true">
       </specification>
       <specification
-            annotationImageProvider="org.jetbrains.kotlin.ui.editors.KotlinAnnotationImageProvider"
+            annotationImageProvider="org.jetbrains.kotlin.ui.editors.annotations.KotlinAnnotationImageProvider"
             annotationType="org.jetbrains.kotlin.ui.annotation.warning"
             colorPreferenceKey="org.jetbrains.kotlin.ui.annotation.warning.color"
             colorPreferenceValue="244,200,45"

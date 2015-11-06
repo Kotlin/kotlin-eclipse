@@ -36,6 +36,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 
 class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStrategy {
     override fun setDocument(document: IDocument?) {}

@@ -41,9 +41,9 @@ import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
-import org.jetbrains.kotlin.ui.editors.AnnotationManager;
-import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
-import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil;
 
 import com.google.common.collect.Sets;
 

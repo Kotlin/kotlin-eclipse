@@ -34,6 +34,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProcessor;
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal;
 

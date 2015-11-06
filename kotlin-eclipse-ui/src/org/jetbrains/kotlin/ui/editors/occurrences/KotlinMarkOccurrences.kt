@@ -46,7 +46,7 @@ import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.ui.editors.withLock
+import org.jetbrains.kotlin.ui.editors.annotations.withLock
 import org.eclipse.jface.text.source.AnnotationModel
 import org.eclipse.ui.progress.UIJob
 

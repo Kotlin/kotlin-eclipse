@@ -27,9 +27,9 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TypingUtils;
-import org.jetbrains.kotlin.ui.editors.AnnotationManager;
-import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotation;
-import org.jetbrains.kotlin.ui.editors.DiagnosticAnnotationUtil;
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation;
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil;
 import org.junit.Assert;
 import org.junit.Before;
 
