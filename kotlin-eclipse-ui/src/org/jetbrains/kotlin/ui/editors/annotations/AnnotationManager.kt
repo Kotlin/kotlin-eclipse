@@ -38,6 +38,10 @@ import org.eclipse.ui.texteditor.MarkerAnnotation
 import org.eclipse.ui.texteditor.MarkerUtilities
 import org.eclipse.jface.text.ISynchronizable
 import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.ui.editors.KotlinReconcilingListener
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
@@ -101,6 +105,20 @@ public object AnnotationManager {
         }
         
         return annotations
+    }
+}
+
+object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
+    override fun reconcile(file: IFile, editor: KotlinFileEditor) {
+        val jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor))
+        if (jetFile == null) {
+            return
+        }
+        
+        val diagnostics = KotlinAnalyzer.analyzeFile(editor.javaProject!!, jetFile).analysisResult.bindingContext.diagnostics
+        val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics)
+        DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)
+        DiagnosticAnnotationUtil.INSTANCE.updateAnnotations(editor, annotations)
     }
 }
 

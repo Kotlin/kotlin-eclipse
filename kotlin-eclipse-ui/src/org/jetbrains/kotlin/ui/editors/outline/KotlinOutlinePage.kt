@@ -25,8 +25,24 @@ import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.ui.editors.KotlinReconcilingListener
+import org.eclipse.core.resources.IFile
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.eclipse.swt.widgets.Display
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 
 class KotlinOutlinePage(val editor: KotlinEditor) : ContentOutlinePage() {
+    object OutlinPageReconciler : KotlinReconcilingListener {
+        override fun reconcile(file: IFile, editor: KotlinFileEditor) {
+            Display.getDefault().asyncExec {
+                val outlinePage = editor.getAdapter(IContentOutlinePage::class.java) as IContentOutlinePage
+                if (outlinePage is KotlinOutlinePage) {
+                    outlinePage.refresh()
+                }
+            }
+        }
+      }
+    
     override fun createControl(parent: Composite?) {
         super.createControl(parent)
         
