@@ -34,6 +34,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.information.IInformationPresenter;
 import org.eclipse.jface.text.information.IInformationProvider;
@@ -191,13 +192,27 @@ public class Configuration extends JavaSourceViewerConfiguration {
         return targets;
     }
     
-    public static IPresentationReconciler getKotlinPresentaionReconciler(@NotNull KotlinTokenScanner scanner) {
+    public static KotlinPresentationReconciler getKotlinPresentaionReconciler(@NotNull KotlinTokenScanner scanner) {
         DefaultDamagerRepairer kotlinDamagerRepairer = new DefaultDamagerRepairer(scanner);
         
-        PresentationReconciler reconciler = new PresentationReconciler();
+        KotlinPresentationReconciler reconciler = new KotlinPresentationReconciler();
         reconciler.setDamager(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(kotlinDamagerRepairer, IDocument.DEFAULT_CONTENT_TYPE);
         
         return reconciler;
+    }
+    
+    public static class KotlinPresentationReconciler extends PresentationReconciler {
+        private volatile IDocument lastDocument = null;
+        
+        public TextPresentation createRepairDescription(IRegion damage, IDocument document) {
+            if (document != lastDocument) {
+                setDocumentToDamagers(document);
+                setDocumentToRepairers(document);
+                lastDocument = document;
+            }
+            
+            return createPresentation(damage, document);
+        }
     }
 }

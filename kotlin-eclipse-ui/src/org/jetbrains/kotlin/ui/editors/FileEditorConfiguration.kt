@@ -33,11 +33,22 @@ import org.eclipse.jface.preference.PreferenceConverter
 import org.eclipse.swt.graphics.Color
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage.OutlinPageReconciler
+import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
 
 public class FileEditorConfiguration(colorManager: IColorManager,
         private val fileEditor: KotlinFileEditor,
         preferenceStore: IPreferenceStore): Configuration(colorManager, fileEditor, preferenceStore) {
-
+    
+    private val semanticHighlighter by lazy {
+        val scanner = getScanner()
+        if (scanner != null) {
+            val reconciler = getKotlinPresentaionReconciler(scanner) 
+            return@lazy KotlinSemanticHighlighter(fPreferenceStore, colorManager, reconciler, fileEditor) 
+        }
+        
+        null
+    }
+    
     override fun getQuickAssistAssistant(sourceViewer: ISourceViewer): IQuickAssistAssistant? {
         val quickAssist = QuickAssistAssistant()
         quickAssist.setQuickAssistProcessor(KotlinCorrectionProcessor(fileEditor))
@@ -49,6 +60,12 @@ public class FileEditorConfiguration(colorManager: IColorManager,
         val reconcilingStrategy = KotlinReconcilingStrategy(fileEditor)
         reconcilingStrategy.addListener(KotlinLineAnnotationsReconciler)
         reconcilingStrategy.addListener(OutlinPageReconciler)
+        
+        if (semanticHighlighter != null) {
+            semanticHighlighter!!.install()
+            reconcilingStrategy.addListener(semanticHighlighter!!)
+        }
+        
         return MonoReconciler(reconcilingStrategy, false)
     }
 
