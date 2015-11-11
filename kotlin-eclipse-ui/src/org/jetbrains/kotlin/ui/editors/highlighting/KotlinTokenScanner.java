@@ -22,7 +22,6 @@ import org.jetbrains.kotlin.psi.KtPsiFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.impl.source.tree.LeafPsiElement;
 
 public class KotlinTokenScanner implements ITokenScanner {
     private final KotlinTokensFactory kotlinTokensFactory;
@@ -59,12 +58,7 @@ public class KotlinTokenScanner implements ITokenScanner {
         lastElement = jetFile.findElementAt(offset);
         if (lastElement != null) {
             offset = lastElement.getTextRange().getEndOffset();
-            IToken token = kotlinTokensFactory.getToken(lastElement);
-            if (!(lastElement instanceof LeafPsiElement) && kotlinTokensFactory.isBlockToken(token)) {
-                rangeEnd = jetFile.getTextLength();
-            }
-            
-            return token;
+            return kotlinTokensFactory.getToken(lastElement);
         }
         
         return Token.EOF;
