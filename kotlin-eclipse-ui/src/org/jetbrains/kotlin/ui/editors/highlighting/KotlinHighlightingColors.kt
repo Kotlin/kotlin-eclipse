@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.ui.editors.highlighting
 
 import org.eclipse.jdt.internal.ui.javaeditor.SemanticHighlightings
+import org.eclipse.swt.graphics.RGB
 
 public class KotlinHighlightingColors {
     companion object {
@@ -29,6 +30,7 @@ class KotlinHighlightingAttributes private constructor() {
         
         val PARAMETER_VARIABLE = withAttributes { 
             this.colorKey = SemanticHighlightings.PARAMETER_VARIABLE
+            this.background = null
         }
         
         val FIELD = withAttributes { 
@@ -51,10 +53,13 @@ class KotlinHighlightingAttributes private constructor() {
             this.italic = true
             this.bold = true
         }
+        
+        val SMART_CAST_VALUE = RGB(219, 255, 219) 
     }
     
     lateinit var colorKey: String
     var underline = false
     var bold = false
     var italic = false
+    var background: RGB? = null
 }
