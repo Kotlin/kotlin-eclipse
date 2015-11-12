@@ -83,6 +83,8 @@ public class KotlinSemanticHighlighter(
                 addPositionCategory(getCategory())
                 addPositionUpdater(KotlinPositionUpdater(getCategory()))
             }
+            
+            reconcile(editor.getFile()!!, editor)
         } else {
             KotlinLogger.logWarning("Cannot install Kotlin Semantic highlighter for viewer $viewer")
         }
