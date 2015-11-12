@@ -88,6 +88,17 @@ public object AnnotationManager {
         }
     }
     
+    fun getAnnotations(model: IAnnotationModel, annontationType: String): List<Annotation> {
+        val annotations = arrayListOf<Annotation>()
+        for (annotation in model.getAnnotationIterator()) {
+            if (annotation is Annotation && annotation.getType() == annontationType) {
+                annotations.add(annotation)
+            }
+        }
+        
+        return annotations
+    }
+    
     private fun getLineMarkerAnnotations(model: IAnnotationModel): List<Annotation> {
         fun isLineMarkerAnnotation(ann: Annotation): Boolean {
             return when (ann) {
