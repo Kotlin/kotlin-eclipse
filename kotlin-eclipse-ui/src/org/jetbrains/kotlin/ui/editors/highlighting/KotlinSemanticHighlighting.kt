@@ -40,6 +40,12 @@ import org.eclipse.swt.graphics.Color
 import org.eclipse.swt.widgets.Display
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.eclipse.swt.SWT
+import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.StyleAttributes
+import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.SmartCast
+import org.eclipse.jface.text.source.Annotation
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
+import org.jetbrains.kotlin.ui.editors.annotations.withLock
+import org.eclipse.jface.text.source.IAnnotationModelExtension
 
 public class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
@@ -55,8 +61,13 @@ public class KotlinSemanticHighlighter(
             .filter { regionStart <= it.getOffset() && it.getOffset() + it.getLength() <= regionEnd }
             .filterNot { it.isDeleted() }
             .forEach { position ->
-                val styleRange = (position as HighlightPosition).createStyleRange()
-                textPresentation.replaceStyleRange(styleRange)
+                val highlightPosition = position as HighlightPosition
+                when (highlightPosition) {
+                    is StyleAttributes -> {
+                        val styleRange = (highlightPosition).createStyleRange()
+                        textPresentation.replaceStyleRange(styleRange)
+                    }
+                }
             }
     }
 
@@ -67,11 +78,17 @@ public class KotlinSemanticHighlighter(
         if (ktFile == null) return
         
         val highlightingVisitor = KotlinSemanticHighlightingVisitor(editor)
+        val smartCasts = arrayListOf<SmartCast>()
         highlightingVisitor.computeHighlightingRanges().forEach { position -> 
-            editor.document.addPosition(getCategory(), position)
+            when (position) {
+                is StyleAttributes -> editor.document.addPosition(getCategory(), position)
+                is SmartCast -> smartCasts.add(position)
+            }
+            
         }
         
         invalidateTextPresentation()
+        setupSmartCastsAsAnnotations(smartCasts)
     }
     
     fun install() {
@@ -94,6 +111,19 @@ public class KotlinSemanticHighlighter(
         super.dispose()
     }
     
+    private fun setupSmartCastsAsAnnotations(positions: List<SmartCast>) {
+        val type = "org.jetbrains.kotlin.ui.annotation.smartCast"
+        val model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
+        val oldAnnotations = AnnotationManager.getAnnotations(model, type)
+        val annotationMap = positions.toMapBy { 
+            Annotation(type, false, "description of smartcast")
+        }
+        
+        model.withLock { 
+            (model as IAnnotationModelExtension).replaceAnnotations(oldAnnotations.toTypedArray(), annotationMap)
+        }
+    }
+    
     private fun invalidateTextPresentation() {
         val shell = editor.getSite()?.getShell()
         if (shell == null || shell.isDisposed()) return
@@ -110,7 +140,7 @@ public class KotlinSemanticHighlighter(
         editor.document.getPositions(getCategory()).forEach { it.delete() }
     }
     
-    private fun HighlightPosition.createStyleRange(): StyleRange {
+    private fun StyleAttributes.createStyleRange(): StyleRange {
         val styleRange = StyleRange(findTextStyle(styleAttributes, preferenceStore, colorManager))
         
         styleRange.start = getOffset()

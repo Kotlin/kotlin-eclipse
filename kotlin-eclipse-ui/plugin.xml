@@ -354,6 +354,20 @@
             verticalRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.warning.ruler"
             verticalRulerPreferenceValue="true">
       </specification>
+      <specification
+            annotationType="org.jetbrains.kotlin.ui.annotation.smartCast"
+            colorPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.color"
+            colorPreferenceValue="219,255,219"
+            highlightPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.highlight"
+            label="Smart Cast Highlighting"
+            overviewRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.overview"
+            overviewRulerPreferenceValue="true"
+            textPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="NONE"
+            verticalRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
    </extension>
    <extension
          point="org.eclipse.ui.editors.annotationTypes">
@@ -368,6 +382,9 @@
             markerType="org.jetbrains.kotlin.ui.marker"
             name="org.jetbrains.kotlin.ui.annotation.warning"
             super="org.eclipse.ui.workbench.texteditor.warning">
+      </type>
+      <type
+            name="org.jetbrains.kotlin.ui.annotation.smartCast">
       </type>
    </extension>
    <extension
