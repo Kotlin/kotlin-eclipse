@@ -112,14 +112,13 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
     
     private fun highlightProperty(element: PsiElement, descriptor: PropertyDescriptor) {
         val range = element.getTextRange()
+        val mutable = descriptor.isVar()
         if (DescriptorUtils.isStaticDeclaration(descriptor)) {
-            if (descriptor.isVar()) {
-                highlight(KotlinHighlightingAttributes.STATIC_FIELD, range)
-            } else {
-                highlight(KotlinHighlightingAttributes.STATIC_FINAL_FIELD, range)
-            }
+            val attributes = if (mutable) KotlinHighlightingAttributes.STATIC_FIELD else KotlinHighlightingAttributes.STATIC_FINAL_FIELD
+            highlight(attributes, range)
         } else {
-            highlight(KotlinHighlightingAttributes.FIELD, range)
+            val attributes = if (mutable) KotlinHighlightingAttributes.FIELD else KotlinHighlightingAttributes.FINAL_FIELD
+            highlight(attributes, range)
         }
     }
     

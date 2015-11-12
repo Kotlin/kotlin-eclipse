@@ -33,6 +33,11 @@ class KotlinHighlightingAttributes private constructor() {
         
         val FIELD = withAttributes { 
             this.colorKey = SemanticHighlightings.FIELD
+            this.underline = true
+        }
+        
+        val FINAL_FIELD = withAttributes { 
+            this.colorKey = SemanticHighlightings.FIELD
         }
         
         val STATIC_FIELD = withAttributes { 
