@@ -51,12 +51,12 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         return positions.toList() // make copy
     }
     
-    private fun highlight(styleKey: String, range: TextRange) {
+    private fun highlight(styleAttributes: KotlinHighlightingAttributes, range: TextRange) {
         val shiftedStart = LineEndUtil.convertLfToDocumentOffset(
                 editor.parsedFile!!.getText(), 
                 range.getStartOffset(), 
                 editor.document)
-        positions.add(HighlightPosition(styleKey, shiftedStart, range.getLength()))
+        positions.add(HighlightPosition(styleAttributes, shiftedStart, range.getLength()))
     }
     
     override fun visitElement(element: PsiElement) {
@@ -114,25 +114,30 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         val range = element.getTextRange()
         if (DescriptorUtils.isStaticDeclaration(descriptor)) {
             if (descriptor.isVar()) {
-                highlight(SemanticHighlightings.STATIC_FIELD, range)
+                highlight(KotlinHighlightingAttributes.STATIC_FIELD, range)
             } else {
-                highlight(SemanticHighlightings.STATIC_FINAL_FIELD, range)
+                highlight(KotlinHighlightingAttributes.STATIC_FINAL_FIELD, range)
             }
         } else {
-            highlight(SemanticHighlightings.FIELD, range)
+            highlight(KotlinHighlightingAttributes.FIELD, range)
         }
     }
     
     private fun highlightVariable(element: PsiElement, descriptor: DeclarationDescriptor) {
         if (descriptor !is VariableDescriptor) return
         
-//        val underline = descriptor.isVar()
-        
         when (descriptor) {
-            is LocalVariableDescriptor -> highlight(SemanticHighlightings.LOCAL_VARIABLE, element.getTextRange())
-            is ValueParameterDescriptor -> highlight(SemanticHighlightings.PARAMETER_VARIABLE, element.getTextRange())
+            is LocalVariableDescriptor -> {
+                val attributes = if (descriptor.isVar()) {
+                    KotlinHighlightingAttributes.LOCAL_VARIABLE
+                } else {
+                    KotlinHighlightingAttributes.LOCAL_FINAL_VARIABLE
+                }
+                highlight(attributes, element.getTextRange())
+            }
+            is ValueParameterDescriptor -> highlight(KotlinHighlightingAttributes.PARAMETER_VARIABLE, element.getTextRange())
         }
     }
 }
 
-class HighlightPosition(val styleKey: String, offset: Int, length: Int) : Position(offset, length)
+class HighlightPosition(val styleAttributes: KotlinHighlightingAttributes, offset: Int, length: Int) : Position(offset, length)

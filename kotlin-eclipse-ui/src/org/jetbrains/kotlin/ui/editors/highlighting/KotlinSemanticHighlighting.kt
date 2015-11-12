@@ -39,6 +39,7 @@ import org.eclipse.jface.preference.PreferenceConverter
 import org.eclipse.swt.graphics.Color
 import org.eclipse.swt.widgets.Display
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.eclipse.swt.SWT
 
 public class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
@@ -108,10 +109,17 @@ public class KotlinSemanticHighlighter(
     }
     
     private fun HighlightPosition.createStyleRange(): StyleRange {
-        val styleRange = StyleRange(findTextStyle(styleKey, preferenceStore, colorManager))
+        val styleRange = StyleRange(findTextStyle(styleAttributes, preferenceStore, colorManager))
         
         styleRange.start = getOffset()
         styleRange.length = getLength()
+        
+        when {
+            styleAttributes.bold && styleAttributes.italic -> styleRange.fontStyle = SWT.BOLD or SWT.ITALIC
+            styleAttributes.bold -> styleRange.fontStyle = SWT.BOLD
+            styleAttributes.italic -> styleRange.fontStyle = SWT.ITALIC
+            else -> styleRange.fontStyle = SWT.NORMAL
+        }
         
         return styleRange
     }
@@ -144,11 +152,11 @@ public class KotlinSemanticHighlighter(
     }
 }
 
-private fun findTextStyle(styleKey: String, store: IPreferenceStore, colorManager: IColorManager): TextStyle {
-    val rgb = getColor(styleKey, store)
-    
+private fun findTextStyle(attributes: KotlinHighlightingAttributes, store: IPreferenceStore, colorManager: IColorManager): TextStyle {
     val style = TextStyle()
+    val rgb = getColor(attributes.colorKey, store)
     style.foreground = getColor(rgb, colorManager)
+    style.underline = attributes.underline
     
     return style
 }
