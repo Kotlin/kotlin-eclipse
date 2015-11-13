@@ -46,7 +46,7 @@ interface KotlinReconcilingListener {
 
 class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStrategy {
     companion object {
-        private val reconcilingListeners = arrayListOf<KotlinReconcilingListener>()
+        private val reconcilingListeners = hashSetOf<KotlinReconcilingListener>()
         
         fun addListener(listener: KotlinReconcilingListener) {
             reconcilingListeners.add(listener)
