@@ -118,7 +118,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
     }
 
     @Nullable
-    protected KotlinTokenScanner getScanner() {
+    public KotlinTokenScanner getScanner() {
         if (scanner == null) {
             scanner = new KotlinTokenScanner(fPreferenceStore, getColorManager());
         }
