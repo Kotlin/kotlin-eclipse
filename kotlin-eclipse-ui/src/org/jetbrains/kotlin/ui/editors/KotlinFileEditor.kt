@@ -58,6 +58,7 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWor
 import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
 import org.jetbrains.kotlin.ui.editors.occurrences.KotlinMarkOccurrences
 import org.jetbrains.kotlin.ui.refactorings.extract.KotlinExtractVariableAction
+import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -71,6 +72,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val kotlinRunToLineAdapter by lazy { KotlinRunToLineAdapter() }
     
     private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences() }
+    
+    private var kotlinSemanticHighlighter: KotlinSemanticHighlighter? = null
     
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
@@ -132,8 +135,32 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setAction(KotlinExtractVariableAction.ACTION_ID, KotlinExtractVariableAction(this))
     }
     
+    override fun installSemanticHighlighting() {
+        val configuration = getSourceViewerConfiguration() as FileEditorConfiguration
+        
+        kotlinSemanticHighlighter = run {
+            val scanner = configuration.getScanner()
+            if (scanner != null) {
+                val reconciler = Configuration.getKotlinPresentaionReconciler(scanner) 
+                return@run KotlinSemanticHighlighter(getPreferenceStore(), colorManager, reconciler, this) 
+            }
+            
+            null
+        }
+        
+        if (kotlinSemanticHighlighter != null) {
+            kotlinSemanticHighlighter!!.install()
+            KotlinReconcilingStrategy.addListener(kotlinSemanticHighlighter!!)
+        }
+    }
+    
     override public fun dispose() {
         colorManager.dispose()
+        
+        if (kotlinSemanticHighlighter != null) {
+            kotlinSemanticHighlighter!!.dispose()
+            KotlinReconcilingStrategy.removeListener(kotlinSemanticHighlighter!!)
+        }
         
         val sourceViewer = getSourceViewer()
         if (sourceViewer is ITextViewerExtension) {

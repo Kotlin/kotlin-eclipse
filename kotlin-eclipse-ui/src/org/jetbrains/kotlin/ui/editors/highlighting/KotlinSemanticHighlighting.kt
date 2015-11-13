@@ -54,6 +54,9 @@ public class KotlinSemanticHighlighter(
         val colorManager: IColorManager,
         val presentationReconciler: KotlinPresentationReconciler,
         val editor: KotlinFileEditor) : KotlinReconcilingListener, ITextPresentationListener {
+    
+    private val positionUpdater by lazy { KotlinPositionUpdater(getCategory()) }
+    
     override fun applyTextPresentation(textPresentation: TextPresentation) {
         val region = textPresentation.getExtent()
         val regionStart = region.getOffset()
@@ -100,7 +103,7 @@ public class KotlinSemanticHighlighter(
             
             with(editor.document) {
                 addPositionCategory(getCategory())
-                addPositionUpdater(KotlinPositionUpdater(getCategory()))
+                addPositionUpdater(positionUpdater)
             }
             
             reconcile(editor.getFile()!!, editor)
@@ -110,6 +113,16 @@ public class KotlinSemanticHighlighter(
     }
     
     override fun dispose() {
+        val viewer = editor.getViewer()
+        if (viewer is JavaSourceViewer) {
+            viewer.removeTextPresentationListener(this)
+            
+            with(editor.document) {
+                removePositionCategory(getCategory())
+                removePositionUpdater(positionUpdater)
+            }
+        }
+        
         super.dispose()
     }
     
