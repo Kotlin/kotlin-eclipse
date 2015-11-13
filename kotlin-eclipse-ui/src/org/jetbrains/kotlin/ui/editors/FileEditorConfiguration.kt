@@ -32,7 +32,6 @@ import org.eclipse.jdt.ui.PreferenceConstants
 import org.eclipse.jface.preference.PreferenceConverter
 import org.eclipse.swt.graphics.Color
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
-import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage.OutlinPageReconciler
 import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
 
 public class FileEditorConfiguration(colorManager: IColorManager,
@@ -48,7 +47,6 @@ public class FileEditorConfiguration(colorManager: IColorManager,
     override fun getReconciler(sourceViewer: ISourceViewer): IReconciler {
         val reconcilingStrategy = KotlinReconcilingStrategy(fileEditor)
         KotlinReconcilingStrategy.addListener(KotlinLineAnnotationsReconciler)
-        KotlinReconcilingStrategy.addListener(OutlinPageReconciler)
         
         return MonoReconciler(reconcilingStrategy, false)
     }
