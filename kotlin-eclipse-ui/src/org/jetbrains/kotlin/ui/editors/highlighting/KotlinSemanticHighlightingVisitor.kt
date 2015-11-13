@@ -57,7 +57,15 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
                 editor.parsedFile!!.getText(), 
                 range.getStartOffset(), 
                 editor.document)
-        positions.add(HighlightPosition(styleAttributes, shiftedStart, range.getLength()))
+        positions.add(HighlightPosition.StyleAttributes(styleAttributes, shiftedStart, range.getLength()))
+    }
+    
+    private fun highlightSmartCast(range: TextRange) {
+        val shiftedStart = LineEndUtil.convertLfToDocumentOffset(
+                editor.parsedFile!!.getText(), 
+                range.getStartOffset(), 
+                editor.document)
+        positions.add(HighlightPosition.SmartCast(shiftedStart, range.getLength()))
     }
     
     override fun visitElement(element: PsiElement) {
@@ -121,7 +129,7 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         } else {
             if (mutable) KotlinHighlightingAttributes.FIELD else KotlinHighlightingAttributes.FINAL_FIELD
         }
-        
+        if (withSmartCast) highlightSmartCast(element.getTextRange())
         highlight(attributes, range)
     }
     
@@ -141,9 +149,13 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
             
             else -> throw IllegalStateException("Cannot find highlight attributes for $descriptor")
         }
-        
+        if (withSmartCast) highlightSmartCast(element.getTextRange())
         highlight(attributes, element.getTextRange())
     }
 }
 
-class HighlightPosition(val styleAttributes: KotlinHighlightingAttributes, offset: Int, length: Int) : Position(offset, length)
+sealed class HighlightPosition(offset: Int, length: Int) : Position(offset, length) {
+    class StyleAttributes(val styleAttributes: KotlinHighlightingAttributes, offset: Int, length: Int) : HighlightPosition(offset, length)
+    
+    class SmartCast(offset: Int, length: Int) : HighlightPosition(offset, length)
+}

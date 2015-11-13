@@ -637,4 +637,19 @@
          </enablement>
       </renameParticipant>
    </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            name="org.jetbrains.kotlin.eclipse.ui.smartCast">
+      </type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="org.jetbrains.kotlin.eclipse.ui.smartCast"
+            colorPreferenceValue="219,255,219"
+            includeOnPreferencePage="true"
+            textStylePreferenceValue="BOX">
+      </specification>
+   </extension>
 </plugin>

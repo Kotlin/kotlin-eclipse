@@ -40,6 +40,9 @@ import org.eclipse.swt.graphics.Color
 import org.eclipse.swt.widgets.Display
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.eclipse.swt.SWT
+import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.StyleAttributes
+import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.SmartCast
+import org.eclipse.jface.text.source.Annotation
 
 public class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
@@ -58,8 +61,19 @@ public class KotlinSemanticHighlighter(
             .filter { regionStart <= it.getOffset() && it.getOffset() + it.getLength() <= regionEnd }
             .filterNot { it.isDeleted() }
             .forEach { position ->
-                val styleRange = (position as HighlightPosition).createStyleRange()
-                textPresentation.replaceStyleRange(styleRange)
+                val highlightPosition = position as HighlightPosition
+                when (highlightPosition) {
+                    is StyleAttributes -> {
+                        val styleRange = (highlightPosition).createStyleRange()
+                        textPresentation.replaceStyleRange(styleRange)
+                    }
+                    
+                    is SmartCast -> {
+                        val annotation = Annotation("org.jetbrains.kotlin.eclipse.ui.smartCast", false, "description of smartcast")
+                        val model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
+                        model.addAnnotation(annotation, position)
+                    }
+                }
             }
     }
 
@@ -123,7 +137,7 @@ public class KotlinSemanticHighlighter(
         editor.document.getPositions(getCategory()).forEach { it.delete() }
     }
     
-    private fun HighlightPosition.createStyleRange(): StyleRange {
+    private fun StyleAttributes.createStyleRange(): StyleRange {
         val styleRange = StyleRange(findTextStyle(styleAttributes, preferenceStore, colorManager))
         
         styleRange.start = getOffset()
