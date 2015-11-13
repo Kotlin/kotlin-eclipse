@@ -45,7 +45,17 @@ interface KotlinReconcilingListener {
 }
 
 class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStrategy {
-    private val reconcilingListeners = arrayListOf<KotlinReconcilingListener>()
+    companion object {
+        private val reconcilingListeners = arrayListOf<KotlinReconcilingListener>()
+        
+        fun addListener(listener: KotlinReconcilingListener) {
+            reconcilingListeners.add(listener)
+        }
+        
+        fun removeListener(listener: KotlinReconcilingListener) {
+            reconcilingListeners.remove(listener)
+        }
+    }
     
     override fun setDocument(document: IDocument?) {}
     
@@ -68,14 +78,6 @@ class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStra
                 KotlinLogger.logError(exception)
             }
         })
-    }
-    
-    fun addListener(listener: KotlinReconcilingListener) {
-        reconcilingListeners.add(listener)
-    }
-    
-    fun removeListener(listener: KotlinReconcilingListener) {
-        reconcilingListeners.remove(listener)
     }
     
     private fun resetCache(file: IFile) {
