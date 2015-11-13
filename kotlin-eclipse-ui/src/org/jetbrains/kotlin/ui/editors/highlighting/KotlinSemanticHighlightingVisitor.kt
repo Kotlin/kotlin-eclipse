@@ -122,9 +122,6 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
             if (mutable) KotlinHighlightingAttributes.FIELD else KotlinHighlightingAttributes.FINAL_FIELD
         }
         
-        if (withSmartCast) {
-            attributes.background = KotlinHighlightingAttributes.SMART_CAST_VALUE
-        }
         highlight(attributes, range)
     }
     
@@ -145,9 +142,6 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
             else -> throw IllegalStateException("Cannot find highlight attributes for $descriptor")
         }
         
-        if (withSmartCast) {
-            attributes.background = KotlinHighlightingAttributes.SMART_CAST_VALUE
-        }
         highlight(attributes, element.getTextRange())
     }
 }

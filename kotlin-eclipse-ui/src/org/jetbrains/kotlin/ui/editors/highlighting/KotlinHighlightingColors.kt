@@ -30,7 +30,6 @@ class KotlinHighlightingAttributes private constructor() {
         
         val PARAMETER_VARIABLE = withAttributes { 
             this.colorKey = SemanticHighlightings.PARAMETER_VARIABLE
-            this.background = null
         }
         
         val FIELD = withAttributes { 
@@ -61,5 +60,4 @@ class KotlinHighlightingAttributes private constructor() {
     var underline = false
     var bold = false
     var italic = false
-    var background: RGB? = null
 }

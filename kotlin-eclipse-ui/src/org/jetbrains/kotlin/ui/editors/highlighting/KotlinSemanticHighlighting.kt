@@ -173,10 +173,6 @@ private fun findTextStyle(attributes: KotlinHighlightingAttributes, store: IPref
     style.foreground = getColor(rgb, colorManager)
     style.underline = attributes.underline
     
-    if (attributes.background != null) {
-        style.background = getColor(attributes.background, colorManager)
-    }
-    
     return style
 }
 
