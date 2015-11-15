@@ -47,8 +47,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.KotlinClasspathContainer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.load.kotlin.PackageClassUtils;
-import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.osgi.framework.Bundle;
 
@@ -99,14 +97,6 @@ public class ProjectUtils {
         assert jetFile != null;
         
         return jetFile.getPackageFqName().asString();
-    }
-    
-    public static FqName createPackageClassName(IFile file) {
-        String filePackage = getPackageByFile(file);
-        if (filePackage == null) {
-            return null;
-        }
-        return PackageClassUtils.getPackageClassFqName(new FqName(filePackage));
     }
     
     public static void cleanFolder(IContainer container, @NotNull Predicate<IResource> predicate) {
