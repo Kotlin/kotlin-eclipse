@@ -63,7 +63,7 @@ public class KotlinMainLauncherTab extends JavaMainTab implements ILaunchConfigu
         }
         
         if (results[0] instanceof IFile) {
-            fMainText.setText(ProjectUtils.createPackageClassName(((IFile) results[0])).toString());
+            fMainText.setText(KotlinLaunchShortcut.getFileClassName((IFile) results[0]));
         }
     }
 }

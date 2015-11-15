@@ -35,12 +35,16 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.fileClasses.FileClasses;
+import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider;
 import org.jetbrains.kotlin.idea.KotlinFileType;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 public class KotlinLaunchShortcut implements ILaunchShortcut {
@@ -117,7 +121,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
         
         try {
             configWC = configurationType.newInstance(null, "Config - " + file.getName());
-            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, ProjectUtils.createPackageClassName(file).toString());
+            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, getFileClassName(file));
             configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, file.getProject().getName());
             
             configuration = configWC.doSave();
@@ -132,7 +136,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
     private ILaunchConfiguration findLaunchConfiguration(ILaunchConfigurationType configurationType, IFile mainClass) {
         try {
             ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(configurationType);
-            String mainClassName = ProjectUtils.createPackageClassName(mainClass).toString();
+            String mainClassName = getFileClassName(mainClass);
             for (ILaunchConfiguration config : configs) {
                 if (config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, (String)null).equals(mainClassName) && 
                         config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String)null).equals(mainClass.getProject().getName())) {
@@ -144,6 +148,11 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
         }
         
         return null;
+    }
+    
+    public static String getFileClassName(@NotNull IFile mainFile) {
+        KtFile ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile);
+        return FileClasses.getFileClassInternalName(NoResolveFileClassesProvider.INSTANCE, ktFile);
     }
     
     private void addFiles(List<IFile> files, IResource resource) {
