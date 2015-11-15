@@ -43,6 +43,9 @@ import org.eclipse.swt.SWT
 import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.StyleAttributes
 import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.SmartCast
 import org.eclipse.jface.text.source.Annotation
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
+import org.jetbrains.kotlin.ui.editors.annotations.withLock
+import org.eclipse.jface.text.source.IAnnotationModelExtension
 
 public class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
@@ -67,12 +70,6 @@ public class KotlinSemanticHighlighter(
                         val styleRange = (highlightPosition).createStyleRange()
                         textPresentation.replaceStyleRange(styleRange)
                     }
-                    
-                    is SmartCast -> {
-                        val annotation = Annotation("org.jetbrains.kotlin.eclipse.ui.smartCast", false, "description of smartcast")
-                        val model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
-                        model.addAnnotation(annotation, position)
-                    }
                 }
             }
     }
@@ -84,11 +81,17 @@ public class KotlinSemanticHighlighter(
         if (ktFile == null) return
         
         val highlightingVisitor = KotlinSemanticHighlightingVisitor(editor)
+        val smartCasts = arrayListOf<SmartCast>()
         highlightingVisitor.computeHighlightingRanges().forEach { position -> 
-            editor.document.addPosition(getCategory(), position)
+            when (position) {
+                is StyleAttributes -> editor.document.addPosition(getCategory(), position)
+                is SmartCast -> smartCasts.add(position)
+            }
+            
         }
         
         invalidateTextPresentation()
+        setupSmartCastsAsAnnotations(smartCasts)
     }
     
     fun install() {
@@ -119,6 +122,19 @@ public class KotlinSemanticHighlighter(
         }
         
         super.dispose()
+    }
+    
+    private fun setupSmartCastsAsAnnotations(positions: List<SmartCast>) {
+        val type = "org.jetbrains.kotlin.ui.annotation.smartCast"
+        val model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
+        val oldAnnotations = AnnotationManager.getAnnotations(model, type)
+        val annotationMap = positions.toMapBy { 
+            Annotation(type, false, "description of smartcast")
+        }
+        
+        model.withLock { 
+            (model as IAnnotationModelExtension).replaceAnnotations(oldAnnotations.toTypedArray(), annotationMap)
+        }
     }
     
     private fun invalidateTextPresentation() {
