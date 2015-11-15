@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.asJava.KotlinLightClassForFacade;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
+import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension;
@@ -43,6 +44,7 @@ import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider;
 import org.jetbrains.kotlin.idea.KotlinFileType;
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
+import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager;
 import org.jetbrains.kotlin.parsing.JetParserDefinition;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
 
@@ -99,6 +101,8 @@ public class KotlinEnvironment {
         };
         
         project = projectEnvironment.getProject();
+        
+        project.registerService(ModuleVisibilityManager.class, new CliModuleVisibilityManagerImpl());
 
 //        For j2k converter
         project.registerService(NullableNotNullManager.class, new KotlinNullableNotNullManager(javaProject)); 
