@@ -39,6 +39,7 @@ import com.intellij.openapi.util.TextRange
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
 
 public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : KtVisitorVoid() {
     private val bindingContext: BindingContext
@@ -60,12 +61,12 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         positions.add(HighlightPosition.StyleAttributes(styleAttributes, shiftedStart, range.getLength()))
     }
     
-    private fun highlightSmartCast(range: TextRange) {
+    private fun highlightSmartCast(range: TextRange, typeName: String) {
         val shiftedStart = LineEndUtil.convertLfToDocumentOffset(
                 editor.parsedFile!!.getText(), 
                 range.getStartOffset(), 
                 editor.document)
-        positions.add(HighlightPosition.SmartCast(shiftedStart, range.getLength()))
+        positions.add(HighlightPosition.SmartCast(typeName, shiftedStart, range.getLength()))
     }
     
     override fun visitElement(element: PsiElement) {
@@ -78,11 +79,12 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         val target = bindingContext[BindingContext.REFERENCE_TARGET, expression]
         if (target == null) return
         
-        val withSmartCast = bindingContext.get(BindingContext.SMARTCAST, expression) != null
+        val smartCast = bindingContext.get(BindingContext.SMARTCAST, expression)
+        val typeName = smartCast?.let { DescriptorRenderer.FQ_NAMES_IN_TYPES.renderType(smartCast) } ?: null
         
         when (target) {
-            is PropertyDescriptor -> highlightProperty(expression, target, withSmartCast)
-            is VariableDescriptor -> highlightVariable(expression, target, withSmartCast)
+            is PropertyDescriptor -> highlightProperty(expression, target, typeName)
+            is VariableDescriptor -> highlightVariable(expression, target, typeName)
         }
         super.visitSimpleNameExpression(expression)
     }
@@ -92,7 +94,7 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         if (nameIdentifier == null) return
         val propertyDescriptor = bindingContext[BindingContext.VARIABLE, property]
         if (propertyDescriptor is PropertyDescriptor) {
-            highlightProperty(nameIdentifier, propertyDescriptor, false)
+            highlightProperty(nameIdentifier, propertyDescriptor)
         } else {
             visitVariableDeclaration(property)
         }
@@ -105,7 +107,7 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         if (nameIdentifier == null) return
         val propertyDescriptor = bindingContext[BindingContext.PRIMARY_CONSTRUCTOR_PARAMETER, parameter]
         if (propertyDescriptor is PropertyDescriptor) {
-            highlightProperty(nameIdentifier, propertyDescriptor, false)
+            highlightProperty(nameIdentifier, propertyDescriptor)
         } else {
             visitVariableDeclaration(parameter)
         }
@@ -117,11 +119,11 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         val declarationDescriptor = bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]
         val nameIdentifier = declaration.getNameIdentifier()
         if (nameIdentifier != null && declarationDescriptor != null) {
-            highlightVariable(nameIdentifier, declarationDescriptor, false)
+            highlightVariable(nameIdentifier, declarationDescriptor)
         }
     }
     
-    private fun highlightProperty(element: PsiElement, descriptor: PropertyDescriptor, withSmartCast: Boolean) {
+    private fun highlightProperty(element: PsiElement, descriptor: PropertyDescriptor, typeName: String? = null) {
         val range = element.getTextRange()
         val mutable = descriptor.isVar()
         val attributes = if (DescriptorUtils.isStaticDeclaration(descriptor)) {
@@ -129,11 +131,11 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         } else {
             if (mutable) KotlinHighlightingAttributes.FIELD else KotlinHighlightingAttributes.FINAL_FIELD
         }
-        if (withSmartCast) highlightSmartCast(element.getTextRange())
+        if (typeName != null) highlightSmartCast(element.getTextRange(), typeName)
         highlight(attributes, range)
     }
     
-    private fun highlightVariable(element: PsiElement, descriptor: DeclarationDescriptor, withSmartCast: Boolean) {
+    private fun highlightVariable(element: PsiElement, descriptor: DeclarationDescriptor, typeName: String? = null) {
         if (descriptor !is VariableDescriptor) return
         
         val attributes = when (descriptor) {
@@ -149,7 +151,7 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
             
             else -> throw IllegalStateException("Cannot find highlight attributes for $descriptor")
         }
-        if (withSmartCast) highlightSmartCast(element.getTextRange())
+        if (typeName != null) highlightSmartCast(element.getTextRange(), typeName)
         highlight(attributes, element.getTextRange())
     }
 }
@@ -157,5 +159,5 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
 sealed class HighlightPosition(offset: Int, length: Int) : Position(offset, length) {
     class StyleAttributes(val styleAttributes: KotlinHighlightingAttributes, offset: Int, length: Int) : HighlightPosition(offset, length)
     
-    class SmartCast(offset: Int, length: Int) : HighlightPosition(offset, length)
+    class SmartCast(val typeName: String, offset: Int, length: Int) : HighlightPosition(offset, length)
 }

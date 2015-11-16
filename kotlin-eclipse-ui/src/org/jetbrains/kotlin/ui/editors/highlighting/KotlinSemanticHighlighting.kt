@@ -116,7 +116,7 @@ public class KotlinSemanticHighlighter(
         val model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
         val oldAnnotations = AnnotationManager.getAnnotations(model, type)
         val annotationMap = positions.toMapBy { 
-            Annotation(type, false, "description of smartcast")
+            Annotation(type, false, "Smart cast to ${it.typeName}")
         }
         
         model.withLock { 
