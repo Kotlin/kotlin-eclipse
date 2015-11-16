@@ -58,9 +58,7 @@ public object AnnotationManager {
         
         val newAnnotations = annotations.toMap({ it }, { it.getPosition() })
         val oldAnnotations = getLineMarkerAnnotations(annotationModel)
-        annotationModel.withLock<Unit> { 
-            annotationModel.replaceAnnotations(oldAnnotations.toTypedArray(), newAnnotations)
-        }
+        updateAnnotations<DiagnosticAnnotation>(annotationModel, newAnnotations, oldAnnotations)
     }
     
     public fun clearAllMarkersFromProject(project: IProject) {
@@ -88,6 +86,11 @@ public object AnnotationManager {
         }
     }
     
+    fun updateAnnotations(editor: KotlinFileEditor, annotationMap: Map<Annotation, Position>, annotationType: String) {
+        val model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
+        updateAnnotations(model, annotationMap, getAnnotations(model, annotationType))
+    }
+    
     fun getAnnotations(model: IAnnotationModel, annontationType: String): List<Annotation> {
         val annotations = arrayListOf<Annotation>()
         for (annotation in model.getAnnotationIterator()) {
@@ -97,6 +100,15 @@ public object AnnotationManager {
         }
         
         return annotations
+    }
+    
+    private fun <Ann : Annotation> updateAnnotations(
+            model: IAnnotationModel, 
+            annotationMap: Map<Ann, Position>, 
+            oldAnnotations: List<Annotation>) {
+        model.withLock { 
+            (model as IAnnotationModelExtension).replaceAnnotations(oldAnnotations.toTypedArray(), annotationMap)
+        }
     }
     
     private fun getLineMarkerAnnotations(model: IAnnotationModel): List<Annotation> {

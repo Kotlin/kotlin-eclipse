@@ -47,6 +47,8 @@ import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.editors.annotations.withLock
 import org.eclipse.jface.text.source.IAnnotationModelExtension
 
+private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
+
 public class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
         val colorManager: IColorManager,
@@ -112,16 +114,11 @@ public class KotlinSemanticHighlighter(
     }
     
     private fun setupSmartCastsAsAnnotations(positions: List<SmartCast>) {
-        val type = "org.jetbrains.kotlin.ui.annotation.smartCast"
-        val model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
-        val oldAnnotations = AnnotationManager.getAnnotations(model, type)
         val annotationMap = positions.toMapBy { 
-            Annotation(type, false, "Smart cast to ${it.typeName}")
+            Annotation(SMART_CAST_ANNOTATION_TYPE, false, "Smart cast to ${it.typeName}")
         }
         
-        model.withLock { 
-            (model as IAnnotationModelExtension).replaceAnnotations(oldAnnotations.toTypedArray(), annotationMap)
-        }
+        AnnotationManager.updateAnnotations(editor, annotationMap, SMART_CAST_ANNOTATION_TYPE)
     }
     
     private fun invalidateTextPresentation() {
@@ -131,7 +128,7 @@ public class KotlinSemanticHighlighter(
         val display = shell.getDisplay()
         if (display == null || display.isDisposed()) return
         
-        display.asyncExec { 
+        display.asyncExec {
             editor.getViewer().invalidateTextPresentation()
         }
     }
