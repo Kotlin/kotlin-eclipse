@@ -59,13 +59,15 @@ import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
 import org.jetbrains.kotlin.ui.editors.occurrences.KotlinMarkOccurrences
 import org.jetbrains.kotlin.ui.refactorings.extract.KotlinExtractVariableAction
 import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
+import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
+import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
     
     private val bracketInserter: KotlinBracketInserter = KotlinBracketInserter()
     
-    private val kotlinOutlinePage by lazy { KotlinOutlinePage(this) }
+    private val kotlinOutlinePage by lazy { KotlinOutlinePage(this, kotlinReconcilingStrategy) }
     
     private val kotlinToggleBreakpointAdapter by lazy { KotlinToggleBreakpointAdapter() }
     
@@ -74,6 +76,10 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences() }
     
     private var kotlinSemanticHighlighter: KotlinSemanticHighlighter? = null
+    
+    private val kotlinReconcilingStrategy by lazy { KotlinReconcilingStrategy(this) }
+    
+    private val kotlinAnnotationReconciler by lazy { KotlinLineAnnotationsReconciler() }
     
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
@@ -85,7 +91,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     }
     
     override public fun createPartControl(parent: Composite) {
-        setSourceViewerConfiguration(FileEditorConfiguration(colorManager, this, getPreferenceStore()))
+        setSourceViewerConfiguration(FileEditorConfiguration(colorManager, this, getPreferenceStore(), kotlinReconcilingStrategy))
+        kotlinReconcilingStrategy.addListener(kotlinAnnotationReconciler)
         
         super<CompilationUnitEditor>.createPartControl(parent)
         
@@ -150,7 +157,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         
         if (kotlinSemanticHighlighter != null) {
             kotlinSemanticHighlighter!!.install()
-            KotlinReconcilingStrategy.addListener(kotlinSemanticHighlighter!!)
+            kotlinReconcilingStrategy.addListener(kotlinSemanticHighlighter!!)
         }
     }
     
@@ -158,9 +165,11 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         colorManager.dispose()
         
         if (kotlinSemanticHighlighter != null) {
+            kotlinReconcilingStrategy.removeListener(kotlinSemanticHighlighter!!)
             kotlinSemanticHighlighter!!.dispose()
-            KotlinReconcilingStrategy.removeListener(kotlinSemanticHighlighter!!)
         }
+        
+        kotlinReconcilingStrategy.removeListener(kotlinAnnotationReconciler)
         
         val sourceViewer = getSourceViewer()
         if (sourceViewer is ITextViewerExtension) {

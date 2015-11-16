@@ -36,7 +36,8 @@ import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
 
 public class FileEditorConfiguration(colorManager: IColorManager,
         private val fileEditor: KotlinFileEditor,
-        preferenceStore: IPreferenceStore): Configuration(colorManager, fileEditor, preferenceStore) {
+        preferenceStore: IPreferenceStore,
+        private val reconcilingStrategy: KotlinReconcilingStrategy): Configuration(colorManager, fileEditor, preferenceStore) {
     override fun getQuickAssistAssistant(sourceViewer: ISourceViewer): IQuickAssistAssistant? {
         val quickAssist = QuickAssistAssistant()
         quickAssist.setQuickAssistProcessor(KotlinCorrectionProcessor(fileEditor))
@@ -45,9 +46,6 @@ public class FileEditorConfiguration(colorManager: IColorManager,
     }
 
     override fun getReconciler(sourceViewer: ISourceViewer): IReconciler {
-        val reconcilingStrategy = KotlinReconcilingStrategy(fileEditor)
-        KotlinReconcilingStrategy.addListener(KotlinLineAnnotationsReconciler)
-        
         return MonoReconciler(reconcilingStrategy, false)
     }
 

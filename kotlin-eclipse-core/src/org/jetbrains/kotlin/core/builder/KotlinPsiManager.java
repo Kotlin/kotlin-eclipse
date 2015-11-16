@@ -218,6 +218,9 @@ public class KotlinPsiManager {
     private KtFile parseFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
             try {
+                if (!file.exists()) {
+                    return null;
+                }
                 File ioFile = new File(file.getRawLocation().toOSString());
                 return parseText(FileUtil.loadFile(ioFile, null, true), file);
             } catch (IOException e) {

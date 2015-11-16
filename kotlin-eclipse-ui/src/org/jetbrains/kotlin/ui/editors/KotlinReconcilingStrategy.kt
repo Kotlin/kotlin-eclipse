@@ -45,16 +45,14 @@ interface KotlinReconcilingListener {
 }
 
 class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStrategy {
-    companion object {
-        private val reconcilingListeners = hashSetOf<KotlinReconcilingListener>()
-        
-        fun addListener(listener: KotlinReconcilingListener) {
-            reconcilingListeners.add(listener)
-        }
-        
-        fun removeListener(listener: KotlinReconcilingListener) {
-            reconcilingListeners.remove(listener)
-        }
+    private val reconcilingListeners = hashSetOf<KotlinReconcilingListener>()
+    
+    fun addListener(listener: KotlinReconcilingListener) {
+        reconcilingListeners.add(listener)
+    }
+    
+    fun removeListener(listener: KotlinReconcilingListener) {
+        reconcilingListeners.remove(listener)
     }
     
     override fun setDocument(document: IDocument?) {}
@@ -67,6 +65,7 @@ class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStra
                 val file = EditorUtil.getFile(editor)
                 if (file != null) {
                     resetCache(file)
+                    KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get()) // commit file
                     
                     reconcilingListeners.forEach { it.reconcile(file, editor) }
                 } else {

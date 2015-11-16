@@ -46,6 +46,7 @@ import org.eclipse.jface.text.source.Annotation
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.editors.annotations.withLock
 import org.eclipse.jface.text.source.IAnnotationModelExtension
+import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
 
 private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
 
@@ -55,21 +56,22 @@ public class KotlinSemanticHighlighter(
         val presentationReconciler: KotlinPresentationReconciler,
         val editor: KotlinFileEditor) : KotlinReconcilingListener, ITextPresentationListener {
     
-    private val positionUpdater by lazy { KotlinPositionUpdater(getCategory()) }
+    private val positionUpdater by lazy { KotlinPositionUpdater(category) }
+    
+    private val category by lazy { toString() }
     
     override fun applyTextPresentation(textPresentation: TextPresentation) {
         val region = textPresentation.getExtent()
         val regionStart = region.getOffset()
         val regionEnd = regionStart + region.getLength()
         
-        editor.document.getPositions(getCategory())
+        editor.document.getPositions(category)
             .filter { regionStart <= it.getOffset() && it.getOffset() + it.getLength() <= regionEnd }
             .filterNot { it.isDeleted() }
             .forEach { position ->
-                val highlightPosition = position as HighlightPosition
-                when (highlightPosition) {
+                when (position) {
                     is StyleAttributes -> {
-                        val styleRange = (highlightPosition).createStyleRange()
+                        val styleRange = position.createStyleRange()
                         textPresentation.replaceStyleRange(styleRange)
                     }
                 }
@@ -86,7 +88,7 @@ public class KotlinSemanticHighlighter(
         val smartCasts = arrayListOf<SmartCast>()
         highlightingVisitor.computeHighlightingRanges().forEach { position -> 
             when (position) {
-                is StyleAttributes -> editor.document.addPosition(getCategory(), position)
+                is StyleAttributes -> editor.document.addPosition(category, position)
                 is SmartCast -> smartCasts.add(position)
             }
             
@@ -98,15 +100,16 @@ public class KotlinSemanticHighlighter(
     
     fun install() {
         val viewer = editor.getViewer()
-        if (viewer is JavaSourceViewer) {
+        val file = editor.getFile()
+        if (file != null && viewer is JavaSourceViewer) {
             viewer.prependTextPresentationListener(this)
             
             with(editor.document) {
-                addPositionCategory(getCategory())
+                addPositionCategory(category)
                 addPositionUpdater(positionUpdater)
             }
             
-            reconcile(editor.getFile()!!, editor)
+            reconcile(file, editor)
         } else {
             KotlinLogger.logWarning("Cannot install Kotlin Semantic highlighter for viewer $viewer")
         }
@@ -118,7 +121,7 @@ public class KotlinSemanticHighlighter(
             viewer.removeTextPresentationListener(this)
             
             with(editor.document) {
-                removePositionCategory(getCategory())
+                removePositionCategory(category)
                 removePositionUpdater(positionUpdater)
             }
         }
@@ -142,12 +145,12 @@ public class KotlinSemanticHighlighter(
         if (display == null || display.isDisposed()) return
         
         display.asyncExec {
-            editor.getViewer().invalidateTextPresentation()
+            editor.getViewer()?.invalidateTextPresentation()
         }
     }
     
     private fun removeAllPositions() {
-        editor.document.getPositions(getCategory()).forEach { it.delete() }
+        editor.document.getPositions(category).forEach { it.delete() }
     }
     
     private fun StyleAttributes.createStyleRange(): StyleRange {
@@ -165,9 +168,6 @@ public class KotlinSemanticHighlighter(
         
         return styleRange
     }
-
-    
-    private fun getCategory(): String = toString()
     
     private class KotlinPositionUpdater(val category: String): IPositionUpdater {
         override fun update(event: DocumentEvent) {

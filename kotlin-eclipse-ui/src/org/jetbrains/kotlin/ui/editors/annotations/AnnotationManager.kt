@@ -131,7 +131,7 @@ public object AnnotationManager {
     }
 }
 
-object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
+class KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
     override fun reconcile(file: IFile, editor: KotlinFileEditor) {
         val jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor))
         if (jetFile == null) {
