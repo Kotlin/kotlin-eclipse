@@ -22,81 +22,81 @@ public class KotlinReplaceGetIntentionTest extends KotlinReplaceGetIntentionTest
 	
 	@Test
 	public void testAcceptableVararg() {
-		doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/acceptableVararg.kt");
+		doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/acceptableVararg.kt");
 	}
 
 	@Test
     public void testArgumentAndFunction() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/argumentAndFunction.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/argumentAndFunction.kt");
     }
     
 	@Test
     public void testDuplicateArguments() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/duplicateArguments.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/duplicateArguments.kt");
     }
     
 	@Test
     public void testExtensionFunction() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/extensionFunction.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/extensionFunction.kt");
     }
     
 	@Test
     public void testFunctionalArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/functionalArgument.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/functionalArgument.kt");
     }
     
 	@Test
     public void testInvalidArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/invalidArgument.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/invalidArgument.kt");
     }
     
 	@Test
     public void testMissingDefaultArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/missingDefaultArgument.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/missingDefaultArgument.kt");
     }
     
 	@Test
     public void testMultiArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/multiArgument.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/multiArgument.kt");
     }
     
 	@Test
     public void testNoArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/noArgument.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/noArgument.kt");
     }
 	
 	@Test
     public void testQualifier() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/qualifier.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/qualifier.kt");
     }
     
 	@Test
     public void testSanityCheck() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/sanityCheck.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/sanityCheck.kt");
     }
     
 	@Test
     public void testSingleArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/singleArgument.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/singleArgument.kt");
     }
     
 	@Test
     public void testSuper() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/super.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/super.kt");
     }
 	
 	@Test
     public void testTopLevelFun() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/topLevelFun.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/topLevelFun.kt");
     }
     
 	@Test
     public void testUnacceptableVararg() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/unacceptableVararg.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/unacceptableVararg.kt");
     }
     
 	@Test
     public void testUnnamedAndNamed() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGet/unnamedAndNamed.kt");
+        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/unnamedAndNamed.kt");
     }
 }
