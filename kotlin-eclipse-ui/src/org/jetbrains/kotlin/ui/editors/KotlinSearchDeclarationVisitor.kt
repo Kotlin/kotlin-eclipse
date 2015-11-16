@@ -15,10 +15,10 @@ import org.jetbrains.kotlin.psi.KtElement
 
 
 private class KotlinSearchDeclarationVisitor(private val descriptor: DeclarationDescriptor): KtVisitor<KtNamedDeclaration?, Void?>() {
-    override fun visitJetFile(file: KtFile, data: Void?): KtNamedDeclaration? = 
-            visitJetElement(file, data)
+    override fun visitKtFile(file: KtFile, data: Void?): KtNamedDeclaration? = 
+            visitKtElement(file, data)
     
-    override fun visitJetElement(element: KtElement, data: Void?): KtNamedDeclaration? =
+    override fun visitKtElement(element: KtElement, data: Void?): KtNamedDeclaration? =
             element.getChildren().asSequence().map { 
                 when(it) {
                     is KtElement -> it.accept(this, data)

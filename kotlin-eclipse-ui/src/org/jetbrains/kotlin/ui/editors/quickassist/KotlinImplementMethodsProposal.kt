@@ -108,7 +108,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 	}
     
     private fun removeWhitespaceAfterLBrace(body: KtClassBody, document: IDocument, editor: KotlinFileEditor) {
-        val lBrace = body.getLBrace()
+        val lBrace = body.lBrace
         if (lBrace != null) {
             val sibling = lBrace.getNextSibling()
             val needNewLine = sibling.getNextSibling() is KtDeclaration
@@ -188,7 +188,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
             if (descriptor is FunctionDescriptor) {
                 val paramTexts = descriptor.getValueParameters().map {
                     val renderedName = it.escapedName()
-                    if (it.getVarargElementType() != null) "*$renderedName" else renderedName
+                    if (it.varargElementType != null) "*$renderedName" else renderedName
                 }
                 paramTexts.joinTo(builder, prefix="(", postfix=")")
             }
@@ -199,7 +199,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 
 	
     private fun findInsertAfterAnchor(body: KtClassBody): PsiElement? {
-        val afterAnchor = body.getLBrace()
+        val afterAnchor = body.lBrace
         if (afterAnchor == null) return null
 
         val offset = getCaretOffset(getActiveEditor()!!)
@@ -211,7 +211,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
             return removeAfterOffset(offset, offsetCursorElement)
         }
 
-        if (offsetCursorElement != null && offsetCursorElement != body.getRBrace()) {
+        if (offsetCursorElement != null && offsetCursorElement != body.rBrace) {
             return offsetCursorElement
         }
 

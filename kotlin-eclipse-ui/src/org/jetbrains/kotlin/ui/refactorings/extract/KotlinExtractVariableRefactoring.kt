@@ -65,7 +65,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     
     private fun getBindingContext(): BindingContext {
         val javaProject = KotlinPsiManager.getJavaProject(expression)!!
-        val analysisResult = KotlinAnalysisFileCache.getAnalysisResult(expression.getContainingJetFile(), javaProject).analysisResult
+        val analysisResult = KotlinAnalysisFileCache.getAnalysisResult(expression.getContainingKtFile(), javaProject).analysisResult
         return analysisResult.bindingContext
     }
     

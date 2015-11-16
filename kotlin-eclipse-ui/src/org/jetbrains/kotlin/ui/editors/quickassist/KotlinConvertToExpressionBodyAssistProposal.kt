@@ -34,18 +34,17 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingServices
-import org.jetbrains.kotlin.resolve.scopes.KtScope
-import org.jetbrains.kotlin.resolve.scopes.utils.asLexicalScope
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo
 import org.jetbrains.kotlin.resolve.BindingTraceContext
 import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
 import org.jetbrains.kotlin.platform.JvmBuiltIns
+import org.jetbrains.kotlin.resolve.scopes.MemberScope
 
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java) ?: return false
-        val context = getBindingContext(declaration.getContainingJetFile()) ?: return false
+        val context = getBindingContext(declaration.getContainingKtFile()) ?: return false
         val value = calcValue(declaration, context)
         return value != null && !containsReturn(value)
     }
@@ -56,7 +55,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
     	val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
-        val (analysisResult, componentProvider) = getAnalysisResultWithProvider(declaration.getContainingJetFile())!!
+        val (analysisResult, componentProvider) = getAnalysisResultWithProvider(declaration.getContainingKtFile())!!
         val context = analysisResult.bindingContext
         val value = calcValue(declaration, context)!!
 
@@ -72,7 +71,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         replaceBody(declaration, value, editor)
         
         val omitType = (declaration.hasDeclaredReturnType() || setUnitType) &&
-             declaration is KtCallableDeclaration && canOmitType(declaration, value, context, componentProvider, setUnitType)
+             declaration is KtCallableDeclaration
 
         insertAndSelectType(declaration, setUnitType, omitType, editor)   
 
@@ -147,34 +146,6 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
 
         return false
     }
-    
-    private fun canOmitType(declaration: KtCallableDeclaration, expression: KtExpression, 
-            bindingContext: BindingContext, provider: ComponentProvider, setUnitType: Boolean): Boolean {
-        // Workaround for anonymous objects and similar expressions without resolution scope
-        // TODO: This should probably be fixed in front-end so that resolution scope is recorded for anonymous objects as well
-        val scopeExpression = ((declaration as? KtDeclarationWithBody)?.getBodyExpression() as? KtBlockExpression)
-                                 ?.getStatements()?.singleOrNull()
-                         ?: return false
-        
-        val declaredType: KotlinType = if (setUnitType) {
-            JvmBuiltIns.Instance.getUnitType()
-        } else {
-            (bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration] as? CallableDescriptor)?.getReturnType() ?: return false
-        }
-        val scope = bindingContext[BindingContext.RESOLUTION_SCOPE, scopeExpression] ?: return false
-        val expressionType = expression.computeTypeInContext(provider, scope)
-        return expressionType?.isSubtypeOf(declaredType) ?: false
-    }
-}
-
-private fun KtExpression.computeTypeInContext(provider: ComponentProvider, scope: KtScope): KotlinType? {
-    return provider.getService(ExpressionTypingServices::class.java).getTypeInfo(
-            scope.asLexicalScope(), 
-            this,
-            TypeUtils.NO_EXPECTED_TYPE,
-            DataFlowInfo.EMPTY,
-            BindingTraceContext(),
-            false).type
 }
 
 fun KtCallableDeclaration.setType(type: KotlinType) {

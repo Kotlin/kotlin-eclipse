@@ -40,7 +40,7 @@ class KotlinCallableLabelProvider : LabelProvider() {
     
     override fun getText(element: Any): String {
         return when (element) {
-            is ClassDescriptor -> DescriptorUtils.getFqNameSafe(element).render()
+            is ClassDescriptor -> DescriptorUtils.getFqNameSafe(element).toUnsafe().render()
             is CallableMemberDescriptor -> MEMBER_RENDERER.render(element)
             else -> throw IllegalArgumentException("$element occurred in override/implement dialog")
         }

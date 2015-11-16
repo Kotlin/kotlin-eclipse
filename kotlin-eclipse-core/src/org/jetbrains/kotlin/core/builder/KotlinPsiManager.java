@@ -283,7 +283,7 @@ public class KotlinPsiManager {
     
     @Nullable
     public static IJavaProject getJavaProject(@NotNull KtElement jetElement) {
-        IFile eclipseFile = getEclispeFile(jetElement.getContainingJetFile());
+        IFile eclipseFile = getEclispeFile(jetElement.getContainingKtFile());
         return eclipseFile != null ? JavaCore.create(eclipseFile.getProject()) : null;
     }
 }

@@ -30,7 +30,7 @@ import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.psi.KtTypeReference
 
 public class KotlinRemoveExplicitTypeAssistProposal : KotlinQuickAssistProposal() {
-    private var _displayString: String? = null
+    private var displayString: String? = null
     
     override fun isApplicable(psiElement: PsiElement): Boolean {
         val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, KtCallableDeclaration::class.java)
@@ -46,7 +46,7 @@ public class KotlinRemoveExplicitTypeAssistProposal : KotlinQuickAssistProposal(
         val initializer = (element as? KtWithExpressionInitializer)?.getInitializer()
         if (initializer != null && initializer.getTextRange().containsOffset(caretOffset)) return false
         
-        val bindingContext = getBindingContext(element.getContainingJetFile())
+        val bindingContext = getBindingContext(element.getContainingKtFile())
         if (bindingContext == null) return false
         
         return when (element) {

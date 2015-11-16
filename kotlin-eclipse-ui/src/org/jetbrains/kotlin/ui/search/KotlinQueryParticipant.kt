@@ -197,7 +197,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
         
         // This is important for optimization: 
         // we will consequentially cache files one by one which are containing these references
-        val sortedByFileNameElements = elements.sortedBy { it.getContainingJetFile().getName() }
+        val sortedByFileNameElements = elements.sortedBy { it.getContainingKtFile().getName() }
         
         return sortedByFileNameElements.filter { element ->
             val beforeResolveCheck = beforeResolveFilters.all { it.isApplicable(element) }
@@ -272,7 +272,7 @@ public class KotlinElementMatch(val jetElement: KtElement) : Match(KotlinAdaptab
 class KotlinAdaptableElement(val jetElement: KtElement): IAdaptable {
     override fun getAdapter(adapter: Class<*>?): Any? {
         return when {
-            IResource::class.java == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())
+            IResource::class.java == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingKtFile())
             else -> null
         }
     }

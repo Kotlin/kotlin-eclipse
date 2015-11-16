@@ -32,7 +32,7 @@ public class KotlinLocalRenameParticipant : KotlinRenameParticipant() {
         val jetElement = element as KtElement
         return KotlinOnlyQuerySpecification(
                 jetElement,
-                listOf(KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())!!), 
+                listOf(KotlinPsiManager.getEclispeFile(jetElement.getContainingKtFile())!!), 
                 IJavaSearchConstants.ALL_OCCURRENCES,
                 JavaSearchScopeFactory.getInstance().getWorkspaceScopeDescription(false))
     }

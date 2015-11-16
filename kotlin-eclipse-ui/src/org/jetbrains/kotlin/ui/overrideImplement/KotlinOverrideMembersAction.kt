@@ -111,7 +111,7 @@ public class KotlinOverrideMembersAction(
         if (descriptor !is ClassDescriptor) return emptySet()
         
         val result = LinkedHashSet<CallableMemberDescriptor>()
-        for (member in descriptor.unsubstitutedMemberScope.getAllDescriptors()) {
+        for (member in descriptor.unsubstitutedMemberScope.getContributedDescriptors()) {
             if (member is CallableMemberDescriptor
                 && (member.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE || member.kind == CallableMemberDescriptor.Kind.DELEGATION)) {
                 val overridden = member.overriddenDescriptors

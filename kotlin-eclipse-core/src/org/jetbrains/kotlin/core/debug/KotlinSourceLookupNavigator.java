@@ -88,7 +88,7 @@ public class KotlinSourceLookupNavigator {
 		boolean isKotlinSourceFile = kotlinFile.getName().equals(sourceName) && KotlinPsiManager.INSTANCE.exists(kotlinFile);
         if (isKotlinSourceFile) {
 		    KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(kotlinFile);
-		    if (jetFile.getPackageFqName().equalsTo(packageName)) {
+		    if (jetFile.getPackageFqName().equals(packageName)) {
 		        return true;
 		    }
 		}

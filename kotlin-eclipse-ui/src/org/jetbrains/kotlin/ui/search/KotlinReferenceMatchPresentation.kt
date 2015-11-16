@@ -57,7 +57,7 @@ public class KotlinReferenceMatchPresentation : IMatchPresentation {
         if (match !is KotlinElementMatch) return 
         
         val element = match.jetElement
-        val eclipseFile = KotlinPsiManager.getEclispeFile(element.getContainingJetFile())
+        val eclipseFile = KotlinPsiManager.getEclispeFile(element.getContainingKtFile())
         if (eclipseFile != null) {
             val document = EditorUtil.getDocument(eclipseFile)
             editorOpener.openAndSelect(

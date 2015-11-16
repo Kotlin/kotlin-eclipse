@@ -93,7 +93,7 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
     private fun renderParameter(parameter: ValueParameterDescriptor): String {
         val result = StringBuilder()
         
-        if (parameter.getVarargElementType() != null) result.append("vararg ")
+        if (parameter.varargElementType != null) result.append("vararg ")
         result.append(parameter.getName())
                 .append(": ")
                 .append(DescriptorRenderer.SHORT_NAMES_IN_TYPES.renderType(getActualParameterType(parameter)))
@@ -120,6 +120,6 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
     }
     
     private fun getActualParameterType(descriptor: ValueParameterDescriptor): KotlinType {
-        return descriptor.getVarargElementType() ?: descriptor.getType()
+        return descriptor.varargElementType ?: descriptor.getType()
     }
 }

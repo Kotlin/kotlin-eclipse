@@ -147,7 +147,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         } else if (element instanceof KotlinJvmBinarySourceElement) {
             KotlinJvmBinaryClass binaryClass = ((KotlinJvmBinarySourceElement) element).getBinaryClass();
             DeclarationDescriptor descriptor = getDeclarationDescriptor(kotlinReference, javaProject);
-            KtFile kotlinFile = kotlinReference.getExpression().getContainingJetFile();
+            KtFile kotlinFile = kotlinReference.getExpression().getContainingKtFile();
             gotoElementInBinaryClass(binaryClass, descriptor, kotlinFile, javaProject);
         } else if (element instanceof KotlinJvmBinaryPackageSourceElement) {
             KotlinJvmBinaryPackageSourceElement binaryElement = (KotlinJvmBinaryPackageSourceElement) element;
@@ -159,7 +159,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         DeclarationDescriptor descriptor = getDeclarationDescriptor(kotlinReference, javaProject);
         if (descriptor instanceof DeserializedCallableMemberDescriptor) {
             KotlinJvmBinaryClass binaryClass = sourceElement.getContainingBinaryClass((DeserializedCallableMemberDescriptor) descriptor);
-            KtFile kotlinFile = kotlinReference.getExpression().getContainingJetFile();
+            KtFile kotlinFile = kotlinReference.getExpression().getContainingKtFile();
             gotoElementInBinaryClass(binaryClass, descriptor, kotlinFile, javaProject);
         }
     }
@@ -186,7 +186,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Nullable
     private DeclarationDescriptor getDeclarationDescriptor(KotlinReference kotlinReference, IJavaProject javaProject) {
-        KtFile jetFile = kotlinReference.getExpression().getContainingJetFile();
+        KtFile jetFile = kotlinReference.getExpression().getContainingKtFile();
         BindingContext context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).getAnalysisResult().getBindingContext();
         Collection<DeclarationDescriptor> descriptors = kotlinReference.getTargetDescriptors(context);
         if (descriptors.isEmpty()) {

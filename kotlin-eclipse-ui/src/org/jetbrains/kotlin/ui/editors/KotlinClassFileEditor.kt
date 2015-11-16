@@ -131,7 +131,7 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
                         super.visitClassOrObject(classOrObject, classFqName)
                     }
             
-            override fun visitJetElement(element: KtElement, classFqName: String): KtClassOrObject? =
+            override fun visitKtElement(element: KtElement, classFqName: String): KtClassOrObject? =
                     element.getChildren().asSequence().map { 
                         when(it) {
                             is KtElement -> it.accept(this, classFqName)
@@ -139,8 +139,8 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
                         }
                      }.filterNotNull().firstOrNull()
                 
-            override fun visitJetFile(file: KtFile, classFqName: String): KtClassOrObject? = 
-                    visitJetElement(file, classFqName)
+            override fun visitKtFile(file: KtFile, classFqName: String): KtClassOrObject? = 
+                    visitKtElement(file, classFqName)
         }, fqName)
     }
 

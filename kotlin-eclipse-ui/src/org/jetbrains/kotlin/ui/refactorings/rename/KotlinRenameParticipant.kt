@@ -106,7 +106,7 @@ open class KotlinRenameParticipant : RenameParticipant() {
         
         val jetElement = match.jetElement
         
-        val eclipseFile = KotlinPsiManager.getEclispeFile(jetElement.getContainingJetFile())
+        val eclipseFile = KotlinPsiManager.getEclispeFile(jetElement.getContainingKtFile())
         if (eclipseFile == null) return null
         
         val document = EditorUtil.getDocument(eclipseFile) // TODO: make workaround here later

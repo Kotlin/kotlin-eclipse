@@ -94,7 +94,7 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
     }
     
     private fun getTypeForDeclaration(declaration: KtCallableDeclaration): KotlinType {
-        val bindingContext = getBindingContext(declaration.getContainingJetFile())
+        val bindingContext = getBindingContext(declaration.getContainingKtFile())
         if (bindingContext == null) return ErrorUtils.createErrorType("null type")
         
         val descriptor = bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]

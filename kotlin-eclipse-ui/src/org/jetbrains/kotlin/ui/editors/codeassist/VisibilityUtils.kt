@@ -28,7 +28,6 @@ import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.scopes.utils.getImplicitReceiversHierarchy
 import org.jetbrains.kotlin.psi.psiUtil.getReceiverExpression
 import org.jetbrains.kotlin.psi.psiUtil.parentsWithSelf
-import org.jetbrains.kotlin.resolve.scopes.utils.asLexicalScope
 
 // from idea/idea-core/src/org/jetbrains/kotlin/idea/core/Utils.kt but without the second parameter
 public fun PsiElement.getResolutionScope(bindingContext: BindingContext): LexicalScope {
@@ -43,10 +42,6 @@ public fun PsiElement.getResolutionScope(bindingContext: BindingContext): Lexica
             if (classDescriptor != null) {
                 return classDescriptor.getScopeForMemberDeclarationResolution()
             }
-        }
-
-        if (parent is KtFile) {
-            return bindingContext[BindingContext.FILE_TO_PACKAGE_FRAGMENT, parent]!!.getMemberScope().asLexicalScope()
         }
     }
     error("Not in JetFile")

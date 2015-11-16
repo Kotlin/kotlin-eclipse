@@ -64,7 +64,7 @@ public object KotlinCompletionUtils {
     public fun getReferenceVariants(simpleNameExpression: KtSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
             Collection<DeclarationDescriptor> {
         val javaProject = JavaCore.create(file.getProject())
-        val (analysisResult, container) = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingJetFile())
+        val (analysisResult, container) = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingKtFile())
         
         val inDescriptor = simpleNameExpression
                 .getReferencedNameElement()
@@ -89,6 +89,7 @@ public object KotlinCompletionUtils {
         return ReferenceVariantsHelper(
                 analysisResult.bindingContext,
                 KotlinResolutionFacade(javaProject, container, analysisResult.moduleDescriptor),
+                analysisResult.moduleDescriptor,
                 visibilityFilter).getReferenceVariants(
                 simpleNameExpression, DescriptorKindFilter.ALL, nameFilter)
     }

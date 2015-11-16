@@ -28,7 +28,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.asJava.KotlinLightClassForFacade;
+import org.jetbrains.kotlin.asJava.KtLightClassForFacade;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
@@ -45,7 +45,7 @@ import org.jetbrains.kotlin.idea.KotlinFileType;
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager;
-import org.jetbrains.kotlin.parsing.JetParserDefinition;
+import org.jetbrains.kotlin.parsing.KotlinParserDefinition;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
 
 import com.intellij.codeInsight.ContainerProvider;
@@ -115,7 +115,7 @@ public class KotlinEnvironment {
         CliLightClassGenerationSupport cliLightClassGenerationSupport = new CliLightClassGenerationSupport(project);
         project.registerService(LightClassGenerationSupport.class, cliLightClassGenerationSupport);
         project.registerService(CliLightClassGenerationSupport.class, cliLightClassGenerationSupport);
-        project.registerService(KotlinLightClassForFacade.FacadeStubCache.class, new KotlinLightClassForFacade.FacadeStubCache(project));
+        project.registerService(KtLightClassForFacade.FacadeStubCache.class, new KtLightClassForFacade.FacadeStubCache(project));
         project.registerService(CodeAnalyzerInitializer.class, cliLightClassGenerationSupport);
         project.registerService(KotlinLightClassManager.class, new KotlinLightClassManager(javaProject));
         project.registerService(CodeStyleManager.class, new DummyCodeStyleManager());
@@ -189,7 +189,7 @@ public class KotlinEnvironment {
         javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, "jet");
         javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, "ktm");
         
-        javaApplicationEnvironment.registerParserDefinition(new JetParserDefinition());
+        javaApplicationEnvironment.registerParserDefinition(new KotlinParserDefinition());
         
         javaApplicationEnvironment.getApplication().registerService(KotlinBinaryClassCache.class,
                 new KotlinBinaryClassCache());

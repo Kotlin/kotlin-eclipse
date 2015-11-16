@@ -55,7 +55,8 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
-import org.jetbrains.kotlin.resolve.scopes.KtScope;
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
+import org.jetbrains.kotlin.resolve.scopes.MemberScope;
 import org.jetbrains.kotlin.serialization.deserialization.FindClassInModuleKt;
 
 import com.intellij.openapi.components.ServiceManager;
@@ -194,7 +195,7 @@ public class BuiltInsReferenceResolver {
     @Nullable
     private DeclarationDescriptor findCurrentDescriptorForMember(@NotNull MemberDescriptor originalDescriptor) {
         DeclarationDescriptor containingDeclaration = findCurrentDescriptor(originalDescriptor.getContainingDeclaration());
-        KtScope memberScope = getMemberScope(containingDeclaration);
+        MemberScope memberScope = getMemberScope(containingDeclaration);
         if (memberScope == null) return null;
 
         String renderedOriginal = DescriptorRenderer.Companion.getFQ_NAMES_IN_TYPES().render(originalDescriptor);
@@ -203,7 +204,7 @@ public class BuiltInsReferenceResolver {
             descriptors = ((ClassDescriptor) containingDeclaration).getConstructors();
         }
         else {
-            descriptors = memberScope.getAllDescriptors();
+            descriptors = memberScope.getContributedDescriptors(DescriptorKindFilter.ALL, MemberScope.ALL_NAME_FILTER);
         }
         for (DeclarationDescriptor member : descriptors) {
             if (renderedOriginal.equals(DescriptorRenderer.Companion.getFQ_NAMES_IN_TYPES().render(member))) {
@@ -250,7 +251,7 @@ public class BuiltInsReferenceResolver {
     }
 
     @Nullable
-    private static KtScope getMemberScope(@Nullable DeclarationDescriptor parent) {
+    private static MemberScope getMemberScope(@Nullable DeclarationDescriptor parent) {
         if (parent instanceof ClassDescriptor) {
             return ((ClassDescriptor) parent).getDefaultType().getMemberScope();
         }

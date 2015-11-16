@@ -29,7 +29,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
 
         when (declaration) {
             is KtNamedFunction -> {
-            val bindingContext = getBindingContext(declaration.getContainingJetFile()) ?: return false;
+            val bindingContext = getBindingContext(declaration.getContainingKtFile()) ?: return false;
             val returnType: KotlinType = declaration.returnType(bindingContext) ?: return false
             if (!declaration.hasDeclaredReturnType() && returnType.isError()) return false// do not convert when type is implicit and unknown
             return true
@@ -45,7 +45,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
-        val context = getBindingContext(declaration.getContainingJetFile())!!
+        val context = getBindingContext(declaration.getContainingKtFile())!!
 
         val shouldSpecifyType = declaration is KtNamedFunction 
             && !declaration.hasDeclaredReturnType() 

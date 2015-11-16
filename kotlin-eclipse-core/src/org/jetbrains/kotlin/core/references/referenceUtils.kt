@@ -34,7 +34,6 @@ import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import com.intellij.openapi.util.Key
-import org.jetbrains.kotlin.psi.KtObjectDeclarationName
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.core.model.toLightElements
@@ -43,7 +42,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 public val FILE_PROJECT: Key<IJavaProject> = Key.create("FILE_PROJECT")
 
 public fun KotlinReference.resolveToSourceElements(): List<SourceElement> {
-    val jetFile = expression.getContainingJetFile()
+    val jetFile = expression.getContainingKtFile()
     val javaProject = JavaCore.create(KotlinPsiManager.getEclispeFile(jetFile)?.getProject()) 
                       ?: jetFile.getUserData(FILE_PROJECT)
     if (javaProject == null) return emptyList()
@@ -64,11 +63,6 @@ public fun getReferenceExpression(element: PsiElement): KtReferenceExpression? {
 public fun KtElement.resolveToSourceDeclaration(javaProject: IJavaProject): List<SourceElement> {
     val jetElement = this
     return when (jetElement) {
-        is KtObjectDeclarationName -> {
-            val objectDeclaration = PsiTreeUtil.getParentOfType(jetElement, KtObjectDeclaration::class.java)
-            objectDeclaration?.let { it.resolveToSourceDeclaration(javaProject) } ?: emptyList()
-        }
-        
         is KtDeclaration -> {
             listOf(KotlinSourceElement(jetElement))
         }
