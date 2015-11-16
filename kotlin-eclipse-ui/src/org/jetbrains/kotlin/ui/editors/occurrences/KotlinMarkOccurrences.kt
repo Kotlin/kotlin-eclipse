@@ -49,6 +49,7 @@ import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.ui.editors.annotations.withLock
 import org.eclipse.jface.text.source.AnnotationModel
 import org.eclipse.ui.progress.UIJob
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 
 public class KotlinMarkOccurrences : ISelectionListener {
     companion object {
@@ -86,22 +87,7 @@ public class KotlinMarkOccurrences : ISelectionListener {
     
     private fun updateOccurrences(editor: KotlinFileEditor, occurrences: List<Position>) {
         val annotationMap = occurrences.toMapBy { Annotation(ANNOTATION_TYPE, false, "description") }
-        val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
-        val oldAnnotations = getOldOccurrenceAnnotations(annotationModel)
-        annotationModel.withLock { 
-            (annotationModel as IAnnotationModelExtension).replaceAnnotations(oldAnnotations.toTypedArray(), annotationMap)
-        }
-    }
-    
-    private fun getOldOccurrenceAnnotations(model: IAnnotationModel): List<Annotation> {
-        val annotations = arrayListOf<Annotation>()
-        for (annotation in model.getAnnotationIterator()) {
-            if (annotation is Annotation && annotation.getType() == ANNOTATION_TYPE) {
-                annotations.add(annotation)
-            }
-        }
-        
-        return annotations
+        AnnotationManager.updateAnnotations(editor, annotationMap, ANNOTATION_TYPE)
     }
     
     private fun findOccurrences(editor: KotlinFileEditor, jetElement: KtElement, file: IFile): List<Position> {
