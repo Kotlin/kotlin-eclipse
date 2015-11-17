@@ -51,7 +51,6 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.references.KotlinReference;
 import org.jetbrains.kotlin.core.references.KotlinReferenceKt;
@@ -100,29 +99,23 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Override
     public void run(ITextSelection selection) {
-        KtFile file = editor.getParsedFile();
-        
-        if (file == null) {
-            return;
-        }
-        
-        IJavaProject javaProject = editor.getJavaProject();
-        
-        if (javaProject == null) {
-            return;
-        }
-        
-        KtReferenceExpression selectedExpression = getSelectedExpressionWithParsedFile(editor, file, selection.getOffset());
+        KtReferenceExpression selectedExpression = getSelectedExpressionWithParsedFile(editor, selection.getOffset());
         if (selectedExpression == null) {
             return;
         }
+        
         KotlinReference reference = KotlinReferenceKt.createReference(selectedExpression);
-        SourceElement element = getTargetElement(reference, file, javaProject);
+        SourceElement element = getTargetElement(reference);
         if (element == null) {
             return;
         }
         
         try {
+            IJavaProject javaProject = editor.getJavaProject();
+            if (javaProject == null) {
+                return;
+            }
+            
             gotoElement(element, reference, javaProject);
         } catch (JavaModelException e) {
             KotlinLogger.logError(e);
@@ -132,7 +125,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private SourceElement getTargetElement(@NotNull KotlinReference reference, @NotNull KtFile file, @NotNull IJavaProject javaProject) {
+    private SourceElement getTargetElement(@NotNull KotlinReference reference) {
         List<SourceElement> sourceElements = ReferenceUtilsKt.resolveToSourceElements(reference);
         return sourceElements.size() == 1 ? sourceElements.get(0) : null; 
     }
@@ -356,17 +349,18 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     @Nullable
     public static KtReferenceExpression getSelectedExpression(@NotNull KotlinEditor editor, @NotNull IFile file, int offset) {
-        return getSelectedExpressionWithParsedFile(editor, KotlinPsiManager.INSTANCE.getParsedFile(file), offset);
+        return getSelectedExpressionWithParsedFile(editor, offset);
     }
     
     @Nullable
-    public static KtReferenceExpression getSelectedExpressionWithParsedFile(@NotNull KotlinEditor editor, @NotNull KtFile file, int offset) {
-        offset = LineEndUtil.convertCrToDocumentOffset(editor.getJavaEditor().getViewer().getDocument(), offset);
+    public static KtReferenceExpression getSelectedExpressionWithParsedFile(@NotNull KotlinEditor editor, int offset) {
+        KtFile file = editor.getParsedFile();
+        if (file == null) return null;
+        
+        offset = LineEndUtil.convertCrToDocumentOffset(editor.getDocument(), offset);
         
         PsiElement psiExpression = file.findElementAt(offset);
-        if (psiExpression == null) {
-            return null;
-        }
+        if (psiExpression == null) return null;
         
         return ReferenceUtilsKt.getReferenceExpression(psiExpression);
     }

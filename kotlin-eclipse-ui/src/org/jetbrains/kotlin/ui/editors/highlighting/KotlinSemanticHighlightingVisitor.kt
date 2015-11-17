@@ -44,13 +44,13 @@ import org.eclipse.jface.text.IDocument
 import org.eclipse.jdt.core.IJavaProject
 
 public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument, val project: IJavaProject) : KtVisitorVoid() {
-    private val bindingContext: BindingContext
-        get() = KotlinAnalysisFileCache.getAnalysisResult(ktFile, project).analysisResult.bindingContext
+    private lateinit var bindingContext: BindingContext
     
     private val positions = arrayListOf<HighlightPosition>()
     
     fun computeHighlightingRanges(): List<HighlightPosition> {
         positions.clear()
+        bindingContext = KotlinAnalysisFileCache.getAnalysisResult(ktFile, project).analysisResult.bindingContext
         ktFile.acceptChildren(this)
         return positions.toList() // make copy
     }

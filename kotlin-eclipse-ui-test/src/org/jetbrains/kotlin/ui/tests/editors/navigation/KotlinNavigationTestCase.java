@@ -124,10 +124,6 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
         NavigationSourceFileData target = NavigationSourceFileData.getFileByPredicate(
                 files,
                 NavigationSourceFileData.IS_BEFORE_PREDICATE);
-        testEditor = configureEditor(
-                target.getFileName().replace(BEFORE_FILE_EXTENSION, ""),
-                target.getContent(),
-                target.getPackageName());
         
         NavigationSourceFileData targetAfter = NavigationSourceFileData.getFileByPredicate(
                 files,
@@ -142,6 +138,11 @@ public abstract class KotlinNavigationTestCase extends KotlinEditorAutoTestCase 
                         data.getContent());
             }
         }
+        
+        testEditor = configureEditor(
+                target.getFileName().replace(BEFORE_FILE_EXTENSION, ""),
+                target.getContent(),
+                target.getPackageName());
         
         performTest(targetAfter.getContent());
     }
