@@ -62,6 +62,9 @@ public class KotlinMarkOccurrences : ISelectionListener {
         val job = object : Job("Update occurrence annotations") {
             override fun run(monitor: IProgressMonitor?): IStatus? {
                 if (part is KotlinFileEditor && selection is ITextSelection) {
+                    val file = part.getFile()
+                    if (file == null || !file.exists()) return Status.CANCEL_STATUS
+                    
                     val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
                     if (ktElement == null || ktElement == previousElement) {
                         previousElement = null
@@ -69,9 +72,6 @@ public class KotlinMarkOccurrences : ISelectionListener {
                     } else {
                         previousElement = ktElement
                     }
-                    
-                    val file = part.getFile()
-                    if (file == null) return Status.CANCEL_STATUS
                     
                     val occurrences = findOccurrences(part, ktElement, file)
                     updateOccurrences(part, occurrences)

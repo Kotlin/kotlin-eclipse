@@ -67,7 +67,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val bracketInserter: KotlinBracketInserter = KotlinBracketInserter()
     
-    private val kotlinOutlinePage by lazy { KotlinOutlinePage(this) }
+    private val kotlinOutlinePage = KotlinOutlinePage(this)
     
     private val kotlinToggleBreakpointAdapter by lazy { KotlinToggleBreakpointAdapter() }
     
@@ -92,7 +92,6 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setSourceViewerConfiguration(FileEditorConfiguration(colorManager, this, getPreferenceStore(), kotlinReconcilingStrategy))
         kotlinReconcilingStrategy.addListener(KotlinLineAnnotationsReconciler)
         kotlinReconcilingStrategy.addListener(kotlinOutlinePage)
-        
         
         super<CompilationUnitEditor>.createPartControl(parent)
         
@@ -216,7 +215,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private fun computeJetFile(): KtFile? {
         val file = getFile()
-        if (file != null) {
+        if (file != null && file.exists()) {
             return KotlinPsiManager.INSTANCE.getParsedFile(file)
         }
         

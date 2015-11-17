@@ -81,7 +81,9 @@ public class KotlinBuilder extends IncrementalProjectBuilder {
     
     private void commitFiles(@NotNull Collection<IFile> files) {
         for (IFile file : files) {
-            KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getDocument(file).get());
+            if (file.exists()) {
+                KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getDocument(file).get());
+            }
         }
     }
     
