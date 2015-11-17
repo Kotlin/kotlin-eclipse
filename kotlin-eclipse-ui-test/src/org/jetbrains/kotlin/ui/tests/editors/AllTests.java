@@ -29,7 +29,6 @@ import org.junit.runners.Suite;
     KotlinAnalyzerInIDETest.class,
     KotlinHighlightingTest.class,
     KotlinBracketInserterTest.class,
-    KotlinOpenDeclarationTest.class,
     KotlinFormatActionTest.class,
     KotlinCustomLocationBugTest.class,
     PsiVisualizationCommandTest.class,
