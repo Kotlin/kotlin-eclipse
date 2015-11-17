@@ -40,33 +40,27 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import org.eclipse.jface.text.IDocument
+import org.eclipse.jdt.core.IJavaProject
 
-public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : KtVisitorVoid() {
+public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument, val project: IJavaProject) : KtVisitorVoid() {
     private val bindingContext: BindingContext
-        get() = KotlinAnalysisFileCache.getAnalysisResult(editor.parsedFile!!, editor.javaProject!!).analysisResult.bindingContext
+        get() = KotlinAnalysisFileCache.getAnalysisResult(ktFile, project).analysisResult.bindingContext
     
     private val positions = arrayListOf<HighlightPosition>()
     
     fun computeHighlightingRanges(): List<HighlightPosition> {
         positions.clear()
-        editor.parsedFile!!.acceptChildren(this)
+        ktFile.acceptChildren(this)
         return positions.toList() // make copy
     }
     
     private fun highlight(styleAttributes: KotlinHighlightingAttributes, range: TextRange) {
-        val shiftedStart = LineEndUtil.convertLfToDocumentOffset(
-                editor.parsedFile!!.getText(), 
-                range.getStartOffset(), 
-                editor.document)
-        positions.add(HighlightPosition.StyleAttributes(styleAttributes, shiftedStart, range.getLength()))
+        positions.add(HighlightPosition.StyleAttributes(styleAttributes, range.offsetInDocument(ktFile, document), range.getLength()))
     }
     
     private fun highlightSmartCast(range: TextRange, typeName: String) {
-        val shiftedStart = LineEndUtil.convertLfToDocumentOffset(
-                editor.parsedFile!!.getText(), 
-                range.getStartOffset(), 
-                editor.document)
-        positions.add(HighlightPosition.SmartCast(typeName, shiftedStart, range.getLength()))
+        positions.add(HighlightPosition.SmartCast(typeName, range.offsetInDocument(ktFile, document), range.getLength()))
     }
     
     override fun visitElement(element: PsiElement) {
@@ -154,6 +148,10 @@ public class KotlinSemanticHighlightingVisitor(val editor: KotlinFileEditor) : K
         if (typeName != null) highlightSmartCast(element.getTextRange(), typeName)
         highlight(attributes, element.getTextRange())
     }
+}
+
+private fun TextRange.offsetInDocument(ktFile: KtFile, document: IDocument): Int {
+    return LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), this.getStartOffset(), document)
 }
 
 sealed class HighlightPosition(offset: Int, length: Int) : Position(offset, length) {

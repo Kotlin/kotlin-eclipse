@@ -84,7 +84,10 @@ public class KotlinSemanticHighlighter(
         val ktFile = editor.parsedFile
         if (ktFile == null) return
         
-        val highlightingVisitor = KotlinSemanticHighlightingVisitor(editor)
+        val javaProject = editor.javaProject
+        if (javaProject == null) return
+        
+        val highlightingVisitor = KotlinSemanticHighlightingVisitor(ktFile, editor.document, javaProject)
         val smartCasts = arrayListOf<SmartCast>()
         highlightingVisitor.computeHighlightingRanges().forEach { position -> 
             when (position) {
@@ -115,7 +118,7 @@ public class KotlinSemanticHighlighter(
         }
     }
     
-    override fun dispose() {
+    fun uninstall() {
         val viewer = editor.getViewer()
         if (viewer is JavaSourceViewer) {
             viewer.removeTextPresentationListener(this)
@@ -125,8 +128,6 @@ public class KotlinSemanticHighlighter(
                 removePositionUpdater(positionUpdater)
             }
         }
-        
-        super.dispose()
     }
     
     private fun setupSmartCastsAsAnnotations(positions: List<SmartCast>) {
@@ -154,19 +155,17 @@ public class KotlinSemanticHighlighter(
     }
     
     private fun StyleAttributes.createStyleRange(): StyleRange {
-        val styleRange = StyleRange(findTextStyle(styleAttributes, preferenceStore, colorManager))
-        
-        styleRange.start = getOffset()
-        styleRange.length = getLength()
-        
-        when {
-            styleAttributes.bold && styleAttributes.italic -> styleRange.fontStyle = SWT.BOLD or SWT.ITALIC
-            styleAttributes.bold -> styleRange.fontStyle = SWT.BOLD
-            styleAttributes.italic -> styleRange.fontStyle = SWT.ITALIC
-            else -> styleRange.fontStyle = SWT.NORMAL
+        val textStyle = findTextStyle(styleAttributes, preferenceStore, colorManager)
+        return with(StyleRange(textStyle)) {
+            start = getOffset()
+            length = getLength()
+            
+            fontStyle = SWT.NORMAL
+            if (styleAttributes.bold) fontStyle = fontStyle or SWT.BOLD
+            if (styleAttributes.italic) fontStyle = fontStyle or SWT.ITALIC
+            
+            this
         }
-        
-        return styleRange
     }
     
     private class KotlinPositionUpdater(val category: String): IPositionUpdater {

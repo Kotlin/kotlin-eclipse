@@ -359,14 +359,15 @@
             colorPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.color"
             colorPreferenceValue="219,255,219"
             highlightPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.highlight"
-            label="Smart Cast Highlighting"
+            highlightPreferenceValue="true"
+            label="Kotlin Smart Cast"
             overviewRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.overview"
             overviewRulerPreferenceValue="true"
             textPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.text"
             textPreferenceValue="true"
             textStylePreferenceValue="NONE"
             verticalRulerPreferenceKey="org.jetbrains.kotlin.ui.annotation.smartCast.ruler"
-            verticalRulerPreferenceValue="true">
+            verticalRulerPreferenceValue="false">
       </specification>
    </extension>
    <extension

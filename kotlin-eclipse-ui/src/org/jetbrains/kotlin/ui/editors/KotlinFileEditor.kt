@@ -67,7 +67,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val bracketInserter: KotlinBracketInserter = KotlinBracketInserter()
     
-    private val kotlinOutlinePage by lazy { KotlinOutlinePage(this, kotlinReconcilingStrategy) }
+    private val kotlinOutlinePage by lazy { KotlinOutlinePage(this) }
     
     private val kotlinToggleBreakpointAdapter by lazy { KotlinToggleBreakpointAdapter() }
     
@@ -78,8 +78,6 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private var kotlinSemanticHighlighter: KotlinSemanticHighlighter? = null
     
     private val kotlinReconcilingStrategy by lazy { KotlinReconcilingStrategy(this) }
-    
-    private val kotlinAnnotationReconciler by lazy { KotlinLineAnnotationsReconciler() }
     
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
@@ -92,7 +90,9 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     override public fun createPartControl(parent: Composite) {
         setSourceViewerConfiguration(FileEditorConfiguration(colorManager, this, getPreferenceStore(), kotlinReconcilingStrategy))
-        kotlinReconcilingStrategy.addListener(kotlinAnnotationReconciler)
+        kotlinReconcilingStrategy.addListener(KotlinLineAnnotationsReconciler)
+        kotlinReconcilingStrategy.addListener(kotlinOutlinePage)
+        
         
         super<CompilationUnitEditor>.createPartControl(parent)
         
@@ -166,10 +166,11 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         
         if (kotlinSemanticHighlighter != null) {
             kotlinReconcilingStrategy.removeListener(kotlinSemanticHighlighter!!)
-            kotlinSemanticHighlighter!!.dispose()
+            kotlinSemanticHighlighter!!.uninstall()
         }
         
-        kotlinReconcilingStrategy.removeListener(kotlinAnnotationReconciler)
+        kotlinReconcilingStrategy.removeListener(KotlinLineAnnotationsReconciler)
+        kotlinReconcilingStrategy.removeListener(kotlinOutlinePage)
         
         val sourceViewer = getSourceViewer()
         if (sourceViewer is ITextViewerExtension) {

@@ -40,8 +40,6 @@ import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 
 interface KotlinReconcilingListener {
     fun reconcile(file: IFile, editor: KotlinFileEditor)
-    
-    open fun dispose() { }
 }
 
 class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStrategy {

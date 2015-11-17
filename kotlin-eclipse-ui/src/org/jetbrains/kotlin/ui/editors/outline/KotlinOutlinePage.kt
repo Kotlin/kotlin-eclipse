@@ -32,17 +32,13 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
 
-class KotlinOutlinePage(val editor: KotlinEditor, private val reconcilingStrategy: KotlinReconcilingStrategy? = null) : ContentOutlinePage() {
-    val pageReconciler = object : KotlinReconcilingListener {
-        override fun reconcile(file: IFile, editor: KotlinFileEditor) {
-            Display.getDefault().asyncExec { refresh() }
-        }
+class KotlinOutlinePage(val editor: KotlinEditor) : ContentOutlinePage(), KotlinReconcilingListener {
+    override fun reconcile(file: IFile, editor: KotlinFileEditor) {
+        Display.getDefault().asyncExec { refresh() }
     }
     
     override fun createControl(parent: Composite?) {
         super.createControl(parent)
-        
-        reconcilingStrategy?.addListener(pageReconciler)
         
         with(getTreeViewer()) {
             setContentProvider(PsiContentProvider())
@@ -77,11 +73,5 @@ class KotlinOutlinePage(val editor: KotlinEditor, private val reconcilingStrateg
                 setInputAndExpand()
             }
         }
-    }
-    
-    override fun dispose() {
-        pageReconciler.dispose()
-        reconcilingStrategy?.removeListener(pageReconciler)
-        super.dispose()
     }
 }
