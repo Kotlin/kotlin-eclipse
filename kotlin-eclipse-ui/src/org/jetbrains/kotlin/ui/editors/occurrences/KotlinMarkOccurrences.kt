@@ -51,14 +51,14 @@ import org.eclipse.jface.text.source.AnnotationModel
 import org.eclipse.ui.progress.UIJob
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 
-public class KotlinMarkOccurrences : ISelectionListener {
+public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelectionListener {
     companion object {
         private val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
     }
     
-    private @Volatile var previousElement: KtElement? = null
-    
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
+        if (!kotlinEditor.isActive()) return
+        
         val job = object : Job("Update occurrence annotations") {
             override fun run(monitor: IProgressMonitor?): IStatus? {
                 if (part is KotlinFileEditor && selection is ITextSelection) {
@@ -66,11 +66,8 @@ public class KotlinMarkOccurrences : ISelectionListener {
                     if (file == null || !file.exists()) return Status.CANCEL_STATUS
                     
                     val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
-                    if (ktElement == null || ktElement == previousElement) {
-                        previousElement = null
+                    if (ktElement == null) {
                         return Status.CANCEL_STATUS
-                    } else {
-                        previousElement = ktElement
                     }
                     
                     val occurrences = findOccurrences(part, ktElement, file)

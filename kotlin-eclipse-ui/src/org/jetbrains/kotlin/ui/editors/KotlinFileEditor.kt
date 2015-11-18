@@ -73,7 +73,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val kotlinRunToLineAdapter by lazy { KotlinRunToLineAdapter() }
     
-    private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences() }
+    private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences(this) }
     
     private var kotlinSemanticHighlighter: KotlinSemanticHighlighter? = null
     
@@ -196,6 +196,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     override fun uninstallOccurrencesFinder() {
         getEditorSite().getPage().removePostSelectionListener(kotlinMarkOccurrences)
     }
+    
+    fun isActive(): Boolean = isActiveEditor()
     
     public fun getFile(): IFile? = getEditorInput().getAdapter(IFile::class.java) as? IFile
     
