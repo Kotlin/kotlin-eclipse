@@ -28,42 +28,37 @@ class KotlinHighlightingAttributes private constructor() {
         }
         
         val LOCAL_FINAL_VARIABLE = withAttributes { 
-            this.colorKey = SemanticHighlightings.LOCAL_VARIABLE
+            this.styleKey = SemanticHighlightings.LOCAL_VARIABLE
         }
         
         val LOCAL_VARIABLE = withAttributes { 
-            this.colorKey = SemanticHighlightings.LOCAL_VARIABLE
+            this.styleKey = SemanticHighlightings.LOCAL_VARIABLE
             this.underline = true
         }
         
         val PARAMETER_VARIABLE = withAttributes { 
-            this.colorKey = SemanticHighlightings.PARAMETER_VARIABLE
+            this.styleKey = SemanticHighlightings.PARAMETER_VARIABLE
         }
         
         val FIELD = withAttributes { 
-            this.colorKey = SemanticHighlightings.FIELD
+            this.styleKey = SemanticHighlightings.FIELD
             this.underline = true
         }
         
         val FINAL_FIELD = withAttributes { 
-            this.colorKey = SemanticHighlightings.FIELD
+            this.styleKey = SemanticHighlightings.FIELD
         }
         
         val STATIC_FIELD = withAttributes { 
-            this.colorKey = SemanticHighlightings.STATIC_FIELD
-            this.italic = true
+            this.styleKey = SemanticHighlightings.STATIC_FIELD
             this.underline = true
         }
         
         val STATIC_FINAL_FIELD = withAttributes { 
-            this.colorKey = SemanticHighlightings.STATIC_FINAL_FIELD
-            this.italic = true
-            this.bold = true
+            this.styleKey = SemanticHighlightings.STATIC_FINAL_FIELD
         }
     }
     
-    lateinit var colorKey: String
+    lateinit var styleKey: String
     var underline = false
-    var bold = false
-    var italic = false
 }

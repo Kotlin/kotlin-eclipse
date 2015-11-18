@@ -47,6 +47,8 @@ import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.editors.annotations.withLock
 import org.eclipse.jface.text.source.IAnnotationModelExtension
 import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
+import org.eclipse.jface.util.IPropertyChangeListener
+import org.eclipse.jface.util.PropertyChangeEvent
 
 private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
 
@@ -54,7 +56,7 @@ public class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
         val colorManager: IColorManager,
         val presentationReconciler: KotlinPresentationReconciler,
-        val editor: KotlinFileEditor) : KotlinReconcilingListener, ITextPresentationListener {
+        val editor: KotlinFileEditor) : KotlinReconcilingListener, ITextPresentationListener, IPropertyChangeListener {
     
     private val positionUpdater by lazy { KotlinPositionUpdater(category) }
     
@@ -72,6 +74,7 @@ public class KotlinSemanticHighlighter(
                 when (position) {
                     is StyleAttributes -> {
                         val styleRange = position.createStyleRange()
+                        
                         textPresentation.replaceStyleRange(styleRange)
                     }
                 }
@@ -101,6 +104,12 @@ public class KotlinSemanticHighlighter(
         setupSmartCastsAsAnnotations(smartCasts)
     }
     
+    override fun propertyChange(event: PropertyChangeEvent) {
+        if (event.getProperty().startsWith(PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX)) {
+            editor.getFile()?.let { reconcile(it, editor) }
+        }
+    }
+    
     fun install() {
         val viewer = editor.getViewer()
         val file = editor.getFile()
@@ -111,6 +120,8 @@ public class KotlinSemanticHighlighter(
                 addPositionCategory(category)
                 addPositionUpdater(positionUpdater)
             }
+            
+            preferenceStore.addPropertyChangeListener(this)
             
             reconcile(file, editor)
         } else {
@@ -127,6 +138,8 @@ public class KotlinSemanticHighlighter(
                 removePositionCategory(category)
                 removePositionUpdater(positionUpdater)
             }
+            
+            preferenceStore.removePropertyChangeListener(this)
         }
     }
     
@@ -155,14 +168,19 @@ public class KotlinSemanticHighlighter(
     }
     
     private fun StyleAttributes.createStyleRange(): StyleRange {
+        val styleKey = styleAttributes.styleKey
+        if (!isEnabled(styleKey, preferenceStore)) {
+            return createStyleRange(getOffset(), getLength())
+        }
+        
         val textStyle = findTextStyle(styleAttributes, preferenceStore, colorManager)
         return with(StyleRange(textStyle)) {
             start = getOffset()
             length = getLength()
             
             fontStyle = SWT.NORMAL
-            if (styleAttributes.bold) fontStyle = fontStyle or SWT.BOLD
-            if (styleAttributes.italic) fontStyle = fontStyle or SWT.ITALIC
+            if (isBold(styleKey, preferenceStore)) fontStyle = fontStyle or SWT.BOLD
+            if (isItalic(styleAttributes.styleKey, preferenceStore)) fontStyle = fontStyle or SWT.ITALIC
             
             this
         }
@@ -195,7 +213,7 @@ public class KotlinSemanticHighlighter(
 
 private fun findTextStyle(attributes: KotlinHighlightingAttributes, store: IPreferenceStore, colorManager: IColorManager): TextStyle {
     val style = TextStyle()
-    val rgb = getColor(attributes.colorKey, store)
+    val rgb = getColor(attributes.styleKey, store)
     style.foreground = getColor(rgb, colorManager)
     style.underline = attributes.underline
     
@@ -216,4 +234,32 @@ private fun getColor(key: String, store: IPreferenceStore): RGB {
             PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_COLOR_SUFFIX
     
     return PreferenceConverter.getColor(store, preferenceKey)
+}
+
+private fun isBold(key: String, store: IPreferenceStore): Boolean {
+    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
+            PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_BOLD_SUFFIX
+    
+    return store.getBoolean(preferenceKey)
+}
+
+private fun isItalic(key: String, store: IPreferenceStore): Boolean {
+    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
+            PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_ITALIC_SUFFIX
+    
+    return store.getBoolean(preferenceKey)
+}
+
+private fun isEnabled(key: String, store: IPreferenceStore): Boolean {
+    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
+            PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_ENABLED_SUFFIX
+    
+    return store.getBoolean(preferenceKey)
+}
+
+private fun createStyleRange(s: Int, l: Int) = with(StyleRange()) {
+    start = s
+    length = l
+    
+    this
 }
