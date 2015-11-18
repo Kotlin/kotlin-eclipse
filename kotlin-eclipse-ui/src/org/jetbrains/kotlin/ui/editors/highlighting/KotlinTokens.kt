@@ -15,12 +15,12 @@ import org.jetbrains.kotlin.kdoc.lexer.KDocTokens
 import org.eclipse.ui.texteditor.AbstractTextEditor
 
 class KotlinTokensFactory(val preferenceStore: IPreferenceStore, val colorManager: IColorManager) {
-    val keywordToken = createToken(PreferenceConstants.EDITOR_JAVA_KEYWORD_COLOR)
+    val keywordToken = createToken(PreferenceConstants.EDITOR_JAVA_KEYWORD_COLOR, PreferenceConstants.EDITOR_JAVA_KEYWORD_BOLD)
     val identifierToken = createToken()
-    val stringToken = createToken(PreferenceConstants.EDITOR_STRING_COLOR)
+    val stringToken = createToken(PreferenceConstants.EDITOR_STRING_COLOR, PreferenceConstants.EDITOR_STRING_BOLD)
     val singleLineCommentToken = createToken(PreferenceConstants.EDITOR_SINGLE_LINE_COMMENT_COLOR)
     val multiLineCommentToken = createToken(PreferenceConstants.EDITOR_MULTI_LINE_COMMENT_COLOR)
-    val kdocTagNameToken = createToken(style = SWT.BOLD)
+    val kdocTagNameToken = createToken(boldKey = PreferenceConstants.EDITOR_JAVADOC_KEYWORD_BOLD)
     val whitespaceToken = createToken()
 
     fun getToken(leafElement: PsiElement): IToken {
@@ -61,8 +61,10 @@ class KotlinTokensFactory(val preferenceStore: IPreferenceStore, val colorManage
         }
     }
     
-    private fun createToken(colorKey: String = AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND, style: Int = SWT.NORMAL): Token {
+    private fun createToken(colorKey: String = AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND, boldKey: String? = null): Token {
         val color = colorManager.getColor(PreferenceConverter.getColor(preferenceStore, colorKey))
+        val style = if (boldKey != null && preferenceStore.getBoolean(boldKey)) SWT.BOLD else SWT.NORMAL
+        
         val attribute = TextAttribute(color, null, style)
         return Token(attribute)
     }
