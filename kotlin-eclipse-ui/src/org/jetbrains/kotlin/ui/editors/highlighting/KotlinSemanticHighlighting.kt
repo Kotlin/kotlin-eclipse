@@ -49,6 +49,8 @@ import org.eclipse.jface.text.source.IAnnotationModelExtension
 import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
 import org.eclipse.jface.util.IPropertyChangeListener
 import org.eclipse.jface.util.PropertyChangeEvent
+import org.eclipse.jface.text.ITextInputListener
+import org.eclipse.jface.text.IDocument
 
 private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
 
@@ -56,13 +58,17 @@ public class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
         val colorManager: IColorManager,
         val presentationReconciler: KotlinPresentationReconciler,
-        val editor: KotlinFileEditor) : KotlinReconcilingListener, ITextPresentationListener, IPropertyChangeListener {
-    
+        val editor: KotlinFileEditor) : KotlinReconcilingListener, ITextPresentationListener, IPropertyChangeListener, ITextInputListener {
     private val positionUpdater by lazy { KotlinPositionUpdater(category) }
     
     private val category by lazy { toString() }
     
     override fun applyTextPresentation(textPresentation: TextPresentation) {
+        if (!editor.document.containsPositionCategory(category)) {
+            KotlinLogger.logWarning("There is no position category for editor")
+            return
+        }
+        
         val region = textPresentation.getExtent()
         val regionStart = region.getOffset()
         val regionEnd = regionStart + region.getLength()
@@ -82,7 +88,7 @@ public class KotlinSemanticHighlighter(
     }
 
     override fun reconcile(file: IFile, editor: KotlinFileEditor) {
-        removeAllPositions()
+        removeAllPositions(editor.document)
         
         val ktFile = editor.parsedFile
         if (ktFile == null) return
@@ -110,18 +116,31 @@ public class KotlinSemanticHighlighter(
         }
     }
     
+    override fun inputDocumentChanged(oldInput: IDocument?, newInput: IDocument?) {
+        if (newInput != null) {
+            manageDocument(newInput)
+            val file = editor.getFile()
+            if (file != null) reconcile(file, editor)
+        }
+    }
+    
+    override fun inputDocumentAboutToBeChanged(oldInput: IDocument?, newInput: IDocument?) {
+        if (oldInput != null) {
+            removeAllPositions(oldInput)
+            releaseDocument(oldInput)
+        }
+    }
+    
     fun install() {
         val viewer = editor.getViewer()
         val file = editor.getFile()
         if (file != null && viewer is JavaSourceViewer) {
-            viewer.prependTextPresentationListener(this)
-            
-            with(editor.document) {
-                addPositionCategory(category)
-                addPositionUpdater(positionUpdater)
-            }
+            manageDocument(editor.document)
             
             preferenceStore.addPropertyChangeListener(this)
+            
+            viewer.addTextInputListener(this)
+            viewer.prependTextPresentationListener(this)
             
             reconcile(file, editor)
         } else {
@@ -133,14 +152,24 @@ public class KotlinSemanticHighlighter(
         val viewer = editor.getViewer()
         if (viewer is JavaSourceViewer) {
             viewer.removeTextPresentationListener(this)
+            viewer.removeTextInputListener(this)
             
-            with(editor.document) {
-                removePositionCategory(category)
-                removePositionUpdater(positionUpdater)
-            }
+            releaseDocument(editor.document)
             
             preferenceStore.removePropertyChangeListener(this)
         }
+    }
+    
+    private fun manageDocument(document: IDocument) {
+        document.addPositionCategory(category)
+        document.addPositionUpdater(positionUpdater)
+    }
+    
+    private fun releaseDocument(document: IDocument) {
+        if (document.containsPositionCategory(category)) {
+            document.removePositionCategory(category)            
+        }
+        document.removePositionUpdater(positionUpdater)
     }
     
     private fun setupSmartCastsAsAnnotations(positions: List<SmartCast>) {
@@ -163,8 +192,8 @@ public class KotlinSemanticHighlighter(
         }
     }
     
-    private fun removeAllPositions() {
-        editor.document.getPositions(category).forEach { it.delete() }
+    private fun removeAllPositions(document: IDocument) {
+        document.getPositions(category).forEach { it.delete() }
     }
     
     private fun StyleAttributes.createStyleRange(): StyleRange {

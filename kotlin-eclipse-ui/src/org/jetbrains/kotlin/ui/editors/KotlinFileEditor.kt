@@ -61,6 +61,7 @@ import org.jetbrains.kotlin.ui.refactorings.extract.KotlinExtractVariableAction
 import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
 import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
+import org.eclipse.jface.text.source.SourceViewerConfiguration
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -77,7 +78,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private var kotlinSemanticHighlighter: KotlinSemanticHighlighter? = null
     
-    private val kotlinReconcilingStrategy by lazy { KotlinReconcilingStrategy(this) }
+    private val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
     
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
@@ -139,6 +140,16 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setAction(KotlinRenameAction.ACTION_ID, KotlinRenameAction(this))
         
         setAction(KotlinExtractVariableAction.ACTION_ID, KotlinExtractVariableAction(this))
+    }
+    
+    override fun setSourceViewerConfiguration(configuration: SourceViewerConfiguration) {
+        if (configuration is FileEditorConfiguration) {
+            super.setSourceViewerConfiguration(configuration)
+        } else {
+            // Hack to avoid adding Java's source viewer configuration (see setPreferenceStore in JavaEditor)
+            super.setSourceViewerConfiguration(
+                    FileEditorConfiguration(colorManager, this, getPreferenceStore(), kotlinReconcilingStrategy))
+        }
     }
     
     override fun installSemanticHighlighting() {
