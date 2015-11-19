@@ -102,7 +102,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
                         renderReference(testFile, match.getOffset())
                     }
                     is KotlinElementMatch -> {
-                        val file = KotlinPsiManager.getEclispeFile(match.jetElement.getContainingKtFile())
+                        val file = KotlinPsiManager.getEclipseFile(match.jetElement.getContainingKtFile())
                         val testFile = sourceFiles.first { it.file == file }
                         renderKotlinReference(testFile, match.jetElement)
                     }

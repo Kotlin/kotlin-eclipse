@@ -55,9 +55,9 @@ public val FILE_PROJECT: Key<IJavaProject> = Key.create("FILE_PROJECT")
 
 public fun List<KotlinReference>.resolveToSourceElements(): List<SourceElement> {
     if (isEmpty()) return emptyList()
-    
+
     val jetFile = first().expression.getContainingKtFile()
-    val javaProject = JavaCore.create(KotlinPsiManager.getEclispeFile(jetFile)?.getProject()) 
+    val javaProject = JavaCore.create(KotlinPsiManager.getEclipseFile(jetFile)?.getProject()) 
                       ?: jetFile.getUserData(FILE_PROJECT)
     if (javaProject == null) return emptyList()
 
@@ -81,15 +81,15 @@ public fun KtElement.resolveToSourceDeclaration(): List<SourceElement> {
         is KtDeclaration -> {
             listOf(KotlinSourceElement(jetElement))
         }
-        
+
         else -> {
             // Try search declaration by reference
             val referenceExpression = getReferenceExpression(jetElement)
             if (referenceExpression == null) return emptyList()
-            
+
             val reference = createReferences(referenceExpression)
             reference.resolveToSourceElements()
-        } 
+        }
     }
 }
 

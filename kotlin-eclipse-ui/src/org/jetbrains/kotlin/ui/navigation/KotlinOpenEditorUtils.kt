@@ -54,13 +54,13 @@ import org.eclipse.ui.PlatformUI
 fun chooseSourceFile(sourceFiles: List<KtFile>): IFile? {
     return when {
         sourceFiles.isEmpty() -> null
-        sourceFiles.size == 1 -> KotlinPsiManager.getEclispeFile(sourceFiles.first())
+        sourceFiles.size == 1 -> KotlinPsiManager.getEclipseFile(sourceFiles.first())
         else -> chooseFile(sourceFiles)
     }
 }
 
 fun chooseFile(jetFiles: List<KtFile>): IFile? {
-    val eclipseFiles = jetFiles.map(KotlinPsiManager::getEclispeFile)
+    val eclipseFiles = jetFiles.map(KotlinPsiManager::getEclipseFile)
     
     val dialog = ListDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell())
     dialog.setBlockOnOpen(true)

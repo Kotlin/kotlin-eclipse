@@ -278,7 +278,7 @@ public class KotlinPsiManager {
     }
     
     @Nullable
-    public static IFile getEclispeFile(@NotNull KtFile jetFile) {
+    public static IFile getEclipseFile(@NotNull KtFile jetFile) {
         VirtualFile virtualFile = jetFile.getVirtualFile();
         return virtualFile != null ? 
                 ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(virtualFile.getPath())) : null;
@@ -286,7 +286,7 @@ public class KotlinPsiManager {
     
     @Nullable
     public static IJavaProject getJavaProject(@NotNull KtElement jetElement) {
-        IFile eclipseFile = getEclispeFile(jetElement.getContainingKtFile());
+        IFile eclipseFile = getEclipseFile(jetElement.getContainingKtFile());
         return eclipseFile != null ? JavaCore.create(eclipseFile.getProject()) : null;
     }
 }

@@ -38,7 +38,7 @@ public class KotlinOpenEditor {
         
         IFile kotlinFile;
         if (sourceFiles.size() == 1) {
-            kotlinFile = KotlinPsiManager.getEclispeFile(CollectionsKt.first(sourceFiles));
+            kotlinFile = KotlinPsiManager.getEclipseFile(CollectionsKt.first(sourceFiles));
         } else {
             kotlinFile = KotlinOpenEditorUtilsKt.chooseSourceFile(sourceFiles);
         }

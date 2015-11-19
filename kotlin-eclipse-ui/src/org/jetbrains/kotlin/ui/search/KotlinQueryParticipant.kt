@@ -83,96 +83,96 @@ public class KotlinQueryParticipant : IQueryParticipant {
             override fun run() {
                 val searchElements = getSearchElements(querySpecification)
                 if (searchElements.isEmpty()) return
-                
+
                 if (querySpecification is KotlinJavaQuerySpecification) {
                     runCompositeSearch(searchElements, requestor, querySpecification, monitor)
                     return
                 }
-                
+
                 val kotlinFiles = getKotlinFilesByScope(querySpecification)
                 if (kotlinFiles.isEmpty()) return
-                
+
                 if (searchElements.size > 1) {
                     KotlinLogger.logWarning("There are more than one elements to search: $searchElements")
                 }
-                
+
                 // We assume that there is only one search element, it could be IJavaElement or KtElement
                 val searchElement = searchElements.first()
                 val searchResult = searchTextOccurrences(searchElement, kotlinFiles)
                 if (searchResult == null) return
-                
+
                 val elements = obtainElements(searchResult as FileSearchResult, kotlinFiles)
                 val matchedReferences = resolveElementsAndMatch(elements, searchElement, querySpecification)
-                
+
                 matchedReferences.forEach { requestor.reportMatch(KotlinElementMatch(it)) }
             }
-            
+
             override fun handleException(exception: Throwable) {
                 KotlinLogger.logError(exception)
             }
         })
     }
-    
+
     override public fun estimateTicks(specification: QuerySpecification): Int = 500
-    
+
     override public fun getUIParticipant() = KotlinReferenceMatchPresentation()
-    
-    private fun runCompositeSearch(elements: List<SearchElement>, requestor: ISearchRequestor, specification: QuerySpecification, 
+
+    private fun runCompositeSearch(elements: List<SearchElement>, requestor: ISearchRequestor, specification: QuerySpecification,
             monitor: IProgressMonitor?) {
-        
+
         fun reportSearchResults(result: AbstractJavaSearchResult) {
             for (searchElement in result.getElements()) {
                 result.getMatches(searchElement).forEach { requestor.reportMatch(it) }
             }
         }
-        
-        val specifications = elements.map { searchElement -> 
+
+        val specifications = elements.map { searchElement ->
             when (searchElement) {
-                is SearchElement.JavaSearchElement -> 
+                is SearchElement.JavaSearchElement ->
                     ElementQuerySpecification(
-                        searchElement.javaElement, 
-                        specification.getLimitTo(), 
-                        specification.getScope(), 
+                        searchElement.javaElement,
+                        specification.getLimitTo(),
+                        specification.getScope(),
                         specification.getScopeDescription())
-                
-                is SearchElement.KotlinSearchElement -> 
+
+                is SearchElement.KotlinSearchElement ->
                     KotlinOnlyQuerySpecification(
                         searchElement.kotlinElement,
-                        specification.getScope().getKotlinFiles(), 
-                        specification.getLimitTo(), 
+                        specification.getScope().getKotlinFiles(),
+                        specification.getLimitTo(),
                         specification.getScopeDescription())
             }
         }
-        
-        
-        specifications.forEach { 
+
+
+        specifications.forEach {
             val searchQuery = JavaSearchQuery(it)
             searchQuery.run(monitor)
             reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
         }
     }
-    
+
     sealed class SearchElement private constructor() {
         abstract fun getSearchText(): String?
-        
+
         class JavaSearchElement(val javaElement: IJavaElement) : SearchElement() {
             override fun getSearchText(): String = javaElement.getElementName()
         }
-        
+
         class KotlinSearchElement(val kotlinElement: KtElement) : SearchElement() {
             override fun getSearchText(): String? = kotlinElement.getName()
         }
     }
-    
-    
+
+
     private fun getSearchElements(querySpecification: QuerySpecification): List<SearchElement> {
         fun obtainSearchElements(sourceElements: List<SourceElement>): List<SearchElement> {
             val (javaElements, kotlinElements) = getJavaAndKotlinElements(sourceElements)
-            return javaElements.map { SearchElement.JavaSearchElement(it) } + 
+            return javaElements.map { SearchElement.JavaSearchElement(it) } +
                    kotlinElements.map { SearchElement.KotlinSearchElement(it) }
-                   
+
         }
-        
+
         return when (querySpecification) {
             is ElementQuerySpecification -> listOf(SearchElement.JavaSearchElement(querySpecification.getElement()))
             is KotlinOnlyQuerySpecification -> listOf(SearchElement.KotlinSearchElement(querySpecification.kotlinElement))
@@ -180,60 +180,60 @@ public class KotlinQueryParticipant : IQueryParticipant {
             else -> emptyList()
         }
     }
-    
+
     private fun searchTextOccurrences(searchElement: SearchElement, filesScope: List<IFile>): ISearchResult? {
         val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null as Array<String?>?, false)
         val searchText = searchElement.getSearchText()
         if (searchText == null) return null
-        
+
         val query = FileSearchQuery(searchText, false, true, true, scope)
-        
+
         query.run(null)
-        
+
         return query.getSearchResult()
     }
-    
-    private fun resolveElementsAndMatch(elements: List<KtElement>, searchElement: SearchElement, 
+
+    private fun resolveElementsAndMatch(elements: List<KtElement>, searchElement: SearchElement,
             querySpecification: QuerySpecification): List<KtElement> {
         val beforeResolveFilters = getBeforeResolveFilters(querySpecification)
         val afterResolveFilters = getAfterResolveFilters()
-        
-        // This is important for optimization: 
+
+        // This is important for optimization:
         // we will consequentially cache files one by one which are containing these references
         val sortedByFileNameElements = elements.sortedBy { it.getContainingKtFile().getName() }
-        
+
         return sortedByFileNameElements.filter { element ->
             val beforeResolveCheck = beforeResolveFilters.all { it.isApplicable(element) }
             if (!beforeResolveCheck) return@filter false
-            
+
             val sourceElements = element.resolveToSourceDeclaration()
             if (sourceElements.isEmpty()) return@filter false
-            
+
             val additionalElements = getContainingClassOrObjectForConstructor(sourceElements)
-            
+
             return@filter afterResolveFilters.all { it.isApplicable(sourceElements, searchElement) } ||
                     afterResolveFilters.all { it.isApplicable(additionalElements, searchElement) }
         }
     }
-    
+
     private fun obtainElements(searchResult: FileSearchResult, files: List<IFile>): List<KtElement> {
         val elements = ArrayList<KtElement>()
         for (file in files) {
             val matches = searchResult.getMatches(file)
             val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
             val document = EditorUtil.getDocument(file)
-            
+
             matches
-                .map { 
-                    val element = jetFile.findElementByDocumentOffset(it.getOffset(), document) 
+                .map {
+                    val element = jetFile.findElementByDocumentOffset(it.getOffset(), document)
                     element?.let { PsiTreeUtil.getNonStrictParentOfType(it, KtElement::class.java) }
                 }
                 .filterNotNullTo(elements)
         }
-        
+
         return elements
     }
-    
+
     private fun getKotlinFilesByScope(querySpecification: QuerySpecification): List<IFile> {
         return when (querySpecification) {
             is ElementQuerySpecification,
@@ -252,20 +252,20 @@ fun getContainingClassOrObjectForConstructor(sourceElements: List<SourceElement>
                 return@mapNotNull KotlinSourceElement(psi.getContainingClassOrObject())
             }
         }
-        
+
         null
     }
 }
 
 fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair<List<IJavaElement>, List<KtElement>> {
     val javaElements = sourceElementsToLightElements(sourceElements)
-    
+
     // Filter out Kotlin elements which have light elements because Javas search will call KotlinQueryParticipant
     // to look up for these elements
-    val kotlinElements = sourceElementsToKotlinElements(sourceElements).filterNot { kotlinElement -> 
+    val kotlinElements = sourceElementsToKotlinElements(sourceElements).filterNot { kotlinElement ->
         javaElements.any { it.getElementName() == kotlinElement.getName() }
     }
-    
+
     return Pair(javaElements, kotlinElements)
 }
 
@@ -282,13 +282,13 @@ fun IJavaSearchScope.getKotlinFiles(): List<IFile> {
             .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
 }
 
-public class KotlinElementMatch(val jetElement: KtElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(), 
+public class KotlinElementMatch(val jetElement: KtElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(),
         jetElement.getTextOffset())
 
 class KotlinAdaptableElement(val jetElement: KtElement): IAdaptable {
     override fun getAdapter(adapter: Class<*>?): Any? {
         return when {
-            IResource::class.java == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingKtFile())
+            IResource::class.java == adapter ->  KotlinPsiManager.getEclipseFile(jetElement.getContainingKtFile())
             else -> null
         }
     }
