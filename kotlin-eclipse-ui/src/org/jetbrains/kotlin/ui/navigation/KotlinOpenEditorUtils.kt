@@ -176,7 +176,7 @@ fun IType.getFqName(): FqName {
 fun equalsDeclaringTypes(jetElement: KtElement, javaMember: IMember): Boolean  {
     val typeNameInfo = getDeclaringTypeFqName(jetElement)
     val javaTypeFqName = javaMember.getDeclaringType().getFqName() 
-    return typeNameInfo.className == javaTypeFqName || typeNameInfo.filePartName == javaTypeFqName
+    return typeNameInfo == javaTypeFqName 
 }
 
 open class JetAllVisitor() : KtVisitorVoid() {

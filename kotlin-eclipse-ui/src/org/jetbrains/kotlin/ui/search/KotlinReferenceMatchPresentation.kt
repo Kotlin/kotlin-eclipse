@@ -83,14 +83,7 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
                     getFqName()?.asString() ?: getNameAsSafeName().asString()
                 }
             }
-            is KtFile -> {
-                val typeFqNameInfo = getTypeFqName(declaration)
-                var typeFqName = typeFqNameInfo.className?.asString()
-                if (typeFqNameInfo.filePartName != null) {
-                    typeFqName = "$typeFqName (${typeFqNameInfo.filePartName})"
-                }
-                typeFqName ?: ""
-            }
+            is KtFile -> getTypeFqName(declaration)?.asString() ?: ""
             else -> ""
         }
     }

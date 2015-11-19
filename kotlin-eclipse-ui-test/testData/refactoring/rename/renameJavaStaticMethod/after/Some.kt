@@ -1,0 +1,3 @@
+fun ktTest() {
+    SomeJava.javaRenamedTest()
+}

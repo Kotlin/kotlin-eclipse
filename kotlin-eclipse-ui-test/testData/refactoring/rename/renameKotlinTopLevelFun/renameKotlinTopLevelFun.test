@@ -1,0 +1,5 @@
+{
+  "oldName": "test",
+  "newName": "kotlinRenamedTest",
+  "mainFile": "Some.kt"
+}

@@ -47,4 +47,15 @@ public class KotlinRenameTest extends KotlinRenameTestCase {
     public void testRenameKotlinMethod() {
         doTest("testData/refactoring/rename/renameKotlinMethod/renameKotlinMethod.test");
     }
+    
+    @Ignore("Disable because of blocking UI")
+    @Test
+    public void testRenameKotlinTopLevelFun() {
+        doTest("testData/refactoring/rename/renameKotlinTopLevelFun/renameKotlinTopLevelFun.test");
+    }
+    
+    @Test
+    public void testRenameJavaStaticMethod() {
+        doTest("testData/refactoring/rename/renameJavaStaticMethod/renameJavaStaticMethod.test");
+    }
 }
