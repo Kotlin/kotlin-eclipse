@@ -57,6 +57,26 @@ class KotlinHighlightingAttributes private constructor() {
         val STATIC_FINAL_FIELD = withAttributes { 
             this.styleKey = SemanticHighlightings.STATIC_FINAL_FIELD
         }
+        
+        val TYPE_PARAMETER = withAttributes { 
+            this.styleKey = SemanticHighlightings.TYPE_VARIABLE
+        }
+        
+        val ANNOTATION = withAttributes { 
+            this.styleKey = SemanticHighlightings.ANNOTATION
+        }
+        
+        val ENUM_CLASS = withAttributes { 
+            this.styleKey = SemanticHighlightings.ENUM
+        }
+        
+        val INTERFACE = withAttributes { 
+            this.styleKey = SemanticHighlightings.INTERFACE
+        }
+        
+        val CLASS = withAttributes { 
+            this.styleKey = SemanticHighlightings.CLASS
+        }
     }
     
     lateinit var styleKey: String

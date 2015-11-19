@@ -42,6 +42,14 @@ import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
+import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.psi.KtTypeParameter
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.descriptors.ClassKind.*
+import org.jetbrains.kotlin.psi.psiUtil.getCalleeHighlightingRange
+import org.jetbrains.kotlin.psi.KtElement
 
 public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument, val project: IJavaProject) : KtVisitorVoid() {
     private lateinit var bindingContext: BindingContext
@@ -70,17 +78,41 @@ public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document:
     override fun visitSimpleNameExpression(expression: KtSimpleNameExpression) {
         if (expression.getParent() is KtThisExpression) return
         
-        val target = bindingContext[BindingContext.REFERENCE_TARGET, expression]
+        val target = bindingContext[BindingContext.REFERENCE_TARGET, expression]?.let {
+            if (it is ConstructorDescriptor) it.getContainingDeclaration() else it
+        }
+        
         if (target == null) return
         
         val smartCast = bindingContext.get(BindingContext.SMARTCAST, expression)
         val typeName = smartCast?.let { DescriptorRenderer.FQ_NAMES_IN_TYPES.renderType(smartCast) } ?: null
         
         when (target) {
+            is TypeParameterDescriptor -> highlightTypeParameter(expression)
+            is ClassDescriptor -> highlightClassDescriptor(expression, target)
             is PropertyDescriptor -> highlightProperty(expression, target, typeName)
             is VariableDescriptor -> highlightVariable(expression, target, typeName)
         }
         super.visitSimpleNameExpression(expression)
+    }
+    
+    override fun visitTypeParameter(parameter: KtTypeParameter) {
+        val identifier = parameter.getNameIdentifier()
+        if (identifier != null) {
+            highlightTypeParameter(identifier)
+        }
+        
+        super.visitTypeParameter(parameter)
+    }
+    
+    override fun visitClassOrObject(classOrObject: KtClassOrObject) {
+        val identifier = classOrObject.getNameIdentifier()
+        val classDescriptor = bindingContext.get(BindingContext.CLASS, classOrObject)
+        if (identifier != null && classDescriptor != null) {
+            highlightClassDescriptor(identifier, classDescriptor)
+        }
+        
+        super.visitClassOrObject(classOrObject)
     }
     
     override fun visitProperty(property: KtProperty) {
@@ -115,6 +147,22 @@ public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document:
         if (nameIdentifier != null && declarationDescriptor != null) {
             highlightVariable(nameIdentifier, declarationDescriptor)
         }
+    }
+    
+    private fun highlightClassDescriptor(element: PsiElement, target: ClassDescriptor) {
+        when (target.kind) {
+            INTERFACE -> highlight(KotlinHighlightingAttributes.INTERFACE, element.getTextRange())
+            ANNOTATION_CLASS -> {
+                highlight(KotlinHighlightingAttributes.ANNOTATION, (element as KtElement).getCalleeHighlightingRange())
+            }
+            ENUM_ENTRY -> highlight(KotlinHighlightingAttributes.STATIC_FINAL_FIELD, element.getTextRange())
+            ENUM_CLASS -> highlight(KotlinHighlightingAttributes.ENUM_CLASS, element.getTextRange())
+            CLASS, OBJECT -> highlight(KotlinHighlightingAttributes.CLASS, element.getTextRange())
+        }
+    }
+    
+    private fun highlightTypeParameter(element: PsiElement) {
+        highlight(KotlinHighlightingAttributes.TYPE_PARAMETER, element.getTextRange())
     }
     
     private fun highlightProperty(element: PsiElement, descriptor: PropertyDescriptor, typeName: String? = null) {
