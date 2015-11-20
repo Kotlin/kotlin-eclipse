@@ -41,16 +41,14 @@ public class KotlinTokenScanner implements ITokenScanner {
         this.document = document;
         jetFile = createJetFile(document);
         this.offset = LineEndUtil.convertCrToDocumentOffset(document, offset);
-        this.rangeEnd = this.offset + length;
+        this.rangeEnd = LineEndUtil.convertCrToDocumentOffset(document, offset + length);
         this.lastElement = null;
     }
 
     @Override
     public IToken nextToken() {
-        if (lastElement != null) {
-            if (lastElement.getTextOffset() > rangeEnd) {
-                return Token.EOF;
-            }
+        if (rangeEnd <= offset) {
+            return Token.EOF;
         }
         
         if (jetFile == null) return Token.EOF;
