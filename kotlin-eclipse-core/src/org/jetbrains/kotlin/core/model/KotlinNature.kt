@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import kotlin.properties.Delegates
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.core.resources.IResourceDelta
+import java.util.LinkedList
 
 public class KotlinNature: IProjectNature {
     companion object {
@@ -70,13 +71,12 @@ public class KotlinNature: IProjectNature {
     
     private fun addKotlinBuilder(project: IProject) {
         if (!hasKotlinBuilder(project)) {
-        	val description = project.getDescription()
+            val description = project.getDescription()
             
-            val kotlinBuilderCommand = description.newCommand()
-            kotlinBuilderCommand.setBuilderName(KOTLIN_BUILDER)
+            val kotlinBuilderCommand = description.newCommand().apply { setBuilderName(KOTLIN_BUILDER) }
             
-            val newBuildCommands = description.getBuildSpec().toArrayList()
-            newBuildCommands.add(kotlinBuilderCommand)
+            val newBuildCommands = description.getBuildSpec().toCollection(LinkedList())
+            newBuildCommands.addFirst(kotlinBuilderCommand)
             
             description.setBuildSpec(newBuildCommands.toTypedArray())
             project.setDescription(description, null)
