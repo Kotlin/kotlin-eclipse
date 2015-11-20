@@ -163,7 +163,12 @@ public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document:
         when (target.kind) {
             INTERFACE -> highlight(KotlinHighlightingAttributes.INTERFACE, element.getTextRange())
             ANNOTATION_CLASS -> {
-                highlight(KotlinHighlightingAttributes.ANNOTATION, (element as KtElement).getCalleeHighlightingRange())
+                val range = when (element) {
+                     is KtElement -> element.getCalleeHighlightingRange()
+                     else -> element.getTextRange()
+                }
+                
+                highlight(KotlinHighlightingAttributes.ANNOTATION, range)
             }
             ENUM_ENTRY -> highlight(KotlinHighlightingAttributes.STATIC_FINAL_FIELD, element.getTextRange())
             ENUM_CLASS -> highlight(KotlinHighlightingAttributes.ENUM_CLASS, element.getTextRange())
