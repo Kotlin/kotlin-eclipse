@@ -50,6 +50,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.descriptors.ClassKind.*
 import org.jetbrains.kotlin.psi.psiUtil.getCalleeHighlightingRange
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtNamedFunction
 
 public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument, val project: IJavaProject) : KtVisitorVoid() {
     private lateinit var bindingContext: BindingContext
@@ -139,6 +140,15 @@ public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document:
         }
         
         super.visitParameter(parameter)
+    }
+    
+    override fun visitNamedFunction(function: KtNamedFunction) {
+        val nameIdentifier = function.getNameIdentifier()
+        if (nameIdentifier != null) {
+            highlight(KotlinHighlightingAttributes.FUNCTION_DECLARATION, nameIdentifier.getTextRange())
+        }
+        
+        super.visitNamedFunction(function)
     }
     
     private fun visitVariableDeclaration(declaration: KtNamedDeclaration) {

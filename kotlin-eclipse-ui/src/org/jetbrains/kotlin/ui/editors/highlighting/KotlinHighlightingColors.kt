@@ -77,6 +77,10 @@ class KotlinHighlightingAttributes private constructor() {
         val CLASS = withAttributes { 
             this.styleKey = SemanticHighlightings.CLASS
         }
+        
+        val FUNCTION_DECLARATION = withAttributes { 
+            this.styleKey = SemanticHighlightings.METHOD_DECLARATION
+        }
     }
     
     lateinit var styleKey: String
