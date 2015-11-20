@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.codegen.binding.PsiCodegenPredictor;
 import org.jetbrains.kotlin.core.asJava.LightClassFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
@@ -34,12 +35,16 @@ import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
 import org.jetbrains.kotlin.psi.KtClassOrObject;
 import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtNamedFunction;
+import org.jetbrains.kotlin.psi.KtProperty;
+import org.jetbrains.kotlin.psi.KtSecondaryConstructor;
+import org.jetbrains.kotlin.psi.KtVisitorVoid;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.PsiElement;
 
 public class KotlinLightClassManager {
     private final IJavaProject javaProject;
@@ -130,20 +135,51 @@ public class KotlinLightClassManager {
     private List<IPath> getLightClassesPaths(@NotNull IFile sourceFile) {
         List<IPath> lightClasses = new ArrayList<IPath>();
         
-        KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
-        for (KtClassOrObject classOrObject : PsiTreeUtil.findChildrenOfType(jetFile, KtClassOrObject.class)) {
+        KtFile ktFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
+        for (KtClassOrObject classOrObject : findLightClasses(ktFile)) {
             String internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(classOrObject, NoResolveFileClassesProvider.INSTANCE);
             if (internalName != null) {
                 lightClasses.add(computePathByInternalName(internalName));
             }
         }
         
-        if (PackagePartClassUtils.fileHasTopLevelCallables(jetFile)) {
+        if (PackagePartClassUtils.fileHasTopLevelCallables(ktFile)) {
             String newFacadeInternalName = FileClasses.getFileClassInternalName(
-                    NoResolveFileClassesProvider.INSTANCE, jetFile);
+                    NoResolveFileClassesProvider.INSTANCE, ktFile);
             lightClasses.add(computePathByInternalName(newFacadeInternalName));
         }
         
+        return lightClasses;
+    }
+    
+    private List<KtClassOrObject> findLightClasses(@NotNull KtFile ktFile) {
+        final ArrayList<KtClassOrObject> lightClasses = new ArrayList<KtClassOrObject>();
+        ktFile.acceptChildren(new KtVisitorVoid() {
+            @Override
+            public void visitClassOrObject(@NotNull KtClassOrObject classOrObject) {
+                lightClasses.add(classOrObject);
+                super.visitClassOrObject(classOrObject);
+            }
+            
+            @Override
+            public void visitNamedFunction(@NotNull KtNamedFunction function) {
+            }
+            
+            @Override
+            public void visitSecondaryConstructor(@NotNull KtSecondaryConstructor constructor) {
+            }
+
+            @Override
+            public void visitProperty(@NotNull KtProperty property) {
+            }
+
+            @Override
+            public void visitElement(@Nullable PsiElement element) {
+                if (element != null) {
+                    element.acceptChildren(this);
+                }
+            }
+        });
         return lightClasses;
     }
     
