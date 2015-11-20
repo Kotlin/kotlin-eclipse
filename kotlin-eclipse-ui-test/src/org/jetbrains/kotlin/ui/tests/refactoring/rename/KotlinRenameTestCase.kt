@@ -23,6 +23,8 @@ import com.google.gson.JsonParser
 import com.google.gson.JsonObject
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.eclipse.core.runtime.IPath
+import org.eclipse.jdt.core.ICompilationUnit
+import org.eclipse.jdt.internal.ui.javaeditor.ASTProvider
 
 abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
     @Before
@@ -37,14 +39,17 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         val renameObject = jsonParser.parse(fileInfoText) as JsonObject
         
         val rootFolder = Path(testInfo).removeLastSegments(1)
-        loadFiles(rootFolder.append("before").toFile())
+        val beforeSourceFolder = rootFolder.append("before")
+        loadFiles(beforeSourceFolder.toFile())
+        
+        KotlinTestUtils.joinBuildThread()
+        reconcileJavaFiles(beforeSourceFolder.toFile(), beforeSourceFolder)
+        KotlinTestUtils.joinBuildThread()
         
         val editor = openMainFile(renameObject)
         
         val selection = findSelectionToRename(renameObject, editor)
         Assert.assertTrue("Element to rename was not found", selection.getOffset() > 0)
-        
-        KotlinTestUtils.joinBuildThread()
         
         performRename(selection, renameObject["newName"].asString, editor)
         
@@ -93,6 +98,25 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         }
         val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
         return IDE.openEditor(page, mainFile, false) as KotlinFileEditor
+    }
+    
+    private fun reconcileJavaFiles(sourceFolder: File, base: IPath) {
+        sourceFolder.listFiles().forEach { 
+            when {
+                it.isFile -> {
+                    val relative = Path(it.getPath()).makeRelativeTo(base)
+                    val element = getTestProject().getJavaProject().findElement(relative)
+                    if (element is ICompilationUnit) {
+                        element.becomeWorkingCopy(null)
+                        element.reconcile(ICompilationUnit.NO_AST, true, null, null)
+                        element.commitWorkingCopy(true, null)
+                        element.discardWorkingCopy()
+                    }
+                }
+                
+                it.isDirectory -> reconcileJavaFiles(it, base)
+            }
+        }
     }
     
     private fun loadFiles(sourceRoot: File) {

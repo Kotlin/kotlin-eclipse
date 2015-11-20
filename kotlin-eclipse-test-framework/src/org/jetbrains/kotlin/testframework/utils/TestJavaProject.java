@@ -214,7 +214,7 @@ public class TestJavaProject {
             
             IFolder outputFolder = ProjectUtils.getOutputFolder(getJavaProject());
             ProjectUtils.cleanFolder(outputFolder);
-            ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE$.getKotlinBinFolderFor(project));
+            ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project));
         } catch (JavaModelException e) {
             throw new RuntimeException(e);
         } catch (CoreException e) {
