@@ -12,10 +12,6 @@ public aspect KotlinRefactoringChecksAspect {
         args(member)
         && execution(RefactoringStatus Checks.checkIfCuBroken(IMember));
     
-    pointcut isAvailable(IJavaElement javaElement) :
-        args(javaElement)
-        && execution(boolean Checks.isAvailable(IJavaElement));
-    
     // Disable checking of compilation unit for Kotlin files
     @SuppressAjWarnings({"adviceDidNotMatch"})
     RefactoringStatus around(IMember member) : checkIfCuBroken(member) {
@@ -24,14 +20,5 @@ public aspect KotlinRefactoringChecksAspect {
         }
         
         return proceed(member);
-    }
-    
-    @SuppressAjWarnings({"adviceDidNotMatch"})
-    boolean around(IJavaElement javaElement) : isAvailable(javaElement) {
-        if (EclipseJavaElementUtil.isKotlinLightClass(javaElement)) {
-            return true;
-        }
-        
-        return proceed(javaElement);
     }
 }
