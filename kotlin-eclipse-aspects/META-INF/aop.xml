@@ -11,5 +11,7 @@
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinBinaryReferencesAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRippleMethodFinderAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRemoveDeclarationUpdateAspect"/>
+        <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRenameFromJavaAspect"/>
+        <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinJavaDescriptorAspect"/>
 	</aspects>
 </aspectj>

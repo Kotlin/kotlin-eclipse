@@ -182,10 +182,13 @@ fun doRename(sourceElements: List<SourceElement>, newName: String, editor: Kotli
         val javaElement = javaElements[0]
         
         val updateStrategy = RenameSupport.UPDATE_REFERENCES
+        val file = editor.getFile()
+        if (file == null) return
+        
         val renameSupport = when (javaElement) {
             is IType -> {
                 val element = if (EclipseJavaElementUtil.isKotlinLightClass(javaElement)) {
-                    KotlinLightType(javaElement, editor)
+                    KotlinLightType(javaElement, file)
                 } else {
                     javaElement
                 }
@@ -194,7 +197,7 @@ fun doRename(sourceElements: List<SourceElement>, newName: String, editor: Kotli
             
             is IMethod -> {
                 val element = if (EclipseJavaElementUtil.isKotlinLightClass(javaElement)) {
-                    KotlinLightFunction(javaElement, editor)
+                    KotlinLightFunction(javaElement, file)
                 } else {
                     javaElement
                 }
