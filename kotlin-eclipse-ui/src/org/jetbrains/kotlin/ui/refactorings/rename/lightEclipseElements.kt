@@ -30,24 +30,35 @@ import org.eclipse.jdt.internal.compiler.env.ICompilationUnit as ContentProvider
 import org.eclipse.jdt.core.compiler.CharOperation
 import org.eclipse.core.resources.IResource
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.eclipse.jdt.internal.ui.JavaPlugin
+import org.eclipse.jdt.core.ITypeRoot
+import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.internal.core.JavaModelManager
+import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner
+import org.eclipse.jdt.internal.core.PackageFragment
+import org.eclipse.jdt.core.IImportDeclaration
+import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
-class KotlinLightType(val originElement: IType, val editor: KotlinFileEditor) : IType by originElement {
-    private val nameRange by lazy {
-        object : ISourceRange {
-            override fun getLength(): Int = 0
-            
-            override fun getOffset(): Int = 1
-        }
-    }
+private val DUMMY_NAME_RANGE = object : ISourceRange {
+    override fun getLength(): Int = 0
     
-    override fun getCompilationUnit(): ICompilationUnit {
-        val compilationUnit = EditorUtility.getEditorInputJavaElement(editor, false) as CompilationUnit
-        return KotlinLightCompilationUnit(editor.getFile()!!, compilationUnit)
+    override fun getOffset(): Int = 1
+}
+
+class KotlinLightType(val originElement: IType) : IType by originElement {
+    override fun findMethods(method: IMethod): Array<out IMethod>? {
+        val methods = originElement.findMethods(method)
+        return methods
+                ?.map { KotlinLightFunction(it) }
+                ?.toTypedArray()
     }
+
+    override fun getCompilationUnit(): ICompilationUnit? = getLightCompilationUnit(originElement)
     
     override fun getMethods(): Array<IMethod> = emptyArray()
 
-    override fun getNameRange(): ISourceRange = nameRange
+    override fun getNameRange(): ISourceRange = DUMMY_NAME_RANGE
 
     override fun getPrimaryElement(): IJavaElement? = this
 
@@ -56,21 +67,15 @@ class KotlinLightType(val originElement: IType, val editor: KotlinFileEditor) : 
     override fun isReadOnly(): Boolean = false
 }
 
-class KotlinLightFunction(val originMethod: IMethod, val editor: KotlinFileEditor) : IMethod by originMethod {
-    private val nameRange by lazy {
-        object : ISourceRange {
-            override fun getLength(): Int = 0
-            
-            override fun getOffset(): Int = 1
-        }
+class KotlinLightFunction(val originMethod: IMethod) : IMethod by originMethod {
+    override fun getDeclaringType(): IType? {
+        val declaringType = originMethod.getDeclaringType()
+        return KotlinLightType(declaringType)
     }
     
-    override fun getCompilationUnit(): ICompilationUnit {
-        val compilationUnit = EditorUtility.getEditorInputJavaElement(editor, false) as CompilationUnit
-        return KotlinLightCompilationUnit(editor.getFile()!!, compilationUnit)
-    }
+    override fun getCompilationUnit(): ICompilationUnit? = getLightCompilationUnit(originMethod)
     
-    override fun getNameRange(): ISourceRange = nameRange
+    override fun getNameRange(): ISourceRange = DUMMY_NAME_RANGE
 
     override fun getPrimaryElement(): IJavaElement? = originMethod
 
@@ -81,6 +86,8 @@ class KotlinLightFunction(val originMethod: IMethod, val editor: KotlinFileEdito
 
 class KotlinLightCompilationUnit(val file: IFile, compilationUnit: ICompilationUnit) : ICompilationUnit by compilationUnit,
        ContentProviderCompilationUnit {
+    override fun getImports(): Array<out IImportDeclaration> = emptyArray()
+
     override fun getFileName(): CharArray? = CharOperation.NO_CHAR
     
     override fun getContents(): CharArray? = CharOperation.NO_CHAR
@@ -89,9 +96,22 @@ class KotlinLightCompilationUnit(val file: IFile, compilationUnit: ICompilationU
     
     override fun getMainTypeName(): CharArray? = CharOperation.NO_CHAR
     
-    override fun getPackageName(): Array<out CharArray>? {
-        return null
-    }
+    override fun getPackageName(): Array<out CharArray>? = null
 
     override fun getResource(): IResource = file
+}
+
+private fun getLightCompilationUnit(origin: IJavaElement): ICompilationUnit? {
+    val sourceFiles = KotlinOpenEditor.findSourceFiles(origin)
+    val sourceFile = sourceFiles.firstOrNull()
+    if (sourceFile == null) return null
+    
+    val file = KotlinPsiManager.getEclispeFile(sourceFile)
+    if (file == null) return null
+    
+    val filePackage = JavaModelManager.determineIfOnClasspath(file, origin.getJavaProject())
+    return if (filePackage is PackageFragment) {
+        val compilationUnit = CompilationUnit(filePackage, file.getName(), DefaultWorkingCopyOwner.PRIMARY)
+        KotlinLightCompilationUnit(file, compilationUnit)
+    } else null
 }

@@ -1,7 +1,10 @@
 package org.jetbrains.kotlin.ui.navigation;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
+
+import kotlin.CollectionsKt;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IClassFile;
@@ -29,31 +32,43 @@ import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 // Seeks Kotlin editor by IJavaElement
 public class KotlinOpenEditor {
-	@Nullable
-	public static IEditorPart openKotlinEditor(@NotNull IJavaElement element, boolean activate) {
-	    File lightClass = element.getResource().getFullPath().toFile();
-	    List<KtFile> sourceFiles = KotlinLightClassManager.getInstance(element.getJavaProject()).getSourceFiles(lightClass);
-	    KtFile navigationFile = KotlinOpenEditorUtilsKt.findNavigationFileFromSources(element, sourceFiles);
-	    
-	    IFile kotlinFile;
-	    if (navigationFile != null) {
-	        kotlinFile = KotlinPsiManager.getEclispeFile(navigationFile);
-	    } else {
-	        kotlinFile = KotlinOpenEditorUtilsKt.chooseSourceFile(sourceFiles);
-	    }
-	    
-	    try {
-	        if (kotlinFile != null && kotlinFile.exists()) {
-	            return EditorUtility.openInEditor(kotlinFile, activate);
-	        }
-	    } catch (PartInitException e) {
-	        KotlinLogger.logAndThrow(e);
-	    }
-	    
-	    return null;
-	}
-	
-	public static void revealKotlinElement(@NotNull KotlinEditor kotlinEditor, @NotNull IJavaElement javaElement) {
+    @Nullable
+    public static IEditorPart openKotlinEditor(@NotNull IJavaElement element, boolean activate) {
+        List<KtFile> sourceFiles = findSourceFiles(element);
+        
+        IFile kotlinFile;
+        if (sourceFiles.size() == 1) {
+            kotlinFile = KotlinPsiManager.getEclispeFile(CollectionsKt.first(sourceFiles));
+        } else {
+            kotlinFile = KotlinOpenEditorUtilsKt.chooseSourceFile(sourceFiles);
+        }
+        
+        try {
+            if (kotlinFile != null && kotlinFile.exists()) {
+                return EditorUtility.openInEditor(kotlinFile, activate);
+            }
+        } catch (PartInitException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return null;
+    }
+    
+    @NotNull
+    public static List<KtFile> findSourceFiles(@NotNull IJavaElement element) {
+        File lightClass = element.getResource().getFullPath().toFile();
+        List<KtFile> sourceFiles = KotlinLightClassManager.getInstance(element.getJavaProject()).getSourceFiles(
+                lightClass);
+        KtFile navigationFile = KotlinOpenEditorUtilsKt.findNavigationFileFromSources(element, sourceFiles);
+        
+        if (navigationFile != null) {
+            return Collections.singletonList(navigationFile);
+        } else {
+            return sourceFiles;
+        }
+    }
+    
+    public static void revealKotlinElement(@NotNull KotlinEditor kotlinEditor, @NotNull IJavaElement javaElement) {
         KtFile jetFile = kotlinEditor.getParsedFile();
         
         if (jetFile == null) {
@@ -65,23 +80,23 @@ public class KotlinOpenEditor {
             jetElement = jetFile;
         }
         
-        int offset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), jetElement.getTextOffset(), kotlinEditor.getDocument());
+        int offset = LineEndUtil.convertLfToDocumentOffset(jetFile.getText(), jetElement.getTextOffset(),
+                kotlinEditor.getDocument());
         kotlinEditor.getJavaEditor().selectAndReveal(offset, 0);
-	}
-	
-	@Nullable
-	public static IEditorPart openKotlinClassFileEditor(@NotNull IJavaElement element, boolean activate) {
+    }
+    
+    @Nullable
+    public static IEditorPart openKotlinClassFileEditor(@NotNull IJavaElement element, boolean activate) {
         IClassFile classFile;
         if (element instanceof IClassFile) {
             classFile = (IClassFile) element;
         } else if (element instanceof BinaryType) {
             classFile = ((BinaryType) element).getClassFile();
-        } else  {
+        } else {
             return null;
         }
-            
-        KotlinClassFileEditorInput editorInput = new KotlinClassFileEditorInput(classFile,
-                classFile.getJavaProject());
+        
+        KotlinClassFileEditorInput editorInput = new KotlinClassFileEditorInput(classFile, classFile.getJavaProject());
         
         IWorkbench wb = PlatformUI.getWorkbench();
         IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
@@ -90,8 +105,10 @@ public class KotlinOpenEditor {
         try {
             IEditorPart reusedEditor = page.openEditor(editorInput, KotlinClassFileEditor.EDITOR_ID, activate);
             if (reusedEditor != null) {
-                //the input is compared by a source path, but corresponding classes may be different
-                //so if editor is reused, the input should be changed for the purpose of inner navigation
+                // the input is compared by a source path, but corresponding
+                // classes may be different
+                // so if editor is reused, the input should be changed for the
+                // purpose of inner navigation
                 page.reuseEditor((IReusableEditor) reusedEditor, editorInput);
             }
             return reusedEditor;
@@ -99,5 +116,5 @@ public class KotlinOpenEditor {
             KotlinLogger.logAndThrow(e);
         }
         return null;
-	}
+    }
 }
