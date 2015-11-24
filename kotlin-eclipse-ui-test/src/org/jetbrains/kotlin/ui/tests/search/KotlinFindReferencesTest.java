@@ -214,5 +214,13 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
         doTest("testData/findUsages/kotlin/findPropertyUsages/kotlinTopLevelPropertyUsages.0.kt");
     }
     
+    @Test
+    public void testPrimaryConstructorByRef() {
+        doTest("testData/findUsages/kotlin/findPrimaryConstructorUsages/primaryConstructorByRef.0.kt");
+    }
     
+    @Test
+    public void testPrimaryConstructorWithKeyword() {
+        doTest("testData/findUsages/kotlin/findPrimaryConstructorUsages/primaryConstructorWithKeyword.0.kt");
+    }
 }
