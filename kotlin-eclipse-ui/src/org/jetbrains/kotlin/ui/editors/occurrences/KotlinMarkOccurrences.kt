@@ -65,6 +65,8 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelect
                     val file = part.getFile()
                     if (file == null || !file.exists()) return Status.CANCEL_STATUS
                     
+                    KotlinPsiManager.getKotlinFileIfExist(file, part.document.get())
+                    
                     val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
                     if (ktElement == null) {
                         return Status.CANCEL_STATUS
