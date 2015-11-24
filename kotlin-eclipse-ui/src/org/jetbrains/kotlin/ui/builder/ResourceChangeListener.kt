@@ -27,29 +27,29 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.core.resources.IProject
 
 public class ResourceChangeListener : IResourceChangeListener {
-	override public fun resourceChanged(event: IResourceChangeEvent) {
-		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-			event.getDelta().accept(ProjectChangeListener())
-		}
-	}
+    override public fun resourceChanged(event: IResourceChangeEvent) {
+        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+            event.getDelta().accept(ProjectChangeListener())
+        }
+    }
 }
 
 class ProjectChangeListener : IResourceDeltaVisitor {
-	override public fun visit(delta: IResourceDelta) : Boolean {
-		if (delta.getKind() == IResourceDelta.CHANGED) {
-			return true
-		}
-		
+    override public fun visit(delta: IResourceDelta) : Boolean {
+        if (delta.getKind() == IResourceDelta.CHANGED) {
+            return true
+        }
+        
         val resource = delta.getResource()
-		when (resource) {
-			is IFile -> {
-				if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
-					KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
-				}
-			}
-			is IProject -> KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
-		}
-		
-		return true
-	}
+        when (resource) {
+            is IFile -> {
+                if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
+                    KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
+                }
+            }
+            is IProject -> KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
+        }
+        
+        return true
+    }
 }
