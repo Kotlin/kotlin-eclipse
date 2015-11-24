@@ -25,6 +25,8 @@ import org.eclipse.core.resources.IResourceDelta
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.core.resources.IProject
+import org.jetbrains.kotlin.core.model.KotlinNature
+import org.jetbrains.kotlin.core.model.setKotlinBuilderBeforeJavaBuilder
 
 public class ResourceChangeListener : IResourceChangeListener {
     override public fun resourceChanged(event: IResourceChangeEvent) {
@@ -47,7 +49,14 @@ class ProjectChangeListener : IResourceDeltaVisitor {
                     KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
                 }
             }
-            is IProject -> KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
+            is IProject -> {
+                val kind = delta.getKind()
+                KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, kind)
+                
+                if (kind == IResourceDelta.ADDED && KotlinNature.hasKotlinBuilder(resource)) {
+                    setKotlinBuilderBeforeJavaBuilder(resource)
+                }
+            }
         }
         
         return true

@@ -28,18 +28,20 @@ import org.eclipse.jdt.core.IPackageFragmentRoot
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.core.model.setKotlinBuilderBeforeJavaBuilder
 
 fun addFilesToParseFromKotlinProjectsInWorkspace() {
-    ResourcesPlugin.getWorkspace().getRoot().getProjects().forEach { 
-    	if (it.isAccessible() && KotlinNature.hasKotlinNature(it)) {
-    	    addFilesToParse(JavaCore.create(it))
-    	}
+    ResourcesPlugin.getWorkspace().getRoot().getProjects().forEach {
+        if (it.isAccessible() && KotlinNature.hasKotlinNature(it)) {
+            addFilesToParse(JavaCore.create(it))
+            setKotlinBuilderBeforeJavaBuilder(it)
+        }
     }
 }
 
 fun addFilesToParse(javaProject: IJavaProject) {
     if (!KotlinNature.hasKotlinNature(javaProject.getProject())) {
-    	throw IllegalArgumentException("Project ${javaProject.getElementName()} has no Kotlin Nature")
+        throw IllegalArgumentException("Project ${javaProject.getElementName()} has no Kotlin Nature")
     }
     
     javaProject.getPackageFragmentRoots().forEach {

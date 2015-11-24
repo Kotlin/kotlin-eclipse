@@ -26,6 +26,13 @@ import kotlin.properties.Delegates
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.core.resources.IResourceDelta
 import java.util.LinkedList
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.core.runtime.IStatus
+import org.eclipse.jdt.core.JavaCore
+import java.util.Collections
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.resources.ResourcesPlugin
 
 public class KotlinNature: IProjectNature {
     companion object {
@@ -33,21 +40,28 @@ public class KotlinNature: IProjectNature {
         public val KOTLIN_BUILDER: String = "org.jetbrains.kotlin.ui.kotlinBuilder"
         
         @JvmStatic
-        public fun hasKotlinNature(project: IProject) : Boolean {
+        fun hasKotlinNature(project: IProject) : Boolean {
             return project.hasNature(KOTLIN_NATURE)
         }
         
         @JvmStatic
-        public fun addNature(project:IProject) {
-	        if (!hasKotlinNature(project)) {
-	            val description = project.getDescription()
-	            
-	            val newNatureIds = description.getNatureIds().toArrayList()
-	            newNatureIds.add(KotlinNature.KOTLIN_NATURE)
-	            
-	            description.setNatureIds(newNatureIds.toTypedArray())
-	            project.setDescription(description, null)
-	        }
+        fun hasKotlinBuilder(project: IProject) : Boolean {
+            return project.getDescription().getBuildSpec().any { 
+                KOTLIN_BUILDER == it.getBuilderName()
+            }
+        }
+        
+        @JvmStatic
+        fun addNature(project:IProject) {
+            if (!hasKotlinNature(project)) {
+                val description = project.getDescription()
+                
+                val newNatureIds = description.getNatureIds().toArrayList()
+                newNatureIds.add(KotlinNature.KOTLIN_NATURE)
+                
+                description.setNatureIds(newNatureIds.toTypedArray())
+                project.setDescription(description, null)
+            }
         }
     }
     
@@ -92,10 +106,29 @@ public class KotlinNature: IProjectNature {
 			project.setDescription(description, null)
 		}
 	}
-    
-    private fun hasKotlinBuilder(project: IProject) : Boolean {
-        return project.getDescription().getBuildSpec().any { 
-            KOTLIN_BUILDER == it.getBuilderName()
+}
+
+// Place Kotlin Builder before Java Builder to avoid red code in Java about Kotlin references 
+fun setKotlinBuilderBeforeJavaBuilder(project: IProject) {
+    val job = object : Job("Swap Kotlin builder with Java Builder") {
+        override fun run(monitor: IProgressMonitor?): IStatus? {
+            val description = project.getDescription()
+                
+            val builders = description.getBuildSpec().toCollection(LinkedList())
+            val kotlinBuilderIndex = builders.indexOfFirst { it.getBuilderName() == KotlinNature.KOTLIN_BUILDER }
+            val javaBuilderIndex = builders.indexOfFirst { it.getBuilderName() == JavaCore.BUILDER_ID }
+            
+            if (kotlinBuilderIndex >= 0 && javaBuilderIndex >= 0 && javaBuilderIndex < kotlinBuilderIndex) {
+                Collections.swap(builders, kotlinBuilderIndex, javaBuilderIndex)
+                
+                description.setBuildSpec(builders.toTypedArray())
+                project.setDescription(description, monitor)
+            }
+            
+            return Status.OK_STATUS
         }
     }
+    
+    job.setRule(ResourcesPlugin.getWorkspace().getRoot())
+    job.schedule()
 }
