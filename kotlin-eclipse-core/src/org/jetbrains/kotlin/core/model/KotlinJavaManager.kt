@@ -49,6 +49,7 @@ import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
+import org.jetbrains.kotlin.psi.KtPrimaryConstructor
 
 public object KotlinJavaManager {
     @JvmField
@@ -113,6 +114,7 @@ public fun KtElement.toLightElements(): List<IJavaElement> {
         is KtClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
         is KtNamedFunction,
         is KtSecondaryConstructor,
+        is KtPrimaryConstructor,
         is KtPropertyAccessor -> KotlinJavaManager.findEclipseMembers(this as KtDeclaration, javaProject, IMethod::class.java)
         is KtProperty -> KotlinJavaManager.findEclipseMembers(this, javaProject, IMember::class.java) 
         else -> emptyList()
