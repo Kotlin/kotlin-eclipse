@@ -180,7 +180,7 @@ private inline fun <T : IJavaElement> wrapIntoLightElementForKotlin(element: T, 
     return if (EclipseJavaElementUtil.isKotlinLightClass(element)) wrap(element) else element
 }
 
-private fun createRenameSupport(javaElement: IJavaElement, newName: String): RenameSupport {
+fun createRenameSupport(javaElement: IJavaElement, newName: String): RenameSupport {
     val updateStrategy = RenameSupport.UPDATE_REFERENCES
     return when (javaElement) {
         is IType -> {

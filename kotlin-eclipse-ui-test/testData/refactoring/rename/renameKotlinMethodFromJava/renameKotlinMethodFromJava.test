@@ -1,0 +1,5 @@
+{
+  "oldName": "methodFromKotlin",
+  "newName": "renamedMethodFromKotlin",
+  "mainFile": "JavaUsage.java"
+}
