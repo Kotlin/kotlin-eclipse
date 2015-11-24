@@ -1,0 +1,5 @@
+{
+  "oldName": "kotlinTopLevelFun",
+  "newName": "renamedFun",
+  "mainFile": "JavaUsage.java"
+}
