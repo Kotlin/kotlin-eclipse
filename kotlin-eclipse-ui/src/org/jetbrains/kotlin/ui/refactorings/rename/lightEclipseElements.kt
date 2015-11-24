@@ -39,6 +39,8 @@ import org.eclipse.jdt.internal.core.PackageFragment
 import org.eclipse.jdt.core.IImportDeclaration
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.eclipse.jdt.internal.core.SourceType
+import org.eclipse.jdt.internal.core.JavaElement
 
 private val DUMMY_NAME_RANGE = object : ISourceRange {
     override fun getLength(): Int = 0
@@ -46,7 +48,9 @@ private val DUMMY_NAME_RANGE = object : ISourceRange {
     override fun getOffset(): Int = 1
 }
 
-class KotlinLightType(val originElement: IType) : IType by originElement {
+class KotlinLightType(val originElement: IType) : 
+        SourceType(originElement.getParent() as JavaElement, originElement.getElementName()), IType by originElement {
+    
     override fun findMethods(method: IMethod): Array<out IMethod>? {
         val methods = originElement.findMethods(method)
         return methods
