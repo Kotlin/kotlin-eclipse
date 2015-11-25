@@ -50,6 +50,10 @@ import org.jetbrains.kotlin.ui.editors.annotations.withLock
 import org.eclipse.jface.text.source.AnnotationModel
 import org.eclipse.ui.progress.UIJob
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
+import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.ui.search.getContainingClassOrObjectForConstructor
 
 public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelectionListener {
     companion object {
@@ -93,7 +97,9 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelect
         val sourceElements = jetElement.resolveToSourceDeclaration(editor.javaProject!!)
         if (sourceElements.isEmpty()) return emptyList()
         
-        val querySpecification = KotlinScopedQuerySpecification(sourceElements, listOf(file), 
+        val searchingElements = getSearchingElements(sourceElements)
+        
+        val querySpecification = KotlinScopedQuerySpecification(searchingElements, listOf(file), 
                 IJavaSearchConstants.ALL_OCCURRENCES, "Searching in ${file.getName()}")
         
         val occurrences = arrayListOf<Match>()
@@ -108,5 +114,10 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelect
             
             Position(element.getTextDocumentOffset(editor.document), length)
         }.filterNotNull()
+    }
+    
+    private fun getSearchingElements(sourceElements: List<SourceElement>): List<SourceElement> {
+        val classOrObjects = getContainingClassOrObjectForConstructor(sourceElements)
+        return if (classOrObjects.isNotEmpty()) classOrObjects else sourceElements
     }
 }

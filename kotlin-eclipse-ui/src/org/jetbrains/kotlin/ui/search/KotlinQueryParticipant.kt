@@ -74,6 +74,8 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinJavaQuerySpecificat
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecification
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinAndJavaSearchable
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScoped
+import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
@@ -168,6 +170,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val (javaElements, kotlinElements) = getJavaAndKotlinElements(sourceElements)
             return javaElements.map { SearchElement.JavaSearchElement(it) } + 
                    kotlinElements.map { SearchElement.KotlinSearchElement(it) }
+                   
         }
         
         return when (querySpecification) {
@@ -209,7 +212,10 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val sourceElements = element.resolveToSourceDeclaration(javaProject)
             if (sourceElements.isEmpty()) return@filter false
             
-            return@filter afterResolveFilters.all { it.isApplicable(sourceElements, searchElement) }
+            val additionalElements = getContainingClassOrObjectForConstructor(sourceElements)
+            
+            return@filter afterResolveFilters.all { it.isApplicable(sourceElements, searchElement) } ||
+                    afterResolveFilters.all { it.isApplicable(additionalElements, searchElement) }
         }
     }
     
@@ -238,6 +244,19 @@ public class KotlinQueryParticipant : IQueryParticipant {
             is KotlinScoped -> querySpecification.searchScope
             else -> emptyList()
         }
+    }
+}
+
+fun getContainingClassOrObjectForConstructor(sourceElements: List<SourceElement>): List<SourceElement> {
+    return sourceElements.mapNotNull {
+        if (it is KotlinSourceElement) {
+            val psi = it.psi
+            if (psi is KtConstructor<*>) {
+                return@mapNotNull KotlinSourceElement(psi.getContainingClassOrObject())
+            }
+        }
+        
+        null
     }
 }
 
