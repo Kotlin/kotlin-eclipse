@@ -176,35 +176,33 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
     }
 }
 
+private inline fun <T : IJavaElement> wrapIntoLightElementForKotlin(element: T, wrap: (T) -> T): T {
+    return if (EclipseJavaElementUtil.isKotlinLightClass(element)) wrap(element) else element
+}
+
+private fun createRenameSupport(javaElement: IJavaElement, newName: String): RenameSupport {
+    val updateStrategy = RenameSupport.UPDATE_REFERENCES
+    return when (javaElement) {
+        is IType -> {
+            val element = wrapIntoLightElementForKotlin(javaElement, ::KotlinLightType)
+            RenameSupport.create(element, newName, updateStrategy)
+        }
+        is IMethod -> {
+            if (javaElement.isConstructor) {
+                createRenameSupport(javaElement.getDeclaringType(), newName)
+            } else {
+                val element = wrapIntoLightElementForKotlin(javaElement, ::KotlinLightFunction)
+                RenameSupport.create(element, newName, updateStrategy)
+            }
+        }
+        else -> throw UnsupportedOperationException("Rename refactoring for ${javaElement} is not supported")
+    }
+}
 
 fun doRename(sourceElements: List<SourceElement>, newName: String, editor: KotlinFileEditor) {
     fun renameByJavaElement(javaElements: List<IJavaElement>) {
         val javaElement = javaElements[0]
-        
-        val updateStrategy = RenameSupport.UPDATE_REFERENCES
-        
-        val renameSupport = when (javaElement) {
-            is IType -> {
-                val element = if (EclipseJavaElementUtil.isKotlinLightClass(javaElement)) {
-                    KotlinLightType(javaElement)
-                } else {
-                    javaElement
-                }
-                RenameSupport.create(element, newName, updateStrategy)
-            }
-            
-            is IMethod -> {
-                val element = if (EclipseJavaElementUtil.isKotlinLightClass(javaElement)) {
-                    KotlinLightFunction(javaElement)
-                } else {
-                    javaElement
-                }
-                RenameSupport.create(element, newName, updateStrategy)
-            }
-            
-            else -> throw UnsupportedOperationException("Rename refactoring for ${javaElement} is not supported")
-        }
-        
+        val renameSupport = createRenameSupport(javaElement, newName)
         with(editor.getSite()) {
             renameSupport.perform(getShell(), getWorkbenchWindow())
         }

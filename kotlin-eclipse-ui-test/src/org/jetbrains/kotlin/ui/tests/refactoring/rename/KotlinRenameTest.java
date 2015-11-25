@@ -54,4 +54,9 @@ public class KotlinRenameTest extends KotlinRenameTestCase {
     public void testRenameJavaStaticMethod() {
         doTest("testData/refactoring/rename/renameJavaStaticMethod/renameJavaStaticMethod.test");
     }
+    
+    @Test
+    public void testRenameKotlinClassByConstructorReference() {
+        doTest("testData/refactoring/rename/renameKotlinClassByConstructorRef/renameKotlinClassByConstructorRef.test");
+    }
 }
