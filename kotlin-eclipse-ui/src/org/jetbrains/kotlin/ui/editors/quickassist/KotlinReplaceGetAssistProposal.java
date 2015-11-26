@@ -219,6 +219,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         return false;
     }
 
+    @NotNull
     @Override
     public String getDisplayString() {
         return "Replace 'get' with index operator";
