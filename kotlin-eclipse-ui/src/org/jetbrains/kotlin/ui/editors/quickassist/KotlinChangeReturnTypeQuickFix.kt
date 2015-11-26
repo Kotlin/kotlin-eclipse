@@ -18,13 +18,25 @@ package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
 import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.diagnostics.Errors
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 
 public class KotlinChangeReturnTypeQuickFix : KotlinQuickAssistProposal() {
-    override fun getDisplayString(): String? {
-        throw UnsupportedOperationException()
+    override fun apply(document: IDocument, psiElement: PsiElement) {
+        val editor = getActiveEditor()
+        if (editor == null) return
+        
+        val annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, getStartOffset(psiElement, editor))
+        val diagnostic = annotation?.getDiagnostic()
+        if (diagnostic == null) return
     }
     
-    override fun apply(document: IDocument, psiElement: PsiElement) {
-        throw UnsupportedOperationException()
+    override fun getDisplayString(): String = "Change return type"
+    
+    override fun isApplicable(psiElement: PsiElement): Boolean {
+        val editor = getActiveEditor()
+        if (editor == null) return false
+        
+        return isDiagnosticAnnotationActiveForElement(Errors.CONSTANT_EXPECTED_TYPE_MISMATCH, editor)
     }
 }
