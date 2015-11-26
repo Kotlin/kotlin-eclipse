@@ -47,7 +47,7 @@ public class KotlinAutoImportProposalsGenerator extends KotlinQuickAssistProposa
 
     @Override
     public boolean isApplicable(@NotNull PsiElement psiElement) {
-        return isDiagnosticActiveForElement(psiElement, errorForQuickFix, markerAnnotationForFix);
+        return isDiagnosticActiveForElement(errorForQuickFix, markerAnnotationForFix);
     }
     
     @NotNull

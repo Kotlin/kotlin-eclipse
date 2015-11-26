@@ -1,140 +1,96 @@
-package org.jetbrains.kotlin.ui.editors.quickassist;
+package org.jetbrains.kotlin.ui.editors.quickassist
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.JavaPluginImages;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
-import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.contentassist.IContextInformation;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider;
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.internal.ui.JavaPluginImages
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
+import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal
+import org.eclipse.jface.text.BadLocationException
+import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.contentassist.IContextInformation
+import org.eclipse.swt.graphics.Image
+import org.eclipse.swt.graphics.Point
+import org.eclipse.ui.texteditor.AbstractTextEditor
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
+import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
 
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-
-public abstract class KotlinQuickAssistProposal extends KotlinQuickAssist implements IJavaCompletionProposal {
-
-    @Override
-    public void apply(IDocument document) {
-        PsiElement element = getActiveElement();
-        if (element != null) {
-            apply(document, element);
-        }
+abstract class KotlinQuickAssistProposal : KotlinQuickAssist(), IJavaCompletionProposal {
+    abstract fun apply(document: IDocument, psiElement: PsiElement)
+    
+    abstract override fun getDisplayString(): String
+    
+    override fun apply(document: IDocument) {
+        getActiveElement()?.let { apply(document, it) }
     }
     
-    public abstract void apply(@NotNull IDocument document, @NotNull PsiElement psiElement);
+    fun getActiveFile(): IFile? {
+        val editor = getActiveEditor()
+        return if (editor != null) EditorUtil.getFile(editor) else null
+    }
     
-    @Nullable
-    public IFile getActiveFile() {
-        AbstractTextEditor editor = getActiveEditor();
-        if (editor == null) return null;
+    fun getStartOffset(element: PsiElement, editor: AbstractTextEditor): Int {
+        return element.getOffsetByDocument(EditorUtil.getDocument(editor), element.getTextRange().getStartOffset())
+    }
+    
+    fun getEndOffset(element:PsiElement, editor:AbstractTextEditor): Int {
+        return element.getEndLfOffset(EditorUtil.getDocument(editor))
+    }
+    
+    fun insertAfter(element: PsiElement, text: String) {
+        val kotlinFileEditor = getActiveEditor()
+        if (kotlinFileEditor == null) {
+            throw IllegalStateException("Active editor cannot be null")
+        }
         
-        JavaEditor javaEditor = (JavaEditor) editor;
-        return EditorUtil.getFile(javaEditor);
+        kotlinFileEditor.getViewer().getDocument().replace(getEndOffset(element, kotlinFileEditor), 0, text)
     }
     
-    public int getStartOffset(@NotNull PsiElement element, @NotNull AbstractTextEditor editor) {
-        int offset = element.getTextRange().getStartOffset();
-        IFile file = EditorUtil.getFile(editor);
-
-        assert file != null : "Failed to retrieve IFile from editor " + editor;
-
-        PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-        return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), offset, EditorUtil.getDocument(editor));
-    }
-    
-    public int getEndOffset(@NotNull PsiElement element, @NotNull AbstractTextEditor editor) {
-        int offset = element.getTextRange().getEndOffset();
-        IFile file = EditorUtil.getFile(editor);
-
-        assert file != null : "Failed to retrieve IFile from editor " + editor;
-
-        PsiFile parsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-        return LineEndUtil.convertLfToDocumentOffset(parsedFile.getText(), offset, EditorUtil.getDocument(editor));
-    }
-    
-    public void insertAfter(@NotNull PsiElement element, @NotNull String text) {
-        KotlinFileEditor kotlinFileEditor = getActiveEditor();
-        assert kotlinFileEditor != null : "Active editor cannot be null";
+    fun replaceBetween(from:PsiElement, till:PsiElement, text:String) {
+        val kotlinFileEditor = getActiveEditor()
+        if (kotlinFileEditor == null) {
+            throw IllegalStateException("Active editor cannot be null")
+        }
         
-        try {
-            kotlinFileEditor.getViewer().getDocument().replace(getEndOffset(element, kotlinFileEditor), 0, text);
-        } catch (BadLocationException e) {
-            KotlinLogger.logAndThrow(e);
-        }
+        val startOffset = getStartOffset(from, kotlinFileEditor)
+        val endOffset = getEndOffset(till, kotlinFileEditor)
+        kotlinFileEditor.getViewer().getDocument().replace(startOffset, endOffset - startOffset, text)
     }
     
-    public void replaceBetween(@NotNull PsiElement from, @NotNull PsiElement till, @NotNull String text) {
-        KotlinFileEditor kotlinFileEditor = getActiveEditor();
-        assert kotlinFileEditor != null : "Active editor cannot be null";
+    fun replace(toReplace: PsiElement, text: String) {
+        replaceBetween(toReplace, toReplace, text)
+    }
+    
+    protected fun getBindingContext(jetFile: KtFile): BindingContext? {
+        return getAnalysisResultWithProvider(jetFile)?.analysisResult?.bindingContext
+    }
+    
+    protected fun getAnalysisResultWithProvider(jetFile:KtFile): AnalysisResultWithProvider? {
+        val file = getActiveFile()
+        if (file == null) return null
         
-        try {
-            int startOffset = getStartOffset(from, kotlinFileEditor);
-            int endOffset = getEndOffset(till, kotlinFileEditor);
-            kotlinFileEditor.getViewer().getDocument().replace(startOffset, endOffset - startOffset, text);
-        } catch (BadLocationException e) {
-            KotlinLogger.logAndThrow(e);
-        }
+        val javaProject = JavaCore.create(file.getProject())
+        return KotlinAnalyzer.analyzeFile(javaProject, jetFile)
     }
     
-    public void replace(@NotNull PsiElement toReplace, @NotNull String text) {
-        replaceBetween(toReplace, toReplace, text);
-    }
+    override fun getSelection(document:IDocument?): Point? = null
     
-    @Nullable
-    protected BindingContext getBindingContext(@NotNull KtFile jetFile)  {
-        return getAnalysisResultWithProvider(jetFile).getAnalysisResult().getBindingContext();
-    }
+    override fun getAdditionalProposalInfo(): String? = null
     
-    protected AnalysisResultWithProvider getAnalysisResultWithProvider(@NotNull KtFile jetFile) {
-        IFile file = getActiveFile();
-        if (file == null) {
-            return null;
-        }
-        IJavaProject javaProject = JavaCore.create(file.getProject());
-        return KotlinAnalyzer.analyzeFile(javaProject, jetFile);
-    }
+    override fun getImage(): Image? = JavaPluginImages.get(JavaPluginImages.IMG_CORRECTION_CHANGE)
     
-    @Override
-    public abstract String getDisplayString();
+    override fun getContextInformation(): IContextInformation? = null
     
-    @Override
-    public Point getSelection(IDocument document) {
-        return null;
-    }
-
-    @Override
-    public String getAdditionalProposalInfo() {
-        return null;
-    }
-
-    @Override
-    public Image getImage() {
-        return JavaPluginImages.get(JavaPluginImages.IMG_CORRECTION_CHANGE);
-    }
-
-    @Override
-    public IContextInformation getContextInformation() {
-        return null;
-    }
-
-    @Override
-    public int getRelevance() {
-        return 0;
-    }
+    override fun getRelevance(): Int = 0
 }

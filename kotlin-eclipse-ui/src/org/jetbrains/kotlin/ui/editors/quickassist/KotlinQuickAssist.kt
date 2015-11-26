@@ -1,108 +1,98 @@
-package org.jetbrains.kotlin.ui.editors.quickassist;
+/*******************************************************************************
+ * Copyright 2000-2015 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
+package org.jetbrains.kotlin.ui.editors.quickassist
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
-import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation;
-import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil;
+import org.eclipse.core.resources.IFile
+import org.eclipse.core.resources.IMarker
+import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.ITextSelection
+import org.eclipse.jface.viewers.ISelection
+import org.eclipse.ui.IWorkbenchWindow
+import org.eclipse.ui.PlatformUI
+import org.eclipse.ui.texteditor.AbstractTextEditor
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
+import com.intellij.psi.PsiElement
 
-import com.intellij.psi.PsiElement;
-
-public abstract class KotlinQuickAssist {
-    public abstract boolean isApplicable(@NotNull PsiElement psiElement);
+abstract class KotlinQuickAssist {
+    abstract fun isApplicable(psiElement: PsiElement): Boolean
     
-    public boolean isApplicable() {
-        PsiElement element = getActiveElement();
-        if (element == null) {
-            return false;
-        }
-        
-        return isApplicable(element);
+    fun isApplicable(): Boolean {
+        val element = getActiveElement()
+        return if (element != null) isApplicable(element) else false
     }
     
-    @Nullable
-    protected KotlinFileEditor getActiveEditor() {
-        IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-
-        if (workbenchWindow == null) {
-            return null;
-        }
-
-        return (KotlinFileEditor) workbenchWindow.getActivePage().getActiveEditor();
+    protected fun getActiveEditor(): KotlinFileEditor? {
+        val workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+        return workbenchWindow?.getActivePage()?.getActiveEditor() as? KotlinFileEditor
     }
     
-    @Nullable
-    protected PsiElement getActiveElement() {
-        AbstractTextEditor editor = getActiveEditor();
-        if (editor == null) return null;
-
-        KotlinFileEditor kotlinEditor = (KotlinFileEditor) editor;
-        IFile file = kotlinEditor.getFile();
+    protected fun getActiveElement(): PsiElement? {
+        val editor = getActiveEditor()
+        if (editor == null) return null
         
-        if (file != null) {
-            IDocument document = kotlinEditor.getDocument();
-            KtFile jetFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
-            if (jetFile == null) return null;
-            
-            int caretOffset = LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(kotlinEditor));
-            return jetFile.findElementAt(caretOffset);
-        } else {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-        }
-
-        return null;
-    }
-    
-    protected int getCaretOffset(@NotNull KotlinFileEditor activeEditor) {
-        ISelection selection = activeEditor.getSelectionProvider().getSelection();
-        if (selection instanceof ITextSelection) {
-            ITextSelection textSelection = (ITextSelection) selection;
-            return textSelection.getOffset();
-        }
-        
-        return activeEditor.getViewer().getTextWidget().getCaretOffset();
-    }
-    
-    protected int getCaretOffsetInPSI(@NotNull KotlinFileEditor activeEditor, IDocument document) {
-        int caretOffset = getCaretOffset(activeEditor);
-        return LineEndUtil.convertCrToDocumentOffset(document, caretOffset);
-    }
-    
-    
-    public boolean isDiagnosticActiveForElement(PsiElement element, @NotNull DiagnosticFactory<?> diagnosticType, @NotNull String attribute) {
-        KotlinFileEditor editor = getActiveEditor();
-        if (editor == null) {
-            return false;
-        }
-        
-        int caretOffset = getCaretOffset(editor);
-        DiagnosticAnnotation annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, caretOffset);
-        if (annotation != null) {
-            DiagnosticFactory<?> diagnostic = annotation.getDiagnostic();
-            return diagnostic != null ? diagnostic.equals(diagnosticType) : false;
-        }
-        
-        IFile file = EditorUtil.getFile(editor);
+        val file = editor.getFile()
         if (file == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-            return false;
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
+            return null
         }
         
-        IMarker marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, caretOffset);
-        return marker != null ? marker.getAttribute(attribute, false) : false;
+        val document = editor.document
+        val ktFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get())
+        if (ktFile == null) return null
+        
+        val caretOffset = LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(editor))
+        return ktFile.findElementAt(caretOffset)
+    }
+    
+    protected fun getCaretOffset(activeEditor: KotlinFileEditor): Int {
+        val selection = activeEditor.getSelectionProvider().getSelection()
+        return if (selection is ITextSelection) selection.getOffset() else activeEditor.getViewer().getTextWidget().getCaretOffset()
+    }
+    
+    protected fun getCaretOffsetInPSI(activeEditor: KotlinFileEditor, document: IDocument): Int {
+        return LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(activeEditor))
+    }
+    
+    fun isDiagnosticActiveForElement(diagnosticType: DiagnosticFactory<*>, attribute: String): Boolean {
+        val editor = getActiveEditor()
+        if (editor == null) return false
+        
+        val caretOffset = getCaretOffset(editor)
+        val annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, caretOffset)
+        if (annotation != null) {
+            val diagnostic = annotation.diagnostic
+            return if (diagnostic != null) diagnostic.equals(diagnosticType) else false
+        }
+        
+        val file = EditorUtil.getFile(editor)
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
+            return false
+        }
+        
+        val marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, caretOffset)
+        return if (marker != null) marker.getAttribute(attribute, false) else false
     }
 }

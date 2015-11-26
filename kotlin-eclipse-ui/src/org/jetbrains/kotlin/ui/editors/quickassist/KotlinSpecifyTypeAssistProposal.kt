@@ -67,9 +67,7 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
         return true
     }
     
-    override fun getDisplayString(): String? {
-        return displayString
-    }
+    override fun getDisplayString(): String = displayString ?: ""
     
     override fun apply(document: IDocument, psiElement: PsiElement) {
         val element = PsiTreeUtil.getNonStrictParentOfType(psiElement, KtCallableDeclaration::class.java)!!

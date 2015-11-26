@@ -56,7 +56,7 @@ public object AnnotationManager {
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
         if (annotationModel !is IAnnotationModelExtension) return
         
-        val newAnnotations = annotations.toMap({ it }, { it.getPosition() })
+        val newAnnotations = annotations.toMap({ it }, { it.position })
         val oldAnnotations = getLineMarkerAnnotations(annotationModel)
         updateAnnotations<DiagnosticAnnotation>(annotationModel, newAnnotations, oldAnnotations)
     }
@@ -75,12 +75,12 @@ public object AnnotationManager {
         val problemMarker = file.createMarker(MARKER_PROBLEM_TYPE)
         with(problemMarker) {
             setAttribute(IMarker.MESSAGE, annotation.getText())
-            setAttribute(IMarker.SEVERITY, annotation.getMarkerSeverity())
-            setAttribute(IMarker.CHAR_START, annotation.getRange().getStartOffset())
-            setAttribute(IMarker.CHAR_END, annotation.getRange().getEndOffset())
-            setAttribute(MARKED_TEXT, annotation.getMarkedText())
+            setAttribute(IMarker.SEVERITY, annotation.markerSeverity)
+            setAttribute(IMarker.CHAR_START, annotation.offset)
+            setAttribute(IMarker.CHAR_END, annotation.endOffset)
+            setAttribute(MARKED_TEXT, annotation.markedText)
             
-            val diagnostic = annotation.getDiagnostic()
+            val diagnostic = annotation.diagnostic
             val isUnresolvedReference = if (diagnostic != null) DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic) else false
             setAttribute(IS_UNRESOLVED_REFERENCE, isUnresolvedReference)
         }
