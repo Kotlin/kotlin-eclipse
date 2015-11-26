@@ -171,10 +171,10 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
         }
         
         
-        int offset = KotlinSearchDeclarationVisitorKt.findDeclarationInParsedFile(descriptor, targetEditor.getParsedFile());
-        int start = LineEndUtil.convertLfToDocumentOffset(kotlinFile.getText(), offset, editor.getDocument());
+        KtFile targetKtFile = targetEditor.getParsedFile();
+        int offset = KotlinSearchDeclarationVisitorKt.findDeclarationInParsedFile(descriptor, targetKtFile);
+        int start = LineEndUtil.convertLfToDocumentOffset(targetKtFile.getText(), offset, targetEditor.getDocument());
         targetEditor.selectAndReveal(start, 0);
-        
     }
     
     @Nullable
@@ -258,12 +258,14 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     
     private void gotoKotlinDeclaration(@NotNull PsiElement element, KotlinReference kotlinReference, @NotNull IJavaProject javaProject) throws PartInitException, JavaModelException {
         AbstractTextEditor targetEditor = findEditorForReferencedElement(element, kotlinReference, javaProject);
-        if (targetEditor == null) {
-            return;
-        }        
-        int start = LineEndUtil.convertLfToDocumentOffset(element.getContainingFile().getText(), 
-                element.getTextOffset(), editor.getDocument());
-        targetEditor.selectAndReveal(start, 0);
+        if (targetEditor == null) return;
+        
+        if (targetEditor instanceof KotlinEditor) {
+            KotlinEditor kotlinEditor = (KotlinEditor) targetEditor;
+            int start = LineEndUtil.convertLfToDocumentOffset(element.getContainingFile().getText(), 
+                    element.getTextOffset(), kotlinEditor.getDocument());
+            targetEditor.selectAndReveal(start, 0);
+        }
     }
     
     private AbstractTextEditor findEditorForReferencedElement(@NotNull PsiElement element,
