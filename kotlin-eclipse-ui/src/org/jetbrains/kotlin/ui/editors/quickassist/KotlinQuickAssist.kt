@@ -79,20 +79,22 @@ abstract class KotlinQuickAssist {
         val editor = getActiveEditor()
         if (editor == null) return false
         
-        val caretOffset = getCaretOffset(editor)
-        val annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, caretOffset)
-        if (annotation != null) {
-            val diagnostic = annotation.getDiagnostic()
-            return if (diagnostic != null) diagnostic.equals(diagnosticType) else false
-        }
-        
+        return isDiagnosticAnnotationActiveForElement(diagnosticType, editor) || isMarkerActiveForElement(attribute, editor)
+    }
+    
+    fun isDiagnosticAnnotationActiveForElement(diagnosticType: DiagnosticFactory<*>, editor: KotlinFileEditor): Boolean {
+        val annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, getCaretOffset(editor))
+        return annotation?.getDiagnostic()?.equals(diagnosticType) ?: false
+    }
+    
+    fun isMarkerActiveForElement(attribute: String, editor: KotlinFileEditor): Boolean {
         val file = EditorUtil.getFile(editor)
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
             return false
         }
         
-        val marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, caretOffset)
+        val marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, getCaretOffset(editor))
         return if (marker != null) marker.getAttribute(attribute, false) else false
     }
 }
