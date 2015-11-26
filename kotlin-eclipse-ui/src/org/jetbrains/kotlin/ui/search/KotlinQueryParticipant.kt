@@ -206,10 +206,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
             val beforeResolveCheck = beforeResolveFilters.all { it.isApplicable(element) }
             if (!beforeResolveCheck) return@filter false
             
-            val javaProject = KotlinPsiManager.getJavaProject(element)
-            if (javaProject == null) return@filter false
-            
-            val sourceElements = element.resolveToSourceDeclaration(javaProject)
+            val sourceElements = element.resolveToSourceDeclaration()
             if (sourceElements.isEmpty()) return@filter false
             
             val additionalElements = getContainingClassOrObjectForConstructor(sourceElements)

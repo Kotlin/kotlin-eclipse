@@ -21,7 +21,7 @@ abstract class KotlinLocalRenameTestCase : KotlinProjectTestCase() {
         
         val jetElement = EditorUtil.getJetElement(testEditor.getEditor() as KotlinFileEditor, 
                 KotlinTestUtils.getCaret(testEditor.getEditor()))!!
-        val sourceElements = jetElement.resolveToSourceDeclaration(testEditor.getTestJavaProject().getJavaProject())
+        val sourceElements = jetElement.resolveToSourceDeclaration()
         doRename(sourceElements, newName, testEditor.getEditor() as KotlinFileEditor)
         
         val expected = KotlinTestUtils.getText("${testPath}.after")

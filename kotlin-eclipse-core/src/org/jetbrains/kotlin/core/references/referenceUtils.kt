@@ -75,7 +75,7 @@ public fun getReferenceExpression(element: PsiElement): KtReferenceExpression? {
 	return PsiTreeUtil.getNonStrictParentOfType(element, KtReferenceExpression::class.java)
 }
 
-public fun KtElement.resolveToSourceDeclaration(javaProject: IJavaProject): List<SourceElement> {
+public fun KtElement.resolveToSourceDeclaration(): List<SourceElement> {
     val jetElement = this
     return when (jetElement) {
         is KtDeclaration -> {
