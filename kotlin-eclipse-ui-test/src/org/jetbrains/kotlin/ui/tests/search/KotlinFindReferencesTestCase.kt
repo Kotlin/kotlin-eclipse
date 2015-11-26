@@ -86,7 +86,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
             val element = jetFile.findElementByDocumentOffset(editor.getCaretOffset(), editor.getDocument())!!
             val jetElement = PsiTreeUtil.getNonStrictParentOfType(element, KtElement::class.java)!!
             
-            createQuerySpecification(jetElement, editor.getTestJavaProject().getJavaProject(), scope, "")
+            createQuerySpecification(jetElement, scope, "")
         }
     
     private fun checkResults(searchResult: ISearchResult, resultFile: File, sourceFiles: List<TestFile>) {

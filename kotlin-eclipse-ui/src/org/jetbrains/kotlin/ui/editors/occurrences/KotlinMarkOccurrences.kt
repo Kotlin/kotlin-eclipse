@@ -94,7 +94,7 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelect
     }
     
     private fun findOccurrences(editor: KotlinFileEditor, jetElement: KtElement, file: IFile): List<Position> {
-        val sourceElements = jetElement.resolveToSourceDeclaration(editor.javaProject!!)
+        val sourceElements = jetElement.resolveToSourceDeclaration()
         if (sourceElements.isEmpty()) return emptyList()
         
         val searchingElements = getSearchingElements(sourceElements)
