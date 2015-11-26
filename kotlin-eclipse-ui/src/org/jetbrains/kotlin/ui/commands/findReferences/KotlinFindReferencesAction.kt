@@ -106,7 +106,6 @@ public class KotlinFindReferencesInProjectAction(editor: KotlinFileEditor) : Kot
         val factory = JavaSearchScopeFactory.getInstance()
         return createQuerySpecification(
                 jetElement,
-                javaProject,
                 factory.createJavaProjectSearchScope(javaProject, false), 
                 factory.getProjectScopeDescription(javaProject, false))
     }
@@ -129,7 +128,6 @@ public class KotlinFindReferencesInWorkspaceAction(editor: KotlinFileEditor) : K
         val factory = JavaSearchScopeFactory.getInstance()
         return createQuerySpecification(
                 jetElement,
-                javaProject,
                 factory.createWorkspaceScope(false), 
                 factory.getWorkspaceScopeDescription(false))
     }
@@ -161,8 +159,7 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
     }
 }
 
-fun createQuerySpecification(jetElement: KtElement, javaProject: IJavaProject, scope: IJavaSearchScope, 
-        description: String): QuerySpecification {
-    val sourceElements = jetElement.resolveToSourceDeclaration(javaProject)
+fun createQuerySpecification(jetElement: KtElement, scope: IJavaSearchScope, description: String): QuerySpecification {
+    val sourceElements = jetElement.resolveToSourceDeclaration()
     return KotlinJavaQuerySpecification(sourceElements, IJavaSearchConstants.REFERENCES, scope, description)
 }

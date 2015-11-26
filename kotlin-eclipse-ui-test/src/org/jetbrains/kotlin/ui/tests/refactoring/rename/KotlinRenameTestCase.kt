@@ -81,7 +81,7 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         val selectedElement = EditorUtil.getJetElement(editor, selection.getOffset())
         if (selectedElement == null) return
         
-        val sourceDeclaration = selectedElement.resolveToSourceDeclaration(editor.javaProject!!)
+        val sourceDeclaration = selectedElement.resolveToSourceDeclaration()
         doRename(sourceDeclaration, newName, editor)
     }
     

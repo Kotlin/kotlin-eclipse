@@ -90,12 +90,11 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         val jetElement = EditorUtil.getJetElement(editor, selection.getOffset())
         if (jetElement == null) return
         
-        val javaProject = JavaCore.create(editor.getFile()!!.getProject())
-        performRefactoring(jetElement, javaProject)
+        performRefactoring(jetElement)
     }
     
-    fun performRefactoring(jetElement: KtElement, javaProject: IJavaProject) {
-        val sourceElements = jetElement.resolveToSourceDeclaration(javaProject)
+    fun performRefactoring(jetElement: KtElement) {
+        val sourceElements = jetElement.resolveToSourceDeclaration()
         if (sourceElements.isEmpty()) return
         
         beginRenameRefactoring(sourceElements, jetElement, editor)
