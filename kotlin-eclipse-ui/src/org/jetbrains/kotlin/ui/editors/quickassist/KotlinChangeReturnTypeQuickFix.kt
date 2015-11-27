@@ -27,7 +27,7 @@ public class KotlinChangeReturnTypeQuickFix : KotlinQuickAssistProposal() {
         if (editor == null) return
         
         val annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, getStartOffset(psiElement, editor))
-        val diagnostic = annotation?.getDiagnostic()
+        val diagnostic = annotation?.diagnostic
         if (diagnostic == null) return
     }
     
