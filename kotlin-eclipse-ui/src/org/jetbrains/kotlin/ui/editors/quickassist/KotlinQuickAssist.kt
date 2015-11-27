@@ -82,7 +82,7 @@ abstract class KotlinQuickAssist {
         val caretOffset = getCaretOffset(editor)
         val annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, caretOffset)
         if (annotation != null) {
-            val diagnostic = annotation.getDiagnostic()
+            val diagnostic = annotation.diagnostic
             return if (diagnostic != null) diagnostic.equals(diagnosticType) else false
         }
         
