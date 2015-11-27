@@ -52,9 +52,9 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     private static final String DEFAULT_SOURCE_FOLDER = "";
     private static final String DEFAULT_PACKAGE = "";
     
-    private static final String NAME_LABEL_TITLE = "Name";
-    private static final String SOURCE_FOLDER_LABEL_TITLE = "Source folder";
-    private static final String PACKAGE_LABEL_TITLE = "Package";
+    private static final String NAME_LABEL_TITLE = "Na&me";
+    private static final String SOURCE_FOLDER_LABEL_TITLE = "Source fol&der";
+    private static final String PACKAGE_LABEL_TITLE = "Pac&kage";
     
     private static final String ILLEGAL_UNIT_NAME_MESSAGE = "Please enter a legal compilation unit name";
     private static final String SELECT_SOURCE_FOLDER_MESSAGE = "Please select a source folder";
