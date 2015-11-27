@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
@@ -54,15 +55,10 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     
     private void performTest(IFile file, String expectedFileText, List<DiagnosticAnnotation> annotations) {
         try {
-        	file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
-        	for (DiagnosticAnnotation annotation : annotations) {
-        		AnnotationManager.INSTANCE.addProblemMarker(annotation, file);
-        	}
-        	
             IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
             String actual = insertTagsForErrors(loadEclipseFile(file), markers);
             
-            Assert.assertEquals(actual, expectedFileText);
+            Assert.assertEquals(expectedFileText, actual);
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
@@ -82,6 +78,11 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
 		List<Pair<IFile, String>> filesWithExpectedData = loadFilesToProject(files);
 		
 		KotlinTestUtils.joinBuildThread();
+		for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {
+		    KotlinTestUtils.reconcileJavaFile(fileAndExpectedData.getFirst());
+		}
+		KotlinTestUtils.joinBuildThread();
+		
 		
 		IJavaProject javaProject = getTestProject().getJavaProject();
 		BindingContext bindingContext = KotlinAnalysisProjectCache.INSTANCE.getAnalysisResult(javaProject).getBindingContext();
@@ -113,7 +114,7 @@ public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCa
     }
     
     private String loadEclipseFile(IFile file) {
-        return KotlinTestUtils.getText(file.getLocation().toOSString());
+        return EditorUtil.getDocument(file).get();
     }
     
     private static String insertTagsForErrors(String fileText, IMarker[] markers) throws CoreException {
