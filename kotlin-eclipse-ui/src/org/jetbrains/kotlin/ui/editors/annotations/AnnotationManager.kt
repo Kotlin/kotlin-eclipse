@@ -76,8 +76,8 @@ public object AnnotationManager {
         with(problemMarker) {
             setAttribute(IMarker.MESSAGE, annotation.getText())
             setAttribute(IMarker.SEVERITY, annotation.markerSeverity)
-            setAttribute(IMarker.CHAR_START, annotation.range.getStartOffset())
-            setAttribute(IMarker.CHAR_END, annotation.range.getEndOffset())
+            setAttribute(IMarker.CHAR_START, annotation.offset)
+            setAttribute(IMarker.CHAR_END, annotation.endOffset)
             setAttribute(MARKED_TEXT, annotation.markedText)
             
             val diagnostic = annotation.diagnostic

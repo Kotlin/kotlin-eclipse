@@ -187,8 +187,7 @@ public class DiagnosticAnnotationUtil {
             if (annotation instanceof DiagnosticAnnotation) {
                 DiagnosticAnnotation diagnosticAnnotation = (DiagnosticAnnotation) annotation;
                 
-                TextRange range = diagnosticAnnotation.getRange();
-                if (range.getStartOffset() <= offset && range.getEndOffset() >= offset) {
+                if (diagnosticAnnotation.getOffset() <= offset && offset <= DiagnosticAnnotationKt.getEndOffset(diagnosticAnnotation)) {
                     return diagnosticAnnotation;
                 }
             }

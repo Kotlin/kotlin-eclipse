@@ -23,16 +23,12 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import com.intellij.openapi.util.TextRange
 
 class DiagnosticAnnotation(
-        offset: Int,
-        length: Int,
+        val offset: Int,
+        val length: Int,
         val annotationType: String, 
         val message: String, 
         val markedText: String, 
         val diagnostic: DiagnosticFactory<*>?) : Annotation(annotationType, true, message) {
-    
-    val position = Position(offset, length)
-    
-    val range = TextRange(offset, offset + length)
     
     val markerSeverity = when (getType()) {
         AnnotationManager.ANNOTATION_ERROR_TYPE -> IMarker.SEVERITY_ERROR
@@ -40,3 +36,9 @@ class DiagnosticAnnotation(
         else -> 0
     }
 }
+
+val DiagnosticAnnotation.position: Position
+    get() = Position(offset, length)
+
+val DiagnosticAnnotation.endOffset: Int
+    get() = offset + length
