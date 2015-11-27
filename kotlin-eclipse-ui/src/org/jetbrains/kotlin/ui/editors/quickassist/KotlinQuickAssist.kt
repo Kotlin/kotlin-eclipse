@@ -79,12 +79,12 @@ abstract class KotlinQuickAssist {
         val editor = getActiveEditor()
         if (editor == null) return false
         
-        return isDiagnosticAnnotationActiveForElement(diagnosticType, editor) || isMarkerActiveForElement(attribute, editor)
+        return isDiagnosticAnnotationActiveForElement(editor, diagnosticType) || isMarkerActiveForElement(attribute, editor)
     }
     
-    fun isDiagnosticAnnotationActiveForElement(diagnosticType: DiagnosticFactory<*>, editor: KotlinFileEditor): Boolean {
+    fun isDiagnosticAnnotationActiveForElement(editor: KotlinFileEditor, vararg diagnosticTypes: DiagnosticFactory<*>): Boolean {
         val annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, getCaretOffset(editor))
-        return annotation?.diagnostic?.equals(diagnosticType) ?: false
+        return annotation?.diagnostic?.factory in diagnosticTypes
     }
     
     fun isMarkerActiveForElement(attribute: String, editor: KotlinFileEditor): Boolean {
