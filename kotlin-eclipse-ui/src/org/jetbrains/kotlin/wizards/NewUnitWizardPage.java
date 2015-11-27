@@ -67,6 +67,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     private String packageName;
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
+    private Text nameField = null;
     private final IStructuredSelection selection;
     
     protected NewUnitWizardPage(String title, String description, String unitName, IStructuredSelection selection) {
@@ -103,10 +104,19 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         
         createSeparator(parent);
         
-        Text name = createNameField(parent);
-        name.forceFocus();
+        nameField = createNameField(parent);
     }
     
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            if (nameField != null) {
+                nameField.setFocus();
+            }
+        }
+    }
+
     private Text createNameField(Composite parent) {
         createLabel(parent, NAME_LABEL_TITLE);
         
