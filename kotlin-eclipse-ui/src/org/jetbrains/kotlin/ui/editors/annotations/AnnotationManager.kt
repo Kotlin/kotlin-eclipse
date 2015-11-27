@@ -81,7 +81,9 @@ public object AnnotationManager {
             setAttribute(MARKED_TEXT, annotation.markedText)
             
             val diagnostic = annotation.diagnostic
-            val isUnresolvedReference = if (diagnostic != null) DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic) else false
+            val isUnresolvedReference = if (diagnostic != null) {
+                DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic.factory)
+            } else false
             setAttribute(IS_UNRESOLVED_REFERENCE, isUnresolvedReference)
         }
     }
