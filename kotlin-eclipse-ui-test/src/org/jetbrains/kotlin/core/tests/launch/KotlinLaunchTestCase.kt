@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2000-2014 JetBrains s.r.o.
+* Copyright 2000-2015 JetBrains s.r.o.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -32,6 +32,12 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase
 import org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut
 import org.junit.Assert
+import org.eclipse.core.runtime.NullProgressMonitor
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
+import org.eclipse.debug.internal.ui.DebugUIPlugin
+import org.eclipse.debug.core.DebugPlugin
+import org.eclipse.debug.core.ILaunchListener
+import org.eclipse.debug.core.ILaunch
 
 abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
     fun doTest(input: String, projectName: String, packageName: String, additionalSrcFolderName: String?) {
@@ -41,35 +47,49 @@ abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
             testEditor.getTestJavaProject().createSourceFolder(additionalSrcFolderName)
         }
         
-        launchInForeground()
-        Assert.assertNotNull(findOutputConsole())
+        KotlinTestUtils.joinBuildThread()
+        
+        val output = launchInForeground()
+        Assert.assertEquals("ok", output)
     }
     
-    private fun findOutputConsole(): IConsole? {
-        val consoleManager = ConsolePlugin.getDefault().getConsoleManager()
-        return consoleManager.getConsoles().find { it.getType() == IDebugUIConstants.ID_PROCESS_CONSOLE_TYPE }
-    }
-    
-    private fun launchInForeground() {
-        val launchConfiguration = KotlinLaunchShortcut.createConfiguration(testEditor.getEditingFile())
-        val job = object : WorkspaceJob("test") {
-            override fun runInWorkspace(monitor: IProgressMonitor?):IStatus? {
-                monitor!!.beginTask("test started", 1)
-                try {
-                    launchConfiguration!!.launch("run", SubProgressMonitor(monitor, 1), true)
-                } catch (e: CoreException) {
-                    KotlinLogger.logAndThrow(e)
-                    return Status.CANCEL_STATUS
-                } finally {
-                    monitor.done()
+    private fun launchInForeground(): String {
+        val stdout = StringBuilder()
+        val launchListener = object : ILaunchListener {
+            override fun launchRemoved(launch: ILaunch) {
+            }
+            
+            override fun launchChanged(launch: ILaunch) {
+                with(launch.processes[0].streamsProxy) {
+                    outputStreamMonitor.addListener { text, monitor -> stdout.append(text) }
+                    errorStreamMonitor.addListener { text, monitor -> stdout.append(text) }
                 }
-                
-                return Status.OK_STATUS
+            }
+            
+            override fun launchAdded(launch: ILaunch) {
             }
         }
         
-        joinBuildThread()
-        job.schedule()
-        job.join()
+        DebugPlugin.getDefault().getLaunchManager().addLaunchListener(launchListener)
+        
+        var launch: ILaunch? = null
+        try {
+            val launchConfiguration = KotlinLaunchShortcut.createConfiguration(testEditor.getEditingFile())
+            launch = DebugUIPlugin.buildAndLaunch(launchConfiguration, "run", NullProgressMonitor())
+            
+            synchronized (launch) {
+                for (attempt in 0..50) {
+                    if (launch!!.isTerminated) break
+                    (launch as java.lang.Object).wait(100)
+                }
+            }
+            
+            if (!launch.isTerminated) stdout.append("Launch not terminated")
+        } finally {
+            launch!!.terminate()
+            DebugPlugin.getDefault().getLaunchManager().removeLaunchListener(launchListener)
+        }
+        
+        return stdout.toString()
     }
 }
