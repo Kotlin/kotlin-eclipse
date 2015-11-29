@@ -1,149 +1,123 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.editors;
+* Copyright 2000-2015 JetBrains s.r.o.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+*******************************************************************************/
+package org.jetbrains.kotlin.ui.tests.editors
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.io.File
+import java.util.Arrays
+import java.util.Collections
+import kotlin.Pair
+import org.eclipse.core.resources.IFile
+import org.eclipse.core.resources.IMarker
+import org.eclipse.core.resources.IResource
+import org.eclipse.core.runtime.CoreException
+import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
+import org.jetbrains.kotlin.testframework.utils.SourceFileData
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
+import org.junit.Assert
+import org.junit.Before
+import com.google.common.collect.Lists
 
-import kotlin.Pair;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IJavaProject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
-import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase;
-import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
-import org.jetbrains.kotlin.testframework.utils.SourceFileData;
-import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager;
-import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation;
-import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil;
-import org.junit.Assert;
-import org.junit.Before;
-
-import com.google.common.collect.Lists;
-
-public abstract class KotlinAnalyzerInIDETestCase extends KotlinEditorAutoTestCase {
-    
+abstract class KotlinAnalyzerInIDETestCase : KotlinEditorAutoTestCase() {
     @Before
-    public void before() {
-        configureProjectWithStdLib();
+    fun before() {
+        configureProjectWithStdLib()
     }
     
-    private static final String ANALYZER_TEST_DATA_PATH_SEGMENT = "ide_analyzer";
+    private fun performTest(file: IFile, expectedFileText: String, annotations: List<DiagnosticAnnotation>) {
+        file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE)
+        for (annotation in annotations) {
+            AnnotationManager.addProblemMarker(annotation, file)
+        }
+        
+        val markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE)
+        val actual = insertTagsForErrors(loadEclipseFile(file), markers)
+        Assert.assertEquals(actual, expectedFileText)
+    }
     
-    private void performTest(IFile file, String expectedFileText, List<DiagnosticAnnotation> annotations) {
-        try {
-        	file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE);
-        	for (DiagnosticAnnotation annotation : annotations) {
-        		AnnotationManager.INSTANCE.addProblemMarker(annotation, file);
-        	}
-        	
-            IMarker[] markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
-            String actual = insertTagsForErrors(loadEclipseFile(file), markers);
-            
-            Assert.assertEquals(actual, expectedFileText);
-        } catch (CoreException e) {
-            throw new RuntimeException(e);
+    override fun doSingleFileAutoTest(testPath: String) {
+        loadFilesToProjectAndDoTest(Collections.singletonList(File(testPath)))
+    }
+    
+    override fun doMultiFileAutoTest(testFolder: File) {
+        loadFilesToProjectAndDoTest(testFolder.listFiles().toList())
+    }
+    
+    private fun loadFilesToProjectAndDoTest(files: List<File>) {
+        val filesWithExpectedData = loadFilesToProject(files)
+        
+        KotlinTestUtils.joinBuildThread()
+        
+        val javaProject = getTestProject().getJavaProject()
+        val bindingContext = KotlinAnalysisProjectCache.getAnalysisResult(javaProject).bindingContext
+        val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(bindingContext.getDiagnostics())
+        for (fileAndExpectedData in filesWithExpectedData) {
+            val file = fileAndExpectedData.first
+            if (annotations.containsKey(file)) {
+                performTest(file, fileAndExpectedData.second, annotations.get(file)!!)
+            }
         }
     }
     
-    @Override
-    protected void doSingleFileAutoTest(String testPath) {
-        loadFilesToProjectAndDoTest(Collections.singletonList(new File(testPath)));
-    }
-    
-    @Override
-    protected void doMultiFileAutoTest(File testFolder) {
-        loadFilesToProjectAndDoTest(Arrays.asList(testFolder.listFiles()));
-    }
-    
-    private void loadFilesToProjectAndDoTest(@NotNull List<File> files) {
-		List<Pair<IFile, String>> filesWithExpectedData = loadFilesToProject(files);
-		
-		KotlinTestUtils.joinBuildThread();
-		
-		IJavaProject javaProject = getTestProject().getJavaProject();
-		BindingContext bindingContext = KotlinAnalysisProjectCache.INSTANCE.getAnalysisResult(javaProject).getBindingContext();
-		Map<IFile, List<DiagnosticAnnotation>> annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(bindingContext.getDiagnostics());
-		
-		for (Pair<IFile, String> fileAndExpectedData : filesWithExpectedData) {
-			IFile file = fileAndExpectedData.getFirst();
-			if (annotations.containsKey(file)) {
-				performTest(
-						file, 
-						fileAndExpectedData.getSecond(), 
-						annotations.get(file));
-			}
-		}
-    }
-    
-    private List<Pair<IFile, String>> loadFilesToProject(@NotNull List<File> files) {
-        List<Pair<IFile, String>> filesWithExpectedData = Lists.newArrayList(); 
-        for (File file : files) {
-            String input = KotlinTestUtils.getText(file.getAbsolutePath());
-            String resolvedInput = KotlinTestUtils.resolveTestTags(input);
-            filesWithExpectedData.add(new Pair<IFile, String>(
-                    createSourceFile(SourceFileData.getPackageFromContent(resolvedInput), file.getName(), 
-                            KotlinTestUtils.resolveTestTags(resolvedInput)), 
-                    input));
+    private fun loadFilesToProject(files: List<File>): List<Pair<IFile, String>> {
+        return files.map { file ->
+            val input = KotlinTestUtils.getText(file.getAbsolutePath())
+            val resolvedInput = KotlinTestUtils.resolveTestTags(input)
+            Pair<IFile, String>(
+                createSourceFile(
+                    SourceFileData.getPackageFromContent(resolvedInput), 
+                    file.getName(),
+                    KotlinTestUtils.resolveTestTags(resolvedInput)),
+                input)
         }
-        
-        return filesWithExpectedData;
     }
     
-    private String loadEclipseFile(IFile file) {
-        return KotlinTestUtils.getText(file.getLocation().toOSString());
+    private fun loadEclipseFile(file: IFile): String {
+        return KotlinTestUtils.getText(file.getLocation().toOSString())
     }
     
-    private static String insertTagsForErrors(String fileText, IMarker[] markers) throws CoreException {
-        StringBuilder result = new StringBuilder(fileText);
-        
-        Integer offset = 0;
-        for (IMarker marker : markers) {
-        	if (!(marker.getAttribute(IMarker.SEVERITY, 0) == IMarker.SEVERITY_ERROR)) {
-        		continue;
-        	}
-        	
-        	offset += insertTagByOffset(result, KotlinTestUtils.ERROR_TAG_OPEN, getTagStartOffset(marker, IMarker.CHAR_START), offset);
-        	offset += insertTagByOffset(result, KotlinTestUtils.ERROR_TAG_CLOSE, getTagStartOffset(marker, IMarker.CHAR_END), offset);
+    override fun getTestDataRelativePath() = ANALYZER_TEST_DATA_PATH_SEGMENT
+}
+
+private val ANALYZER_TEST_DATA_PATH_SEGMENT = "ide_analyzer"
+
+private fun insertTagsForErrors(fileText: String, markers: Array<IMarker>): String {
+    val result = StringBuilder(fileText)
+    var offset = 0
+    for (marker in markers) {
+        if (!(marker.getAttribute(IMarker.SEVERITY, 0) === IMarker.SEVERITY_ERROR)) {
+            continue
         }
-        
-        return result.toString();
+        offset += insertTagByOffset(result, KotlinTestUtils.ERROR_TAG_OPEN, getTagStartOffset(marker, IMarker.CHAR_START), offset.toInt())
+        offset += insertTagByOffset(result, KotlinTestUtils.ERROR_TAG_CLOSE, getTagStartOffset(marker, IMarker.CHAR_END), offset.toInt())
     }
     
-    private static int getTagStartOffset(IMarker marker, String type) throws CoreException {
-        return (int) marker.getAttribute(type);
-    }
-    
-    private static int insertTagByOffset(StringBuilder builder, String tag, int tagStartOffset, int offset) {
-    	int tagOffset = tagStartOffset + offset;
-		builder.insert(tagOffset, tag);
-        return tag.length();
-    }
-    
-    @Override
-    protected String getTestDataRelativePath() {
-        return ANALYZER_TEST_DATA_PATH_SEGMENT;
-    }
+    return result.toString()
+}
+
+private fun getTagStartOffset(marker: IMarker, type: String): Int = marker.getAttribute(type) as Int
+
+private fun insertTagByOffset(builder: StringBuilder, tag: String, tagStartOffset: Int, offset: Int): Int {
+    val tagOffset = tagStartOffset + offset
+    builder.insert(tagOffset, tag)
+    return tag.length
 }
