@@ -46,6 +46,8 @@ public class KotlinNature: IProjectNature {
         
         @JvmStatic
         fun hasKotlinBuilder(project: IProject) : Boolean {
+            if (!project.isAccessible) return false
+            
             return project.getDescription().getBuildSpec().any { 
                 KOTLIN_BUILDER == it.getBuilderName()
             }
