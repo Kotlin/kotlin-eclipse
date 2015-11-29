@@ -91,6 +91,8 @@ public class TestJavaProject {
                 setNatureSpecificProperties();
                 setDefaultSettings();
                 
+                IFolder outputFolder = createFolderIfNotExist("bin");
+                createOutputFolder(outputFolder);
             }
         } catch (CoreException e) {
             throw new RuntimeException(e);
@@ -158,6 +160,11 @@ public class TestJavaProject {
             sourceFolder = createSourceFolder(SRC_FOLDER);
         }
         return sourceFolder.createPackageFragment(name, true, null);
+    }
+    
+    private void createOutputFolder(IFolder outputFolder) throws JavaModelException {
+        IPath outputLocation = outputFolder.getFullPath();
+        javaProject.setOutputLocation(outputLocation, null);
     }
     
     public IPackageFragmentRoot createSourceFolder(String srcFolderName) throws CoreException {

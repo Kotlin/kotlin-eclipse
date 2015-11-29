@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class KotlinLaunchTest extends KotlinLaunchTestCase {
     
-    private static final String SOURCE_CODE = "fun main(args : Array<String>) {}";
+    private static final String SOURCE_CODE = "fun main(args : Array<String>) { print(\"ok\") }";
     
     @Test
     public void launchSimpleProject() {
@@ -40,5 +40,10 @@ public class KotlinLaunchTest extends KotlinLaunchTestCase {
     @Test
     public void launchWhenSourceFolderHaveSpace() {
         doTest(SOURCE_CODE, "testProject", "pckg", "src directory");
+    }
+    
+    @Test
+    public void launchFileWithJvmNameAnnotation() {
+        doTest("@file:JvmName(\"some\") " + SOURCE_CODE, "testProject", "some.pckg", null);
     }
 }
