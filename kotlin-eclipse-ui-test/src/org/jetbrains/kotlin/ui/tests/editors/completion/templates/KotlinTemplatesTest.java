@@ -24,7 +24,7 @@ public class KotlinTemplatesTest extends KotlinTemplatesTestCase {
 	@Test
 	public void completeMainTemplate() {
 		doTest("main<caret>", 
-				"fun main(args : Array<String>) {<br>" +
+				"fun main(args: Array<String>) {<br>" +
 				"\t<caret><br>" +
 				"}");
 	}
@@ -36,7 +36,7 @@ public class KotlinTemplatesTest extends KotlinTemplatesTestCase {
 				"mai<caret>",
 				
 				"// comment<br>" +
-				"fun main(args : Array<String>) {<br>" +
+				"fun main(args: Array<String>) {<br>" +
 				"\t<caret><br>" +
 				"}");
 	}
@@ -64,7 +64,7 @@ public class KotlinTemplatesTest extends KotlinTemplatesTestCase {
 		doTest(
 				"main<caret>",
 				
-				"fun main(args : Array<String>) {<br>" +
+				"fun main(args: Array<String>) {<br>" +
 				"  <caret><br>" +
 				"}", 
 				

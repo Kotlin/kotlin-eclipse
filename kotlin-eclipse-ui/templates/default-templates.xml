@@ -1,7 +1,7 @@
 <templates>
 
 <template name="main" description="An entry point for Kotlin program" id="org.jetbrains.kotlin.ui.editors.templates.main" 
-	context="kotlin-top-level-declarations" enabled="true" autoinsert="true">fun main(args : Array&lt;String&gt;) {
+	context="kotlin-top-level-declarations" enabled="true" autoinsert="true">fun main(args: Array&lt;String&gt;) {
 	${cursor}
 }</template>
 
