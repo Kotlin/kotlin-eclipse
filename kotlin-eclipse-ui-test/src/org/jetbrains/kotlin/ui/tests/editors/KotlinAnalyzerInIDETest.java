@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
@@ -36,7 +35,6 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
     }
     
     @Test
-    @Ignore
     public void analyzerHasKotlinAnnotations() {
         doAutoTest();
     }
@@ -56,7 +54,6 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
         doAutoTest();
     }
     
-    @Ignore
     @Test
     public void kotlinJavaKotlin() {
         doAutoTest();
@@ -73,7 +70,7 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
     }
     
     @Test
-    public void classObjectFromJava() {
+    public void companionObjectFromJava() {
         doAutoTest();
     }
     

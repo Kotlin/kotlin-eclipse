@@ -1,6 +1,6 @@
 class Foo {
 	public void some() {
-		_DefaultPackage.topLevel1();
-		_DefaultPackage.topLevel2();
+		BarKt.topLevel1();
+		BazKt.topLevel2();
 	}
 }
