@@ -135,10 +135,7 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
                     val relative = Path(it.getPath()).makeRelativeTo(base)
                     val element = getTestProject().getJavaProject().findElement(relative)
                     if (element is ICompilationUnit) {
-                        element.becomeWorkingCopy(null)
-                        element.reconcile(ICompilationUnit.NO_AST, true, null, null)
-                        element.commitWorkingCopy(true, null)
-                        element.discardWorkingCopy()
+                        KotlinTestUtils.reconcileCompilationUnit(element)
                     }
                 }
                 

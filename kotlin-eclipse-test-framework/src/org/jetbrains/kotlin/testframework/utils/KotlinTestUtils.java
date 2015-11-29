@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 
 import com.intellij.openapi.util.io.FileUtil;
@@ -60,5 +62,16 @@ public class KotlinTestUtils {
     public static String resolveTestTags(String text) {
         return text.replaceAll(ERROR_TAG_OPEN, "").replaceAll(ERROR_TAG_CLOSE, "").replaceAll(BR,
                 System.lineSeparator());
+    }
+    
+    public static void reconcileCompilationUnit(ICompilationUnit element) {
+        try {
+            element.becomeWorkingCopy(null);
+            element.reconcile(ICompilationUnit.NO_AST, true, null, null);
+            element.commitWorkingCopy(true, null);
+            element.discardWorkingCopy();
+        } catch (JavaModelException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
