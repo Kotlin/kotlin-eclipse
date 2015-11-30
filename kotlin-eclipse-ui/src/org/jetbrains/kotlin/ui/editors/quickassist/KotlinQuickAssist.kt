@@ -34,6 +34,8 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
+import org.eclipse.jdt.core.IJavaProject
 
 abstract class KotlinQuickAssist {
     abstract fun isApplicable(psiElement: PsiElement): Boolean
@@ -85,6 +87,15 @@ abstract class KotlinQuickAssist {
     fun isDiagnosticAnnotationActiveForElement(editor: KotlinFileEditor, vararg diagnosticTypes: DiagnosticFactory<*>): Boolean {
         val annotation = DiagnosticAnnotationUtil.INSTANCE.getAnnotationByOffset(editor, getCaretOffset(editor))
         return annotation?.diagnostic?.factory in diagnosticTypes
+    }
+    
+    fun isDiagnosticActiveForElement(editor: KotlinFileEditor, vararg diagnosticTypes: DiagnosticFactory<*>): Boolean {
+        val ktFile = editor.parsedFile!!
+        val javaProject = editor.javaProject!!
+        val diagnostics = KotlinAnalysisFileCache.getAnalysisResult(ktFile, javaProject).analysisResult.bindingContext.diagnostics
+        for (diagnostic in diagnostics) {
+            val textRanges = diagnostic.textRanges
+        }
     }
     
     fun isMarkerActiveForElement(attribute: String, editor: KotlinFileEditor): Boolean {

@@ -221,4 +221,10 @@ public class DiagnosticAnnotationUtil {
     public static boolean isUnresolvedReference(@NotNull DiagnosticFactory<?> diagnostic) {
         return Errors.UNRESOLVED_REFERENCE.equals(diagnostic);
     }
+    
+    public static boolean isTypeMismatchCanBeFixed(@NotNull DiagnosticFactory<?> diagnostic) {
+        return Errors.CONSTANT_EXPECTED_TYPE_MISMATCH.equals(diagnostic) ||
+                Errors.TYPE_MISMATCH.equals(diagnostic) ||
+                Errors.NULL_FOR_NONNULL_TYPE.equals(diagnostic);
+    }
 }

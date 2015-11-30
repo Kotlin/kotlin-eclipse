@@ -48,9 +48,10 @@ public object AnnotationManager {
     
     @JvmField val ANNOTATION_ERROR_TYPE = "org.jetbrains.kotlin.ui.annotation.error"
     @JvmField val ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning"
-    val MARKED_TEXT = "markedText"
+    @JvmField val MARKED_TEXT = "markedText"
     @JvmField val IS_UNRESOLVED_REFERENCE = "isUnresolvedReference"
     @JvmField val MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER
+    @JvmField val IS_TYPE_MISMATCH = "isTypeMismatch"
     
     public fun updateAnnotations(editor: AbstractTextEditor, annotations: List<DiagnosticAnnotation>) {
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
