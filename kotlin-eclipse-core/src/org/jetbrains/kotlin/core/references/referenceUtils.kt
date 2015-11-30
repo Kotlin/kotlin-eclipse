@@ -41,8 +41,10 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 
 public val FILE_PROJECT: Key<IJavaProject> = Key.create("FILE_PROJECT")
 
-public fun KotlinReference.resolveToSourceElements(): List<SourceElement> {
-    val jetFile = expression.getContainingKtFile()
+public fun List<KotlinReference>.resolveToSourceElements(): List<SourceElement> {
+    if (isEmpty()) return emptyList()
+    
+    val jetFile = first().expression.getContainingKtFile()
     val javaProject = JavaCore.create(KotlinPsiManager.getEclispeFile(jetFile)?.getProject()) 
                       ?: jetFile.getUserData(FILE_PROJECT)
     if (javaProject == null) return emptyList()
@@ -52,8 +54,9 @@ public fun KotlinReference.resolveToSourceElements(): List<SourceElement> {
                 javaProject)
 }
 
-public fun KotlinReference.resolveToSourceElements(context: BindingContext, project: IJavaProject): List<SourceElement> {
-    return getTargetDescriptors(context).flatMap { EclipseDescriptorUtils.descriptorToDeclarations(it, project) }
+public fun List<KotlinReference>.resolveToSourceElements(context: BindingContext, project: IJavaProject): List<SourceElement> {
+    return flatMap { it.getTargetDescriptors(context) }
+            .flatMap { EclipseDescriptorUtils.descriptorToDeclarations(it, project) }
 }
 
 public fun getReferenceExpression(element: PsiElement): KtReferenceExpression? {
@@ -72,7 +75,7 @@ public fun KtElement.resolveToSourceDeclaration(javaProject: IJavaProject): List
             val referenceExpression = getReferenceExpression(jetElement)
             if (referenceExpression == null) return emptyList()
             
-            val reference = createReference(referenceExpression)
+            val reference = createReferences(referenceExpression)
             reference.resolveToSourceElements()
         } 
     }

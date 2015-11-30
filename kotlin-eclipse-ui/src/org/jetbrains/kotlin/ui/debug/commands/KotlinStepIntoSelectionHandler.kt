@@ -25,7 +25,7 @@ import org.eclipse.jdt.internal.debug.ui.EvaluationContextManager
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.core.references.resolveToSourceElements
-import org.jetbrains.kotlin.core.references.createReference
+import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
@@ -62,7 +62,7 @@ private fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelectio
     val expression = getReferenceExpression(psiElement)
     if (expression == null) return
     
-    val sourceElements = createReference(expression).resolveToSourceElements()
+    val sourceElements = createReferences(expression).resolveToSourceElements()
     val javaElements = sourceElementsToLightElements(sourceElements)
     if (javaElements.size > 1) {
         KotlinLogger.logWarning("There are more than one java element for $sourceElements")

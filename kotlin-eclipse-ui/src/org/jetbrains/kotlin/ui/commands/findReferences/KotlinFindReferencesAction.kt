@@ -33,7 +33,7 @@ import org.eclipse.ui.ISources
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.core.model.toLightElements
 import org.jetbrains.kotlin.core.references.KotlinReference
-import org.jetbrains.kotlin.core.references.createReference
+import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.core.references.resolveToSourceElements
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.IJavaProject

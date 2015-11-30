@@ -104,7 +104,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
             return;
         }
         
-        KotlinReference reference = KotlinReferenceKt.createReference(selectedExpression);
+        List<KotlinReference> reference = KotlinReferenceKt.createReferences(selectedExpression);
         SourceElement element = getTargetElement(reference);
         if (element == null) {
             return;
@@ -116,7 +116,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
                 return;
             }
             
-            gotoElement(element, reference, javaProject);
+            gotoElement(element, reference.get(0), javaProject);
         } catch (JavaModelException e) {
             KotlinLogger.logError(e);
         } catch (PartInitException e) {
@@ -125,7 +125,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     }
     
     @Nullable
-    private SourceElement getTargetElement(@NotNull KotlinReference reference) {
+    private SourceElement getTargetElement(@NotNull List<KotlinReference> reference) {
         List<SourceElement> sourceElements = ReferenceUtilsKt.resolveToSourceElements(reference);
         return sourceElements.size() == 1 ? sourceElements.get(0) : null; 
     }

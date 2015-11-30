@@ -31,13 +31,18 @@ import org.jetbrains.kotlin.resolve.calls.model.VariableAsFunctionResolvedCall
 import org.jetbrains.kotlin.psi.Call
 import org.jetbrains.kotlin.psi.KtConstructorDelegationReferenceExpression
 import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.psi.KtElement
+import java.util.ArrayList
 
-public fun createReference(element: KtReferenceExpression): KotlinReference {
-    return when(element) {
-        is KtSimpleNameExpression -> KotlinSimpleNameReference(element)
-        is KtCallExpression -> KotlinInvokeFunctionReference(element)
-        is KtConstructorDelegationReferenceExpression -> KotlinConstructorDelegationReference(element)
-        else -> throw UnsupportedOperationException("Reference for $element is not supported")
+inline private fun <reified T> ArrayList<KotlinReference>.register(e: KtElement, action: (T) -> KotlinReference) {
+    if (e is T) this.add(action(e))
+}
+
+public fun createReferences(element: KtReferenceExpression): List<KotlinReference> {
+    return arrayListOf<KotlinReference>().apply {
+        register<KtSimpleNameExpression>(element, ::KotlinSimpleNameReference)
+        register<KtCallExpression>(element, ::KotlinInvokeFunctionReference)
+        register<KtConstructorDelegationReferenceExpression>(element, ::KotlinConstructorDelegationReference)
     }
 }
 

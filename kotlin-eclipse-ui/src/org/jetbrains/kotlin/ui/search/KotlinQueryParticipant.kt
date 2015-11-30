@@ -47,7 +47,7 @@ import org.eclipse.jface.viewers.LabelProvider
 import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jdt.internal.core.JavaModel
 import org.eclipse.core.resources.IProject
-import org.jetbrains.kotlin.core.references.createReference
+import org.jetbrains.kotlin.core.references.createReferences
 import org.eclipse.core.runtime.IAdaptable
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.core.asJava.getDeclaringTypeFqName

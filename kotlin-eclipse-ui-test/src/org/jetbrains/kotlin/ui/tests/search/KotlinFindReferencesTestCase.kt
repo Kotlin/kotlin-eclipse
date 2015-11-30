@@ -41,7 +41,7 @@ import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
 import org.eclipse.core.resources.IResource
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.eclipse.jface.text.AbstractDocument
-import org.jetbrains.kotlin.core.references.createReference
+import org.jetbrains.kotlin.core.references.createReferences
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import kotlin.properties.Delegates

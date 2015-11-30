@@ -22,7 +22,7 @@ import org.eclipse.jface.text.ITextSelection
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.core.references.getReferenceExpression
-import org.jetbrains.kotlin.core.references.createReference
+import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.core.references.resolveToSourceElements
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.eclipse.jdt.internal.ui.refactoring.reorg.RenameLinkedMode

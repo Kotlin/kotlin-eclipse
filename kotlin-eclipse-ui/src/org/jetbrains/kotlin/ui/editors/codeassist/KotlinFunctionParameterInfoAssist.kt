@@ -41,7 +41,7 @@ import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.core.references.getReferenceExpression
-import org.jetbrains.kotlin.core.references.createReference
+import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.types.KotlinType
 
 public object KotlinFunctionParameterInfoAssist {
