@@ -1,0 +1,13 @@
+package navigation
+
+public class Foo {
+    private int bar = 3;
+    
+    public int getBar<caret>() {
+        return bar;
+    }
+    
+    public void setBar(int x) {
+        bar = x;
+    }
+}

@@ -1,0 +1,6 @@
+package navigation
+
+fun some() {
+    val foo = Foo()
+    foo.b<caret>ar
+}

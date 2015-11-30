@@ -1,0 +1,5 @@
+package navigation
+
+fun some() {
+    Foo().ba<caret>r
+}

@@ -127,7 +127,10 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     @Nullable
     private SourceElement getTargetElement(@NotNull List<KotlinReference> reference) {
         List<SourceElement> sourceElements = ReferenceUtilsKt.resolveToSourceElements(reference);
-        return sourceElements.size() == 1 ? sourceElements.get(0) : null; 
+        for (SourceElement sourceElement : sourceElements) {
+            if (!sourceElement.equals(SourceElement.NO_SOURCE)) return sourceElement;
+        }
+        return null; 
     }
     
     private void gotoElement(@NotNull SourceElement element, KotlinReference kotlinReference, @NotNull IJavaProject javaProject) throws JavaModelException, PartInitException {

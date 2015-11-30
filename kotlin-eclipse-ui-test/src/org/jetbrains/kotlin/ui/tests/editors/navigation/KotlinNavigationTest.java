@@ -65,4 +65,23 @@ public class KotlinNavigationTest extends KotlinNavigationTestCase {
         doAutoTest();
     }
     
+    @Test
+    public void fromSyntheticPropertyOnlyWithGetter() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void fromGetterSyntheticProperty() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void fromSetterSyntheticProperty() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void toJavaGetterMethod() {
+        doAutoTest();
+    }
 }
