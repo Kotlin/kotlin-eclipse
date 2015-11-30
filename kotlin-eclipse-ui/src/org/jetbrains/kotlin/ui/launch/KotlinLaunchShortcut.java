@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.fileClasses.FileClasses;
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider;
 import org.jetbrains.kotlin.idea.KotlinFileType;
+import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
@@ -121,7 +122,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
         
         try {
             configWC = configurationType.newInstance(null, "Config - " + file.getName());
-            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, getFileClassName(file));
+            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, getFileClassName(file).asString());
             configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, file.getProject().getName());
             
             configuration = configWC.doSave();
@@ -136,7 +137,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
     private ILaunchConfiguration findLaunchConfiguration(ILaunchConfigurationType configurationType, IFile mainClass) {
         try {
             ILaunchConfiguration[] configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(configurationType);
-            String mainClassName = getFileClassName(mainClass);
+            String mainClassName = getFileClassName(mainClass).asString();
             for (ILaunchConfiguration config : configs) {
                 if (config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, (String)null).equals(mainClassName) && 
                         config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, (String)null).equals(mainClass.getProject().getName())) {
@@ -150,9 +151,9 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
         return null;
     }
     
-    public static String getFileClassName(@NotNull IFile mainFile) {
+    public static FqName getFileClassName(@NotNull IFile mainFile) {
         KtFile ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile);
-        return FileClasses.getFileClassInternalName(NoResolveFileClassesProvider.INSTANCE, ktFile);
+        return FileClasses.getFileClassFqName(NoResolveFileClassesProvider.INSTANCE, ktFile);
     }
     
     private void addFiles(List<IFile> files, IResource resource) {
