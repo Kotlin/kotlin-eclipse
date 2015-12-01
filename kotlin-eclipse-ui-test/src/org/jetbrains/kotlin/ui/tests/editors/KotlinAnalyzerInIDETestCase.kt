@@ -36,6 +36,9 @@ import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import org.junit.Assert
 import org.junit.Before
 import com.google.common.collect.Lists
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.core.ICompilationUnit
 
 abstract class KotlinAnalyzerInIDETestCase : KotlinEditorAutoTestCase() {
     @Before
@@ -43,15 +46,10 @@ abstract class KotlinAnalyzerInIDETestCase : KotlinEditorAutoTestCase() {
         configureProjectWithStdLib()
     }
     
-    private fun performTest(file: IFile, expectedFileText: String, annotations: List<DiagnosticAnnotation>) {
-        file.deleteMarkers(AnnotationManager.MARKER_PROBLEM_TYPE, true, IResource.DEPTH_INFINITE)
-        for (annotation in annotations) {
-            AnnotationManager.addProblemMarker(annotation, file)
-        }
-        
+    private fun performTest(file: IFile, expectedFileText: String) {
         val markers = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE)
         val actual = insertTagsForErrors(loadEclipseFile(file), markers)
-        Assert.assertEquals(actual, expectedFileText)
+        Assert.assertEquals(expectedFileText, actual)
     }
     
     override fun doSingleFileAutoTest(testPath: String) {
@@ -67,14 +65,9 @@ abstract class KotlinAnalyzerInIDETestCase : KotlinEditorAutoTestCase() {
         
         KotlinTestUtils.joinBuildThread()
         
-        val javaProject = getTestProject().getJavaProject()
-        val bindingContext = KotlinAnalysisProjectCache.getAnalysisResult(javaProject).bindingContext
-        val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(bindingContext.getDiagnostics())
         for (fileAndExpectedData in filesWithExpectedData) {
             val file = fileAndExpectedData.first
-            if (annotations.containsKey(file)) {
-                performTest(file, fileAndExpectedData.second, annotations.get(file)!!)
-            }
+            performTest(file, fileAndExpectedData.second)
         }
     }
     
@@ -82,7 +75,7 @@ abstract class KotlinAnalyzerInIDETestCase : KotlinEditorAutoTestCase() {
         return files.map { file ->
             val input = KotlinTestUtils.getText(file.getAbsolutePath())
             val resolvedInput = KotlinTestUtils.resolveTestTags(input)
-            Pair<IFile, String>(
+            Pair(
                 createSourceFile(
                     SourceFileData.getPackageFromContent(resolvedInput), 
                     file.getName(),
@@ -91,9 +84,7 @@ abstract class KotlinAnalyzerInIDETestCase : KotlinEditorAutoTestCase() {
         }
     }
     
-    private fun loadEclipseFile(file: IFile): String {
-        return KotlinTestUtils.getText(file.getLocation().toOSString())
-    }
+    private fun loadEclipseFile(file: IFile): String = EditorUtil.getDocument(file).get()
     
     override fun getTestDataRelativePath() = ANALYZER_TEST_DATA_PATH_SEGMENT
 }

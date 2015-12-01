@@ -1,7 +1,7 @@
-import kotlin.eclipse.ide.IdePackage;
+import kotlin.eclipse.ide.BarKt;
 
 public class Foo {
     void foo() {
-        String some = IdePackage.some(1);
+        String some = BarKt.some(1);
     }
 }
