@@ -72,18 +72,6 @@ abstract class KotlinQuickAssistProposal : KotlinQuickAssist(), IJavaCompletionP
         replaceBetween(toReplace, toReplace, text)
     }
     
-    protected fun getBindingContext(jetFile: KtFile): BindingContext? {
-        return getAnalysisResultWithProvider(jetFile)?.analysisResult?.bindingContext
-    }
-    
-    protected fun getAnalysisResultWithProvider(jetFile:KtFile): AnalysisResultWithProvider? {
-        val file = getActiveFile()
-        if (file == null) return null
-        
-        val javaProject = JavaCore.create(file.getProject())
-        return KotlinAnalyzer.analyzeFile(javaProject, jetFile)
-    }
-    
     override fun getSelection(document:IDocument?): Point? = null
     
     override fun getAdditionalProposalInfo(): String? = null

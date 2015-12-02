@@ -1,5 +1,7 @@
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
+import java.io.File;
+
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
@@ -26,6 +28,10 @@ public abstract class AbstractKotlinQuickAssistTestCase<Proposal extends KotlinQ
 		String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");
         
+        String pathToExpectedFile = testPath + ".after";
+        File expectedFile = new File(pathToExpectedFile);
+        if (!expectedFile.exists()) isApplicableExpected = false;
+        
         if (joinBuildThread) {
         	KotlinTestUtils.joinBuildThread();
         }
@@ -40,7 +46,6 @@ public abstract class AbstractKotlinQuickAssistTestCase<Proposal extends KotlinQ
 			proposal.apply(testEditor.getEditor().getViewer().getDocument());
 	
 			if (shouldFailString == null) {
-				String pathToExpectedFile = testPath + ".after";
 				assertByEditor(testEditor.getEditor(), KotlinTestUtils.getText(pathToExpectedFile));
 			}
 		}
