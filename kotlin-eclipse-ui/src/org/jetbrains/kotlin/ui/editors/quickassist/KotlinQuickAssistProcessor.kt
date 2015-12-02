@@ -34,6 +34,6 @@ public class KotlinQuickAssistProcessor : IQuickAssistProcessor {
     }
     
     private fun getKotlinQuickAssistProposalsGenerators() : List<KotlinQuickAssistProposalsGenerator> {
-        return listOf(KotlinAutoImportProposalsGenerator())
+        return listOf(KotlinAutoImportProposalsGenerator(), KotlinChangeReturnTypeFixGenerator())
     }
 }

@@ -34,6 +34,9 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 
 abstract class KotlinQuickAssist {
     abstract fun isApplicable(psiElement: PsiElement): Boolean
@@ -73,6 +76,17 @@ abstract class KotlinQuickAssist {
     
     protected fun getCaretOffsetInPSI(activeEditor: KotlinFileEditor, document: IDocument): Int {
         return LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(activeEditor))
+    }
+    
+    protected fun getBindingContext(jetFile: KtFile): BindingContext? {
+        return getAnalysisResultWithProvider(jetFile)?.analysisResult?.bindingContext
+    }
+    
+    protected fun getAnalysisResultWithProvider(jetFile:KtFile): AnalysisResultWithProvider? {
+        val javaProject = KotlinPsiManager.getJavaProject(jetFile)
+        if (javaProject == null) return null
+        
+        return KotlinAnalyzer.analyzeFile(javaProject, jetFile)
     }
     
     fun isDiagnosticActiveForElement(diagnosticType: DiagnosticFactory<*>, attribute: String): Boolean {
