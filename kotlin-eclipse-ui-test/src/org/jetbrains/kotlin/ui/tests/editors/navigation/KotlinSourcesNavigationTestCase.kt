@@ -22,6 +22,8 @@ import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase
 import org.junit.rules.TestName
 import org.junit.Rule
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 
 abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
     
@@ -87,11 +89,10 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         val expectedFile = expectedTarget[0]
         val expectedName = expectedTarget[1]
         
-        val parsedFile = getParsedFile(editor)
-        
         val editorOffset = editor.javaEditor.getViewer().getTextWidget().getCaretOffset()
-        
-        val expression = parsedFile.findElementAt(editorOffset)?.getNonStrictParentOfType(PsiNamedElement::class.java)
+        val offsetInPSI = LineEndUtil.convertCrToDocumentOffset(editor.document, editorOffset)
+        val psiElement = getParsedFile(editor).findElementAt(offsetInPSI)
+        val expression = psiElement?.getNonStrictParentOfType(PsiNamedElement::class.java)
         
         Assert.assertEquals(expectedFile, editor.javaEditor.getTitleToolTip())
         Assert.assertEquals(expectedName, expression?.getName())

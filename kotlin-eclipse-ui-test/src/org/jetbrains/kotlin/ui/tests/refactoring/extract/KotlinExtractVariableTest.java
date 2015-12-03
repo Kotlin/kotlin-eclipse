@@ -20,7 +20,7 @@ public class KotlinExtractVariableTest extends KotlinExtractVariableTestCase {
     
     @Test
     public void testDelegatorToSuperCallInArgument() {
-        doTest("common_testData/ide/refactoring/introduceVariable/DelegatorToSuperCallInArgument.kt");
+        doTest("common_testData/ide/refactoring/introduceVariable/DelegatorToSuperCallInArgument.kt", "n");
     }
     
     @Test
@@ -60,7 +60,7 @@ public class KotlinExtractVariableTest extends KotlinExtractVariableTestCase {
     
     @Test
     public void testReplaceOccurence() {
-        doTest("common_testData/ide/refactoring/introduceVariable/ReplaceOccurence.kt");
+        doTest("common_testData/ide/refactoring/introduceVariable/ReplaceOccurence.kt", "x");
     }
     
     @Test

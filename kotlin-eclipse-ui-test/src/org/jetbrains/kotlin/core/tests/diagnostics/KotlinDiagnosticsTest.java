@@ -475,11 +475,6 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
 	}
 	
 	@Test
-	public void testSelfTypesUnsupported() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/SelfTypesUnsupported.kt");
-	}
-	
-	@Test
 	public void testPackageInTypePosition() throws Exception {
 		doTest("common_testData/compiler/diagnostics/tests/PackageInTypePosition.kt");
 	}
