@@ -28,21 +28,21 @@ class KotlinTokensFactory(val preferenceStore: IPreferenceStore, val colorManage
 
         val elementType = leafElement.getElementType()
         return when {
-            elementType in KtTokens.KEYWORDS,
-            elementType in KtTokens.SOFT_KEYWORDS,
+            elementType in KtTokens.KEYWORDS ||
+            elementType in KtTokens.SOFT_KEYWORDS ||
             elementType in KtTokens.MODIFIER_KEYWORDS -> keywordToken
 
             KtTokens.IDENTIFIER == elementType -> identifierToken
 
-            elementType in KtTokens.STRINGS,
-            KtTokens.OPEN_QUOTE == elementType,
+            elementType in KtTokens.STRINGS ||
+            KtTokens.OPEN_QUOTE == elementType ||
             KtTokens.CLOSING_QUOTE == elementType -> stringToken
 
             elementType in KtTokens.WHITESPACES -> whitespaceToken
 
             elementType == KtTokens.EOL_COMMENT -> singleLineCommentToken
 
-            elementType in KtTokens.COMMENTS,
+            elementType in KtTokens.COMMENTS ||
             elementType in KDocTokens.KDOC_HIGHLIGHT_TOKENS -> multiLineCommentToken
 
             KDocTokens.TAG_NAME == elementType -> kdocTagNameToken

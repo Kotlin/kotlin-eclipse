@@ -196,8 +196,7 @@ public class KotlinOpenDeclarationAction extends SelectionDispatchAction {
     private IClassFile findImplementingClass(KotlinJvmBinaryClass binaryClass, DeclarationDescriptor descriptor, IJavaProject javaProject)
             throws JavaModelException {
         Kind binaryClassKind = binaryClass.getClassHeader().getKind();
-        if (KotlinClassHeader.Kind.MULTIFILE_CLASS.equals(binaryClassKind) || 
-                KotlinClassHeader.Kind.PACKAGE_FACADE.equals(binaryClassKind)) {
+        if (KotlinClassHeader.Kind.MULTIFILE_CLASS.equals(binaryClassKind)) {
             return getImplementingFacadePart(binaryClass, descriptor, javaProject);
         }
         

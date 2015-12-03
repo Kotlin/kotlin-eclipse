@@ -16,7 +16,6 @@ import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver
 import org.jetbrains.kotlin.load.kotlin.DeserializationComponentsForJava
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.load.java.JavaClassFinderImpl
-import org.jetbrains.kotlin.load.java.components.TraceBasedExternalSignatureResolver
 import org.jetbrains.kotlin.load.java.components.LazyResolveBasedCache
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
 import org.jetbrains.kotlin.load.java.components.PsiBasedExternalAnnotationResolver
@@ -39,6 +38,7 @@ import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.resolve.CompilerEnvironment
 import org.jetbrains.kotlin.descriptors.PackagePartProvider
+import org.jetbrains.kotlin.load.java.components.SignaturePropagatorImpl
 
 fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: GlobalSearchScope, 
         project: Project, lookupTracker: LookupTracker) {
@@ -55,7 +55,7 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: G
     useInstance(JvmVirtualFileFinderFactory.SERVICE.getInstance(project).create(moduleContentScope))
 
     useImpl<EclipseJavaClassFinder>()
-    useImpl<TraceBasedExternalSignatureResolver>()
+    useImpl<SignaturePropagatorImpl>()
     useImpl<EclipseTraceBasedJavaResolverCache>()
     useImpl<TraceBasedErrorReporter>()
     useImpl<EclipseExternalAnnotationResolver>()

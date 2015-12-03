@@ -54,24 +54,21 @@ public fun DeclarationDescriptorWithVisibility.isVisible(
     element: KtSimpleNameExpression? = null
 ): Boolean {
     if (Visibilities.isVisible(ReceiverValue.IRRELEVANT_RECEIVER, this, from)) return true
+
     if (bindingContext == null || element == null) return false
 
-    val receiver = element.getReceiverExpression()
-    val type = receiver?.let { bindingContext.getType(it) }
-    val explicitReceiver = type?.let { ExpressionReceiver(receiver!!, it) }
-
-    if (explicitReceiver != null) {
-        val normalizeReceiver = ExpressionTypingUtils.normalizeReceiverValueForVisibility(explicitReceiver, bindingContext)
-        return Visibilities.isVisible(normalizeReceiver, this, from)
+    val receiverExpression = element.getReceiverExpression()
+    if (receiverExpression != null) {
+        val receiverType = bindingContext.getType(receiverExpression) ?: return false
+        val explicitReceiver = ExpressionReceiver.create(receiverExpression, receiverType, bindingContext)
+        return Visibilities.isVisible(explicitReceiver, this, from)
     }
-
-    val jetScope = element.getResolutionScope(bindingContext)
-    val implicitReceivers = jetScope.getImplicitReceiversHierarchy()
-    for (implicitReceiver in implicitReceivers) {
-        val normalizeReceiver = ExpressionTypingUtils.normalizeReceiverValueForVisibility(implicitReceiver.getValue(), bindingContext)
-        if (Visibilities.isVisible(normalizeReceiver, this, from)) return true
+    else {
+        val resolutionScope = element.getResolutionScope(bindingContext)
+        return resolutionScope.getImplicitReceiversHierarchy().any {
+            Visibilities.isVisible(it.value, this, from)
+        }
     }
-    return false
 }
 
 //from idea/idea-completion/src/org/jetbrains/kotlin/idea/completion/CompletionSession.kt

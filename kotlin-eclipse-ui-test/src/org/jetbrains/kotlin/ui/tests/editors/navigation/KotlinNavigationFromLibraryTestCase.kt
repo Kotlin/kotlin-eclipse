@@ -53,7 +53,7 @@ open public class KotlinNavigationFromLibraryTestCase: KotlinProjectTestCase() {
         return JavaUI.openInEditor(cls, true, true) //activate = true, reveal = true
     }
 
-    public fun configureEditor(editor: KotlinClassFileEditor, testData: TestData) {
+    private fun configureEditor(editor: KotlinClassFileEditor, testData: TestData) {
         val functionBody = testData.functionToTest.getBodyExpression()!!
 
         val offset = functionBody.getTextOffset() + functionBody.getText().indexOf(testData.referenceText)
