@@ -30,7 +30,8 @@ public class KotlinQuickAssistProcessor : IQuickAssistProcessor {
             KotlinRemoveExplicitTypeAssistProposal(),
             KotlinImplementMethodsProposal(),
             KotlinConvertToExpressionBodyAssistProposal(),
-	KotlinConvertToBlockBodyAssistProposal())
+            KotlinConvertToBlockBodyAssistProposal(),
+            KotlinChangeReturnTypeProposal())
     }
     
     private fun getKotlinQuickAssistProposalsGenerators() : List<KotlinQuickAssistProposalsGenerator> {

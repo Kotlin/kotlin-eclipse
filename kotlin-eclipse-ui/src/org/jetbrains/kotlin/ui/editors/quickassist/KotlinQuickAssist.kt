@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiWhiteSpace
 
 abstract class KotlinQuickAssist {
     abstract fun isApplicable(psiElement: PsiElement): Boolean
@@ -63,7 +64,8 @@ abstract class KotlinQuickAssist {
         if (ktFile == null) return null
         
         val caretOffset = LineEndUtil.convertCrToDocumentOffset(document, getCaretOffset(editor))
-        return ktFile.findElementAt(caretOffset)
+        val activeElement = ktFile.findElementAt(caretOffset)
+        return if (activeElement !is PsiWhiteSpace) activeElement else ktFile.findElementAt(caretOffset - 1)
     }
     
     protected fun getCaretOffset(activeEditor: KotlinFileEditor): Int {
