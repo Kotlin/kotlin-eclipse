@@ -23,27 +23,26 @@ import org.jetbrains.kotlin.load.java.structure.JavaAnnotation
 import org.jetbrains.kotlin.name.FqName
 
 public abstract class EclipseJavaClassifier<T : ITypeBinding>(javaType: T) : 
-		EclipseJavaElement<T>(javaType), JavaClassifier, JavaAnnotationOwner {
-	companion object {
-		@JvmStatic 
-		fun create(element: ITypeBinding): JavaClassifier {
-			return when {
-				element.isTypeVariable() -> EclipseJavaTypeParameter(element)
-				element.isClass(), element.isParameterizedType(), 
-					element.isInterface(), element.isEnum() -> EclipseJavaClass(element)
-				else -> throw IllegalArgumentException("Element: ${element.getName()} is not JavaClassifier")
-			}
-		}
-	}
-    
-    override public fun getAnnotations(): Collection<JavaAnnotation> {
-        return getBinding().getAnnotations().map { EclipseJavaAnnotation(it) }
+        EclipseJavaElement<T>(javaType), JavaClassifier, JavaAnnotationOwner {
+    companion object {
+        @JvmStatic
+        fun create(element: ITypeBinding): JavaClassifier {
+            return when {
+                element.isTypeVariable() -> EclipseJavaTypeParameter(element)
+                
+                element.isClass() || element.isParameterizedType() || 
+                    element.isInterface() || element.isEnum() -> EclipseJavaClass(element)
+                
+                else -> throw IllegalArgumentException("Element: ${element.getName()} is not JavaClassifier")
+            }
+        }
     }
-
-    override public fun findAnnotation(fqName: FqName): JavaAnnotation? {
+    
+    override fun getAnnotations(): Collection<JavaAnnotation> = getBinding().getAnnotations().map { EclipseJavaAnnotation(it) }
+    
+    override fun findAnnotation(fqName: FqName): JavaAnnotation? {
         return EclipseJavaElementUtil.findAnnotation(getBinding().getAnnotations(), fqName)
     }
-	
-	override fun isDeprecatedInJavaDoc(): Boolean =
-			getBinding().isDeprecated()
+    
+    override fun isDeprecatedInJavaDoc(): Boolean = getBinding().isDeprecated()
 }

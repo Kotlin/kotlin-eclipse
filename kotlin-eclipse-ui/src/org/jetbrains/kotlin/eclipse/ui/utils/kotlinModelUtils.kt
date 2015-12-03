@@ -60,14 +60,14 @@ fun removeKotlinBinFolder(project: IProject) {
 
 fun canBeDeconfigured(project: IProject): Boolean {
     return when {
-        KotlinNature.hasKotlinNature(project), ProjectUtils.hasKotlinRuntime(project) -> true
+        KotlinNature.hasKotlinNature(project) || ProjectUtils.hasKotlinRuntime(project) -> true
         else -> false
     }
 }
 
 fun isConfigurationMissing(project: IProject): Boolean {
     return when {
-        !KotlinNature.hasKotlinNature(project), !ProjectUtils.hasKotlinRuntime(project) -> true
+        !KotlinNature.hasKotlinNature(project) || !ProjectUtils.hasKotlinRuntime(project) -> true
         else -> false
     }
 }

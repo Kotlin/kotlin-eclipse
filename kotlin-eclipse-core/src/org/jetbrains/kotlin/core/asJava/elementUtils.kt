@@ -22,7 +22,6 @@ import org.eclipse.jdt.core.IField
 import org.eclipse.jdt.core.IMethod
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtConstructor
-import org.jetbrains.kotlin.load.kotlin.PackageClassUtils
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import com.intellij.psi.util.PsiTreeUtil
