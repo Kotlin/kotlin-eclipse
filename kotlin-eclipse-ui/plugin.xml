@@ -193,6 +193,12 @@
             id="org.jetbrains.kotlin.ui.preferences.templates"
             name="Template">
       </page>
+      <page
+            category="kotlin-eclipse-ui.preferences.editor"
+            class="org.jetbrains.kotlin.preferences.KotlinEditorColoringPreferencePage"
+            id="kotlin-eclipse-ui.preferences.editor.syntaxColoring"
+            name="Syntax Coloring">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
