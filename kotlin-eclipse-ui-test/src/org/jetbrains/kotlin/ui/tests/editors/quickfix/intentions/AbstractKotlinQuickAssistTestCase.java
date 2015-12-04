@@ -22,10 +22,10 @@ public abstract class AbstractKotlinQuickAssistTestCase<Proposal extends KotlinQ
 	}
 	
 	protected void doTestFor(String testPath, Proposal proposal, boolean joinBuildThread) {
-		String fileText = KotlinTestUtils.getText(testPath);
-		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
-		
-		String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
+        String fileText = KotlinTestUtils.getText(testPath);
+        TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
+        
+        String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");
         
         String pathToExpectedFile = testPath + ".after";

@@ -125,7 +125,7 @@ private fun createSyntaxCategory(
 }
 
 private fun getDefaultColor(key: String, store: IPreferenceStore): RGB {
-    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
+    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key +
             PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_COLOR_SUFFIX
     
     return PreferenceConverter.getDefaultColor(store, preferenceKey)
@@ -153,8 +153,9 @@ private fun isDefaultEnabled(key: String, store: IPreferenceStore): Boolean {
 }
 
 private fun isDefaultUnderline(key: String, store: IPreferenceStore): Boolean {
-    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
-            PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_UNDERLINE_SUFFIX
-        
-    return store.getDefaultBoolean(preferenceKey)
+    return store.getDefaultBoolean(buildJavaSemanticKey(key,PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_UNDERLINE_SUFFIX ))
 }
+
+private fun buildJavaSemanticKey(key: String, suffix: String): String {
+    return "${PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX}${key}${suffix}"
+} 
