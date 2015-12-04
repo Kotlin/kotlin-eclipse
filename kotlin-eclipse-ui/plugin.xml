@@ -655,4 +655,10 @@
          </enablement>
       </renameParticipant>
    </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.jetbrains.kotlin.preferences.KotlinPreferenceInitializer">
+      </initializer>
+   </extension>
 </plugin>

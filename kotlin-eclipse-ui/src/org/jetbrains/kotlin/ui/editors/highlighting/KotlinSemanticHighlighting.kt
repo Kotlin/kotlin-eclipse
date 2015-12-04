@@ -34,8 +34,6 @@ import org.eclipse.swt.graphics.TextStyle
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.Region
 import org.eclipse.swt.graphics.RGB
-import org.eclipse.jdt.ui.PreferenceConstants
-import org.eclipse.jface.preference.PreferenceConverter
 import org.eclipse.swt.graphics.Color
 import org.eclipse.swt.widgets.Display
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
@@ -111,7 +109,7 @@ public class KotlinSemanticHighlighter(
     }
     
     override fun propertyChange(event: PropertyChangeEvent) {
-        if (event.getProperty().startsWith(PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX)) {
+        if (event.getProperty().startsWith(KotlinHighlightingAttributes.KEY_PREFIX)) {
             editor.getFile()?.let { reconcile(it, editor) }
         }
     }
@@ -197,8 +195,7 @@ public class KotlinSemanticHighlighter(
     }
     
     private fun StyleAttributes.createStyleRange(): StyleRange {
-        val styleKey = styleAttributes.styleKey
-        if (!isEnabled(styleKey, preferenceStore)) {
+        if (!styleAttributes.isEnabled(preferenceStore)) {
             return createStyleRange(getOffset(), getLength())
         }
         
@@ -208,8 +205,8 @@ public class KotlinSemanticHighlighter(
             length = getLength()
             
             fontStyle = SWT.NORMAL
-            if (isBold(styleKey, preferenceStore)) fontStyle = fontStyle or SWT.BOLD
-            if (isItalic(styleAttributes.styleKey, preferenceStore)) fontStyle = fontStyle or SWT.ITALIC
+            if (styleAttributes.isBold(preferenceStore)) fontStyle = fontStyle or SWT.BOLD
+            if (styleAttributes.isItalic(preferenceStore)) fontStyle = fontStyle or SWT.ITALIC
             
             this
         }
@@ -242,9 +239,9 @@ public class KotlinSemanticHighlighter(
 
 private fun findTextStyle(attributes: KotlinHighlightingAttributes, store: IPreferenceStore, colorManager: IColorManager): TextStyle {
     val style = TextStyle()
-    val rgb = getColor(attributes.styleKey, store)
+    val rgb = attributes.getColor(store)
     style.foreground = getColor(rgb, colorManager)
-    style.underline = attributes.underline
+    style.underline = attributes.isUnderline(store)
     
     return style
 }
@@ -256,34 +253,6 @@ private fun getColor(rgb: RGB?, colorManager: IColorManager): Color? {
     }
     
     return color
-}
-
-private fun getColor(key: String, store: IPreferenceStore): RGB {
-    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
-            PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_COLOR_SUFFIX
-    
-    return PreferenceConverter.getColor(store, preferenceKey)
-}
-
-private fun isBold(key: String, store: IPreferenceStore): Boolean {
-    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
-            PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_BOLD_SUFFIX
-    
-    return store.getBoolean(preferenceKey)
-}
-
-private fun isItalic(key: String, store: IPreferenceStore): Boolean {
-    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
-            PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_ITALIC_SUFFIX
-    
-    return store.getBoolean(preferenceKey)
-}
-
-private fun isEnabled(key: String, store: IPreferenceStore): Boolean {
-    val preferenceKey = PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX + key + 
-            PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_ENABLED_SUFFIX
-    
-    return store.getBoolean(preferenceKey)
 }
 
 private fun createStyleRange(s: Int, l: Int) = with(StyleRange()) {

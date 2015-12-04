@@ -62,6 +62,7 @@ import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
 import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
 import org.eclipse.jface.text.source.SourceViewerConfiguration
+import org.jetbrains.kotlin.ui.Activator
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -159,7 +160,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
             val scanner = configuration.getScanner()
             if (scanner != null) {
                 val reconciler = Configuration.getKotlinPresentaionReconciler(scanner) 
-                return@run KotlinSemanticHighlighter(getPreferenceStore(), colorManager, reconciler, this) 
+                return@run KotlinSemanticHighlighter(Activator.getDefault().preferenceStore, colorManager, reconciler, this) 
             }
             
             null
