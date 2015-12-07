@@ -34,6 +34,8 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import java.io.BufferedReader
 import java.io.StringReader
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.junit.Assert
+import org.jetbrains.kotlin.cli.common.ExitCode
 
 public data class TestLibraryData(val libPath: String, val srcPath: String)
 
@@ -123,6 +125,10 @@ private class NavigationTestLibrary {
         val outputStream = ByteArrayOutputStream();
         val out = PrintStream(outputStream);
         
-        KotlinCLICompiler.doMain(K2JVMCompiler(), out, arrayOf("-d", targetPath, "-kotlin-home", ProjectUtils.KT_HOME, srcPath.getAbsolutePath()))
+        val exitCode = KotlinCLICompiler.doMain(K2JVMCompiler(), out, 
+                arrayOf("-d", targetPath, "-kotlin-home", ProjectUtils.KT_HOME, srcPath.getAbsolutePath()))
+        Assert.assertTrue(
+                "Could not compile test library, exitCode = $exitCode\n ${outputStream.toString()}", 
+                exitCode == ExitCode.OK)
     }
 }

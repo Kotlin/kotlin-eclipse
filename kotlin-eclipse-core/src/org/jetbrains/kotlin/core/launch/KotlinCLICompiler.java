@@ -28,11 +28,11 @@ import org.jetbrains.kotlin.config.Services.Builder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class KotlinCLICompiler {
-    public static int doMain(@NotNull CLICompiler<?> compiler, @NotNull PrintStream errorStream, @NotNull String[] args) {
+    public static ExitCode doMain(@NotNull CLICompiler<?> compiler, @NotNull PrintStream errorStream, @NotNull String[] args) {
         System.setProperty("java.awt.headless", "true");
         ExitCode exitCode = doMainNoExitWithHtmlOutput(compiler, errorStream, args);
         
-        return exitCode.getCode();
+        return exitCode;
     }
     
     private static ExitCode doMainNoExitWithHtmlOutput(

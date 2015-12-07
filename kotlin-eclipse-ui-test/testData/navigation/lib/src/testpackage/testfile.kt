@@ -1,10 +1,10 @@
 package testpackage
 
 public class SimpleClass {
-    public fun doNothing<T>(arg: T): T = 
+    public fun <T> doNothing(arg: T): T = 
     		arg
     
-    public fun doNothingWithCollection<T>(arg: Collection<T>): Collection<T> =
+    public fun <T> doNothingWithCollection(arg: Collection<T>): Collection<T> =
     		arg.map { doNothing(it) }
 }
 
