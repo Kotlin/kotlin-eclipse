@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.core.resources.IProject
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.jetbrains.kotlin.core.model.setKotlinBuilderBeforeJavaBuilder
+import org.jetbrains.kotlin.ui.KotlinUsageReporter
 
 public class ResourceChangeListener : IResourceChangeListener {
     override public fun resourceChanged(event: IResourceChangeEvent) {
@@ -39,6 +40,11 @@ public class ResourceChangeListener : IResourceChangeListener {
 class ProjectChangeListener : IResourceDeltaVisitor {
     override public fun visit(delta: IResourceDelta) : Boolean {
         if (delta.getKind() == IResourceDelta.CHANGED) {
+            val resource = delta.getResource()
+            if (resource != null && KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
+                KotlinUsageReporter.kotlinFileEdited()
+            }
+            
             return true
         }
         

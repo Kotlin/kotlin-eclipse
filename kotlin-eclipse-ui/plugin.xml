@@ -193,6 +193,12 @@
             id="org.jetbrains.kotlin.ui.preferences.templates"
             name="Template">
       </page>
+      <page
+            category="kotlin-eclipse-ui.preferences"
+            class="org.jetbrains.kotlin.preferences.KotlinUsageReportingPreferencePage"
+            id="org.jetbrains.kotlin.ui.preferences.pages.usageReporting"
+            name="Usage Reporting">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
@@ -654,5 +660,11 @@
             </with>
          </enablement>
       </renameParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.jetbrains.kotlin.preferences.KotlinPreferencesInitializer">
+      </initializer>
    </extension>
 </plugin>
