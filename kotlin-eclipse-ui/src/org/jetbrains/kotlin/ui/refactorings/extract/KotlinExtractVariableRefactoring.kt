@@ -36,6 +36,7 @@ import org.eclipse.jface.text.ITextSelection
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.isUsedAsStatement
 
+@Suppress("CONFLICTING_INHERITED_JVM_DECLARATIONS")
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
     private lateinit var expression: KtExpression

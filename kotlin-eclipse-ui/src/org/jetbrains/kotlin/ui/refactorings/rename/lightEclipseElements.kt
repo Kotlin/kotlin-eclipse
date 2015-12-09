@@ -110,7 +110,7 @@ private fun getLightCompilationUnit(origin: IJavaElement): ICompilationUnit? {
     val sourceFile = sourceFiles.firstOrNull()
     if (sourceFile == null) return null
     
-    val file = KotlinPsiManager.getEclispeFile(sourceFile)
+    val file = KotlinPsiManager.getEclipseFile(sourceFile)
     if (file == null) return null
     
     val filePackage = JavaModelManager.determineIfOnClasspath(file, origin.getJavaProject())
