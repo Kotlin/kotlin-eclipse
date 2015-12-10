@@ -140,6 +140,7 @@ object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
         
         val diagnostics = KotlinAnalyzer.analyzeFile(editor.javaProject!!, jetFile).analysisResult.bindingContext.diagnostics
         val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics)
+        
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)
         DiagnosticAnnotationUtil.INSTANCE.updateAnnotations(editor, annotations)
     }

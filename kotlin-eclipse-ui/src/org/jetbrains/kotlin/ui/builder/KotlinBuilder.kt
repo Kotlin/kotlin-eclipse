@@ -39,10 +39,17 @@ import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import com.google.common.collect.Sets
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.eclipse.core.resources.IMarker
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.Status
+import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
+import org.jetbrains.kotlin.progress.CompilationCanceledStatus
+import org.jetbrains.kotlin.progress.CompilationCanceledException
 
 class KotlinBuilder : IncrementalProjectBuilder() {
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
-        val project = getProject()
         val javaProject = JavaCore.create(project)
         if (isBuildingForLaunch()) {
             compileKotlinFiles(javaProject)
@@ -56,24 +63,25 @@ class KotlinBuilder : IncrementalProjectBuilder() {
             if (delta != null) getAffectedFiles(delta, javaProject) else emptySet()
         }
         
-        commitFiles(affectedFiles)
+        val existingAffectedFiles = affectedFiles.filter { it.exists() }
+        
+        commitFiles(existingAffectedFiles)
         
         if (affectedFiles.isNotEmpty()) {
             KotlinLightClassGeneration.updateLightClasses(javaProject, affectedFiles)
         }
         
-        val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-        updateLineMarkers(analysisResult.bindingContext.diagnostics)
+        val ktFiles = existingAffectedFiles.map { KotlinPsiManager.INSTANCE.getParsedFile(it) }
+        val analysisResult = KotlinAnalyzer.analyzeFiles(javaProject, ktFiles).analysisResult
+        updateLineMarkers(analysisResult.bindingContext.diagnostics, existingAffectedFiles)
+        
+        runCancellableAnalysisFor(javaProject, existingAffectedFiles)
         
         return null
     }
     
     private fun commitFiles(files: Collection<IFile>) {
-        for (file in files) {
-            if (file.exists()) {
-                KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getDocument(file).get())
-            }
-        }
+        files.forEach { KotlinPsiManager.getKotlinFileIfExist(it, EditorUtil.getDocument(it).get()) }
     }
     
     private fun getAffectedFiles(resourceDelta: IResourceDelta, javaProject: IJavaProject): Set<IFile> {
@@ -100,27 +108,27 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         return Thread.currentThread().getStackTrace().find { it.className == launchDelegateFQName } != null
     }
     
-    private fun compileKotlinFiles(javaProject:IJavaProject) {
+    private fun compileKotlinFiles(javaProject: IJavaProject) {
         val compilerResult = KotlinCompilerUtils.compileWholeProject(javaProject)
         if (!compilerResult.compiledCorrectly()) {
             KotlinCompilerUtils.handleCompilerOutput(compilerResult.getCompilerOutput())
         }
     }
+}
+
+fun updateLineMarkers(diagnostics: Diagnostics, affectedFiles: List<IFile>) {
+    clearMarkersFromFiles(affectedFiles)
+    addMarkersToProject(DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics), affectedFiles)
+}
+
+private fun clearMarkersFromFiles(files: List<IFile>) {
+    files.forEach { it.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE) }
+}
+
+private fun addMarkersToProject(annotations: Map<IFile, List<DiagnosticAnnotation>>, affectedFiles: List<IFile>) {
+    affectedFiles.forEach { DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(it, annotations) }
     
-    private fun updateLineMarkers(diagnostics:Diagnostics) {
-        addMarkersToProject(DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics), getProject())
-    }
-    
-    private fun addMarkersToProject(annotations: Map<IFile, List<DiagnosticAnnotation>>, project: IProject) {
-        AnnotationManager.clearAllMarkersFromProject(project)
-        for (file in KotlinPsiManager.INSTANCE.getFilesByProject(getProject())) {
-            DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)
-        }
-        
-        for ((file, diagnosticAnnotations) in annotations) {
-            for (annotation in diagnosticAnnotations) {
-                AnnotationManager.addProblemMarker(annotation, file)
-            }
-        }
+    for (file in affectedFiles) {
+        annotations[file]?.forEach { AnnotationManager.addProblemMarker(it, file) }
     }
 }
