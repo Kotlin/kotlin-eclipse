@@ -45,7 +45,12 @@ public class KotlinOpenEditor {
         
         try {
             if (kotlinFile != null && kotlinFile.exists()) {
-                return EditorUtility.openInEditor(kotlinFile, activate);
+                IEditorPart kotlinEditor = EditorUtility.openInEditor(kotlinFile, activate);
+                if (activate && kotlinEditor instanceof KotlinEditor) {
+                    revealKotlinElement((KotlinEditor) kotlinEditor, element);
+                }
+                
+                return kotlinEditor;
             }
         } catch (PartInitException e) {
             KotlinLogger.logAndThrow(e);
