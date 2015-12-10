@@ -48,7 +48,8 @@ Import-Package: com.intellij.navigation,
  org.jetbrains.kotlin.j2k,
  org.eclipse.ui.texteditor.link,
  org.eclipse.jdt.internal.compiler.env,
- org.eclipse.jdt.core.compiler
+ org.eclipse.jdt.core.compiler,
+ org.jetbrains.kotlin.progress
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,

@@ -406,4 +406,5 @@ Export-Package: com.google.common.base,
  src.org.jetbrains.kotlin.resolve.lazy,
  org.jetbrains.kotlin.idea.resolve,
  org.jetbrains.kotlin.resolve.scopes.utils,
- org.jetbrains.kotlin.fileClasses
+ org.jetbrains.kotlin.fileClasses,
+ org.jetbrains.kotlin.progress
