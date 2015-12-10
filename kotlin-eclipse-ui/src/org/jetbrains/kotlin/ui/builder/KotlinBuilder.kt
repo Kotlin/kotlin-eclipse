@@ -126,9 +126,8 @@ private fun clearMarkersFromFiles(files: List<IFile>) {
 }
 
 private fun addMarkersToProject(annotations: Map<IFile, List<DiagnosticAnnotation>>, affectedFiles: List<IFile>) {
-    affectedFiles.forEach { DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(it, annotations) }
-    
     for (file in affectedFiles) {
+        DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)
         annotations[file]?.forEach { AnnotationManager.addProblemMarker(it, file) }
     }
 }
