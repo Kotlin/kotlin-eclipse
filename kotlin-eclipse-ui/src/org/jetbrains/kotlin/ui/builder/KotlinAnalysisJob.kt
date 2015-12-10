@@ -34,12 +34,6 @@ public class KotlinAnalysisJob(
         private val affectedFiles: List<IFile>) : Job("Kotlin Analysis") {
     init {
         setPriority(DECORATE)
-        
-        ProgressIndicatorAndCompilationCanceledStatus.setCompilationCanceledStatus(object : CompilationCanceledStatus {
-            override fun checkCanceled() {
-                if (canceled) throw CompilationCanceledException()
-            }
-        })
     }
     
     val familyIndicator = constructFamilyIndicator(javaProject)
@@ -50,15 +44,21 @@ public class KotlinAnalysisJob(
         try {
             canceled = false
             
+            ProgressIndicatorAndCompilationCanceledStatus.setCompilationCanceledStatus(object : CompilationCanceledStatus {
+                override fun checkCanceled() {
+                    if (canceled) throw CompilationCanceledException()
+                }
+            })
+            
             val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
             val projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.project)
             updateLineMarkers(analysisResult.bindingContext.diagnostics, (projectFiles - affectedFiles).toList())
             
             return Status.OK_STATUS
         } catch (e: CompilationCanceledException) {
-            canceled = false
-            
             return Status.CANCEL_STATUS
+        } finally {
+            ProgressIndicatorAndCompilationCanceledStatus.setCompilationCanceledStatus(null)
         }
     }
     
