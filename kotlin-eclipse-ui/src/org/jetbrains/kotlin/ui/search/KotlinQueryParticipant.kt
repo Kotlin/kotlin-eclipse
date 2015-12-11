@@ -286,9 +286,11 @@ public class KotlinElementMatch(val jetElement: KtElement) : Match(KotlinAdaptab
         jetElement.getTextOffset())
 
 class KotlinAdaptableElement(val jetElement: KtElement): IAdaptable {
-    override fun getAdapter(adapter: Class<*>?): Any? {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> getAdapter(adapter: Class<T>?): T? {
         return when {
-            IResource::class.java == adapter ->  KotlinPsiManager.getEclipseFile(jetElement.getContainingKtFile())
+            IResource::class.java == adapter ->
+                KotlinPsiManager.getEclipseFile(jetElement.getContainingKtFile()) as T
             else -> null
         }
     }

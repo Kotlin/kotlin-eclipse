@@ -21,32 +21,32 @@
 		<tycho.version>0.22.0</tycho.version>
 		<tycho-extras.version>0.18.0</tycho-extras.version>
 
-		<luna-repo.url>http://download.eclipse.org/releases/luna</luna-repo.url>
+		<mars-repo.url>http://download.eclipse.org/releases/mars</mars-repo.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		
-		<ajdt-luna-repo.url>http://download.eclipse.org/tools/ajdt/44/dev/update</ajdt-luna-repo.url>
-		
+
+		<ajdt-mars-repo.url>http://download.eclipse.org/tools/ajdt/45/dev/update</ajdt-mars-repo.url>
+
 		<kotlin.version>1.0.0-beta-3593</kotlin.version>
-		
+
 		<aspectj.version>1.8.2</aspectj.version>
 		<aspectj.plugin.version>1.7</aspectj.plugin.version>
-		
+
 		<weaving-hook.version>1.1.100.weaving-hook-20140821</weaving-hook.version>
 	</properties>
 
 	<repositories>
 		<repository>
-			<id>juno</id>
-			<url>${luna-repo.url}</url>
+			<id>mars</id>
+			<url>${mars-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
 		<repository>
 			<id>ajdt</id>
-			<url>${ajdt-luna-repo.url}</url>
+			<url>${ajdt-mars-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
 	</repositories>
-	
+
 	<pluginRepositories>
 		<pluginRepository>
 			<id>sonatype-nexus-staging</id>
@@ -160,7 +160,7 @@
 					<artifactId>tycho-surefire-plugin</artifactId>
 					<version>${tycho.version}</version>
 					<configuration>
-					   <testFailureIgnore>true</testFailureIgnore>
+						<testFailureIgnore>true</testFailureIgnore>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -211,4 +211,4 @@
 			</plugins>
 		</pluginManagement>
 	</build>
-</project> 
+</project>

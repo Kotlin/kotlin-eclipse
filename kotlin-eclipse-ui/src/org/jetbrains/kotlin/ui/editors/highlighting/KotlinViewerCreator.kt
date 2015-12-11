@@ -20,12 +20,14 @@ import org.eclipse.jdt.internal.ui.text.JavaColorManager
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.editors.Configuration
 
+
 public class KotlinViewerCreator : IViewerCreator {
 	override fun createViewer(parent: Composite, configuration: CompareConfiguration): Viewer {
 		return KotlinMergeViewer(parent, configuration)
 	}
 }
 
+@Suppress("ABSTRACT_CLASS_MEMBER_NOT_IMPLEMENTED", "CONFLICTING_INHERITED_JVM_DECLARATIONS")
 class KotlinMergeViewer(parent: Composite, configuration: CompareConfiguration): TextMergeViewer(parent, configuration) {
 	private val colorManager = JavaColorManager()
 	
