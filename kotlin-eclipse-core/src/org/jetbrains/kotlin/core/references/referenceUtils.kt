@@ -57,7 +57,7 @@ public fun List<KotlinReference>.resolveToSourceElements(): List<SourceElement> 
     if (isEmpty()) return emptyList()
     
     val jetFile = first().expression.getContainingKtFile()
-    val javaProject = JavaCore.create(KotlinPsiManager.getEclispeFile(jetFile)?.getProject()) 
+    val javaProject = JavaCore.create(KotlinPsiManager.getEclipseFile(jetFile)?.getProject()) 
                       ?: jetFile.getUserData(FILE_PROJECT)
     if (javaProject == null) return emptyList()
 

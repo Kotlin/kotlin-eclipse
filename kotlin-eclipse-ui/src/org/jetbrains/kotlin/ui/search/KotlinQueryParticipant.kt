@@ -288,7 +288,7 @@ public class KotlinElementMatch(val jetElement: KtElement) : Match(KotlinAdaptab
 class KotlinAdaptableElement(val jetElement: KtElement): IAdaptable {
     override fun getAdapter(adapter: Class<*>?): Any? {
         return when {
-            IResource::class.java == adapter ->  KotlinPsiManager.getEclispeFile(jetElement.getContainingKtFile())
+            IResource::class.java == adapter ->  KotlinPsiManager.getEclipseFile(jetElement.getContainingKtFile())
             else -> null
         }
     }
