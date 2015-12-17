@@ -51,6 +51,9 @@ import org.eclipse.jface.util.IPropertyChangeListener
 import org.eclipse.jface.util.PropertyChangeEvent
 import org.eclipse.jface.text.ITextInputListener
 import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.eclipse.ui.utils.runJob
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.Status
 
 private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
 
@@ -142,7 +145,10 @@ public class KotlinSemanticHighlighter(
             viewer.addTextInputListener(this)
             viewer.prependTextPresentationListener(this)
             
-            reconcile(file, editor)
+            runJob("Install semantic highlighting", Job.DECORATE) {
+                reconcile(file, editor)
+                Status.OK_STATUS
+            }
         } else {
             KotlinLogger.logWarning("Cannot install Kotlin Semantic highlighter for viewer $viewer")
         }

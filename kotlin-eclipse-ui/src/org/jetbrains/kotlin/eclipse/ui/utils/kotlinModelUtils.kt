@@ -24,6 +24,9 @@ import org.eclipse.core.resources.ICommand
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.IProgressMonitor
 
 fun unconfigureKotlinProject(javaProject: IJavaProject) {
     val project = javaProject.getProject()
@@ -70,4 +73,15 @@ fun isConfigurationMissing(project: IProject): Boolean {
         !KotlinNature.hasKotlinNature(project) || !ProjectUtils.hasKotlinRuntime(project) -> true
         else -> false
     }
+}
+
+fun runJob(name: String = "job", priority: Int = Job.LONG, action: (IProgressMonitor) -> IStatus) {
+    val job = object : Job(name) {
+        override fun run(monitor: IProgressMonitor): IStatus {
+            return action(monitor)
+        }
+    }
+    
+    job.setPriority(priority)
+    job.schedule()
 }
