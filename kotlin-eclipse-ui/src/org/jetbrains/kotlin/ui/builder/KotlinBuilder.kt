@@ -28,7 +28,6 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
-import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils
@@ -47,6 +46,7 @@ import org.eclipse.core.runtime.Status
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
 import org.jetbrains.kotlin.progress.CompilationCanceledStatus
 import org.jetbrains.kotlin.progress.CompilationCanceledException
+import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 
 class KotlinBuilder : IncrementalProjectBuilder() {
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
