@@ -35,6 +35,7 @@ public class KotlinLightClassGeneration {
             @NotNull List<KtFile> jetFiles) {
         Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
         
+        // TODO: Optimize this place by using generateDeclaredClassFilter parameter to generate specific light class
         GenerationState state = new GenerationState(
                 project, 
                 new LightClassBuilderFactory(), 
