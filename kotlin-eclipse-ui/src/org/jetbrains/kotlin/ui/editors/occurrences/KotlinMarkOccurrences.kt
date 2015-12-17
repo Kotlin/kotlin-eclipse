@@ -54,6 +54,7 @@ import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.ui.search.getContainingClassOrObjectForConstructor
+import org.jetbrains.kotlin.eclipse.ui.utils.runJob
 
 public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelectionListener {
     companion object {
@@ -63,29 +64,24 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelect
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
         if (!kotlinEditor.isActive()) return
         
-        val job = object : Job("Update occurrence annotations") {
-            override fun run(monitor: IProgressMonitor?): IStatus? {
-                if (part is KotlinFileEditor && selection is ITextSelection) {
-                    val file = part.getFile()
-                    if (file == null || !file.exists()) return Status.CANCEL_STATUS
-                    
-                    KotlinPsiManager.getKotlinFileIfExist(file, part.document.get())
-                    
-                    val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
-                    if (ktElement == null) {
-                        return Status.CANCEL_STATUS
-                    }
-                    
-                    val occurrences = findOccurrences(part, ktElement, file)
-                    updateOccurrences(part, occurrences)
+        runJob("Update occurrence annotations", Job.DECORATE) { 
+            if (part is KotlinFileEditor && selection is ITextSelection) {
+                val file = part.getFile()
+                if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
+                
+                KotlinPsiManager.getKotlinFileIfExist(file, part.document.get())
+                
+                val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
+                if (ktElement == null) {
+                    return@runJob Status.CANCEL_STATUS
                 }
                 
-                return Status.OK_STATUS
+                val occurrences = findOccurrences(part, ktElement, file)
+                updateOccurrences(part, occurrences)
             }
+            
+            Status.OK_STATUS
         }
-        
-        job.setPriority(Job.DECORATE)
-        job.schedule()
     }
     
     private fun updateOccurrences(editor: KotlinFileEditor, occurrences: List<Position>) {
