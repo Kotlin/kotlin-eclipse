@@ -1,54 +1,36 @@
-package org.jetbrains.kotlin.core.asJava;
+package org.jetbrains.kotlin.core.asJava
 
-import java.util.List;
-import java.util.Set;
+import org.eclipse.core.resources.IFile
+import org.eclipse.core.runtime.CoreException
+import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.analyzer.AnalysisResult
+import org.jetbrains.kotlin.codegen.CompilationErrorHandler
+import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
+import org.jetbrains.kotlin.codegen.state.GenerationState
+import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.model.KotlinJavaManager
+import org.jetbrains.kotlin.psi.KtFile
+import com.intellij.openapi.project.Project
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IJavaProject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.analyzer.AnalysisResult;
-import org.jetbrains.kotlin.codegen.CompilationErrorHandler;
-import org.jetbrains.kotlin.codegen.KotlinCodegenFacade;
-import org.jetbrains.kotlin.codegen.state.GenerationState;
-import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
-import org.jetbrains.kotlin.core.model.KotlinEnvironment;
-import org.jetbrains.kotlin.core.model.KotlinJavaManager;
-import org.jetbrains.kotlin.psi.KtFile;
-
-import com.intellij.openapi.project.Project;
-
-public class KotlinLightClassGeneration {
-    
-    public static void updateLightClasses(
-            @NotNull IJavaProject javaProject,
-            @NotNull Set<IFile> affectedFiles) throws CoreException {
-        if (!KotlinJavaManager.INSTANCE.hasLinkedKotlinBinFolder(javaProject)) {
-            return;
-        }
+object KotlinLightClassGeneration {
+    fun updateLightClasses(javaProject: IJavaProject, affectedFiles: Set<IFile>) {
+        if (!KotlinJavaManager.hasLinkedKotlinBinFolder(javaProject)) return
         
-        KotlinLightClassManager.getInstance(javaProject).computeLightClassesSources();
-        KotlinLightClassManager.getInstance(javaProject).updateLightClasses(affectedFiles);
+        KotlinLightClassManager.getInstance(javaProject).computeLightClassesSources()
+        KotlinLightClassManager.getInstance(javaProject).updateLightClasses(affectedFiles)
     }
     
-    public static GenerationState buildLightClasses(@NotNull AnalysisResult analysisResult, @NotNull IJavaProject javaProject, 
-            @NotNull List<KtFile> jetFiles) {
-        Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
+    fun buildLightClasses(analysisResult: AnalysisResult, javaProject: IJavaProject, jetFiles: List<KtFile>) : GenerationState {
+        val state = GenerationState(
+                KotlinEnvironment.getEnvironment(javaProject).project,
+                LightClassBuilderFactory(),
+                analysisResult.moduleDescriptor,
+                analysisResult.bindingContext,
+                jetFiles)
         
-        GenerationState state = new GenerationState(
-                project, 
-                new LightClassBuilderFactory(), 
-                analysisResult.getModuleDescriptor(),
-                analysisResult.getBindingContext(), 
-                jetFiles);
+        KotlinCodegenFacade.compileCorrectFiles(state) { exception, fileUrl -> Unit }
         
-        KotlinCodegenFacade.compileCorrectFiles(state, new CompilationErrorHandler() {
-            @Override
-            public void reportException(Throwable exception, String fileUrl) {
-                // skip
-            }
-        });
-        
-        return state;
+        return state
     }
 }
