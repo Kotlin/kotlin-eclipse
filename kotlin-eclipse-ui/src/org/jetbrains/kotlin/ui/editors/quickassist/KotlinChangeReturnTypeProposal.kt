@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.psi.KtFunctionLiteral
+import org.jetbrains.kotlin.idea.core.quickfix.QuickFixUtil
 
 class KotlinChangeReturnTypeProposal : KotlinQuickAssistProposal() {
     private lateinit var function: KtFunction
@@ -100,7 +101,7 @@ class KotlinChangeReturnTypeProposal : KotlinQuickAssistProposal() {
         if (ktFunction !is KtFunction) return false
         
         return when {
-            KotlinQuickFixUtil.canFunctionOrGetterReturnExpression(ktFunction, expression) -> {
+            QuickFixUtil.canFunctionOrGetterReturnExpression(ktFunction, expression) -> {
                 val scope = ktFunction.getResolutionScope(bindingContext)
                 type = expressionType.approximateWithResolvableType(scope, false)
                 function = ktFunction
