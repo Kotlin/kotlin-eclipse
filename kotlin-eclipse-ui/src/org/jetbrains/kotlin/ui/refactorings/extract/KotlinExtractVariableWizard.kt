@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2015 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ import org.eclipse.swt.layout.GridData
 import org.eclipse.jface.dialogs.Dialog
 import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
+import org.eclipse.swt.widgets.Button
+import org.eclipse.swt.events.SelectionAdapter
+import org.eclipse.swt.events.SelectionEvent
 
 class KotlinExtractVariableWizard(val refactoring: KotlinExtractVariableRefactoring) : 
         RefactoringWizard(refactoring, RefactoringWizard.DIALOG_BASED_USER_INTERFACE) {
@@ -67,8 +70,26 @@ class KotlinExtractVariableWizard(val refactoring: KotlinExtractVariableRefactor
             
             layouter.perform(label, text, 1)
             
+            addReplaceAllCheckbox(result, layouter)
+            
             Dialog.applyDialogFont(result)
             PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IJavaHelpContextIds.EXTRACT_TEMP_WIZARD_PAGE)
+        }
+        
+        private fun addReplaceAllCheckbox(result: Composite, layouter: RowLayouter) {
+            val title = RefactoringMessages.ExtractConstantInputPage_replace_all
+            val defaultValue = true
+            
+            val checkBox= Button(result, SWT.CHECK)
+            checkBox.setText(title)
+            checkBox.setSelection(defaultValue)
+            layouter.perform(checkBox)
+            
+            checkBox.addSelectionListener(object : SelectionAdapter() {
+                override fun widgetSelected(e: SelectionEvent) {
+                    kotlinRefactoring.replaceAllOccurrences = checkBox.getSelection()
+                }
+            })
         }
     }
 }

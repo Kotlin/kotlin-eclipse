@@ -1,3 +1,19 @@
+/*******************************************************************************
+* Copyright 2000-2016 JetBrains s.r.o.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+*******************************************************************************/
 package org.jetbrains.kotlin.ui.refactorings.extract
 
 import org.eclipse.ltk.core.refactoring.Refactoring
@@ -35,9 +51,23 @@ import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import org.eclipse.jface.text.ITextSelection
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.isUsedAsStatement
+import org.jetbrains.kotlin.idea.util.psi.patternMatching.KotlinPsiUnifier
+import org.jetbrains.kotlin.idea.util.psi.patternMatching.*
+import org.jetbrains.kotlin.psi.KtStringTemplateEntryWithExpression
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtClassBody
+import org.jetbrains.kotlin.psi.KtFile
+import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.psi.KtBlockStringTemplateEntry
+import org.jetbrains.kotlin.psi.KtNameReferenceExpression
+import org.jetbrains.kotlin.psi.psiUtil.canPlaceAfterSimpleNameEntry
+import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
+import com.intellij.psi.PsiWhiteSpace
 
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
+    public var replaceAllOccurrences = true
     private lateinit var expression: KtExpression
     override fun checkFinalConditions(pm: IProgressMonitor?): RefactoringStatus = RefactoringStatus()
     
@@ -70,11 +100,14 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     }
     
     private fun introduceVariable(): List<FileEdit> {
-        val commonParent = expression
+        val occurrenceContainer = expression.getOccurrenceContainer()
+        if (occurrenceContainer == null) return emptyList()
+        val allReplaces = if (replaceAllOccurrences) expression.findOccurrences(occurrenceContainer) else listOf(expression)
+        val commonParent = PsiTreeUtil.findCommonParent(allReplaces) as KtElement
         val commonContainer = getContainer(commonParent)
         if (commonContainer == null) return emptyList()
         
-        val anchor = calculateAnchor(commonParent, commonContainer, listOf(expression))
+        val anchor = calculateAnchor(commonParent, commonContainer, allReplaces)
         if (anchor == null) return emptyList()
         
         val indent = run {
@@ -87,57 +120,82 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         val bindingContext = getBindingContext()
         
         return createEdits(
+                commonContainer,
                 expression.isUsedAsStatement(bindingContext),
                 commonContainer !is KtBlockExpression,
                 variableDeclarationText,
                 indent,
-                anchor)
+                anchor,
+                allReplaces)
     }
     
     private fun shouldReplaceInitialExpression(context: BindingContext): Boolean {
         return expression.isUsedAsStatement(context)
     }
     
-    private fun replaceExpressionWithVariableDeclaration(variableText: String): FileEdit {
-        val offset = expression.getTextDocumentOffset(editor.document)
-        return FileEdit(editor.getFile()!!, ReplaceEdit(offset, expression.getTextLength(), variableText))
+    private fun replaceExpressionWithVariableDeclaration(variableText: String, firstOccurrence: KtExpression): FileEdit {
+        val offset = firstOccurrence.getTextDocumentOffset(editor.document)
+        return FileEdit(editor.getFile()!!, ReplaceEdit(offset, firstOccurrence.getTextLength(), variableText))
     }
     
     private fun createEdits(
+            container: PsiElement,
             isUsedAsStatement: Boolean, 
             needBraces: Boolean, 
             variableDeclarationText: String,
             indent: Int,
-            anchor: PsiElement): List<FileEdit> {
+            anchor: PsiElement,
+            replaces: List<KtExpression>): List<FileEdit> {
         val newLine = KtPsiFactory(expression).createNewLine()
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
         val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
         
         val newLineBeforeBrace = AlignmentStrategy.alignCode(newLine.getNode(), indent - 1, lineDelimiter)
-        if (isUsedAsStatement) {
+        
+        val sortedReplaces = replaces.sortedBy { it.getTextOffset() }
+        if (isUsedAsStatement && sortedReplaces.first() == anchor) {
             val variableText = if (needBraces) {
                 "{${newLineWithShift}${variableDeclarationText}${newLineBeforeBrace}}"
             } else {
                 variableDeclarationText
             }
             
-            return listOf(replaceExpressionWithVariableDeclaration(variableText))
+            val replacesList = sortedReplaces.drop(1).map { replaceOccurrence(newName, it, editor) }
+            
+            return listOf(replaceExpressionWithVariableDeclaration(variableText, sortedReplaces.first())) + replacesList
         } else {
+            val replacesList = replaces.map { replaceOccurrence(newName, it, editor) }
             if (needBraces) {
                 val variableText = "{${newLineWithShift}${variableDeclarationText}${newLineWithShift}"
+                val removeNewLineIfNeeded = if (isElseAfterContainer(container)) 
+                    removeNewLineAfter(container, editor)
+                else 
+                    null
+                
                 return listOf(
                         insertBefore(anchor, variableText, editor), 
-                        replaceOccurrence(newName, expression, editor), 
-                        addBraceAfter(expression, newLineBeforeBrace, editor))
+                        addBraceAfter(expression, newLineBeforeBrace, editor),
+                        removeNewLineIfNeeded).filterNotNull() + replacesList
             } else {
                 val variableText = "${variableDeclarationText}${newLineWithShift}"
-                return listOf(
-                        insertBefore(anchor, variableText, editor), 
-                        replaceOccurrence(newName, expression, editor))
+                return replacesList + insertBefore(anchor, variableText, editor)
             }
         }
     }
-    
+}
+
+private fun KtExpression.findOccurrences(occurrenceContainer: PsiElement): List<KtExpression> {
+    return toRange()
+            .match(occurrenceContainer, KotlinPsiUnifier.DEFAULT)
+            .map {
+                val candidate = it.range.elements.first()
+                when (candidate) {
+                    is KtExpression -> candidate
+                    is KtStringTemplateEntryWithExpression -> candidate.expression
+                    else -> throw AssertionError("Unexpected candidate element: " + candidate.text)
+                } as? KtExpression
+            }
+            .filterNotNull()
 }
 
 private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor: KotlinFileEditor): FileEdit {
@@ -152,9 +210,45 @@ private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor
     return FileEdit(editor.getFile()!!, ReplaceEdit(offset, 0, "$newLineBeforeBrace}"))
 }
 
+private fun removeNewLineAfter(container: PsiElement, editor: KotlinFileEditor): FileEdit? {
+    val next = container.nextSibling
+    if (next is PsiWhiteSpace) {
+        return FileEdit(
+                editor.getFile()!!, 
+                ReplaceEdit(next.getTextDocumentOffset(editor.document), next.getTextLength(), " "))
+    }
+    
+    return null
+}
+
 private fun replaceOccurrence(newName: String, replaceExpression: KtExpression, editor: KotlinFileEditor): FileEdit {
-    val offset = replaceExpression.getTextDocumentOffset(editor.document)
-    return FileEdit(editor.getFile()!!, ReplaceEdit(offset, replaceExpression.getTextLength(), newName))
+    val (offset, length) = replaceExpression.getReplacementRange(editor)
+    return FileEdit(editor.getFile()!!, ReplaceEdit(offset, length, newName))
+}
+
+private fun KtExpression.getReplacementRange(editor: KotlinFileEditor): ReplacementRange {
+    val p = getParent()
+    if (p is KtBlockStringTemplateEntry) {
+        if (canPlaceAfterSimpleNameEntry(p.nextSibling)) {
+            return ReplacementRange(p.getTextDocumentOffset(editor.document) + 1, p.getTextLength() - 1) // '+- 1' is for '$' sign
+        }
+    }
+    
+    return ReplacementRange(getTextDocumentOffset(editor.document), getTextLength())
+}
+
+private data class ReplacementRange(val offset: Int, val length: Int)
+
+private fun isElseAfterContainer(container: PsiElement): Boolean {
+    val next = container.nextSibling
+    if (next != null) {
+        val nextnext = next.nextSibling
+        if (nextnext != null && nextnext.node.elementType == KtTokens.ELSE_KEYWORD) {
+            return true
+        }
+    }
+    
+    return false
 }
 
 private fun insertBefore(psiElement: PsiElement, text: String, editor: KotlinFileEditor): FileEdit {
@@ -210,6 +304,27 @@ private fun getContainer(place: PsiElement): PsiElement? {
     
     return null
 }
+
+private fun KtExpression.getOccurrenceContainer(): KtElement? {
+    var result: KtElement? = null
+    for ((place, parent) in parentsWithSelf.zip(parents)) {
+        when {
+            parent is KtContainerNode && place !is KtBlockExpression && !isBadContainerNode(parent, place) -> result = parent
+            parent is KtClassBody || parent is KtFile -> return result
+            parent is KtBlockExpression -> result = parent
+            parent is KtWhenEntry && place !is KtBlockExpression -> result = parent
+            parent is KtDeclarationWithBody && parent.bodyExpression == place && place !is KtBlockExpression -> result = parent
+        }
+    }
+
+    return null
+}
+
+public val PsiElement.parentsWithSelf: Sequence<PsiElement>
+    get() = generateSequence(this) { if (it is PsiFile) null else it.getParent() }
+
+public val PsiElement.parents: Sequence<PsiElement>
+    get() = parentsWithSelf.drop(1)
 
 private fun isBadContainerNode(parent: KtContainerNode, place: PsiElement): Boolean {
     if (parent.getParent() is KtIfExpression && (parent.getParent() as KtIfExpression).getCondition() == place) {
