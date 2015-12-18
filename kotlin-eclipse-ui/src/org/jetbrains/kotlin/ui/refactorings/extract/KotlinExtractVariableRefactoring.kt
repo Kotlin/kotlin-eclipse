@@ -35,6 +35,13 @@ import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import org.eclipse.jface.text.ITextSelection
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.isUsedAsStatement
+import org.jetbrains.kotlin.idea.util.psi.patternMatching.KotlinPsiUnifier
+import org.jetbrains.kotlin.idea.util.psi.patternMatching.*
+import org.jetbrains.kotlin.psi.KtStringTemplateEntryWithExpression
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtClassBody
+import org.jetbrains.kotlin.psi.KtFile
+import com.intellij.psi.PsiFile
 
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
@@ -70,11 +77,14 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     }
     
     private fun introduceVariable(): List<FileEdit> {
-        val commonParent = expression
+        val occurrenceContainer = expression.getOccurrenceContainer()
+        if (occurrenceContainer == null) return emptyList()
+        val allReplaces = expression.findOccurrences(occurrenceContainer)
+        val commonParent = PsiTreeUtil.findCommonParent(allReplaces) as KtElement
         val commonContainer = getContainer(commonParent)
         if (commonContainer == null) return emptyList()
         
-        val anchor = calculateAnchor(commonParent, commonContainer, listOf(expression))
+        val anchor = calculateAnchor(commonParent, commonContainer, allReplaces)
         if (anchor == null) return emptyList()
         
         val indent = run {
@@ -91,7 +101,8 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
                 commonContainer !is KtBlockExpression,
                 variableDeclarationText,
                 indent,
-                anchor)
+                anchor,
+                allReplaces)
     }
     
     private fun shouldReplaceInitialExpression(context: BindingContext): Boolean {
@@ -108,7 +119,8 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
             needBraces: Boolean, 
             variableDeclarationText: String,
             indent: Int,
-            anchor: PsiElement): List<FileEdit> {
+            anchor: PsiElement,
+            replaces: List<KtExpression>): List<FileEdit> {
         val newLine = KtPsiFactory(expression).createNewLine()
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
         val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
@@ -137,7 +149,21 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
             }
         }
     }
-    
+}
+
+@Suppress("UNRESOLVED_REFERENCE") // We are treating toRange() as a simple function while it is an extension
+private fun KtExpression.findOccurrences(occurrenceContainer: PsiElement): List<KtExpression> {
+    return toRange()
+            .match(occurrenceContainer, KotlinPsiUnifier.DEFAULT)
+            .map {
+                val candidate = it.range.elements.first()
+                when (candidate) {
+                    is KtExpression -> candidate
+                    is KtStringTemplateEntryWithExpression -> candidate.expression
+                    else -> throw AssertionError("Unexpected candidate element: " + candidate.text)
+                } as? KtExpression
+            }
+            .filterNotNull()
 }
 
 private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor: KotlinFileEditor): FileEdit {
@@ -210,6 +236,27 @@ private fun getContainer(place: PsiElement): PsiElement? {
     
     return null
 }
+
+private fun KtExpression.getOccurrenceContainer(): KtElement? {
+    var result: KtElement? = null
+    for ((place, parent) in parentsWithSelf.zip(parents)) {
+        when {
+            parent is KtContainerNode && place !is KtBlockExpression && !isBadContainerNode(parent, place) -> result = parent
+            parent is KtClassBody || parent is KtFile -> return result
+            parent is KtBlockExpression -> result = parent
+            parent is KtWhenEntry && place !is KtBlockExpression -> result = parent
+            parent is KtDeclarationWithBody && parent.bodyExpression == place && place !is KtBlockExpression -> result = parent
+        }
+    }
+
+    return null
+}
+
+public val PsiElement.parentsWithSelf: Sequence<PsiElement>
+    get() = sequence(this) { if (it is PsiFile) null else it.getParent() }
+
+public val PsiElement.parents: Sequence<PsiElement>
+    get() = parentsWithSelf.drop(1)
 
 private fun isBadContainerNode(parent: KtContainerNode, place: PsiElement): Boolean {
     if (parent.getParent() is KtIfExpression && (parent.getParent() as KtIfExpression).getCondition() == place) {
