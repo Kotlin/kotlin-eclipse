@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
     val anonymous = object : Bar() {
     }
 
-    val (foo1: Foo, foos: List<Foo>) = Pair(Bar(), listOf<Bar>())
+    val (foo1: Bar, foos: List<Bar>) = Pair(Bar(), listOf<Bar>())
 
     try {
         for (foo2: Bar in listOf<Bar>()) {
