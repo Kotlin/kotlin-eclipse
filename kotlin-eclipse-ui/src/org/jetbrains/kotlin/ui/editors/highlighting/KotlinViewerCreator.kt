@@ -27,7 +27,6 @@ public class KotlinViewerCreator : IViewerCreator {
 	}
 }
 
-@Suppress("ABSTRACT_CLASS_MEMBER_NOT_IMPLEMENTED", "CONFLICTING_INHERITED_JVM_DECLARATIONS")
 class KotlinMergeViewer(parent: Composite, configuration: CompareConfiguration): TextMergeViewer(parent, configuration) {
 	private val colorManager = JavaColorManager()
 	

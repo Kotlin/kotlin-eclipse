@@ -81,7 +81,6 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
     
-    @Suppress("ACCIDENTAL_OVERRIDE")
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
             IContentOutlinePage::class.java -> kotlinOutlinePage

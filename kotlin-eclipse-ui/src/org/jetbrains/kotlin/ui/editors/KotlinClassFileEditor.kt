@@ -66,7 +66,6 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
         colorManager = JavaColorManager()
     }
 
-    @Suppress("ACCIDENTAL_OVERRIDE")
     override public fun getAdapter(required: Class<*>) : Any? =
         when (required) {
             IContentOutlinePage::class.java -> kotlinOutlinePage
