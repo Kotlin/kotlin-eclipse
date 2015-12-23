@@ -21,7 +21,6 @@ import org.jetbrains.kotlin.resolve.bindingContextUtil.getTargetFunction
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
-import org.jetbrains.kotlin.psi.KtFunctionLiteralExpression
 import org.jetbrains.kotlin.psi.KtFunctionLiteral
 
 class KotlinChangeReturnTypeProposal : KotlinQuickAssistProposal() {

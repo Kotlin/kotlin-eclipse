@@ -226,7 +226,7 @@ public class EclipseJavaElementUtil {
         if (archiveRelativeFile == null) {
             return false;
         }
-        KotlinJvmBinaryClass binaryClass = KotlinBinaryClassCache.getKotlinBinaryClass(archiveRelativeFile);
+        KotlinJvmBinaryClass binaryClass = KotlinBinaryClassCache.Companion.getKotlinBinaryClass(archiveRelativeFile, null);
         if (binaryClass == null) {
             return false;
         }

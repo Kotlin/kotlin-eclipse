@@ -33,7 +33,6 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.resolve.lazy.FileScopeProviderImpl
 import org.jetbrains.kotlin.resolve.BodyResolveCache
-import org.jetbrains.kotlin.synthetic.AdditionalScopesWithJavaSyntheticExtensions
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.resolve.CompilerEnvironment
@@ -64,7 +63,6 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(moduleContentScope: G
     useImpl<EclipseJavaSourceElementFactory>()
     useImpl<JavaLazyAnalyzerPostConstruct>()
     useImpl<JavaFlexibleTypeCapabilitiesProvider>()
-    useImpl<AdditionalScopesWithJavaSyntheticExtensions>()
 }
 
 public fun createContainerForTopDownAnalyzerForJvm(

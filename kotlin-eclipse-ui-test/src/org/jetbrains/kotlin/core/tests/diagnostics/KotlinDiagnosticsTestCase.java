@@ -26,10 +26,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
-import kotlin.CollectionsKt;
+import kotlin.collections.CollectionsKt;
 import kotlin.jvm.functions.Function1;
 
-import org.eclipse.core.runtime.Path;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
@@ -75,7 +74,6 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
-import com.intellij.util.PathUtil;
 import com.intellij.util.containers.ContainerUtil;
 
 public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
@@ -365,9 +363,10 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     
     private boolean writeJavaFile(@NotNull String filePath, @NotNull String content) {
         try {
+            File sourceFile = new File(filePath);
             getTestProject().createSourceFile(
-                    PathUtil.getParentPath(filePath), 
-                    new Path(filePath).lastSegment(), 
+                    sourceFile.getParent(), 
+                    sourceFile.getName(), 
                     content);
             return true;
         } catch (Exception e) {

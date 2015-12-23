@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import kotlin.jvm.functions.Function1;
-
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -40,6 +38,8 @@ import org.jetbrains.kotlin.name.Name;
 
 import com.google.common.collect.Lists;
 
+import kotlin.jvm.functions.Function1;
+
 public class EclipseJavaPackage implements JavaElement, JavaPackage {
     
     private final List<IPackageFragment> packages = Lists.newArrayList();
@@ -56,7 +56,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
     
     @Override
     @NotNull
-    public Collection<JavaClass> getClasses(@NotNull Function1<? super Name, ? extends Boolean> nameFilter) {
+    public Collection<JavaClass> getClasses(@NotNull Function1<? super Name, Boolean> nameFilter) {
         List<JavaClass> javaClasses = Lists.newArrayList();
         for (IPackageFragment pckg : packages) {
             javaClasses.addAll(getClassesInPackage(pckg, nameFilter));

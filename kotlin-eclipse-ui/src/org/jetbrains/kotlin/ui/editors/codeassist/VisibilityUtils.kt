@@ -53,7 +53,7 @@ public fun DeclarationDescriptorWithVisibility.isVisible(
     bindingContext: BindingContext? = null,
     element: KtSimpleNameExpression? = null
 ): Boolean {
-    if (Visibilities.isVisible(ReceiverValue.IRRELEVANT_RECEIVER, this, from)) return true
+    if (Visibilities.isVisibleWithIrrelevantReceiver(this, from)) return true
 
     if (bindingContext == null || element == null) return false
 

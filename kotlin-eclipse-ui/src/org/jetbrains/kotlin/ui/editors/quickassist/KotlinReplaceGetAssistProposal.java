@@ -197,8 +197,9 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             return false;
         }
         
-        return "get".equals(calleeExpression.getText()) && callExpression.getTypeArgumentList() == null &&
-                valueArguments.size() + callExpression.getFunctionLiteralArguments().size() > 0;
+        return "get".equals(calleeExpression.getText()) && 
+                callExpression.getTypeArgumentList() == null &&
+                valueArguments.size() > 0;
     }
     
     private boolean isReceiverExpressionWithValue(@NotNull KtQualifiedExpression expression) {

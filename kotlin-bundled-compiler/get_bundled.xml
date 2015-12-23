@@ -1,6 +1,6 @@
 <project default="get_bundled">
 	<property name="compiler.tag" value="pre_release" />
-	<property name="bootstrap_branch" value="beta3"/>
+	<property name="bootstrap_branch" value="beta4"/>
 	<property name="idea-version" value="143.1015.7"/>
 	
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
