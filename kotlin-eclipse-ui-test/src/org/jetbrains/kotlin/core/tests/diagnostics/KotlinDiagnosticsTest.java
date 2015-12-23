@@ -265,11 +265,6 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
-    public void testPackageAsExpression() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/PackageAsExpression.kt");
-    }
-    
-    @Test
     public void testPackageInExpressionPosition() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/PackageInExpressionPosition.kt");
     }
