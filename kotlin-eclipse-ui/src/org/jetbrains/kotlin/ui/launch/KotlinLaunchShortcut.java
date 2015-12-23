@@ -60,7 +60,7 @@ public class KotlinLaunchShortcut implements ILaunchShortcut {
         List<IFile> files = new ArrayList<IFile>();
         for (Object object : structuredSelection.toList()) {
             if (object instanceof IAdaptable) {
-                IResource resource = (IResource) ((IAdaptable) object).getAdapter(IResource.class);
+                IResource resource = ((IAdaptable) object).getAdapter(IResource.class);
                 addFiles(files, resource);
             }
         }

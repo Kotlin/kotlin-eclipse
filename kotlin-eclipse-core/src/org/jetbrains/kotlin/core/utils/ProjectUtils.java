@@ -24,9 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import kotlin.ArraysKt;
-import kotlin.jvm.functions.Function1;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -54,6 +51,9 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import kotlin.collections.ArraysKt;
+import kotlin.jvm.functions.Function1;
 
 public class ProjectUtils {
     

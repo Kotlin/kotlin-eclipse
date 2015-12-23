@@ -49,7 +49,7 @@ public class KotlinRunToLineAdapter : IRunToLineTarget {
         if (file == null) throw CoreException(createErrorStatus("Missing file for $editor"))
         
         if (target is IAdaptable) {
-            val debugTarget = target.getAdapter(IDebugTarget::class.java) as? IDebugTarget
+            val debugTarget = target.getAdapter(IDebugTarget::class.java)
             if (debugTarget == null) return
             
             val lineNumber = (selection as ITextSelection).getStartLine() + 1

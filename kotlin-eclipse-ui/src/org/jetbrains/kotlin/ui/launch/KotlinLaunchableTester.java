@@ -15,7 +15,7 @@ public class KotlinLaunchableTester extends PropertyTester {
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (receiver instanceof IAdaptable) {
-            IFile file = (IFile) ((IAdaptable) receiver).getAdapter(IFile.class);
+            IFile file = ((IAdaptable) receiver).getAdapter(IFile.class);
             if (file != null) {
                 KtFile jetFile = KotlinPsiManager.getKotlinParsedFile(file);
                 if (jetFile == null) {

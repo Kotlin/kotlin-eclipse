@@ -56,7 +56,7 @@ public object AnnotationManager {
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
         if (annotationModel !is IAnnotationModelExtension) return
         
-        val newAnnotations = annotations.toMap({ it }, { it.position })
+        val newAnnotations = annotations.toMapBy({ it }, { it.position })
         val oldAnnotations = getLineMarkerAnnotations(annotationModel)
         updateAnnotations<DiagnosticAnnotation>(annotationModel, newAnnotations, oldAnnotations)
     }

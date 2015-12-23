@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import kotlin.CollectionsKt;
-
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -72,6 +70,8 @@ import com.intellij.psi.PsiManager;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.io.URLUtil;
+
+import kotlin.collections.CollectionsKt;
 
 public class BuiltInsReferenceResolver {
     private static final String RUNTIME_SRC_DIR = "jar:file:"+ ProjectUtils.buildLibPath("kotlin-runtime-sources")+ "!/kotlin";
@@ -204,7 +204,7 @@ public class BuiltInsReferenceResolver {
             descriptors = ((ClassDescriptor) containingDeclaration).getConstructors();
         }
         else {
-            descriptors = memberScope.getContributedDescriptors(DescriptorKindFilter.ALL, MemberScope.ALL_NAME_FILTER);
+            descriptors = memberScope.getContributedDescriptors(DescriptorKindFilter.ALL, MemberScope.Companion.getALL_NAME_FILTER());
         }
         for (DeclarationDescriptor member : descriptors) {
             if (renderedOriginal.equals(DescriptorRenderer.Companion.getFQ_NAMES_IN_TYPES().render(member))) {

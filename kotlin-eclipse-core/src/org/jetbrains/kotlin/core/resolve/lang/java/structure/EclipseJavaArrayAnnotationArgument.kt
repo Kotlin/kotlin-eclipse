@@ -23,10 +23,10 @@ import org.jetbrains.kotlin.name.Name
 import com.google.common.collect.Lists
 
 public class EclipseJavaArrayAnnotationArgument(
-		private val arguments: Array<Any>, 
+		private val arguments: Array<*>, 
 		override val name: Name, 
 		private val javaProject: IJavaProject) : JavaArrayAnnotationArgument {
 	override public fun getElements(): List<JavaAnnotationArgument> {
-		return arguments.map { EclipseJavaAnnotationArgument.create(it, name, javaProject) }
+		return arguments.map { EclipseJavaAnnotationArgument.create(it!!, name, javaProject) }
 	}
 }

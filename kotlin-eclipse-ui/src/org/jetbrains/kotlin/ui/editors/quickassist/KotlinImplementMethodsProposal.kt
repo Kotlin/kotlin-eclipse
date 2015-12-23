@@ -149,7 +149,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         val returnsNotUnit = returnType != null && !KotlinBuiltIns.isUnit(returnType)
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
 
-        val delegation = generateUnsupportedOrSuperCall(classOrObject, descriptor)
+        val delegation = generateUnsupportedOrSuperCall(descriptor)
 
         val body = "{\n" + (if (returnsNotUnit && !isAbstract) "return " else "") + delegation + "\n}"
 
@@ -164,7 +164,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         val body = StringBuilder()
         body.append("\nget()")
         body.append(" = ")
-        body.append(generateUnsupportedOrSuperCall(classOrObject, descriptor))
+        body.append(generateUnsupportedOrSuperCall(descriptor))
         if (descriptor.isVar()) {
             body.append("\nset(value) {\n}")
         }
@@ -172,7 +172,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     }
 
 	
-    private fun generateUnsupportedOrSuperCall(classOrObject: KtClassOrObject, descriptor: CallableMemberDescriptor): String {
+    private fun generateUnsupportedOrSuperCall(descriptor: CallableMemberDescriptor): String {
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
         if (isAbstract) {
             return "throw UnsupportedOperationException()"

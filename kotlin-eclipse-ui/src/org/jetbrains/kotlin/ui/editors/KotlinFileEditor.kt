@@ -212,7 +212,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     fun isActive(): Boolean = isActiveEditor()
     
-    public fun getFile(): IFile? = getEditorInput().getAdapter(IFile::class.java) as? IFile
+    public fun getFile(): IFile? = getEditorInput().getAdapter(IFile::class.java)
     
     override val javaEditor: JavaEditor = this
     

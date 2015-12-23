@@ -44,7 +44,7 @@ public class StringInput implements IStorageEditorInput {
     }
     
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class required) {
+    public <T> T getAdapter(Class<T> required) {
         return storage.getAdapter(required);
     }
     

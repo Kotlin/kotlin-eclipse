@@ -55,10 +55,10 @@ public class StringStorage implements IStorage {
     }
    
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class required) {
-      return null;
+    public <T> T getAdapter(Class<T> adapter) {
+        return null;
     }
-   
+    
     @Override
     public String getName() {
         return name;

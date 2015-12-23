@@ -72,7 +72,7 @@ public class KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
     override public fun canToggleWatchpoints(part: IWorkbenchPart, selection: ISelection): Boolean = true
     
     private fun getEditor(part: IWorkbenchPart): ITextEditor? {
-        return if (part is ITextEditor) part else part.getAdapter(ITextEditor::class.java) as? ITextEditor
+        return if (part is ITextEditor) part else part.getAdapter(ITextEditor::class.java)
     }
 }
 

@@ -45,7 +45,7 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
     public fun getAnalysisResult(javaProject: IJavaProject): AnalysisResult {
         val project = javaProject.getProject()
         return synchronized(project) {
-            val analysisResult = cachedAnalysisResults.getOrElse(project) {
+            val analysisResult = cachedAnalysisResults.get(project) ?: run {
                 val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject)
                 EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                     javaProject, 

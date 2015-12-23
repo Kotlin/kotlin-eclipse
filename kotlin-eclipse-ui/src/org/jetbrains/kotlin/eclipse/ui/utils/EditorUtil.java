@@ -39,7 +39,7 @@ public class EditorUtil {
     
     @Nullable
     public static IFile getFile(@NotNull IEditorPart editor) {
-        return (IFile) editor.getEditorInput().getAdapter(IFile.class);
+        return editor.getEditorInput().getAdapter(IFile.class);
     }
     
     @NotNull

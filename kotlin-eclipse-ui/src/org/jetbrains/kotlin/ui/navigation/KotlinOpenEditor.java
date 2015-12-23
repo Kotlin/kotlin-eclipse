@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-import kotlin.CollectionsKt;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
@@ -29,6 +27,8 @@ import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditorInput;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+
+import kotlin.collections.CollectionsKt;
 
 // Seeks Kotlin editor by IJavaElement
 public class KotlinOpenEditor {
