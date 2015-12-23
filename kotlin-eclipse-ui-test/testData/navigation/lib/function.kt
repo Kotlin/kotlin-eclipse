@@ -1,3 +1,4 @@
 import testpackage.SimpleClass
-val x = SimpleClass().<ref>doNothing(42) 
-//testpackage/testfile.kt:doNothing
+val x = SimpleClass().<caret>doNothing(42) 
+// SRC: testpackage/testfile.kt
+// TARGET: (in testpackage.SimpleClass).doNothing(T)

@@ -1,3 +1,4 @@
 import testpackage.SimpleClass
-val x: <ref>SimpleClass? = null 
-//testpackage/testfile.kt:SimpleClass
+val x: <caret>SimpleClass? = null 
+// SRC: testpackage/testfile.kt
+// TARGET: (testpackage).SimpleClass

@@ -1,3 +1,4 @@
 import packagefacade.firstFileFun
-val c = <ref>firstFileFun() 
-//packagefacade/first.kt:firstFileFun
+val c = <caret>firstFileFun() 
+// SRC: packagefacade/first.kt
+// TARGET: (packagefacade).firstFileFun()

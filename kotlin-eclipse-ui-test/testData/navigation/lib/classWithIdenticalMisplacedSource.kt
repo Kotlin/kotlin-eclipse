@@ -1,3 +1,4 @@
 import misplaced.first.ClassWithMisplacedIdenticalSource
-val x: <ref>ClassWithMisplacedIdenticalSource? = null 
-//misplaced-source-folder/first/misplaced.kt:ClassWithMisplacedIdenticalSource
+val x: <caret>ClassWithMisplacedIdenticalSource? = null 
+// SRC: misplaced-source-folder/first/misplaced.kt
+// TARGET: (misplaced.first).ClassWithMisplacedIdenticalSource

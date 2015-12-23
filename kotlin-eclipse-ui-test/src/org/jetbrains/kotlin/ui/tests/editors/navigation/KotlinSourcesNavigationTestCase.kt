@@ -24,6 +24,11 @@ import org.junit.Rule
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils
+import org.jetbrains.kotlin.psi.KtNamedDeclaration
+import org.jetbrains.kotlin.psi.KtCallableDeclaration
+import org.jetbrains.kotlin.psi.KtConstructor
+import org.jetbrains.kotlin.psi.KtFunction
 
 abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
     
@@ -83,23 +88,55 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
     }
 
     private fun assertWithEditor(initialFile: KtFile, editor: KotlinEditor) {
-        val comments = PsiTreeUtil.getChildrenOfTypeAsList(initialFile, PsiComment::class.java)
-        val expectedTarget = comments.get(comments.size - 1).getText().substring(2).split(":")
-        Assert.assertEquals(2, expectedTarget.size)
-        val expectedFile = expectedTarget[0]
-        val expectedName = expectedTarget[1]
+        val fileText = initialFile.getText()
+        val expectedFile = InTextDirectivesUtils.findStringWithPrefixes(fileText, "SRC:");
+        val expectedTarget = InTextDirectivesUtils.findStringWithPrefixes(fileText, "TARGET:");
+        
+        Assert.assertEquals(expectedFile, editor.javaEditor.getTitleToolTip())
         
         val editorOffset = editor.javaEditor.getViewer().getTextWidget().getCaretOffset()
         val offsetInPSI = LineEndUtil.convertCrToDocumentOffset(editor.document, editorOffset)
         val psiElement = getParsedFile(editor).findElementAt(offsetInPSI)
-        val expression = psiElement?.getNonStrictParentOfType(PsiNamedElement::class.java)
+        val declaration = psiElement?.getNonStrictParentOfType(PsiNamedElement::class.java) as KtNamedDeclaration
         
-        Assert.assertEquals(expectedFile, editor.javaEditor.getTitleToolTip())
-        Assert.assertEquals(expectedName, expression?.getName())
+        val expressionName = getPresentableString(declaration)
+        val locationString = if (declaration is KtConstructor<*>) {
+            val name = declaration.getContainingClassOrObject().fqName
+            "(in $name)"
+        } else {
+            getLocationString(declaration)
+        }
+        
+        Assert.assertEquals(expectedTarget, "$locationString.$expressionName")
     }
     
     abstract fun getParsedFile(editor: KotlinEditor): KtFile
     
-    private fun getReferenceOffset(fileText: String) =
-            fileText.indexOf(KotlinEditorTestCase.REFERENCE_TAG);
+    private fun getReferenceOffset(fileText: String) = fileText.indexOf(KotlinEditorTestCase.CARET_TAG)
+    
+    private fun getPresentableString(declaration: KtNamedDeclaration): String {
+        if (declaration !is KtFunction) {
+            return declaration.name!!
+        }
+        
+        return buildString {
+            declaration.name?.let { append(it) }
+            
+            append("(")
+            append(declaration.valueParameters.joinToString { it.typeReference?.text ?: "" })
+            append(")")
+        }
+    }
+    
+    private fun getLocationString(declaration: KtNamedDeclaration): String? {
+        val name = declaration.fqName ?: return null
+        val receiverTypeRef = (declaration as? KtCallableDeclaration)?.receiverTypeReference
+        if (receiverTypeRef != null) {
+            return "(for " + receiverTypeRef.text + " in " + name.parent() + ")"
+        } else if (declaration.parent is KtFile) {
+            return "(" + name.parent() + ")"
+        } else {
+            return "(in " + name.parent() + ")"
+        }
+    }
 }
