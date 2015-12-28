@@ -227,6 +227,9 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
     
+    // Use this method instead of property `document` when document is getting in deferred thread 
+    fun getDocumentSafely(): IDocument? = getDocumentProvider()?.getDocument(getEditorInput())
+    
     private fun computeJetFile(): KtFile? {
         val file = getFile()
         if (file != null && file.exists()) {

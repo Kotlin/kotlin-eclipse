@@ -91,7 +91,10 @@ public class KotlinSemanticHighlighter(
     }
 
     override fun reconcile(file: IFile, editor: KotlinFileEditor) {
-        removeAllPositions(editor.document)
+        val document = editor.getDocumentSafely()
+        if (document == null) return
+        
+        removeAllPositions(document)
         
         val ktFile = editor.parsedFile
         if (ktFile == null) return
