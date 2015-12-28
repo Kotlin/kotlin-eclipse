@@ -87,8 +87,10 @@ public object AnnotationManager {
     }
     
     fun updateAnnotations(editor: KotlinFileEditor, annotationMap: Map<Annotation, Position>, annotationType: String) {
-        val model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
-        updateAnnotations(model, annotationMap, getAnnotations(model, annotationType))
+        val model = editor.getDocumentProvider()?.getAnnotationModel(editor.getEditorInput())
+        if (model != null) {
+            updateAnnotations(model, annotationMap, getAnnotations(model, annotationType))
+        }
     }
     
     fun getAnnotations(model: IAnnotationModel, annontationType: String): List<Annotation> {
