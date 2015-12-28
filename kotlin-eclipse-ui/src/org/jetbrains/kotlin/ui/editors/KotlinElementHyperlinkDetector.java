@@ -45,7 +45,7 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         
-        if (KotlinOpenDeclarationAction.getSelectedExpressionWithParsedFile(editor, offset) == null) {
+        if (KotlinOpenDeclarationActionKt.getSelectedExpressionWithParsedFile(editor, offset) == null) {
             return null;
         }
         
