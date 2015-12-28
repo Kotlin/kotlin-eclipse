@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.asJava.KtLightClassForFacade;
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport;
+import org.jetbrains.kotlin.caches.resolve.KotlinCacheService;
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
@@ -37,6 +38,7 @@ import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver;
+import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl;
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
@@ -122,6 +124,7 @@ public class KotlinEnvironment {
         project.registerService(CodeStyleManager.class, new DummyCodeStyleManager());
         project.registerService(BuiltInsReferenceResolver.class, new BuiltInsReferenceResolver(project));
         project.registerService(KotlinSourceIndex.class, new KotlinSourceIndex());
+        project.registerService(KotlinCacheService.class, new KotlinCacheServiceImpl());
         
         configureClasspath();
         
