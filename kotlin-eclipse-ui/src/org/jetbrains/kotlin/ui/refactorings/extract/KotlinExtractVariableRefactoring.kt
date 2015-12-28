@@ -135,17 +135,15 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
             
             return listOf(replaceExpressionWithVariableDeclaration(variableText))
         } else {
+            val replacesList = replaces.map { replaceOccurrence(newName, it, editor) }
             if (needBraces) {
                 val variableText = "{${newLineWithShift}${variableDeclarationText}${newLineWithShift}"
                 return listOf(
                         insertBefore(anchor, variableText, editor), 
-                        replaceOccurrence(newName, expression, editor), 
-                        addBraceAfter(expression, newLineBeforeBrace, editor))
+                        addBraceAfter(expression, newLineBeforeBrace, editor)) + replacesList
             } else {
                 val variableText = "${variableDeclarationText}${newLineWithShift}"
-                return listOf(
-                        insertBefore(anchor, variableText, editor), 
-                        replaceOccurrence(newName, expression, editor))
+                return replacesList + insertBefore(anchor, variableText, editor)
             }
         }
     }
