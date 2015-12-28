@@ -45,6 +45,7 @@ import com.intellij.psi.PsiFile
 
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
+    public var replaceAllOccurrences = true
     private lateinit var expression: KtExpression
     override fun checkFinalConditions(pm: IProgressMonitor?): RefactoringStatus = RefactoringStatus()
     
@@ -109,9 +110,9 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         return expression.isUsedAsStatement(context)
     }
     
-    private fun replaceExpressionWithVariableDeclaration(variableText: String): FileEdit {
-        val offset = expression.getTextDocumentOffset(editor.document)
-        return FileEdit(editor.getFile()!!, ReplaceEdit(offset, expression.getTextLength(), variableText))
+    private fun replaceExpressionWithVariableDeclaration(variableText: String, firstOccurrence: KtExpression): FileEdit {
+        val offset = firstOccurrence.getTextDocumentOffset(editor.document)
+        return FileEdit(editor.getFile()!!, ReplaceEdit(offset, firstOccurrence.getTextLength(), variableText))
     }
     
     private fun createEdits(
@@ -126,14 +127,18 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
         
         val newLineBeforeBrace = AlignmentStrategy.alignCode(newLine.getNode(), indent - 1, lineDelimiter)
-        if (isUsedAsStatement) {
+        
+        val sortedReplaces = replaces.sortedBy { it.getTextOffset() }
+        if (isUsedAsStatement && sortedReplaces.first() == anchor) {
             val variableText = if (needBraces) {
                 "{${newLineWithShift}${variableDeclarationText}${newLineBeforeBrace}}"
             } else {
                 variableDeclarationText
             }
             
-            return listOf(replaceExpressionWithVariableDeclaration(variableText))
+            val replacesList = sortedReplaces.drop(1).map { replaceOccurrence(newName, it, editor) }
+            
+            return listOf(replaceExpressionWithVariableDeclaration(variableText, sortedReplaces.first())) + replacesList
         } else {
             val replacesList = replaces.map { replaceOccurrence(newName, it, editor) }
             if (needBraces) {
@@ -149,7 +154,6 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     }
 }
 
-@Suppress("UNRESOLVED_REFERENCE") // We are treating toRange() as a simple function while it is an extension
 private fun KtExpression.findOccurrences(occurrenceContainer: PsiElement): List<KtExpression> {
     return toRange()
             .match(occurrenceContainer, KotlinPsiUnifier.DEFAULT)
