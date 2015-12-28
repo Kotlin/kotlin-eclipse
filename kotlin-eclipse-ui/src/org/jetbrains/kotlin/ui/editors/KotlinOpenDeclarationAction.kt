@@ -92,14 +92,14 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         val selectedExpression = getSelectedExpressionWithParsedFile(editor, selection.offset)
         if (selectedExpression == null) return
         
-        val reference = createReferences(selectedExpression)
-        val element = getTargetElement(reference)
+        val references = createReferences(selectedExpression)
+        val element = getTargetElement(references)
         if (element == null) return
         
         val javaProject = editor.javaProject
         if (javaProject == null) return
         
-        gotoElement(element, reference.first(), javaProject)
+        gotoElement(element, references.first(), javaProject)
     }
     
     private fun getTargetElement(reference: List<KotlinReference>): SourceElement? {
@@ -113,10 +113,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
                 gotoJavaDeclaration(binding)
             }
             
-            is KotlinSourceElement -> {
-                val psiElement = element.psi
-                gotoKotlinDeclaration(psiElement, kotlinReference, javaProject)
-            }
+            is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, kotlinReference, javaProject)
             
             is KotlinJvmBinarySourceElement -> {
                 val binaryClass = element.binaryClass
@@ -169,15 +166,15 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
     private fun getDeclarationDescriptor(kotlinReference: KotlinReference, javaProject: IJavaProject): DeclarationDescriptor? {
         val jetFile = kotlinReference.expression.getContainingKtFile()
         val context = KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult.bindingContext
-        val descriptors = kotlinReference.getTargetDescriptors(context)
-        return if (descriptors.isNotEmpty()) descriptors.first() else null //TODO: popup if there's several descriptors to navigate to
+        
+        return kotlinReference.getTargetDescriptors(context).firstOrNull() //TODO: popup if there's several descriptors to navigate to
     }
     
     private fun findImplementingClass(
             binaryClass: KotlinJvmBinaryClass, 
             descriptor: DeclarationDescriptor, 
             javaProject: IJavaProject): IClassFile? {
-        return if (KotlinClassHeader.Kind.MULTIFILE_CLASS == binaryClass.getClassHeader().kind) 
+        return if (KotlinClassHeader.Kind.MULTIFILE_CLASS == binaryClass.classHeader.kind) 
             getImplementingFacadePart(binaryClass, descriptor, javaProject)
         else 
             getClassFile(binaryClass, javaProject)
@@ -187,16 +184,24 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
             binaryClass: KotlinJvmBinaryClass, 
             descriptor: DeclarationDescriptor,
             javaProject: IJavaProject): IClassFile? {
-        if (descriptor is DeserializedCallableMemberDescriptor) {
-            val className = getImplClassName(descriptor)
-            if (className == null) return null
-            
-            val fragment = getClassFile(binaryClass, javaProject)!!.getParent() as IPackageFragment
-            val file = fragment.getClassFile(className.asString() + ".class")
-            
-            if (file.exists()) return file
+        if (descriptor !is DeserializedCallableMemberDescriptor) return null
+        
+        val className = getImplClassName(descriptor)
+        if (className == null) {
+            KotlinLogger.logWarning("Class file with implementation of $descriptor is null")
+            return null
         }
-        return null
+        
+        val classFile = getClassFile(binaryClass, javaProject)
+        if (classFile == null) {
+            KotlinLogger.logWarning("Class file for $binaryClass is null")
+            return null
+        }
+        
+        val fragment = classFile.getParent() as IPackageFragment
+        val file = fragment.getClassFile(className.asString() + ".class")
+        
+        return if (file.exists()) file else null
     }
     
     //implemented via Reflection because Eclipse has issues with ProGuard-shrunken compiler
@@ -218,10 +223,13 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         
             nameIndex = indexObj.toInt()
         } catch (e: ReflectiveOperationException) {
+            KotlinLogger.logAndThrow(e)
             return null
         } catch (e: IllegalArgumentException) {
+            KotlinLogger.logAndThrow(e)
             return null
         } catch (e: SecurityException) {
+            KotlinLogger.logAndThrow(e)
             return null
         }
         
@@ -236,10 +244,10 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
     
     private fun gotoKotlinDeclaration(element: PsiElement, kotlinReference: KotlinReference, javaProject: IJavaProject) {
         val targetEditor = findEditorForReferencedElement(element, kotlinReference, javaProject)
-        if (targetEditor is KotlinEditor) {
-            val start = element.getTextDocumentOffset(targetEditor.document)
-            targetEditor.selectAndReveal(start, 0)
-        }
+        if (targetEditor !is KotlinEditor) return
+        
+        val start = element.getTextDocumentOffset(targetEditor.document)
+        targetEditor.selectAndReveal(start, 0)
     }
     
     private fun findEditorForReferencedElement(
