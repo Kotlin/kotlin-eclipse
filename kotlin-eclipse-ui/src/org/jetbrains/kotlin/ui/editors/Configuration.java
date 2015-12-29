@@ -26,6 +26,7 @@ import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
 import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
@@ -57,6 +58,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.highlighting.KotlinTokenScanner;
+import org.jetbrains.kotlin.ui.editors.hover.KotlinInformationProvider;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePopup;
 
 public class Configuration extends JavaSourceViewerConfiguration {
@@ -102,6 +104,25 @@ public class Configuration extends JavaSourceViewerConfiguration {
         return presenter;
     }
     
+    @Override
+    public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer) {
+        InformationPresenter presenter= new InformationPresenter(new IInformationControlCreator() {
+            @Override
+            public IInformationControl createInformationControl(Shell parent) {
+                return new DefaultInformationControl(parent, true);
+            }
+        });
+        presenter.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
+        
+        IInformationProvider provider = new KotlinInformationProvider(editor);
+        for (String contentType : getConfiguredContentTypes(sourceViewer)) {
+            presenter.setInformationProvider(provider, contentType);
+        }
+        
+        presenter.setSizeConstraints(100, 12, false, true);
+        return presenter;
+    }
+
     @Override
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
         return new DefaultAnnotationHover();
