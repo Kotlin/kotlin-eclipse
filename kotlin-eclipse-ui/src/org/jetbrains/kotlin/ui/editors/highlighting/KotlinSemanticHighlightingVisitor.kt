@@ -51,6 +51,7 @@ import org.jetbrains.kotlin.descriptors.ClassKind.*
 import org.jetbrains.kotlin.psi.psiUtil.getCalleeHighlightingRange
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtSuperExpression
 
 public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument, val project: IJavaProject) : KtVisitorVoid() {
     private lateinit var bindingContext: BindingContext
@@ -77,7 +78,8 @@ public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document:
     }
     
     override fun visitSimpleNameExpression(expression: KtSimpleNameExpression) {
-        if (expression.getParent() is KtThisExpression) return
+        val parentExpression = expression.getParent()
+        if (parentExpression is KtThisExpression || parentExpression is KtSuperExpression) return
         
         val target = bindingContext[BindingContext.REFERENCE_TARGET, expression]?.let {
             if (it is ConstructorDescriptor) it.getContainingDeclaration() else it
