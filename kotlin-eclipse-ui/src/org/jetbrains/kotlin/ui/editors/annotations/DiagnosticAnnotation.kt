@@ -21,6 +21,8 @@ import org.eclipse.jface.text.Position
 import org.eclipse.jface.text.source.Annotation
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import com.intellij.openapi.util.TextRange
+import org.eclipse.jdt.internal.ui.javaeditor.IJavaAnnotation
+import org.eclipse.jdt.core.ICompilationUnit
 
 class DiagnosticAnnotation(
         val offset: Int,
@@ -28,7 +30,36 @@ class DiagnosticAnnotation(
         val annotationType: String, 
         val message: String, 
         val markedText: String, 
-        val diagnostic: DiagnosticFactory<*>?) : Annotation(annotationType, true, message) {
+        val diagnostic: DiagnosticFactory<*>?) : Annotation(annotationType, true, message), IJavaAnnotation {
+    override fun getMarkerType(): String? = null
+    
+    override fun getArguments(): Array<String>? = null
+    
+    override fun hasOverlay(): Boolean = false
+    
+    override fun addOverlaid(annotation: IJavaAnnotation?) {
+//        skip
+    }
+    
+    override fun getId(): Int = -1
+    
+    override fun getOverlay(): IJavaAnnotation? = null
+    
+    override fun isProblem(): Boolean {
+        return when(getType()) {
+            AnnotationManager.ANNOTATION_ERROR_TYPE, AnnotationManager.ANNOTATION_WARNING_TYPE -> true
+            else -> false
+        }
+    }
+    
+    override fun removeOverlaid(annotation: IJavaAnnotation?) {
+//        skip
+    }
+    
+    override fun getOverlaidIterator(): MutableIterator<IJavaAnnotation>? = null
+    
+    override fun getCompilationUnit(): ICompilationUnit? = null
+
     
     val markerSeverity = when (getType()) {
         AnnotationManager.ANNOTATION_ERROR_TYPE -> IMarker.SEVERITY_ERROR

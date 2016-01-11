@@ -21,7 +21,6 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jdt.internal.ui.text.JavaPartitionScanner;
-import org.eclipse.jdt.internal.ui.text.java.hover.AnnotationHover;
 import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jdt.ui.text.IJavaPartitions;
 import org.eclipse.jdt.ui.text.JavaSourceViewerConfiguration;
@@ -32,7 +31,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextPresentation;
@@ -81,12 +79,7 @@ public class Configuration extends JavaSourceViewerConfiguration {
             IJavaPartitions.JAVA_CHARACTER
         };
     }
-
-    @Override
-    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType, int stateMask) {
-        return new AnnotationHover();
-    }
-
+    
     @Override
     public IInformationPresenter getOutlinePresenter(ISourceViewer sourceViewer, boolean doCodeResolve) {
         InformationPresenter presenter = new InformationPresenter(new IInformationControlCreator() {
