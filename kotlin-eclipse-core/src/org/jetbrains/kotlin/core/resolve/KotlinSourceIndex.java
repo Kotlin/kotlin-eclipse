@@ -58,7 +58,10 @@ public class KotlinSourceIndex {
         String simpleSourceFileName = binaryType.getSourceFileName(null).toString();
         
         String resolvedPath = index.resolvePath((PackageFragment) packageFragment, simpleSourceFileName);
-        SourceMapper mapper = new SourceMapper();
+        SourceMapper mapper = new SourceMapper(
+                new Path("C:/Users/Mikhail.Zarechenskiy/Documents/projects/kotlin-eclipse/kotlin-bundled-compiler/lib/kotlin-runtime-sources.jar"),
+                null,
+                null);
         return mapper.findSource(resolvedPath);
     }
     

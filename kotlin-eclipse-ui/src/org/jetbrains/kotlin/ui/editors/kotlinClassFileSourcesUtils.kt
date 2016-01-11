@@ -13,7 +13,7 @@ fun getSourceFileForAnalysis(ktClassFile: IClassFile): KtFile? {
     if (source != null) {
         val javaProject = ktClassFile.javaProject
         val ideaProject = KotlinEnvironment.getEnvironment(javaProject).project
-        val jetFile = KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(source.toString(),"\n"))
+        val jetFile = KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(String(source),"\n"))
         jetFile.putUserData(FILE_PROJECT, javaProject)
         
         return jetFile
