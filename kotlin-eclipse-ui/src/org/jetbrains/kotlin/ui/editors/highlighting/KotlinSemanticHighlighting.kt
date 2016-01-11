@@ -223,30 +223,6 @@ public class KotlinSemanticHighlighter(
             this
         }
     }
-    
-    private class KotlinPositionUpdater(val category: String): IPositionUpdater {
-        override fun update(event: DocumentEvent) {
-            val editionOffset = event.getOffset()
-            val editionLength = event.getLength()
-            val editionEnd = editionOffset + editionLength
-            val newText = event.getText()
-            
-            val newLength = newText?.length ?: 0
-            
-            for (position in event.getDocument().getPositions(category)) {
-                val posOffset = position.getOffset()
-                val posEnd = posOffset + position.getLength()
-                if (editionOffset <= posEnd) {
-                    if (editionEnd < posOffset) {
-                        val delta = newLength - editionLength
-                        position.setOffset(posOffset + delta)
-                    } else {
-                        position.delete()
-                    }
-                }
-            }
-        }
-    }
 }
 
 private fun findTextStyle(attributes: KotlinHighlightingAttributes, store: IPreferenceStore, colorManager: IColorManager): TextStyle {
