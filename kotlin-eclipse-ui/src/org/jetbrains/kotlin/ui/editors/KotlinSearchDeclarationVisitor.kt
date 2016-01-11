@@ -75,7 +75,7 @@ private class KotlinSearchDeclarationVisitor(private val descriptor: Declaration
             DescriptorUtils.getFqName(descriptor) == declaration.getFqName()?.toUnsafe()
 }
 
-public fun findDeclarationInParsedFile(descriptor: DeclarationDescriptor, parsedFile: KtFile): Int {
+public fun findDeclarationInParsedFile(descriptor: DeclarationDescriptor, parsedFile: KtFile): KtNamedDeclaration? {
     val visitor = KotlinSearchDeclarationVisitor(descriptor)
-    return parsedFile.accept(visitor, null)?.getTextOffset() ?: 0
+    return parsedFile.accept(visitor, null)
 }

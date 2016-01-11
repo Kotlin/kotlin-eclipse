@@ -3,11 +3,13 @@ package org.jetbrains.kotlin.core.resolve;
 import java.util.HashMap;
 
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jdt.internal.core.SourceMapper;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +43,23 @@ public class KotlinSourceIndex {
             return mapper.findSource(resolvedPath);
         }
         return null;
+    }
+    
+    @Nullable
+    public static char[] getSource(IClassFile classFile) {
+        KotlinSourceIndex index = KotlinSourceIndex.getInstance(classFile.getJavaProject());
+        IPackageFragment packageFragment = (IPackageFragment) classFile.getParent();
+        if (!(packageFragment instanceof PackageFragment)) return null;
+        
+        IType type = classFile.getType();
+        if (!(type instanceof BinaryType)) return null;
+        
+        BinaryType binaryType = (BinaryType) type;
+        String simpleSourceFileName = binaryType.getSourceFileName(null).toString();
+        
+        String resolvedPath = index.resolvePath((PackageFragment) packageFragment, simpleSourceFileName);
+        SourceMapper mapper = new SourceMapper();
+        return mapper.findSource(resolvedPath);
     }
     
     public String resolvePath(PackageFragment packageFragment, String pathToSource) {
