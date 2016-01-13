@@ -38,6 +38,7 @@ import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.ui.editors.getKotlinDeclaration
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.core.references.KotlinReference
+import org.eclipse.jface.internal.text.html.HTMLPrinter
 
 public class KotlinInformationProvider(val editor: KotlinEditor) : IInformationProvider, IInformationProviderExtension, IInformationProviderExtension2 {
     override fun getSubject(textViewer: ITextViewer?, offset: Int): IRegion? {
@@ -104,6 +105,17 @@ private fun renderKotlinDeclaration(declaration: KtDeclaration, context: Binding
             renderedDecl = "$renderedDecl<br/>$renderedComment"
         }
     }
+    
+    return with(StringBuffer(renderedDecl)) { 
+        HTMLPrinter.insertPageProlog(this, 0, getStyleSheet())
+        HTMLPrinter.addPageEpilog(this)
+        
+        toString()
+    }
+}
 
-    return renderedDecl
+private fun getStyleSheet(): String {
+    val method = JavadocHover::class.java.getDeclaredMethod("getStyleSheet")
+    method.setAccessible(true)
+    return method.invoke(null) as String
 }
