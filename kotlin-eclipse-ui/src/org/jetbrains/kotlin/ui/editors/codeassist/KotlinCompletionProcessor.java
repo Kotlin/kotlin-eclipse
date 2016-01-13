@@ -21,8 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import kotlin.jvm.functions.Function1;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.internal.ui.JavaPluginImages;
@@ -57,6 +55,8 @@ import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
 
 import com.google.common.collect.Lists;
 import com.intellij.psi.tree.IElementType;
+
+import kotlin.jvm.functions.Function1;
 
 public class KotlinCompletionProcessor implements IContentAssistProcessor, ICompletionListener {
      
@@ -132,7 +132,7 @@ public class KotlinCompletionProcessor implements IContentAssistProcessor, IComp
         for (DeclarationDescriptor descriptor : descriptors) {
             String completion = descriptor.getName().getIdentifier();
             Image image = KotlinImageProvider.INSTANCE.getImage(descriptor);
-            String presentableString = DescriptorRenderer.Companion.getONLY_NAMES_WITH_SHORT_TYPES().render(descriptor);
+            String presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor);
             assert image != null : "Image for completion must not be null";
             
             KotlinCompletionProposal proposal = new KotlinCompletionProposal(
