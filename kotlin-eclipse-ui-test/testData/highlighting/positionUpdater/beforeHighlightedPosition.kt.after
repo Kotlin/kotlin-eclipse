@@ -1,0 +1,4 @@
+val test = 1
+val <pos>ktProperty</pos> = 10
+
+// TYPE: val test = 1

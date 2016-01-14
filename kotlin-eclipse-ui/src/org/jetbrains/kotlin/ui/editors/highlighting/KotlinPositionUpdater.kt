@@ -41,10 +41,7 @@ public class KotlinPositionUpdater(val category: String) : IPositionUpdater {
                 
                 editionData.end <= position.end -> updateWithOverStart(position, editionData)
                 
-                else -> {
-                    position.delete();
-                    position.update(event.getOffset(), 0);
-                }
+                else -> position.delete()
             }
         }
     }
