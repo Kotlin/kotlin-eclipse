@@ -22,11 +22,15 @@ import java.util.List;
 
 public class TypingUtils {
     
-    private static final String TYPE_PREFIX = "TYPE:";
+    private static final String TYPE_PREFIX = "TYPE: ";
 
     public static Character typedCharacter(String fileText) {
         List<String> items = getItems(fileText, TYPE_PREFIX);
         
         return !items.isEmpty() ? items.get(0).charAt(0) : null;
-    }    
+    }
+    
+    public static String typedText(String fileText) {
+        return getItems(fileText, TYPE_PREFIX).get(0);
+    }
 }
