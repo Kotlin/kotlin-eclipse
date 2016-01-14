@@ -15,11 +15,12 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.launch.junit;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.junit.ui.JUnitMessages;
@@ -89,9 +90,10 @@ public class KotlinJUnitLaunchShortcut extends JUnitLaunchShortcut {
     
     private void launch(@NotNull IJavaElement eclipseElement, @NotNull String mode) {
         try {
-            ILaunchConfigurationWorkingCopy temporary = createLaunchConfiguration(eclipseElement);
-            DebugUITools.launch(temporary, mode);
-        } catch (CoreException e) {
+            Method method = this.getClass().getSuperclass().getDeclaredMethod("performLaunch", IJavaElement.class, String.class);
+            method.setAccessible(true);
+            method.invoke(this, eclipseElement, mode);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             KotlinLogger.logAndThrow(e);
         }
     }
