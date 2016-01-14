@@ -31,6 +31,12 @@ import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.resolve.OverrideResolver
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
+import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
+import org.jetbrains.kotlin.descriptors.SourceElement
 
 public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -39,21 +45,40 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
         setDescription(ActionMessages.OpenSuperImplementationAction_description)
     }
     
+    companion object {
+        val ACTION_ID = "OpenSuperImplementation"
+    }
+    
     override fun run(selection: ITextSelection) {
+        val ktFile = editor.parsedFile
+        val project = editor.javaProject
+        if (ktFile == null || project == null) return
+        
         val psiElement = EditorUtil.getPsiElement(editor, selection.offset)
         if (psiElement == null) return
         
         val declaration = PsiTreeUtil.getParentOfType(psiElement, 
                 KtNamedFunction::class.java,
-                KtClass::class.java,
-                KtProperty::class.java,
-                KtObjectDeclaration::class.java)
-        if (declaration == null) return
+                KtProperty::class.java)
+        if (declaration !is KtDeclaration) return
         
+        val descriptor = resolveToDescriptor(declaration, ktFile, project)
+        if (descriptor !is CallableMemberDescriptor) return
         
+        val superDeclarations = findSuperDeclarations(descriptor)
+        if (superDeclarations.isEmpty()) return
+        
+        val superDeclaration = superDeclarations.first()
+        println(superDeclaration.toString())
     }
     
-    private fun resolveToDescriptor(declaration: KtDeclaration, ktFile: KtFile, project: IJavaProject) {
+    private fun resolveToDescriptor(declaration: KtDeclaration, ktFile: KtFile, project: IJavaProject): DeclarationDescriptor? {
         val context = KotlinAnalysisFileCache.getAnalysisResult(ktFile, project).analysisResult.bindingContext
+        return context[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]
+    }
+    
+    private fun findSuperDeclarations(descriptor: CallableMemberDescriptor): List<SourceElement> {
+        val superDescriptors = OverrideResolver.getDirectlyOverriddenDeclarations(descriptor)
+        return superDescriptors.mapNotNull { EclipseDescriptorUtils.descriptorToDeclaration(it) }
     }
 }

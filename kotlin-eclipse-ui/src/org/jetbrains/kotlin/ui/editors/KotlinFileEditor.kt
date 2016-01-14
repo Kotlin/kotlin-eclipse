@@ -141,6 +141,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setAction(KotlinRenameAction.ACTION_ID, KotlinRenameAction(this))
         
         setAction(KotlinExtractVariableAction.ACTION_ID, KotlinExtractVariableAction(this))
+        
+        setAction(KotlinOpenSuperImplementationAction.ACTION_ID, KotlinOpenSuperImplementationAction(this))
     }
     
     override fun setSourceViewerConfiguration(configuration: SourceViewerConfiguration) {
