@@ -412,4 +412,5 @@ Export-Package: com.google.common.base,
  org.jetbrains.kotlin.idea.resolve,
  org.jetbrains.kotlin.resolve.scopes.utils,
  org.jetbrains.kotlin.fileClasses,
- org.jetbrains.kotlin.progress
+ org.jetbrains.kotlin.progress,
+ kotlin.ranges
