@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.jetbrains.kotlin.ui.tests.editors.highlighting.KotlinHighlightingTest;
 import org.jetbrains.kotlin.ui.tests.editors.selection.KotlinSelectEnclosingTest;
 import org.jetbrains.kotlin.ui.tests.editors.selection.KotlinSelectNextTest;
 import org.jetbrains.kotlin.ui.tests.editors.selection.KotlinSelectPreviousTest;

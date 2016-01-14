@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.editors;
+package org.jetbrains.kotlin.ui.tests.editors.highlighting;
 
 import java.io.File;
 
