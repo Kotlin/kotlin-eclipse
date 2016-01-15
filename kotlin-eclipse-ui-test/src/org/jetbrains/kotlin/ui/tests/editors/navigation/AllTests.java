@@ -25,7 +25,8 @@ import org.junit.runners.Suite;
 	JavaToKotlinNavigationTest.class,
 	KotlinBuiltInsReferenceResolverTest.class,
 	KotlinNavigationToLibraryTest.class,
-	KotlinNavigationFromLibraryTest.class
+	KotlinNavigationFromLibraryTest.class,
+	KotlinNavigationToSuperTest.class
 } )
 public class AllTests {
 

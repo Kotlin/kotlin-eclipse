@@ -29,13 +29,13 @@ import com.intellij.psi.impl.PsiFileFactoryImpl;
 import com.intellij.testFramework.LightVirtualFile;
 
 public class JetTestUtils {
-	
-    public static final Pattern FILE_OR_MODULE_PATTERN = Pattern.compile("(?://\\s*MODULE:\\s*(\\w+)(\\(\\w+(?:, \\w+)*\\))?\\s*)?" +
-            "//\\s*FILE:\\s*(.*)$", Pattern.MULTILINE);
-
+    
+    public static final Pattern FILE_OR_MODULE_PATTERN = Pattern.compile(
+            "(?://\\s*MODULE:\\s*(\\w+)(\\(\\w+(?:, \\w+)*\\))?\\s*)?" + "//\\s*FILE:\\s*(.*)$", Pattern.MULTILINE);
+            
     public static final Pattern DIRECTIVE_PATTERN = Pattern.compile("^//\\s*!(\\w+)(:\\s*(.*)$)?", Pattern.MULTILINE);
-	
-	public static void mkdirs(File file) throws IOException {
+    
+    public static void mkdirs(File file) throws IOException {
         if (file.isDirectory()) {
             return;
         }
@@ -46,26 +46,49 @@ public class JetTestUtils {
             throw new IOException();
         }
     }
-	
-	public static String doLoadFile(File file) throws IOException {
+    
+    public static String doLoadFile(File file) throws IOException {
         return FileUtil.loadFile(file).trim();
     }
-	
-	public interface TestFileFactory<M, F> {
+    
+    public interface TestFileFactory<M, F> {
         F createFile(@Nullable M module, String fileName, String text, Map<String, String> directives);
+        
         M createModule(String name, List<String> dependencies);
     }
-	
-	@NotNull
+    
+    public static abstract class TestFileFactoryNoModules<F> implements TestFileFactory<Void, F> {
+        @Override
+        public final F createFile(
+                @Nullable Void module,
+                @NotNull String fileName,
+                @NotNull String text,
+                @NotNull Map<String, String> directives
+        ) {
+            return create(fileName, text, directives);
+        }
+
+        @NotNull
+        public abstract F create(@NotNull String fileName, @NotNull String text, @NotNull Map<String, String> directives);
+
+        @Override
+        public Void createModule(@NotNull String name, @NotNull List<String> dependencies) {
+            return null;
+        }
+    }
+    
+    @NotNull
     public static KtFile createFile(@NotNull @NonNls String name, @NotNull String text, @NotNull Project project) {
         LightVirtualFile virtualFile = new LightVirtualFile(name, KotlinLanguage.INSTANCE, text);
         virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET);
-        return (KtFile) ((PsiFileFactoryImpl) PsiFileFactory.getInstance(project)).trySetupPsiForFile(virtualFile, KotlinLanguage.INSTANCE, true, false);
+        return (KtFile) ((PsiFileFactoryImpl) PsiFileFactory.getInstance(project)).trySetupPsiForFile(virtualFile,
+                KotlinLanguage.INSTANCE, true, false);
     }
-	
-	private static List<String> parseDependencies(@Nullable String dependencies) {
-        if (dependencies == null) return Collections.emptyList();
-
+    
+    private static List<String> parseDependencies(@Nullable String dependencies) {
+        if (dependencies == null)
+            return Collections.emptyList();
+            
         Matcher matcher = Pattern.compile("\\w+").matcher(dependencies);
         List<String> result = new ArrayList<String>();
         while (matcher.find()) {
@@ -73,30 +96,30 @@ public class JetTestUtils {
         }
         return result;
     }
-	
-	public static void assertEqualsToFile(@NotNull File expectedFile, @NotNull String actual) {
+    
+    public static void assertEqualsToFile(@NotNull File expectedFile, @NotNull String actual) {
         try {
-        	String actualText = StringUtil.convertLineSeparators(actual.trim());
-//        	TODO: add remove trailing whitespaces from expected and actual text
-
+            String actualText = StringUtil.convertLineSeparators(actual.trim());
+            // TODO: add remove trailing whitespaces from expected and actual
+            // text
+            
             if (!expectedFile.exists()) {
                 FileUtil.writeToFile(expectedFile, actualText.getBytes());
                 Assert.fail("Expected data file did not exist. Generating: " + expectedFile);
             }
             String expected = FileUtil.loadFile(expectedFile, "UTF-8", true);
             String expectedText = StringUtil.convertLineSeparators(expected.trim());
-
+            
             if (!Comparing.equal(expectedText, actualText)) {
-            	throw new FileComparisonFailure("Actual data differs from file content: " + expectedFile.getName(),
+                throw new FileComparisonFailure("Actual data differs from file content: " + expectedFile.getName(),
                         expected, actual, expectedFile.getAbsolutePath());
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw ExceptionUtilsKt.rethrow(e);
         }
     }
-	
-	@NotNull
+    
+    @NotNull
     public static Map<String, String> parseDirectives(String expectedText) {
         Map<String, String> directives = Maps.newHashMap();
         Matcher directiveMatcher = DIRECTIVE_PATTERN.matcher(expectedText);
@@ -108,22 +131,23 @@ public class JetTestUtils {
             String name = directiveMatcher.group(1);
             String value = directiveMatcher.group(3);
             String oldValue = directives.put(name, value);
-            Assert.assertNull("Directive overwritten: " + name + " old value: " + oldValue + " new value: " + value, oldValue);
+            Assert.assertNull("Directive overwritten: " + name + " old value: " + oldValue + " new value: " + value,
+                    oldValue);
             start = directiveMatcher.end() + 1;
         }
         return directives;
     }
-	
-	public static <M, F> List<F> createTestFiles(String testFileName, String expectedText, TestFileFactory<M, F> factory) {
+    
+    public static <M, F> List<F> createTestFiles(String testFileName, String expectedText,
+            TestFileFactory<M, F> factory) {
         Map<String, String> directives = parseDirectives(expectedText);
-
+        
         List<F> testFiles = Lists.newArrayList();
         Matcher matcher = FILE_OR_MODULE_PATTERN.matcher(expectedText);
         if (!matcher.find()) {
             // One file
             testFiles.add(factory.createFile(null, testFileName, expectedText, directives));
-        }
-        else {
+        } else {
             int processedChars = 0;
             M module = null;
             // Many files
@@ -133,29 +157,27 @@ public class JetTestUtils {
                 if (moduleName != null) {
                     module = factory.createModule(moduleName, parseDependencies(moduleDependencies));
                 }
-
+                
                 String fileName = matcher.group(3);
                 int start = processedChars;
-
+                
                 boolean nextFileExists = matcher.find();
                 int end;
                 if (nextFileExists) {
                     end = matcher.start();
-                }
-                else {
+                } else {
                     end = expectedText.length();
                 }
                 String fileText = expectedText.substring(start, end);
                 processedChars = end;
-
+                
                 testFiles.add(factory.createFile(module, fileName, fileText, directives));
-
-                if (!nextFileExists) break;
+                
+                if (!nextFileExists)
+                    break;
             }
-            assert processedChars == expectedText.length() : "Characters skipped from " +
-                                                             processedChars +
-                                                             " to " +
-                                                             (expectedText.length() - 1);
+            assert processedChars == expectedText.length() : "Characters skipped from " + processedChars + " to "
+                    + (expectedText.length() - 1);
         }
         return testFiles;
     }

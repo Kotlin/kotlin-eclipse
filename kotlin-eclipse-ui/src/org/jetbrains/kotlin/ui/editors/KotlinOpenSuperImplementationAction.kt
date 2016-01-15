@@ -37,6 +37,8 @@ import org.jetbrains.kotlin.resolve.OverrideResolver
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.MemberDescriptor
 
 public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -59,11 +61,13 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
         
         val declaration = PsiTreeUtil.getParentOfType(psiElement, 
                 KtNamedFunction::class.java,
-                KtProperty::class.java)
+                KtClass::class.java,
+                KtProperty::class.java,
+                KtObjectDeclaration::class.java)
         if (declaration !is KtDeclaration) return
         
         val descriptor = resolveToDescriptor(declaration, ktFile, project)
-        if (descriptor !is CallableMemberDescriptor) return
+        if (descriptor !is DeclarationDescriptor) return
         
         val navigationData = findSuperDeclarations(descriptor)
         if (navigationData.isEmpty()) return
@@ -76,8 +80,20 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
         return context[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]
     }
     
-    private fun findSuperDeclarations(descriptor: CallableMemberDescriptor): List<NavigationData> {
-        val superDescriptors = OverrideResolver.getDirectlyOverriddenDeclarations(descriptor)
+    private fun findSuperDeclarations(descriptor: DeclarationDescriptor): List<NavigationData> {
+        val superDescriptors = when (descriptor) {
+            is ClassDescriptor -> {
+                descriptor.typeConstructor.supertypes.mapNotNull { 
+                    val declarationDescriptor = it.constructor.declarationDescriptor
+                    if (declarationDescriptor is ClassDescriptor) declarationDescriptor else null
+                }.toSet()
+            }
+            
+            is CallableMemberDescriptor -> OverrideResolver.getDirectlyOverriddenDeclarations(descriptor).toSet()
+            
+            else -> emptySet<MemberDescriptor>()
+        }
+        
         return superDescriptors.mapNotNull { descriptor -> 
             EclipseDescriptorUtils.descriptorToDeclaration(descriptor)?.let { sourceElement ->
                 NavigationData(sourceElement, descriptor) 
