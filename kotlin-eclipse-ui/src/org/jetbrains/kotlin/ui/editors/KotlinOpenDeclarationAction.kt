@@ -77,6 +77,8 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import org.jetbrains.kotlin.core.references.getReferenceExpression
+import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
+import org.jetbrains.kotlin.psi.KtElement
 
 class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchAction(editor.javaEditor.site) {
     companion object {
@@ -90,51 +92,50 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
     
     override fun run(selection: ITextSelection) {
         val selectedExpression = getSelectedExpressionWithParsedFile(editor, selection.offset)
-        if (selectedExpression == null) return
-        
-        val references = createReferences(selectedExpression)
-        val element = getTargetElement(references)
-        if (element == null) return
-        
         val javaProject = editor.javaProject
-        if (javaProject == null) return
+        if (selectedExpression == null || javaProject == null) return
         
-        gotoElement(element, references.first(), javaProject)
+        val data = getNavigationData(selectedExpression, javaProject)
+        if (data == null) return
+        
+        gotoElement(data.sourceElement, data.descriptor, selectedExpression, javaProject)
     }
     
-    private fun getTargetElement(reference: List<KotlinReference>): SourceElement? {
-        return reference.resolveToSourceElements().find { it != SourceElement.NO_SOURCE }
+    private data class NavigationData(val sourceElement: SourceElement, val descriptor: DeclarationDescriptor)
+    
+    private fun getNavigationData(referenceExpression: KtReferenceExpression, project: IJavaProject): NavigationData? {
+        val context = KotlinAnalyzer.analyzeFile(project, referenceExpression.getContainingKtFile()).analysisResult.bindingContext
+        return createReferences(referenceExpression)
+                .asSequence()
+                .flatMap { it.getTargetDescriptors(context).asSequence() }
+                .mapNotNull { descriptor ->
+                    val sourceElements = EclipseDescriptorUtils.descriptorToDeclarations(descriptor, project)
+                    val elementWithSource = sourceElements.find { element -> element != SourceElement.NO_SOURCE }
+                    
+                    if (elementWithSource != null) NavigationData(elementWithSource, descriptor) else null
+                }
+                .firstOrNull()
     }
     
-    private fun gotoElement(element: SourceElement, kotlinReference: KotlinReference, javaProject: IJavaProject) {
+    private fun gotoElement(element: SourceElement, descriptor: DeclarationDescriptor, fromElement: KtElement, project: IJavaProject) {
         when (element) {
             is EclipseJavaSourceElement -> {
                 val binding = (element.javaElement as EclipseJavaElement<*>).getBinding()
                 gotoJavaDeclaration(binding)
             }
             
-            is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, kotlinReference, javaProject)
+            is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, fromElement, project)
             
-            is KotlinJvmBinarySourceElement -> {
-                val binaryClass = element.binaryClass
-                val descriptor = getDeclarationDescriptor(kotlinReference, javaProject)
-                if (descriptor == null) {
-                    KotlinLogger.logWarning("Declaration descriptor for $kotlinReference is null")
-                    return
-                }
-                
-                gotoElementInBinaryClass(binaryClass, descriptor, javaProject)
-            }
+            is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, descriptor, project)
             
-            is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, kotlinReference, javaProject)
+            is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, descriptor, project)
         }
     }
     
     private fun gotoClassByPackageSourceElement(
             sourceElement: KotlinJvmBinaryPackageSourceElement, 
-            kotlinReference: KotlinReference, 
+            descriptor: DeclarationDescriptor, 
             javaProject: IJavaProject) {
-        val descriptor = getDeclarationDescriptor(kotlinReference, javaProject)
         if (descriptor !is DeserializedCallableMemberDescriptor) return 
         
         val binaryClass = sourceElement.getContainingBinaryClass(descriptor)
@@ -242,8 +243,8 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         return fragment?.getClassFile(file.name)
     }
     
-    private fun gotoKotlinDeclaration(element: PsiElement, kotlinReference: KotlinReference, javaProject: IJavaProject) {
-        val targetEditor = findEditorForReferencedElement(element, kotlinReference, javaProject)
+    private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, javaProject: IJavaProject) {
+        val targetEditor = findEditorForReferencedElement(element, fromElement, javaProject)
         if (targetEditor !is KotlinEditor) return
         
         val start = element.getTextDocumentOffset(targetEditor.document)
@@ -252,10 +253,10 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
     
     private fun findEditorForReferencedElement(
             element: PsiElement,
-            kotlinReference: KotlinReference, 
+            fromElement: KtElement, 
             javaProject: IJavaProject): AbstractTextEditor? {
         // if element is in the same file
-        if (kotlinReference.expression.getContainingFile() == element.getContainingFile()) {
+        if (fromElement.getContainingFile() == element.getContainingFile()) {
             return editor.javaEditor
         }
         
