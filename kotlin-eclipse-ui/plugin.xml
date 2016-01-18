@@ -50,7 +50,7 @@
       </wizard>
       <wizard
             category="org.jetbrains.kotlin.wizards"
-            class="org.jetbrains.kotlin.wizards.NewTraitWizard"
+            class="org.jetbrains.kotlin.wizards.NewInterfaceWizard"
             finalPerspective="org.jetbrains.kotlin.perspective"
             hasPages="true"
             icon="icons/newint_wiz.gif"

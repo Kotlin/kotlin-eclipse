@@ -46,10 +46,14 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     private static final String DEFAULT_TYPE_BODY = "";
     private static final String PACKAGE_FORMAT = "package %s\n\n";
     
-    protected WizardType type;
+    private final WizardType type;
     
     public NewUnitWizard() {
-        type = WizardType.NONE;
+        this(WizardType.NONE);
+    }
+    
+    public NewUnitWizard(WizardType type) {
+        this.type = type;
     }
     
     @Override

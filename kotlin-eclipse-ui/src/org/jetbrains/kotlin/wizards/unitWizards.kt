@@ -14,13 +14,9 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.wizards;
+package org.jetbrains.kotlin.wizards
 
-public class NewClassWizard extends NewUnitWizard {
-
-    public NewClassWizard() {
-        super();
-        type = WizardType.CLASS;
-    }
-    
-}
+class NewClassWizard : NewUnitWizard(WizardType.CLASS)
+class NewEnumWizard : NewUnitWizard(WizardType.ENUM)
+class NewObjectWizard : NewUnitWizard(WizardType.OBJECT)
+class NewInterfaceWizard : NewUnitWizard(WizardType.INTERFACE)
