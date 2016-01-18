@@ -21,7 +21,7 @@ public class NewTraitWizard extends NewUnitWizard {
     
     public NewTraitWizard() {
         super();
-        type = WizardType.TRAIT;
+        type = WizardType.INTERFACE;
     }
     
 }

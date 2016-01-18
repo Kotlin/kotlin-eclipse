@@ -55,7 +55,7 @@
             hasPages="true"
             icon="icons/newint_wiz.gif"
             id="org.jetbrains.kotlin.traitWizard"
-            name="Kotlin Trait"
+            name="Kotlin Interface"
             preferredPerspectives="org.jetbrains.kotlin.perspective"
             project="false">
          <description>
