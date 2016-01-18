@@ -69,7 +69,7 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
         val descriptor = resolveToDescriptor(declaration, ktFile, project)
         if (descriptor !is DeclarationDescriptor) return
         
-        val navigationData = findSuperDeclarations(descriptor)
+        val navigationData = findSuperDeclarations(descriptor, project)
         if (navigationData.isEmpty()) return
         
         gotoElement(navigationData.first(), declaration, editor, project)
@@ -80,7 +80,7 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
         return context[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]
     }
     
-    private fun findSuperDeclarations(descriptor: DeclarationDescriptor): List<NavigationData> {
+    private fun findSuperDeclarations(descriptor: DeclarationDescriptor, project: IJavaProject): List<NavigationData> {
         val superDescriptors = when (descriptor) {
             is ClassDescriptor -> {
                 descriptor.typeConstructor.supertypes.mapNotNull { 
@@ -94,10 +94,10 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
             else -> emptySet<MemberDescriptor>()
         }
         
-        return superDescriptors.mapNotNull { descriptor -> 
-            EclipseDescriptorUtils.descriptorToDeclaration(descriptor)?.let { sourceElement ->
-                NavigationData(sourceElement, descriptor) 
-            } 
+        return superDescriptors.flatMap { descriptor -> 
+            EclipseDescriptorUtils.descriptorToDeclarations(descriptor, project).map { sourceElement ->
+                NavigationData(sourceElement, descriptor)
+            }
         }
     }
 }
