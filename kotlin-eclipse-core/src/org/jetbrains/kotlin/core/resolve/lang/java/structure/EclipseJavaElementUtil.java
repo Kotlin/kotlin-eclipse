@@ -55,6 +55,7 @@ import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
 
 import com.google.common.collect.Lists;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
@@ -234,7 +235,8 @@ public class EclipseJavaElementUtil {
     }
     
     @Nullable
-    public static VirtualFile jarFileOrDirectoryToVirtualFile(@NotNull File file) {
+    private static VirtualFile jarFileOrDirectoryToVirtualFile(@NotNull File file) {
+        if (ApplicationManager.getApplication() == null) return null;
         if (file.exists()) {
             if (file.isDirectory()) {
                 return VirtualFileManager.getInstance()
