@@ -41,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.Visibilities;
@@ -214,6 +215,11 @@ public class EclipseJavaElementUtil {
     }
 
     private static boolean isKotlinClassFile(IClassFile classFile) {
+        IJavaProject javaProject = classFile.getJavaProject();
+        if (javaProject == null || !KotlinNature.hasKotlinNature(javaProject.getProject())) {
+            return false;
+        }
+        
         IPath classFilePath = ProjectUtils.convertToGlobalPath(classFile.getPath());
         if (classFilePath == null) {
             return false;
@@ -233,8 +239,10 @@ public class EclipseJavaElementUtil {
         return true;
     }
     
+//    By calling this method be sure that VirtualFileManager has been initialized in KotlinEnvironment
+//    So if there is no Kotlin in workspace, this method could throw NPE
     @Nullable
-    public static VirtualFile jarFileOrDirectoryToVirtualFile(@NotNull File file) {
+    private static VirtualFile jarFileOrDirectoryToVirtualFile(@NotNull File file) {
         if (file.exists()) {
             if (file.isDirectory()) {
                 return VirtualFileManager.getInstance()
