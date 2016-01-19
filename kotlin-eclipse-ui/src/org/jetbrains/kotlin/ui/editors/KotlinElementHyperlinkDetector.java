@@ -23,8 +23,8 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction;
-import org.jetbrains.kotlin.ui.editors.navigation.NavigationUtilsKt;
 
 public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
     
@@ -47,7 +47,7 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
             return null;
         }
         
-        if (NavigationUtilsKt.getSelectedExpressionWithParsedFile(editor, offset) == null) {
+        if (EditorUtil.getReferenceExpression(editor, offset) == null) {
             return null;
         }
         
