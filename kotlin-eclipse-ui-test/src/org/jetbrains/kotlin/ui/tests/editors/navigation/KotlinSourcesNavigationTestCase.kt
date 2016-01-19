@@ -2,7 +2,7 @@ package org.jetbrains.kotlin.ui.tests.editors.navigation
 
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.ui.editors.KotlinOpenDeclarationAction
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
 import org.eclipse.jface.text.TextSelection
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
 import org.eclipse.ui.PlatformUI

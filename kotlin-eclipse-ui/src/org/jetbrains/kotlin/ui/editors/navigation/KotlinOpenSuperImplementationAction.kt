@@ -15,7 +15,7 @@
 * limitations under the License.
 *
 *******************************************************************************/
-package org.jetbrains.kotlin.ui.editors
+package org.jetbrains.kotlin.ui.editors.navigation
 
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.eclipse.jdt.internal.ui.actions.ActionMessages
@@ -44,6 +44,7 @@ import org.eclipse.ui.dialogs.ListDialog
 import org.eclipse.jface.viewers.ArrayContentProvider
 import org.jetbrains.kotlin.ui.overrideImplement.KotlinCallableLabelProvider
 import org.eclipse.jface.window.Window
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
 public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     init {

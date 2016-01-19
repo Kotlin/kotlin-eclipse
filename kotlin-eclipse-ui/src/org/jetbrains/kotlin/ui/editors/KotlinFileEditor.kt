@@ -63,6 +63,8 @@ import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
 import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
 import org.eclipse.jface.text.source.SourceViewerConfiguration
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationAction
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()

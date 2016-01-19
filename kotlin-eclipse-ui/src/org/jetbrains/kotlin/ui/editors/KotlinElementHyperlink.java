@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.ui.editors;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction;
 
 public class KotlinElementHyperlink implements IHyperlink {
     

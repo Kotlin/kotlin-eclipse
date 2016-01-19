@@ -17,7 +17,7 @@ import com.intellij.psi.PsiComment
 import com.intellij.psi.util.PsiTreeUtil
 import org.junit.Assert
 import org.eclipse.jdt.core.IMember
-import org.jetbrains.kotlin.ui.editors.KotlinOpenDeclarationAction
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
 import com.intellij.psi.PsiNamedElement
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.ui.editors.KotlinEditor

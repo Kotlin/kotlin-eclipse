@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.ui.editors
+package org.jetbrains.kotlin.ui.editors.navigation
 
 import org.jetbrains.kotlin.psi.KtVisitor
 import org.jetbrains.kotlin.psi.KtNamedDeclaration

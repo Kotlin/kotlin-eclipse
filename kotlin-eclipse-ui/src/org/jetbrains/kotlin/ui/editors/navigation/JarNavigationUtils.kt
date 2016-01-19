@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.ui.editors
+package org.jetbrains.kotlin.ui.editors.navigation
 
 import com.intellij.openapi.vfs.VirtualFile
 import org.eclipse.core.resources.IFile

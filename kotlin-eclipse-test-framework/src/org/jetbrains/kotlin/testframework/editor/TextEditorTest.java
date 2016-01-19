@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFormatAction;
-import org.jetbrains.kotlin.ui.editors.KotlinOpenDeclarationAction;
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction;
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction;
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectNextAction;
 import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectPreviousAction;

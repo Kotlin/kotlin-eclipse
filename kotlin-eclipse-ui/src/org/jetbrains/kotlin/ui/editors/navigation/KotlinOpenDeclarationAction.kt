@@ -14,7 +14,7 @@
 * limitations under the License.
 *
 *******************************************************************************/
-package org.jetbrains.kotlin.ui.editors
+package org.jetbrains.kotlin.ui.editors.navigation
 
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -79,6 +79,8 @@ import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor
 
 class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchAction(editor.javaEditor.site) {
     companion object {

@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.ui.editors;
+package org.jetbrains.kotlin.ui.editors.navigation;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
