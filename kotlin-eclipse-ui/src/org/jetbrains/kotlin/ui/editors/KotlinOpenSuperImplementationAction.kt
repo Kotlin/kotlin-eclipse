@@ -72,7 +72,7 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
         val navigationData = findSuperDeclarations(descriptor, project)
         if (navigationData.isEmpty()) return
         
-        gotoElement(navigationData.first(), declaration, editor, project)
+        gotoElement(navigationData.first(), project)
     }
     
     private fun resolveToDescriptor(declaration: KtDeclaration, ktFile: KtFile, project: IJavaProject): DeclarationDescriptor? {

@@ -98,7 +98,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         val data = getNavigationData(selectedExpression, javaProject)
         if (data == null) return
         
-        gotoElement(data, selectedExpression, editor, javaProject)
+        gotoElement(data, javaProject)
     }
     
     private fun getNavigationData(referenceExpression: KtReferenceExpression, project: IJavaProject): NavigationData? {
@@ -118,7 +118,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
 
 data class NavigationData(val sourceElement: SourceElement, val descriptor: DeclarationDescriptor)
 
-fun gotoElement(data: NavigationData, fromElement: KtElement, fromEditor: KotlinEditor, project: IJavaProject) {
+fun gotoElement(data: NavigationData, project: IJavaProject) {
     val element = data.sourceElement
     when (element) {
         is EclipseJavaSourceElement -> {
@@ -126,7 +126,7 @@ fun gotoElement(data: NavigationData, fromElement: KtElement, fromEditor: Kotlin
             gotoJavaDeclaration(binding)
         }
         
-        is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, fromElement, fromEditor, project)
+        is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, project)
         
         is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, data.descriptor, project)
         
@@ -238,8 +238,8 @@ private fun gotoElementInBinaryClass(
     targetEditor.selectAndReveal(start, 0)
 }
 
-private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, fromEditor: KotlinEditor, javaProject: IJavaProject) {
-    val targetEditor = findEditorForReferencedElement(element, fromElement, fromEditor, javaProject)
+private fun gotoKotlinDeclaration(element: PsiElement, javaProject: IJavaProject) {
+    val targetEditor = findEditorForReferencedElement(element, javaProject)
     if (targetEditor !is KotlinEditor) return
     
     val start = element.getTextDocumentOffset(targetEditor.document)
@@ -248,14 +248,7 @@ private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, f
 
 private fun findEditorForReferencedElement(
         element: PsiElement,
-        fromElement: KtElement,
-        fromEditor: KotlinEditor,
         javaProject: IJavaProject): AbstractTextEditor? {
-    // if element is in the same file
-    if (fromElement.getContainingFile() == element.getContainingFile()) {
-        return fromEditor.javaEditor
-    }
-    
     val virtualFile = element.getContainingFile().getVirtualFile()
     if (virtualFile == null) return null
     
