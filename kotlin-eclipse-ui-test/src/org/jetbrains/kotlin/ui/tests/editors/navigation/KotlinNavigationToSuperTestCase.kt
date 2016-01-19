@@ -24,7 +24,7 @@ import org.jetbrains.kotlin.core.tests.diagnostics.JetTestUtils
 import org.jetbrains.kotlin.core.tests.diagnostics.JetTestUtils.TestFileFactoryNoModules
 import org.junit.Assert
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.ui.editors.KotlinOpenSuperImplementationAction
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationAction
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
 
 abstract class KotlinNavigationToSuperTestCase : KotlinProjectTestCase() {

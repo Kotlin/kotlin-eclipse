@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.ui.editors;
+package org.jetbrains.kotlin.ui.editors.navigation;
 
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.jface.resource.ImageDescriptor;

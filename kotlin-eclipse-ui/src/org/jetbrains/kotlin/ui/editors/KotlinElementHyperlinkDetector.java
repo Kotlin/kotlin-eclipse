@@ -23,6 +23,8 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction;
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationActionKt;
 
 public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
     

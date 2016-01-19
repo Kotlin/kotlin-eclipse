@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.psi.KtVisitor
 import org.jetbrains.kotlin.psi.KtElement
 import org.eclipse.jface.text.source.SourceViewerConfiguration
 import org.jetbrains.kotlin.core.references.FILE_PROJECT
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
 
 public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
     override fun isEditable() = false
