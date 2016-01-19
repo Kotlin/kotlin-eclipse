@@ -27,8 +27,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.references.ReferenceUtilsKt;
 import org.jetbrains.kotlin.psi.KtElement;
 import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtReferenceExpression;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
@@ -85,6 +87,18 @@ public class EditorUtil {
     public static KtElement getJetElement(@NotNull KotlinEditor editor, int offset) {
         PsiElement psiElement = getPsiElement(editor, offset);
         return psiElement != null ? PsiTreeUtil.getNonStrictParentOfType(psiElement, KtElement.class) : null;
+    }
+    
+    @Nullable
+    public static KtReferenceExpression getReferenceExpression(@NotNull KotlinEditor editor, int offset) {
+        KtFile ktFile = editor.getParsedFile();
+        if (ktFile == null) return null;
+        
+        int documentOffset = LineEndUtil.convertCrToDocumentOffset(editor.getDocument(), offset);
+        PsiElement psiExpression = ktFile.findElementAt(documentOffset);
+        if (psiExpression == null) return null;
+        
+        return ReferenceUtilsKt.getReferenceExpression(psiExpression);
     }
     
     @Nullable

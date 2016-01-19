@@ -88,17 +88,6 @@ fun gotoElement(
     }
 }
 
-fun getSelectedExpressionWithParsedFile(editor: KotlinEditor, offset: Int): KtReferenceExpression? {
-    val file = editor.parsedFile
-    if (file == null) return null
-    
-    val documentOffset = LineEndUtil.convertCrToDocumentOffset(editor.document, offset)
-    val psiExpression = file.findElementAt(documentOffset)
-    if (psiExpression == null) return null
-    
-    return getReferenceExpression(psiExpression)
-}
-
 private fun getClassFile(binaryClass: KotlinJvmBinaryClass, javaProject: IJavaProject): IClassFile? {
     val file = (binaryClass as VirtualFileKotlinClass).file
     val fragment = javaProject.findPackageFragment(pathFromUrlInArchive(file.parent.path))

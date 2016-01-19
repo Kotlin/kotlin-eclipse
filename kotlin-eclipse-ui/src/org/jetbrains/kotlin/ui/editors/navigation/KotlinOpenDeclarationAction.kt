@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.core.references.createReferences
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 
 class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchAction(editor.javaEditor.site) {
     companion object {
@@ -39,7 +40,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
     }
     
     override fun run(selection: ITextSelection) {
-        val selectedExpression = getSelectedExpressionWithParsedFile(editor, selection.offset)
+        val selectedExpression = EditorUtil.getReferenceExpression(editor, selection.offset)
         val javaProject = editor.javaProject
         if (selectedExpression == null || javaProject == null) return
         
