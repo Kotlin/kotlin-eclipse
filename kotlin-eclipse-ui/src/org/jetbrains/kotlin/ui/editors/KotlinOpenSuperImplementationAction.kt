@@ -66,21 +66,21 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
                 KtObjectDeclaration::class.java)
         if (declaration == null) return
         
-        val descriptor = resolveToDescriptor(declaration, ktFile, project)
+        val descriptor = resolveToDescriptor(declaration, project)
         if (descriptor !is DeclarationDescriptor) return
         
-        val navigationData = findSuperDeclarations(descriptor, project)
-        if (navigationData.isEmpty()) return
+        val superDeclarations = findSuperDeclarations(descriptor)
+        if (superDeclarations.isEmpty()) return
         
-        gotoElement(navigationData.first(), declaration, editor, project)
+        gotoElement(superDeclarations.first(), declaration, editor, project)
     }
     
-    private fun resolveToDescriptor(declaration: KtDeclaration, ktFile: KtFile, project: IJavaProject): DeclarationDescriptor? {
-        val context = KotlinAnalysisFileCache.getAnalysisResult(ktFile, project).analysisResult.bindingContext
+    private fun resolveToDescriptor(declaration: KtDeclaration, project: IJavaProject): DeclarationDescriptor? {
+        val context = KotlinAnalysisFileCache.getAnalysisResult(declaration.getContainingKtFile(), project).analysisResult.bindingContext
         return context[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]
     }
     
-    private fun findSuperDeclarations(descriptor: DeclarationDescriptor, project: IJavaProject): List<NavigationData> {
+    private fun findSuperDeclarations(descriptor: DeclarationDescriptor): Set<MemberDescriptor> {
         val superDescriptors = when (descriptor) {
             is ClassDescriptor -> {
                 descriptor.typeConstructor.supertypes.mapNotNull { 
@@ -94,10 +94,6 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
             else -> emptySet<MemberDescriptor>()
         }
         
-        return superDescriptors.flatMap { descriptor -> 
-            EclipseDescriptorUtils.descriptorToDeclarations(descriptor, project).map { sourceElement ->
-                NavigationData(sourceElement, descriptor)
-            }
-        }
+        return superDescriptors
     }
 }

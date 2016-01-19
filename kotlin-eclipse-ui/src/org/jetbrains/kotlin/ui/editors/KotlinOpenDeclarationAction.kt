@@ -98,7 +98,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         val data = getNavigationData(selectedExpression, javaProject)
         if (data == null) return
         
-        gotoElement(data, selectedExpression, editor, javaProject)
+        gotoElement(data.sourceElement, data.descriptor, selectedExpression, editor, javaProject)
     }
     
     private fun getNavigationData(referenceExpression: KtReferenceExpression, project: IJavaProject): NavigationData? {
@@ -107,9 +107,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
                 .asSequence()
                 .flatMap { it.getTargetDescriptors(context).asSequence() }
                 .mapNotNull { descriptor ->
-                    val sourceElements = EclipseDescriptorUtils.descriptorToDeclarations(descriptor, project)
-                    val elementWithSource = sourceElements.find { element -> element != SourceElement.NO_SOURCE }
-                    
+                    val elementWithSource = getElementWithSource(descriptor, project)
                     if (elementWithSource != null) NavigationData(elementWithSource, descriptor) else null
                 }
                 .firstOrNull()
@@ -118,8 +116,22 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
 
 data class NavigationData(val sourceElement: SourceElement, val descriptor: DeclarationDescriptor)
 
-fun gotoElement(data: NavigationData, fromElement: KtElement, fromEditor: KotlinEditor, project: IJavaProject) {
-    val element = data.sourceElement
+fun gotoElement(descriptor: DeclarationDescriptor, fromElement: KtElement, fromEditor: KotlinEditor, project: IJavaProject) {
+    val elementWithSource = getElementWithSource(descriptor, project)
+    if (elementWithSource != null) gotoElement(elementWithSource, descriptor, fromElement, fromEditor, project)
+}
+
+private fun getElementWithSource(descriptor: DeclarationDescriptor, project: IJavaProject): SourceElement? {
+    val sourceElements = EclipseDescriptorUtils.descriptorToDeclarations(descriptor, project)
+    return sourceElements.find { element -> element != SourceElement.NO_SOURCE }
+}
+
+private fun gotoElement(
+        element: SourceElement, 
+        descriptor: DeclarationDescriptor, 
+        fromElement: KtElement, 
+        fromEditor: KotlinEditor, 
+        project: IJavaProject) {
     when (element) {
         is EclipseJavaSourceElement -> {
             val binding = (element.javaElement as EclipseJavaElement<*>).getBinding()
@@ -128,9 +140,9 @@ fun gotoElement(data: NavigationData, fromElement: KtElement, fromEditor: Kotlin
         
         is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, fromElement, fromEditor, project)
         
-        is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, data.descriptor, project)
+        is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, descriptor, project)
         
-        is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, data.descriptor, project)
+        is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, descriptor, project)
     }
 }
 
@@ -248,7 +260,7 @@ private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, f
 
 private fun findEditorForReferencedElement(
         element: PsiElement,
-        fromElement: KtElement,
+        fromElement: KtElement, 
         fromEditor: KotlinEditor,
         javaProject: IJavaProject): AbstractTextEditor? {
     // if element is in the same file
