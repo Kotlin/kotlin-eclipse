@@ -39,6 +39,11 @@ import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.MemberDescriptor
+import org.eclipse.ui.PlatformUI
+import org.eclipse.ui.dialogs.ListDialog
+import org.eclipse.jface.viewers.ArrayContentProvider
+import org.jetbrains.kotlin.ui.overrideImplement.KotlinCallableLabelProvider
+import org.eclipse.jface.window.Window
 
 public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -72,7 +77,38 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
         val superDeclarations = findSuperDeclarations(descriptor)
         if (superDeclarations.isEmpty()) return
         
-        gotoElement(superDeclarations.first(), declaration, editor, project)
+        val superDeclaration = when {
+            superDeclarations.isEmpty() -> null
+            superDeclarations.size == 1 -> superDeclarations.first()
+            else -> chooseFromSelectionDialog(superDeclarations)
+        }
+        
+        if (superDeclaration == null) return
+        
+        gotoElement(superDeclaration, declaration, editor, project)
+    }
+    
+    private fun chooseFromSelectionDialog(declarations: Set<MemberDescriptor>): MemberDescriptor? {
+        val shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell()
+        val dialog = ListDialog(shell)
+        
+        dialog.setTitle("Super Declarations")
+        dialog.setMessage("Select a declaration to navigate")
+        dialog.setContentProvider(ArrayContentProvider())
+        dialog.setLabelProvider(KotlinCallableLabelProvider())
+        
+        dialog.setInput(declarations.toTypedArray())
+        
+        if (dialog.open() == Window.CANCEL) {
+            return null;
+        }
+        
+        val result = dialog.getResult()
+        if (result == null || result.size != 1) {
+            return null
+        }
+        
+        return result[0] as MemberDescriptor
     }
     
     private fun resolveToDescriptor(declaration: KtDeclaration, project: IJavaProject): DeclarationDescriptor? {
