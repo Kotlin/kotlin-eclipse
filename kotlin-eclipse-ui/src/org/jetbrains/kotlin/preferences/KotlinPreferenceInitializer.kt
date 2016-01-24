@@ -17,8 +17,16 @@
 package org.jetbrains.kotlin.preferences
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer
+import org.jetbrains.kotlin.ui.Activator
+import org.jetbrains.kotlin.ui.KotlinPluginUpdater
+import java.util.Random
 
-public class KotlinPreferenceInitializer : AbstractPreferenceInitializer() {
+class KotlinPreferenceInitializer : AbstractPreferenceInitializer() {
     override fun initializeDefaultPreferences() {
+        val kotlinStore = Activator.getDefault().preferenceStore
+        with(kotlinStore) {
+            setDefault(KotlinPluginUpdater.LAST_UPDATE_CHECK, 0L)
+            setDefault(KotlinPluginUpdater.USER_ID, 0L)
+        }
     }
 }
