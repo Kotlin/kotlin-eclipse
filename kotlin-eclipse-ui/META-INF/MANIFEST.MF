@@ -20,7 +20,13 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.search,
  org.eclipse.jdt.core.manipulation,
  org.eclipse.ltk.core.refactoring,
- org.eclipse.ltk.ui.refactoring
+ org.eclipse.ltk.ui.refactoring,
+ org.eclipse.equinox.p2.operations,
+ org.eclipse.equinox.p2.core,
+ org.eclipse.equinox.p2.metadata,
+ org.eclipse.equinox.p2.engine,
+ org.eclipse.mylyn.commons.ui,
+ org.eclipse.equinox.p2.director
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.navigation,
  org.eclipse.core.expressions,
