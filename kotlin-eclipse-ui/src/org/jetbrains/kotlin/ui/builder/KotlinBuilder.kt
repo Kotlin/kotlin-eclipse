@@ -47,6 +47,8 @@ import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStat
 import org.jetbrains.kotlin.progress.CompilationCanceledStatus
 import org.jetbrains.kotlin.progress.CompilationCanceledException
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
+import org.jetbrains.kotlin.ui.KotlinPluginUpdater
+import org.jetbrains.kotlin.eclipse.ui.utils.runJob
 
 class KotlinBuilder : IncrementalProjectBuilder() {
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
@@ -69,6 +71,11 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         
         if (affectedFiles.isNotEmpty()) {
             KotlinLightClassGeneration.updateLightClasses(javaProject, affectedFiles)
+            
+            runJob("Checking for update", Job.DECORATE) { 
+                KotlinPluginUpdater.kotlinFileEdited()
+                Status.OK_STATUS
+            }
         }
         
         val ktFiles = existingAffectedFiles.map { KotlinPsiManager.INSTANCE.getParsedFile(it) }
