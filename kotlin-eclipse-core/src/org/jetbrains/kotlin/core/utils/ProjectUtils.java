@@ -61,6 +61,7 @@ public class ProjectUtils {
     private static final String LIB_EXTENSION = "jar";
     
     private static final String MAVEN_NATURE_ID = "org.eclipse.m2e.core.maven2Nature";
+    private static final String GRADLE_NATURE_ID = "org.eclipse.buildship.core.gradleprojectnature";
     
     public static final String KT_HOME = getKtHome();
     
@@ -341,6 +342,16 @@ public class ProjectUtils {
     public static boolean isMavenProject(@NotNull IProject project) {
         try {
             return project.hasNature(MAVEN_NATURE_ID);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return false;
+    }
+    
+    public static boolean isGradleProject(@NotNull IProject project) {
+        try {
+            return project.hasNature(GRADLE_NATURE_ID);
         } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }

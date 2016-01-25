@@ -46,7 +46,7 @@ public class LibrarySourcesIndex(private val root: IPackageFragmentRoot) {
         val sourcePath = ProjectUtils.convertToGlobalPath(
             root.getResolvedClasspathEntry()?.getSourceAttachmentPath())!!
         val sourceArchive = ZipFile(sourcePath.toOSString())
-        sourcesList.forEach {
+        for (it in sourcesList) {
             if (it.effectivePackage == null) {
                 it.effectivePackage = getPackageName(sourceArchive, sourceArchive.getEntry(it.path))
             }
