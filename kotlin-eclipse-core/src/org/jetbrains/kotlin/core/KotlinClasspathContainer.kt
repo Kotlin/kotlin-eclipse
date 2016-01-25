@@ -38,37 +38,37 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
         private val LIB_RUNTIME_NAME = "kotlin-runtime"
         private val LIB_RUNTIME_SRC_NAME = "kotlin-runtime-sources"
         private val LIB_REFLECT_NAME = "kotlin-reflect"
-		
-		@JvmStatic
+        
+        @JvmStatic
         public fun getPathToLightClassesFolder(javaProject: IJavaProject): IPath {
             return Path(javaProject.getProject().getName()).append(KotlinJavaManager.KOTLIN_BIN_FOLDER).makeAbsolute()
         }
     }
     
     override public fun getClasspathEntries() : Array<IClasspathEntry> {
-    	val entries = ArrayList<IClasspathEntry>()
-		
-		val kotlinBinFolderEntry = newExportedLibraryEntry(getPathToLightClassesFolder(javaProject))
-		entries.add(kotlinBinFolderEntry)
-		
-		if (!ProjectUtils.isMavenProject(javaProject.getProject())) {
-			val kotlinRuntimeEntry = JavaCore.newLibraryEntry(
-				Path(ProjectUtils.buildLibPath(LIB_RUNTIME_NAME)), 
-                Path(ProjectUtils.buildLibPath(LIB_RUNTIME_SRC_NAME)),
-				null, 
-				true)
-			val kotlinReflectEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_REFLECT_NAME)))
-			
-			entries.add(kotlinRuntimeEntry)
-			entries.add(kotlinReflectEntry)
-		}
-		
+        val entries = ArrayList<IClasspathEntry>()
+                
+        val kotlinBinFolderEntry = newExportedLibraryEntry(getPathToLightClassesFolder(javaProject))
+        entries.add(kotlinBinFolderEntry)
+        
+        if (!ProjectUtils.isMavenProject(javaProject.getProject())) {
+            val kotlinRuntimeEntry = JavaCore.newLibraryEntry(
+                    Path(ProjectUtils.buildLibPath(LIB_RUNTIME_NAME)),
+                    Path(ProjectUtils.buildLibPath(LIB_RUNTIME_SRC_NAME)),
+                    null,
+                    true)
+            val kotlinReflectEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_REFLECT_NAME)))
+            
+            entries.add(kotlinRuntimeEntry)
+            entries.add(kotlinReflectEntry)
+        }
+        
         return entries.toTypedArray()
     }
-	
-	override public fun getDescription() : String = "Kotlin Runtime Library"
-			
-	override public fun getKind() : Int = IClasspathContainer.K_APPLICATION
-	
-	override public fun getPath() : IPath = runtimeContainerId
+    
+    override public fun getDescription() : String = "Kotlin Runtime Library"
+    
+    override public fun getKind() : Int = IClasspathContainer.K_APPLICATION
+    
+    override public fun getPath() : IPath = runtimeContainerId
 }
