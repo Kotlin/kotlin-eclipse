@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,6 @@ import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createSeparator;
 import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createText;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
@@ -134,12 +130,12 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         return name;
     }
     
-    private void setSourceDirByFolderName(String folderName) {
+    private void setSourceDirByFolderName(String srcFolder) {
         try {
             sourceDir = null;
             for (IJavaProject jp : JavaCore.create(getWorkspaceRoot()).getJavaProjects()) {
                 for (IPackageFragmentRoot pfr : jp.getPackageFragmentRoots()) {
-                    if (pfr.getPath().toPortableString().equals(folderName)) {
+                    if (pfr.getPath().toPortableString().equals(srcFolder)) {
                         sourceDir = pfr;
                         return;
                     }
@@ -153,8 +149,9 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     private Text createSourceFolderField(Composite parent) {
         createLabel(parent, SOURCE_FOLDER_LABEL_TITLE);
         
-        String sourceFolderFromSelection = getSourceFolderFromSelection();
-        setSourceDirByFolderName(sourceFolderFromSelection);
+        IPackageFragmentRoot srcFolder = WizardUtilsKt.getSourceFolderBySelection(selection);
+        String sourceFolderFromSelection = srcFolder != null ? srcFolder.getPath().toOSString() : DEFAULT_SOURCE_FOLDER;
+        sourceDir = srcFolder;
         
         final Text folder = createText(parent, sourceFolderFromSelection);
         folder.addModifyListener(new ModifyListener() {
@@ -186,7 +183,8 @@ public class NewUnitWizardPage extends AbstractWizardPage {
     private Text createPackageField(Composite parent) {
         createLabel(parent, PACKAGE_LABEL_TITLE);
         
-        String packageFromSelection = getPackageFromSelection();
+        IPackageFragment fragment = WizardUtilsKt.getPackageBySelection(selection);
+        String packageFromSelection = fragment != null ? fragment.getElementName() : DEFAULT_PACKAGE;
         packageName = packageFromSelection;
         
         final Text pkg = createText(parent, packageFromSelection);
@@ -230,105 +228,6 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         });
         
         return pkg;
-    }
-    
-    private String getSourceFolderFromSelection() {
-        String defaultFolder = DEFAULT_SOURCE_FOLDER;
-        
-        if (selection.isEmpty()) {
-            return defaultFolder;
-        }
-        
-        Object selectedObject = selection.getFirstElement();
-        
-        if (selectedObject instanceof IJavaElement) {
-            IJavaElement selectedJavaElement = (IJavaElement) selectedObject;
-            switch (selectedJavaElement.getElementType()) {
-            case IJavaElement.JAVA_PROJECT:
-                return getDefaultSrcByProject((IJavaProject) selectedJavaElement);
-                
-            case IJavaElement.PACKAGE_FRAGMENT_ROOT:
-                return selectedJavaElement.getPath().toPortableString();
-                
-            case IJavaElement.PACKAGE_FRAGMENT:
-            case IJavaElement.COMPILATION_UNIT:
-                return selectedJavaElement.getPath().uptoSegment(2).toPortableString();
-            }
-        } else if (selectedObject instanceof IResource) {
-            IResource selectedResource = (IResource) selectedObject;
-            switch (selectedResource.getType()) {
-            case IResource.FOLDER:
-                return getDefaultSrcByProject(JavaCore.create(selectedResource.getProject()));
-                
-            case IResource.FILE:
-                return selectedResource.getFullPath().uptoSegment(2).toPortableString();
-            }
-        }
-        
-        return defaultFolder;
-    }
-    
-    private String getPackageFromSelection() {
-        String defaultPackage = DEFAULT_PACKAGE;
-        
-        if (selection.isEmpty()) {
-            return defaultPackage;
-        }
-        
-        Object selectedObject = selection.getFirstElement();
-        
-        if (selectedObject instanceof IJavaElement) {
-            IJavaElement selectedJavaElement = (IJavaElement) selectedObject;
-            switch (selectedJavaElement.getElementType()) {
-            case IJavaElement.PACKAGE_FRAGMENT:
-                return selectedJavaElement.getElementName();
-                
-            case IJavaElement.COMPILATION_UNIT:
-                try {
-                    return selectedJavaElement.getJavaProject().findPackageFragment(
-                            selectedJavaElement.getPath().makeAbsolute().removeLastSegments(1)).getElementName();
-                } catch (Exception e) {
-                    KotlinLogger.logAndThrow(e);
-                }
-                break;
-            }
-        } else if (selectedObject instanceof IResource) {
-            IResource selectedResource = (IResource) selectedObject;
-            switch (selectedResource.getType()) {
-            case IResource.FILE:
-                try {
-                    return JavaCore.create(selectedResource.getProject()).findPackageFragment(
-                            selectedResource.getFullPath().makeAbsolute().removeLastSegments(1)).getElementName();
-                } catch (Exception e) {
-                    KotlinLogger.logAndThrow(e);
-                }
-                break;
-            }
-        }
-        
-        return defaultPackage;
-    }
-    
-    private String getDefaultSrcByProject(IJavaProject javaProject) {
-        String destFolder = javaProject.getPath().toPortableString();
-        
-        IClasspathEntry[] classpathEntries = null;
-        try {
-            classpathEntries = javaProject.getRawClasspath();
-        } catch (JavaModelException e) {
-            KotlinLogger.logAndThrow(e);
-            
-            return destFolder;
-        }
-        
-        for (IClasspathEntry classpathEntry : classpathEntries) {
-            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                destFolder += IPath.SEPARATOR + classpathEntry.getPath().segment(1);
-                break;
-            }
-        }
-        
-        return destFolder;
     }
     
     @Override
