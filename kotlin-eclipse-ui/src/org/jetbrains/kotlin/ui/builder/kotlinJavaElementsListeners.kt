@@ -42,10 +42,12 @@ public class KotlinClassPathListener : IElementChangedListener {
     private fun updateEnvironmentIfClasspathChanged(delta: IJavaElementDelta) {
         delta.getAffectedChildren().forEach { updateEnvironmentIfClasspathChanged(it) }
         
-        val javaProject = delta.getElement().getJavaProject()
-        if (javaProject != null && javaProject.exists() && KotlinNature.hasKotlinNature(javaProject.getProject())) {
-            if ((delta.getFlags() and IJavaElementDelta.F_CLASSPATH_CHANGED) !== 0) {
-                KotlinEnvironment.updateKotlinEnvironment(javaProject)
+        val element = delta.getElement()
+        if (element is IJavaProject && element.exists() && KotlinNature.hasKotlinNature(element.getProject())) {
+            val flags = delta.getFlags()
+            if ((flags and IJavaElementDelta.F_CLASSPATH_CHANGED) != 0 || 
+                (flags and IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED) != 0) {
+                KotlinEnvironment.updateKotlinEnvironment(element)
             }
         }
     }
