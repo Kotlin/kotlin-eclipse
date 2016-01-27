@@ -47,7 +47,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         val data = getNavigationData(selectedExpression, javaProject)
         if (data == null) return
         
-        gotoElement(data.sourceElement, data.descriptor, javaProject)
+        gotoElement(data.sourceElement, data.descriptor, javaProject, NavigationPosition(selectedExpression, editor))
     }
     
     private fun getNavigationData(referenceExpression: KtReferenceExpression, project: IJavaProject): NavigationData? {

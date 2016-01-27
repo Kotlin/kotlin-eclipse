@@ -56,10 +56,11 @@ import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.eclipse.ui.ide.IDE
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import org.jetbrains.kotlin.core.references.getReferenceExpression
+import org.jetbrains.kotlin.psi.KtElement
 
-fun gotoElement(descriptor: DeclarationDescriptor, project: IJavaProject) {
+fun gotoElement(descriptor: DeclarationDescriptor, project: IJavaProject, fromPosition: NavigationPosition) {
     val elementWithSource = getElementWithSource(descriptor, project)
-    if (elementWithSource != null) gotoElement(elementWithSource, descriptor, project)
+    if (elementWithSource != null) gotoElement(elementWithSource, descriptor, project, fromPosition)
 }
 
 fun getElementWithSource(descriptor: DeclarationDescriptor, project: IJavaProject): SourceElement? {
@@ -67,20 +68,22 @@ fun getElementWithSource(descriptor: DeclarationDescriptor, project: IJavaProjec
     return sourceElements.find { element -> element != SourceElement.NO_SOURCE }
 }
 
-fun gotoElement(element: SourceElement, descriptor: DeclarationDescriptor, project: IJavaProject) {
+fun gotoElement(element: SourceElement, descriptor: DeclarationDescriptor, project: IJavaProject, fromPosition: NavigationPosition) {
     when (element) {
         is EclipseJavaSourceElement -> {
             val binding = (element.javaElement as EclipseJavaElement<*>).getBinding()
             gotoJavaDeclaration(binding)
         }
         
-        is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, project)
+        is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, project, fromPosition)
         
         is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, descriptor, project)
         
         is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, descriptor, project)
     }
 }
+
+class NavigationPosition(val element: KtElement, val editor: KotlinEditor)
 
 private fun getClassFile(binaryClass: KotlinJvmBinaryClass, javaProject: IJavaProject): IClassFile? {
     val file = (binaryClass as VirtualFileKotlinClass).file
@@ -186,8 +189,8 @@ private fun gotoElementInBinaryClass(
     targetEditor.selectAndReveal(start, 0)
 }
 
-private fun gotoKotlinDeclaration(element: PsiElement, javaProject: IJavaProject) {
-    val targetEditor = findEditorForReferencedElement(element, javaProject)
+private fun gotoKotlinDeclaration(element: PsiElement, javaProject: IJavaProject, fromPosition: NavigationPosition) {
+    val targetEditor = findEditorForReferencedElement(element, javaProject, fromPosition)
     if (targetEditor !is KotlinEditor) return
     
     val start = element.getTextDocumentOffset(targetEditor.document)
@@ -196,7 +199,12 @@ private fun gotoKotlinDeclaration(element: PsiElement, javaProject: IJavaProject
 
 private fun findEditorForReferencedElement(
         element: PsiElement,
-        javaProject: IJavaProject): AbstractTextEditor? {
+        javaProject: IJavaProject,
+        fromPosition: NavigationPosition): AbstractTextEditor? {
+    if (fromPosition.element.getContainingFile() == element.getContainingFile()) {
+        return fromPosition.editor.javaEditor
+    }
+    
     val virtualFile = element.getContainingFile().getVirtualFile()
     if (virtualFile == null) return null
     

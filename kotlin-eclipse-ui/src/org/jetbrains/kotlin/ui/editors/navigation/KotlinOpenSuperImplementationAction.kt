@@ -86,7 +86,7 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) :
         
         if (superDeclaration == null) return
         
-        gotoElement(superDeclaration, project)
+        gotoElement(superDeclaration, project, NavigationPosition(declaration, editor))
     }
     
     private fun chooseFromSelectionDialog(declarations: Set<MemberDescriptor>): MemberDescriptor? {
