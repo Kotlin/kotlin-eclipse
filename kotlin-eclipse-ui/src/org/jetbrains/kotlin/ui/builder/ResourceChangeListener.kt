@@ -50,6 +50,10 @@ class ProjectChangeListener : IResourceDeltaVisitor {
                 }
             }
             is IProject -> {
+                if (!resource.isAccessible || !KotlinNature.hasKotlinNature(resource)) {
+                    return false
+                }
+                
                 val kind = delta.getKind()
                 KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, kind)
                 
