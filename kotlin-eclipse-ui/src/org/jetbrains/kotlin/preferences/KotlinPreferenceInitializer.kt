@@ -20,13 +20,16 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer
 import org.jetbrains.kotlin.ui.Activator
 import org.jetbrains.kotlin.ui.KotlinPluginUpdater
 import java.util.Random
+import org.jetbrains.kotlin.ui.KotlinUiStartupClass
 
 class KotlinPreferenceInitializer : AbstractPreferenceInitializer() {
     override fun initializeDefaultPreferences() {
+        println("Preference initializing")
         val kotlinStore = Activator.getDefault().preferenceStore
         with(kotlinStore) {
             setDefault(KotlinPluginUpdater.LAST_UPDATE_CHECK, 0L)
             setDefault(KotlinPluginUpdater.USER_ID, 0L)
+            setDefault(KotlinUiStartupClass.PRIVACY_POLICY_SHOWED_KEY, false)
         }
     }
 }
