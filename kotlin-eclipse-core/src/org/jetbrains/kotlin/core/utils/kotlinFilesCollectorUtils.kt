@@ -44,20 +44,16 @@ fun addFilesToParse(javaProject: IJavaProject) {
         throw IllegalArgumentException("Project ${javaProject.getElementName()} has no Kotlin Nature")
     }
     
-    javaProject.getPackageFragmentRoots().forEach {
-        if (it.getKind() == IPackageFragmentRoot.K_SOURCE) {
-            scanForKotlinFiles(it.getResource())
+    for (sourceFolder in javaProject.sourceFolders) {
+        sourceFolder.resource.accept { resource ->
+            if (resource is IFile && KotlinPsiManager.isKotlinFile(resource)) {
+                KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, IResourceDelta.ADDED)
+            }
+            
+            true
         }
     }
 }
 
-private fun scanForKotlinFiles(parentResource: IResource) {
-    when (parentResource) {
-        is IFile -> {
-            if (KotlinPsiManager.isKotlinFile(parentResource)) {
-                KotlinPsiManager.INSTANCE.updateProjectPsiSources(parentResource, IResourceDelta.ADDED)
-            }
-        }
-        is IFolder -> parentResource.members().forEach { scanForKotlinFiles(it) }
-    }
-}
+val IJavaProject.sourceFolders: List<IPackageFragmentRoot>
+    get() = packageFragmentRoots.filter { it.kind == IPackageFragmentRoot.K_SOURCE }
