@@ -42,6 +42,9 @@ import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtFile
 import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.psi.KtBlockStringTemplateEntry
+import org.jetbrains.kotlin.psi.KtNameReferenceExpression
+import org.jetbrains.kotlin.psi.psiUtil.canPlaceAfterSimpleNameEntry
 
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
@@ -181,9 +184,22 @@ private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor
 }
 
 private fun replaceOccurrence(newName: String, replaceExpression: KtExpression, editor: KotlinFileEditor): FileEdit {
-    val offset = replaceExpression.getTextDocumentOffset(editor.document)
-    return FileEdit(editor.getFile()!!, ReplaceEdit(offset, replaceExpression.getTextLength(), newName))
+    val (offset, length) = replaceExpression.getReplacementRange(editor)
+    return FileEdit(editor.getFile()!!, ReplaceEdit(offset, length, newName))
 }
+
+private fun KtExpression.getReplacementRange(editor: KotlinFileEditor): ReplacementRange {
+    val p = getParent()
+    if (p is KtBlockStringTemplateEntry) {
+        if (canPlaceAfterSimpleNameEntry(p.nextSibling)) {
+            return ReplacementRange(p.getTextDocumentOffset(editor.document) + 1, p.getTextLength() - 1) // '+- 1' is for '$' sign
+        }
+    }
+    
+    return ReplacementRange(getTextDocumentOffset(editor.document), getTextLength())
+}
+
+private data class ReplacementRange(val offset: Int, val length: Int)
 
 private fun insertBefore(psiElement: PsiElement, text: String, editor: KotlinFileEditor): FileEdit {
     val startOffset = psiElement.getOffsetByDocument(editor.document, psiElement.getTextRange().getStartOffset())
@@ -255,7 +271,7 @@ private fun KtExpression.getOccurrenceContainer(): KtElement? {
 }
 
 public val PsiElement.parentsWithSelf: Sequence<PsiElement>
-    get() = sequence(this) { if (it is PsiFile) null else it.getParent() }
+    get() = generateSequence(this) { if (it is PsiFile) null else it.getParent() }
 
 public val PsiElement.parents: Sequence<PsiElement>
     get() = parentsWithSelf.drop(1)

@@ -15,8 +15,13 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
+import org.jetbrains.kotlin.resolve.diagnostics.KotlinSuppressCache
 
 public class KotlinCacheServiceImpl : KotlinCacheService {
+    override fun getSuppressionCache(): KotlinSuppressCache {
+        throw UnsupportedOperationException()
+    }
+
     override fun getResolutionFacade(elements: List<KtElement>): ResolutionFacade {
         return KotlinSimpleResolutionFacade()
     }
