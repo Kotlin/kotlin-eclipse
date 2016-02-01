@@ -10,7 +10,7 @@ public val PsiElement.allChildren: PsiChildRange
     }
 public fun PsiElement.siblings(forward: Boolean = true, withItself: Boolean = true): Sequence<PsiElement> {
     val stepFun = if (forward) { e: PsiElement -> e.getNextSibling() } else { e: PsiElement -> e.getPrevSibling() }
-    val sequence = sequence(this, stepFun)
+    val sequence = generateSequence(this, stepFun)
     return if (withItself) sequence else sequence.drop(1)
 }
 public val PsiElement.startOffset: Int

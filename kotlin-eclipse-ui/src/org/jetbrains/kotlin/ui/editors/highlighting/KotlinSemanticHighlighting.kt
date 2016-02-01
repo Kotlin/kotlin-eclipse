@@ -182,7 +182,7 @@ public class KotlinSemanticHighlighter(
     }
     
     private fun setupSmartCastsAsAnnotations(positions: List<SmartCast>) {
-        val annotationMap = positions.toMapBy { 
+        val annotationMap = positions.associateBy { 
             Annotation(SMART_CAST_ANNOTATION_TYPE, false, "Smart cast to ${it.typeName}")
         }
         

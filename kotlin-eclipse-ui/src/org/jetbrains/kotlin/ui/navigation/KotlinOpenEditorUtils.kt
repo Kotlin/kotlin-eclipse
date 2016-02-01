@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.psi.KtClass
 import org.eclipse.jdt.core.IMethod
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtFile
-import kotlin.MutableList
 import java.util.ArrayList
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
@@ -92,7 +91,7 @@ fun findKotlinDeclaration(element: IJavaElement, jetFile: KtFile): KtElement? {
     return result.firstOrNull()
 }
 
-fun makeVisitor(element: IJavaElement, result: MutableList<KtElement>): KtVisitorVoid? {
+fun makeVisitor(element: IJavaElement, result: ArrayList<KtElement>): KtVisitorVoid? {
     return when (element) {
         is IType -> object : JetAllVisitor() {
             override fun visitClassOrObject(jetClassOrObject: KtClassOrObject) {

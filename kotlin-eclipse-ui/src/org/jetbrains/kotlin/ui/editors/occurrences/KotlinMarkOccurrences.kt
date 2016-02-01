@@ -88,7 +88,7 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelect
     }
     
     private fun updateOccurrences(editor: KotlinFileEditor, occurrences: List<Position>) {
-        val annotationMap = occurrences.toMapBy { Annotation(ANNOTATION_TYPE, false, null) }
+        val annotationMap = occurrences.associateBy { Annotation(ANNOTATION_TYPE, false, null) }
         AnnotationManager.updateAnnotations(editor, annotationMap, ANNOTATION_TYPE)
     }
     

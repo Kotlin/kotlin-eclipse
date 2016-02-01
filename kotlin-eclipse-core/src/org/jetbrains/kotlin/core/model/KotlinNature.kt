@@ -58,7 +58,7 @@ public class KotlinNature: IProjectNature {
             if (!hasKotlinNature(project)) {
                 val description = project.getDescription()
                 
-                val newNatureIds = description.getNatureIds().toArrayList()
+                val newNatureIds = description.getNatureIds().toMutableList()
                 newNatureIds.add(KotlinNature.KOTLIN_NATURE)
                 
                 description.setNatureIds(newNatureIds.toTypedArray())

@@ -94,3 +94,12 @@ public fun createContainerForTopDownAnalyzerForJvm(
 private fun StorageComponentContainer.javaAnalysisInit() {
     get<JavaClassFinderPostConstruct>().postCreate()
 }
+
+// Copy functions from Dsl.kt as they were shrinked by proguard
+private inline fun <reified T : Any> StorageComponentContainer.useImpl() {
+    registerSingleton(T::class.java)
+}
+
+private inline fun <reified T : Any> ComponentProvider.get(): T {
+    return getService(T::class.java)
+}
