@@ -45,6 +45,9 @@ import com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.psi.KtBlockStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtNameReferenceExpression
 import org.jetbrains.kotlin.psi.psiUtil.canPlaceAfterSimpleNameEntry
+import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
+import com.intellij.psi.PsiWhiteSpace
 
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
@@ -101,6 +104,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         val bindingContext = getBindingContext()
         
         return createEdits(
+                commonContainer,
                 expression.isUsedAsStatement(bindingContext),
                 commonContainer !is KtBlockExpression,
                 variableDeclarationText,
@@ -119,6 +123,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     }
     
     private fun createEdits(
+            container: PsiElement,
             isUsedAsStatement: Boolean, 
             needBraces: Boolean, 
             variableDeclarationText: String,
@@ -146,9 +151,15 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
             val replacesList = replaces.map { replaceOccurrence(newName, it, editor) }
             if (needBraces) {
                 val variableText = "{${newLineWithShift}${variableDeclarationText}${newLineWithShift}"
+                val removeNewLineIfNeeded = if (isElseAfterContainer(container)) 
+                    removeNewLineAfter(container, editor)
+                else 
+                    null
+                
                 return listOf(
                         insertBefore(anchor, variableText, editor), 
-                        addBraceAfter(expression, newLineBeforeBrace, editor)) + replacesList
+                        addBraceAfter(expression, newLineBeforeBrace, editor),
+                        removeNewLineIfNeeded).filterNotNull() + replacesList
             } else {
                 val variableText = "${variableDeclarationText}${newLineWithShift}"
                 return replacesList + insertBefore(anchor, variableText, editor)
@@ -183,6 +194,17 @@ private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor
     return FileEdit(editor.getFile()!!, ReplaceEdit(offset, 0, "$newLineBeforeBrace}"))
 }
 
+private fun removeNewLineAfter(container: PsiElement, editor: KotlinFileEditor): FileEdit? {
+    val next = container.nextSibling
+    if (next is PsiWhiteSpace) {
+        return FileEdit(
+                editor.getFile()!!, 
+                ReplaceEdit(next.getTextDocumentOffset(editor.document), next.getTextLength(), " "))
+    }
+    
+    return null
+}
+
 private fun replaceOccurrence(newName: String, replaceExpression: KtExpression, editor: KotlinFileEditor): FileEdit {
     val (offset, length) = replaceExpression.getReplacementRange(editor)
     return FileEdit(editor.getFile()!!, ReplaceEdit(offset, length, newName))
@@ -200,6 +222,18 @@ private fun KtExpression.getReplacementRange(editor: KotlinFileEditor): Replacem
 }
 
 private data class ReplacementRange(val offset: Int, val length: Int)
+
+private fun isElseAfterContainer(container: PsiElement): Boolean {
+    val next = container.nextSibling
+    if (next != null) {
+        val nextnext = next.nextSibling
+        if (nextnext != null && nextnext.node.elementType == KtTokens.ELSE_KEYWORD) {
+            return true
+        }
+    }
+    
+    return false
+}
 
 private fun insertBefore(psiElement: PsiElement, text: String, editor: KotlinFileEditor): FileEdit {
     val startOffset = psiElement.getOffsetByDocument(editor.document, psiElement.getTextRange().getStartOffset())
