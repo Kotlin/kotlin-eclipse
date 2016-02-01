@@ -41,8 +41,7 @@ Import-Package: com.intellij.navigation,
  org.jetbrains.kotlin.ui.editors,
  org.jetbrains.kotlin.ui.navigation,
  org.jetbrains.kotlin.ui.refactorings.rename,
- org.jetbrains.kotlin.utils,
- org.eclipse.jdt.internal.ui.javaeditor
+ org.jetbrains.kotlin.utils
 Eclipse-SupplementBundle: 
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.launching,

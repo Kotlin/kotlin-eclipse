@@ -86,7 +86,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     private fun introduceVariable(): List<FileEdit> {
         val occurrenceContainer = expression.getOccurrenceContainer()
         if (occurrenceContainer == null) return emptyList()
-        val allReplaces = expression.findOccurrences(occurrenceContainer)
+        val allReplaces = if (replaceAllOccurrences) expression.findOccurrences(occurrenceContainer) else listOf(expression)
         val commonParent = PsiTreeUtil.findCommonParent(allReplaces) as KtElement
         val commonContainer = getContainer(commonParent)
         if (commonContainer == null) return emptyList()
