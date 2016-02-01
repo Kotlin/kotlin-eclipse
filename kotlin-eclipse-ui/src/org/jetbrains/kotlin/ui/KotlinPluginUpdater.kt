@@ -68,30 +68,28 @@ public object KotlinPluginUpdater {
     private val KOTLIN_GROUP_ID = "org.jetbrains.kotlin.feature.feature.group"
     private val ECLIPSE_PLATFORM_ID = "org.eclipse.platform"
     
-    private @Volatile var retry = false
-    private @Volatile var LAST_RETRY_TIME = 0L
-//    private val DELAY: Long = 3 * 1000 * 60 * 60 // 3 hours
-    private val RETRY_DELAY: Long = TimeUnit.SECONDS.toMillis(5)
     private val MAIN_DELAY: Long = TimeUnit.SECONDS.toMillis(5)
+    private val retryState = RetryState(TimeUnit.HOURS.toMillis(3))
     
     fun kotlinFileEdited() {
         val kotlinStore = Activator.getDefault().preferenceStore
         
-        if (retry) {
-            if (checkTimeIsUp(LAST_RETRY_TIME, RETRY_DELAY)) {
-                val updateStatus = tryToUpdate(kotlinStore)
-                processResults(updateStatus, kotlinStore)
-            }
+        val updateStatus: PluginUpdateStatus
+        if (retryState.isActive && retryState.timeIsUp()) {
+            updateStatus = tryToUpdate(kotlinStore)
         } else {
             val lastUpdateTime = kotlinStore.getLong(LAST_UPDATE_CHECK)
             if (lastUpdateTime == 0L || checkTimeIsUp(lastUpdateTime, MAIN_DELAY)) {
-                val updateStatus = tryToUpdate(kotlinStore)
-                processResults(updateStatus, kotlinStore)
+                updateStatus = tryToUpdate(kotlinStore)
+            } else {
+                return
             }
         }
+        
+        processResults(updateStatus, kotlinStore)
     }
     
-    fun getKotlinInstallationUnit(monitor: IProgressMonitor): IInstallableUnit? {
+    private fun getKotlinInstallationUnit(monitor: IProgressMonitor): IInstallableUnit? {
         return OperationFactory().listInstalledElements(true, monitor).find { it.id == KOTLIN_GROUP_ID }
     }
     
@@ -101,21 +99,16 @@ public object KotlinPluginUpdater {
         when (updateStatus) {
             is PluginUpdateStatus.Update -> {
                 kotlinStore.setValue(LAST_UPDATE_CHECK, System.currentTimeMillis())
-                retry = false
+                retryState.disableRetry()
             }
             
-            is PluginUpdateStatus.CheckUpdateSiteFailed -> setForRetry()
+            is PluginUpdateStatus.CheckUpdateSiteFailed -> retryState.setUpForRetry()
             
             is PluginUpdateStatus.UpdateFailed -> {
                 KotlinLogger.logWarning("Could not check for update (${updateStatus.message})")
-                setForRetry()
+                retryState.setUpForRetry()
             }
         }
-    }
-    
-    private fun setForRetry() {
-        retry = true
-        LAST_RETRY_TIME = System.currentTimeMillis()
     }
     
     private fun tryToUpdate(store: IPreferenceStore): PluginUpdateStatus {
@@ -133,20 +126,19 @@ public object KotlinPluginUpdater {
             KotlinLogger.logWarning("There is no eclipse platform group with id: $ECLIPSE_PLATFORM_ID")
         }
 
-        val updateSite: String?
-        try {
-            val params = "build=$eclipseVersion&pluginVersion=$pluginVersion&os=$os&uuid=$uid"
-            updateSite = obtainUpdateSite("https://plugins.jetbrains.com/eclipse-plugins/kotlin/update?$params")
-        } catch (e: IOException) {
-            return PluginUpdateStatus.CheckUpdateSiteFailed
-        }
+        val params = "build=$eclipseVersion&pluginVersion=$pluginVersion&os=$os&uuid=$uid"
+        val updateSiteStatus = obtainUpdateSite("https://plugins.jetbrains.com/eclipse-plugins/kotlin/update?$params")
         
-        if (updateSite == null) {
-            return PluginUpdateStatus.UpdateFailed("Could not obtain update site")
+        return when (updateSiteStatus) {
+            is UpdateSiteStatus.UpdateSite -> {
+                val resolvedUpdateSite = updateSiteStatus.updateSite.removeSuffix("compositeArtifacts.xml")
+                proposeToUpdate(kotlinUnit, resolvedUpdateSite, monitor)
+            }
+            
+            is UpdateSiteStatus.UpdateSiteNotFound -> PluginUpdateStatus.CheckUpdateSiteFailed
+            
+            is UpdateSiteStatus.Failed -> PluginUpdateStatus.UpdateFailed("Could not obtain update site")
         }
-        
-        val resolvedUpdateSite = updateSite.removeSuffix("compositeArtifacts.xml")
-        return proposeToUpdate(kotlinUnit, resolvedUpdateSite, monitor)
     }
     
     private fun proposeToUpdate(kotlinUnit: IInstallableUnit, updateSite: String, monitor: IProgressMonitor): PluginUpdateStatus {
@@ -180,7 +172,7 @@ public object KotlinPluginUpdater {
                 ?.version
     }
     
-    private fun obtainUpdateSite(urlString: String): String? {
+    private fun obtainUpdateSite(urlString: String): UpdateSiteStatus {
         val url = URL(urlString)
         val connection = url.openConnection()
         if (connection is HttpURLConnection) {
@@ -189,14 +181,41 @@ public object KotlinPluginUpdater {
                 connection.connect()
                 
                 if (connection.getResponseCode() == 302) {
-                    return connection.getHeaderField("Location")
+                    val redirect = connection.getHeaderField("Location")
+                    return if (redirect != null) UpdateSiteStatus.UpdateSite(redirect) else UpdateSiteStatus.Failed
                 }
+            }  catch (e: IOException) {
+                return UpdateSiteStatus.UpdateSiteNotFound
             } finally {
                 connection.disconnect()
             }
         }
         
-        return null
+        return UpdateSiteStatus.Failed
+    }
+    
+    private sealed class UpdateSiteStatus {
+        object UpdateSiteNotFound : UpdateSiteStatus()
+        
+        object Failed : UpdateSiteStatus()
+        
+        class UpdateSite(val updateSite: String) : UpdateSiteStatus()
+    }
+    
+    private class RetryState(private val retryDelay: Long) {
+        @Volatile var lastRetryTime: Long = 0
+        @Volatile var isActive: Boolean = false
+        
+        fun timeIsUp(): Boolean = checkTimeIsUp(lastRetryTime, retryDelay)
+        
+        @Synchronized fun setUpForRetry() {
+            isActive = true
+            lastRetryTime = System.currentTimeMillis()
+        }
+        
+        fun disableRetry() {
+            isActive = false
+        }
     }
 }
 
@@ -250,7 +269,8 @@ private fun gridData(
 
 private class RestartJobAdapter(val display: Display) : JobChangeAdapter() {
     override fun done(event: IJobChangeEvent) {
-        if (event.result.isOK) {
+        val result = event.result
+        if (result.isOK) {
             display.syncExec { 
                 val restart = MessageDialog.openQuestion(
                         null,
@@ -260,7 +280,7 @@ private class RestartJobAdapter(val display: Display) : JobChangeAdapter() {
                     PlatformUI.getWorkbench().restart()
                 }
             }
-        } else {
+        } else if (!result.matches(IStatus.CANCEL)) {
             display.syncExec { 
                 MessageDialog.openError(null, "Error", event.result.message)
             }
