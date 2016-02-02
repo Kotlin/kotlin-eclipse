@@ -186,7 +186,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
         val searchText = searchElement.getSearchText()
         if (searchText == null) return null
         
-        val query = FileSearchQuery(searchText, false, true, true, scope)
+        val query = FileSearchQuery(searchText, false, true, scope)
         
         query.run(null)
         
