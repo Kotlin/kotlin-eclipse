@@ -76,6 +76,8 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinAndJavaSearchable
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScoped
 import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
+import org.eclipse.search2.internal.ui.text2.DefaultTextSearchQueryProvider
+import org.eclipse.search.ui.text.TextSearchQueryProvider.TextSearchInput
 
 public class KotlinQueryParticipant : IQueryParticipant {
     override public fun search(requestor: ISearchRequestor, querySpecification: QuerySpecification, monitor: IProgressMonitor?) {
@@ -182,11 +184,22 @@ public class KotlinQueryParticipant : IQueryParticipant {
     }
     
     private fun searchTextOccurrences(searchElement: SearchElement, filesScope: List<IFile>): ISearchResult? {
-        val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null as Array<String?>?, false)
         val searchText = searchElement.getSearchText()
         if (searchText == null) return null
         
-        val query = FileSearchQuery(searchText, false, true, true, scope)
+        val scope = FileTextSearchScope.newSearchScope(filesScope.toTypedArray(), null as Array<String?>?, false)
+        
+        val query = DefaultTextSearchQueryProvider().createQuery(object : TextSearchInput() {
+            override fun isWholeWordSearch(): Boolean = true
+        
+            override fun getSearchText(): String = searchText
+            
+            override fun isCaseSensitiveSearch(): Boolean = true
+            
+            override fun isRegExSearch(): Boolean = false
+            
+            override fun getScope(): FileTextSearchScope = scope
+        })
         
         query.run(null)
         
