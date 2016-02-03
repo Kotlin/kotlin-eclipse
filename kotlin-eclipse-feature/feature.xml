@@ -29,6 +29,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
    </license>
 
+   <includes
+         id="org.jetbrains.kotlin.policy"
+         version="0.0.0"/>
+
    <plugin
          id="org.jetbrains.kotlin.bundled-compiler"
          download-size="0"

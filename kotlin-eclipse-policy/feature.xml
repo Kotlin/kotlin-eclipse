@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.jetbrains.kotlin.policy"
+      label="kotlin-eclipse-policy"
+      version="0.5.1.qualifier"
+      provider-name="JetBrains">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      PRIVACY POLICY
+
+THIS IS JETBRAINS PRIVACY POLICY
+   </license>
+
+</feature>
