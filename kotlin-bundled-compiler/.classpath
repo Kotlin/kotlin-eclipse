@@ -7,5 +7,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-runtime.jar" sourcepath="lib/kotlin-runtime-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-ide-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-converter.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-formatter.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/openapi.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
