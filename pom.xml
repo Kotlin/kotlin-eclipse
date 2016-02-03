@@ -12,6 +12,7 @@
 		<module>kotlin-eclipse-ui</module>
 		<module>kotlin-eclipse-ui-test</module>
 		<module>kotlin-eclipse-test-framework</module>
+		<module>kotlin-eclipse-policy</module>
 		<module>kotlin-eclipse-feature</module>
 		<module>kotlin-eclipse-p2updatesite</module>
 		<module>kotlin-eclipse-maven</module>

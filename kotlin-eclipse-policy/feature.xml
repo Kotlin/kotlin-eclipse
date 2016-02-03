@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.jetbrains.kotlin.policy"
+      label="kotlin-eclipse-policy"
+      version="0.5.1.qualifier"
+      provider-name="JetBrains">
+
+   <copyright url="http://www.jetbrains.com/">
+      Copyright 2010-2016 JetBrains s.r.o.
+   </copyright>
+
+   <license url="https://www.jetbrains.com/company/privacy.html">
+      JetBrains Privacy Policy
+
+This software is governed by JetBrains Privacy Policy.
+https://www.jetbrains.com/company/privacy.html
+   </license>
+
+</feature>
