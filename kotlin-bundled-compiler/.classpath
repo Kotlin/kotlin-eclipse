@@ -9,5 +9,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-converter.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-formatter.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/openapi.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/util.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

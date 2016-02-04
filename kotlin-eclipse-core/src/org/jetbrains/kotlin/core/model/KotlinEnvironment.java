@@ -57,6 +57,8 @@ import com.intellij.core.CoreApplicationEnvironment;
 import com.intellij.core.CoreJavaFileManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
+import com.intellij.formatting.KotlinLanguageCodeStyleSettingsProvider;
+import com.intellij.formatting.KotlinSettingsProvider;
 import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
@@ -71,6 +73,9 @@ import com.intellij.psi.PsiElementFinder;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.augment.PsiAugmentProvider;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.psi.codeStyle.CodeStyleSettingsProvider;
+import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider;
+import com.intellij.psi.codeStyle.ProjectCodeStyleSettingsManager;
 import com.intellij.psi.compiled.ClassFileDecompilers;
 import com.intellij.psi.impl.PsiTreeChangePreprocessor;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
@@ -125,6 +130,7 @@ public class KotlinEnvironment {
         project.registerService(BuiltInsReferenceResolver.class, new BuiltInsReferenceResolver(project));
         project.registerService(KotlinSourceIndex.class, new KotlinSourceIndex());
         project.registerService(KotlinCacheService.class, new KotlinCacheServiceImpl());
+        project.registerService(ProjectCodeStyleSettingsManager.class, new ProjectCodeStyleSettingsManager());
         
         configureClasspath();
         
@@ -143,6 +149,11 @@ public class KotlinEnvironment {
     private static void registerProjectExtensionPoints(ExtensionsArea area) {
         CoreApplicationEnvironment.registerExtensionPoint(area, PsiTreeChangePreprocessor.EP_NAME, PsiTreeChangePreprocessor.class);
         CoreApplicationEnvironment.registerExtensionPoint(area, PsiElementFinder.EP_NAME, PsiElementFinder.class);
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider.class);
+        CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider.class);
+        Extensions.getRootArea().getExtensionPoint(CodeStyleSettingsProvider.EXTENSION_POINT_NAME).registerExtension(new KotlinSettingsProvider());
+        Extensions.getRootArea().getExtensionPoint(LanguageCodeStyleSettingsProvider.EP_NAME).registerExtension(new KotlinLanguageCodeStyleSettingsProvider());
+        
     }
     
     private static void registerApplicationExtensionPointsAndExtensionsFrom(String configFilePath) {
