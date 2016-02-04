@@ -26,7 +26,7 @@
 
 		<ajdt-mars-repo.url>http://download.eclipse.org/tools/ajdt/45/dev/update</ajdt-mars-repo.url>
 
-		<kotlin.version>1.0.0-rc-1017</kotlin.version>
+		<kotlin.version>1.0.0-rc-1036</kotlin.version>
 
 		<aspectj.version>1.8.2</aspectj.version>
 		<aspectj.plugin.version>1.7</aspectj.plugin.version>
@@ -46,13 +46,16 @@
 			<layout>p2</layout>
 		</repository>
         <repository>
-            <snapshots>
+            <id>sonatype.oss.snapshots</id>
+            <name>Sonatype OSS Snapshot Repository</name>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
                 <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
-            <id>bintray-kotlin-kotlin-eap</id>
-            <name>bintray</name>
-            <url>http://dl.bintray.com/kotlin/kotlin-eap</url>
-        </repository>
+      </repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -67,14 +70,6 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</pluginRepository>
-		<pluginRepository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>bintray-kotlin-kotlin-eap</id>
-            <name>bintray-plugins</name>
-            <url>http://dl.bintray.com/kotlin/kotlin-eap</url>
-        </pluginRepository>
 	</pluginRepositories>
 
 	<build>
