@@ -16,8 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
-import java.util.List;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
@@ -36,19 +34,17 @@ import org.jetbrains.kotlin.idea.common.formatter.KotlinSpacingRulesKt;
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings;
 import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.ui.editors.formatter.KotlinFormatterKt;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 import org.jetbrains.kotlin.ui.formatter.KotlinBlock;
 import org.jetbrains.kotlin.ui.formatter.NullAlignmentStrategy;
 
-import com.intellij.formatting.Block;
 import com.intellij.formatting.FormatterFactory;
 import com.intellij.formatting.Indent;
 import com.intellij.lang.ASTNode;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
-import com.intellij.psi.codeStyle.CodeStyleSettingsProvider;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
@@ -125,30 +121,29 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         return 0; 
     }
     
-    private void computeIndent(IDocument document, int offset) {
+    private int computeIndent(IDocument document, int offset) {
         if (offset == document.getLength()) {
-            return;
+            return 0;
         }
         
         IFile file = EditorUtil.getFile(editor);
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-            return;
+            return 0;
         }
         
         KtFile ktFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
         if (ktFile == null) {
-            return;
+            return 0;
         }
         
         IJavaProject javaProject = ((KotlinFileEditor) editor).getJavaProject();
-        if (javaProject == null) return;
+        if (javaProject == null) return 0;
         CodeStyleSettings settings = new CodeStyleSettings(true);
         KotlinCodeStyleSettings kotlinSettings = settings.getCustomSettings(KotlinCodeStyleSettings.class);
         if (kotlinSettings == null) {
             System.out.println("Settings are null :(");
         }
-        CodeStyleSettingsProvider[] extensions = Extensions.getExtensions(CodeStyleSettingsProvider.EXTENSION_POINT_NAME);
         KotlinBlock block = new KotlinBlock(
                 ktFile.getNode(), 
                 new NullAlignmentStrategy(), 
@@ -156,17 +151,18 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 null,
                 settings,
                 KotlinSpacingRulesKt.createSpacingBuilder(settings));
-        findBlocksToFormat(block, offset);
+        int resolvedOffset = LineEndUtil.convertCrToDocumentOffset(document, offset);
+        return KotlinFormatterKt.computeAlignment(ktFile, resolvedOffset);
     }
     
-    private void findBlocksToFormat(KotlinBlock root, int offset) {
-        List<Block> subBlocks = root.getSubBlocks();
-        for (Block block : subBlocks) {
-            if (!block.isLeaf() && block instanceof KotlinBlock) {
-                findBlocksToFormat((KotlinBlock) block, offset);
-            }
-        }
-    }
+//    private void findBlocksToFormat(KotlinBlock root, int offset) {
+//        List<Block> subBlocks = root.getSubBlocks();
+//        for (Block block : subBlocks) {
+//            if (!block.isLeaf() && block instanceof KotlinBlock) {
+//                findBlocksToFormat((KotlinBlock) block, offset);
+//            }
+//        }
+//    }
     
     
     
@@ -199,8 +195,8 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 }
                 command.text = buf.toString();
             } else {
-                computeIndent(document, command.offset);
-                int indent = computeIndentCount(document, command.offset);
+                int indent = computeIndent(document, command.offset);
+//                int indent = computeIndentCount(document, command.offset);
                 if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
                     indent--;
                 }
