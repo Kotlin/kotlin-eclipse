@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Bundled Kotlin Compiler
 Bundle-SymbolicName: org.jetbrains.kotlin.bundled-compiler;singleton:=true
-Bundle-Version: 0.5.1.qualifier
+Bundle-Version: 0.5.2.qualifier
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .,
