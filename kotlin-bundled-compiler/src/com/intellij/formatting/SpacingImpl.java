@@ -1,6 +1,6 @@
 package com.intellij.formatting;
 
-class SpacingImpl extends Spacing {
+public class SpacingImpl extends Spacing {
     private int myMinSpaces;
     private int myKeepBlankLines;
     private int myMaxSpaces;

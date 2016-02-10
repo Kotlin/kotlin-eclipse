@@ -30,21 +30,15 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.idea.common.formatter.KotlinSpacingRulesKt;
-import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings;
 import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.ui.editors.formatter.KotlinFormatterKt;
+import org.jetbrains.kotlin.ui.editors.formatter.FormatUtilsKt;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
-import org.jetbrains.kotlin.ui.formatter.KotlinBlock;
-import org.jetbrains.kotlin.ui.formatter.NullAlignmentStrategy;
 
 import com.intellij.formatting.FormatterFactory;
-import com.intellij.formatting.Indent;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.codeStyle.CodeStyleSettings;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
@@ -139,20 +133,9 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         
         IJavaProject javaProject = ((KotlinFileEditor) editor).getJavaProject();
         if (javaProject == null) return 0;
-        CodeStyleSettings settings = new CodeStyleSettings(true);
-        KotlinCodeStyleSettings kotlinSettings = settings.getCustomSettings(KotlinCodeStyleSettings.class);
-        if (kotlinSettings == null) {
-            System.out.println("Settings are null :(");
-        }
-        KotlinBlock block = new KotlinBlock(
-                ktFile.getNode(), 
-                new NullAlignmentStrategy(), 
-                Indent.getNoneIndent(), 
-                null,
-                settings,
-                KotlinSpacingRulesKt.createSpacingBuilder(settings));
         int resolvedOffset = LineEndUtil.convertCrToDocumentOffset(document, offset);
-        return KotlinFormatterKt.computeAlignment(ktFile, resolvedOffset);
+        
+        return FormatUtilsKt.computeAlignment(ktFile, resolvedOffset);
     }
     
 //    private void findBlocksToFormat(KotlinBlock root, int offset) {

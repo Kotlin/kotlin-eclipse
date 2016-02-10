@@ -12,53 +12,122 @@ import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import com.intellij.formatting.Indent.Type
 import com.intellij.formatting.ASTBlock
 import com.intellij.formatting.Block
+import com.intellij.lang.ASTNode
+import com.intellij.formatting.Spacing
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.formatting.SpacingImpl
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
+import com.intellij.psi.PsiImportList
+import org.eclipse.core.resources.IFile
+import org.jetbrains.kotlin.ui.refactorings.rename.FileEdit
+import org.eclipse.text.edits.TextEdit
+import org.eclipse.text.edits.ReplaceEdit
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
+import com.intellij.psi.PsiElement
+import org.eclipse.jface.text.TextUtilities
+import java.util.ArrayList
+import org.eclipse.ltk.core.refactoring.TextFileChange
+import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
+import org.eclipse.core.runtime.NullProgressMonitor
+import org.jetbrains.kotlin.psi.KtImportList
 
 val settings = CodeStyleSettings(true)
 val kotlinSettings = settings.getCustomSettings(KotlinCodeStyleSettings::class.java)
 
-fun computeAlignment(ktFile: KtFile, offset: Int): Int {
-    val rootBlock = KotlinBlock(ktFile.node, 
+class KotlinFormatter(val editor: KotlinFileEditor) {
+    val file = editor.getFile()!!
+    
+    val lineSeparator = TextUtilities.getDefaultLineDelimiter(editor.document)
+    
+    val ktFile = editor.parsedFile!!
+    
+    fun formatCode() {
+        val rootBlock = KotlinBlock(ktFile.getNode(), 
                 NullAlignmentStrategy(), 
                 Indent.getNoneIndent(), 
                 null,
                 settings,
                 createSpacingBuilder(settings))
-    
-    val (block, indent) = computeBlocks(rootBlock, offset)
-    
-    val attributes = block.getChildAttributes(1)
-    return if (attributes.childIndent?.type == Type.NORMAL) {
-        indent + 1
-    } else {
-        indent
+        
+        val edits = format(rootBlock)
+        
+        val fileChange = TextFileChange("Introduce variable", file)
+        edits.forEach { TextChangeCompatibility.addTextEdit(fileChange, "Kotlin change", it.edit) }
+        
+        fileChange.perform(NullProgressMonitor())
     }
-}
-
-fun computeBlocks(root: KotlinBlock, offset: Int): BlockWithIndentation {
-    var indent = 0
-    var rootBlock: Block = root
     
-    while (true) {
-        val subBlocks = rootBlock.getSubBlocks()
-        var narrowBlock: Block? = null
-        for (subBlock in subBlocks) {
-            if (offset in subBlock.getTextRange()) {
-                narrowBlock = subBlock
-                break
+    private fun format(parent: KotlinBlock): ArrayList<FileEdit> {
+        val edits = ArrayList<FileEdit>()
+        val subBlocks = parent.getSubBlocks()
+        var left = subBlocks.firstOrNull()
+        for (block in subBlocks) {
+            if (block == left) continue
+            
+            val edit = adjustSpacing(parent, left!!, block)
+            if (edit != null) edits.add(edit)
+            
+            if (block is KotlinBlock) edits.addAll(format(block))
+            
+            left = block
+        }
+        
+        return edits
+    }
+    
+    fun adjustSpacing(parent: KotlinBlock, left: Block, right: Block): FileEdit? {
+        val spacing = parent.getSpacing(left, right)
+        if (spacing == null) return null
+        
+        if (left is ASTBlock && right is ASTBlock) {
+            val next = left.getNode().getTreeNext().let { 
+                when (it.psi) {
+                    is KtImportList -> it.getTreeNext()
+                    else -> it
+                }
+            }
+            
+            val whiteSpace = if (next is PsiWhiteSpace) next.getText() else ""
+            val fixedSpace = fixSpacing(whiteSpace, spacing)
+            if (fixedSpace == next.getText()) return null
+            
+            val leftOffset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), left.getTextRange().getEndOffset(), editor.document)
+            val rightOffset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), right.getTextRange().getStartOffset(), editor.document)
+            return FileEdit(
+                    file, 
+                    ReplaceEdit(
+                            leftOffset, 
+                            rightOffset - leftOffset,
+                            fixedSpace))
+        }
+        
+        return null
+    }
+    
+    fun fixSpacing(whiteSpace: String, spacing: Spacing): String {
+        val fixedSpacing = StringBuilder()
+        if (spacing is SpacingImpl) {
+            val countLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
+            if (countLineFeeds < spacing.minLineFeeds) {
+                fixedSpacing.append(IndenterUtil.createWhiteSpace(0, spacing.minLineFeeds, lineSeparator))
+            } else if (spacing.minLineFeeds < countLineFeeds && !spacing.shouldKeepLineFeeds()) {
+                fixedSpacing.append(IndenterUtil.createWhiteSpace(0, spacing.minLineFeeds, lineSeparator))
+            } else if (countLineFeeds == 0) {
+                val countSpaces = whiteSpace.length
+                if (countSpaces < spacing.minSpaces) {
+                    fixedSpacing.append(" ".repeat(spacing.minSpaces))
+                } else if (spacing.maxSpaces < countSpaces) {
+                    fixedSpacing.append(" ".repeat(spacing.maxSpaces))
+                } else {
+                    fixedSpacing.append(whiteSpace)
+                }
+            } else {
+                fixedSpacing.append(whiteSpace)
             }
         }
         
-        if (narrowBlock != null && !narrowBlock.isLeaf) {
-            if (narrowBlock.indent?.type == Type.NORMAL) {
-                indent++
-            }
-            rootBlock = narrowBlock
-        } else {
-            break
-        }
-    }
-    
-    return BlockWithIndentation(rootBlock, indent)
+        return fixedSpacing.toString()
+    }    
 }
-
-data class BlockWithIndentation(val block: Block, val indent: Int)
