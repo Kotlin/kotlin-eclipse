@@ -14,11 +14,15 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.editors;
+package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
 import org.junit.Test;
 
 public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
+    @Override
+    protected String getTestDataRelativePath() {
+        return "format";
+    }
     
     @Test
     public void classesAndPropertiesFormatTest() {

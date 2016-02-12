@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.tests.editors;
+package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -26,10 +26,7 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.junit.Assert;
 import org.junit.Before;
 
-public class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCase {
-    
-    private static final String FORMAT_ACTION_TEST_DATA_SEGMENT = "format";
-    
+public abstract class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCase {
     @Before
     public void before() {
         configureProject();
@@ -47,11 +44,6 @@ public class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCas
         
         EditorTestUtils.assertByEditor(getTestEditor().getEditor(), content);
         assertLineDelimiters(expectedLineDelimiter, getTestEditor().getDocument());
-    }
-    
-    @Override
-    protected String getTestDataRelativePath() {
-        return FORMAT_ACTION_TEST_DATA_SEGMENT;
     }
     
     private void assertLineDelimiters(String expectedLineDelimiter, IDocument document) {
