@@ -34,7 +34,7 @@ import org.eclipse.core.runtime.NullProgressMonitor
 import org.jetbrains.kotlin.psi.KtImportList
 import com.intellij.formatting.DependantSpacingImpl
 
-val settings = CodeStyleSettings(true)
+var settings = CodeStyleSettings(true)
 val kotlinSettings = settings.getCustomSettings(KotlinCodeStyleSettings::class.java)
 
 class KotlinFormatter(val editor: KotlinFileEditor) {
@@ -65,11 +65,21 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         val subBlocks = parent.getSubBlocks()
         var left = subBlocks.firstOrNull()
         var first = true
-        if (left is ASTBlock) edits.addAll(format(left, indent))
+        if (left is ASTBlock) 
         for (block in subBlocks) {
             var myIndent = indent
             if (first) {
                 first = false
+                
+                
+                if (block is ASTBlock) {
+                    edits.addAll(format(block, indent))
+                    if (subBlocks.size == 1 && parent.node.textRange == block.node.textRange) {
+                        val edit = addSpacingBefore(block)
+                        if (edit != null) edits.add(edit)
+                    }
+                }
+                
                 continue
             }
             if (block.indent?.type == Type.NORMAL) {
@@ -86,7 +96,26 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         return edits
     }
     
-    fun adjustSpacing(parent: ASTBlock, left: Block, right: Block, indent: Int): FileEdit? {
+    private fun addSpacingBefore(block: ASTBlock): FileEdit? {
+        if (block.indent?.type != Type.NORMAL) return null
+        
+        val prevParent = block.node.treeParent.treePrev
+        if (prevParent !is PsiWhiteSpace) return null
+        
+        if (IndenterUtil.getLineSeparatorsOccurences(prevParent.getText()) == 0) return null
+        
+        val indent = IndenterUtil.createWhiteSpace(1, 0, lineSeparator)
+        val offset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), block.getTextRange().getStartOffset(), editor.document)
+        
+        return FileEdit(
+                    file, 
+                    ReplaceEdit(
+                            offset, 
+                            0,
+                            indent))
+    }
+    
+    private fun adjustSpacing(parent: ASTBlock, left: Block, right: Block, indent: Int): FileEdit? {
         val spacing = parent.getSpacing(left, right)
         
         if (left is ASTBlock && right is ASTBlock) {
@@ -116,7 +145,7 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         return null
     }
     
-    fun fixSpacing(whiteSpace: String, spacing: Spacing?, indent: Int, rightIndent: Indent?): String {
+    private fun fixSpacing(whiteSpace: String, spacing: Spacing?, indent: Int, rightIndent: Indent?): String {
         val fixedSpacing = StringBuilder()
         if (spacing is SpacingImpl) {
             val countLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
@@ -149,6 +178,7 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         
         return fixedSpacing.toString()
     }
+    
     private fun getLineFeeds(spacing: SpacingImpl): Int {
         return when (spacing) {
             is DependantSpacingImpl -> {
