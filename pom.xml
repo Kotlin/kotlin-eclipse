@@ -27,7 +27,7 @@
 
 		<ajdt-mars-repo.url>http://download.eclipse.org/tools/ajdt/45/dev/update</ajdt-mars-repo.url>
 
-		<kotlin.version>1.0.0-rc-1036</kotlin.version>
+		<kotlin.version>1.0.0</kotlin.version>
 
 		<aspectj.version>1.8.2</aspectj.version>
 		<aspectj.plugin.version>1.7</aspectj.plugin.version>
@@ -57,7 +57,7 @@
                 <enabled>true</enabled>
             </snapshots>
       </repository>
-	</repositories>
+    </repositories>
 
 	<pluginRepositories>
 		<pluginRepository>
