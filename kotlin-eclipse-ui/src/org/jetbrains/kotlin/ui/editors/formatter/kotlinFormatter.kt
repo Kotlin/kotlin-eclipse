@@ -74,8 +74,9 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
                 
                 if (block is ASTBlock) {
                     edits.addAll(format(block, indent))
-                    if (subBlocks.size == 1 && parent.node.textRange == block.node.textRange) {
-                        val edit = addSpacingBefore(block)
+                    val blockSubBlocks = block.getSubBlocks()
+                    if (blockSubBlocks.size == 1 && block.node.textRange == (blockSubBlocks[0] as ASTBlock).node.textRange) {
+                        val edit = addSpacingBefore(blockSubBlocks[0] as ASTBlock)
                         if (edit != null) edits.add(edit)
                     }
                 }
@@ -151,7 +152,11 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
             val countLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
             val lineFeeds = getLineFeeds(spacing)
             if (countLineFeeds < lineFeeds || (lineFeeds < countLineFeeds && !spacing.shouldKeepLineFeeds())) {
-                fixedSpacing.append(IndenterUtil.createWhiteSpace(indent, lineFeeds, lineSeparator))
+                if (lineFeeds == 0) {
+                    fixedSpacing.append(" ".repeat(spacing.minSpaces))
+                } else {
+                    fixedSpacing.append(IndenterUtil.createWhiteSpace(indent, lineFeeds, lineSeparator))
+                }
             } else if (countLineFeeds != 0) {
 //                val biasedIndent = if (rightIndent?.type == Type.NORMAL) indent + 1 else indent
                 fixedSpacing.append(IndenterUtil.createWhiteSpace(indent, countLineFeeds, lineSeparator))
