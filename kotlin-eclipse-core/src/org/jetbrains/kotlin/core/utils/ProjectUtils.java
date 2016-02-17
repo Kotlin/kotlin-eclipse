@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.core.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -66,17 +65,6 @@ public class ProjectUtils {
     public static final String KT_HOME = getKtHome();
     
     
-    public static IFile findFilesWithMain(Collection<IFile> files) {
-        for (IFile file : files) {
-            KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-            if (JetMainDetector.hasMain(jetFile.getDeclarations())) {
-                return file;
-            }
-        }
-        
-        return null;
-    }
-    
     public static IJavaProject getJavaProjectFromCollection(Collection<IFile> files) {
         IJavaProject javaProject = null;
         for (IFile file : files) {
@@ -85,10 +73,6 @@ public class ProjectUtils {
         }
         
         return javaProject;
-    }
-    
-    public static boolean hasMain(IFile file) {
-        return findFilesWithMain(Arrays.asList(file)) != null;
     }
     
     @Nullable

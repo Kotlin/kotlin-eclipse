@@ -28,7 +28,6 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.dialogs.ListDialog;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
-import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class KotlinMainLauncherTab extends JavaMainTab implements ILaunchConfigurationTab {
     
@@ -45,11 +44,11 @@ public class KotlinMainLauncherTab extends JavaMainTab implements ILaunchConfigu
         projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(fProjText.getText());
         
         List<IFile> mainFiles = new ArrayList<IFile>();
-        for (IFile file : projectFiles) {
-            if (ProjectUtils.hasMain(file)) {
-                mainFiles.add(file);
-            }
-        }
+//        for (IFile file : projectFiles) {
+//            if (ProjectUtils.hasMain(file)) {
+//                mainFiles.add(file);
+//            }
+//        }
         
         dialog.setInput(mainFiles);
         
@@ -62,8 +61,8 @@ public class KotlinMainLauncherTab extends JavaMainTab implements ILaunchConfigu
             return;
         }
         
-        if (results[0] instanceof IFile) {
-            fMainText.setText(KotlinLaunchShortcut.getFileClassName((IFile) results[0]).asString());
-        }
+//        if (results[0] instanceof IFile) {
+//            fMainText.setText(KotlinLaunchShortcut.getFileClassName((IFile) results[0]).asString());
+//        }
     }
 }
