@@ -34,8 +34,9 @@ limitations under the License.
          version="0.0.0"/>
 
    <includes
-         id="org.eclipse.equinox.weaving.sdk"
-         version="0.0.0"/>
+         id="org.jetbrains.kotlin.weaving.feature"
+         version="0.0.0"
+         optional="true"/>
 
    <plugin
          id="org.jetbrains.kotlin.bundled-compiler"
@@ -57,27 +58,6 @@ limitations under the License.
 
    <plugin
          id="org.jetbrains.kotlin.aspects"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.equinox.weaving.aspectj"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.aspectj.weaver"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.aspectj.runtime"
          download-size="0"
          install-size="0"
          version="0.0.0"
