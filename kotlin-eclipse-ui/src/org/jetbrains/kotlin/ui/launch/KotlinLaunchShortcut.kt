@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2000-2014 JetBrains s.r.o.
+* Copyright 2000-2016 JetBrains s.r.o.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -75,36 +75,30 @@ class KotlinLaunchShortcut : ILaunchShortcut {
             }
         }
         
-        val fileWithMain = ProjectUtils.findFilesWithMain(files)
-        if (fileWithMain != null) {
-            launchWithMainClass(fileWithMain, mode)
-            return
-        }
+        if (files.isEmpty()) return
         
-        launchProject(files[0].getProject(), mode)
+        launchWithMainClass(files[0], mode)
     }
     
     override fun launch(editor: IEditorPart, mode: String) {
         if (editor !is KotlinFileEditor) return
         
-        val file = EditorUtil.getFile(editor)
+        val file = editor.getFile()
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
             return
         }
         
-        if (ProjectUtils.hasMain(file)) {
+        val parsedFile = editor.parsedFile
+        if (parsedFile == null) return
+        
+        val javaProject = editor.javaProject
+        if (javaProject == null) return
+        
+        
+        if (checkFileHashMain(parsedFile, javaProject)) {
             launchWithMainClass(file, mode)
             return
-        }
-        
-        launchProject(file.getProject(), mode)
-    }
-    
-    private fun launchProject(project: IProject, mode: String) {
-        val fileWithMain = ProjectUtils.findFilesWithMain(KotlinPsiManager.INSTANCE.getFilesByProject(project))
-        if (fileWithMain != null) {
-            launchWithMainClass(fileWithMain, mode)
         }
     }
     
