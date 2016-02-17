@@ -31,6 +31,12 @@ import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.eclipse.jdt.internal.core.JavaProject
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtDeclarationContainer
+import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
+import org.jetbrains.kotlin.name.FqName
 
 class KotlinLaunchableTester : PropertyTester() {
     override fun test(receiver: Any?, property: String?, args: Array<Any>?, expectedValue: Any?): Boolean {
@@ -48,18 +54,55 @@ class KotlinLaunchableTester : PropertyTester() {
 }
 
 fun checkFileHashMain(ktFile: KtFile, javaProject: IJavaProject): Boolean {
-    val bindingContext = KotlinAnalysisFileCache.getAnalysisResult(ktFile, javaProject).analysisResult.bindingContext
-    return MainFunctionDetector(bindingContext).hasMain(obtainFileStaticDeclarations(ktFile))
+    return getEntryPoint(ktFile, javaProject) != null
 }
 
-private fun obtainFileStaticDeclarations(ktFile: KtFile): ArrayList<KtDeclaration> {
-    val topLevelDeclarations = ktFile.getDeclarations()
-    return ArrayList(topLevelDeclarations).apply { 
-        for (declaration in topLevelDeclarations) {
-            when (declaration) {
-                is KtClass -> addAll(declaration.getCompanionObjects().flatMap { it.declarations })
-                is KtObjectDeclaration -> addAll(declaration.declarations)
+fun getStartClassFqName(mainFunctionDeclaration: KtDeclaration): FqName? {
+    val container = mainFunctionDeclaration.declarationContainer()
+    return when (container) {
+        is KtFile -> JvmFileClassUtil.getFileClassInfoNoResolve(container).facadeClassFqName
+        
+        is KtClassOrObject -> {
+            if (container is KtObjectDeclaration && container.isCompanion()) {
+                val containerClass = PsiTreeUtil.getParentOfType(container, KtClass::class.java)
+                containerClass?.fqName
+            } else {
+                container.fqName
             }
         }
+        
+        else -> null
     }
+}
+
+private fun KtDeclaration.declarationContainer(): KtDeclarationContainer? {
+    return PsiTreeUtil.getParentOfType(this, KtClassOrObject::class.java, KtFile::class.java) as KtDeclarationContainer?
+}
+
+fun getEntryPoint(ktFile: KtFile, javaProject: IJavaProject): KtDeclaration? {
+    val bindingContext = KotlinAnalysisFileCache.getAnalysisResult(ktFile, javaProject).analysisResult.bindingContext
+    val mainFunctionDetector = MainFunctionDetector(bindingContext)
+    
+    val topLevelDeclarations = ktFile.getDeclarations()
+    for (declaration in topLevelDeclarations) {
+        val mainFunction = when (declaration) {
+            is KtNamedFunction -> if (mainFunctionDetector.isMain(declaration)) declaration else null
+            
+            is KtClass -> {
+                mainFunctionDetector.findMainFunction(declaration.getCompanionObjects().flatMap { it.declarations })
+            }
+            
+            is KtObjectDeclaration -> mainFunctionDetector.findMainFunction(declaration.declarations)
+            
+            else -> null
+        }
+        
+        if (mainFunction != null) return mainFunction
+    }
+    
+    return null
+}
+
+private fun MainFunctionDetector.findMainFunction(declarations: List<KtDeclaration>): KtNamedFunction? {
+    return declarations.filterIsInstance(KtNamedFunction::class.java).find { isMain(it) }
 }
