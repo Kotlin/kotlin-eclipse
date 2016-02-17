@@ -31,6 +31,7 @@ import org.eclipse.ui.console.IConsoleManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase
 import org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut
+import org.jetbrains.kotlin.ui.launch.getEntryPoint
 import org.junit.Assert
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
@@ -74,7 +75,8 @@ abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
         
         var launch: ILaunch? = null
         try {
-            val launchConfiguration = KotlinLaunchShortcut.createConfiguration(testEditor.getEditingFile())
+            val entryPoint = getEntryPoint(getEditor().parsedFile!!, getEditor().javaProject!!)
+            val launchConfiguration = KotlinLaunchShortcut.createConfiguration(entryPoint!!, testEditor.getEclipseProject())
             launch = DebugUIPlugin.buildAndLaunch(launchConfiguration, "run", NullProgressMonitor())
             
             synchronized (launch) {

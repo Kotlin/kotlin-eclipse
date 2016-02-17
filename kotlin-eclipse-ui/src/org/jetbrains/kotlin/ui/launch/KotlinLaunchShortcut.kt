@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2000-2014 JetBrains s.r.o.
+* Copyright 2000-2016 JetBrains s.r.o.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -43,13 +43,18 @@ import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.psi.KtDeclaration
 
 class KotlinLaunchShortcut : ILaunchShortcut {
     companion object {
-        fun createConfiguration(file: IFile): ILaunchConfiguration {
-            val configWC = getLaunchConfigurationType().newInstance(null, "Config - " + file.getName())
-            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, getFileClassName(file).asString())
-            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, file.getProject().getName())
+        fun createConfiguration(entryPoint: KtDeclaration, project: IProject): ILaunchConfiguration? {
+            val classFqName = getStartClassFqName(entryPoint)
+            if (classFqName == null) return null
+            
+            val configWC = getLaunchConfigurationType().newInstance(null, "Config - " + entryPoint.getContainingKtFile().getName())
+            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, classFqName.asString())
+            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.getName())
             
             return configWC.doSave()
         }
@@ -75,50 +80,59 @@ class KotlinLaunchShortcut : ILaunchShortcut {
             }
         }
         
-        val fileWithMain = ProjectUtils.findFilesWithMain(files)
-        if (fileWithMain != null) {
-            launchWithMainClass(fileWithMain, mode)
-            return
-        }
+        if (files.isEmpty()) return
         
-        launchProject(files[0].getProject(), mode)
+        val mainFile = files.first()
+        val javaProject = JavaCore.create(mainFile.getProject())
+        val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
+        val entryPoint = getEntryPoint(ktFile, javaProject)
+        if (entryPoint != null) {
+            launchWithMainClass(entryPoint, javaProject.project, mode)
+        }
     }
     
     override fun launch(editor: IEditorPart, mode: String) {
         if (editor !is KotlinFileEditor) return
         
-        val file = EditorUtil.getFile(editor)
+        val file = editor.getFile()
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
             return
         }
         
-        if (ProjectUtils.hasMain(file)) {
-            launchWithMainClass(file, mode)
+        val parsedFile = editor.parsedFile
+        if (parsedFile == null) return
+        
+        val javaProject = editor.javaProject
+        if (javaProject == null) return
+        
+        val entryPoint = getEntryPoint(parsedFile, javaProject)
+        if (entryPoint != null) {
+            launchWithMainClass(entryPoint, javaProject.project, mode)
             return
         }
-        
-        launchProject(file.getProject(), mode)
     }
     
-    private fun launchProject(project: IProject, mode: String) {
-        val fileWithMain = ProjectUtils.findFilesWithMain(KotlinPsiManager.INSTANCE.getFilesByProject(project))
-        if (fileWithMain != null) {
-            launchWithMainClass(fileWithMain, mode)
+    private fun launchWithMainClass(entryPoint: KtDeclaration, project: IProject, mode: String) {
+        val configuration = findLaunchConfiguration(getLaunchConfigurationType(), entryPoint, project) ?: 
+                createConfiguration(entryPoint, project)
+        
+        if (configuration != null) {
+            DebugUITools.launch(configuration, mode)
         }
     }
     
-    private fun launchWithMainClass(fileWithMain: IFile, mode: String) {
-        val configuration = findLaunchConfiguration(getLaunchConfigurationType(), fileWithMain) ?: createConfiguration(fileWithMain)
-        DebugUITools.launch(configuration, mode)
-    }
-    
-    private fun findLaunchConfiguration(configurationType: ILaunchConfigurationType, mainClass: IFile): ILaunchConfiguration? {
+    private fun findLaunchConfiguration(
+            configurationType: ILaunchConfigurationType, 
+            entryPoint: KtDeclaration,
+            project: IProject): ILaunchConfiguration? {
         val configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(configurationType)
-        val mainClassName = getFileClassName(mainClass).asString()
+        val mainClassName = getStartClassFqName(entryPoint)?.asString()
+        if (mainClassName == null) return null
+        
         for (config in configs) {
             if (config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, null as String?) == mainClassName && 
-                config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, null as String?) == mainClass.project.name) {
+                config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, null as String?) == project.name) {
                 return config
             }
         }

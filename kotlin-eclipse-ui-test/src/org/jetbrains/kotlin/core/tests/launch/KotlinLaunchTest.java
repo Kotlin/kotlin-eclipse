@@ -20,30 +20,40 @@ import org.junit.Test;
 
 public class KotlinLaunchTest extends KotlinLaunchTestCase {
     
-    private static final String SOURCE_CODE = "fun main(args : Array<String>) { print(\"ok\") }";
+    private static final String MAIN_FUNCTION = "fun main(args : Array<String>) { print(\"ok\") }";
     
     @Test
     public void launchSimpleProject() {
-        doTest(SOURCE_CODE, "test_project", "org.jet.pckg", null);
+        doTest(MAIN_FUNCTION, "test_project", "org.jet.pckg", null);
     }
     
     @Test
     public void launchWhenProjectNameHaveSpace() {
-        doTest(SOURCE_CODE, "test project", "pckg", null);
+        doTest(MAIN_FUNCTION, "test project", "pckg", null);
     }
     
     @Test
     public void launchWithTwoSourceFolders() {
-        doTest(SOURCE_CODE, "testProject", "pckg", "src2");
+        doTest(MAIN_FUNCTION, "testProject", "pckg", "src2");
     }
     
     @Test
     public void launchWhenSourceFolderHaveSpace() {
-        doTest(SOURCE_CODE, "testProject", "pckg", "src directory");
+        doTest(MAIN_FUNCTION, "testProject", "pckg", "src directory");
     }
     
     @Test
     public void launchFileWithJvmNameAnnotation() {
-        doTest("@file:JvmName(\"some\") " + SOURCE_CODE, "testProject", "some.pckg", null);
+        doTest("@file:JvmName(\"some\") " + MAIN_FUNCTION, "testProject", "some.pckg", null);
+    }
+    
+    @Test
+    public void launchMainFromObject() {
+        doTest("object SomeObj { @JvmStatic " + MAIN_FUNCTION + " }", "testProject", "pckg", null);
+    }
+    
+    @Test
+    public void launchMainFromCompanionObject() {
+        doTest("class SomeClass { companion object { @JvmStatic " + MAIN_FUNCTION + " } }", "testProject", "pckg", null);
     }
 }
