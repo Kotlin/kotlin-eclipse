@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -49,6 +50,11 @@ public abstract class KotlinFormatActionTestCase extends KotlinEditorWithAfterFi
         configureProject();
     }
     
+    @After
+    public void setDefaultSettings() {
+        KotlinFormatterKt.setSettings(new CodeStyleSettings());
+    }
+    
     @Override
     protected void performTest(String fileText, String content) {
     	String expectedLineDelimiter = TextUtilities.getDefaultLineDelimiter(getTestEditor().getDocument());
@@ -56,17 +62,12 @@ public abstract class KotlinFormatActionTestCase extends KotlinEditorWithAfterFi
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true);
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, 4);
         
-        try {
-            configureSettings(fileText);
-            
-            getTestEditor().runFormatAction();
-            
-            EditorTestUtils.assertByEditor(getTestEditor().getEditor(), content);
-            assertLineDelimiters(expectedLineDelimiter, getTestEditor().getDocument());
-            
-        } finally {
-            KotlinFormatterKt.setSettings(new CodeStyleSettings());
-        }
+        configureSettings(fileText);
+        
+        getTestEditor().runFormatAction();
+        
+        EditorTestUtils.assertByEditor(getTestEditor().getEditor(), content);
+        assertLineDelimiters(expectedLineDelimiter, getTestEditor().getDocument());
     }
     
     private void assertLineDelimiters(String expectedLineDelimiter, IDocument document) {
@@ -90,7 +91,7 @@ public abstract class KotlinFormatActionTestCase extends KotlinEditorWithAfterFi
             }
         });
         
-        KotlinCodeStyleSettings kotlinSettings = KotlinFormatterKt.getKotlinSettings();
+        KotlinCodeStyleSettings kotlinSettings = KotlinFormatterKt.getSettings().getCustomSettings(KotlinCodeStyleSettings.class);
         CommonCodeStyleSettings commonSettings = KotlinFormatterKt.getSettings().getCommonSettings(KotlinLanguage.INSTANCE);
         
         List<Object> objects = Arrays.asList(kotlinSettings, commonSettings);

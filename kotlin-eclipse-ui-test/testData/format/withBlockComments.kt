@@ -1,10 +1,10 @@
 class Hello {
-	/*
-	class classInComment {
-		fun someFun {
-		}
-	}
-	*/
-	fun someFun() {
-	}
+    /*
+    class classInComment {
+        fun someFun {
+        }
+    }
+    */
+    fun someFun() {
+    }
 }
