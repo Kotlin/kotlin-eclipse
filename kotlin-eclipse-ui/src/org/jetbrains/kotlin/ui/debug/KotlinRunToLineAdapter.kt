@@ -40,7 +40,7 @@ import org.eclipse.debug.core.model.IDebugTarget
 import org.eclipse.debug.ui.actions.RunToLineHandler
 import org.eclipse.core.runtime.NullProgressMonitor
 
-public class KotlinRunToLineAdapter : IRunToLineTarget {
+object KotlinRunToLineAdapter : IRunToLineTarget {
     override fun runToLine(part: IWorkbenchPart, selection: ISelection, target: ISuspendResume) {
         val editor = getEditor(part)
         if (editor == null) throw CoreException(createErrorStatus("Missing editor for $part"))

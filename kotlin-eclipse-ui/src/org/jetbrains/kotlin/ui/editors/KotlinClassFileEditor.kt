@@ -53,24 +53,16 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
     override val javaProject: IJavaProject
         get() = classFile.getJavaProject()
 
-    private val colorManager : IColorManager
+    private val colorManager = JavaColorManager()
     
     private val kotlinOutlinePage : KotlinOutlinePage by lazy {
         KotlinOutlinePage(this)
     }
     
-    private val kotlinToggleBreakpointAdapter:KotlinToggleBreakpointAdapter by lazy {
-        KotlinToggleBreakpointAdapter()
-    }
-    
-    init {
-        colorManager = JavaColorManager()
-    }
-
     override public fun getAdapter(required: Class<*>) : Any? =
         when (required) {
             IContentOutlinePage::class.java -> kotlinOutlinePage
-            IToggleBreakpointsTarget::class.java -> kotlinToggleBreakpointAdapter
+            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter
             else -> super<ClassFileEditor>.getAdapter(required)
         }
 
