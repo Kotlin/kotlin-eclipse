@@ -49,6 +49,7 @@ import org.jetbrains.kotlin.progress.CompilationCanceledException
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 import org.jetbrains.kotlin.ui.KotlinPluginUpdater
 import org.jetbrains.kotlin.eclipse.ui.utils.runJob
+import org.eclipse.core.resources.ResourcesPlugin
 
 class KotlinBuilder : IncrementalProjectBuilder() {
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
@@ -58,19 +59,26 @@ class KotlinBuilder : IncrementalProjectBuilder() {
             return null
         }
         
-        val affectedFiles = if (kind == FULL_BUILD) {
-            KotlinPsiManager.INSTANCE.getFilesByProject(project)
-        } else {
-            val delta = getDelta(project)
-            if (delta != null) getAffectedFiles(delta, javaProject) else emptySet()
+        val delta = getDelta(project)
+        val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
+        if (isAllFromOutputFolder(allAffectedFiles, javaProject)) {
+            return null
         }
         
-        val existingAffectedFiles = affectedFiles.filter { it.exists() }
+        val kotlinAffectedFiles = if (kind == FULL_BUILD) {
+            KotlinPsiManager.INSTANCE.getFilesByProject(project)
+        } else {
+            allAffectedFiles
+                .filter { KotlinPsiManager.INSTANCE.isKotlinSourceFile(it, javaProject) }
+                .toSet()
+        }
+        
+        val existingAffectedFiles = kotlinAffectedFiles.filter { it.exists() }
         
         commitFiles(existingAffectedFiles)
         
-        if (affectedFiles.isNotEmpty()) {
-            KotlinLightClassGeneration.updateLightClasses(javaProject, affectedFiles)
+        if (kotlinAffectedFiles.isNotEmpty()) {
+            KotlinLightClassGeneration.updateLightClasses(javaProject, kotlinAffectedFiles)
             
             runJob("Checking for update", Job.DECORATE) { 
                 KotlinPluginUpdater.kotlinFileEdited()
@@ -91,17 +99,29 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         files.forEach { KotlinPsiManager.getKotlinFileIfExist(it, EditorUtil.getDocument(it).get()) }
     }
     
-    private fun getAffectedFiles(resourceDelta: IResourceDelta, javaProject: IJavaProject): Set<IFile> {
+    private fun isAllFromOutputFolder(files: Set<IFile>, javaProject: IJavaProject): Boolean {
+        val workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getFullPath()
+        val outputLocation = javaProject.outputLocation
+        for (file in files) {
+            val filePathLocation = file.getFullPath().makeRelativeTo(workspaceLocation)
+            if (!outputLocation.isPrefixOf(filePathLocation)) {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    private fun getAllAffectedFiles(resourceDelta: IResourceDelta): Set<IFile> {
         val affectedFiles = hashSetOf<IFile>()
         resourceDelta.accept { delta ->
-            if (delta.getKind() != IResourceDelta.NO_CHANGE) {
-                val resource = delta.getResource()
-                if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource, javaProject)) {
-                    affectedFiles.add(resource as IFile)
-                    return@accept false
-                }
+            if (delta.getKind() == IResourceDelta.NO_CHANGE) return@accept false
                 
-                if (resource !is IFile) return@accept true
+            val resource = delta.getResource()
+            if (resource is IFile) {
+                affectedFiles.add(resource)
+            } else {
+                return@accept true
             }
             
             false
@@ -110,7 +130,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         return affectedFiles
     }
     
-    private fun isBuildingForLaunch():Boolean {
+    private fun isBuildingForLaunch(): Boolean {
         val launchDelegateFQName = LaunchConfigurationDelegate::class.java.getCanonicalName()
         return Thread.currentThread().getStackTrace().find { it.className == launchDelegateFQName } != null
     }
