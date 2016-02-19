@@ -73,10 +73,6 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val kotlinOutlinePage = KotlinOutlinePage(this)
     
-    private val kotlinToggleBreakpointAdapter by lazy { KotlinToggleBreakpointAdapter() }
-    
-    private val kotlinRunToLineAdapter by lazy { KotlinRunToLineAdapter() }
-    
     private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences(this) }
     
     private var kotlinSemanticHighlighter: KotlinSemanticHighlighter? = null
@@ -86,8 +82,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     override public fun getAdapter(required: Class<*>): Any? {
         return when (required) {
             IContentOutlinePage::class.java -> kotlinOutlinePage
-            IToggleBreakpointsTarget::class.java -> kotlinToggleBreakpointAdapter
-            IRunToLineTarget::class.java -> kotlinRunToLineAdapter
+            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter
+            IRunToLineTarget::class.java -> KotlinRunToLineAdapter
             else -> super<CompilationUnitEditor>.getAdapter(required)
         }
     }
