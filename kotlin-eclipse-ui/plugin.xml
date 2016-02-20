@@ -661,4 +661,23 @@
             class="org.jetbrains.kotlin.preferences.KotlinPreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         point="org.eclipse.ui.console.consolePatternMatchListeners">
+      <consolePatternMatchListener
+            class="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenEditorFromConsole"
+            id="org.jetbrains.kotlin.eclipse.ui.consoleListener"
+            regex="at .+\(.+\.kt\:\d+\)">
+         <enablement>
+            <or>
+               <test
+                     property="org.eclipse.ui.console.consoleTypeTest"
+                     value="org.eclipse.debug.ui.ProcessConsoleType">
+               </test>
+               <test
+                     property="org.eclipse.ui.console.consoleTypeTest"
+                     value="javaStackTraceConsole">
+               </test>
+            </or></enablement>
+      </consolePatternMatchListener>
+   </extension>
 </plugin>
