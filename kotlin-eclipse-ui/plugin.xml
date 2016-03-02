@@ -664,4 +664,17 @@
             </or></enablement>
       </consolePatternMatchListener>
    </extension>
+   <extension
+         point="org.eclipse.ui.exportWizards">
+      <category
+            id="org.jetbrains.kotlin.exportWizards"
+            name="Kotlin">
+      </category>
+      <wizard
+            category="org.jetbrains.kotlin.exportWizards"
+            class="org.jetbrains.kotlin.ui.export.KotlinJarExportWizard"
+            id="org.jetbrains.kotlin.exportWizards.jarWizard"
+            name="Runnable JAR File with Kotlin Support">
+      </wizard>
+   </extension>
 </plugin>
