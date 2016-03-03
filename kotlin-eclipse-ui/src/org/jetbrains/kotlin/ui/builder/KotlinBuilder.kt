@@ -54,7 +54,8 @@ import org.eclipse.core.resources.ResourcesPlugin
 class KotlinBuilder : IncrementalProjectBuilder() {
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
         val javaProject = JavaCore.create(project)
-        if (isBuildingForLaunch()) {
+        if (isBuildingForLaunch() || kind == IncrementalProjectBuilder.INCREMENTAL_BUILD) {
+            println("Compiling Kotlin files")
             compileKotlinFiles(javaProject)
             return null
         }
