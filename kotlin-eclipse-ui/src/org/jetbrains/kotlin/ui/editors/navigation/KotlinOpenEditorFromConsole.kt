@@ -32,6 +32,7 @@ import org.eclipse.jface.text.BadLocationException
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.utils.ProjectUtils
 
 private val NAVIGATION_DESCRIPTION_REGEX = "at (.+)\\((.+\\.kt)\\:(\\d+)\\)".toRegex()
 
@@ -117,14 +118,9 @@ class KotlinOpenEditorFromConsole : IPatternMatchListenerDelegate {
     
     private fun findType(fqName: String): IType? {
         val typeFqName = fqName.substringBeforeLast(".")
-        for (project in ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            val javaProject = JavaCore.create(project)
-            val javaType = javaProject.findType(typeFqName)
-            if (javaType != null) {
-                return javaType
-            }
-        }
-        
-        return null
+        return ProjectUtils.getAccessibleKotlinProjects().asSequence()
+                .map { JavaCore.create(it) }
+                .mapNotNull { it.findType(typeFqName) }
+                .firstOrNull()
     }
 }

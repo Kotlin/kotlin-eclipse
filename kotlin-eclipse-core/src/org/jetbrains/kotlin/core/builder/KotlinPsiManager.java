@@ -41,6 +41,7 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinLightVirtualFile;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinFilesCollectorUtilsKt;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.idea.KotlinFileType;
 import org.jetbrains.kotlin.idea.KotlinLanguage;
 import org.jetbrains.kotlin.psi.KtElement;
@@ -98,7 +99,7 @@ public class KotlinPsiManager {
     
     private void addProject(@NotNull IProject project) {
         synchronized (mapOperationLock) {
-            if (project.isAccessible() && KotlinNature.hasKotlinNature(project)) {
+            if (ProjectUtils.isAccessibleKotlinProject(project)) {
                 KotlinFilesCollectorUtilsKt.addFilesToParse(JavaCore.create(project));
             }
         }

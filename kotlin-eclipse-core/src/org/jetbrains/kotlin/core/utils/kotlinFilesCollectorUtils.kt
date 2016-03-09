@@ -31,11 +31,9 @@ import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.model.setKotlinBuilderBeforeJavaBuilder
 
 fun addFilesToParseFromKotlinProjectsInWorkspace() {
-    ResourcesPlugin.getWorkspace().getRoot().getProjects().forEach {
-        if (it.isAccessible() && KotlinNature.hasKotlinNature(it)) {
-            addFilesToParse(JavaCore.create(it))
-            setKotlinBuilderBeforeJavaBuilder(it)
-        }
+    ProjectUtils.getAccessibleKotlinProjects().forEach {
+        addFilesToParse(JavaCore.create(it))
+        setKotlinBuilderBeforeJavaBuilder(it)
     }
 }
 

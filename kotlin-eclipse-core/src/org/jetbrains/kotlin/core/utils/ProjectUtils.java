@@ -43,6 +43,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.KotlinClasspathContainer;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.osgi.framework.Bundle;
 
@@ -345,6 +346,19 @@ public class ProjectUtils {
     
     public static String buildLibPath(String libName) {
         return KT_HOME + buildLibName(libName);
+    }
+    
+    public static List<IProject> getAccessibleKotlinProjects() {
+        return ArraysKt.filter(ResourcesPlugin.getWorkspace().getRoot().getProjects(), new Function1<IProject, Boolean>() {
+            @Override
+            public Boolean invoke(IProject project) {
+                return isAccessibleKotlinProject(project);
+            }
+        });
+    }
+    
+    public static boolean isAccessibleKotlinProject(IProject project) {
+        return project.isAccessible() && KotlinNature.hasKotlinNature(project);
     }
     
     private static String buildLibName(String libName) {
