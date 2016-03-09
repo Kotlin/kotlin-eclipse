@@ -59,7 +59,7 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         
         val edits = format(rootBlock, 0)
         
-        val fileChange = TextFileChange("Introduce variable", file)
+        val fileChange = TextFileChange("Format code", file)
         edits.forEach { TextChangeCompatibility.addTextEdit(fileChange, "Kotlin change", it.edit) }
         
         fileChange.perform(NullProgressMonitor())
@@ -75,36 +75,39 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
             if (edit != null) edits.add(edit)
         }
         
-        val subBlocks = parent.getSubBlocks()
+        val subBlocks = parent.subBlocks
         var left = subBlocks.firstOrNull()
         var first = true
         if (left is ASTBlock) 
-        for (block in subBlocks) {
-            var myIndent = indent
-            when (block.indent?.type) {
-                Type.NORMAL -> myIndent++
-                Type.CONTINUATION -> myIndent += 2
+        for (subBlock in subBlocks) {
+            var subBlockIndent = indent
+            when (subBlock.indent?.type) {
+                Type.NORMAL -> subBlockIndent++
+                Type.CONTINUATION -> subBlockIndent += 2
             }
             
             if (first) {
                 first = false
-                
-                if (block is ASTBlock) edits.addAll(format(block, myIndent))
+                if (subBlock is ASTBlock) {
+                    edits.addAll(format(subBlock, subBlockIndent))
+                }
                 
                 continue
             }
             
             if (parent.indent?.type == Type.CONTINUATION_WITHOUT_FIRST &&
-                block.indent?.type == Type.CONTINUATION_WITHOUT_FIRST) {
-                myIndent += 2
+                subBlock.indent?.type == Type.CONTINUATION_WITHOUT_FIRST) {
+                subBlockIndent += 2
             }
             
-            val edit = adjustSpacing(parent, left!!, block)
+            val edit = adjustSpacing(parent, left!!, subBlock)
             if (edit != null) edits.add(edit)
             
-            if (block is ASTBlock) edits.addAll(format(block, myIndent))
+            if (subBlock is ASTBlock) {
+                edits.addAll(format(subBlock, subBlockIndent))
+            }
             
-            left = block
+            left = subBlock
         }
         
         return edits
@@ -134,13 +137,6 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         val spacing = parent.getSpacing(left, right)
         
         if (left is ASTBlock && right is ASTBlock) {
-//            val next = left.getNode().getTreeNext().let { 
-//                if (it == null) return@let null
-//                when (it.psi) {
-//                    is KtImportList -> it.getTreeNext()
-//                    else -> it
-//                }
-//            }
             val next = ktFile.findElementAt(right.node.startOffset - 1)
             if (next == null) return null
             
@@ -164,23 +160,22 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
     private fun fixSpacing(whiteSpace: String, spacing: Spacing?): String {
         val fixedSpacing = StringBuilder()
         if (spacing is SpacingImpl) {
-            val countLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
-            val lineFeeds = getLineFeeds(spacing)
-            if (countLineFeeds < lineFeeds || (lineFeeds < countLineFeeds && !spacing.shouldKeepLineFeeds())) {
-                if (lineFeeds == 0) {
-                    fixedSpacing.append(" ".repeat(spacing.minSpaces))
+            val actualLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
+            val expectedLineFeeds = getLineFeeds(spacing)
+            if (actualLineFeeds < expectedLineFeeds || (expectedLineFeeds < actualLineFeeds && !spacing.shouldKeepLineFeeds())) {
+                if (expectedLineFeeds == 0) {
+                    fixedSpacing.append(createWhitespaces(spacing.minSpaces))
                 } else {
-                    fixedSpacing.append(IndenterUtil.createWhiteSpace(0, lineFeeds, lineSeparator))
+                    fixedSpacing.append(IndenterUtil.createWhiteSpace(0, expectedLineFeeds, lineSeparator))
                 }
-            } else if (countLineFeeds != 0) {
-//                val biasedIndent = if (rightIndent?.type == Type.NORMAL) indent + 1 else indent
-                fixedSpacing.append(IndenterUtil.createWhiteSpace(0, countLineFeeds, lineSeparator))
-            } else if (countLineFeeds == 0) {
+            } else if (actualLineFeeds != 0) {
+                fixedSpacing.append(IndenterUtil.createWhiteSpace(0, actualLineFeeds, lineSeparator))
+            } else if (actualLineFeeds == 0) {
                 val countSpaces = whiteSpace.length
                 if (countSpaces < spacing.minSpaces) {
-                    fixedSpacing.append(" ".repeat(spacing.minSpaces))
+                    fixedSpacing.append(createWhitespaces(spacing.minSpaces))
                 } else if (spacing.maxSpaces < countSpaces) {
-                    fixedSpacing.append(" ".repeat(spacing.maxSpaces))
+                    fixedSpacing.append(createWhitespaces(spacing.maxSpaces))
                 } else {
                     fixedSpacing.append(whiteSpace)
                 }
@@ -203,7 +198,7 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         return when (spacing) {
             is DependantSpacingImpl -> {
                 val trigger = spacing.getDependentRegionRanges().find { 
-                    IndenterUtil.getLineSeparatorsOccurences(ktFile.getText().substring(it.startOffset, it.endOffset)) != 0
+                    IndenterUtil.getLineSeparatorsOccurences(ktFile.text.substring(it.startOffset, it.endOffset)) != 0
                 }
                 
                 if (trigger != null) {
@@ -216,3 +211,5 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         }
     }
 }
+
+private fun createWhitespaces(countSpaces: Int) = IndenterUtil.SPACE_STRING.repeat(countSpaces)

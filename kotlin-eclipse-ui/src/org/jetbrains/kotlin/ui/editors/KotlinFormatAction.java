@@ -52,10 +52,7 @@ public class KotlinFormatAction extends Action {
                 return;
             }
 
-//            KotlinFormatter formatter = new KotlinFormatter(editor);
-//            formatter.formatCode();
             KotlinFormatterKt.formatTwice(editor);
-//            document.set(AlignmentStrategy.alignCode(parsedCode.getNode(), TextUtilities.getDefaultLineDelimiter(document)));
         } else {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
         }

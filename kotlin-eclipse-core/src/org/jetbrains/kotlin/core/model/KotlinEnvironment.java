@@ -153,7 +153,6 @@ public class KotlinEnvironment {
         CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider.class);
         Extensions.getRootArea().getExtensionPoint(CodeStyleSettingsProvider.EXTENSION_POINT_NAME).registerExtension(new KotlinSettingsProvider());
         Extensions.getRootArea().getExtensionPoint(LanguageCodeStyleSettingsProvider.EP_NAME).registerExtension(new KotlinLanguageCodeStyleSettingsProvider());
-        
     }
     
     private static void registerApplicationExtensionPointsAndExtensionsFrom(String configFilePath) {
