@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import kotlin.Pair;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -61,6 +59,8 @@ import org.jetbrains.kotlin.wizards.FileCreationOp;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
+
+import kotlin.Pair;
 
 public class JavaToKotlinActionHandler extends AbstractHandler {
     private final static String DOC_START = "/**";
