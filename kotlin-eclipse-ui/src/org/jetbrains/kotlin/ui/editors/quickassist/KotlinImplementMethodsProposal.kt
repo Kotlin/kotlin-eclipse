@@ -141,9 +141,9 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     }
 
     private fun overrideFunction(classOrObject: KtClassOrObject, descriptor: FunctionDescriptor): KtNamedFunction {
-        val newDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
+        val newDescriptor: FunctionDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
                                             descriptor.getKind(), /* copyOverrides = */ true)
-        newDescriptor.addOverriddenDescriptor(descriptor)
+        newDescriptor.setOverriddenDescriptors(listOf(descriptor))
 
         val returnType = descriptor.getReturnType()
         val returnsNotUnit = returnType != null && !KotlinBuiltIns.isUnit(returnType)
@@ -159,7 +159,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private fun overrideProperty(classOrObject: KtClassOrObject, descriptor: PropertyDescriptor): KtElement {
         val newDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
                                             descriptor.getKind(), /* copyOverrides = */ true) as PropertyDescriptor
-        newDescriptor.addOverriddenDescriptor(descriptor)
+        newDescriptor.setOverriddenDescriptors(listOf(descriptor))
 
         val body = StringBuilder()
         body.append("\nget()")
