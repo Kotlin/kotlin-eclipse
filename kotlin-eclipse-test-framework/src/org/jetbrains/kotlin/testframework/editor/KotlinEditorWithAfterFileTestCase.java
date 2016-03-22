@@ -30,6 +30,14 @@ import com.intellij.util.containers.ContainerUtil;
 
 public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAutoTestCase {
     
+    public enum AfterSuffixPosition {
+        BEFORE_DOT, AFTER_NAME
+    }
+    
+    protected AfterSuffixPosition getAfterPosition() {
+        return AfterSuffixPosition.AFTER_NAME;
+    }
+    
     private static class WithAfterSourceFileData extends EditorSourceFileData {
         
         private static final Condition<WithAfterSourceFileData> TARGET_PREDICATE = new Condition<WithAfterSourceFileData>() {
@@ -99,7 +107,15 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
         testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText,
                 WithAfterSourceFileData.getPackageFromContent(fileText));
         
-        performTest(fileText, KotlinTestUtils.getText(testPath + AFTER_FILE_EXTENSION));
+        String afterTestPath;
+        AfterSuffixPosition afterPosition = getAfterPosition();
+        if (afterPosition == AfterSuffixPosition.AFTER_NAME) {
+            afterTestPath = testPath + AFTER_FILE_EXTENSION;
+        } else {
+            afterTestPath = testPath.substring(0, testPath.length() - ".kt".length()) + AFTER_FILE_EXTENSION + ".kt";
+        }
+        
+        performTest(fileText, KotlinTestUtils.getText(afterTestPath));
     }
     
     @Override

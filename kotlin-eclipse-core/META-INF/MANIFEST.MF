@@ -14,7 +14,10 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.core.expressions,
  org.eclipse.jdt.junit
 Bundle-ActivationPolicy: lazy
-Import-Package: com.intellij.openapi.vfs,
+Import-Package: com.intellij.core,
+ com.intellij.openapi.util,
+ com.intellij.openapi.vfs,
+ com.intellij.psi.codeStyle,
  javax.inject,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources,

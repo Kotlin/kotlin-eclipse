@@ -55,7 +55,8 @@ Import-Package: com.intellij.navigation,
  org.eclipse.ui.texteditor.link,
  org.eclipse.jdt.internal.compiler.env,
  org.eclipse.jdt.core.compiler,
- org.jetbrains.kotlin.progress
+ org.jetbrains.kotlin.progress,
+ com.intellij.formatting
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,
@@ -75,4 +76,5 @@ Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui.overrideImplement,
  org.jetbrains.kotlin.ui.refactorings.extract,
  org.jetbrains.kotlin.ui.refactorings.rename,
- org.jetbrains.kotlin.ui.search
+ org.jetbrains.kotlin.ui.search,
+ org.jetbrains.kotlin.ui.formatter
