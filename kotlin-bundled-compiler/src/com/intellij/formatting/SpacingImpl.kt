@@ -3,7 +3,7 @@ package com.intellij.formatting
 open class SpacingImpl(
         val minSpaces: Int,
         maxSpaces: Int,
-        open val minLineFeeds: Int,
+        private val minLineFeeds: Int,
         isReadOnly: Boolean,
         safe: Boolean,
         shouldKeepLineBreaks: Boolean,
@@ -35,6 +35,8 @@ open class SpacingImpl(
                 (if (shouldKeepLineBreaks) SHOULD_KEEP_LINE_BREAKS_MASK else 0) or
                 (if (keepFirstColumn) SHOULD_KEEP_FIRST_COLUMN_MASK else 0)
     }
+    
+    open fun getMinLineFeeds(): Int = minLineFeeds
     
     internal fun isReadOnly(): Boolean = (myFlags and READ_ONLY_MASK) != 0
     

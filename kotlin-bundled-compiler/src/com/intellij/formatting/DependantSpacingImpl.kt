@@ -4,7 +4,7 @@ import java.util.ArrayList
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
 
-class DependantSpacingImpl(
+open class DependantSpacingImpl(
         minSpaces: Int,
         maxSpaces: Int,
         val dependentRegionRanges: List<TextRange>,
@@ -26,22 +26,21 @@ class DependantSpacingImpl(
         keepBlankLines:Int,
         rule:DependentSpacingRule) : this(minSpaces, maxSpaces, listOf(dependency), keepLineBreaks, keepBlankLines, rule)
     
-    override val minLineFeeds:Int
-        get() {
-            if (!isTriggered()) {
-                return super.minLineFeeds
-            }
-            
-            if (myRule.hasData(DependentSpacingRule.Anchor.MIN_LINE_FEEDS)) {
-                return myRule.getData(DependentSpacingRule.Anchor.MIN_LINE_FEEDS)
-            }
-            
-            if (myRule.hasData(DependentSpacingRule.Anchor.MAX_LINE_FEEDS)) {
-                return myRule.getData(DependentSpacingRule.Anchor.MAX_LINE_FEEDS)
-            }
-            
-            return super.minLineFeeds
+    override fun getMinLineFeeds(): Int {
+        if (!isTriggered()) {
+            return super.getMinLineFeeds()
         }
+        
+        if (myRule.hasData(DependentSpacingRule.Anchor.MIN_LINE_FEEDS)) {
+            return myRule.getData(DependentSpacingRule.Anchor.MIN_LINE_FEEDS)
+        }
+        
+        if (myRule.hasData(DependentSpacingRule.Anchor.MAX_LINE_FEEDS)) {
+            return myRule.getData(DependentSpacingRule.Anchor.MAX_LINE_FEEDS)
+        }
+        
+        return super.getMinLineFeeds()
+    }
     
     override val keepBlankLines: Int
         get() {
@@ -56,7 +55,7 @@ class DependantSpacingImpl(
     
     fun setDependentRegionLinefeedStatusChanged() {
         myFlags = myFlags or DEPENDENT_REGION_LF_CHANGED_MASK
-        if (minLineFeeds <= 0) {
+        if (getMinLineFeeds() <= 0) {
             myFlags = myFlags or DEPENDENCE_CONTAINS_LF_MASK
         } else {
             myFlags = myFlags and DEPENDENCE_CONTAINS_LF_MASK.inv()
@@ -64,6 +63,6 @@ class DependantSpacingImpl(
     }
     
     private fun isTriggered(): Boolean {
-        return (myRule.getTrigger() === DependentSpacingRule.Trigger.HAS_LINE_FEEDS) xor ((myFlags and DEPENDENCE_CONTAINS_LF_MASK) === 0)
+        return (myRule.getTrigger() == DependentSpacingRule.Trigger.HAS_LINE_FEEDS) xor ((myFlags and DEPENDENCE_CONTAINS_LF_MASK) === 0)
     }
 }

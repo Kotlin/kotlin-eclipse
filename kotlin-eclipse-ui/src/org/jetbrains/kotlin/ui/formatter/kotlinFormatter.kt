@@ -43,9 +43,7 @@ fun formatTwice(editor: KotlinFileEditor) {
     KotlinFormatter(editor).formatCode()
 }
 
-class NullAlignmentStrategy : CommonAlignmentStrategy() {
-    override fun getAlignment(node: ASTNode): Alignment? = null
-}
+val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))
 
 class KotlinFormatter(val editor: KotlinFileEditor) {
     val file = editor.getFile()!!
@@ -56,11 +54,11 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
     
     fun formatCode() {
         val rootBlock = KotlinBlock(ktFile.getNode(), 
-                NullAlignmentStrategy(), 
+                NULL_ALIGNMENT_STRATEGY, 
                 Indent.getNoneIndent(), 
                 null,
                 settings,
-                createSpacingBuilder(settings))
+                createSpacingBuilder(settings, KotlinDependantSpacingFactoryImpl))
         
         val edits = format(rootBlock, 0)
         
@@ -210,9 +208,9 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
                     spacing.setDependentRegionLinefeedStatusChanged()
                 }
                 
-                spacing.minLineFeeds
+                spacing.getMinLineFeeds()
             }
-            else -> spacing.minLineFeeds
+            else -> spacing.getMinLineFeeds()
         }
     }
 }

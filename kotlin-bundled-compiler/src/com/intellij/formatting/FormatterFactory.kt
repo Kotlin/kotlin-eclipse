@@ -3,7 +3,7 @@ package com.intellij.formatting
 import com.intellij.formatting.Indent.Type
 import com.intellij.openapi.util.TextRange
 
-class FormatterFactory : IndentFactory, SpacingFactory, WrapFactory {
+class FormatterFactory : IndentFactory, SpacingFactory, WrapFactory, AlignmentFactory {
     private val NONE_INDENT = IndentImpl(Indent.Type.NONE, false, false)
     private val myAbsoluteNoneIndent = IndentImpl(Indent.Type.NONE, true, false)
     private val myLabelIndent = IndentImpl(Indent.Type.LABEL, false, false)
@@ -20,6 +20,15 @@ class FormatterFactory : IndentFactory, SpacingFactory, WrapFactory {
         Indent.setFactory(this)
         Spacing.setFactory(this)
         Wrap.setFactory(this)
+        Alignment.setFactory(this)
+    }
+    
+    override fun createAlignment(applyToNonFirstBlocksOnLine: Boolean, anchor: Alignment.Anchor): Alignment {
+        return AlignmentImpl(applyToNonFirstBlocksOnLine, anchor)
+    }
+    
+    override fun createChildAlignment(base: Alignment): Alignment {
+        return AlignmentImpl() // TODO: add properly child alignment
     }
     
     override fun getAbsoluteLabelIndent(): Indent = myAbsoluteLabelIndent
