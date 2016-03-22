@@ -74,10 +74,10 @@ object KotlinDependantSpacingFactoryImpl : KotlinDependentSpacingFactory {
             dependency: TextRange,
             rule: DependentSpacingRule): Spacing {
         return object : DependantSpacingImpl(minSpaces, maxSpaces, dependency, keepLineBreaks, keepBlankLines, rule) {
-            override fun getMinLineFeeds(): Int {
-                val superMin = super.getMinLineFeeds()
-                return if (superMin == 0) minimumLineFeeds else superMin
-            }
+//            override fun getMinLineFeeds(): Int {
+//                val superMin = super.getMinLineFeeds()
+//                return if (superMin == 0) minimumLineFeeds else superMin
+//            }
         }
     }
 }
