@@ -4,7 +4,7 @@ class Hello {
         fun someFun {
         }
     }
-     */
+    */
     fun someFun() {
     }
 }
