@@ -2,7 +2,7 @@
 <feature
       id="org.jetbrains.kotlin.weaving.feature"
       label="kotlin-weaving-feature"
-      version="0.6.1.qualifier"
+      version="0.6.2.qualifier"
       provider-name="JetBrains">
 
    <includes

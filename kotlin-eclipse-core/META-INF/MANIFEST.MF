@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-core
 Bundle-SymbolicName: org.jetbrains.kotlin.core;singleton:=true
-Bundle-Version: 0.6.1.qualifier
+Bundle-Version: 0.6.2.qualifier
 Bundle-Activator: org.jetbrains.kotlin.core.Activator
 Bundle-Vendor: JetBrains
 Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
