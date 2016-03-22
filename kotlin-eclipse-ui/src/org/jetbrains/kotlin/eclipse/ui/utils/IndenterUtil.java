@@ -25,6 +25,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 public class IndenterUtil {
     
     public static final char SPACE_CHAR = ' ';
+    public static final String SPACE_STRING = Character.toString(SPACE_CHAR);
     public static final char TAB_CHAR = '\t';
     public static final String TAB_STRING = Character.toString(TAB_CHAR);
     

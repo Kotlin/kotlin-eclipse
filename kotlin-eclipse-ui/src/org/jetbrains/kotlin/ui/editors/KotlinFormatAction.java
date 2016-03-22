@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,11 @@ package org.jetbrains.kotlin.ui.editors;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
+import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 
 import com.intellij.psi.PsiFile;
 
@@ -54,8 +52,7 @@ public class KotlinFormatAction extends Action {
                 return;
             }
 
-            IDocument document = editor.getViewer().getDocument(); 
-            document.set(AlignmentStrategy.alignCode(parsedCode.getNode(), TextUtilities.getDefaultLineDelimiter(document)));
+            KotlinFormatterKt.formatTwice(editor);
         } else {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
         }
