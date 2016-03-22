@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
@@ -67,6 +68,10 @@ public class EditorUtil {
         }
         
         throw new RuntimeException();
+    }
+    
+    public static String getDocumentLineDelimiter(@NotNull KotlinEditor editor) {
+        return TextUtilities.getDefaultLineDelimiter(editor.getDocument());
     }
     
     @Nullable

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,14 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.TextUtilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
-
-import com.intellij.psi.PsiFile;
+import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 
 public class KotlinFormatAction extends Action {
     
@@ -48,16 +45,20 @@ public class KotlinFormatAction extends Action {
         String sourceCode = EditorUtil.getSourceCode(editor);
         IFile file = EditorUtil.getFile(editor);
         
-        if (file != null) {
-            PsiFile parsedCode = KotlinPsiManager.getKotlinFileIfExist(file, sourceCode);
-            if (parsedCode == null) {
-                return;
-            }
-
-            IDocument document = editor.getViewer().getDocument(); 
-            document.set(AlignmentStrategy.alignCode(parsedCode.getNode(), TextUtilities.getDefaultLineDelimiter(document)));
-        } else {
+        if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return;
         }
+        
+        IJavaProject javaProject = editor.getJavaProject();
+        if (javaProject == null) {
+            KotlinLogger.logError("Failed to format code as java project is null for editor " + editor, null);
+            return;
+        }
+        
+        String formattedCode = KotlinFormatterKt.formatCode(sourceCode, javaProject, EditorUtil.getDocumentLineDelimiter(editor));
+        editor.getDocument().set(formattedCode);
+        
+        KotlinPsiManager.getKotlinFileIfExist(file, formattedCode);
     }
 }

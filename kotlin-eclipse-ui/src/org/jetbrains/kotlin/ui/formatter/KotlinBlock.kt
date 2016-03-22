@@ -26,9 +26,7 @@ class KotlinBlock(
             
         private val kotlinDelegationBlock = object : KotlinDelegationBlock(node, mySettings, mySpacingBuilder, myAlignmentStrategy) {
             
-            override fun getNullAlignmentStrategy(): CommonAlignmentStrategy {
-                throw UnsupportedOperationException()
-            }
+            override fun getNullAlignmentStrategy(): CommonAlignmentStrategy = NULL_ALIGNMENT_STRATEGY
     
             override fun createAlignmentStrategy(alignOption: Boolean, defaultAlignment: Alignment?): CommonAlignmentStrategy {
                 return NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(createAlignment(alignOption, defaultAlignment)))
