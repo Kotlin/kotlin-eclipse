@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.editors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
@@ -30,8 +31,11 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.lexer.KtTokens;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
+import org.jetbrains.kotlin.ui.formatter.FormatUtilsKt;
 
+import com.intellij.formatting.FormatterFactory;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -46,6 +50,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
     public KotlinAutoIndentStrategy(JavaEditor editor) {
         this.editor = editor;
+        new FormatterFactory();
     }
     
     @Override
@@ -110,6 +115,29 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         return 0; 
     }
     
+    private int computeIndent(IDocument document, int offset) {
+        if (offset == document.getLength()) {
+            return 0;
+        }
+        
+        IFile file = EditorUtil.getFile(editor);
+        if (file == null) {
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            return 0;
+        }
+        
+        KtFile ktFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
+        if (ktFile == null) {
+            return 0;
+        }
+        
+        IJavaProject javaProject = ((KotlinFileEditor) editor).getJavaProject();
+        if (javaProject == null) return 0;
+        int resolvedOffset = LineEndUtil.convertCrToDocumentOffset(document, offset);
+        
+        return FormatUtilsKt.computeAlignment(ktFile, resolvedOffset);
+    }
+    
     private void autoEditAfterNewLine(IDocument document, DocumentCommand command) {
         if (command.offset == -1 || document.getLength() == 0) {
             return;
@@ -139,7 +167,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 }
                 command.text = buf.toString();
             } else {
-                int indent = computeIndentCount(document, command.offset);
+                int indent = computeIndent(document, command.offset);
                 if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
                     indent--;
                 }
