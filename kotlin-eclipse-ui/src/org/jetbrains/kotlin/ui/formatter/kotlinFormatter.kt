@@ -36,24 +36,28 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.idea.formatter.CommonAlignmentStrategy
 import com.intellij.formatting.Alignment
 import com.intellij.formatting.DependentSpacingRule
+import org.eclipse.ltk.core.refactoring.DocumentChange
+import org.eclipse.jface.text.Document
+import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.psi.KtPsiFactory
+import com.intellij.openapi.util.text.StringUtil
 
 @Volatile var settings = CodeStyleSettings(true)
 
-fun formatTwice(editor: KotlinFileEditor) {
-    KotlinFormatter(editor).formatCode()
-    KotlinFormatter(editor).formatCode()
+fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String): String {
+    val firstRun = KotlinFormatter(source, javaProject, lineSeparator).formatCode()
+    return KotlinFormatter(firstRun, javaProject, lineSeparator).formatCode()
 }
 
 val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))
 
-class KotlinFormatter(val editor: KotlinFileEditor) {
-    val file = editor.getFile()!!
+private class KotlinFormatter(source: String, javaProject: IJavaProject, val lineSeparator: String) {
+    val ktFile = createKtFile(source, javaProject)
     
-    val lineSeparator = TextUtilities.getDefaultLineDelimiter(editor.document)
+    val sourceDocument = Document(source)
     
-    val ktFile = editor.parsedFile!!
-    
-    fun formatCode() {
+    fun formatCode(): String {
         val rootBlock = KotlinBlock(ktFile.getNode(), 
                 NULL_ALIGNMENT_STRATEGY, 
                 Indent.getNoneIndent(), 
@@ -63,16 +67,15 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         
         val edits = format(rootBlock, 0)
         
-        val fileChange = TextFileChange("Format code", file)
-        edits.forEach { TextChangeCompatibility.addTextEdit(fileChange, "Kotlin change", it.edit) }
+        val documentChange = DocumentChange("Format code", sourceDocument)
+        edits.forEach { TextChangeCompatibility.addTextEdit(documentChange, "Kotlin change", it) }
         
-        fileChange.perform(NullProgressMonitor())
-        
-        KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get())
+        documentChange.perform(NullProgressMonitor())
+        return sourceDocument.get()
     }
     
-    private fun format(parent: ASTBlock, indent: Int): ArrayList<FileEdit> {
-        val edits = ArrayList<FileEdit>()
+    private fun format(parent: ASTBlock, indent: Int): ArrayList<ReplaceEdit> {
+        val edits = ArrayList<ReplaceEdit>()
         
         if (parent.isLeaf) {
             val edit = addSpacingBefore(parent, indent)
@@ -117,7 +120,7 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         return edits
     }
     
-    private fun addSpacingBefore(block: ASTBlock, blockIndent: Int): FileEdit? {
+    private fun addSpacingBefore(block: ASTBlock, blockIndent: Int): ReplaceEdit? {
         val startOffset = block.node.startOffset
         if (startOffset < 1) return null
         
@@ -127,17 +130,15 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
         if (IndenterUtil.getLineSeparatorsOccurences(prevParent.getText()) == 0) return null
         
         val indent = IndenterUtil.createWhiteSpace(blockIndent, 0, lineSeparator)
-        val offset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), block.getTextRange().getStartOffset(), editor.document)
+        val offset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), block.getTextRange().getStartOffset(), sourceDocument)
         
-        return FileEdit(
-                    file, 
-                    ReplaceEdit(
-                            offset, 
-                            0,
-                            indent))
+        return ReplaceEdit(
+                        offset, 
+                        0,
+                        indent)
     }
     
-    private fun adjustSpacing(parent: ASTBlock, left: Block, right: Block): FileEdit? {
+    private fun adjustSpacing(parent: ASTBlock, left: Block, right: Block): ReplaceEdit? {
         val spacing = parent.getSpacing(left, right)
         
         if (left is ASTBlock && right is ASTBlock) {
@@ -148,14 +149,12 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
             val fixedSpace = fixSpacing(whiteSpace, spacing)
             if (fixedSpace == next.getText()) return null
             
-            val leftOffset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), left.getTextRange().getEndOffset(), editor.document)
-            val rightOffset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), right.getTextRange().getStartOffset(), editor.document)
-            return FileEdit(
-                    file, 
-                    ReplaceEdit(
+            val leftOffset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), left.getTextRange().getEndOffset(), sourceDocument)
+            val rightOffset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), right.getTextRange().getStartOffset(), sourceDocument)
+            return ReplaceEdit(
                             leftOffset, 
                             rightOffset - leftOffset,
-                            fixedSpace))
+                            fixedSpace)
         }
         
         return null
@@ -215,6 +214,12 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
             else -> spacing.getMinLineFeeds()
         }
     }
+}
+
+private fun createKtFile(source: String, javaProject: IJavaProject): KtFile {
+    val environment = KotlinEnvironment.getEnvironment(javaProject)
+    val ideaProject = environment.getProject()
+    return KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(source))
 }
 
 private fun createWhitespaces(countSpaces: Int) = IndenterUtil.SPACE_STRING.repeat(countSpaces)
