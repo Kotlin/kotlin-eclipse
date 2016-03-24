@@ -41,6 +41,7 @@ import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
 import org.jetbrains.kotlin.platform.JvmBuiltIns
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.ui.formatter.formatCode
 
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -80,11 +81,12 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
     
     private fun replaceBody(declaration: KtDeclarationWithBody, newBody: KtExpression, editor: KotlinFileEditor) {
         val body = declaration.getBodyExpression()!!
-        val eqToken = KtPsiFactory(declaration).createEQ().getText()
+        val psiFactory = KtPsiFactory(declaration)
+        val eqToken = psiFactory.createEQ().getText()
         
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
         val indent = AlignmentStrategy.computeIndent(declaration.getNode())        
-        val valueText = AlignmentStrategy.alignCode(newBody.getNode(), indent, lineDelimiter)
+        val valueText = formatCode(newBody.node.text, psiFactory, lineDelimiter, indent)
         
         replace(body, "$eqToken $valueText")
     }

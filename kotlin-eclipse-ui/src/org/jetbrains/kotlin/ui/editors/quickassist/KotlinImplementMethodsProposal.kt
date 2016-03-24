@@ -35,11 +35,9 @@ import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
 import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-<<<<<<< HEAD
 import org.jetbrains.kotlin.renderer.ClassifierNamePolicy
-=======
+import org.jetbrains.kotlin.ui.formatter.formatCode
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
->>>>>>> bfb0287... Add helper classes for formatter
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
@@ -93,19 +91,17 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
         val indent = AlignmentStrategy.computeIndent(classOrObject.getNode()) + 1
         
-        val newLine = psiFactory.createNewLine()
-        
-        val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
+        val newLineWithShift = IndenterUtil.createWhiteSpace(indent, 1, lineDelimiter)
         
         val generatedMembers = generateOverridingMembers(selectedElements, classOrObject)
         for (i in generatedMembers.indices) {
             generatedText.append(newLineWithShift)
-            generatedText.append(AlignmentStrategy.alignCode(generatedMembers[i].getNode(), indent, lineDelimiter))
+            generatedText.append(formatCode(generatedMembers[i].node.text, psiFactory, lineDelimiter, indent))
             if (i != generatedMembers.lastIndex) {
             	generatedText.append(newLineWithShift)
             }
         }
-		generatedText.append(AlignmentStrategy.alignCode(newLine.getNode(), indent - 1, lineDelimiter))
+		generatedText.append(IndenterUtil.createWhiteSpace(indent - 1, 1, lineDelimiter))
         
         document.replace(insertOffset, 0, generatedText.toString())
 	}

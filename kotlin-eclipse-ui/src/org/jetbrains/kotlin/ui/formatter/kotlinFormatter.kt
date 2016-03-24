@@ -45,15 +45,22 @@ import com.intellij.openapi.util.text.StringUtil
 
 @Volatile var settings = CodeStyleSettings(true)
 
-fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String): String {
-    val firstRun = KotlinFormatter(source, javaProject, lineSeparator).formatCode()
-    return KotlinFormatter(firstRun, javaProject, lineSeparator).formatCode()
+@JvmOverloads
+fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String, initialIndent: Int = 0): String {
+    return formatCode(source, createPsiFactory(javaProject), lineSeparator, initialIndent)
+
+}
+@JvmOverloads
+fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String, initialIndent: Int = 0): String {
+    val firstRun = KotlinFormatter(source, psiFactory, initialIndent, lineSeparator).formatCode()
+    return KotlinFormatter(firstRun, psiFactory, initialIndent, lineSeparator).formatCode()
 }
 
 val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))
 
-private class KotlinFormatter(source: String, javaProject: IJavaProject, val lineSeparator: String) {
-    val ktFile = createKtFile(source, javaProject)
+private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val initialIndent: Int, val lineSeparator: String) {
+    
+    val ktFile = createKtFile(source, psiFactory)
     
     val sourceDocument = Document(source)
     
@@ -65,7 +72,7 @@ private class KotlinFormatter(source: String, javaProject: IJavaProject, val lin
                 settings,
                 createSpacingBuilder(settings, KotlinDependantSpacingFactoryImpl))
         
-        val edits = format(rootBlock, 0)
+        val edits = format(rootBlock, initialIndent)
         
         val documentChange = DocumentChange("Format code", sourceDocument)
         edits.forEach { TextChangeCompatibility.addTextEdit(documentChange, "Kotlin change", it) }
@@ -219,7 +226,17 @@ private class KotlinFormatter(source: String, javaProject: IJavaProject, val lin
 private fun createKtFile(source: String, javaProject: IJavaProject): KtFile {
     val environment = KotlinEnvironment.getEnvironment(javaProject)
     val ideaProject = environment.getProject()
-    return KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(source))
+    return createKtFile(source, KtPsiFactory(ideaProject))
+}
+
+private fun createPsiFactory(javaProject: IJavaProject): KtPsiFactory {
+    val environment = KotlinEnvironment.getEnvironment(javaProject)
+    val ideaProject = environment.getProject()
+    return KtPsiFactory(ideaProject)
+}
+
+private fun createKtFile(source: String, psiFactory: KtPsiFactory): KtFile {
+    return psiFactory.createFile(StringUtil.convertLineSeparators(source))
 }
 
 private fun createWhitespaces(countSpaces: Int) = IndenterUtil.SPACE_STRING.repeat(countSpaces)

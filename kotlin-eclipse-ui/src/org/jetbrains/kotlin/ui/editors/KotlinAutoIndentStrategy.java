@@ -30,15 +30,10 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.lexer.KtTokens;
 import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
 import org.jetbrains.kotlin.ui.formatter.FormatUtilsKt;
 
 import com.intellij.formatting.FormatterFactory;
-import com.intellij.lang.ASTNode;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
@@ -64,55 +59,6 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         } else if (CLOSING_BRACE_STRING.equals(command.text)) {
             autoEditBeforeCloseBrace(document, command);
         }
-    }
-    
-    private int computeIndentCount(IDocument document, int offset) {
-        try {
-            if (offset == document.getLength()) {
-                return 0;
-            }
-            
-            IFile file = EditorUtil.getFile(editor);
-            if (file == null) {
-                KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-                return 0;
-            }
-
-            if (document.get().contains(LineEndUtil.CARRIAGE_RETURN_STRING)) {
-                offset -= document.getLineOfOffset(offset);
-            }
-            
-            PsiFile parsedDocument = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
-            if (parsedDocument == null) {
-                return 0;
-            }
-            
-            PsiElement leaf = parsedDocument.findElementAt(offset);
-            if (leaf == null) {
-                return 0;
-            }
-            
-            if (leaf.getNode().getElementType() != KtTokens.WHITE_SPACE) {
-                leaf = parsedDocument.findElementAt(offset - 1);
-            }
-            
-            int indent = 0;
-            
-            ASTNode node = null;
-            if (leaf != null) {
-                node = leaf.getNode();
-            }
-            while(node != null) {
-                indent = AlignmentStrategy.updateIndent(node, indent);
-                node = node.getTreeParent();
-            }
-            
-            return indent;
-        } catch (BadLocationException e) {
-            KotlinLogger.logAndThrow(e);
-        }
-        
-        return 0; 
     }
     
     private int computeIndent(IDocument document, int offset) {
@@ -183,7 +129,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             try {
                 int spaceLength = command.offset - findEndOfWhiteSpaceBefore(document, command.offset - 1, 0) - 1;
                 
-                command.text = IndenterUtil.createWhiteSpace(computeIndentCount(document, command.offset) - 1, 0, 
+                command.text = IndenterUtil.createWhiteSpace(computeIndent(document, command.offset) - 1, 0, 
                         TextUtilities.getDefaultLineDelimiter(document)) + CLOSING_BRACE_STRING;
                 command.offset -= spaceLength;
                 document.replace(command.offset, spaceLength, "");

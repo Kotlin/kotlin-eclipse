@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.psi.KtPsiUtil
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.ui.formatter.formatCode
 
 class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -67,7 +68,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
         val indent = AlignmentStrategy.computeIndent(declaration.getNode())
         
         val newBody = convert(declaration, context, factory)
-        var newBodyText = AlignmentStrategy.alignCode(newBody.getNode(), indent, lineDelimiter)
+        var newBodyText = formatCode(newBody.getNode().text, editor.javaProject!!, lineDelimiter, indent)
 
         if (declaration.getEqualsToken()!!.getNextSibling() !is PsiWhiteSpace) {
             newBodyText = factory.createWhiteSpace().getText() + newBodyText

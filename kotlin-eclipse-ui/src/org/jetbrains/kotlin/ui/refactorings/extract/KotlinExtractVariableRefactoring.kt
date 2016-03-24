@@ -141,11 +141,10 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
             indent: Int,
             anchor: PsiElement,
             replaces: List<KtExpression>): List<FileEdit> {
-        val newLine = KtPsiFactory(expression).createNewLine()
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
-        val newLineWithShift = AlignmentStrategy.alignCode(newLine.getNode(), indent, lineDelimiter)
+        val newLineWithShift = IndenterUtil.createWhiteSpace(indent, 1, lineDelimiter)
         
-        val newLineBeforeBrace = AlignmentStrategy.alignCode(newLine.getNode(), indent - 1, lineDelimiter)
+        val newLineBeforeBrace = IndenterUtil.createWhiteSpace(indent - 1, 1, lineDelimiter)
         
         val sortedReplaces = replaces.sortedBy { it.getTextOffset() }
         if (isUsedAsStatement && sortedReplaces.first() == anchor) {
