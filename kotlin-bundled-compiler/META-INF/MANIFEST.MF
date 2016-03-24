@@ -11,10 +11,10 @@ Bundle-ClassPath: .,
  lib/kotlin-runtime.jar,
  lib/kotlin-ide-common.jar,
  lib/kotlin-reflect.jar,
- lib/openapi.jar,
+ lib/openapi-shrinked.jar,
  ../kotlin-eclipse-ui-test/lib/gson-2.3.1.jar,
  lib/kotlin-formatter.jar,
- lib/util.jar
+ lib/util-shrinked.jar
 Export-Package: com.google.common.base,
  com.google.common.collect,
  com.google.common.primitives,
