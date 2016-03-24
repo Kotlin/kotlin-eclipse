@@ -53,7 +53,7 @@ import org.jetbrains.kotlin.psi.KtPsiFactory;
 import org.jetbrains.kotlin.ui.Activator;
 import org.jetbrains.kotlin.ui.commands.CommandsUtilsKt;
 import org.jetbrains.kotlin.ui.commands.ConvertedKotlinData;
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
+import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
 import org.jetbrains.kotlin.wizards.FileCreationOp;
 
@@ -204,8 +204,13 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         String translatedCode = JavaToKotlinTranslator.INSTANCE.prettify(
                 JavaToKotlinTranslatorKt.translateToKotlin(contents, ideaProject));
         KtFile jetFile = getJetFile(translatedCode, compilationUnit.getJavaProject());
-        String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode(), getDefaultLineDelimiter(compilationUnit))
-                .replaceAll(Pattern.quote(DOC_ESCAPE_START), DOC_START);
+//        String formattedCode = AlignmentStrategy.alignCode(jetFile.getNode(), getDefaultLineDelimiter(compilationUnit))
+//                .replaceAll(Pattern.quote(DOC_ESCAPE_START), DOC_START);
+        String formattedCode = KotlinFormatterKt.formatCode(
+                jetFile.getNode().getText(),
+                compilationUnit.getJavaProject(),
+                getDefaultLineDelimiter(compilationUnit))
+            .replaceAll(Pattern.quote(DOC_ESCAPE_START), DOC_START);
         
         String fileName = FileUtil.getNameWithoutExtension(compilationUnit.getElementName());
         IFile file = FileCreationOp.makeFile((IPackageFragment) compilationUnit.getParent(), compilationUnit.getPackageFragmentRoot(), fileName);

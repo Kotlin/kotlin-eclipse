@@ -30,7 +30,7 @@ import org.eclipse.jface.text.templates.TemplateVariable;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtPsiFactory;
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy;
+import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 
 import com.intellij.openapi.project.Project;
 
@@ -162,7 +162,7 @@ public class KotlinTemplateFormatter {
         
         assert parsedFile != null;
 
-        String formatted = AlignmentStrategy.alignCode(parsedFile.getNode(), lineIndentation, lineDelimiter);
+        String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), javaProject, lineDelimiter, lineIndentation);
         
         offsetsTracker.unmark(formatted);
         
