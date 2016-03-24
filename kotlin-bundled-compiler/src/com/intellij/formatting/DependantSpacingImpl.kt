@@ -62,6 +62,8 @@ open class DependantSpacingImpl(
         }
     }
     
+    fun getRule(): DependentSpacingRule = myRule
+    
     private fun isTriggered(): Boolean {
         return (myRule.getTrigger() == DependentSpacingRule.Trigger.HAS_LINE_FEEDS) xor ((myFlags and DEPENDENCE_CONTAINS_LF_MASK) === 0)
     }

@@ -35,6 +35,7 @@ import com.intellij.formatting.DependantSpacingImpl
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.idea.formatter.CommonAlignmentStrategy
 import com.intellij.formatting.Alignment
+import com.intellij.formatting.DependentSpacingRule
 
 @Volatile var settings = CodeStyleSettings(true)
 
@@ -200,11 +201,12 @@ class KotlinFormatter(val editor: KotlinFileEditor) {
     private fun getLineFeeds(spacing: SpacingImpl): Int {
         return when (spacing) {
             is DependantSpacingImpl -> {
-                val trigger = spacing.dependentRegionRanges.find { 
+                val hasLineFeeds = spacing.dependentRegionRanges.find { 
                     IndenterUtil.getLineSeparatorsOccurences(ktFile.text.substring(it.startOffset, it.endOffset)) != 0
                 }
                 
-                if (trigger != null) {
+                val triggerWithLineFeeds = spacing.getRule().getTrigger() == DependentSpacingRule.Trigger.HAS_LINE_FEEDS
+                if ((triggerWithLineFeeds && hasLineFeeds != null) || (!triggerWithLineFeeds && hasLineFeeds == null)) {
                     spacing.setDependentRegionLinefeedStatusChanged()
                 }
                 
