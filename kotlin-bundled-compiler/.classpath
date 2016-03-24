@@ -8,7 +8,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-ide-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-converter.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-formatter.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/openapi.jar"/>
 	<classpathentry kind="con" path="org.jetbrains.kotlin.core.KOTLIN_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/openapi-shrinked.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/util-shrinked.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
