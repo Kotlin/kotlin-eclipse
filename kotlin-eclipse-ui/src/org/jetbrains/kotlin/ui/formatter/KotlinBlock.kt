@@ -46,7 +46,7 @@ class KotlinBlock(
     
             override fun isIncompleteInSuper(): Boolean = isIncomplete
     
-            override fun getSuperChildAttributes(newChildIndex: Int): ChildAttributes = super.getChildAttributes(newChildIndex)
+            override fun getSuperChildAttributes(newChildIndex: Int): ChildAttributes = super@KotlinBlock.getChildAttributes(newChildIndex)
     
             override fun getSubBlocks(): List<Block> = subBlocks
     
