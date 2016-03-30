@@ -418,4 +418,5 @@ Export-Package: com.google.common.base,
  org.jetbrains.kotlin.progress,
  kotlin.ranges,
  kotlin.comparisons,
- org.jetbrains.kotlin.idea.imports
+ org.jetbrains.kotlin.idea.imports,
+ com.intellij.psi.codeStyle

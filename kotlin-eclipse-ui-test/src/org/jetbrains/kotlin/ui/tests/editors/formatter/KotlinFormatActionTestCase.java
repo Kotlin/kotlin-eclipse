@@ -80,7 +80,7 @@ public abstract class KotlinFormatActionTestCase extends KotlinEditorWithAfterFi
     	}
 	}
     
-    public void configureSettings(String fileText) {
+    public static void configureSettings(String fileText) {
         List<String> settingsToTrue = InTextDirectivesUtils.findListWithPrefixes(fileText, "SET_TRUE:");
         List<String> settingsToFalse = InTextDirectivesUtils.findListWithPrefixes(fileText, "SET_FALSE:");
         List<Pair> settingsToIntValue = CollectionsKt.map(InTextDirectivesUtils.findListWithPrefixes(fileText, "SET_INT:"), new Function1<String, Pair>() {

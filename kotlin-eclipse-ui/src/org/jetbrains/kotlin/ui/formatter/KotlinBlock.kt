@@ -9,7 +9,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.formatting.Block
 import com.intellij.formatting.Alignment
 import com.intellij.formatting.Spacing
-import org.jetbrains.kotlin.idea.formatter.KotlinDelegationBlock
+import org.jetbrains.kotlin.idea.formatter.KotlinCommonBlock
 import com.intellij.formatting.ChildAttributes
 import com.intellij.formatting.ASTBlock
 import com.intellij.psi.tree.IElementType
@@ -24,7 +24,7 @@ class KotlinBlock(
         private val mySettings: CodeStyleSettings,
         private val mySpacingBuilder: KotlinSpacingBuilder) : AbstractBlock(node, wrap, myAlignmentStrategy.getAlignment(node)) {
             
-        private val kotlinDelegationBlock = object : KotlinDelegationBlock(node, mySettings, mySpacingBuilder, myAlignmentStrategy) {
+        private val kotlinDelegationBlock = object : KotlinCommonBlock(node, mySettings, mySpacingBuilder, myAlignmentStrategy) {
             
             override fun getNullAlignmentStrategy(): CommonAlignmentStrategy = NULL_ALIGNMENT_STRATEGY
     
@@ -46,7 +46,7 @@ class KotlinBlock(
     
             override fun isIncompleteInSuper(): Boolean = isIncomplete
     
-            override fun getSuperChildAttributes(newChildIndex: Int): ChildAttributes = super.getChildAttributes(newChildIndex)
+            override fun getSuperChildAttributes(newChildIndex: Int): ChildAttributes = super@KotlinBlock.getChildAttributes(newChildIndex)
     
             override fun getSubBlocks(): List<Block> = subBlocks
     

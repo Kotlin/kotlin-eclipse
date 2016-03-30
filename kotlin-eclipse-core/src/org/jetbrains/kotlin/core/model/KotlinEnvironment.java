@@ -18,9 +18,7 @@ package org.jetbrains.kotlin.core.model;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
@@ -41,9 +39,11 @@ import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver;
 import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl;
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
+import org.jetbrains.kotlin.core.utils.KotlinImportInserterHelper;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider;
 import org.jetbrains.kotlin.idea.KotlinFileType;
+import org.jetbrains.kotlin.idea.util.ImportInsertHelper;
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager;
@@ -69,7 +69,6 @@ import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.impl.ZipHandler;
 import com.intellij.psi.PsiElementFinder;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.augment.PsiAugmentProvider;
@@ -80,8 +79,6 @@ import com.intellij.psi.compiled.ClassFileDecompilers;
 import com.intellij.psi.impl.PsiTreeChangePreprocessor;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 import com.intellij.psi.impl.file.impl.JavaFileManager;
-
-import com.sun.media.jfxmediaimpl.MediaDisposer.Disposable;
 
 import kotlin.jvm.functions.Function1;
 

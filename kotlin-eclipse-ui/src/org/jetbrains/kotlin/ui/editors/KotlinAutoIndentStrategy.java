@@ -32,6 +32,8 @@ import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.ui.formatter.FormatUtilsKt;
+import org.jetbrains.kotlin.ui.formatter.IndentInEditor;
+import org.jetbrains.kotlin.ui.formatter.IndentInEditor.BlockIndent;
 
 import com.intellij.formatting.FormatterFactory;
 
@@ -61,24 +63,20 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         }
     }
     
-    private int computeIndent(IDocument document, int offset) {
-        if (offset == document.getLength()) {
-            return 0;
-        }
-        
+    private IndentInEditor computeIndent(IDocument document, int offset) {
         IFile file = EditorUtil.getFile(editor);
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-            return 0;
+            return BlockIndent.NO_INDENT;
         }
         
         KtFile ktFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
         if (ktFile == null) {
-            return 0;
+            return BlockIndent.NO_INDENT;
         }
         
         IJavaProject javaProject = ((KotlinFileEditor) editor).getJavaProject();
-        if (javaProject == null) return 0;
+        if (javaProject == null) return BlockIndent.NO_INDENT;
         int resolvedOffset = LineEndUtil.convertCrToDocumentOffset(document, offset);
         
         return FormatUtilsKt.computeAlignment(ktFile, resolvedOffset);
@@ -110,14 +108,39 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                     
                     buf.append(command.text);
                     buf.append(lineSpaces);
+                    
+                    command.length = document.get().indexOf(CLOSING_BRACE_CHAR, p) - p;
                 }
+                
+                int oldOffset = command.offset;
+                int newOffset = findEndOfWhiteSpace(document, oldOffset - 1) + 1;
+                if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
+                    command.offset = newOffset;
+                    int shift = oldOffset - newOffset;
+                    if (command.length + shift >= 0) {
+                        command.length += shift;
+                    }
+                    
+                    if (command.caretOffset > 0 && command.caretOffset - shift >= 0) {
+                        command.caretOffset -= shift;
+                    }
+                } 
                 command.text = buf.toString();
             } else {
-                int indent = computeIndent(document, command.offset);
-                if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
-                    indent--;
+                IndentInEditor indent = computeIndent(document, command.offset);
+                if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength()) && indent instanceof BlockIndent) {
+                    BlockIndent blockIndent = (BlockIndent) indent;
+                    indent = new BlockIndent(blockIndent.getIndent() - 1);
                 }
-                command.text += IndenterUtil.createWhiteSpace(indent, 0, TextUtilities.getDefaultLineDelimiter(document));
+                int oldOffset = command.offset;
+                int newOffset = findEndOfWhiteSpace(document, command.offset - 1) + 1;
+                if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
+                    command.offset = newOffset;
+                    command.text = IndenterUtil.createWhiteSpace(indent, 1, TextUtilities.getDefaultLineDelimiter(document));
+                    command.length = oldOffset - command.offset;
+                } else {
+                    command.text += IndenterUtil.createWhiteSpace(indent, 0, TextUtilities.getDefaultLineDelimiter(document));
+                }
            }
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
@@ -128,8 +151,12 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         if (isNewLineBefore(document, command.offset)) {
             try {
                 int spaceLength = command.offset - findEndOfWhiteSpaceBefore(document, command.offset - 1, 0) - 1;
-                
-                command.text = IndenterUtil.createWhiteSpace(computeIndent(document, command.offset) - 1, 0, 
+                IndentInEditor indent = computeIndent(document, command.offset);
+                if (indent instanceof BlockIndent) {
+                    BlockIndent blockIndent = (BlockIndent) indent;
+                    indent = new BlockIndent(blockIndent.getIndent() - 1);
+                }
+                command.text = IndenterUtil.createWhiteSpace(indent, 0, 
                         TextUtilities.getDefaultLineDelimiter(document)) + CLOSING_BRACE_STRING;
                 command.offset -= spaceLength;
                 document.replace(command.offset, spaceLength, "");
@@ -174,6 +201,19 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             nonEmptyOffset--;
         }
         return document.getChar(nonEmptyOffset) == CLOSING_BRACE_CHAR;
+    }
+    
+    private static int findEndOfWhiteSpace(IDocument document, int offset) throws BadLocationException {
+        while (offset > 0) {
+            char c = document.getChar(offset);
+            if (!IndenterUtil.isWhiteSpaceChar(c)) {
+                return offset;
+            }
+            
+            offset--;
+        }
+        
+        return offset;
     }
     
     private static boolean isNewLineBefore(IDocument document, int offset) {

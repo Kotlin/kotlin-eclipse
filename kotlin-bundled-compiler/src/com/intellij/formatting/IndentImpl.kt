@@ -2,12 +2,12 @@ package com.intellij.formatting
 
 import org.jetbrains.annotations.NonNls
 
-class IndentImpl(
+open class IndentImpl(
         private val myType: Type?, 
         val isAbsolute: Boolean,
         val spaces: Int, 
         val isRelativeToDirectParent: Boolean,
-        val isEnforceIndentToChildren: Boolean) : Indent() {
+        open val isEnforceIndentToChildren: Boolean) : Indent() {
     
     constructor(myType: Type?, 
         isAbsolute: Boolean,

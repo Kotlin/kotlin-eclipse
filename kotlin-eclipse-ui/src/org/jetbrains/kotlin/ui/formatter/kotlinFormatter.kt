@@ -42,8 +42,9 @@ import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.util.text.StringUtil
+import org.jetbrains.kotlin.idea.KotlinLanguage
 
-@Volatile var settings = CodeStyleSettings(true)
+@Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
 @JvmOverloads
 fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String, initialIndent: Int = 0): String {
@@ -70,9 +71,9 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
                 Indent.getNoneIndent(), 
                 null,
                 settings,
-                createSpacingBuilder(settings, KotlinDependantSpacingFactoryImpl))
+                createSpacingBuilder(settings, KotlinSpacingBuilderUtilImpl))
         
-        val edits = format(rootBlock, initialIndent)
+        val edits = format(BlockWithParent(rootBlock, null), initialIndent)
         
         val documentChange = DocumentChange("Format code", sourceDocument)
         edits.forEach { TextChangeCompatibility.addTextEdit(documentChange, "Kotlin change", it) }
@@ -81,44 +82,43 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
         return sourceDocument.get()
     }
     
-    private fun format(parent: ASTBlock, indent: Int): ArrayList<ReplaceEdit> {
+    private fun format(blockWithParent: BlockWithParent, indent: Int): ArrayList<ReplaceEdit> {
         val edits = ArrayList<ReplaceEdit>()
         
-        if (parent.isLeaf) {
-            val edit = addSpacingBefore(parent, indent)
+        val block = blockWithParent.block
+        if (block.isLeaf) {
+            val edit = addSpacingBefore(blockWithParent, indent)
             if (edit != null) edits.add(edit)
         }
         
-        val subBlocks = parent.subBlocks
+        val subBlocks = block.subBlocks
         var left = subBlocks.firstOrNull()
         var first = true
         if (left is ASTBlock) 
-        for (subBlock in subBlocks) {
+        for ((index, subBlock) in subBlocks.withIndex()) {
             var subBlockIndent = indent
             when (subBlock.indent?.type) {
                 Type.NORMAL -> subBlockIndent++
                 Type.CONTINUATION -> subBlockIndent += 2
+                Type.CONTINUATION_WITHOUT_FIRST -> {
+                    if (index > 0 && block.indent?.type == Type.CONTINUATION_WITHOUT_FIRST) subBlockIndent += 2
+                }
             }
             
             if (first) {
                 first = false
                 if (subBlock is ASTBlock) {
-                    edits.addAll(format(subBlock, subBlockIndent))
+                    edits.addAll(format(BlockWithParent(subBlock, blockWithParent), subBlockIndent))
                 }
                 
                 continue
             }
             
-            if (parent.indent?.type == Type.CONTINUATION_WITHOUT_FIRST &&
-                subBlock.indent?.type == Type.CONTINUATION_WITHOUT_FIRST) {
-                subBlockIndent += 2
-            }
-            
-            val edit = adjustSpacing(parent, left!!, subBlock)
+            val edit = adjustSpacing(block as ASTBlock, left!!, subBlock)
             if (edit != null) edits.add(edit)
             
             if (subBlock is ASTBlock) {
-                edits.addAll(format(subBlock, subBlockIndent))
+                edits.addAll(format(BlockWithParent(subBlock, blockWithParent), subBlockIndent))
             }
             
             left = subBlock
@@ -127,7 +127,10 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
         return edits
     }
     
-    private fun addSpacingBefore(block: ASTBlock, blockIndent: Int): ReplaceEdit? {
+    private fun addSpacingBefore(blockWithparent: BlockWithParent, blockIndent: Int): ReplaceEdit? {
+        val block = blockWithparent.block
+        if (block !is ASTBlock) return null
+        
         val startOffset = block.node.startOffset
         if (startOffset < 1) return null
         
@@ -136,7 +139,14 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
         
         if (IndenterUtil.getLineSeparatorsOccurences(prevParent.getText()) == 0) return null
         
-        val indent = IndenterUtil.createWhiteSpace(blockIndent, 0, lineSeparator)
+        val alignment = getAlignment(blockWithparent)
+        val indent = if (alignment != null) {
+                val indentByAlignment = getIndentByAlignment(alignment.parent!!.block, ktFile)
+                IndenterUtil.createWhiteSpace(indentByAlignment, 0, lineSeparator)
+            } else {
+                IndenterUtil.createWhiteSpace(blockIndent, 0, lineSeparator)
+            }
+        
         val offset = LineEndUtil.convertLfToDocumentOffset(ktFile.getText(), block.getTextRange().getStartOffset(), sourceDocument)
         
         return ReplaceEdit(
@@ -148,7 +158,7 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
     private fun adjustSpacing(parent: ASTBlock, left: Block, right: Block): ReplaceEdit? {
         val spacing = parent.getSpacing(left, right)
         
-        if (left is ASTBlock && right is ASTBlock) {
+        if (right is ASTBlock) {
             val next = ktFile.findElementAt(right.node.startOffset - 1)
             if (next == null) return null
             
