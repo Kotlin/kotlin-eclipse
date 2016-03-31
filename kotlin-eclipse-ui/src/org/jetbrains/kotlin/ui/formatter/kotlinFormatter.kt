@@ -42,8 +42,9 @@ import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.util.text.StringUtil
+import org.jetbrains.kotlin.idea.KotlinLanguage
 
-@Volatile var settings = CodeStyleSettings(true)
+@Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
 @JvmOverloads
 fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String, initialIndent: Int = 0): String {
