@@ -112,7 +112,23 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                     
                     buf.append(command.text);
                     buf.append(lineSpaces);
+                    
+                    command.length = document.get().indexOf(CLOSING_BRACE_CHAR, p) - p;
                 }
+                
+                int oldOffset = command.offset;
+                int newOffset = findEndOfWhiteSpace(document, p - 1) + 1;
+                if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
+                    command.offset = newOffset;
+                    int shift = oldOffset - command.offset;
+                    if (command.length + shift >= 0) {
+                        command.length += shift;
+                    }
+                    
+                    if (command.caretOffset > 0 && command.caretOffset - shift >= 0) {
+                        command.caretOffset -= shift;
+                    }
+                } 
                 command.text = buf.toString();
             } else {
                 IndentInEditor indent = computeIndent(document, command.offset);

@@ -71,7 +71,7 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
                 Indent.getNoneIndent(), 
                 null,
                 settings,
-                createSpacingBuilder(settings, KotlinDependantSpacingFactoryImpl))
+                createSpacingBuilder(settings))
         
         val edits = format(rootBlock, initialIndent)
         
