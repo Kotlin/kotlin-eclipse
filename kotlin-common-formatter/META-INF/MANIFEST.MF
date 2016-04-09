@@ -5,7 +5,8 @@ Bundle-SymbolicName: org.jetbrains.kotlin.formatter
 Bundle-Version: 0.6.2.qualifier
 Bundle-Activator: org.jetbrains.kotlin.formatter.KotlinFormatterPlugin
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.jetbrains.kotlin.bundled-compiler;bundle-version="0.6.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
