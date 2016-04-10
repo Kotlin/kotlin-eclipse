@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.formatting.Alignment;
 
-class AlignmentImpl extends Alignment {
+public class AlignmentImpl extends Alignment {
     private final boolean myAllowBackwardShift;
     private final Anchor myAnchor;
     
@@ -12,7 +12,7 @@ class AlignmentImpl extends Alignment {
      * Creates new <code>AlignmentImpl</code> object with <code>'false'</code>
      * as <code>'allows backward shift'</code> argument flag.
      */
-    AlignmentImpl() {
+    public AlignmentImpl() {
         this(false, Anchor.LEFT);
     }
     
@@ -28,7 +28,7 @@ class AlignmentImpl extends Alignment {
      *            alignment anchor (see
      *            {@link Alignment#createAlignment(boolean, Anchor)})
      */
-    AlignmentImpl(boolean allowBackwardShift, @NotNull Anchor anchor) {
+    public AlignmentImpl(boolean allowBackwardShift, @NotNull Anchor anchor) {
         myAllowBackwardShift = allowBackwardShift;
         myAnchor = anchor;
     }

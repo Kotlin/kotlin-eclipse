@@ -3,6 +3,11 @@ package com.intellij.formatting;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.common.formatter.AlignmentImpl;
+import org.jetbrains.kotlin.common.formatter.DependantSpacingImpl;
+import org.jetbrains.kotlin.common.formatter.IndentImpl;
+import org.jetbrains.kotlin.common.formatter.SpacingImpl;
+import org.jetbrains.kotlin.common.formatter.WrapImpl;
 
 import com.intellij.openapi.util.TextRange;
 

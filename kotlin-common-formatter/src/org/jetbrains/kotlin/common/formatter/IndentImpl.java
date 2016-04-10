@@ -2,7 +2,7 @@ package org.jetbrains.kotlin.common.formatter;
 
 import com.intellij.formatting.Indent;
 
-class IndentImpl extends Indent {
+public class IndentImpl extends Indent {
     private final boolean myIsAbsolute;
     private final boolean myRelativeToDirectParent;
     
