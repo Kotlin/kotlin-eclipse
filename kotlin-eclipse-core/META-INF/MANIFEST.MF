@@ -12,11 +12,11 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.debug.core,
  org.eclipse.core.filesystem,
  org.eclipse.core.expressions,
- org.eclipse.jdt.junit
+ org.eclipse.jdt.junit,
+ org.jetbrains.kotlin.formatter
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.formatting,
  com.intellij.openapi.vfs,
- com.intellij.psi.codeStyle,
  javax.inject,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources,
