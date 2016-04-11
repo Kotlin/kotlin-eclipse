@@ -5,12 +5,13 @@ Bundle-SymbolicName: org.jetbrains.kotlin.ui;singleton:=true
 Bundle-Version: 0.6.2.qualifier
 Bundle-Activator: org.jetbrains.kotlin.ui.Activator
 Bundle-Vendor: JetBrains
-Require-Bundle: org.eclipse.ui,
+Require-Bundle: common-formatter,
+ org.jetbrains.kotlin.bundled-compiler,
+ org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jetbrains.kotlin.core,
  org.eclipse.jface.text,
  org.eclipse.ui.editors;visibility:=reexport,
- org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.debug.ui,
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.ui,
@@ -26,8 +27,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.metadata,
  org.eclipse.equinox.p2.engine,
  org.eclipse.mylyn.commons.ui,
- org.eclipse.equinox.p2.director,
- org.jetbrains.kotlin.formatter
+ org.eclipse.equinox.p2.director
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.navigation,
  org.eclipse.core.expressions,
@@ -56,9 +56,7 @@ Import-Package: com.intellij.navigation,
  org.eclipse.ui.texteditor.link,
  org.eclipse.jdt.internal.compiler.env,
  org.eclipse.jdt.core.compiler,
- org.jetbrains.kotlin.progress,
- com.intellij.formatting,
- org.jetbrains.kotlin.common.formatter
+ org.jetbrains.kotlin.progress
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,

@@ -25,7 +25,7 @@ class KotlinBlock(
         wrap: Wrap?,
         private val mySettings: CodeStyleSettings,
         private val mySpacingBuilder: KotlinSpacingBuilder) : AbstractBlock(node, wrap, myAlignmentStrategy.getAlignment(node)) {
-            
+        
         private val kotlinDelegationBlock = object : KotlinDelegationBlock(node, mySettings, mySpacingBuilder, myAlignmentStrategy) {
             
             override fun getNullAlignmentStrategy(): CommonAlignmentStrategy = NULL_ALIGNMENT_STRATEGY

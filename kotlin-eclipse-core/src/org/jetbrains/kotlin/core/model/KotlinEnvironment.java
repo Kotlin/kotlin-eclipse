@@ -43,6 +43,8 @@ import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider;
+import org.jetbrains.kotlin.formatter.KotlinLanguageCodeStyleSettingsProvider;
+import org.jetbrains.kotlin.formatter.KotlinSettingsProvider;
 import org.jetbrains.kotlin.idea.KotlinFileType;
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;

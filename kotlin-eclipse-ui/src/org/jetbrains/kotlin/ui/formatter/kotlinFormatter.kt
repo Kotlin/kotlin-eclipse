@@ -53,6 +53,7 @@ fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String,
     return formatCode(source, createPsiFactory(javaProject), lineSeparator, initialIndent)
 
 }
+
 @JvmOverloads
 fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String, initialIndent: Int = 0): String {
     val firstRun = KotlinFormatter(source, psiFactory, initialIndent, lineSeparator).formatCode()
