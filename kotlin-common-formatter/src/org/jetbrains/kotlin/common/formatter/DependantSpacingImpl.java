@@ -31,6 +31,10 @@ public class DependantSpacingImpl extends SpacingImpl {
         myRule = rule;
     }
     
+    public DependentSpacingRule getRule() {
+        return myRule;
+    }
+    
     /**
      * @return <code>1</code> if dependency has line feeds; <code>0</code>
      *         otherwise

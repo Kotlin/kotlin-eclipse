@@ -14,7 +14,6 @@ import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.TextUtilities
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import com.intellij.psi.PsiWhiteSpace
 import org.jetbrains.kotlin.psi.KtReturnExpression
 import org.jetbrains.kotlin.psi.KtBlockExpression
@@ -22,6 +21,7 @@ import org.jetbrains.kotlin.psi.KtPsiUtil
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.ui.formatter.formatCode
+import org.jetbrains.kotlin.ui.formatter.IndentStrategy
 
 class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -64,7 +64,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
 
     private fun replaceBody(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext, editor: KotlinFileEditor) {
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
-        val indent = AlignmentStrategy.computeIndent(declaration.getNode())
+        val indent = IndentStrategy.computeIndent(declaration.getNode())
         
         val newBody = convert(declaration, context, factory)
         var newBodyText = formatCode(newBody.getNode().text, editor.javaProject!!, lineDelimiter, indent)

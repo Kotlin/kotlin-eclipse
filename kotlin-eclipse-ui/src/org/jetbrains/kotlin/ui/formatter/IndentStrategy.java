@@ -29,19 +29,19 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 
-public class AlignmentStrategy {
+public class IndentStrategy {
     
     private static final Set<String> BLOCK_ELEMENT_TYPES = new HashSet<String>(Arrays.asList(
             "IF", "FOR", "WHILE", "CLASS_BODY", "FUNCTION_LITERAL_EXPRESSION", 
             "WHEN", "WHEN_ENTRY", "DO_WHILE", "PROPERTY_ACCESSOR"));
     
-    public AlignmentStrategy(ASTNode parsedFile, int lineIndentation, String lineDelimiter) {
+    public IndentStrategy(ASTNode parsedFile, int lineIndentation, String lineDelimiter) {
     }
     
     public static int computeIndent(ASTNode node) {
         int indent = 0;
         while(node != null) {
-            indent = AlignmentStrategy.updateIndent(node, indent);
+            indent = IndentStrategy.updateIndent(node, indent);
             node = node.getTreeParent();
         }
         

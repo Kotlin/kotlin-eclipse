@@ -47,7 +47,6 @@ import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.eclipse.jface.text.TextUtilities
 import org.eclipse.ltk.core.refactoring.TextFileChange
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import org.eclipse.jface.text.ITextSelection
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.isUsedAsStatement
@@ -64,6 +63,7 @@ import org.jetbrains.kotlin.psi.psiUtil.canPlaceAfterSimpleNameEntry
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import com.intellij.psi.PsiWhiteSpace
+import org.jetbrains.kotlin.ui.formatter.IndentStrategy
 
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
@@ -112,8 +112,8 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         
         val indent = run {
             val indentNode = commonContainer.getFirstChild().getNode()
-            val nodeIndent = AlignmentStrategy.computeIndent(indentNode)
-            if (AlignmentStrategy.isBlockElement(indentNode)) nodeIndent - 1 else nodeIndent
+            val nodeIndent = IndentStrategy.computeIndent(indentNode)
+            if (IndentStrategy.isBlockElement(indentNode)) nodeIndent - 1 else nodeIndent
         }
         val variableDeclarationText = "val $newName = ${expression.getText()}"
         

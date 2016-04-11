@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.common.formatter
+package org.jetbrains.kotlin.core.model
 
 import com.intellij.lang.Language
 import com.intellij.openapi.options.Configurable

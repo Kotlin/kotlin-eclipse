@@ -3,7 +3,6 @@ package org.jetbrains.kotlin.ui.formatter
 import org.eclipse.jface.text.IDocument
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
-import org.jetbrains.kotlin.ui.formatter.KotlinBlock
 import org.jetbrains.kotlin.psi.KtFile
 import com.intellij.formatting.Indent
 import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
@@ -11,13 +10,14 @@ import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import com.intellij.formatting.Indent.Type
 import com.intellij.formatting.ASTBlock
 import com.intellij.formatting.Block
-import com.intellij.formatting.DependantSpacingImpl
 import com.intellij.formatting.Spacing
 import com.intellij.formatting.DependentSpacingRule
 import com.intellij.openapi.util.TextRange
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import com.intellij.formatting.Alignment
 import org.jetbrains.kotlin.idea.KotlinLanguage
+import org.jetbrains.kotlin.formatter.KotlinBlock
+import org.jetbrains.kotlin.formatter.NULL_ALIGNMENT_STRATEGY
 
 fun computeAlignment(ktFile: KtFile, offset: Int): IndentInEditor {
     settings.getCommonSettings(KotlinLanguage.INSTANCE).ALIGN_MULTILINE_EXTENDS_LIST = true

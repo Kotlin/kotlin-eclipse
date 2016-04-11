@@ -37,7 +37,7 @@ import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
 import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.ui.formatter.formatCode
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
+import org.jetbrains.kotlin.ui.formatter.IndentStrategy
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
@@ -89,7 +89,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         
         val generatedText = StringBuilder()
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
-        val indent = AlignmentStrategy.computeIndent(classOrObject.getNode()) + 1
+        val indent = IndentStrategy.computeIndent(classOrObject.getNode()) + 1
         
         val newLineWithShift = IndenterUtil.createWhiteSpace(indent, 1, lineDelimiter)
         

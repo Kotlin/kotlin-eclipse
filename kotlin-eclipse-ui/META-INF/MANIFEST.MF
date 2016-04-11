@@ -26,7 +26,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.metadata,
  org.eclipse.equinox.p2.engine,
  org.eclipse.mylyn.commons.ui,
- org.eclipse.equinox.p2.director
+ org.eclipse.equinox.p2.director,
+ org.jetbrains.kotlin.formatter
 Bundle-ActivationPolicy: lazy
 Import-Package: com.intellij.navigation,
  org.eclipse.core.expressions,
@@ -56,7 +57,8 @@ Import-Package: com.intellij.navigation,
  org.eclipse.jdt.internal.compiler.env,
  org.eclipse.jdt.core.compiler,
  org.jetbrains.kotlin.progress,
- com.intellij.formatting
+ com.intellij.formatting,
+ org.jetbrains.kotlin.common.formatter
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,

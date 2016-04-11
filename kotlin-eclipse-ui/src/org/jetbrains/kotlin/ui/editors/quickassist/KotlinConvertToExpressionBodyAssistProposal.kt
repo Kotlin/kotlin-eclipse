@@ -28,7 +28,6 @@ import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.analyzer.*
 import com.intellij.psi.PsiWhiteSpace
 import org.eclipse.jface.text.TextUtilities
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.container.ComponentProvider
@@ -41,6 +40,7 @@ import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
 import org.jetbrains.kotlin.platform.JvmBuiltIns
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.ui.formatter.formatCode
+import org.jetbrains.kotlin.ui.formatter.IndentStrategy
 
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -84,7 +84,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         val eqToken = psiFactory.createEQ().getText()
         
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
-        val indent = AlignmentStrategy.computeIndent(declaration.getNode())        
+        val indent = IndentStrategy.computeIndent(declaration.getNode())        
         val valueText = formatCode(newBody.node.text, psiFactory, lineDelimiter, indent)
         
         replace(body, "$eqToken $valueText")

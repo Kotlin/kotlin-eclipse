@@ -3,7 +3,6 @@ package org.jetbrains.kotlin.ui.formatter
 import org.eclipse.jface.text.IDocument
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
-import org.jetbrains.kotlin.ui.formatter.KotlinBlock
 import org.jetbrains.kotlin.psi.KtFile
 import com.intellij.formatting.Indent
 import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
@@ -14,7 +13,6 @@ import com.intellij.formatting.Block
 import com.intellij.lang.ASTNode
 import com.intellij.formatting.Spacing
 import com.intellij.psi.PsiWhiteSpace
-import com.intellij.formatting.SpacingImpl
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import com.intellij.psi.PsiImportList
 import org.eclipse.core.resources.IFile
@@ -31,7 +29,6 @@ import org.eclipse.ltk.core.refactoring.TextFileChange
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.jetbrains.kotlin.psi.KtImportList
-import com.intellij.formatting.DependantSpacingImpl
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.idea.formatter.CommonAlignmentStrategy
 import com.intellij.formatting.Alignment
@@ -43,6 +40,11 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.util.text.StringUtil
 import org.jetbrains.kotlin.idea.KotlinLanguage
+import org.jetbrains.kotlin.common.formatter.SpacingImpl
+import org.jetbrains.kotlin.common.formatter.DependantSpacingImpl
+import org.jetbrains.kotlin.formatter.NodeAlignmentStrategy
+import org.jetbrains.kotlin.formatter.KotlinBlock
+import org.jetbrains.kotlin.formatter.NULL_ALIGNMENT_STRATEGY
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
@@ -56,8 +58,6 @@ fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String, 
     val firstRun = KotlinFormatter(source, psiFactory, initialIndent, lineSeparator).formatCode()
     return KotlinFormatter(firstRun, psiFactory, initialIndent, lineSeparator).formatCode()
 }
-
-val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))
 
 private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val initialIndent: Int, val lineSeparator: String) {
     
