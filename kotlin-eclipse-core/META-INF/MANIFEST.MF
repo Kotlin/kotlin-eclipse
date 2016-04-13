@@ -5,7 +5,8 @@ Bundle-SymbolicName: org.jetbrains.kotlin.core;singleton:=true
 Bundle-Version: 0.6.2.qualifier
 Bundle-Activator: org.jetbrains.kotlin.core.Activator
 Bundle-Vendor: JetBrains
-Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
+Require-Bundle: common-formatter,
+ org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.jdt.launching,
