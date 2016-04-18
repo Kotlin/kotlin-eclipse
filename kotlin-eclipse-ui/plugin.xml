@@ -664,4 +664,11 @@
             </or></enablement>
       </consolePatternMatchListener>
    </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+            class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator"
+            markerType="org.eclipse.jdt.core.problem">
+      </markerResolutionGenerator>
+   </extension>
 </plugin>
