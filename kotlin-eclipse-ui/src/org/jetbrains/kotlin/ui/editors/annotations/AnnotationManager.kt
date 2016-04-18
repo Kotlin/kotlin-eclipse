@@ -86,6 +86,10 @@ public object AnnotationManager {
         }
     }
     
+    fun removeAnnotations(editor: KotlinFileEditor, annotationType: String) {
+        updateAnnotations(editor, emptyMap(), annotationType)
+    }
+    
     fun updateAnnotations(editor: KotlinFileEditor, annotationMap: Map<Annotation, Position>, annotationType: String) {
         val model = editor.getDocumentProvider()?.getAnnotationModel(editor.getEditorInput())
         if (model != null) {

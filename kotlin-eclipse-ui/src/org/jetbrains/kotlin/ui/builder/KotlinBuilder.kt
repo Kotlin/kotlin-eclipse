@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2000-2015 JetBrains s.r.o.
+* Copyright 2000-2016 JetBrains s.r.o.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -50,6 +50,8 @@ import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 import org.jetbrains.kotlin.ui.KotlinPluginUpdater
 import org.jetbrains.kotlin.eclipse.ui.utils.runJob
 import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
 class KotlinBuilder : IncrementalProjectBuilder() {
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
@@ -88,6 +90,8 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         
         val ktFiles = existingAffectedFiles.map { KotlinPsiManager.INSTANCE.getParsedFile(it) }
         val analysisResult = KotlinAnalyzer.analyzeFiles(javaProject, ktFiles).analysisResult
+        
+        clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
         updateLineMarkers(analysisResult.bindingContext.diagnostics, existingAffectedFiles)
         
         runCancellableAnalysisFor(javaProject, existingAffectedFiles)
@@ -150,6 +154,21 @@ fun updateLineMarkers(diagnostics: Diagnostics, affectedFiles: List<IFile>) {
 
 private fun clearMarkersFromFiles(files: List<IFile>) {
     files.forEach { it.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE) }
+}
+
+private fun clearProblemAnnotationsFromOpenEditorsExcept(affectedFiles: List<IFile>) {
+    for (window in PlatformUI.getWorkbench().getWorkbenchWindows()) {
+        for (page in window.getPages()) {
+            page.getEditorReferences()
+                .map { it.getEditor(false) }
+                .filterIsInstance(KotlinFileEditor::class.java)
+                .filterNot { it.getFile() in affectedFiles }
+                .forEach { 
+                    AnnotationManager.removeAnnotations(it, AnnotationManager.ANNOTATION_ERROR_TYPE)
+                    AnnotationManager.removeAnnotations(it, AnnotationManager.ANNOTATION_WARNING_TYPE)
+                }
+        }
+    }
 }
 
 private fun addMarkersToProject(annotations: Map<IFile, List<DiagnosticAnnotation>>, affectedFiles: List<IFile>) {
