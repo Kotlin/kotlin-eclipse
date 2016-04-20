@@ -71,7 +71,7 @@ object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
                     IJavaSearchConstants.TYPE, 
                     scope, 
                     collector,
-                    IJavaSearchConstants.FORCE_IMMEDIATE_SEARCH, 
+                    IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, 
                     null)
         
         return foundTypes
