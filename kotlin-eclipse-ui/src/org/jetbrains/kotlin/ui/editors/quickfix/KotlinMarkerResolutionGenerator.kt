@@ -20,13 +20,13 @@ class KotlinMarkerResolutionGenerator : IMarkerResolutionGenerator, IMarkerResol
         val diagnostics = obtainDiagnostics(marker)
         val resolutions = arrayListOf<IMarkerResolution>()
         for (quickFix in kotlinQuickFixes) {
-            val fixableDiagnostic = diagnostics.find { quickFix.canFix(it) }
-            if (fixableDiagnostic == null) continue
+            if (quickFix !is KotlinDiagnosticQuickFix) continue
             
-            when (quickFix) {
-                is KotlinDiagnosticQuickFix -> resolutions.add(quickFix.getResolution(fixableDiagnostic))
-                is KotlinDiagnosticQuickFixGenerator -> resolutions.addAll(quickFix.getResolutions(fixableDiagnostic))
-            }
+            diagnostics
+                .filter { quickFix.canFix(it) }
+                .forEach { fixableDiagnostic ->
+                    quickFix.getResolutions(fixableDiagnostic)
+                }
         }
         
         return resolutions.toTypedArray()
@@ -48,11 +48,12 @@ private fun obtainDiagnostics(marker: IMarker): List<Diagnostic> {
     if (bindingContext == null) return emptyList()
     
     val document = EditorUtil.getDocument(resource)
-    val offset = LineEndUtil.convertCrToDocumentOffset(document, marker.getAttribute(IMarker.CHAR_START, -1))
+    val markerBegin = LineEndUtil.convertCrToDocumentOffset(document, marker.getAttribute(IMarker.CHAR_START, -1))
+    val markerEnd = LineEndUtil.convertCrToDocumentOffset(document, marker.getAttribute(IMarker.CHAR_END, -1))
     
     return bindingContext.diagnostics.filter { diagnostic ->
         diagnostic.textRanges.any { range ->
-            range.startOffset <= offset && offset <= range.endOffset
+            markerBegin == range.startOffset && markerEnd == range.endOffset
         }
     }
 }
