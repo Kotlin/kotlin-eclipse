@@ -16,10 +16,6 @@ public class KotlinQuickAssistProcessor : IQuickAssistProcessor {
         
         getSingleKotlinQuickAssistProposals().filterTo(allApplicableProposals) { it.isApplicable() }
         
-        getKotlinQuickAssistProposalsGenerators().filter { 
-            it.isApplicable() 
-        }.forEach { allApplicableProposals.addAll(it.getProposals()) }
-        
         return allApplicableProposals.toTypedArray()
     }
     
@@ -32,9 +28,5 @@ public class KotlinQuickAssistProcessor : IQuickAssistProcessor {
             KotlinConvertToExpressionBodyAssistProposal(),
             KotlinConvertToBlockBodyAssistProposal(),
             KotlinChangeReturnTypeProposal())
-    }
-    
-    private fun getKotlinQuickAssistProposalsGenerators() : List<KotlinQuickAssistProposalsGenerator> {
-        return listOf(KotlinAutoImportProposalsGenerator())
     }
 }
