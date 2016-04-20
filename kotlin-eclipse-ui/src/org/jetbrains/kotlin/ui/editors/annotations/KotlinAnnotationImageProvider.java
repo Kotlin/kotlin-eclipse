@@ -21,7 +21,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.texteditor.IAnnotationImageProvider;
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
+import org.jetbrains.kotlin.diagnostics.Diagnostic;
 
 public class KotlinAnnotationImageProvider implements IAnnotationImageProvider {
 
@@ -29,8 +29,8 @@ public class KotlinAnnotationImageProvider implements IAnnotationImageProvider {
     public Image getManagedImage(Annotation annotation) {
         if (annotation instanceof DiagnosticAnnotation) {
             DiagnosticAnnotation diagnosticAnnotation = (DiagnosticAnnotation) annotation;
-            DiagnosticFactory<?> diagnostic = diagnosticAnnotation.getDiagnostic();
-            if (diagnostic != null && DiagnosticAnnotationUtil.isQuickFixable(diagnostic)) {
+            Diagnostic diagnostic = diagnosticAnnotation.getDiagnostic();
+            if (diagnostic != null && DiagnosticAnnotationUtil.isQuickFixable(diagnostic.getFactory())) {
                 switch (diagnosticAnnotation.getType()) {
                     case AnnotationManager.ANNOTATION_ERROR_TYPE:
                         return JavaPluginImages.get(JavaPluginImages.IMG_OBJS_FIXABLE_ERROR);
