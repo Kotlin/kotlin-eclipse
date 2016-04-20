@@ -22,12 +22,8 @@ interface KotlinQuickFix {
     fun canFix(diagnostic: Diagnostic): Boolean
 }
 
-interface KotlinDiagnosticQuickFixGenerator : KotlinQuickFix {
-    fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution>
-}
-
 interface KotlinDiagnosticQuickFix : KotlinQuickFix {
-    fun getResolution(diagnostic: Diagnostic): KotlinMarkerResolution
+    fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution>
 }
 
 interface KotlinMarkerResolution: IMarkerResolution, IMarkerResolution2

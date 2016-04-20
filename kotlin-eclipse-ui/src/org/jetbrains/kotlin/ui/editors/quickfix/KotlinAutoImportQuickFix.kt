@@ -40,7 +40,7 @@ import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
 
-object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFixGenerator {
+object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
         val typeName = diagnostic.psiElement.text
         return findApplicableTypes(typeName).map { KotlinAutoImportResolution(it) }
