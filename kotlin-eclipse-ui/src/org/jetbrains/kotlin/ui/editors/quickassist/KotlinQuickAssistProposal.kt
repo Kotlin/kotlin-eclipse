@@ -94,3 +94,7 @@ abstract class KotlinQuickAssistProposal : KotlinQuickAssist(), IJavaCompletionP
     
     override fun getRelevance(): Int = 0
 }
+
+fun getBindingContext(jetFile: KtFile, javaProject: IJavaProject): BindingContext? {
+    return KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult.bindingContext
+}

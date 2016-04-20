@@ -141,7 +141,7 @@ public class DiagnosticAnnotationUtil {
                 getAnnotationType(diagnostic.getSeverity()), 
                 DefaultErrorMessages.render(diagnostic),
                 diagnostic.getPsiElement().getText(),
-                diagnostic.getFactory());
+                diagnostic);
     }
     
     @NotNull

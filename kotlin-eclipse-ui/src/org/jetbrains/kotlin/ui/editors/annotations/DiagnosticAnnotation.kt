@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import com.intellij.openapi.util.TextRange
 import org.eclipse.jdt.internal.ui.javaeditor.IJavaAnnotation
 import org.eclipse.jdt.core.ICompilationUnit
+import org.jetbrains.kotlin.diagnostics.Diagnostic
 
 class DiagnosticAnnotation(
         val offset: Int,
@@ -30,7 +31,7 @@ class DiagnosticAnnotation(
         val annotationType: String, 
         val message: String, 
         val markedText: String, 
-        val diagnostic: DiagnosticFactory<*>?) : Annotation(annotationType, true, message), IJavaAnnotation {
+        val diagnostic: Diagnostic?) : Annotation(annotationType, true, message), IJavaAnnotation {
     override fun getMarkerType(): String? = null
     
     override fun getArguments(): Array<String>? = null

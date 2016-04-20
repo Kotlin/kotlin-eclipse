@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.ui.editors.KotlinReconcilingListener
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.quickfix.kotlinQuickFixes
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
@@ -51,6 +52,7 @@ public object AnnotationManager {
     val MARKED_TEXT = "markedText"
     @JvmField val IS_UNRESOLVED_REFERENCE = "isUnresolvedReference"
     @JvmField val MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER
+    val CAN_FIX_PROBLEM = "KotlinProblemCanBeFixed"
     
     public fun updateAnnotations(editor: AbstractTextEditor, annotations: List<DiagnosticAnnotation>) {
         val annotationModel = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput())
@@ -81,8 +83,11 @@ public object AnnotationManager {
             setAttribute(MARKED_TEXT, annotation.markedText)
             
             val diagnostic = annotation.diagnostic
-            val isUnresolvedReference = if (diagnostic != null) DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic) else false
+            val isUnresolvedReference = if (diagnostic != null) DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic.factory) else false
             setAttribute(IS_UNRESOLVED_REFERENCE, isUnresolvedReference)
+            
+            val canBeFixed = if (diagnostic != null) kotlinQuickFixes.any { it.canFix(diagnostic) } else false
+            setAttribute(CAN_FIX_PROBLEM, canBeFixed)
         }
     }
     
@@ -126,14 +131,13 @@ public object AnnotationManager {
             }
         }
         
-        val annotations = arrayListOf<Annotation>()
-        model.getAnnotationIterator().forEach { 
-            if (it is Annotation && isLineMarkerAnnotation(it)) {
-                annotations.add(it)
+        return arrayListOf<Annotation>().apply {
+            model.getAnnotationIterator().forEach { 
+                if (it is Annotation && isLineMarkerAnnotation(it)) {
+                    add(it)
+                }
             }
         }
-        
-        return annotations
     }
 }
 
