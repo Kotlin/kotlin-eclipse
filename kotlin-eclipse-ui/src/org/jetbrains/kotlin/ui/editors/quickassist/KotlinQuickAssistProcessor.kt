@@ -8,7 +8,7 @@ import org.eclipse.jdt.ui.text.java.IQuickAssistProcessor
 import com.google.common.collect.Lists
 import java.util.ArrayList
 
-public class KotlinQuickAssistProcessor : IQuickAssistProcessor {
+object KotlinQuickAssistProcessor : IQuickAssistProcessor {
     override public fun hasAssists(context: IInvocationContext) : Boolean = getAssists(context, null).isNotEmpty()
     
     override public fun getAssists(context: IInvocationContext?, locations: Array<IProblemLocation>?) : Array<IJavaCompletionProposal> {
