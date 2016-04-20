@@ -34,47 +34,73 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProcessor
-import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionProposal
 import com.google.common.collect.Lists
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal
+import org.eclipse.ui.texteditor.MarkerAnnotation
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
+import org.jetbrains.kotlin.ui.editors.annotations.endOffset
+import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator
+import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolution
+import org.eclipse.swt.graphics.Image
+import org.eclipse.jface.text.IDocument
+import org.eclipse.swt.graphics.Point
+import org.eclipse.jface.text.contentassist.IContextInformation
 
-class KotlinCorrectionProcessor(val editor: AbstractTextEditor) : IQuickAssistProcessor {
+class KotlinCorrectionProcessor(val editor: KotlinFileEditor) : IQuickAssistProcessor {
     
     override fun getErrorMessage(): String? = null
     
     override fun canFix(annotation: Annotation): Boolean {
-        val documentProvider = editor.getDocumentProvider()
-        val annotationModel = documentProvider.getAnnotationModel(editor.getEditorInput())
-        
-        val file = EditorUtil.getFile(editor)
-        if (file == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
-            return false
-        }
-        
-        val position = annotationModel.getPosition(annotation)
-        val marker = DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(file, position.getOffset())
-        return IDE.getMarkerHelpRegistry().hasResolutions(marker)
+        return annotation is MarkerAnnotation && IDE.getMarkerHelpRegistry().hasResolutions(annotation.marker)
     }
     
     override fun canAssist(invocationContext: IQuickAssistInvocationContext): Boolean = true
     
     override fun computeQuickAssistProposals(invocationContext: IQuickAssistInvocationContext): Array<ICompletionProposal> {
-        val completionProposals = ArrayList<ICompletionProposal>()
+        val diagnostics = findDiagnosticsBy(invocationContext)
+        val quickFixResolutions = KotlinMarkerResolutionGenerator.getResolutions(diagnostics)
         
-        val marker = EditorUtil.getFile(editor)?.let { 
-            val caretOffset = invocationContext.getOffset()
-            DiagnosticAnnotationUtil.INSTANCE.getMarkerByOffset(it, caretOffset)
-        }
-        
-        if (marker != null) {
-            IDE.getMarkerHelpRegistry().getResolutions(marker).mapTo(completionProposals) { 
-                KotlinMarkerResolutionProposal(marker, it) 
+        return arrayListOf<ICompletionProposal>().apply { 
+            val file = editor.getFile()
+            if (file != null) {
+                addAll(quickFixResolutions.map { KotlinMarkerResolutionProposal(file, it) })
+            }
+            
+            addAll(KotlinQuickAssistProcessor.getAssists(null, null))
+        }.toTypedArray()
+    }
+}
+
+private class KotlinMarkerResolutionProposal(
+        private val file: IFile,
+        private val resolution: KotlinMarkerResolution) : ICompletionProposal {
+    override fun getImage(): Image? = resolution.image
+    
+    override fun getAdditionalProposalInfo(): String? = resolution.description
+    
+    override fun apply(document: IDocument?) {
+        resolution.apply(file)
+    }
+    
+    override fun getContextInformation(): IContextInformation? = null
+    
+    override fun getDisplayString(): String? = resolution.label
+    
+    override fun getSelection(document: IDocument?): Point? = null
+}
+
+private fun findDiagnosticsBy(invocationContext: IQuickAssistInvocationContext): ArrayList<Diagnostic> {
+    val offset = invocationContext.offset
+    val annotations = arrayListOf<Diagnostic>()
+    for (ann in invocationContext.sourceViewer.annotationModel.getAnnotationIterator()) {
+        if (ann is DiagnosticAnnotation) {
+            if (ann.offset <= offset && offset <= ann.endOffset && ann.diagnostic != null) {
+                annotations.add(ann.diagnostic)
             }
         }
-        
-        completionProposals.addAll(KotlinQuickAssistProcessor.getAssists(null, null))
-        
-        return completionProposals.toTypedArray()
     }
+    
+    return annotations
 }
