@@ -14,26 +14,33 @@ import org.jetbrains.kotlin.ui.editors.quickassist.getBindingContext
 import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import java.util.ArrayList
 
 class KotlinMarkerResolutionGenerator : IMarkerResolutionGenerator, IMarkerResolutionGenerator2 {
     override fun getResolutions(marker: IMarker): Array<IMarkerResolution> {
         val diagnostics = obtainDiagnostics(marker)
-        val resolutions = arrayListOf<IMarkerResolution>()
-        for (quickFix in kotlinQuickFixes) {
-            if (quickFix !is KotlinDiagnosticQuickFix) continue
-            
-            diagnostics
-                .filter { quickFix.canFix(it) }
-                .forEach { fixableDiagnostic ->
-                    quickFix.getResolutions(fixableDiagnostic)
-                }
-        }
-        
-        return resolutions.toTypedArray()
+        return getResolutions(diagnostics).toTypedArray()
     }
     
     override fun hasResolutions(marker: IMarker): Boolean {
         return marker.type == MARKER_PROBLEM_TYPE && marker.getAttribute(CAN_FIX_PROBLEM, false)
+    }
+    
+    companion object {
+        fun getResolutions(diagnostics: List<Diagnostic>): ArrayList<KotlinMarkerResolution> {
+            val resolutions = arrayListOf<KotlinMarkerResolution>()
+            for (quickFix in kotlinQuickFixes) {
+                if (quickFix !is KotlinDiagnosticQuickFix) continue
+                
+                diagnostics
+                    .filter { quickFix.canFix(it) }
+                    .forEach { fixableDiagnostic ->
+                        resolutions.addAll(quickFix.getResolutions(fixableDiagnostic))
+                    }
+            }
+            
+            return resolutions
+        }
     }
 }
 

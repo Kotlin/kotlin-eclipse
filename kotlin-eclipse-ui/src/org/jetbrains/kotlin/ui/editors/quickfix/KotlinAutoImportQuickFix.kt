@@ -78,7 +78,7 @@ object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     }
 }
 
-class KotlinAutoImportResolution(private val type: IType): KotlinFileMarkerResolution() {
+class KotlinAutoImportResolution(private val type: IType): KotlinMarkerResolution {
     override fun apply(file: IFile) {
         val placeElement = findNodeToNewImport(file)
         if (placeElement == null) return

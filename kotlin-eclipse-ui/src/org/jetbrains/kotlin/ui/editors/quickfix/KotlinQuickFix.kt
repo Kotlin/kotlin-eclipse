@@ -26,10 +26,8 @@ interface KotlinDiagnosticQuickFix : KotlinQuickFix {
     fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution>
 }
 
-interface KotlinMarkerResolution: IMarkerResolution, IMarkerResolution2
-
-abstract class KotlinFileMarkerResolution: KotlinMarkerResolution {
-    abstract fun apply(file: IFile)
+interface KotlinMarkerResolution: IMarkerResolution, IMarkerResolution2 {
+    fun apply(file: IFile)
     
     override fun run(marker: IMarker) {
         val resource = marker.resource
@@ -38,3 +36,4 @@ abstract class KotlinFileMarkerResolution: KotlinMarkerResolution {
         }
     }
 }
+
