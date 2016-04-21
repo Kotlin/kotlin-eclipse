@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.TextInvocationContext;
@@ -28,7 +30,8 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinCorrectionProcessor;
-import org.jetbrains.kotlin.ui.editors.quickassist.KotlinAutoImportAssistProposal;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
+import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolution;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -44,21 +47,18 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
         configureProjectWithStdLib();
     }
     
-    private List<ICompletionProposal> createProposals() {
-        return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(
-                new TextInvocationContext(getEditor().getViewer(), KotlinTestUtils.getCaret(getEditor()), -1)));
+    private List<KotlinMarkerResolution> createProposals() {
+        return KotlinQuickFixTestCaseKt.getProposals(getTestEditor());
     }
     
     @Override
     protected void performTest(String fileText, String content) {
-        KotlinTestUtils.joinBuildThread();
-        
-        List<ICompletionProposal> proposals = createProposals();
+        List<KotlinMarkerResolution> proposals = createProposals();
         assertCount(proposals, fileText);
         assertExistence(proposals, fileText);
         
         if (!proposals.isEmpty()) {
-            proposals.get(0).apply(getEditor().getViewer().getDocument());
+            proposals.get(0).apply(getTestEditor().getEditingFile());;
         }
         
         EditorTestUtils.assertByEditor(getEditor(), content);
@@ -69,7 +69,7 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
         return AUTOIMPORT_TEST_DATA_PATH_SEGMENT;
     }
     
-    private static void assertCount(List<ICompletionProposal> proposals, String fileText) {
+    private static void assertCount(List<KotlinMarkerResolution> proposals, String fileText) {
         Integer expectedNumber = ExpectedCompletionUtils.numberOfItemsShouldPresent(fileText);
         
         if (expectedNumber != null) {
@@ -77,7 +77,7 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
         }
     }
     
-    private static void assertExistence(List<ICompletionProposal> proposals, String fileText) {
+    private static void assertExistence(List<KotlinMarkerResolution> proposals, String fileText) {
         List<String> expectedStrings = ExpectedCompletionUtils.itemsShouldExist(fileText);
         List<String> actualStrings = getProposalsStrings(proposals);
         
@@ -86,14 +86,11 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
         }
     }
     
-    private static List<String> getProposalsStrings(List<ICompletionProposal> proposals) {
+    private static List<String> getProposalsStrings(List<KotlinMarkerResolution> proposals) {
         List<String> result = new ArrayList<String>();
         
-        for (ICompletionProposal proposal : proposals) {
-        	if (proposal instanceof KotlinAutoImportAssistProposal) {
-				KotlinAutoImportAssistProposal autoImportProposal = (KotlinAutoImportAssistProposal) proposal;
-				result.add(autoImportProposal.getFqName());
-        	}
+        for (KotlinMarkerResolution proposal : proposals) {
+            result.add(proposal.getLabel());
         }
         
         return result;
