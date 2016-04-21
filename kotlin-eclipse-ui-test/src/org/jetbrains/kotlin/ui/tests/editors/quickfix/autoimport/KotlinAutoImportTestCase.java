@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinCorrectionProcessor;
-import org.jetbrains.kotlin.ui.editors.quickassist.KotlinAutoImportAssistProposal;
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -45,7 +45,7 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
     }
     
     private List<ICompletionProposal> createProposals() {
-        return Arrays.asList(new KotlinCorrectionProcessor(getEditor()).computeQuickAssistProposals(
+        return Arrays.asList(new KotlinCorrectionProcessor((KotlinFileEditor) getEditor()).computeQuickAssistProposals(
                 new TextInvocationContext(getEditor().getViewer(), KotlinTestUtils.getCaret(getEditor()), -1)));
     }
     
@@ -90,10 +90,7 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
         List<String> result = new ArrayList<String>();
         
         for (ICompletionProposal proposal : proposals) {
-        	if (proposal instanceof KotlinAutoImportAssistProposal) {
-				KotlinAutoImportAssistProposal autoImportProposal = (KotlinAutoImportAssistProposal) proposal;
-				result.add(autoImportProposal.getFqName());
-        	}
+            result.add(proposal.getDisplayString());
         }
         
         return result;
