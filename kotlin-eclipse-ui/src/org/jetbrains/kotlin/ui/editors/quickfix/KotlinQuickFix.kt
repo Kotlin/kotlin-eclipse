@@ -80,5 +80,8 @@ private fun initializeQuickFixes(): List<KotlinQuickFix> {
             NON_FINAL_MEMBER_IN_OBJECT.createAddModifierFix(OPEN_KEYWORD, KtClass::class.java),
     
             INACCESSIBLE_OUTER_CLASS_EXPRESSION.createAddModifierFix(INNER_KEYWORD, KtClass::class.java),
-            NESTED_CLASS_NOT_ALLOWED.createAddModifierFix(INNER_KEYWORD))
+            NESTED_CLASS_NOT_ALLOWED.createAddModifierFix(INNER_KEYWORD),
+    
+            FINAL_SUPERTYPE.createMakeClassOpenFix(),
+            FINAL_UPPER_BOUND.createMakeClassOpenFix())
 }
