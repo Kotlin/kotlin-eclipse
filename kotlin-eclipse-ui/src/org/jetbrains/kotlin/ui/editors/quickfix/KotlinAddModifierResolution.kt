@@ -42,6 +42,13 @@ import org.jetbrains.kotlin.diagnostics.Diagnostic
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.psi.KtTypeReference
+import org.jetbrains.kotlin.ui.editors.quickassist.getBindingContext
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 
 fun DiagnosticFactory<*>.createAddModifierFix(modifier: KtModifierKeywordToken): KotlinDiagnosticQuickFix {
     return createAddModifierFix(modifier, KtModifierListOwner::class.java)
@@ -64,6 +71,39 @@ fun <T : KtModifierListOwner> DiagnosticFactory<*>.createAddModifierFix(
         override fun canFix(diagnostic: Diagnostic): Boolean {
             return diagnostic.factory == thisFactory // this@createFactory ?
         }
+    }
+}
+
+fun DiagnosticFactory<*>.createMakeClassOpenFix(): KotlinDiagnosticQuickFix {
+    return KotlinMakeClassOpenQuickFix(this)
+}
+
+class KotlinMakeClassOpenQuickFix(private val diagnosticTriggger: DiagnosticFactory<*>) : KotlinDiagnosticQuickFix {
+    override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
+        val typeReference = diagnostic.psiElement as KtTypeReference
+        
+        val ktFile = typeReference.getContainingKtFile()
+        val javaProject = KotlinPsiManager.getJavaProject(ktFile)
+        if (javaProject == null) return emptyList()
+        
+        val bindingContext = getBindingContext(ktFile, javaProject)
+        if (bindingContext == null) return emptyList()
+        
+        val type = bindingContext[BindingContext.TYPE, typeReference]
+        if (type == null) return emptyList()
+        
+        val classDescriptor = type.constructor.declarationDescriptor as? ClassDescriptor ?: return emptyList()
+        val sourceElement = EclipseDescriptorUtils.descriptorToDeclaration(classDescriptor) ?: return emptyList()
+        if (sourceElement !is KotlinSourceElement) return emptyList()
+        
+        val declaration = sourceElement.psi as? KtClass ?: return emptyList()
+        if (declaration.isEnum()) return emptyList()
+        
+        return listOf(KotlinAddModifierResolution(declaration, OPEN_KEYWORD))
+    }
+    
+    override fun canFix(diagnostic: Diagnostic): Boolean {
+        return diagnostic.factory == diagnosticTriggger
     }
 }
 
