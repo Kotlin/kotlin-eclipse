@@ -99,8 +99,6 @@ class KotlinAutoImportResolution(private val type: IType): KotlinMarkerResolutio
     
     override fun getImage(): Image? = JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_IMPDECL)
     
-    override fun getDescription(): String? = null
-    
     private fun getFqName(): String = type.getFullyQualifiedName('.')
 }
 
