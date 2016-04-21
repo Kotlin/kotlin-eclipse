@@ -21,7 +21,8 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( { 
-	KotlinAutoImportTest.class
+	KotlinAutoImportTest.class,
+	KotlinMakeClassOpenQuickFixTest.class
 } )
 public class AllTests {
 
