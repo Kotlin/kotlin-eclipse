@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2000-2016 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.quickassist
 
 import org.eclipse.core.resources.IFile
@@ -40,10 +56,6 @@ abstract class KotlinQuickAssistProposal : KotlinQuickAssist(), IJavaCompletionP
         return if (editor != null) EditorUtil.getFile(editor) else null
     }
     
-    fun getStartOffset(element: PsiElement, editor: AbstractTextEditor): Int {
-        return element.getOffsetByDocument(EditorUtil.getDocument(editor), element.getTextRange().getStartOffset())
-    }
-    
     fun getEndOffset(element:PsiElement, editor:AbstractTextEditor): Int {
         return element.getEndLfOffset(EditorUtil.getDocument(editor))
     }
@@ -54,18 +66,16 @@ abstract class KotlinQuickAssistProposal : KotlinQuickAssist(), IJavaCompletionP
             throw IllegalStateException("Active editor cannot be null")
         }
         
-        kotlinFileEditor.getViewer().getDocument().replace(getEndOffset(element, kotlinFileEditor), 0, text)
+        insertAfter(element, text, kotlinFileEditor.getViewer().getDocument())
     }
     
-    fun replaceBetween(from:PsiElement, till:PsiElement, text:String) {
+    fun replaceBetween(from: PsiElement, till: PsiElement, text: String) {
         val kotlinFileEditor = getActiveEditor()
         if (kotlinFileEditor == null) {
             throw IllegalStateException("Active editor cannot be null")
         }
         
-        val startOffset = getStartOffset(from, kotlinFileEditor)
-        val endOffset = getEndOffset(till, kotlinFileEditor)
-        kotlinFileEditor.getViewer().getDocument().replace(startOffset, endOffset - startOffset, text)
+        replaceBetween(from, till, text, kotlinFileEditor.getViewer().getDocument())
     }
     
     fun replace(toReplace: PsiElement, text: String) {
@@ -93,6 +103,44 @@ abstract class KotlinQuickAssistProposal : KotlinQuickAssist(), IJavaCompletionP
     override fun getContextInformation(): IContextInformation? = null
     
     override fun getRelevance(): Int = 0
+}
+
+fun getStartOffset(element: PsiElement, editor: AbstractTextEditor): Int {
+    return getStartOffset(element, EditorUtil.getDocument(editor))
+}
+
+fun getStartOffset(element: PsiElement, document: IDocument): Int {
+    return element.getOffsetByDocument(document, element.getTextRange().getStartOffset())
+}
+
+fun insertBefore(element: PsiElement, text: String, fileDocument: IDocument) {
+    fileDocument.replace(getStartOffset(element, fileDocument), 0, text)
+}
+
+fun replaceBetween(from: PsiElement, till: PsiElement, text: String, fileDocument: IDocument) {
+    val startOffset = getStartOffset(from, fileDocument)
+    val endOffset = getEndOffset(till, fileDocument)
+    fileDocument.replace(startOffset, endOffset - startOffset, text)
+}
+
+fun getEndOffset(element: PsiElement, editor: AbstractTextEditor): Int {
+    return getEndOffset(element, EditorUtil.getDocument(editor))
+}
+
+fun getEndOffset(element: PsiElement, fileDocument: IDocument): Int {
+    return element.getEndLfOffset(fileDocument)
+}
+
+fun replace(toReplace: PsiElement, text: String, fileDocument: IDocument) {
+    replaceBetween(toReplace, toReplace, text, fileDocument)
+}
+
+fun remove(element: PsiElement, fileDocument: IDocument) {
+    replace(element, "", fileDocument)
+}
+
+fun insertAfter(element: PsiElement, text: String, fileDocument: IDocument) {
+    fileDocument.replace(getEndOffset(element, fileDocument), 0, text)
 }
 
 fun getBindingContext(jetFile: KtFile, javaProject: IJavaProject): BindingContext? {

@@ -80,7 +80,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
                 textLength += IndenterUtil.getLineSeparatorsOccurences(element.getText());
             }
             document.replace(
-                    getStartOffset(element, editor), 
+                    KotlinQuickAssistProposalKt.getStartOffset(element, editor), 
                     textLength, 
                     element.getReceiverExpression().getText() + "[" + arguments + "]");
         } catch (BadLocationException e) {
