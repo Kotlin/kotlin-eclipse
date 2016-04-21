@@ -146,7 +146,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
 }
 
 fun updateLineMarkers(diagnostics: Diagnostics, affectedFiles: List<IFile>) {
-    clearProblemAnnotationsFromOpenEditorsExcept(affectedFiles)
+//    clearProblemAnnotationsFromOpenEditorsExcept(affectedFiles)
     clearMarkersFromFiles(affectedFiles)
     addMarkersToProject(DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics), affectedFiles)
 }
