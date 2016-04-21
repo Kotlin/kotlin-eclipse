@@ -5,5 +5,5 @@ fun main(args : Array<String>) {
 	println(list)
 }
 
-// EXIST: java.util.ArrayList
+// EXIST: Import 'ArrayList' (java.util)
 // NUMBER: 1
