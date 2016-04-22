@@ -103,6 +103,8 @@ private fun initializeQuickFixes(): List<KotlinQuickFix> {
             REDUNDANT_MODIFIER.createRemoveModifierFactory(true),
             REDUNDANT_MODIFIER_IN_GETTER.createRemoveModifierFactory(true),
             
+            INCOMPATIBLE_MODIFIERS.createRemoveModifierFactory(),
+            
             GETTER_VISIBILITY_DIFFERS_FROM_PROPERTY_VISIBILITY.createRemoveModifierFactory(),
             SETTER_VISIBILITY_INCONSISTENT_WITH_PROPERTY_VISIBILITY.createRemoveModifierFactory(),
             PRIVATE_SETTER_FOR_ABSTRACT_PROPERTY.createRemoveModifierFactory(),
@@ -111,5 +113,8 @@ private fun initializeQuickFixes(): List<KotlinQuickFix> {
             WRONG_MODIFIER_TARGET.createRemoveModifierFactory(),
             REDUNDANT_MODIFIER_FOR_TARGET.createRemoveModifierFactory(),
             WRONG_MODIFIER_CONTAINING_DECLARATION.createRemoveModifierFactory(),
-            REPEATED_MODIFIER.createRemoveModifierFactory())
+            REPEATED_MODIFIER.createRemoveModifierFactory(),
+    
+            OPERATOR_MODIFIER_REQUIRED.createAddOperatorModifierFix(OPERATOR_KEYWORD),
+            INFIX_MODIFIER_REQUIRED.createAddOperatorModifierFix(INFIX_KEYWORD))
 }

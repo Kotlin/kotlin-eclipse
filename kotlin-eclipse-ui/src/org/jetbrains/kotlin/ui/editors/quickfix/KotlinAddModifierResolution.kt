@@ -50,6 +50,8 @@ import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.diagnostics.DiagnosticWithParameters2
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 
 fun DiagnosticFactory<*>.createAddModifierFix(modifier: KtModifierKeywordToken): KotlinDiagnosticQuickFix {
     return createAddModifierFix(modifier, KtModifierListOwner::class.java)
@@ -71,6 +73,24 @@ fun <T : KtModifierListOwner> DiagnosticFactory<*>.createAddModifierFix(
         
         override fun canFix(diagnostic: Diagnostic): Boolean {
             return diagnostic.factory == thisFactory // this@createFactory ?
+        }
+    }
+}
+
+fun DiagnosticFactory<*>.createAddOperatorModifierFix(modifier: KtModifierKeywordToken): KotlinDiagnosticQuickFix {
+    return object : KotlinDiagnosticQuickFix {
+        override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
+            val functionDescriptor = (diagnostic as? DiagnosticWithParameters2<*, *, *>)?.a as? FunctionDescriptor ?: return emptyList()
+            val sourceElement = EclipseDescriptorUtils.descriptorToDeclaration(functionDescriptor) ?: return emptyList()
+            if (sourceElement !is KotlinSourceElement) return emptyList()
+            
+            val target = sourceElement.psi as? KtModifierListOwner ?: return emptyList()
+            
+            return listOf(KotlinAddModifierResolution(target, modifier))
+        }
+        
+        override fun canFix(diagnostic: Diagnostic): Boolean {
+            return diagnostic.factory == this@createAddOperatorModifierFix // this@createFactory ?
         }
     }
 }
