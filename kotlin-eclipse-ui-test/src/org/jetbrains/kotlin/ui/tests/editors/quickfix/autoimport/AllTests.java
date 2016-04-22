@@ -23,7 +23,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses( { 
 	KotlinAutoImportTest.class,
 	KotlinMakeClassOpenQuickFixTest.class,
-	KotlinAddOverrideQuickFixTest.class
+	KotlinAddOverrideQuickFixTest.class,
+	KotlinAbstractModifierQuickFixTest.class
 } )
 public class AllTests {
 
