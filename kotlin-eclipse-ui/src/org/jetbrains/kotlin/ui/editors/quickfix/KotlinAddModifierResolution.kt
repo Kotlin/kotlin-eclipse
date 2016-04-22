@@ -49,6 +49,7 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.psi.KtElement
 
 fun DiagnosticFactory<*>.createAddModifierFix(modifier: KtModifierKeywordToken): KotlinDiagnosticQuickFix {
     return createAddModifierFix(modifier, KtModifierListOwner::class.java)
@@ -143,12 +144,17 @@ class KotlinAddModifierResolution(
     }
 }
 
+// TODO: move to file with util functions 
+fun getDocument(ktElement: KtElement): IDocument? {
+    val ktFile = ktElement.getContainingKtFile()
+    return KotlinPsiManager.getEclipseFile(ktFile)?.let {
+        EditorUtil.getDocument(it)
+    }
+}
+
 private fun addModifier(owner: KtModifierListOwner, modifier: KtModifierKeywordToken) {
-    val ktFile = owner.getContainingKtFile()
-    val eclipseFile = KotlinPsiManager.getEclipseFile(ktFile)
-    if (eclipseFile == null) return 
-    
-    val elementDocument = EditorUtil.getDocument(eclipseFile)
+    val elementDocument = getDocument(owner)
+    if (elementDocument == null) return
     
     val modifierList = owner.modifierList
     if (modifierList == null) {
@@ -201,7 +207,7 @@ private fun addModifier(modifierList: KtModifierList, modifier: KtModifierKeywor
         
         if (anchor == null) return
         
-        insertAfter(anchor, newModifier.text, elementDocument)
+        insertAfter(anchor, " ${newModifier.text}", elementDocument)
     }
 }
 
