@@ -70,6 +70,7 @@ private fun initializeQuickFixes(): List<KotlinQuickFix> {
             MUST_BE_INITIALIZED_OR_BE_ABSTRACT.createAddModifierFix(ABSTRACT_KEYWORD),
             ABSTRACT_CLASS_MEMBER_NOT_IMPLEMENTED.createAddModifierFix(ABSTRACT_KEYWORD),
             NON_ABSTRACT_FUNCTION_WITH_NO_BODY.createAddModifierFix(ABSTRACT_KEYWORD),
+            ABSTRACT_MEMBER_NOT_IMPLEMENTED.createAddModifierFix(ABSTRACT_KEYWORD),
             
             ABSTRACT_PROPERTY_IN_NON_ABSTRACT_CLASS.createAddModifierFix(ABSTRACT_KEYWORD, KtClass::class.java),
             ABSTRACT_FUNCTION_IN_NON_ABSTRACT_CLASS.createAddModifierFix(ABSTRACT_KEYWORD, KtClass::class.java),
@@ -83,5 +84,32 @@ private fun initializeQuickFixes(): List<KotlinQuickFix> {
             NESTED_CLASS_NOT_ALLOWED.createAddModifierFix(INNER_KEYWORD),
     
             FINAL_SUPERTYPE.createMakeClassOpenFix(),
-            FINAL_UPPER_BOUND.createMakeClassOpenFix())
+            FINAL_UPPER_BOUND.createMakeClassOpenFix(),
+            
+            ABSTRACT_PROPERTY_IN_PRIMARY_CONSTRUCTOR_PARAMETERS.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
+            ABSTRACT_PROPERTY_WITH_INITIALIZER.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
+            ABSTRACT_PROPERTY_WITH_GETTER.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
+            ABSTRACT_PROPERTY_WITH_SETTER.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
+            ABSTRACT_PROPERTY_IN_NON_ABSTRACT_CLASS.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
+            ABSTRACT_FUNCTION_IN_NON_ABSTRACT_CLASS.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
+            ABSTRACT_FUNCTION_WITH_BODY.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
+            ABSTRACT_MODIFIER_IN_INTERFACE.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD, true),
+            
+            NOTHING_TO_OVERRIDE.createRemoveModifierFromListOwnerFactory(OVERRIDE_KEYWORD),
+    
+            NON_FINAL_MEMBER_IN_FINAL_CLASS.createRemoveModifierFromListOwnerFactory(OPEN_KEYWORD),
+            NON_FINAL_MEMBER_IN_OBJECT.createRemoveModifierFromListOwnerFactory(OPEN_KEYWORD),
+    
+            REDUNDANT_MODIFIER.createRemoveModifierFactory(true),
+            REDUNDANT_MODIFIER_IN_GETTER.createRemoveModifierFactory(true),
+            
+            GETTER_VISIBILITY_DIFFERS_FROM_PROPERTY_VISIBILITY.createRemoveModifierFactory(),
+            SETTER_VISIBILITY_INCONSISTENT_WITH_PROPERTY_VISIBILITY.createRemoveModifierFactory(),
+            PRIVATE_SETTER_FOR_ABSTRACT_PROPERTY.createRemoveModifierFactory(),
+            PRIVATE_SETTER_FOR_OPEN_PROPERTY.createRemoveModifierFactory(),
+            REDUNDANT_MODIFIER_IN_GETTER.createRemoveModifierFactory(),
+            WRONG_MODIFIER_TARGET.createRemoveModifierFactory(),
+            REDUNDANT_MODIFIER_FOR_TARGET.createRemoveModifierFactory(),
+            WRONG_MODIFIER_CONTAINING_DECLARATION.createRemoveModifierFactory(),
+            REPEATED_MODIFIER.createRemoveModifierFactory())
 }
