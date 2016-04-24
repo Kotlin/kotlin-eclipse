@@ -65,6 +65,7 @@ import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconcil
 import org.eclipse.jface.text.source.SourceViewerConfiguration
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationAction
+import org.jetbrains.kotlin.ui.editors.organizeImports.KotlinOrganizeImportsAction
 
 public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private val colorManager: IColorManager = JavaColorManager()
@@ -141,6 +142,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         setAction(KotlinExtractVariableAction.ACTION_ID, KotlinExtractVariableAction(this))
         
         setAction(KotlinOpenSuperImplementationAction.ACTION_ID, KotlinOpenSuperImplementationAction(this))
+        
+        setAction(KotlinOrganizeImportsAction.ACTION_ID, KotlinOrganizeImportsAction(this))
     }
     
     override fun setSourceViewerConfiguration(configuration: SourceViewerConfiguration) {
