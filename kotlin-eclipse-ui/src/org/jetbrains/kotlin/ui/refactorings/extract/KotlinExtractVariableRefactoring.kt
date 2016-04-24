@@ -64,6 +64,7 @@ import org.jetbrains.kotlin.psi.psiUtil.canPlaceAfterSimpleNameEntry
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import com.intellij.psi.PsiWhiteSpace
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 
 public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
     public var newName: String = "temp"
@@ -93,12 +94,6 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         return fileChange
     }
     
-    private fun getBindingContext(): BindingContext {
-        val javaProject = KotlinPsiManager.getJavaProject(expression)!!
-        val analysisResult = KotlinAnalysisFileCache.getAnalysisResult(expression.getContainingKtFile(), javaProject).analysisResult
-        return analysisResult.bindingContext
-    }
-    
     private fun introduceVariable(): List<FileEdit> {
         val occurrenceContainer = expression.getOccurrenceContainer()
         if (occurrenceContainer == null) return emptyList()
@@ -117,7 +112,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
         }
         val variableDeclarationText = "val $newName = ${expression.getText()}"
         
-        val bindingContext = getBindingContext()
+        val bindingContext = getBindingContext(expression) ?: return emptyList()
         
         return createEdits(
                 commonContainer,

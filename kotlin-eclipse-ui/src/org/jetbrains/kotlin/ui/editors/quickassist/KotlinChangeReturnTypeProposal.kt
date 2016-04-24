@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.idea.core.quickfix.QuickFixUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 
 class KotlinChangeReturnTypeProposal : KotlinQuickAssistProposal() {
     private lateinit var function: KtFunction

@@ -38,6 +38,7 @@ import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 
 public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
     private var displayString: String? = null
@@ -92,7 +93,7 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
     }
     
     private fun getTypeForDeclaration(declaration: KtCallableDeclaration): KotlinType {
-        val bindingContext = getBindingContext(declaration.getContainingKtFile())
+        val bindingContext = getBindingContext(declaration)
         if (bindingContext == null) return ErrorUtils.createErrorType("null type")
         
         val descriptor = bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]

@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.jdt.core.JavaCore
-import org.jetbrains.kotlin.ui.editors.quickassist.getBindingContext
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil

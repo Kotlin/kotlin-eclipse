@@ -82,10 +82,6 @@ abstract class KotlinQuickAssistProposal : KotlinQuickAssist(), IJavaCompletionP
         replaceBetween(toReplace, toReplace, text)
     }
     
-    protected fun getBindingContext(jetFile: KtFile): BindingContext? {
-        return getAnalysisResultWithProvider(jetFile)?.analysisResult?.bindingContext
-    }
-    
     protected fun getAnalysisResultWithProvider(jetFile:KtFile): AnalysisResultWithProvider? {
         val file = getActiveFile()
         if (file == null) return null
@@ -141,8 +137,4 @@ fun remove(element: PsiElement, fileDocument: IDocument) {
 
 fun insertAfter(element: PsiElement, text: String, fileDocument: IDocument) {
     fileDocument.replace(getEndOffset(element, fileDocument), 0, text)
-}
-
-fun getBindingContext(jetFile: KtFile, javaProject: IJavaProject): BindingContext? {
-    return KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult.bindingContext
 }

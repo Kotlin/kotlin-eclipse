@@ -41,5 +41,6 @@ class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : Select
     }
     
     override fun run() {
+        println("Run Kotlin, run!")
     }
 }

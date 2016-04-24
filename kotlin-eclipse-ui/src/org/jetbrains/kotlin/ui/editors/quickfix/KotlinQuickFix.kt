@@ -24,7 +24,6 @@ import org.eclipse.ui.IMarkerResolution
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.ui.editors.quickassist.getBindingContext
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset

@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.psi.KtTypeReference
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 
 public class KotlinRemoveExplicitTypeAssistProposal : KotlinQuickAssistProposal() {
     private var displayString: String? = null
@@ -46,7 +47,7 @@ public class KotlinRemoveExplicitTypeAssistProposal : KotlinQuickAssistProposal(
         val initializer = (element as? KtWithExpressionInitializer)?.getInitializer()
         if (initializer != null && initializer.getTextRange().containsOffset(caretOffset)) return false
         
-        val bindingContext = getBindingContext(element.getContainingKtFile())
+        val bindingContext = getBindingContext(element)
         if (bindingContext == null) return false
         
         return when (element) {
