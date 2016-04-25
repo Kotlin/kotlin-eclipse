@@ -23,6 +23,16 @@ import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jdt.internal.ui.actions.ActionMessages
 import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.diagnostics.Errors
+import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableTypes
+import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
+import org.eclipse.jdt.core.IType
+import org.eclipse.jdt.core.search.TypeNameMatch
+import org.eclipse.jdt.internal.ui.util.TypeNameMatchLabelProvider
+import org.eclipse.jdt.internal.ui.dialogs.MultiElementListSelectionDialog
+import org.eclipse.jface.window.Window
+import java.util.ArrayList
 
 class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -33,7 +43,6 @@ class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : Select
         setDescription(ActionMessages.OrganizeImportsAction_description);
 
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.ORGANIZE_IMPORTS_ACTION);
-
     }
     
     companion object {
@@ -41,6 +50,67 @@ class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : Select
     }
     
     override fun run() {
-        println("Run Kotlin, run!")
+        val bindingContext = getBindingContext(editor) ?: return
+        val ktFile = editor.parsedFile ?: return
+        val file = editor.getFile() ?: return
+        
+        val typeNamesToImport = bindingContext.diagnostics
+                .filter { it.factory == Errors.UNRESOLVED_REFERENCE && it.psiFile == ktFile }
+                .map { it.psiElement.text }
+                .distinct()
+        
+        val (uniqueImports, ambiguousImports) = findTypesToImport(typeNamesToImport)
+        
+        val allRequiredImports = ArrayList(uniqueImports)
+        if (ambiguousImports.isNotEmpty()) {
+            val chosenImports = chooseImports(ambiguousImports)
+            if (chosenImports == null) return
+            
+            allRequiredImports.addAll(chosenImports)
+        }
+        
+        placeImports(allRequiredImports, file, editor.document)
     }
+    
+    // null signalizes about cancelling operation
+    private fun chooseImports(ambiguousImports: List<List<TypeNameMatch>>): List<TypeNameMatch>? {
+        val labelProvider = TypeNameMatchLabelProvider(TypeNameMatchLabelProvider.SHOW_FULLYQUALIFIED)
+        
+        val dialog = MultiElementListSelectionDialog(getShell(), labelProvider)
+        dialog.setTitle(ActionMessages.OrganizeImportsAction_selectiondialog_title)
+        dialog.setMessage(ActionMessages.OrganizeImportsAction_selectiondialog_message)
+        
+        val arrayImports = Array<Array<TypeNameMatch>>(ambiguousImports.size) { i -> 
+            Array<TypeNameMatch>(ambiguousImports[i].size) { j ->
+                ambiguousImports[i][j]
+            }
+        }
+        
+        dialog.setElements(arrayImports)
+        
+        return if (dialog.open() == Window.OK) {
+                 dialog.result.mapNotNull { (it as Array<*>).firstOrNull() as? TypeNameMatch }
+            } else {
+                null
+            }
+    }
+    
+    private fun findTypesToImport(typeNames: List<String>): UniqueAndAmbiguousImports {
+        val uniqueImports = arrayListOf<TypeNameMatch>()
+        val ambiguousImports = arrayListOf<List<TypeNameMatch>>()
+        loop@ for (typeName in typeNames) {
+            val typesToImport = findApplicableTypes(typeName)
+            when (typesToImport.size) {
+                0 -> continue@loop
+                1 -> uniqueImports.add(typesToImport.first())
+                else -> ambiguousImports.add(typesToImport)
+            }
+        }
+        
+        return UniqueAndAmbiguousImports(uniqueImports, ambiguousImports)
+    }
+    
+    private data class UniqueAndAmbiguousImports(
+            val uniqueImports: List<TypeNameMatch>, 
+            val ambiguousImports: List<List<TypeNameMatch>>)
 }

@@ -49,57 +49,61 @@ object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun canFix(diagnostic: Diagnostic): Boolean {
         return diagnostic.factory == Errors.UNRESOLVED_REFERENCE
     }
-    
-    private fun findApplicableTypes(typeName: String): List<IType> {
-        val scope = SearchEngine.createWorkspaceScope()
-        
-        val foundTypes = arrayListOf<IType>()
-        val collector = object : TypeNameMatchRequestor() {
-            override fun acceptTypeNameMatch(match: TypeNameMatch) {
-                val type = match.type
-                if (Flags.isPublic(type.flags)) {
-                    foundTypes.add(type)
-                }
-            }
-        }
-        
-        val searchEngine = SearchEngine()
-        searchEngine.searchAllTypeNames(null, 
-                    SearchPattern.R_EXACT_MATCH, 
-                    typeName.toCharArray(), 
-                    SearchPattern.R_EXACT_MATCH, 
-                    IJavaSearchConstants.TYPE, 
-                    scope, 
-                    collector,
-                    IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, 
-                    null)
-        
-        return foundTypes
-    }
 }
 
-class KotlinAutoImportResolution(private val type: IType): KotlinMarkerResolution {
+fun findApplicableTypes(typeName: String): List<TypeNameMatch> {
+    val scope = SearchEngine.createWorkspaceScope()
+    
+    val foundTypes = arrayListOf<TypeNameMatch>()
+    val collector = object : TypeNameMatchRequestor() {
+        override fun acceptTypeNameMatch(match: TypeNameMatch) {
+            val type = match.type
+            if (Flags.isPublic(type.flags)) {
+                foundTypes.add(match)
+            }
+        }
+    }
+    
+    val searchEngine = SearchEngine()
+    searchEngine.searchAllTypeNames(null, 
+                SearchPattern.R_EXACT_MATCH, 
+                typeName.toCharArray(), 
+                SearchPattern.R_EXACT_MATCH, 
+                IJavaSearchConstants.TYPE, 
+                scope, 
+                collector,
+                IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, 
+                null)
+    
+    return foundTypes
+}
+
+fun placeImports(typeNames: List<TypeNameMatch>, file: IFile, document: IDocument) {
+    if (typeNames.isEmpty()) return
+    
+    val placeElement = findNodeToNewImport(file)
+    if (placeElement == null) return
+    
+    val breakLineBefore = computeBreakLineBeforeImport(placeElement)
+    val breakLineAfter = computeBreakLineAfterImport(placeElement)
+    
+    val lineDelimiter = TextUtilities.getDefaultLineDelimiter(document)
+    
+    val imports = typeNames.map { "import ${it.fullyQualifiedName}" }.joinToString(lineDelimiter)
+    val newImport = "${IndenterUtil.createWhiteSpace(0, breakLineBefore, lineDelimiter)}$imports" +
+            "${IndenterUtil.createWhiteSpace(0, breakLineAfter, lineDelimiter)}"
+    
+    document.replace(placeElement.getEndLfOffset(document), 0, newImport)
+}
+
+class KotlinAutoImportResolution(private val type: TypeNameMatch): KotlinMarkerResolution {
     override fun apply(file: IFile) {
-        val placeElement = findNodeToNewImport(file)
-        if (placeElement == null) return
-        
-        val breakLineBefore = computeBreakLineBeforeImport(placeElement)
-        val breakLineAfter = computeBreakLineAfterImport(placeElement)
-        
-        val document = EditorUtil.getDocument(file)
-        val lineDelimiter = TextUtilities.getDefaultLineDelimiter(document)
-        
-        val newImport = "${IndenterUtil.createWhiteSpace(0, breakLineBefore, lineDelimiter)}import ${getFqName()}" +
-                "${IndenterUtil.createWhiteSpace(0, breakLineAfter, lineDelimiter)}"
-        
-        document.replace(placeElement.getEndLfOffset(document), 0, newImport)
+        placeImports(listOf(type), file, EditorUtil.getDocument(file))
     }
 
-    override fun getLabel(): String? = "Import '${type.elementName}' (${type.packageFragment.elementName})"
+    override fun getLabel(): String? = "Import '${type.simpleTypeName}' (${type.packageName})"
     
     override fun getImage(): Image? = JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_IMPDECL)
-    
-    private fun getFqName(): String = type.getFullyQualifiedName('.')
 }
 
 private fun computeBreakLineAfterImport(element: PsiElement): Int {
