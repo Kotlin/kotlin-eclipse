@@ -1,0 +1,6 @@
+import java.util.HashSet
+
+fun test() {
+    val s: HashSet<Int>? = null
+    callFromBaz()
+}
