@@ -1,0 +1,8 @@
+package some
+
+import java.util.ArrayList
+import java.util.HashSet
+
+fun test(s: ArrayList<Int>) {
+    val k: HashSet<Int>? = null
+}
