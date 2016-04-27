@@ -49,11 +49,16 @@ import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
 import com.intellij.psi.tree.IElementType
+import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.internal.ui.viewsupport.JavaElementImageProvider
+import org.eclipse.jface.resource.ImageDescriptor
 
 class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContentAssistProcessor, ICompletionListener {
     companion object {
         private val VALID_PROPOSALS_CHARS = charArrayOf('.')
         private val VALID_INFO_CHARS = charArrayOf('(', ',')
+        
+        private val descriptorsToImages = hashMapOf<ImageDescriptor, Image>()
     }
     
     private val cachedProposals = arrayListOf<ProposalWithCompletion>()
@@ -86,17 +91,51 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             identifierPart: String, 
             offset: Int, 
             identOffset: Int): List<ProposalWithCompletion> {
+        val expression = KotlinCompletionUtils.getSimpleNameExpression(editor, identOffset)
+        
         return arrayListOf<ProposalWithCompletion>().apply {
-            addAll(collectCompletionProposals(
-                    generateBasicCompletionProposals(identifierPart, identOffset), identOffset, offset - identOffset))
+            if (expression != null) {
+                val replacementLength = offset - identOffset
+                addAll(collectCompletionProposals(
+                        generateBasicCompletionProposals(identifierPart, expression), identOffset, replacementLength))
+                addAll(
+                        generateNonImportedCompletionProposals(
+                                identifierPart, expression, editor.javaProject!!, identOffset, replacementLength))
+            }
             addAll(generateKeywordProposals(identOffset, offset, identifierPart))
             addAll(generateTemplateProposals(viewer, offset, identifierPart))
         }
     }
     
-    private fun generateBasicCompletionProposals(identifierPart: String, identOffset: Int): Collection<DeclarationDescriptor> {
-        val simpleNameExpression = KotlinCompletionUtils.getSimpleNameExpression(editor, identOffset) ?: return emptyList()
+    private fun generateNonImportedCompletionProposals(
+            identifierPart: String, 
+            expression: KtSimpleNameExpression,
+            javaProject: IJavaProject,
+            replacementOffset: Int,
+            replacementLength: Int): List<ProposalWithCompletion> {
         
+        val nonImportedTypesVariants = lookupNonImportedTypes(expression, identifierPart, javaProject)
+        return nonImportedTypesVariants.map { 
+            val completion = it.simpleTypeName
+            val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.type.flags, false)
+            val image = descriptorsToImages.getOrPut(imageDescriptor) { imageDescriptor.createImage() }
+            val presentableString = completion
+            
+            val proposal = KotlinCompletionProposal(
+                                completion,
+                                replacementOffset,
+                                replacementLength,
+                                completion.length,
+                                image,
+                                presentableString,
+                                null,
+                                completion)
+            
+            ProposalWithCompletion(proposal, completion)
+        }
+    }
+    
+    private fun generateBasicCompletionProposals(identifierPart: String, expression: KtSimpleNameExpression): Collection<DeclarationDescriptor> {
         val file = EditorUtil.getFile(editor)
         if (file == null) {
             throw IllegalStateException("Failed to retrieve IFile from editor $editor")
@@ -104,7 +143,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         
         val nameFilter: (Name) -> Boolean = { name -> KotlinCompletionUtils.applicableNameFor(identifierPart, name) }
         
-        return KotlinCompletionUtils.getReferenceVariants(simpleNameExpression, nameFilter, file)
+        return KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, file)
     }
     
     private fun collectCompletionProposals(

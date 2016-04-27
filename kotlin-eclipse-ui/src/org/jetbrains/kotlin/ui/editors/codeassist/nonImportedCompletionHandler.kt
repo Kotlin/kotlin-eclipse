@@ -20,7 +20,7 @@ fun lookupNonImportedTypes(
         javaProject: IJavaProject): List<TypeNameMatch> {
     val callTypeAndReceiver = CallTypeAndReceiver.detect(simpleNameExpression)
      
-    if (callTypeAndReceiver !is CallTypeAndReceiver.TYPE || callTypeAndReceiver !is CallTypeAndReceiver.DEFAULT) {
+    if (callTypeAndReceiver !is CallTypeAndReceiver.TYPE && callTypeAndReceiver !is CallTypeAndReceiver.DEFAULT) {
         return emptyList()
     }
     
