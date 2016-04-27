@@ -105,7 +105,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                         
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
-            val image = KotlinImageProvider.getImage(descriptor)
+            val image = KotlinImageProvider.getImage(descriptor)!!
             val presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
             
             val proposal = KotlinCompletionProposal(
