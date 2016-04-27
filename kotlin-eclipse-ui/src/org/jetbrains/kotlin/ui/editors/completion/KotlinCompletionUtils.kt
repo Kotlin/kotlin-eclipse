@@ -46,19 +46,14 @@ import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
     
-    public fun filterCompletionProposals(descriptors: List<DeclarationDescriptor>, prefix: String): Collection<DeclarationDescriptor> {
-        return descriptors.filter { applicableNameFor(prefix, it.getName()) }
+    public fun applicableNameFor(prefix: String, name: Name): Boolean {
+        return !name.isSpecial && applicableNameFor(prefix, name.identifier)
     }
     
-    public fun applicableNameFor(prefix: String, name: Name): Boolean {
-        return if (!name.isSpecial()) {
-                val identifier = name.getIdentifier()
-                identifier.startsWith(prefix) || 
-                    identifier.toLowerCase().startsWith(prefix) || 
-                    SearchPattern.camelCaseMatch(prefix, identifier)
-            } else {
-                false
-            }
+    public fun applicableNameFor(prefix: String, completion: String): Boolean {
+        return completion.startsWith(prefix) || 
+            completion.toLowerCase().startsWith(prefix) || 
+            SearchPattern.camelCaseMatch(prefix, completion)
     }
     
     public fun getReferenceVariants(simpleNameExpression: KtSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 

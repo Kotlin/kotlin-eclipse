@@ -56,7 +56,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         private val VALID_INFO_CHARS = charArrayOf('(', ',')
     }
     
-    private val cachedDescriptors = arrayListOf<DeclarationDescriptor>()
+    private val cachedProposals = arrayListOf<ProposalWithCompletion>()
     
     private val kotlinParameterValidator by lazy {
         KotlinParameterListValidator(editor)
@@ -70,19 +70,28 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         
         val identifierPart = fileText!!.substring(identOffset, offset)
         if (isNewSession) {
-            cachedDescriptors.clear()
-            cachedDescriptors.addAll(generateBasicCompletionProposals(identifierPart, identOffset))
+            cachedProposals.clear()
+            cachedProposals.addAll(generateCompletionProposals(viewer, identifierPart, offset, identOffset))
             isNewSession = false
         }
         
-        return arrayListOf<ICompletionProposal>().apply {
+        return cachedProposals
+                .filter { KotlinCompletionUtils.applicableNameFor(identifierPart, it.completion) }
+                .map { it.proposal }
+                .toTypedArray()
+    }
+    
+    private fun generateCompletionProposals(
+            viewer: ITextViewer, 
+            identifierPart: String, 
+            offset: Int, 
+            identOffset: Int): List<ProposalWithCompletion> {
+        return arrayListOf<ProposalWithCompletion>().apply {
             addAll(collectCompletionProposals(
-                        KotlinCompletionUtils.filterCompletionProposals(cachedDescriptors, identifierPart),
-                        identOffset,
-                        offset - identOffset))
+                    generateBasicCompletionProposals(identifierPart, identOffset), identOffset, offset - identOffset))
             addAll(generateKeywordProposals(identOffset, offset, identifierPart))
             addAll(generateTemplateProposals(viewer, offset, identifierPart))
-        }.toTypedArray()
+        }
     }
     
     private fun generateBasicCompletionProposals(identifierPart: String, identOffset: Int): Collection<DeclarationDescriptor> {
@@ -101,7 +110,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     private fun collectCompletionProposals(
                     descriptors: Collection<DeclarationDescriptor>,
                     replacementOffset: Int,
-                    replacementLength: Int): List<ICompletionProposal> {
+                    replacementLength: Int): List<ProposalWithCompletion> {
                         
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
@@ -118,11 +127,11 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                                 null,
                                 completion)
             
-            withKotlinInsertHandler(descriptor, proposal)
+            ProposalWithCompletion(withKotlinInsertHandler(descriptor, proposal), completion)
         }
     }
     
-    private fun generateTemplateProposals(viewer: ITextViewer, offset: Int, identifierPart: String):Collection<ICompletionProposal> {
+    private fun generateTemplateProposals(viewer: ITextViewer, offset: Int, identifierPart: String):List<ProposalWithCompletion> {
         val file = EditorUtil.getFile(editor)
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor $editor", null)
@@ -139,7 +148,9 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                 .filter { it.name.startsWith(identifierPart) }
                 .map {
                     val templateContext = createTemplateContext(region, it.contextTypeId)
-                    TemplateProposal(it, templateContext, region, templateIcon)
+                    ProposalWithCompletion(
+                            TemplateProposal(it, templateContext, region, templateIcon),
+                            it.name)
                 }
         
     }
@@ -153,14 +164,16 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     private fun generateKeywordProposals(
             identOffset: Int, 
             offset: Int, 
-            identifierPart: String): Collection<ICompletionProposal> {
+            identifierPart: String): List<ProposalWithCompletion> {
         if (identifierPart.isBlank()) return emptyList()
         
         return KtTokens.KEYWORDS.types
                 .filter { it.toString().startsWith(identifierPart) }
                 .map { 
                     val keyword = it.toString()
-                    CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length)
+                    ProposalWithCompletion(
+                            CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length),
+                            keyword)
                 }
     }
     
@@ -189,8 +202,10 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     }
     
     override fun assistSessionEnded(event: ContentAssistEvent?) {
-        cachedDescriptors.clear()
+        cachedProposals.clear()
     }
     
     override fun selectionChanged(proposal: ICompletionProposal?, smartToggle: Boolean) { }
 }
+
+private class ProposalWithCompletion(val proposal: ICompletionProposal, val completion: String)
