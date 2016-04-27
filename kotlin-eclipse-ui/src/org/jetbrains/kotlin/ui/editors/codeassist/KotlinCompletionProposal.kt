@@ -56,18 +56,26 @@ public fun withKotlinInsertHandler(
     }
 }
 
-public open class KotlinCompletionProposal(
+open class KotlinCompletionProposal(
         val replacementString: String,
         val replacementOffset: Int,
-        val replacementLength: Int,
-        val cursorPosition: Int,
-        val img: Image?,
-        val presentableString: String,
-        val information: IContextInformation?,
-        val additionalInfo: String) : ICompletionProposal {
+        replacementLength: Int,
+        cursorPosition: Int,
+        img: Image,
+        presentableString: String,
+        information: IContextInformation? = null,
+        additionalInfo: String? = null) : ICompletionProposal {
     
     val defaultCompletionProposal =
-            CompletionProposal(replacementString, replacementOffset, replacementLength, cursorPosition, img, presentableString, information, additionalInfo)
+            CompletionProposal(
+                    replacementString, 
+                    replacementOffset, 
+                    replacementLength, 
+                    cursorPosition, 
+                    img, 
+                    presentableString, 
+                    information, 
+                    additionalInfo ?: replacementString)
 
     override fun apply(document: IDocument) {
         defaultCompletionProposal.apply(document)
