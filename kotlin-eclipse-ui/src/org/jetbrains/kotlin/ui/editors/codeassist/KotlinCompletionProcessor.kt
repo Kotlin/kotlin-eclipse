@@ -60,6 +60,7 @@ import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.eclipse.swt.graphics.Point
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 
 class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContentAssistProcessor, ICompletionListener {
     companion object {
@@ -115,14 +116,6 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         }
     }
     
-    private fun createStyledString(simpleName: String, packageName: String): StyledString {
-        return StyledString().apply { 
-            append(simpleName)
-            append(JavaElementLabels.CONCAT_STRING, StyledString.QUALIFIER_STYLER)
-            append(packageName, StyledString.QUALIFIER_STYLER)
-        }
-    }
-    
     private fun generateNonImportedCompletionProposals(
             identifierPart: String, 
             expression: KtSimpleNameExpression,
@@ -138,13 +131,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.type.flags, false)
             val image = descriptorsToImages.getOrPut(imageDescriptor) { imageDescriptor.createImage() }
             
-            val proposal = KotlinImportCompletionProposal(
-                                it,
-                                replacementOffset,
-                                replacementLength,
-                                image,
-                                createStyledString(it.simpleTypeName, it.packageName),
-                                file)
+            val proposal = KotlinImportCompletionProposal(it, replacementOffset, replacementLength, image, file)
             
             ProposalWithCompletion(proposal, completion)
         }
@@ -170,13 +157,11 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             val completion = descriptor.name.identifier
             val image = KotlinImageProvider.getImage(descriptor)!!
             val presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
-            val styledString = if (descriptor is ClassDescriptor) {
-                val fqName = DescriptorUtils.getFqName(descriptor)
-                val packageName = if (fqName.isRoot) "<root>" else fqName.parent().asString()
-                createStyledString(fqName.shortName().asString(), packageName)
-            } else {
-                null
-            }
+            val containmentPresentableString = if (descriptor is ClassDescriptor) {
+                    val fqName = DescriptorUtils.getFqName(descriptor)
+                    if (fqName.isRoot) "<root>" else fqName.parent().asString()
+                } else 
+                    null
             
             val proposal = KotlinCompletionProposal(
                                 completion,
@@ -185,15 +170,15 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                                 completion.length,
                                 image,
                                 presentableString,
+                                containmentPresentableString,
                                 null,
-                                completion,
-                                styledString)
+                                completion)
             
             ProposalWithCompletion(withKotlinInsertHandler(descriptor, proposal), completion)
         }
     }
     
-    private fun generateTemplateProposals(viewer: ITextViewer, offset: Int, identifierPart: String):List<ProposalWithCompletion> {
+    private fun generateTemplateProposals(viewer: ITextViewer, offset: Int, identifierPart: String): List<ProposalWithCompletion> {
         val file = EditorUtil.getFile(editor)
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor $editor", null)

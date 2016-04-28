@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.search.TypeNameMatch
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.psi.KtFile
 import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.ui.JavaElementLabels
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
@@ -69,9 +70,9 @@ open class KotlinCompletionProposal(
         cursorPosition: Int,
         img: Image,
         presentableString: String,
+        val containmentPresentableString: String? = null,
         information: IContextInformation? = null,
-        additionalInfo: String? = null,
-        val styledPresentableString: StyledString? = null) : ICompletionProposal, ICompletionProposalExtension6 {
+        additionalInfo: String? = null) : ICompletionProposal, ICompletionProposalExtension6 {
     
     val defaultCompletionProposal =
             CompletionProposal(
@@ -98,7 +99,13 @@ open class KotlinCompletionProposal(
 
     override fun getContextInformation(): IContextInformation? = defaultCompletionProposal.getContextInformation()
     
-    override fun getStyledDisplayString(): StyledString = styledPresentableString ?: StyledString(defaultCompletionProposal.displayString)
+    override fun getStyledDisplayString(): StyledString {
+        return if (containmentPresentableString != null) {
+            createStyledString(getDisplayString(), containmentPresentableString)
+        } else {
+            StyledString(getDisplayString())
+        }
+    }
 }
 
 class KotlinImportCompletionProposal(
@@ -106,7 +113,6 @@ class KotlinImportCompletionProposal(
         replacementOffset: Int,
         val replacementLength: Int,
         image: Image,
-        styledString: StyledString,
         val file: IFile) : 
             KotlinCompletionProposal(
                 typeName.simpleTypeName,
@@ -115,9 +121,9 @@ class KotlinImportCompletionProposal(
                 typeName.simpleTypeName.length,
                 image,
                 typeName.simpleTypeName,
+                typeName.packageName,
                 null,
-                typeName.simpleTypeName,
-                styledString)  {
+                typeName.simpleTypeName)  {
     
     var importShift = -1
     
@@ -129,5 +135,13 @@ class KotlinImportCompletionProposal(
     override fun getSelection(document: IDocument): Point {
         val selection = super.getSelection(document)
         return if (importShift > 0) Point(selection.x + importShift, 0) else selection
+    }
+}
+
+private fun createStyledString(simpleName: String, containingDeclaration: String): StyledString {
+    return StyledString().apply { 
+        append(simpleName)
+        append(JavaElementLabels.CONCAT_STRING, StyledString.QUALIFIER_STYLER)
+        append(containingDeclaration, StyledString.QUALIFIER_STYLER)
     }
 }
