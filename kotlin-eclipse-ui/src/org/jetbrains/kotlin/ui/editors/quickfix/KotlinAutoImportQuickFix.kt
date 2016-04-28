@@ -78,11 +78,11 @@ fun findApplicableTypes(typeName: String): List<TypeNameMatch> {
     return foundTypes
 }
 
-fun placeImports(typeNames: List<TypeNameMatch>, file: IFile, document: IDocument) {
-    if (typeNames.isEmpty()) return
+fun placeImports(typeNames: List<TypeNameMatch>, file: IFile, document: IDocument): Int {
+    if (typeNames.isEmpty()) return -1
     
     val placeElement = findNodeToNewImport(file)
-    if (placeElement == null) return
+    if (placeElement == null) return -1
     
     val breakLineBefore = computeBreakLineBeforeImport(placeElement)
     val breakLineAfter = computeBreakLineAfterImport(placeElement)
@@ -90,10 +90,12 @@ fun placeImports(typeNames: List<TypeNameMatch>, file: IFile, document: IDocumen
     val lineDelimiter = TextUtilities.getDefaultLineDelimiter(document)
     
     val imports = typeNames.map { "import ${it.fullyQualifiedName}" }.joinToString(lineDelimiter)
-    val newImport = "${IndenterUtil.createWhiteSpace(0, breakLineBefore, lineDelimiter)}$imports" +
+    val newImports = "${IndenterUtil.createWhiteSpace(0, breakLineBefore, lineDelimiter)}$imports" +
             "${IndenterUtil.createWhiteSpace(0, breakLineAfter, lineDelimiter)}"
     
-    document.replace(placeElement.getEndLfOffset(document), 0, newImport)
+    document.replace(placeElement.getEndLfOffset(document), 0, newImports)
+    
+    return newImports.length
 }
 
 class KotlinAutoImportResolution(private val type: TypeNameMatch): KotlinMarkerResolution {

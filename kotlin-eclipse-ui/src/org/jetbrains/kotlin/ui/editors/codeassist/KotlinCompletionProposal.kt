@@ -84,7 +84,7 @@ open class KotlinCompletionProposal(
         defaultCompletionProposal.apply(document)
     }
 
-    override fun getSelection(document: IDocument): Point? = defaultCompletionProposal.getSelection(document)
+    override fun getSelection(document: IDocument): Point = defaultCompletionProposal.getSelection(document)
 
     override fun getAdditionalProposalInfo(): String = defaultCompletionProposal.getAdditionalProposalInfo()
 

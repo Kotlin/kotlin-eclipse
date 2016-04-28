@@ -57,6 +57,9 @@ import org.eclipse.jdt.ui.JavaElementLabels
 import org.eclipse.jdt.internal.corext.util.Strings
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.resolve.DescriptorUtils
+import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
+import org.eclipse.swt.graphics.Point
 
 class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContentAssistProcessor, ICompletionListener {
     companion object {
@@ -127,6 +130,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             replacementOffset: Int,
             replacementLength: Int): List<ProposalWithCompletion> {
         
+        val file = editor.getFile() ?: return emptyList()
         val nonImportedTypesVariants = lookupNonImportedTypes(expression, identifierPart, javaProject)
         return nonImportedTypesVariants.map { 
             val completion = it.simpleTypeName
@@ -134,7 +138,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             val image = descriptorsToImages.getOrPut(imageDescriptor) { imageDescriptor.createImage() }
             val presentableString = completion
             
-            val proposal = KotlinCompletionProposal(
+            val proposal = object : KotlinCompletionProposal(
                                 completion,
                                 replacementOffset,
                                 replacementLength,
@@ -143,7 +147,19 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                                 presentableString,
                                 null,
                                 completion,
-                                createStyledString(it.simpleTypeName, it.packageName))
+                                createStyledString(it.simpleTypeName, it.packageName)) {
+                var importShift = -1
+                
+                override fun apply(document: IDocument) {
+                    document.replace(replacementOffset, replacementLength, completion)
+                    importShift = placeImports(listOf(it), file, document)
+                }
+                
+                override fun getSelection(document: IDocument): Point {
+                    val selection = super.getSelection(document)
+                    return if (importShift > 0) Point(selection.x + importShift, 0) else selection
+                }
+            }
             
             ProposalWithCompletion(proposal, completion)
         }
