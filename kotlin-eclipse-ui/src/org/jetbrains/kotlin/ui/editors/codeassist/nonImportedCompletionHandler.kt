@@ -12,6 +12,8 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
 import org.eclipse.jface.text.contentassist.ICompletionProposal
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.eclipse.jdt.core.JavaCore
 
 fun lookupNonImportedTypes(
         simpleNameExpression: KtSimpleNameExpression,
@@ -46,7 +48,12 @@ private fun searchFor(identifierPart: String, javaProject: IJavaProject): List<T
     
     val searchEngine = SearchEngine()
     
-    val javaProjectSearchScope = JavaSearchScopeFactory.getInstance().createJavaProjectSearchScope(javaProject, true)
+    val dependencyProjects = arrayListOf<IJavaProject>().apply {
+        addAll(ProjectUtils.getDependencyProjects(javaProject).map { JavaCore.create(it) })
+        add(javaProject)
+    }
+    
+    val javaProjectSearchScope = JavaSearchScopeFactory.getInstance().createJavaSearchScope(dependencyProjects.toTypedArray(), true)
     searchEngine.searchAllTypeNames(null, 
                 SearchPattern.R_EXACT_MATCH, 
                 identifierPart.toCharArray(), 
