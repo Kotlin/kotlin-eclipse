@@ -28,6 +28,10 @@ import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.eclipse.jface.text.contentassist.CompletionProposal
 import org.eclipse.jface.viewers.StyledString
 import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6
+import org.eclipse.jdt.core.search.TypeNameMatch
+import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
+import org.jetbrains.kotlin.psi.KtFile
+import org.eclipse.core.resources.IFile
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
@@ -95,4 +99,35 @@ open class KotlinCompletionProposal(
     override fun getContextInformation(): IContextInformation? = defaultCompletionProposal.getContextInformation()
     
     override fun getStyledDisplayString(): StyledString = styledPresentableString ?: StyledString(defaultCompletionProposal.displayString)
+}
+
+class KotlinImportCompletionProposal(
+        val typeName: TypeNameMatch,
+        replacementOffset: Int,
+        val replacementLength: Int,
+        image: Image,
+        styledString: StyledString,
+        val file: IFile) : 
+            KotlinCompletionProposal(
+                typeName.simpleTypeName,
+                replacementOffset,
+                replacementLength,
+                typeName.simpleTypeName.length,
+                image,
+                typeName.simpleTypeName,
+                null,
+                typeName.simpleTypeName,
+                styledString)  {
+    
+    var importShift = -1
+    
+    override fun apply(document: IDocument) {
+        document.replace(replacementOffset, replacementLength, typeName.simpleTypeName)
+        importShift = placeImports(listOf(typeName), file, document)
+    }
+    
+    override fun getSelection(document: IDocument): Point {
+        val selection = super.getSelection(document)
+        return if (importShift > 0) Point(selection.x + importShift, 0) else selection
+    }
 }

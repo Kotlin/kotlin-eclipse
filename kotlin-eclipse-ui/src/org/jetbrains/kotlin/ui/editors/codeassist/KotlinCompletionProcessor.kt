@@ -137,30 +137,14 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             val completion = it.simpleTypeName
             val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.type.flags, false)
             val image = descriptorsToImages.getOrPut(imageDescriptor) { imageDescriptor.createImage() }
-            val presentableString = completion
             
-            val proposal = object : KotlinCompletionProposal(
-                                completion,
+            val proposal = KotlinImportCompletionProposal(
+                                it,
                                 replacementOffset,
                                 replacementLength,
-                                completion.length,
                                 image,
-                                presentableString,
-                                null,
-                                completion,
-                                createStyledString(it.simpleTypeName, it.packageName)) {
-                var importShift = -1
-                
-                override fun apply(document: IDocument) {
-                    document.replace(replacementOffset, replacementLength, completion)
-                    importShift = placeImports(listOf(it), file, document)
-                }
-                
-                override fun getSelection(document: IDocument): Point {
-                    val selection = super.getSelection(document)
-                    return if (importShift > 0) Point(selection.x + importShift, 0) else selection
-                }
-            }
+                                createStyledString(it.simpleTypeName, it.packageName),
+                                file)
             
             ProposalWithCompletion(proposal, completion)
         }
