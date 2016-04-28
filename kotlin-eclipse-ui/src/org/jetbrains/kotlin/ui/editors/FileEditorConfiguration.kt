@@ -78,6 +78,8 @@ public class FileEditorConfiguration(colorManager: IColorManager,
         
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY)
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE)
+        
+        assistant.enableColoredLabels(true)
 
         return assistant
     }

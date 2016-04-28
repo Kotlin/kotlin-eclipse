@@ -26,6 +26,8 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.eclipse.jface.text.contentassist.CompletionProposal
+import org.eclipse.jface.viewers.StyledString
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
@@ -64,7 +66,8 @@ open class KotlinCompletionProposal(
         img: Image,
         presentableString: String,
         information: IContextInformation? = null,
-        additionalInfo: String? = null) : ICompletionProposal {
+        additionalInfo: String? = null,
+        val styledPresentableString: StyledString? = null) : ICompletionProposal, ICompletionProposalExtension6 {
     
     val defaultCompletionProposal =
             CompletionProposal(
@@ -90,4 +93,6 @@ open class KotlinCompletionProposal(
     override fun getImage(): Image? = defaultCompletionProposal.getImage()
 
     override fun getContextInformation(): IContextInformation? = defaultCompletionProposal.getContextInformation()
+    
+    override fun getStyledDisplayString(): StyledString = styledPresentableString ?: StyledString(defaultCompletionProposal.displayString)
 }
