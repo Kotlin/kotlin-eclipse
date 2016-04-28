@@ -137,4 +137,14 @@ public class KotlinCompletionHandlerInsertTest extends KotlinCompletionHandlerIn
 	public void withLambdaAndBracesOnDot() {
 		doAutoTest();
 	}
+	
+	@Test
+    public void completeNonImported() {
+        doAutoTest();
+    }
+	
+	@Test
+    public void nonImportedByCamelCase() {
+        doAutoTest();
+    }
 }

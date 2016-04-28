@@ -461,4 +461,13 @@ public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
         doTest("testData/completion/basic/common/WithCompletedExpression.kt");
     }
     
+    @Test
+    public void testOneProposalWithExplicitImport() {
+        doTest("testData/completion/basic/common/OneProposalWithExplicitImport.kt");
+    }
+    
+    @Test
+    public void testOneProposalWithStarImport() {
+        doTest("testData/completion/basic/common/OneWithStarImport.kt");
+    }
 }
