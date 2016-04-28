@@ -116,11 +116,11 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     }
     
     private fun createStyledString(simpleName: String, packageName: String): StyledString {
-        val styledString = StyledString()
-        styledString.append(simpleName)
-        styledString.append(JavaElementLabels.CONCAT_STRING, StyledString.QUALIFIER_STYLER)
-        styledString.append(packageName, StyledString.QUALIFIER_STYLER)
-        return Strings.markJavaElementLabelLTR(styledString)
+        return StyledString().apply { 
+            append(simpleName)
+            append(JavaElementLabels.CONCAT_STRING, StyledString.QUALIFIER_STYLER)
+            append(packageName, StyledString.QUALIFIER_STYLER)
+        }
     }
     
     private fun generateNonImportedCompletionProposals(
