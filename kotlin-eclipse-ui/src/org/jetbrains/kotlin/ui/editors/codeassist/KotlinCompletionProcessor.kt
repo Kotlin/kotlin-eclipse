@@ -131,7 +131,8 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             replacementLength: Int): List<ProposalWithCompletion> {
         
         val file = editor.getFile() ?: return emptyList()
-        val nonImportedTypesVariants = lookupNonImportedTypes(expression, identifierPart, javaProject)
+        val ktFile = editor.parsedFile ?: return emptyList()
+        val nonImportedTypesVariants = lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject)
         return nonImportedTypesVariants.map { 
             val completion = it.simpleTypeName
             val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.type.flags, false)
