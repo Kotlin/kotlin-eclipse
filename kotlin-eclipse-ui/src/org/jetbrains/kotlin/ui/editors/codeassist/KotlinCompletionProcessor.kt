@@ -60,13 +60,12 @@ import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.eclipse.swt.graphics.Point
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.eclipse.jdt.internal.ui.JavaPlugin
 
 class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContentAssistProcessor, ICompletionListener {
     companion object {
         private val VALID_PROPOSALS_CHARS = charArrayOf('.')
         private val VALID_INFO_CHARS = charArrayOf('(', ',')
-        
-        private val descriptorsToImages = hashMapOf<ImageDescriptor, Image>()
     }
     
     private val kotlinParameterValidator by lazy {
@@ -101,7 +100,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         
         return lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject).map { 
             val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.type.flags, false)
-            val image = descriptorsToImages.getOrPut(imageDescriptor) { imageDescriptor.createImage() }
+            val image = JavaPlugin.getImageDescriptorRegistry().get(imageDescriptor)
             
             KotlinImportCompletionProposal(it, image, file)
         }
