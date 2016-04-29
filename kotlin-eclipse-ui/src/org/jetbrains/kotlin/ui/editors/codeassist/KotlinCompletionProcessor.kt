@@ -104,12 +104,8 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         
         return arrayListOf<ProposalWithCompletion>().apply {
             if (expression != null) {
-                val replacementLength = offset - identOffset
-                addAll(collectCompletionProposals(
-                        generateBasicCompletionProposals(identifierPart, expression), identOffset, replacementLength))
-                addAll(
-                        generateNonImportedCompletionProposals(
-                                identifierPart, expression, editor.javaProject!!, identOffset, replacementLength))
+                addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, expression)))
+                addAll(generateNonImportedCompletionProposals(identifierPart, expression, editor.javaProject!!))
             }
             addAll(generateKeywordProposals(identOffset, offset, identifierPart))
             addAll(generateTemplateProposals(viewer, offset, identifierPart))
@@ -119,9 +115,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     private fun generateNonImportedCompletionProposals(
             identifierPart: String, 
             expression: KtSimpleNameExpression,
-            javaProject: IJavaProject,
-            replacementOffset: Int,
-            replacementLength: Int): List<ProposalWithCompletion> {
+            javaProject: IJavaProject): List<ProposalWithCompletion> {
         
         val file = editor.getFile() ?: return emptyList()
         val ktFile = editor.parsedFile ?: return emptyList()
@@ -131,7 +125,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.type.flags, false)
             val image = descriptorsToImages.getOrPut(imageDescriptor) { imageDescriptor.createImage() }
             
-            val proposal = KotlinImportCompletionProposal(it, replacementOffset, replacementLength, image, file)
+            val proposal = KotlinImportCompletionProposal(it, image, file)
             
             ProposalWithCompletion(proposal, completion)
         }
@@ -148,10 +142,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         return KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, file)
     }
     
-    private fun collectCompletionProposals(
-                    descriptors: Collection<DeclarationDescriptor>,
-                    replacementOffset: Int,
-                    replacementLength: Int): List<ProposalWithCompletion> {
+    private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>): List<ProposalWithCompletion> {
                         
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
@@ -165,9 +156,6 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
             
             val proposal = KotlinCompletionProposal(
                                 completion,
-                                replacementOffset,
-                                replacementLength,
-                                completion.length,
                                 image,
                                 presentableString,
                                 containmentPresentableString,

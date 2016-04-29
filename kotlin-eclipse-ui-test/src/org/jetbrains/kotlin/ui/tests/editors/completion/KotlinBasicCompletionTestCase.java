@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
+import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProposal;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -77,7 +78,13 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 		
 		List<String> actualProposals = new ArrayList<String>();
 		for (ICompletionProposal proposal : proposals) {
-			String replacementString = proposal.getAdditionalProposalInfo();
+		    String replacementString;
+		    if (proposal instanceof KotlinCompletionProposal) {
+		        replacementString = ((KotlinCompletionProposal) proposal).getReplacementString();
+		    } else {
+		        replacementString = proposal.getAdditionalProposalInfo();
+		    }
+		    
 			if (replacementString == null) replacementString = proposal.getDisplayString();
 
 			actualProposals.add(replacementString);

@@ -33,6 +33,10 @@ import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.psi.KtFile
 import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.ui.JavaElementLabels
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2
+import org.eclipse.jface.text.ITextViewer
+import org.eclipse.jface.text.DocumentEvent
+import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
@@ -65,39 +69,36 @@ public fun withKotlinInsertHandler(
 
 open class KotlinCompletionProposal(
         val replacementString: String,
-        val replacementOffset: Int,
-        replacementLength: Int,
-        cursorPosition: Int,
-        img: Image,
-        presentableString: String,
+        val img: Image,
+        val presentableString: String,
         val containmentPresentableString: String? = null,
-        information: IContextInformation? = null,
-        additionalInfo: String? = null) : ICompletionProposal, ICompletionProposalExtension6 {
+        val information: IContextInformation? = null,
+        val additionalInfo: String? = null) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
     
-    val defaultCompletionProposal =
-            CompletionProposal(
-                    replacementString, 
-                    replacementOffset, 
-                    replacementLength, 
-                    cursorPosition, 
-                    img, 
-                    presentableString, 
-                    information, 
-                    additionalInfo ?: replacementString)
-
-    override fun apply(document: IDocument) {
-        defaultCompletionProposal.apply(document)
+    var selectedOffset = -1
+    
+    override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
+        val document = viewer.document
+        val (identifierPart, identifierStart) = getIdentifierInfo(document, offset)
+        document.replace(identifierStart, offset - identifierStart, replacementString)
+        
+        selectedOffset = offset - identifierPart.length + replacementString.length
     }
+    
+    override fun validate(document: IDocument, offset: Int, event: DocumentEvent): Boolean {
+        val identiferInfo = getIdentifierInfo(document, offset)
+        return KotlinCompletionUtils.applicableNameFor(identiferInfo.identifierPart, replacementString)
+    }
+    
+    override fun getSelection(document: IDocument): Point? = Point(selectedOffset, 0)
 
-    override fun getSelection(document: IDocument): Point = defaultCompletionProposal.getSelection(document)
+    override fun getAdditionalProposalInfo(): String? = additionalInfo
 
-    override fun getAdditionalProposalInfo(): String = defaultCompletionProposal.getAdditionalProposalInfo()
+    override fun getDisplayString(): String = presentableString
 
-    override fun getDisplayString(): String = defaultCompletionProposal.getDisplayString()
+    override fun getImage(): Image? = img
 
-    override fun getImage(): Image? = defaultCompletionProposal.getImage()
-
-    override fun getContextInformation(): IContextInformation? = defaultCompletionProposal.getContextInformation()
+    override fun getContextInformation(): IContextInformation? = information
     
     override fun getStyledDisplayString(): StyledString {
         return if (containmentPresentableString != null) {
@@ -106,35 +107,31 @@ open class KotlinCompletionProposal(
             StyledString(getDisplayString())
         }
     }
+    
+    override fun selected(viewer: ITextViewer?, smartToggle: Boolean) {
+    }
+    
+    override fun unselected(viewer: ITextViewer?) {
+    }
+    
+    override final fun apply(document: IDocument) {
+        // should not be called
+    }
 }
 
-class KotlinImportCompletionProposal(
-        val typeName: TypeNameMatch,
-        replacementOffset: Int,
-        val replacementLength: Int,
-        image: Image,
-        val file: IFile) : 
-            KotlinCompletionProposal(
-                typeName.simpleTypeName,
-                replacementOffset,
-                replacementLength,
-                typeName.simpleTypeName.length,
-                image,
-                typeName.simpleTypeName,
-                typeName.packageName,
-                null,
-                typeName.simpleTypeName)  {
+class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image, val file: IFile) : 
+            KotlinCompletionProposal(typeName.simpleTypeName, image, typeName.simpleTypeName, typeName.packageName)  {
     
     var importShift = -1
     
-    override fun apply(document: IDocument) {
-        document.replace(replacementOffset, replacementLength, typeName.simpleTypeName)
-        importShift = placeImports(listOf(typeName), file, document)
+    override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
+        super.apply(viewer, trigger, stateMask, offset)
+        importShift = placeImports(listOf(typeName), file, viewer.document)
     }
     
-    override fun getSelection(document: IDocument): Point {
+    override fun getSelection(document: IDocument): Point? {
         val selection = super.getSelection(document)
-        return if (importShift > 0) Point(selection.x + importShift, 0) else selection
+        return if (importShift > 0 && selection != null) Point(selection.x + importShift, 0) else selection
     }
 }
 
@@ -145,3 +142,14 @@ private fun createStyledString(simpleName: String, containingDeclaration: String
         append(containingDeclaration, StyledString.QUALIFIER_STYLER)
     }
 }
+
+private fun getIdentifierInfo(document: IDocument, offset: Int): IdentifierInfo {
+    val text = document.get()
+    var identStartOffset = offset
+    while ((identStartOffset != 0) && Character.isUnicodeIdentifierPart(text[identStartOffset - 1])) {
+        identStartOffset--
+    }
+    return IdentifierInfo(text!!.substring(identStartOffset, offset), identStartOffset)
+}
+
+private data class IdentifierInfo(val identifierPart: String, val identifierStart: Int)
