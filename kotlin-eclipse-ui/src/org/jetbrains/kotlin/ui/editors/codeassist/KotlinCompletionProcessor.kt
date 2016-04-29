@@ -69,37 +69,19 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         private val descriptorsToImages = hashMapOf<ImageDescriptor, Image>()
     }
     
-    private val cachedProposals = arrayListOf<ProposalWithCompletion>()
-    
     private val kotlinParameterValidator by lazy {
         KotlinParameterListValidator(editor)
     }
     
-    private var isNewSession = true
-    
     override fun computeCompletionProposals(viewer: ITextViewer, offset: Int): Array<ICompletionProposal> {
-        val (identifierPart, identifierStart) = getIdentifierInfo(viewer.document, offset)
-        
-        if (isNewSession) {
-            cachedProposals.clear()
-            cachedProposals.addAll(generateCompletionProposals(viewer, identifierPart, offset, identifierStart))
-            isNewSession = false
-        }
-        
-        return cachedProposals
-                .filter { KotlinCompletionUtils.applicableNameFor(identifierPart, it.completion) }
-                .map { it.proposal }
-                .toTypedArray()
+        return generateCompletionProposals(viewer, offset).toTypedArray()
     }
     
-    private fun generateCompletionProposals(
-            viewer: ITextViewer, 
-            identifierPart: String, 
-            offset: Int, 
-            identOffset: Int): List<ProposalWithCompletion> {
-        val expression = KotlinCompletionUtils.getSimpleNameExpression(editor, identOffset)
+    private fun generateCompletionProposals(viewer: ITextViewer, offset: Int): List<ICompletionProposal> {
+        val (identifierPart, identifierStart) = getIdentifierInfo(viewer.document, offset)
+        val expression = KotlinCompletionUtils.getSimpleNameExpression(editor, identifierStart)
         
-        return arrayListOf<ProposalWithCompletion>().apply {
+        return arrayListOf<ICompletionProposal>().apply {
             if (expression != null) {
                 addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, expression)))
                 addAll(generateNonImportedCompletionProposals(identifierPart, expression, editor.javaProject!!))
@@ -112,19 +94,16 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     private fun generateNonImportedCompletionProposals(
             identifierPart: String, 
             expression: KtSimpleNameExpression,
-            javaProject: IJavaProject): List<ProposalWithCompletion> {
+            javaProject: IJavaProject): List<KotlinCompletionProposal> {
         
         val file = editor.getFile() ?: return emptyList()
         val ktFile = editor.parsedFile ?: return emptyList()
-        val nonImportedTypesVariants = lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject)
-        return nonImportedTypesVariants.map { 
-            val completion = it.simpleTypeName
+        
+        return lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject).map { 
             val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.type.flags, false)
             val image = descriptorsToImages.getOrPut(imageDescriptor) { imageDescriptor.createImage() }
             
-            val proposal = KotlinImportCompletionProposal(it, image, file)
-            
-            ProposalWithCompletion(proposal, completion)
+            KotlinImportCompletionProposal(it, image, file)
         }
     }
     
@@ -139,7 +118,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
         return KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, file)
     }
     
-    private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>): List<ProposalWithCompletion> {
+    private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>): List<KotlinCompletionProposal> {
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
             val image = KotlinImageProvider.getImage(descriptor)!!
@@ -158,11 +137,11 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                                 null,
                                 completion)
             
-            ProposalWithCompletion(withKotlinInsertHandler(descriptor, proposal), completion)
+            withKotlinInsertHandler(descriptor, proposal)
         }
     }
     
-    private fun generateTemplateProposals(viewer: ITextViewer, offset: Int, identifierPart: String): List<ProposalWithCompletion> {
+    private fun generateTemplateProposals(viewer: ITextViewer, offset: Int, identifierPart: String): List<ICompletionProposal> {
         val file = EditorUtil.getFile(editor)
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor $editor", null)
@@ -179,9 +158,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                 .filter { it.name.startsWith(identifierPart) }
                 .map {
                     val templateContext = createTemplateContext(region, it.contextTypeId)
-                    ProposalWithCompletion(
-                            TemplateProposal(it, templateContext, region, templateIcon),
-                            it.name)
+                    TemplateProposal(it, templateContext, region, templateIcon)
                 }
         
     }
@@ -192,16 +169,14 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                 editor, region.getOffset(), region.getLength())
     }
     
-    private fun generateKeywordProposals(identifierPart: String): List<ProposalWithCompletion> {
+    private fun generateKeywordProposals(identifierPart: String): List<KotlinCompletionProposal> {
         if (identifierPart.isBlank()) return emptyList()
         
         return KtTokens.KEYWORDS.types
                 .filter { it.toString().startsWith(identifierPart) }
                 .map { 
                     val keyword = it.toString()
-                    ProposalWithCompletion(
-                            KotlinCompletionProposal(keyword, null, keyword),
-                            keyword)
+                    KotlinCompletionProposal(keyword, null, keyword)
                 }
     }
     
@@ -218,14 +193,10 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     override fun getContextInformationValidator(): IContextInformationValidator = kotlinParameterValidator
     
     override fun assistSessionStarted(event: ContentAssistEvent?) {
-        isNewSession = true
     }
     
     override fun assistSessionEnded(event: ContentAssistEvent?) {
-        cachedProposals.clear()
     }
     
     override fun selectionChanged(proposal: ICompletionProposal?, smartToggle: Boolean) { }
 }
-
-private class ProposalWithCompletion(val proposal: ICompletionProposal, val completion: String)

@@ -40,7 +40,7 @@ import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
-        proposal: KotlinCompletionProposal): ICompletionProposal {
+        proposal: KotlinCompletionProposal): KotlinCompletionProposal {
     return when (descriptor) {
         is FunctionDescriptor -> {
             val parameters = descriptor.getValueParameters()
