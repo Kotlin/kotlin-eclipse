@@ -24,7 +24,6 @@ import org.eclipse.jdt.internal.ui.JavaPluginImages
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.Region
-import org.eclipse.jface.text.contentassist.CompletionProposal
 import org.eclipse.jface.text.contentassist.ContentAssistEvent
 import org.eclipse.jface.text.contentassist.ICompletionListener
 import org.eclipse.jface.text.contentassist.ICompletionProposal
@@ -79,13 +78,11 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     private var isNewSession = true
     
     override fun computeCompletionProposals(viewer: ITextViewer, offset: Int): Array<ICompletionProposal> {
-        val fileText = viewer.getDocument().get()
-        val identOffset = getIdentifierStartOffset(fileText, offset)
+        val (identifierPart, identifierStart) = getIdentifierInfo(viewer.document, offset)
         
-        val identifierPart = fileText!!.substring(identOffset, offset)
         if (isNewSession) {
             cachedProposals.clear()
-            cachedProposals.addAll(generateCompletionProposals(viewer, identifierPart, offset, identOffset))
+            cachedProposals.addAll(generateCompletionProposals(viewer, identifierPart, offset, identifierStart))
             isNewSession = false
         }
         
@@ -107,7 +104,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                 addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, expression)))
                 addAll(generateNonImportedCompletionProposals(identifierPart, expression, editor.javaProject!!))
             }
-            addAll(generateKeywordProposals(identOffset, offset, identifierPart))
+            addAll(generateKeywordProposals(identifierPart))
             addAll(generateTemplateProposals(viewer, offset, identifierPart))
         }
     }
@@ -143,7 +140,6 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     }
     
     private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>): List<ProposalWithCompletion> {
-                        
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
             val image = KotlinImageProvider.getImage(descriptor)!!
@@ -196,10 +192,7 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                 editor, region.getOffset(), region.getLength())
     }
     
-    private fun generateKeywordProposals(
-            identOffset: Int, 
-            offset: Int, 
-            identifierPart: String): List<ProposalWithCompletion> {
+    private fun generateKeywordProposals(identifierPart: String): List<ProposalWithCompletion> {
         if (identifierPart.isBlank()) return emptyList()
         
         return KtTokens.KEYWORDS.types
@@ -207,17 +200,9 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
                 .map { 
                     val keyword = it.toString()
                     ProposalWithCompletion(
-                            CompletionProposal(keyword, identOffset, offset - identOffset, keyword.length),
+                            KotlinCompletionProposal(keyword, null, keyword),
                             keyword)
                 }
-    }
-    
-    private fun getIdentifierStartOffset(text: String, offset: Int): Int {
-        var identStartOffset = offset
-        while ((identStartOffset != 0) && Character.isUnicodeIdentifierPart(text[identStartOffset - 1])) {
-            identStartOffset--
-        }
-        return identStartOffset
     }
     
     override fun computeContextInformation(viewer: ITextViewer?, offset: Int): Array<IContextInformation> {

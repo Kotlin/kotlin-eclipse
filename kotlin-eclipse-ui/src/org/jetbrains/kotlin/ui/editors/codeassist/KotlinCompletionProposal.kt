@@ -67,9 +67,20 @@ public fun withKotlinInsertHandler(
     }
 }
 
+fun getIdentifierInfo(document: IDocument, offset: Int): IdentifierInfo {
+    val text = document.get()
+    var identStartOffset = offset
+    while ((identStartOffset != 0) && Character.isUnicodeIdentifierPart(text[identStartOffset - 1])) {
+        identStartOffset--
+    }
+    return IdentifierInfo(text!!.substring(identStartOffset, offset), identStartOffset)
+}
+
+data class IdentifierInfo(val identifierPart: String, val identifierStart: Int)
+
 open class KotlinCompletionProposal(
         val replacementString: String,
-        val img: Image,
+        val img: Image?,
         val presentableString: String,
         val containmentPresentableString: String? = null,
         val information: IContextInformation? = null,
@@ -142,14 +153,3 @@ private fun createStyledString(simpleName: String, containingDeclaration: String
         append(containingDeclaration, StyledString.QUALIFIER_STYLER)
     }
 }
-
-private fun getIdentifierInfo(document: IDocument, offset: Int): IdentifierInfo {
-    val text = document.get()
-    var identStartOffset = offset
-    while ((identStartOffset != 0) && Character.isUnicodeIdentifierPart(text[identStartOffset - 1])) {
-        identStartOffset--
-    }
-    return IdentifierInfo(text!!.substring(identStartOffset, offset), identStartOffset)
-}
-
-private data class IdentifierInfo(val identifierPart: String, val identifierStart: Int)
