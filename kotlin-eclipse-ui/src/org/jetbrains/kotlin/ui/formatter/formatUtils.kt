@@ -18,16 +18,17 @@ import com.intellij.openapi.util.TextRange
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import com.intellij.formatting.Alignment
 import org.jetbrains.kotlin.idea.KotlinLanguage
+import org.jetbrains.kotlin.idea.formatter.KotlinDependentSpacingFactory
 
 fun computeAlignment(ktFile: KtFile, offset: Int): IndentInEditor {
-    settings.getCommonSettings(KotlinLanguage.INSTANCE).ALIGN_MULTILINE_EXTENDS_LIST = true
-    settings.getCommonSettings(KotlinLanguage.INSTANCE).ALIGN_MULTILINE_BINARY_OPERATION = true
+//    settings.getCommonSettings(KotlinLanguage.INSTANCE).ALIGN_MULTILINE_EXTENDS_LIST = true
+//    settings.getCommonSettings(KotlinLanguage.INSTANCE).ALIGN_MULTILINE_BINARY_OPERATION = true
     val rootBlock = KotlinBlock(ktFile.node, 
                 NULL_ALIGNMENT_STRATEGY, 
                 Indent.getNoneIndent(), 
                 null,
                 settings,
-                createSpacingBuilder(settings))
+                createSpacingBuilder(settings, KotlinDependantSpacingFactoryImpl))
     
     val (blockWithParent, indent, index) = computeBlocks(rootBlock, offset)
     
@@ -37,68 +38,32 @@ fun computeAlignment(ktFile: KtFile, offset: Int): IndentInEditor {
     }
     
     val block = blockWithParent.block
-    if (block.isIncomplete) {
-        val currentBlock = if (block.textRange.startOffset == offset) {
+    
+    val currentBlock = if ((block.textRange.startOffset == offset) && (block.isIncomplete || block.isLeaf)) {
             blockWithParent.parent?.block ?: block
         } else {
             block
         }
-        
-        val attributes = currentBlock.getChildAttributes(index + 1)
-        if (attributes.alignment != null) {
-            return getIndentByAlignment(currentBlock, ktFile)
-        }
-        
-        val blockIndent = when (attributes.childIndent?.type) {
-            Type.NORMAL -> indent + 1
-            Type.CONTINUATION -> indent + 2
-            Type.CONTINUATION_WITHOUT_FIRST -> {
-                if (index != 0) indent + 2 else indent
-            }
-            null -> {
-                indent + 2
-            }
-            else -> indent
-        }
-        
-        return IndentInEditor.BlockIndent(blockIndent)
-    } 
-    else {
-        val alignmentBlock = getAlignment(blockWithParent)
-        if (alignmentBlock != null) {
-            return getIndentByAlignment(alignmentBlock.parent!!.block, ktFile)
-        }
-        
-        val currentBlock = if (block.textRange.startOffset == offset && block.isLeaf) {
-            blockWithParent.parent?.block ?: block
-        } else {
-            block
-        }
-        
-        val attributes = currentBlock.getChildAttributes(1)
-        val blockIndent = when (attributes.childIndent?.type) {
-            Type.NORMAL -> indent + 1
-            Type.CONTINUATION -> indent + 2
-            Type.CONTINUATION_WITHOUT_FIRST -> {
-                if (index != 0) indent + 2 else indent
-            }
-            else -> indent
-        }
-        
-        return IndentInEditor.BlockIndent(blockIndent)
-    }
-}
-
-private fun getIncompleteBlock(blockWithParent: BlockWithParent): Block? {
-    var current: BlockWithParent? = blockWithParent
-    while (current != null && !current.block.isIncomplete) {
-        current = current.parent
+    
+    val attributes = currentBlock.getChildAttributes(index + 1)
+    if (attributes.alignment != null) {
+        return getIndentByAlignment(currentBlock, ktFile)
     }
     
-    return current?.block
+    val blockIndent = when (attributes.childIndent?.type) {
+        Type.NORMAL -> indent + 1
+        Type.CONTINUATION -> indent + 2
+        Type.CONTINUATION_WITHOUT_FIRST -> {
+            if (index != 0) indent + 2 else indent
+        }
+        null -> indent + 2
+        else -> indent
+    }
+    
+    return IndentInEditor.BlockIndent(blockIndent)
 }
 
-private fun getIndentByAlignment(parent: Block, ktFile: KtFile): IndentInEditor.RawIndent {
+fun getIndentByAlignment(parent: Block, ktFile: KtFile): IndentInEditor.RawIndent {
     val alignmentBlock = parent.subBlocks.find { it.alignment != null }
     val alignmentStartOffset = alignmentBlock!!.textRange.startOffset - 1
     var parentIndent = 0
@@ -122,15 +87,12 @@ private fun computeBlocks(root: KotlinBlock, offset: Int): BlockWithIndentation 
         
         for (i in subBlocks.indices) {
             val subBlock = subBlocks[i]
-            if (subBlock is KotlinBlock && 
-                (offset in subBlock.getTextRange())) {
+            if (subBlock is KotlinBlock && offset in subBlock.getTextRange()) {
                 narrowBlock = subBlock
-                        break
+                break
             }
             
-            if (subBlock is KotlinBlock && 
-                (subBlock.textRange.startOffset >= offset)) {
-                
+            if (subBlock is KotlinBlock && subBlock.textRange.startOffset >= offset) {
                 narrowBlock = if (i > 0) subBlocks[i - 1] else null
                 break
             }
@@ -166,7 +128,7 @@ private fun computeBlocks(root: KotlinBlock, offset: Int): BlockWithIndentation 
 
 private data class BlockWithIndentation(val block: BlockWithParent, val indent: Int, val index: Int)
 
-private fun getAlignment(blockWithParent: BlockWithParent): BlockWithParent? {
+fun getAlignment(blockWithParent: BlockWithParent): BlockWithParent? {
     var current: BlockWithParent? = blockWithParent
     while (current?.parent != null) {
         if (current?.block?.alignment != null) {
@@ -178,7 +140,7 @@ private fun getAlignment(blockWithParent: BlockWithParent): BlockWithParent? {
     return null
 }
 
-private class BlockWithParent(val block: Block, val parent: BlockWithParent?)
+class BlockWithParent(val block: Block, val parent: BlockWithParent?)
 
 sealed class IndentInEditor {
     class RawIndent(val rawIndent: Int) : IndentInEditor()
@@ -192,20 +154,20 @@ sealed class IndentInEditor {
     }
 }
 
-//object KotlinDependantSpacingFactoryImpl : KotlinDependentSpacingFactory {
-//    override fun createLineFeedDependentSpacing(
-//            minSpaces: Int,
-//            maxSpaces: Int,
-//            minimumLineFeeds: Int,
-//            keepLineBreaks: Boolean,
-//            keepBlankLines: Int,
-//            dependency: TextRange,
-//            rule: DependentSpacingRule): Spacing {
-//        return object : DependantSpacingImpl(minSpaces, maxSpaces, dependency, keepLineBreaks, keepBlankLines, rule) {
-////            override fun getMinLineFeeds(): Int {
-////                val superMin = super.getMinLineFeeds()
-////                return if (superMin == 0) minimumLineFeeds else superMin
-////            }
-//        }
-//    }
-//}
+object KotlinDependantSpacingFactoryImpl : KotlinDependentSpacingFactory {
+    override fun createLineFeedDependentSpacing(
+            minSpaces: Int,
+            maxSpaces: Int,
+            minimumLineFeeds: Int,
+            keepLineBreaks: Boolean,
+            keepBlankLines: Int,
+            dependency: TextRange,
+            rule: DependentSpacingRule): Spacing {
+        return object : DependantSpacingImpl(minSpaces, maxSpaces, dependency, keepLineBreaks, keepBlankLines, rule) {
+//            override fun getMinLineFeeds(): Int {
+//                val superMin = super.getMinLineFeeds()
+//                return if (superMin == 0) minimumLineFeeds else superMin
+//            }
+        }
+    }
+}
