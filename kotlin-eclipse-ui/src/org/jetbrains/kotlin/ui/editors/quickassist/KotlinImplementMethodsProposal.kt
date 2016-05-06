@@ -43,7 +43,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
             renderDefaultValues = false
             modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
             withDefinedIn = false
-            classifierNamePolicy = ClassifierNamePolicy.SOURCE_CODE_QUALIFIED
+            classifierNamePolicy = ClassifierNamePolicy.SHORT
             overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
             unitReturnType = false
             typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES

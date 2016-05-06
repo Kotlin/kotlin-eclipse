@@ -79,10 +79,16 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             if (TextUtilities.getDefaultLineDelimiter(document).length() > 1) {
                 textLength += IndenterUtil.getLineSeparatorsOccurences(element.getText());
             }
+            
+            int startOffset = KotlinQuickAssistProposalKt.getStartOffset(element, editor);
+            String receiverExpressionText = element.getReceiverExpression().getText();
+            
             document.replace(
-                    KotlinQuickAssistProposalKt.getStartOffset(element, editor), 
+                    startOffset, 
                     textLength, 
-                    element.getReceiverExpression().getText() + "[" + arguments + "]");
+                    receiverExpressionText + "[" + arguments + "]");
+            
+            editor.getViewer().getTextWidget().setCaretOffset(startOffset + receiverExpressionText.length());
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
