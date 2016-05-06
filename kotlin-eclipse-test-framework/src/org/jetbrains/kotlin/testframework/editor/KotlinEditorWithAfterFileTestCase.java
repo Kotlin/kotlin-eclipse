@@ -17,11 +17,13 @@
 package org.jetbrains.kotlin.testframework.editor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.util.containers.ContainerUtil;
@@ -114,5 +116,25 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
         }
         
         performTest(target.getContent(), target.getContentAfter());
+    }
+    
+    @Override
+    protected void doAutoTestWithDependencyFile(String mainTestPath, File dependencyFile) {
+        String fileText = KotlinTestUtils.getText(mainTestPath);
+        testEditor = configureEditor(KotlinTestUtils.getNameByPath(mainTestPath), fileText,
+                WithAfterSourceFileData.getPackageFromContent(fileText));
+        
+        try {
+            SourceFileData dependencySourceFile = new SourceFileData(dependencyFile);
+            String fileName = dependencySourceFile.getFileName();
+            String dependencyFileName = fileName.substring(0, fileName.length() - FILE_DEPENDENCY_SUFFIX.length()) + 
+                    "_dependency" + KT_FILE_EXTENSION;
+            createSourceFile(dependencySourceFile.getPackageName(), dependencyFileName, 
+                    dependencySourceFile.getContent());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        
+        performTest(fileText, KotlinTestUtils.getText(mainTestPath + AFTER_FILE_EXTENSION));
     }
 }
