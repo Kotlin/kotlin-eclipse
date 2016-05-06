@@ -41,9 +41,11 @@ import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver;
 import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl;
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex;
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder;
+import org.jetbrains.kotlin.core.utils.KotlinImportInserterHelper;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider;
 import org.jetbrains.kotlin.idea.KotlinFileType;
+import org.jetbrains.kotlin.idea.util.ImportInsertHelper;
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager;
@@ -83,6 +85,7 @@ public class KotlinEnvironment {
     public final static String KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler");
     
     private static final Map<IJavaProject, KotlinEnvironment> cachedEnvironment = new HashMap<>();
+    private static final Map<Project, IJavaProject> ideaToEclipseProject = new HashMap<>();
     private static final Object environmentLock = new Object();
     
     private final JavaCoreApplicationEnvironment applicationEnvironment;
@@ -125,6 +128,7 @@ public class KotlinEnvironment {
         project.registerService(BuiltInsReferenceResolver.class, new BuiltInsReferenceResolver(project));
         project.registerService(KotlinSourceIndex.class, new KotlinSourceIndex());
         project.registerService(KotlinCacheService.class, new KotlinCacheServiceImpl());
+        project.registerService(ImportInsertHelper.class, new KotlinImportInserterHelper());
         
         configureClasspath();
         
@@ -138,6 +142,7 @@ public class KotlinEnvironment {
         }
         
         cachedEnvironment.put(javaProject, this);
+        ideaToEclipseProject.put(project, javaProject);
     }
     
     private static void registerProjectExtensionPoints(ExtensionsArea area) {
@@ -154,7 +159,10 @@ public class KotlinEnvironment {
     public static KotlinEnvironment getEnvironment(@NotNull IJavaProject javaProject) {
         synchronized (environmentLock) {
             if (!cachedEnvironment.containsKey(javaProject)) {
-                cachedEnvironment.put(javaProject, new KotlinEnvironment(javaProject, Disposer.newDisposable()));
+                KotlinEnvironment newEnvironment = new KotlinEnvironment(javaProject, Disposer.newDisposable());
+                
+                cachedEnvironment.put(javaProject, newEnvironment);
+                ideaToEclipseProject.put(newEnvironment.getProject(), javaProject);
             }
             
             return cachedEnvironment.get(javaProject);
@@ -165,10 +173,23 @@ public class KotlinEnvironment {
         synchronized (environmentLock) {
             if (cachedEnvironment.containsKey(javaProject)) {
                 KotlinEnvironment environment = cachedEnvironment.get(javaProject);
+                
+                ideaToEclipseProject.remove(environment.getProject());
+                
                 Disposer.dispose(environment.getJavaApplicationEnvironment().getParentDisposable());
                 ZipHandler.clearFileAccessorCache();
             }
-            cachedEnvironment.put(javaProject, new KotlinEnvironment(javaProject, Disposer.newDisposable()));
+            
+            KotlinEnvironment newEnvironment = new KotlinEnvironment(javaProject, Disposer.newDisposable());
+            cachedEnvironment.put(javaProject, newEnvironment);
+            ideaToEclipseProject.put(newEnvironment.getProject(), javaProject);
+        }
+    }
+    
+    @Nullable
+    public static IJavaProject getJavaProject(@NotNull Project project) {
+        synchronized (environmentLock) {
+            return ideaToEclipseProject.get(project);
         }
     }
     

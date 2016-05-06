@@ -50,6 +50,12 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.isReallySuccess
 import org.jetbrains.kotlin.psi.KtUnaryExpression
 import org.jetbrains.kotlin.utils.addToStdlib.constant
+import org.jetbrains.kotlin.idea.imports.canBeReferencedViaImport
+import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
+import org.jetbrains.kotlin.psi.KtNameReferenceExpression
+import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
+import org.jetbrains.kotlin.psi.KtThisExpression
+import org.jetbrains.kotlin.psi.KtSuperExpression
 
 public val FILE_PROJECT: Key<IJavaProject> = Key.create("FILE_PROJECT")
 
@@ -119,4 +125,14 @@ public fun KtExpression.readWriteAccess(): ReferenceAccess {
         ReferenceAccess.READ_WRITE
     else
         ReferenceAccess.READ
+}
+
+// TODO: obtain this function from referenceUtil.kt (org.jetbrains.kotlin.idea.references)
+fun KotlinReference.canBeResolvedViaImport(target: DeclarationDescriptor): Boolean {
+    if (!target.canBeReferencedViaImport()) return false
+    if (target.isExtension) return true // assume that any type of reference can use imports when resolved to extension
+    val referenceExpression = this.expression as? KtNameReferenceExpression ?: return false
+    if (CallTypeAndReceiver.detect(referenceExpression).receiver != null) return false
+    if (expression.parent is KtThisExpression || expression.parent is KtSuperExpression) return false // TODO: it's a bad design of PSI tree, we should change it
+    return true
 }
