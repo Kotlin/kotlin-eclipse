@@ -10,6 +10,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testAbstractAccessor() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/AbstractAccessor.kt");
+    }
+    
+    @Test
     public void testAbstractInAbstractClass() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/AbstractInAbstractClass.kt");
     }
@@ -35,8 +40,18 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testAssignToArrayElement() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/AssignToArrayElement.kt");
+    }
+    
+    @Test
     public void testAutoCreatedIt() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/AutoCreatedIt.kt");
+    }
+    
+    @Test
+    public void testBacktickNames() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/BacktickNames.kt");
     }
     
     @Test
@@ -57,6 +72,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     @Test
     public void testBreakContinue() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/BreakContinue.kt");
+    }
+    
+    @Test
+    public void testBreakContinueInWhen() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/BreakContinueInWhen.kt");
     }
     
     @Test
@@ -105,6 +125,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testDefaultValueForParameterInFunctionType() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/DefaultValueForParameterInFunctionType.kt");
+    }
+    
+    @Test
     public void testDefaultValuesTypechecking() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/DefaultValuesTypechecking.kt");
     }
@@ -115,38 +140,13 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
-    public void testDelegationAndOverriding() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/delegation/DelegationAndOverriding.kt");
+    public void testDeprecatedGetSetPropertyDelegateConvention() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/DeprecatedGetSetPropertyDelegateConvention.kt");
     }
     
     @Test
-    public void testDelegationNotTotrait() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/delegation/DelegationNotTotrait.kt");
-    }
-    
-    @Test
-    public void testDelegationToJavaIface() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/delegation/DelegationToJavaIface.kt");
-    }
-    
-    @Test
-    public void testDelegation_ClashingFunctions() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/delegation/Delegation_ClashingFunctions.kt");
-    }
-    
-    @Test
-    public void testDelegation_Hierarchy() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/delegation/Delegation_Hierarchy.kt");
-    }
-    
-    @Test
-    public void testDelegation_MultipleDelegates() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/delegation/Delegation_MultipleDelegates.kt");
-    }
-    
-    @Test
-    public void testDelegation_ScopeInitializationOrder() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/delegation/Delegation_ScopeInitializationOrder.kt");
+    public void testDeprecatedUnaryOperatorConventions() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/DeprecatedUnaryOperatorConventions.kt");
     }
     
     @Test
@@ -170,13 +170,38 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testEnumEntryAsType() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/EnumEntryAsType.kt");
+    }
+    
+    @Test
+    public void testExtensionCallInvoke() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/ExtensionCallInvoke.kt");
+    }
+    
+    @Test
+    public void testfileDependencyRecursion() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/fileDependencyRecursion.kt");
+    }
+    
+    @Test
     public void testForRangeConventions() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/ForRangeConventions.kt");
     }
     
     @Test
+    public void testFreeFunctionCalledAsExtension() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/FreeFunctionCalledAsExtension.kt");
+    }
+    
+    @Test
     public void testFunctionCalleeExpressions() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/FunctionCalleeExpressions.kt");
+    }
+    
+    @Test
+    public void testFunctionParameterWithoutType() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/FunctionParameterWithoutType.kt");
     }
     
     @Test
@@ -195,8 +220,13 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
-    public void testIllegalModifiers() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/modifiers/IllegalModifiers.kt");
+    public void testimplicitIntersection() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/implicitIntersection.kt");
+    }
+    
+    @Test
+    public void testimplicitNestedIntersection() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/implicitNestedIntersection.kt");
     }
     
     @Test
@@ -215,6 +245,21 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testInfix() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/Infix.kt");
+    }
+    
+    @Test
+    public void testInfixModifierApplicability() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/InfixModifierApplicability.kt");
+    }
+    
+    @Test
+    public void testInvokeAndRecursiveResolve() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/InvokeAndRecursiveResolve.kt");
+    }
+    
+    @Test
     public void testIsExpressions() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/IsExpressions.kt");
     }
@@ -227,6 +272,31 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     @Test
     public void testkt53() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/kt53.kt");
+    }
+    
+    @Test
+    public void testLateInit() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/LateInit.kt");
+    }
+    
+    @Test
+    public void testLateInitSetter() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/LateInitSetter.kt");
+    }
+    
+    @Test
+    public void testLiteralAsResult() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/LiteralAsResult.kt");
+    }
+    
+    @Test
+    public void testLocalClassAndShortSubpackageNames() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/LocalClassAndShortSubpackageNames.kt");
+    }
+    
+    @Test
+    public void testlocalInterfaces() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/localInterfaces.kt");
     }
     
     @Test
@@ -245,8 +315,38 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testNamedFunctionTypeParameterInSupertype() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/NamedFunctionTypeParameterInSupertype.kt");
+    }
+    
+    @Test
     public void testNullability() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/Nullability.kt");
+    }
+    
+    @Test
+    public void testNumberPrefixAndSuffix() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/NumberPrefixAndSuffix.kt");
+    }
+    
+    @Test
+    public void testObjectWithConstructor() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/ObjectWithConstructor.kt");
+    }
+    
+    @Test
+    public void testOperatorChecks() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/OperatorChecks.kt");
+    }
+    
+    @Test
+    public void testOperators() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/Operators.kt");
+    }
+    
+    @Test
+    public void testOperatorsWithWrongNames() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/OperatorsWithWrongNames.kt");
     }
     
     @Test
@@ -260,6 +360,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testOverridenSetterVisibility() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/OverridenSetterVisibility.kt");
+    }
+    
+    @Test
     public void testOverridingVarByVal() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/OverridingVarByVal.kt");
     }
@@ -270,6 +375,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testPackageInTypePosition() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/PackageInTypePosition.kt");
+    }
+    
+    @Test
     public void testPackageQualified() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/PackageQualified.kt");
     }
@@ -277,6 +387,16 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     @Test
     public void testPrimaryConstructors() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/PrimaryConstructors.kt");
+    }
+    
+    @Test
+    public void testPrivateFromOuterPackage() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/PrivateFromOuterPackage.kt");
+    }
+    
+    @Test
+    public void testPrivateSetterForOverridden() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/PrivateSetterForOverridden.kt");
     }
     
     @Test
@@ -310,8 +430,23 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testRecursiveGetter() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/RecursiveGetter.kt");
+    }
+    
+    @Test
+    public void testRecursiveResolve() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/RecursiveResolve.kt");
+    }
+    
+    @Test
     public void testRecursiveTypeInference() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/RecursiveTypeInference.kt");
+    }
+    
+    @Test
+    public void testReservedAsync() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/ReservedAsync.kt");
     }
     
     @Test
@@ -330,6 +465,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testSafeCallInvoke() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/SafeCallInvoke.kt");
+    }
+    
+    @Test
     public void testSafeCallNonNullReceiver() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/SafeCallNonNullReceiver.kt");
     }
@@ -345,6 +485,21 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
+    public void testSafeCallOnSuperReceiver() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/SafeCallOnSuperReceiver.kt");
+    }
+    
+    @Test
+    public void testSerializable() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/Serializable.kt");
+    }
+    
+    @Test
+    public void testSetterVisibility() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/SetterVisibility.kt");
+    }
+    
+    @Test
     public void testShiftFunctionTypes() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/ShiftFunctionTypes.kt");
     }
@@ -352,6 +507,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     @Test
     public void testStarsInFunctionCalls() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/StarsInFunctionCalls.kt");
+    }
+    
+    @Test
+    public void testStringPrefixAndSuffix() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/StringPrefixAndSuffix.kt");
     }
     
     @Test
@@ -380,8 +540,8 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
-    public void testTraitSupertypeList() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/traitWithRequired/traitSupertypeList.kt");
+    public void testTraitWithConstructor() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/TraitWithConstructor.kt");
     }
     
     @Test
@@ -392,6 +552,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     @Test
     public void testTypeMismatchOnOverrideWithSyntaxErrors() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/TypeMismatchOnOverrideWithSyntaxErrors.kt");
+    }
+    
+    @Test
+    public void testUnderscore() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/Underscore.kt");
     }
     
     @Test
@@ -407,6 +572,11 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     @Test
     public void testUnresolved() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/Unresolved.kt");
+    }
+    
+    @Test
+    public void testUnusedParameters() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/UnusedParameters.kt");
     }
     
     @Test
@@ -432,136 +602,5 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     @Test
     public void testVariance() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/Variance.kt");
-    }
-    
-    @Test
-    public void testdefaultModifier() throws Exception {
-    	doTest("common_testData/compiler/diagnostics/tests/modifiers/defaultModifier.kt");
-    }
-    
-    @Test
-    public void testincompatibleVarianceModifiers() throws Exception {
-    	doTest("common_testData/compiler/diagnostics/tests/modifiers/incompatibleVarianceModifiers.kt");
-    }
-    
-    @Test
-    public void testprimaryConstructorMissingKeyword() throws Exception {
-    	doTest("common_testData/compiler/diagnostics/tests/modifiers/primaryConstructorMissingKeyword.kt");
-    }
-    
-    @Test
-    public void testrepeatedModifiers() throws Exception {
-    	doTest("common_testData/compiler/diagnostics/tests/modifiers/repeatedModifiers.kt");
-    }
-    
-    @Test
-    public void testtraitRequiresAny() throws Exception {
-    	doTest("common_testData/compiler/diagnostics/tests/traitWithRequired/traitRequiresAny.kt");
-    }
-    
-    @Test
-	public void testUnusedParameters() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/UnusedParameters.kt");
-	}
-    
-	@Test
-	public void testTraitWithConstructor() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/TraitWithConstructor.kt");
-	}
-	
-	@Test
-	public void testPackageInTypePosition() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/PackageInTypePosition.kt");
-	}
-	
-	@Test
-	public void testRecursiveResolve() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/RecursiveResolve.kt");
-	}
-	
-	@Test
-	public void testLocalClassAndShortSubpackageNames() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/LocalClassAndShortSubpackageNames.kt");
-	}
-	
-	@Test
-	public void testFunctionParameterWithoutType() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/FunctionParameterWithoutType.kt");
-	}
-	
-	@Test
-	public void testDelegationExpectedType() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/delegation/DelegationExpectedType.kt");
-	}
-	
-	@Test
-	public void testBreakContinueInWhen() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/BreakContinueInWhen.kt");
-	}
-	
-	@Test
-	public void testAssignToArrayElement() throws Exception {
-		doTest("common_testData/compiler/diagnostics/tests/AssignToArrayElement.kt");
-	}
-	
-	//deprecation tests
-	@Test
-    public void testAnnotationUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/annotationUsage.kt");
-    }
-
-	@Test
-    public void testComponentUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/componentUsage.kt");
-    }
-	
-	@Test
-    public void testFunctionUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/functionUsage.kt");
-    }
-
-	@Test
-    public void testGenericConstructorUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/genericConstructorUsage.kt");
-    }
-
-	@Test
-    public void testImports() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/imports.kt");
-    }
-
-	@Test
-    public void testIteratorUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/iteratorUsage.kt");
-    }
-
-	@Test
-    public void testJavaDeprecated() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/javaDeprecated.kt");
-    }
-
-	@Test
-    public void testJavaDocDeprecated() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/javaDocDeprecated.kt");
-    }
-
-	@Test
-    public void testNestedTypesUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/nestedTypesUsage.kt");
-    }
-
-	@Test
-    public void testObjectUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/objectUsage.kt");
-    }
-
-	@Test
-    public void testPropertyUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/propertyUsage.kt");
-    }
-
-	@Test
-    public void testTypeUsage() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/deprecated/typeUsage.kt");
     }
 }
