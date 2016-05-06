@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.jetbrains.kotlin.renderer.NameShortness
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
@@ -37,13 +36,14 @@ import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
 import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.renderer.ClassifierNamePolicy
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
             renderDefaultValues = false
             modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
             withDefinedIn = false
-            nameShortness = NameShortness.SHORT
+            classifierNamePolicy = ClassifierNamePolicy.SOURCE_CODE_QUALIFIED
             overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
             unitReturnType = false
             typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES

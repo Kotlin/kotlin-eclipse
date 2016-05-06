@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2000-2014 JetBrains s.r.o.
+* Copyright 2000-2016 JetBrains s.r.o.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -35,83 +35,61 @@ import org.jetbrains.kotlin.load.java.structure.JavaField
 import org.jetbrains.kotlin.load.java.structure.JavaMethod
 import org.jetbrains.kotlin.load.java.structure.JavaType
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter
-import org.jetbrains.kotlin.load.java.structure.JavaTypeSubstitutor
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import com.google.common.collect.Lists
-import org.jetbrains.kotlin.load.java.structure.JavaClass.OriginKind
+import org.jetbrains.kotlin.name.SpecialNames
 
 public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(javaElement), JavaClass {
-    override public fun getName(): Name = Name.guess(getBinding().getName())
+    override val name: Name = SpecialNames.safeIdentifier(getBinding().getName())
     
-    override public fun isAbstract(): Boolean = Modifier.isAbstract(getBinding().getModifiers())
+    override val isAbstract: Boolean = Modifier.isAbstract(getBinding().getModifiers())
     
-    override public fun isStatic(): Boolean = Modifier.isStatic(getBinding().getModifiers())
+    override val isStatic: Boolean = Modifier.isStatic(getBinding().getModifiers())
     
-    override public fun isFinal(): Boolean = Modifier.isFinal(getBinding().getModifiers())
+    override val isFinal: Boolean = Modifier.isFinal(getBinding().getModifiers())
     
-    override public fun getVisibility(): Visibility = EclipseJavaElementUtil.getVisibility(getBinding())
+    override val visibility: Visibility = EclipseJavaElementUtil.getVisibility(getBinding())
     
-    override public fun getTypeParameters(): List<JavaTypeParameter> {
-    	return typeParameters(getBinding().getTypeParameters())
-    }
+    override val typeParameters: List<JavaTypeParameter>
+        get() = typeParameters(getBinding().getTypeParameters())
     
-    override public fun getInnerClasses(): Collection<JavaClass> {
-        return getBinding().getDeclaredTypes().map { EclipseJavaClass(it) }
-    }
+    override val innerClasses: Collection<JavaClass>
+        get() = getBinding().declaredTypes.map(::EclipseJavaClass)
     
-    override public fun getFqName(): FqName? = FqName(getBinding().getQualifiedName())
+    override val fqName: FqName? = getBinding().getQualifiedName()?.let { FqName(it) }
     
-    override public fun isInterface(): Boolean = getBinding().isInterface()
+    override val isInterface: Boolean = getBinding().isInterface()
     
-    override public fun isAnnotationType(): Boolean = getBinding().isAnnotation()
+    override val isAnnotationType: Boolean = getBinding().isAnnotation()
     
-    override public fun isEnum(): Boolean = getBinding().isEnum()
+    override val isEnum: Boolean = getBinding().isEnum()
     
-    override public fun getOuterClass(): JavaClass? {
-        val outerClass = getBinding().getDeclaringClass()
-        return if (outerClass != null) EclipseJavaClass(outerClass) else null
-    }
+    override val outerClass: JavaClass? 
+        get() = getBinding().getDeclaringClass()?.let { EclipseJavaClass(it) }
     
-    override public fun getSupertypes(): Collection<JavaClassifierType> {
-        return classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(getBinding()))
-    }
+    override val supertypes: Collection<JavaClassifierType> 
+        get() = classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(getBinding()))
     
-    override public fun getMethods(): Collection<JavaMethod> {
-        return getBinding().getDeclaredMethods()
-        		.filterNot { it.isConstructor() }
-        		.map { EclipseJavaMethod(it) }
-    }
+    override val methods: Collection<JavaMethod> 
+        get() = getBinding().declaredMethods.filterNot { it.isConstructor() }.map(::EclipseJavaMethod)
     
-    override public fun getFields(): Collection<JavaField> {
-        return getBinding().getDeclaredFields()
-        		.filter { 
-        		    val name = it.getName()
-        		    name != null && Name.isValidIdentifier(name)
-        		 }
-        		.map { EclipseJavaField(it) }
-    }
+    override val fields: Collection<JavaField>
+        get() = getBinding().getDeclaredFields()
+                .filter { 
+                    val name = it.getName()
+                    name != null && Name.isValidIdentifier(name)
+                }
+                .map { EclipseJavaField(it) }
     
-    override public fun getConstructors(): Collection<JavaConstructor> {
-        return getBinding().getDeclaredMethods()
-        		.filter { it.isConstructor() }
-        		.map { EclipseJavaConstructor(it) }
-    }
+    override val constructors: Collection<JavaConstructor> 
+        get() = getBinding().declaredMethods.filter { it.isConstructor() }.map(::EclipseJavaConstructor)
     
-    override public fun getDefaultType(): JavaClassifierType {
-        return EclipseJavaClassifierType(getBinding().getTypeDeclaration())
-    }
+    override val isDeprecatedInJavaDoc: Boolean = getBinding().isDeprecated
     
-    override public fun getOriginKind(): OriginKind {
-        val javaType = getBinding().getJavaElement() as IType
-        return when {
-            EclipseJavaElementUtil.isKotlinLightClass(javaType) -> OriginKind.KOTLIN_LIGHT_CLASS
-            javaType is BinaryType -> OriginKind.COMPILED
-            else -> OriginKind.SOURCE 
-        }
-    }
+    override val annotations: Collection<JavaAnnotation> 
+        get() = getBinding().annotations.map(::EclipseJavaAnnotation)
     
-    override public fun createImmediateType(substitutor: JavaTypeSubstitutor): JavaType {
-        return EclipseJavaImmediateClass(this, substitutor)
-    }
+    override val isKotlinLightClass: Boolean
+        get() = getBinding().javaElement.let { EclipseJavaElementUtil.isKotlinLightClass(it) }
 }

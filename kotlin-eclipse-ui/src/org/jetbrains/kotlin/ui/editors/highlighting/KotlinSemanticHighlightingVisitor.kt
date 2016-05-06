@@ -48,10 +48,12 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.psi.KtTypeParameter
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.descriptors.ClassKind.*
-import org.jetbrains.kotlin.psi.psiUtil.getCalleeHighlightingRange
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtSuperExpression
+import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.psi.KtAnnotationEntry
+import org.jetbrains.kotlin.psi.KtValueArgumentList
 
 public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument, val project: IJavaProject) : KtVisitorVoid() {
     private lateinit var bindingContext: BindingContext
@@ -164,18 +166,28 @@ public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document:
     private fun highlightClassDescriptor(element: PsiElement, target: ClassDescriptor) {
         when (target.kind) {
             INTERFACE -> highlight(KotlinHighlightingAttributes.INTERFACE, element.getTextRange())
-            ANNOTATION_CLASS -> {
-                val range = when (element) {
-                     is KtElement -> element.getCalleeHighlightingRange()
-                     else -> element.getTextRange()
-                }
-                
-                highlight(KotlinHighlightingAttributes.ANNOTATION, range)
-            }
+            ANNOTATION_CLASS -> highlightAnnotation(element)
             ENUM_ENTRY -> highlight(KotlinHighlightingAttributes.STATIC_FINAL_FIELD, element.getTextRange())
             ENUM_CLASS -> highlight(KotlinHighlightingAttributes.ENUM_CLASS, element.getTextRange())
             CLASS, OBJECT -> highlight(KotlinHighlightingAttributes.CLASS, element.getTextRange())
         }
+    }
+    
+    private fun highlightAnnotation(expression: PsiElement) {
+        var range = expression.getTextRange()
+
+        // include '@' symbol if the reference is the first segment of KtAnnotationEntry
+        // if "Deprecated" is highlighted then '@' should be highlighted too in "@Deprecated"
+        val annotationEntry = PsiTreeUtil.getParentOfType(
+                expression, KtAnnotationEntry::class.java, false, KtValueArgumentList::class.java);
+        if (annotationEntry != null) {
+            val atSymbol = annotationEntry.getAtSymbol();
+            if (atSymbol != null) {
+                range = TextRange(atSymbol.getTextRange().getStartOffset(), expression.getTextRange().getEndOffset());
+            }
+        }
+        
+        highlight(KotlinHighlightingAttributes.ANNOTATION, range)
     }
     
     private fun highlightTypeParameter(element: PsiElement) {

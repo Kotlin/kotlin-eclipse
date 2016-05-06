@@ -20,7 +20,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.load.java.structure.JavaType;
-import org.jetbrains.kotlin.load.java.structure.JavaTypeProvider;
 import org.jetbrains.kotlin.load.java.structure.JavaWildcardType;
 
 public class EclipseJavaWildcardType extends EclipseJavaType<ITypeBinding> implements JavaWildcardType {
@@ -40,11 +39,4 @@ public class EclipseJavaWildcardType extends EclipseJavaType<ITypeBinding> imple
     public boolean isExtends() {
         return getBinding().isUpperbound();
     }
-
-    @Override
-    @NotNull
-    public JavaTypeProvider getTypeProvider() {
-        return new EclipseJavaTypeProvider(getBinding().getJavaElement().getJavaProject());
-    }
-
 }

@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.core.resolve.lang.java;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -182,6 +183,13 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
             KotlinLogger.logAndThrow(e);
         }
         
+        return null;
+    }
+
+    @Override
+    @Nullable
+    public Set<String> knownClassNamesInPackage(@NotNull FqName packageFqName) {
+        // TODO Auto-generated method stub
         return null;
     }
 }

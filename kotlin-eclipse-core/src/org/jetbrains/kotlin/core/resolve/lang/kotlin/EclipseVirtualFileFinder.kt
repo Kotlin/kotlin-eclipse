@@ -66,13 +66,13 @@ public class EclipseVirtualFileFinder(val javaProject: IJavaProject) : VirtualFi
     private fun isBinaryKotlinClass(type: IType): Boolean = type.isBinary() && !EclipseJavaClassFinder.isInKotlinBinFolder(type)
 
     private fun classFileName(jClass:JavaClass): String {
-        val outerClass = jClass.getOuterClass()
-        if (outerClass == null) return jClass.getName().asString()
-        return classFileName(outerClass) + "$" + jClass.getName().asString()
+        val outerClass = jClass.outerClass
+        if (outerClass == null) return jClass.name.asString()
+        return classFileName(outerClass) + "$" + jClass.name.asString()
     }
 
     override public fun findKotlinClass(javaClass: JavaClass): KotlinJvmBinaryClass? {
-        val fqName = javaClass.getFqName()
+        val fqName = javaClass.fqName
         if (fqName == null) return null
 
         val classId = EclipseJavaElementUtil.computeClassId((javaClass as EclipseJavaClassifier<*>).getBinding())
@@ -81,7 +81,7 @@ public class EclipseVirtualFileFinder(val javaProject: IJavaProject) : VirtualFi
         var file = findVirtualFileWithHeader(classId)
         if (file == null) return null
 
-        if (javaClass.getOuterClass() != null) {
+        if (javaClass.outerClass != null) {
             // For nested classes we get a file of the containing class, to get the actual class file for A.B.C,
             // we take the file for A, take its parent directory, then in this directory we look for A$B$C.class
             file = file.getParent().findChild("${classFileName(javaClass)}.class")

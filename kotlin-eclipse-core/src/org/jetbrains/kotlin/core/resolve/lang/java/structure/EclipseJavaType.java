@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotationOwner;
-import org.jetbrains.kotlin.load.java.structure.JavaArrayType;
 import org.jetbrains.kotlin.load.java.structure.JavaType;
 import org.jetbrains.kotlin.name.FqName;
 
@@ -66,12 +65,6 @@ public class EclipseJavaType<T extends ITypeBinding> implements JavaType, JavaAn
     @Override
     public boolean equals(Object obj) {
         return obj instanceof EclipseJavaType && getBinding().equals(((EclipseJavaType<?>) obj).getBinding());
-    }
-
-    @Override
-    @NotNull
-    public JavaArrayType createArrayType() {
-        return new EclipseJavaArrayType(getBinding().createArrayType(1));
     }
     
     @Override

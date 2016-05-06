@@ -21,7 +21,6 @@ import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.Viewer
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.jetbrains.kotlin.renderer.NameShortness
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
@@ -29,13 +28,14 @@ import org.eclipse.swt.graphics.Image
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
+import org.jetbrains.kotlin.renderer.ClassifierNamePolicy
 
 class KotlinCallableLabelProvider : LabelProvider() {
     private val MEMBER_RENDERER = DescriptorRenderer.withOptions { 
         withDefinedIn = false
         modifiers = emptySet()
         startFromName = true
-        nameShortness = NameShortness.SHORT
+        classifierNamePolicy = ClassifierNamePolicy.SHORT
     }
     
     override fun getText(element: Any): String {

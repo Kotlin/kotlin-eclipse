@@ -72,7 +72,7 @@ public abstract class EclipseJavaMember<T extends IBinding> extends EclipseJavaE
     @Override
     @NotNull
     public Name getName() {
-        return Name.guess(getBinding().getName());
+        return Name.identifier(getBinding().getName());
     }
     
     @Override

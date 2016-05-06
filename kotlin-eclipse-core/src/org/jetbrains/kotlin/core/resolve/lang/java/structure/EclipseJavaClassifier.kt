@@ -38,11 +38,12 @@ public abstract class EclipseJavaClassifier<T : ITypeBinding>(javaType: T) :
         }
     }
     
-    override fun getAnnotations(): Collection<JavaAnnotation> = getBinding().getAnnotations().map { EclipseJavaAnnotation(it) }
+    override val annotations: Collection<JavaAnnotation>
+        get() = getBinding().getAnnotations().map(::EclipseJavaAnnotation)
     
     override fun findAnnotation(fqName: FqName): JavaAnnotation? {
         return EclipseJavaElementUtil.findAnnotation(getBinding().getAnnotations(), fqName)
     }
     
-    override fun isDeprecatedInJavaDoc(): Boolean = getBinding().isDeprecated()
+    override val isDeprecatedInJavaDoc: Boolean = getBinding().isDeprecated()
 }

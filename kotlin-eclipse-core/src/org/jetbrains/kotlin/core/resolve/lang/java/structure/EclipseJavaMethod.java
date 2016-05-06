@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.load.java.structure.JavaType;
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter;
 import org.jetbrains.kotlin.load.java.structure.JavaValueParameter;
 
-public class EclipseJavaMethod extends EclipseJavaMember<IMethodBinding> implements JavaMethod  {
+public class EclipseJavaMethod extends EclipseJavaMember<IMethodBinding> implements JavaMethod {
 
     protected EclipseJavaMethod(IMethodBinding method) {
         super(method);
@@ -47,7 +47,7 @@ public class EclipseJavaMethod extends EclipseJavaMember<IMethodBinding> impleme
     }
 
     @Override
-    public boolean hasAnnotationParameterDefaultValue() {
+    public boolean getHasAnnotationParameterDefaultValue() {
         return getBinding().getDefaultValue() != null;
     }
 

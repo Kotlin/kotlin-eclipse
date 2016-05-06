@@ -22,36 +22,13 @@ import org.jetbrains.kotlin.load.java.structure.JavaClassifierType
 import org.jetbrains.kotlin.load.java.structure.JavaType
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameterListOwner
-import org.jetbrains.kotlin.load.java.structure.JavaTypeProvider
 import org.jetbrains.kotlin.name.Name
 import com.google.common.collect.Lists
+import org.jetbrains.kotlin.name.SpecialNames
 
 public class EclipseJavaTypeParameter(binding: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(binding), JavaTypeParameter {
-    override public fun getName(): Name = Name.identifier(getBinding().getName())
+    override val name: Name = SpecialNames.safeIdentifier(getBinding().getName())
     
-    override public fun getUpperBounds(): Collection<JavaClassifierType> {
-        return getBinding().getTypeBounds().map { EclipseJavaClassifierType(it) }
-    }
-    
-    override public fun getOwner(): JavaTypeParameterListOwner? {
-        val methodOwner = getBinding().getDeclaringMethod()
-        if (methodOwner != null) {
-            return if (methodOwner.isConstructor()) EclipseJavaConstructor(methodOwner) else EclipseJavaMethod(methodOwner) 
-        }
-        
-        val typeOwner = getBinding().getDeclaringClass()
-        if (typeOwner != null) {
-            return EclipseJavaClass(typeOwner)
-        }
-        
-        return null
-    }
-    
-    override public fun getType(): JavaType {
-        return EclipseJavaType.create(getBinding().getTypeDeclaration())
-    }
-    
-    override public fun getTypeProvider(): JavaTypeProvider {
-        return EclipseJavaTypeProvider(getBinding().getJavaElement().getJavaProject())
-    }
+    override val upperBounds: Collection<JavaClassifierType>
+        get() = getBinding().getTypeBounds().map(::EclipseJavaClassifierType)
 }

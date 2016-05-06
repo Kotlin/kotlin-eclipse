@@ -42,18 +42,6 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     }
     
     @Override
-    @Nullable
-    public JavaAnnotationArgument findArgument(@NotNull Name name) {
-        for (IMemberValuePairBinding member : getBinding().getDeclaredMemberValuePairs()) {
-            if (name.equals(member.getName())) {
-                return EclipseJavaAnnotationArgument.create(member.getValue(), name, javaProject);
-            }
-        }
-        
-        return null;
-    }
-    
-    @Override
     @NotNull
     public Collection<JavaAnnotationArgument> getArguments() {
         List<JavaAnnotationArgument> arguments = Lists.newArrayList();

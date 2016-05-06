@@ -37,6 +37,9 @@ import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2
 import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.DocumentEvent
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
+import org.jetbrains.kotlin.builtins.isFunctionType
+import org.jetbrains.kotlin.builtins.isExtensionFunctionType
+import org.jetbrains.kotlin.resolve.getValueParametersCountFromFunctionType
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
@@ -49,8 +52,8 @@ public fun withKotlinInsertHandler(
 
                 1 -> {
                     val parameterType = parameters.single().getType()
-                    if (KotlinBuiltIns.isFunctionOrExtensionFunctionType(parameterType)) {
-                        val parameterCount = KotlinBuiltIns.getParameterTypeProjectionsFromFunctionType(parameterType).size
+                    if (parameterType.isFunctionType || parameterType.isExtensionFunctionType) {
+                        val parameterCount = getValueParametersCountFromFunctionType(parameterType)
                         if (parameterCount <= 1) {
                             // otherwise additional item with lambda template is to be added
                             return KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, true)

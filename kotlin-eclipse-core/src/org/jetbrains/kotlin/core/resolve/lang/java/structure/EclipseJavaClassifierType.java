@@ -16,24 +16,16 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
-import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.classifierTypes;
 import static org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.types;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.load.java.structure.JavaClassifier;
 import org.jetbrains.kotlin.load.java.structure.JavaClassifierType;
 import org.jetbrains.kotlin.load.java.structure.JavaType;
-import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter;
-import org.jetbrains.kotlin.load.java.structure.JavaTypeSubstitutor;
-import org.jetbrains.kotlin.load.java.structure.impl.JavaTypeSubstitutorImpl;
 
 public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> implements JavaClassifierType {
 
@@ -46,35 +38,7 @@ public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> imp
     public JavaClassifier getClassifier() {
         return EclipseJavaClassifier.create(getBinding().getTypeDeclaration());
     }
-
-    @Override
-    @NotNull
-    public JavaTypeSubstitutor getSubstitutor() {
-        JavaClassifier resolvedType = getClassifier();
-        if (resolvedType instanceof JavaClass && getBinding().isParameterizedType()) {
-            JavaClass javaClass = (JavaClass) resolvedType;
-            List<JavaType> substitutedTypeArguments = getTypeArguments();
-            
-            int i = 0;
-            Map<JavaTypeParameter, JavaType> substitutionMap = new HashMap<JavaTypeParameter, JavaType>();
-            boolean isThisRawType = isRaw();
-            for (JavaTypeParameter typeParameter : javaClass.getTypeParameters()) {
-                substitutionMap.put(typeParameter, !isThisRawType ? substitutedTypeArguments.get(i) : null);
-                i++;
-            }
-            
-            return new JavaTypeSubstitutorImpl(substitutionMap);
-        }
-        
-        return JavaTypeSubstitutor.EMPTY;
-    }
     
-    @Override
-    @NotNull
-    public Collection<JavaClassifierType> getSupertypes() {
-        return classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(getBinding()));
-    }
-
     @Override
     @NotNull
     public String getPresentableText() {
@@ -90,5 +54,11 @@ public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> imp
     @NotNull
     public List<JavaType> getTypeArguments() {
         return types(getBinding().getTypeArguments());
+    }
+
+    @Override
+    @NotNull
+    public String getCanonicalText() {
+        return getBinding().getName(); // TODO: make this canonical name consistent with idea's
     }
 }

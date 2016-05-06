@@ -19,7 +19,6 @@ import org.jetbrains.kotlin.load.java.JavaClassFinderImpl
 import org.jetbrains.kotlin.load.java.components.LazyResolveBasedCache
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
 import org.jetbrains.kotlin.load.java.components.PsiBasedExternalAnnotationResolver
-import org.jetbrains.kotlin.load.java.structure.impl.JavaPropertyInitializerEvaluatorImpl
 import org.jetbrains.kotlin.load.java.sam.SamConversionResolverImpl
 import org.jetbrains.kotlin.load.java.components.JavaSourceElementFactoryImpl
 import org.jetbrains.kotlin.resolve.jvm.JavaLazyAnalyzerPostConstruct

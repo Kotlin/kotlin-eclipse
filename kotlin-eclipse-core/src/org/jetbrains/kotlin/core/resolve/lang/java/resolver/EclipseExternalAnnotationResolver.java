@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *  
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.resolver;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.load.java.components.ExternalAnnotationResolver;
@@ -34,12 +31,4 @@ public class EclipseExternalAnnotationResolver implements ExternalAnnotationReso
         // TODO Auto-generated method stub
         return null;
     }
-
-    @Override
-    @NotNull
-    public Collection<JavaAnnotation> findExternalAnnotations(@NotNull JavaAnnotationOwner owner) {
-        // TODO Auto-generated method stub
-        return Collections.emptyList();
-    }
-
 }
