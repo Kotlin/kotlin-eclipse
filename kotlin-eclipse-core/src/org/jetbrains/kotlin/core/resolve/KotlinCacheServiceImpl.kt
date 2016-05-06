@@ -32,6 +32,8 @@ import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.resolve.diagnostics.KotlinSuppressCache
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.container.ComponentProvider
 
 public class KotlinCacheServiceImpl : KotlinCacheService {
     override fun getSuppressionCache(): KotlinSuppressCache {
@@ -39,11 +41,11 @@ public class KotlinCacheServiceImpl : KotlinCacheService {
     }
 
     override fun getResolutionFacade(elements: List<KtElement>): ResolutionFacade {
-        return KotlinSimpleResolutionFacade()
+        return KotlinSimpleResolutionFacade(elements)
     }
 }
 
-class KotlinSimpleResolutionFacade : ResolutionFacade {
+class KotlinSimpleResolutionFacade(private val elements: List<KtElement>) : ResolutionFacade {
     override val moduleDescriptor: ModuleDescriptor
         get() = throw UnsupportedOperationException()
     
@@ -70,7 +72,16 @@ class KotlinSimpleResolutionFacade : ResolutionFacade {
     }
     
     override fun <T : Any> getFrontendService(serviceClass: Class<T>): T {
-        throw UnsupportedOperationException()
+        val project = elements.firstOrNull()?.getContainingKtFile()?.getProject() ?: 
+                throw IllegalStateException("Project should not be null")
+        
+        val files = elements.map { it.getContainingKtFile() }.toSet()
+        if (files.isEmpty()) throw IllegalStateException("Elements should not be empty")
+        
+        val javaProject = KotlinEnvironment.getJavaProject(project) ?: 
+                throw IllegalStateException("Java project for idea project ($project) should not be null")
+        
+        return KotlinAnalyzer.analyzeFiles(javaProject, files).componentProvider.getService(serviceClass)
     }
     
     override fun <T : Any> getFrontendService(moduleDescriptor: ModuleDescriptor, serviceClass: Class<T>): T {
@@ -84,4 +95,8 @@ class KotlinSimpleResolutionFacade : ResolutionFacade {
     override fun resolveToDescriptor(declaration: KtDeclaration): DeclarationDescriptor {
         throw UnsupportedOperationException()
     }
+}
+
+@Suppress("UNCHECKED_CAST") fun <T : Any> ComponentProvider.getService(request: Class<T>): T {
+    return resolve(request)!!.getValue() as T
 }

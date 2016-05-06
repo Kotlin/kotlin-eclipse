@@ -34,6 +34,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.text.IDocument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -289,5 +290,9 @@ public class KotlinPsiManager {
     public static IJavaProject getJavaProject(@NotNull KtElement jetElement) {
         IFile eclipseFile = getEclipseFile(jetElement.getContainingKtFile());
         return eclipseFile != null ? JavaCore.create(eclipseFile.getProject()) : null;
+    }
+    
+    public static void commitFile(IFile file, IDocument document) {
+        getKotlinFileIfExist(file, document.get());
     }
 }

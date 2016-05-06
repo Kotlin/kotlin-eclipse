@@ -100,7 +100,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
     }
     
     private fun commitFiles(files: Collection<IFile>) {
-        files.forEach { KotlinPsiManager.getKotlinFileIfExist(it, EditorUtil.getDocument(it).get()) }
+        files.forEach { KotlinPsiManager.commitFile(it, EditorUtil.getDocument(it)) }
     }
     
     private fun isAllFromOutputFolder(files: Set<IFile>, javaProject: IJavaProject): Boolean {

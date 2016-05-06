@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 
 object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
@@ -79,7 +80,34 @@ fun findApplicableTypes(typeName: String): List<TypeNameMatch> {
 }
 
 fun placeImports(typeNames: List<TypeNameMatch>, file: IFile, document: IDocument): Int {
-    if (typeNames.isEmpty()) return -1
+    return placeStrImports(typeNames.map { it.fullyQualifiedName }, file, document)
+}
+
+fun replaceImports(newImports: List<String>, file: IFile, document: IDocument) {
+    val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
+    val importDirectives = ktFile.getImportDirectives()
+    if (importDirectives.isEmpty()) {
+        placeStrImports(newImports, file, document)
+        return
+    }
+    
+    val imports = buildImportsStr(newImports, document)
+    
+    val startOffset = importDirectives.first().getTextDocumentOffset(document)
+    val lastImportDirectiveOffset = importDirectives.last().getEndLfOffset(document)
+    val endOffset = if (newImports.isEmpty()) {
+            val next = ktFile.getImportList()!!.getNextSibling()
+            if (next is PsiWhiteSpace) next.getEndLfOffset(document) else lastImportDirectiveOffset
+        }
+        else {
+            lastImportDirectiveOffset
+        }
+    
+    document.replace(startOffset, endOffset - startOffset, imports)
+}
+
+private fun placeStrImports(importsDirectives: List<String>, file: IFile, document: IDocument): Int {
+    if (importsDirectives.isEmpty()) return -1
     
     val placeElement = findNodeToNewImport(file)
     if (placeElement == null) return -1
@@ -89,13 +117,18 @@ fun placeImports(typeNames: List<TypeNameMatch>, file: IFile, document: IDocumen
     
     val lineDelimiter = TextUtilities.getDefaultLineDelimiter(document)
     
-    val imports = typeNames.map { "import ${it.fullyQualifiedName}" }.joinToString(lineDelimiter)
+    val imports = buildImportsStr(importsDirectives, document)
     val newImports = "${IndenterUtil.createWhiteSpace(0, breakLineBefore, lineDelimiter)}$imports" +
             "${IndenterUtil.createWhiteSpace(0, breakLineAfter, lineDelimiter)}"
     
     document.replace(placeElement.getEndLfOffset(document), 0, newImports)
     
     return newImports.length
+}
+
+private fun buildImportsStr(importsDirectives: List<String>, document: IDocument): String {
+    val lineDelimiter = TextUtilities.getDefaultLineDelimiter(document)
+    return importsDirectives.map { "import ${it}" }.joinToString(lineDelimiter)
 }
 
 class KotlinAutoImportResolution(private val type: TypeNameMatch): KotlinMarkerResolution {

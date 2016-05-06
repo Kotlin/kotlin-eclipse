@@ -27,12 +27,18 @@ import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableTypes
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
+import org.jetbrains.kotlin.ui.editors.quickfix.replaceImports
 import org.eclipse.jdt.core.IType
 import org.eclipse.jdt.core.search.TypeNameMatch
 import org.eclipse.jdt.internal.ui.util.TypeNameMatchLabelProvider
 import org.eclipse.jdt.internal.ui.dialogs.MultiElementListSelectionDialog
 import org.eclipse.jface.window.Window
 import java.util.ArrayList
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.resolve.ImportPath
+import org.jetbrains.kotlin.idea.imports.prepareOptimizedImports
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -70,6 +76,20 @@ class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : Select
         }
         
         placeImports(allRequiredImports, file, editor.document)
+        
+        KotlinPsiManager.commitFile(file, editor.document)
+        
+        optimizeImports()
+    }
+    
+    private fun optimizeImports() {
+        val ktFile = editor.parsedFile ?: return
+        val file = editor.getFile() ?: return
+        val descriptorsToImport = collectDescriptorsToImport(ktFile)
+        
+        val optimizedImports = prepareOptimizedImports(ktFile, descriptorsToImport) ?: return
+        
+        replaceImports(optimizedImports.map { it.toString() }, file, editor.document)
     }
     
     // null signalizes about cancelling operation
@@ -113,4 +133,11 @@ class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : Select
     private data class UniqueAndAmbiguousImports(
             val uniqueImports: List<TypeNameMatch>, 
             val ambiguousImports: List<List<TypeNameMatch>>)
+}
+
+fun prepareOptimizedImports(file: KtFile,
+                            descriptorsToImport: Collection<DeclarationDescriptor>): List<ImportPath>? {
+    
+    // TODO: obtains these constants from the KotlinCodeStyleSettings
+    return prepareOptimizedImports(file, descriptorsToImport, 5, 3) { fqName -> false }
 }
