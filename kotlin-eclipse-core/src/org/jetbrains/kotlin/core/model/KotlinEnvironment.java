@@ -18,9 +18,7 @@ package org.jetbrains.kotlin.core.model;
 
 import java.io.File;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
@@ -68,7 +66,6 @@ import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.impl.ZipHandler;
 import com.intellij.psi.PsiElementFinder;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.augment.PsiAugmentProvider;
@@ -78,15 +75,22 @@ import com.intellij.psi.impl.PsiTreeChangePreprocessor;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 import com.intellij.psi.impl.file.impl.JavaFileManager;
 
+import kotlin.jvm.functions.Function1;
+
 @SuppressWarnings("deprecation")
 public class KotlinEnvironment {
     
     public final static String KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations");
     public final static String KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler");
     
-    private static final Map<IJavaProject, KotlinEnvironment> cachedEnvironment = new HashMap<>();
-    private static final Map<Project, IJavaProject> ideaToEclipseProject = new HashMap<>();
-    private static final Object environmentLock = new Object();
+    private static final CachedEnvironment cachedEnvironment = new CachedEnvironment();
+    
+    private static final Function1<IJavaProject, KotlinEnvironment> environmentCreation = new Function1<IJavaProject, KotlinEnvironment>() {
+        @Override
+        public KotlinEnvironment invoke(IJavaProject javaProject) {
+            return new KotlinEnvironment(javaProject, Disposer.newDisposable());
+        }
+    };
     
     private final JavaCoreApplicationEnvironment applicationEnvironment;
     private final JavaCoreProjectEnvironment projectEnvironment;
@@ -141,8 +145,7 @@ public class KotlinEnvironment {
             registerApplicationExtensionPointsAndExtensionsFrom(config);
         }
         
-        cachedEnvironment.put(javaProject, this);
-        ideaToEclipseProject.put(project, javaProject);
+        cachedEnvironment.putEnvironment(javaProject, this);
     }
     
     private static void registerProjectExtensionPoints(ExtensionsArea area) {
@@ -157,40 +160,16 @@ public class KotlinEnvironment {
     
     @NotNull
     public static KotlinEnvironment getEnvironment(@NotNull IJavaProject javaProject) {
-        synchronized (environmentLock) {
-            if (!cachedEnvironment.containsKey(javaProject)) {
-                KotlinEnvironment newEnvironment = new KotlinEnvironment(javaProject, Disposer.newDisposable());
-                
-                cachedEnvironment.put(javaProject, newEnvironment);
-                ideaToEclipseProject.put(newEnvironment.getProject(), javaProject);
-            }
-            
-            return cachedEnvironment.get(javaProject);
-        }
+        return cachedEnvironment.getOrCreateEnvironment(javaProject, environmentCreation);
     }
     
     public static void updateKotlinEnvironment(@NotNull IJavaProject javaProject) {
-        synchronized (environmentLock) {
-            if (cachedEnvironment.containsKey(javaProject)) {
-                KotlinEnvironment environment = cachedEnvironment.get(javaProject);
-                
-                ideaToEclipseProject.remove(environment.getProject());
-                
-                Disposer.dispose(environment.getJavaApplicationEnvironment().getParentDisposable());
-                ZipHandler.clearFileAccessorCache();
-            }
-            
-            KotlinEnvironment newEnvironment = new KotlinEnvironment(javaProject, Disposer.newDisposable());
-            cachedEnvironment.put(javaProject, newEnvironment);
-            ideaToEclipseProject.put(newEnvironment.getProject(), javaProject);
-        }
+        cachedEnvironment.updateEnvironment(javaProject, environmentCreation);
     }
     
     @Nullable
     public static IJavaProject getJavaProject(@NotNull Project project) {
-        synchronized (environmentLock) {
-            return ideaToEclipseProject.get(project);
-        }
+        return cachedEnvironment.getJavaProject(project);
     }
     
     private void configureClasspath() {
