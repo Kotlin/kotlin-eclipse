@@ -111,6 +111,66 @@
 			
             <delete dir="${download.dir}/j2k"/>
         </sequential>
+		
+        <sequential>
+            <get 
+                src="${idea-sdk-url}/ideaIC/${idea-version}/ideaIC-${idea-version}.zip" 
+                dest="${download.dir}/ideaIC.zip" 
+                usetimestamp="true"/>
+            
+            <unzip src="${download.dir}/ideaIC.zip" dest="${target.dir}">
+                <patternset>
+                    <include name="lib/openapi.jar" />
+                    <include name="lib/util.jar" />
+                </patternset>
+                <mapper type="flatten"/>
+            </unzip>
+            
+            <unzip src="${target.dir}/openapi.jar" dest="${download.dir}/openapi-shrinked">
+                <patternset>
+                    <include name="com/intellij/psi/codeStyle/**/*.class" />
+                    <include name="com/intellij/formatting/**/*.class" />
+                    <include name="com/intellij/application/options/**/*.class" />
+                    <include name="com/intellij/openapi/options/**/*.class" />
+                </patternset>
+            </unzip>
+            
+            <unzip src="${target.dir}/util.jar" dest="${download.dir}/util-shrinked">
+                <patternset>
+                    <include name="com/intellij/openapi/util/**/*.class" />
+                    <include name="com/intellij/util/containers/**/*.class" />
+                </patternset>
+            </unzip>
+            
+            <jar jarfile="${target.dir}/openapi-shrinked.jar">
+                <fileset dir="${download.dir}/openapi-shrinked"/>
+
+                <manifest>
+                    <attribute name="Built-By" value="JetBrains"/>
+
+                    <attribute name="Implementation-Vendor" value="JetBrains"/>
+                    <attribute name="Implementation-Title" value="openapi-shrinked"/>
+                    <attribute name="Implementation-Version" value="1.0"/>
+                </manifest>
+            </jar>
+            
+            <jar jarfile="${target.dir}/util-shrinked.jar">
+                <fileset dir="${download.dir}/util-shrinked"/>
+
+                <manifest>
+                    <attribute name="Built-By" value="JetBrains"/>
+
+                    <attribute name="Implementation-Vendor" value="JetBrains"/>
+                    <attribute name="Implementation-Title" value="util-shrinked"/>
+                    <attribute name="Implementation-Version" value="1.0"/>
+                </manifest>
+            </jar>
+            
+            <delete dir="${download.dir}/openapi-shrinked"/>
+            <delete file="${target.dir}/openapi.jar"/>
+            <delete dir="${download.dir}/util-shrinked"/>
+            <delete file="${target.dir}/util.jar"/>
+        </sequential>
 
 		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
 			<patternset>
@@ -127,6 +187,11 @@
 			src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
 			dest="${target.dir}/kotlin-ide-common.jar"
 			usetimestamp="true" />
+		
+        <get 
+            src="${teamcity-kotlin-url}/internal/kotlin-formatter.jar${branch}"
+            dest="${target.dir}/kotlin-formatter.jar"
+            usetimestamp="true" />
 		
 		<get src="${idea-sdk-url}/intellij-core/${idea-version}/intellij-core-${idea-version}.zip" 
 			dest="${download.dir}/intellij-core.zip" 
