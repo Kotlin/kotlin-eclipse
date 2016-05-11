@@ -168,7 +168,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         if (!(call instanceof KtCallExpression)) return null;
         
         IJavaProject javaProject = JavaCore.create(file.getProject());
-        BindingContext bindingContext = KotlinAnalyzer
+        BindingContext bindingContext = KotlinAnalyzer.INSTANCE
                 .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
                 .getAnalysisResult()
                 .getBindingContext();
