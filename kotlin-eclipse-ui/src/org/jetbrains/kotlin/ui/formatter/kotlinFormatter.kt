@@ -94,7 +94,6 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
         val subBlocks = block.subBlocks
         var left = subBlocks.firstOrNull()
         var first = true
-        if (left is ASTBlock) 
         for ((index, subBlock) in subBlocks.withIndex()) {
             var subBlockIndent = indent
             when (subBlock.indent?.type) {
