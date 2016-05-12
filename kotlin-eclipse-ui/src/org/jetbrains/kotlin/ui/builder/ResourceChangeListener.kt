@@ -16,53 +16,71 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.builder
 
-import org.eclipse.core.resources.IResourceChangeEvent
-import org.eclipse.core.resources.IResourceChangeListener
-import org.eclipse.core.runtime.CoreException
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.eclipse.core.resources.IResourceDeltaVisitor
-import org.eclipse.core.resources.IResourceDelta
-import org.eclipse.core.resources.IFile
+import org.eclipse.core.resources.*
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.eclipse.core.resources.IProject
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.jetbrains.kotlin.core.model.setKotlinBuilderBeforeJavaBuilder
 
 public class ResourceChangeListener : IResourceChangeListener {
     override public fun resourceChanged(event: IResourceChangeEvent) {
-        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-            event.getDelta().accept(ProjectChangeListener())
+        val eventResource = event.resource
+        if (eventResource != null) {
+            val type = event.type
+            if (type == IResourceChangeEvent.PRE_CLOSE || type == IResourceChangeEvent.PRE_DELETE) {
+                updateManager(eventResource, IResourceDelta.REMOVED)
+            }
+            
+            return
+        }
+        
+        val delta = event.delta
+        if (delta != null) {
+            delta.accept(ProjectChangeListener())
         }
     }
 }
 
 class ProjectChangeListener : IResourceDeltaVisitor {
     override public fun visit(delta: IResourceDelta) : Boolean {
+        val resource = delta.resource
+        if ((delta.flags and IResourceDelta.OPEN) != 0) {
+            if (resource is IProject && resource.isOpen) {
+                return updateManager(resource, IResourceDelta.ADDED)
+            }
+        }
+        
         if (delta.getKind() == IResourceDelta.CHANGED) {
             return true
         }
         
-        val resource = delta.getResource()
-        when (resource) {
-            is IFile -> {
-                if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
-                    KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, delta.getKind())
-                }
+        return updateManager(resource, delta.kind)
+    }
+}
+
+private fun updateManager(resource: IResource, deltaKind: Int): Boolean {
+    return when (resource) {
+        is IFile -> {
+            if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
+                KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, deltaKind)
             }
-            is IProject -> {
-                if (!resource.isAccessible || !KotlinNature.hasKotlinNature(resource)) {
-                    return false
-                }
-                
-                val kind = delta.getKind()
-                KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, kind)
-                
-                if (kind == IResourceDelta.ADDED && KotlinNature.hasKotlinBuilder(resource)) {
-                    setKotlinBuilderBeforeJavaBuilder(resource)
-                }
-            }
+            
+            false
         }
         
-        return true
+        is IProject -> {
+            if (!resource.isAccessible || !KotlinNature.hasKotlinNature(resource)) {
+                return false
+            }
+            
+            KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, deltaKind)
+            
+            if (deltaKind == IResourceDelta.ADDED && KotlinNature.hasKotlinBuilder(resource)) {
+                setKotlinBuilderBeforeJavaBuilder(resource)
+            }
+            
+            false
+        }
+        
+        else -> true // folder
     }
 }

@@ -52,7 +52,9 @@ public class Activator extends AbstractUIPlugin {
         
         KotlinFilesCollectorUtilsKt.addFilesToParseFromKotlinProjectsInWorkspace();
         
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceChangeListener, IResourceChangeEvent.POST_CHANGE);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(
+                resourceChangeListener, 
+                IResourceChangeEvent.POST_CHANGE | IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE);
         JavaCore.addElementChangedListener(kotlinClassPathChangedListener);
         JavaCore.addElementChangedListener(kotlinJavaDeclarationsListener);
     }
