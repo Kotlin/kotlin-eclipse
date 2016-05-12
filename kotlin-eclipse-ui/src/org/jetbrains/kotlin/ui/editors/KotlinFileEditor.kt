@@ -236,7 +236,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     private fun computeJetFile(): KtFile? {
         val file = getFile()
         if (file != null && file.exists()) {
-            return KotlinPsiManager.INSTANCE.getParsedFile(file)
+            return KotlinPsiManager.getKotlinParsedFile(file) // File might be not under the source root
         }
         
         if (javaProject == null) {
