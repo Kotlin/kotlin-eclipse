@@ -32,9 +32,15 @@ fun lookupNonImportedTypes(
             .mapNotNull { it.getImportedFqName()?.asString() }
             .toSet()
     
+    val originPackage = ktFile.packageFqName.asString()
+    
     // TODO: exclude variants by callType.descriptorKind
     return searchFor(identifierPart, javaProject)
-            .filter { it.fullyQualifiedName !in importsSet && it.packageName !in importsSet }
+            .filter {
+                it.fullyQualifiedName !in importsSet &&
+                it.packageName !in importsSet &&
+                it.packageName != originPackage
+            }
 }
 
 private fun searchFor(identifierPart: String, javaProject: IJavaProject): List<TypeNameMatch> {

@@ -147,4 +147,9 @@ public class KotlinCompletionHandlerInsertTest extends KotlinCompletionHandlerIn
     public void nonImportedByCamelCase() {
         doAutoTest();
     }
+	
+	@Test
+	public void filterTypesFromSamePackage() {
+	    doAutoTest();
+	}
 }

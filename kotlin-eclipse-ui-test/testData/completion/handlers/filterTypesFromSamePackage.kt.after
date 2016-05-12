@@ -1,0 +1,5 @@
+package org.jet
+
+fun foo() {
+    KotlinCompletionTest<caret>
+}
