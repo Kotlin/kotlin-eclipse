@@ -69,7 +69,7 @@ class KotlinRemoveModifierResolution(
 }
 
 private fun removeModifier(owner: KtModifierListOwner, modifier: KtModifierKeywordToken) {
-    val document = getDocument(owner)
+    val document = openEditorAndGetDocument(owner)
     if (document == null) return
     
     val modifierList = owner.modifierList

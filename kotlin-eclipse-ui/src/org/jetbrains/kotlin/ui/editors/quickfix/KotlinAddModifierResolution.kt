@@ -16,42 +16,34 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.quickfix
 
-import org.eclipse.core.resources.IFile
-import org.eclipse.swt.graphics.Image
-import org.jetbrains.kotlin.psi.KtModifierListOwner
-import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
-import org.jetbrains.kotlin.lexer.KtTokens.*
-import com.intellij.psi.PsiNameIdentifierOwner
-import org.jetbrains.kotlin.psi.KtPropertyAccessor
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import com.intellij.psi.PsiComment
-import com.intellij.psi.PsiWhiteSpace
-import org.jetbrains.kotlin.psi.psiUtil.siblings
-import org.jetbrains.kotlin.psi.KtModifierList
-import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.KtAnnotation
-import org.jetbrains.kotlin.ui.editors.quickassist.replace
-import org.jetbrains.kotlin.ui.editors.quickassist.insertAfter
-import org.jetbrains.kotlin.ui.editors.quickassist.remove
-import org.jetbrains.kotlin.ui.editors.quickassist.insertBefore
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
-import org.jetbrains.kotlin.diagnostics.Diagnostic
+import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtObjectDeclaration
-import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.psi.KtTypeReference
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.psi.KtClass
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
+import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
-import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.diagnostics.DiagnosticWithParameters2
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
+import org.jetbrains.kotlin.diagnostics.DiagnosticWithParameters2
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
+import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.lexer.KtTokens.*
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.siblings
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.quickassist.insertAfter
+import org.jetbrains.kotlin.ui.editors.quickassist.insertBefore
+import org.jetbrains.kotlin.ui.editors.quickassist.remove
+import org.jetbrains.kotlin.ui.editors.quickassist.replace
 
 fun DiagnosticFactory<*>.createAddModifierFix(modifier: KtModifierKeywordToken): KotlinDiagnosticQuickFix {
     return createAddModifierFix(modifier, KtModifierListOwner::class.java)
@@ -165,15 +157,16 @@ class KotlinAddModifierResolution(
 }
 
 // TODO: move to file with util functions 
-fun getDocument(ktElement: KtElement): IDocument? {
+fun openEditorAndGetDocument(ktElement: KtElement): IDocument? {
     val ktFile = ktElement.getContainingKtFile()
     return KotlinPsiManager.getEclipseFile(ktFile)?.let {
-        EditorUtil.getDocument(it)
+        val editor = EditorUtility.openInEditor(it, true)
+        if (editor is KotlinEditor) editor.document else null
     }
 }
 
 private fun addModifier(owner: KtModifierListOwner, modifier: KtModifierKeywordToken) {
-    val elementDocument = getDocument(owner)
+    val elementDocument = openEditorAndGetDocument(owner)
     if (elementDocument == null) return
     
     val modifierList = owner.modifierList
