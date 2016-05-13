@@ -30,28 +30,5 @@ import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.model.setKotlinBuilderBeforeJavaBuilder
 
-fun addFilesToParseFromKotlinProjectsInWorkspace() {
-    ProjectUtils.getAccessibleKotlinProjects().forEach {
-        addFilesToParse(JavaCore.create(it))
-        setKotlinBuilderBeforeJavaBuilder(it)
-    }
-}
-
-fun addFilesToParse(javaProject: IJavaProject) {
-    if (!KotlinNature.hasKotlinNature(javaProject.getProject())) {
-        throw IllegalArgumentException("Project ${javaProject.getElementName()} has no Kotlin Nature")
-    }
-    
-    for (sourceFolder in javaProject.sourceFolders) {
-        sourceFolder.resource.accept { resource ->
-            if (resource is IFile && KotlinPsiManager.isKotlinFile(resource)) {
-                KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, IResourceDelta.ADDED)
-            }
-            
-            true
-        }
-    }
-}
-
 val IJavaProject.sourceFolders: List<IPackageFragmentRoot>
     get() = packageFragmentRoots.filter { it.kind == IPackageFragmentRoot.K_SOURCE }

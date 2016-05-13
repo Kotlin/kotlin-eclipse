@@ -60,7 +60,7 @@ class ProjectChangeListener : IResourceDeltaVisitor {
 private fun updateManager(resource: IResource, deltaKind: Int): Boolean {
     return when (resource) {
         is IFile -> {
-            if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource)) {
+            if (KotlinPsiManager.isKotlinSourceFile(resource)) {
                 KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, deltaKind)
             }
             
@@ -72,7 +72,9 @@ private fun updateManager(resource: IResource, deltaKind: Int): Boolean {
                 return false
             }
             
-            KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, deltaKind)
+            if (deltaKind == IResourceDelta.REMOVED) {
+                KotlinPsiManager.INSTANCE.removeProjectFromManager(resource)
+            }
             
             if (deltaKind == IResourceDelta.ADDED && KotlinNature.hasKotlinBuilder(resource)) {
                 setKotlinBuilderBeforeJavaBuilder(resource)

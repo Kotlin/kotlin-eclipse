@@ -71,7 +71,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
             KotlinPsiManager.INSTANCE.getFilesByProject(project)
         } else {
             allAffectedFiles
-                .filter { KotlinPsiManager.INSTANCE.isKotlinSourceFile(it, javaProject) }
+                .filter { KotlinPsiManager.isKotlinSourceFile(it, javaProject) }
                 .toSet()
         }
         

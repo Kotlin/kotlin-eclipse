@@ -28,10 +28,13 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.IDocument;
@@ -86,7 +89,95 @@ public class KotlinPsiManager {
         }
     }
     
-    public void updateProjectPsiSources(@NotNull IProject project, int flag) {
+    public void removeProjectFromManager(@NotNull IProject project) {
+        updateProjectPsiSources(project, IResourceDelta.REMOVED);
+    }
+    
+    @NotNull
+    public Set<IFile> getFilesByProject(@Nullable IProject project) {
+        synchronized (mapOperationLock) {
+            updateProjectPsiSourcesIfNeeded(project);
+            
+            if (projectFiles.containsKey(project)) {
+                return Collections.unmodifiableSet(projectFiles.get(project));
+            }
+            
+            return Collections.emptySet();
+        }
+    }
+    
+    @NotNull
+    public KtFile getParsedFile(@NotNull IFile file) {
+        synchronized (mapOperationLock) {
+            updateProjectPsiSourcesIfNeeded(file.getProject());
+            
+            assert exists(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
+            
+            if (!cachedKtFiles.containsKey(file)) {
+                KtFile jetFile = parseFile(file);
+                cachedKtFiles.put(file, jetFile);
+            }
+            
+            return cachedKtFiles.get(file);
+        }
+    }
+    
+    public boolean exists(@NotNull IFile file) {
+        synchronized (mapOperationLock) {
+            IProject project = file.getProject();
+            updateProjectPsiSourcesIfNeeded(project);
+            
+            if (project == null) return false;
+            
+            Set<IFile> files = projectFiles.get(project);
+            return files != null ? files.contains(file) : false;
+        }
+    }
+    
+    @NotNull
+    public Set<IFile> getFilesByProject(@NotNull String projectName) {
+        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+        
+        updateProjectPsiSourcesIfNeeded(project);
+        
+        return getFilesByProject(project);
+    }
+    
+    public static boolean isKotlinSourceFile(@NotNull IResource resource) throws JavaModelException {
+        return isKotlinSourceFile(resource, JavaCore.create(resource.getProject()));
+    }
+    
+    public static boolean isKotlinSourceFile(@NotNull IResource resource, @NotNull IJavaProject javaProject) throws JavaModelException {
+        if (!(resource instanceof IFile) || !KotlinFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
+            return false;
+        }
+
+        if (!javaProject.exists()) {
+            return false;
+        }
+        
+        if (!KotlinNature.hasKotlinNature(javaProject.getProject())) {
+            return false;
+        }
+        
+        IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
+        String resourceRoot = resource.getFullPath().segment(1);
+        for (IClasspathEntry classpathEntry : classpathEntries) {
+            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+                if (resourceRoot.equals(classpathEntry.getPath().segment(1))) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    public static boolean isKotlinFile(@NotNull IFile file) {
+        return KotlinFileType.INSTANCE.getDefaultExtension().equals(file.getFileExtension());
+    }
+    
+    private void updateProjectPsiSources(@NotNull IProject project, int flag) {
         switch (flag) {
             case IResourceDelta.ADDED:
                 addProject(project);
@@ -101,8 +192,31 @@ public class KotlinPsiManager {
     private void addProject(@NotNull IProject project) {
         synchronized (mapOperationLock) {
             if (ProjectUtils.isAccessibleKotlinProject(project)) {
-                KotlinFilesCollectorUtilsKt.addFilesToParse(JavaCore.create(project));
+                addFilesToParse(JavaCore.create(project));
             }
+        }
+    }
+    
+    private void addFilesToParse(@NotNull IJavaProject javaProject) {
+        try {
+            projectFiles.put(javaProject.getProject(), new HashSet<IFile>());
+            
+            for (IPackageFragmentRoot sourceFolder : KotlinFilesCollectorUtilsKt.getSourceFolders(javaProject)) {
+                    sourceFolder.getResource().accept(new IResourceVisitor() {
+                        
+                        @Override
+                        public boolean visit(IResource resource) throws CoreException {
+                            if (resource instanceof IFile && isKotlinFile((IFile) resource)) {
+                                addFile((IFile) resource);
+                            }
+                            
+                            return true;
+                        }
+                    });
+            }
+        }
+        catch (CoreException e) {
+            KotlinLogger.logError(e);
         }
     }
     
@@ -132,88 +246,24 @@ public class KotlinPsiManager {
     
     private void removeFile(@NotNull IFile file) {
         synchronized (mapOperationLock) {
+            IProject project = file.getProject();
+            
             assert exists(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
             
-            IProject project = file.getProject();
             
             cachedKtFiles.remove(file);
             projectFiles.get(project).remove(file);
         }
     }
     
-    @NotNull
-    public Set<IFile> getFilesByProject(@Nullable IProject project) {
-        synchronized (mapOperationLock) {
-            if (projectFiles.containsKey(project)) {
-                return Collections.unmodifiableSet(projectFiles.get(project));
-            }
-            
-            return Collections.emptySet();
-        }
-    }
-    
-    @NotNull
-    public KtFile getParsedFile(@NotNull IFile file) {
-        synchronized (mapOperationLock) {
-            assert exists(file) : "File(" + file.getName() + ") does not contain in the psiFiles";
-            
-            if (!cachedKtFiles.containsKey(file)) {
-                KtFile jetFile = parseFile(file);
-                cachedKtFiles.put(file, jetFile);
-            }
-            
-            return cachedKtFiles.get(file);
-        }
-    }
-    
-    public boolean exists(@NotNull IFile file) {
-        synchronized (mapOperationLock) {
-            IProject project = file.getProject();
-            if (project == null) return false;
-            
-            Set<IFile> files = projectFiles.get(project);
-            return files != null ? files.contains(file) : false;
-        }
-    }
-    
-    @NotNull
-    public Set<IFile> getFilesByProject(@NotNull String projectName) {
-        IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-        return getFilesByProject(project);
-    }
-    
-    public boolean isKotlinSourceFile(@NotNull IResource resource) throws JavaModelException {
-        return isKotlinSourceFile(resource, JavaCore.create(resource.getProject()));
-    }
-    
-    public boolean isKotlinSourceFile(@NotNull IResource resource, @NotNull IJavaProject javaProject) throws JavaModelException {
-        if (!(resource instanceof IFile) || !KotlinFileType.INSTANCE.getDefaultExtension().equals(resource.getFileExtension())) {
-            return false;
-        }
-
-        if (!javaProject.exists()) {
-            return false;
+    private void updateProjectPsiSourcesIfNeeded(IProject project) {
+        if (projectFiles.containsKey(project)) {
+            return;
         }
         
-        if (!KotlinNature.hasKotlinNature(javaProject.getProject())) {
-            return false;
+        if (ProjectUtils.isAccessibleKotlinProject(project)) {
+            updateProjectPsiSources(project, IResourceDelta.ADDED);
         }
-        
-        IClasspathEntry[] classpathEntries = javaProject.getRawClasspath();
-        String resourceRoot = resource.getFullPath().segment(1);
-        for (IClasspathEntry classpathEntry : classpathEntries) {
-            if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-                if (resourceRoot.equals(classpathEntry.getPath().segment(1))) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-    }
-    
-    public static boolean isKotlinFile(@NotNull IFile file) {
-        return KotlinFileType.INSTANCE.getDefaultExtension().equals(file.getFileExtension());
     }
     
     @Nullable

@@ -69,7 +69,7 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
                 val resource = delta.getResource()
                 if (resource is IFile){
                     val javaProject = JavaCore.create(resource.getProject())
-                    if (KotlinPsiManager.INSTANCE.isKotlinSourceFile(resource, javaProject)) {
+                    if (KotlinPsiManager.isKotlinSourceFile(resource, javaProject)) {
                         cachedAnalysisResults.remove(resource.getProject())
                     }
                     
