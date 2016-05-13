@@ -25,6 +25,8 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolution
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest
+import org.jetbrains.kotlin.ui.editors.findDiagnosticsBy
+import org.eclipse.jface.text.source.TextInvocationContext
 
 private val expectedQuickFixRegex = "\"(.*?)\"".toRegex()
 
@@ -51,15 +53,8 @@ abstract class KotlinQuickFixTestCase : KotlinEditorWithAfterFileTestCase() {
 }
 
 fun getProposals(testEditor: TextEditorTest): List<KotlinMarkerResolution> {
-    val shiftedOffset = LineEndUtil.convertCrToDocumentOffset(testEditor.getDocument(), testEditor.getCaretOffset())
-    val diagnostics = 
-            getBindingContext(KotlinPsiManager.INSTANCE.getParsedFile(testEditor.getEditingFile()), testEditor.getTestJavaProject().getJavaProject())!!
-                .diagnostics
-                .toList()
-                .filter { 
-                    val range = it.psiElement.textRange
-                    range.startOffset <= shiftedOffset && shiftedOffset <= range.endOffset
-                 }
+    val editor = testEditor.getEditor() as KotlinFileEditor
+    val diagnostics = findDiagnosticsBy(TextInvocationContext(editor.viewer, testEditor.caretOffset, 0), editor)
     
     return KotlinMarkerResolutionGenerator.getResolutions(diagnostics)
 }

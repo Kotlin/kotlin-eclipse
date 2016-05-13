@@ -47,6 +47,8 @@ import org.eclipse.swt.graphics.Image
 import org.eclipse.jface.text.IDocument
 import org.eclipse.swt.graphics.Point
 import org.eclipse.jface.text.contentassist.IContextInformation
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 
 class KotlinCorrectionProcessor(val editor: KotlinFileEditor) : IQuickAssistProcessor {
     
@@ -59,7 +61,7 @@ class KotlinCorrectionProcessor(val editor: KotlinFileEditor) : IQuickAssistProc
     override fun canAssist(invocationContext: IQuickAssistInvocationContext): Boolean = true
     
     override fun computeQuickAssistProposals(invocationContext: IQuickAssistInvocationContext): Array<ICompletionProposal> {
-        val diagnostics = findDiagnosticsBy(invocationContext)
+        val diagnostics = findDiagnosticsBy(invocationContext, editor)
         val quickFixResolutions = KotlinMarkerResolutionGenerator.getResolutions(diagnostics)
         
         return arrayListOf<ICompletionProposal>().apply { 
@@ -91,16 +93,14 @@ private class KotlinMarkerResolutionProposal(
     override fun getSelection(document: IDocument?): Point? = null
 }
 
-private fun findDiagnosticsBy(invocationContext: IQuickAssistInvocationContext): ArrayList<Diagnostic> {
-    val offset = invocationContext.offset
-    val annotations = arrayListOf<Diagnostic>()
-    for (ann in invocationContext.sourceViewer.annotationModel.getAnnotationIterator()) {
-        if (ann is DiagnosticAnnotation) {
-            if (ann.offset <= offset && offset <= ann.endOffset && ann.diagnostic != null) {
-                annotations.add(ann.diagnostic)
-            }
-        }
-    }
+fun findDiagnosticsBy(invocationContext: IQuickAssistInvocationContext, editor: KotlinFileEditor): List<Diagnostic> {
+    val offset = LineEndUtil.convertCrToDocumentOffset(editor.document, invocationContext.offset)
+    val ktFile = editor.parsedFile ?: return emptyList()
+    val javaProject = editor.javaProject ?: return emptyList()
     
-    return annotations
+    val diagnostics = getBindingContext(ktFile, javaProject)?.diagnostics ?: return emptyList()
+    return diagnostics.filter { 
+       val range = it.psiElement.textRange
+       range.startOffset <= offset && offset <= range.endOffset
+    }
 }
