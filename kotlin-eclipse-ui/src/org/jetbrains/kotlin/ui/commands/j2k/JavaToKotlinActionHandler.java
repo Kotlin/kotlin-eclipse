@@ -58,6 +58,7 @@ import org.jetbrains.kotlin.wizards.FileCreationOp;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 
 import kotlin.Pair;
 
@@ -194,7 +195,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     }
     
     private ConvertedKotlinData getConvertedFileData(@NotNull CompilationUnit compilationUnit, @NotNull Shell shell) throws ExecutionException {
-        String contents = new String(compilationUnit.getContents());
+        String contents = StringUtil.convertLineSeparators(new String(compilationUnit.getContents()));
         Project ideaProject = KotlinEnvironment.getEnvironment(compilationUnit.getJavaProject()).getProject();
         
         String translatedCode = JavaToKotlinTranslator.INSTANCE.prettify(
