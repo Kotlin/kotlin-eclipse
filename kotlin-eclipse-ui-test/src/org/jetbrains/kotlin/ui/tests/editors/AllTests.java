@@ -27,7 +27,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses( { 
     KotlinEditorBaseTest.class, 
-    KotlinAutoIndenterTest.class,
+    KotlinBasicAutoIndentTest.class,
     KotlinAnalyzerInIDETest.class,
     KotlinHighlightingTest.class,
     KotlinBracketInserterTest.class,
