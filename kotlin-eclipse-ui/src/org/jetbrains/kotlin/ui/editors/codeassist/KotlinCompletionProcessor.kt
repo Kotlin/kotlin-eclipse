@@ -16,25 +16,18 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.codeassist
 
-import java.util.ArrayList
-import java.util.Collections
-import org.eclipse.core.resources.IFile
-import org.eclipse.core.runtime.Assert
+import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.internal.ui.JavaPlugin
 import org.eclipse.jdt.internal.ui.JavaPluginImages
+import org.eclipse.jdt.internal.ui.viewsupport.JavaElementImageProvider
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.Region
-import org.eclipse.jface.text.contentassist.ContentAssistEvent
-import org.eclipse.jface.text.contentassist.ICompletionListener
-import org.eclipse.jface.text.contentassist.ICompletionProposal
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor
-import org.eclipse.jface.text.contentassist.IContextInformation
-import org.eclipse.jface.text.contentassist.IContextInformationValidator
-import org.eclipse.jface.text.templates.Template
+import org.eclipse.jface.text.contentassist.*
 import org.eclipse.jface.text.templates.TemplateContext
 import org.eclipse.jface.text.templates.TemplateProposal
-import org.eclipse.swt.graphics.Image
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
@@ -42,26 +35,12 @@ import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
-import com.intellij.psi.tree.IElementType
-import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.internal.ui.viewsupport.JavaElementImageProvider
-import org.eclipse.jface.resource.ImageDescriptor
-import org.eclipse.jface.viewers.StyledString
-import org.eclipse.jdt.ui.JavaElementLabels
-import org.eclipse.jdt.internal.corext.util.Strings
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.resolve.DescriptorUtils
-import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
-import org.eclipse.swt.graphics.Point
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.eclipse.jdt.internal.ui.JavaPlugin
-import org.eclipse.jface.text.contentassist.ContentAssistant
 
 class KotlinCompletionProcessor(
         private val editor: KotlinFileEditor,
@@ -76,9 +55,16 @@ class KotlinCompletionProcessor(
     }
     
     override fun computeCompletionProposals(viewer: ITextViewer, offset: Int): Array<ICompletionProposal> {
-        assistant?.setEmptyMessage("No Default Proposals")
+        if (assistant != null) {
+            configureContentAssistant(assistant)
+        }
         
         return generateCompletionProposals(viewer, offset).toTypedArray()
+    }
+    
+    private fun configureContentAssistant(contentAssistant: ContentAssistant) {
+        contentAssistant.setEmptyMessage("No Default Proposals")
+        contentAssistant.setSorter(KotlinCompletionSorter)
     }
     
     private fun generateCompletionProposals(viewer: ITextViewer, offset: Int): List<ICompletionProposal> {
@@ -203,4 +189,14 @@ class KotlinCompletionProcessor(
     }
     
     override fun selectionChanged(proposal: ICompletionProposal?, smartToggle: Boolean) { }
+}
+
+object KotlinCompletionSorter : ICompletionProposalSorter {
+    override fun compare(p1: ICompletionProposal, p2: ICompletionProposal): Int {
+        return p1.sortString().compareTo(p2.sortString(), ignoreCase = true)
+    }
+    
+    private fun ICompletionProposal.sortString(): String {
+        return if (this is KotlinCompletionProposal) this.replacementString else this.displayString
+    }
 }
