@@ -90,58 +90,34 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         try {
             int p = command.offset == document.getLength() ? command.offset - 1 : command.offset;
             IRegion info = document.getLineInformationOfOffset(p);
+            
             int start = info.getOffset();
             
-            StringBuffer buf = new StringBuffer(command.text);
+            IndentInEditor indent = computeIndent(document, command.offset);
             
-            int end = findEndOfWhiteSpaceAfter(document, start, command.offset);
-            
-            String lineSpaces = (end > start) ? document.get(start, end - start) : "";
-            buf.append(lineSpaces);
-            
-            if (isAfterOpenBrace(document, command.offset - 1, start)) {
-                buf.append(IndenterUtil.createWhiteSpace(1, 0, TextUtilities.getDefaultLineDelimiter(document)));
-                
-                if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength())) {
-                    command.shiftsCaret = false;
-                    command.caretOffset = command.offset + buf.length();
-                    
-                    buf.append(command.text);
-                    buf.append(lineSpaces);
-                    
-                    command.length = document.get().indexOf(CLOSING_BRACE_CHAR, p) - p;
-                }
-                
-                int oldOffset = command.offset;
-                int newOffset = findEndOfWhiteSpace(document, oldOffset - 1) + 1;
-                if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
-                    command.offset = newOffset;
-                    int shift = oldOffset - newOffset;
-                    if (command.length + shift >= 0) {
-                        command.length += shift;
-                    }
-                    
-                    if (command.caretOffset > 0 && command.caretOffset - shift >= 0) {
-                        command.caretOffset -= shift;
-                    }
-                } 
-                command.text = buf.toString();
+            boolean afterOpenBrace = isAfterOpenBrace(document, command.offset - 1, start);
+            boolean beforeCloseBrace = isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength()) && indent instanceof BlockIndent;
+            if (beforeCloseBrace && !afterOpenBrace) {
+                BlockIndent blockIndent = (BlockIndent) indent;
+                indent = new BlockIndent(blockIndent.getIndent() - 1);
+            }
+            int oldOffset = command.offset;
+            int newOffset = findEndOfWhiteSpace(document, command.offset - 1) + 1;
+            if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
+                command.offset = newOffset;
+                command.text = IndenterUtil.createWhiteSpace(indent, 1, TextUtilities.getDefaultLineDelimiter(document));
+                command.length = oldOffset - command.offset;
             } else {
-                IndentInEditor indent = computeIndent(document, command.offset);
-                if (isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength()) && indent instanceof BlockIndent) {
-                    BlockIndent blockIndent = (BlockIndent) indent;
-                    indent = new BlockIndent(blockIndent.getIndent() - 1);
-                }
-                int oldOffset = command.offset;
-                int newOffset = findEndOfWhiteSpace(document, command.offset - 1) + 1;
-                if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
-                    command.offset = newOffset;
-                    command.text = IndenterUtil.createWhiteSpace(indent, 1, TextUtilities.getDefaultLineDelimiter(document));
-                    command.length = oldOffset - command.offset;
-                } else {
-                    command.text += IndenterUtil.createWhiteSpace(indent, 0, TextUtilities.getDefaultLineDelimiter(document));
-                }
-           }
+                command.text += IndenterUtil.createWhiteSpace(indent, 0, TextUtilities.getDefaultLineDelimiter(document));
+            }
+            
+            if (beforeCloseBrace && afterOpenBrace) {
+                BlockIndent blockIndent = (BlockIndent) indent;
+                String shift = IndenterUtil.createWhiteSpace(blockIndent.getIndent() - 1, 1, TextUtilities.getDefaultLineDelimiter(document));
+                command.caretOffset = p + command.text.length();
+                command.text += shift;
+                command.shiftsCaret = false;
+            }
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
