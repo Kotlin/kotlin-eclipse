@@ -71,7 +71,7 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 	}
 	
 	private List<String> getActualProposals(KotlinFileEditor javaEditor) {
-		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(javaEditor);
+		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(javaEditor, null);
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(
 				javaEditor.getViewer(), 
 				KotlinTestUtils.getCaret(javaEditor));

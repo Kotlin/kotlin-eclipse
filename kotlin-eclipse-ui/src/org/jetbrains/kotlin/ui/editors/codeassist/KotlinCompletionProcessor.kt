@@ -61,8 +61,11 @@ import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.eclipse.swt.graphics.Point
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.eclipse.jdt.internal.ui.JavaPlugin
+import org.eclipse.jface.text.contentassist.ContentAssistant
 
-class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContentAssistProcessor, ICompletionListener {
+class KotlinCompletionProcessor(
+        private val editor: KotlinFileEditor,
+        private val assistant: ContentAssistant? = null) : IContentAssistProcessor, ICompletionListener {
     companion object {
         private val VALID_PROPOSALS_CHARS = charArrayOf('.')
         private val VALID_INFO_CHARS = charArrayOf('(', ',')
@@ -73,6 +76,8 @@ class KotlinCompletionProcessor(private val editor: KotlinFileEditor) : IContent
     }
     
     override fun computeCompletionProposals(viewer: ITextViewer, offset: Int): Array<ICompletionProposal> {
+        assistant?.setEmptyMessage("No Default Proposals")
+        
         return generateCompletionProposals(viewer, offset).toTypedArray()
     }
     

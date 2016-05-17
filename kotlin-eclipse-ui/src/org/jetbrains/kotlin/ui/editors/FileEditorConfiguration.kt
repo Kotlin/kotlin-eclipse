@@ -54,7 +54,7 @@ public class FileEditorConfiguration(colorManager: IColorManager,
 
     override fun getContentAssistant(sourceViewer: ISourceViewer): IContentAssistant? {
         val assistant = ContentAssistant()
-        val completionProcessor = KotlinCompletionProcessor(fileEditor)
+        val completionProcessor = KotlinCompletionProcessor(fileEditor, assistant)
 
         assistant.setContentAssistProcessor(completionProcessor, IDocument.DEFAULT_CONTENT_TYPE)
         assistant.addCompletionListener(completionProcessor)
@@ -80,7 +80,9 @@ public class FileEditorConfiguration(colorManager: IColorManager,
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE)
         
         assistant.enableColoredLabels(true)
-
+        
+        assistant.setShowEmptyList(true)
+        
         return assistant
     }
 }

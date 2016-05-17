@@ -52,7 +52,7 @@ public abstract class KotlinCompletionHandlerInsertTestCase extends KotlinEditor
 	}
 	
 	private ICompletionProposal[] getActualProposals(KotlinFileEditor javaEditor) {
-		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(javaEditor);
+		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(javaEditor, null);
 		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(
 				javaEditor.getViewer(), 
 				KotlinTestUtils.getCaret(javaEditor));
