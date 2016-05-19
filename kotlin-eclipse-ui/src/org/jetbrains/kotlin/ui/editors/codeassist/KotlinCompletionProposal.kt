@@ -158,7 +158,9 @@ class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image, 
 private fun createStyledString(simpleName: String, containingDeclaration: String): StyledString {
     return StyledString().apply { 
         append(simpleName)
-        append(JavaElementLabels.CONCAT_STRING, StyledString.QUALIFIER_STYLER)
-        append(containingDeclaration, StyledString.QUALIFIER_STYLER)
+        if (containingDeclaration.isNotBlank()) {
+            append(JavaElementLabels.CONCAT_STRING, StyledString.QUALIFIER_STYLER)
+            append(containingDeclaration, StyledString.QUALIFIER_STYLER)
+        }
     }
 }
