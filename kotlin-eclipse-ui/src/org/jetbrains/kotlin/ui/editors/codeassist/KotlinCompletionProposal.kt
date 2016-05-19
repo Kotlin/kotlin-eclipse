@@ -91,6 +91,8 @@ open class KotlinCompletionProposal(
     
     var selectedOffset = -1
     
+    open fun getRelevance(): Int = 0
+    
     override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
         val document = viewer.document
         val (identifierPart, identifierStart) = getIdentifierInfo(document, offset)
@@ -135,7 +137,7 @@ open class KotlinCompletionProposal(
 
 class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image, val file: IFile) : 
             KotlinCompletionProposal(typeName.simpleTypeName, image, typeName.simpleTypeName, typeName.packageName)  {
-    
+
     var importShift = -1
     
     override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
@@ -146,6 +148,10 @@ class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image, 
     override fun getSelection(document: IDocument): Point? {
         val selection = super.getSelection(document)
         return if (importShift > 0 && selection != null) Point(selection.x + importShift, 0) else selection
+    }
+    
+    override fun getRelevance(): Int {
+        return -1
     }
 }
 

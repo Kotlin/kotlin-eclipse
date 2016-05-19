@@ -193,10 +193,23 @@ class KotlinCompletionProcessor(
 
 object KotlinCompletionSorter : ICompletionProposalSorter {
     override fun compare(p1: ICompletionProposal, p2: ICompletionProposal): Int {
-        return p1.sortString().compareTo(p2.sortString(), ignoreCase = true)
+        val relevance2 = p2.relevance()
+        val relevance1 = p1.relevance()
+        
+        return if (relevance2 > relevance1) {
+            1
+        } else if (relevance2 < relevance1) {
+            -1
+        } else {
+            p1.sortString().compareTo(p2.sortString(), ignoreCase = true)
+        }
     }
     
     private fun ICompletionProposal.sortString(): String {
         return if (this is KotlinCompletionProposal) this.replacementString else this.displayString
     }
+    
+    private fun ICompletionProposal.relevance(): Int {
+        return if (this is KotlinCompletionProposal) this.getRelevance() else 0
+    } 
 }
