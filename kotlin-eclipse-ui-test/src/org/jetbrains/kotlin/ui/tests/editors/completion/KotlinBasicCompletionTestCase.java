@@ -22,8 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import kotlin.collections.CollectionsKt;
-
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
@@ -32,10 +30,11 @@ import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
-import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor;
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProposal;
 import org.junit.Assert;
 import org.junit.Before;
+
+import kotlin.collections.CollectionsKt;
 
 public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCase {
 	@Before
@@ -71,10 +70,7 @@ public abstract class KotlinBasicCompletionTestCase extends KotlinProjectTestCas
 	}
 	
 	private List<String> getActualProposals(KotlinFileEditor javaEditor) {
-		KotlinCompletionProcessor ktCompletionProcessor = new KotlinCompletionProcessor(javaEditor, null);
-		ICompletionProposal[] proposals = ktCompletionProcessor.computeCompletionProposals(
-				javaEditor.getViewer(), 
-				KotlinTestUtils.getCaret(javaEditor));
+		ICompletionProposal[] proposals = CompletionTestUtilsKt.getCompletionProposals(javaEditor);
 		
 		List<String> actualProposals = new ArrayList<String>();
 		for (ICompletionProposal proposal : proposals) {
