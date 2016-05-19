@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
+import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
@@ -41,10 +42,12 @@ import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
+import java.util.Comparator
 
 class KotlinCompletionProcessor(
         private val editor: KotlinFileEditor,
-        private val assistant: ContentAssistant? = null) : IContentAssistProcessor, ICompletionListener {
+        private val assistant: ContentAssistant? = null,
+        private val needSorting: Boolean = false) : IContentAssistProcessor, ICompletionListener {
     companion object {
         private val VALID_PROPOSALS_CHARS = charArrayOf('.')
         private val VALID_INFO_CHARS = charArrayOf('(', ',')
@@ -59,7 +62,19 @@ class KotlinCompletionProcessor(
             configureContentAssistant(assistant)
         }
         
-        return generateCompletionProposals(viewer, offset).toTypedArray()
+        val generatedProposals = generateCompletionProposals(viewer, offset).let {
+            if (needSorting) sortProposals(it) else it
+        }
+        
+        return generatedProposals.toTypedArray() 
+    }
+    
+    private fun sortProposals(proposals: List<ICompletionProposal>): List<ICompletionProposal> {
+        return proposals.sortedWith(object : Comparator<ICompletionProposal> {
+            override fun compare(o1: ICompletionProposal, o2: ICompletionProposal): Int {
+                return KotlinCompletionSorter.compare(o1, o2)
+            }
+        })
     }
     
     private fun configureContentAssistant(contentAssistant: ContentAssistant) {
@@ -191,7 +206,7 @@ class KotlinCompletionProcessor(
     override fun selectionChanged(proposal: ICompletionProposal?, smartToggle: Boolean) { }
 }
 
-object KotlinCompletionSorter : ICompletionProposalSorter {
+private object KotlinCompletionSorter : ICompletionProposalSorter {
     override fun compare(p1: ICompletionProposal, p2: ICompletionProposal): Int {
         val relevance2 = p2.relevance()
         val relevance1 = p1.relevance()

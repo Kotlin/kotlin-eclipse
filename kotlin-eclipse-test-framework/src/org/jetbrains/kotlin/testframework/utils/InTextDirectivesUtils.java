@@ -70,10 +70,10 @@ public class InTextDirectivesUtils {
 
         for (String prefix : prefixes) {
             if (prefix.startsWith("//")) {
-                resultPrefixes.add(StringUtil.trimStart(prefix, prefix.substring(0, 2)));
+                resultPrefixes.add(StringUtil.trimStart(prefix, prefix.substring(0, 2)).trim());
             }
             else {
-                resultPrefixes.add(prefix);
+                resultPrefixes.add(prefix.trim());
             }
         }
 
@@ -93,7 +93,7 @@ public class InTextDirectivesUtils {
                     if (line.startsWith("//")) {
                         String uncommentedLine = line.substring(2).trim();
                         if (!uncommentedLine.isEmpty()) {
-                            result.add(uncommentedLine);
+                            result.add(StringUtil.trim(uncommentedLine));
                         }
                     }
                 }
