@@ -17,28 +17,29 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.organizeImports
 
-import org.eclipse.jdt.ui.actions.SelectionDispatchAction
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
-import org.eclipse.jdt.internal.ui.actions.ActionMessages
-import org.eclipse.ui.PlatformUI
+import org.eclipse.jdt.core.search.TypeNameMatch
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.eclipse.jdt.internal.ui.actions.ActionMessages
+import org.eclipse.jdt.internal.ui.dialogs.MultiElementListSelectionDialog
+import org.eclipse.jdt.internal.ui.util.TypeNameMatchLabelProvider
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
+import org.eclipse.jdt.ui.actions.SelectionDispatchAction
+import org.eclipse.jface.window.Window
+import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Errors
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
+import org.jetbrains.kotlin.idea.imports.prepareOptimizedImports
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.resolve.ImportPath
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableTypes
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.ui.editors.quickfix.replaceImports
-import org.eclipse.jdt.core.IType
-import org.eclipse.jdt.core.search.TypeNameMatch
-import org.eclipse.jdt.internal.ui.util.TypeNameMatchLabelProvider
-import org.eclipse.jdt.internal.ui.dialogs.MultiElementListSelectionDialog
-import org.eclipse.jface.window.Window
+import org.jetbrains.kotlin.ui.formatter.settings
 import java.util.ArrayList
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.resolve.ImportPath
-import org.jetbrains.kotlin.idea.imports.prepareOptimizedImports
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -137,7 +138,13 @@ class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : Select
 
 fun prepareOptimizedImports(file: KtFile,
                             descriptorsToImport: Collection<DeclarationDescriptor>): List<ImportPath>? {
+    val settings = settings.getCustomSettings(KotlinCodeStyleSettings::class.java)
     
-    // TODO: obtains these constants from the KotlinCodeStyleSettings
-    return prepareOptimizedImports(file, descriptorsToImport, 5, 3) { fqName -> false }
+    return prepareOptimizedImports(
+            file,
+            descriptorsToImport,
+            settings.NAME_COUNT_TO_USE_STAR_IMPORT,
+            settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS) { fqName ->
+        fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS
+    }
 }
