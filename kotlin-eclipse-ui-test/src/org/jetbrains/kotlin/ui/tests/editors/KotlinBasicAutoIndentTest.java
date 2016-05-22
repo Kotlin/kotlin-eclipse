@@ -94,4 +94,24 @@ public class KotlinBasicAutoIndentTest extends KotlinAutoIndentTestCase {
 	public void afterOpenBraceWithShift() {
 	    doAutoTest();
 	}
+	
+	@Test
+	public void betweenBracesWithSpacesAtStart() {
+	    doAutoTest();
+	}
+	
+	@Test
+	public void betweenBracesWithSpacesEnd1() {
+	    doAutoTest();
+	}
+	
+	@Test
+	public void betweenBracesWithSpacesEnd2() {
+	    doAutoTest();
+	}
+	
+	@Test
+	public void betweenBracesWithSpacesMiddle() {
+	    doAutoTest();
+	}
 }

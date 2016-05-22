@@ -106,7 +106,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
                 command.offset = newOffset;
                 command.text = IndenterUtil.createWhiteSpace(indent, 1, TextUtilities.getDefaultLineDelimiter(document));
-                command.length = oldOffset - command.offset;
+                command.length = oldOffset - newOffset;
             } else {
                 command.text += IndenterUtil.createWhiteSpace(indent, 0, TextUtilities.getDefaultLineDelimiter(document));
             }
@@ -114,9 +114,10 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             if (beforeCloseBrace && afterOpenBrace) {
                 BlockIndent blockIndent = (BlockIndent) indent;
                 String shift = IndenterUtil.createWhiteSpace(blockIndent.getIndent() - 1, 1, TextUtilities.getDefaultLineDelimiter(document));
-                command.caretOffset = p + command.text.length();
+                command.caretOffset = command.offset + command.text.length();
                 command.text += shift;
                 command.shiftsCaret = false;
+                command.length += document.get().indexOf(CLOSING_BRACE_CHAR, p) - p;
             }
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
