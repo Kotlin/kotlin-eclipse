@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.formatter.KotlinSpacingBuilderUtil
 import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.TokenType
+import javax.naming.InitialContext
 
 fun computeAlignment(ktFile: KtFile, offset: Int): IndentInEditor {
     settings.getCommonSettings(KotlinLanguage.INSTANCE).ALIGN_MULTILINE_BINARY_OPERATION = true
@@ -138,14 +139,19 @@ private data class BlockWithIndentation(val block: BlockWithParent, val indent: 
 
 fun getAlignment(blockWithParent: BlockWithParent): BlockWithParent? {
     var current: BlockWithParent? = blockWithParent
-    while (current?.parent != null) {
-        if (current?.block?.alignment != null) {
-            return current
+    val initialOffset = blockWithParent.block.textRange.startOffset
+    while (true) {
+        val alignment: Alignment? = current?.block?.alignment
+        if (alignment != null) {
+            val firstWithAlignment = current!!.parent?.block?.subBlocks?.find { it.alignment != null }
+            return if (firstWithAlignment != current.block) current else null
         }
+        
         current = current?.parent
+        if (current == null || current.block.textRange.startOffset != initialOffset) {
+            return null
+        }
     }
-    
-    return null
 }
 
 class BlockWithParent(val block: Block, val parent: BlockWithParent?)
