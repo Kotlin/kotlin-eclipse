@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils;
+import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,7 +43,6 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import kotlin.Pair;
 import kotlin.collections.CollectionsKt;
 import kotlin.jvm.functions.Function1;
-import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 
 public abstract class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCase {
     @Before

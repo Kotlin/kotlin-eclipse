@@ -70,11 +70,11 @@ Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui.editors.quickassist,
  org.jetbrains.kotlin.ui.editors.quickfix,
  org.jetbrains.kotlin.ui.editors.selection,
+ org.jetbrains.kotlin.ui.formatter,
  org.jetbrains.kotlin.ui.launch,
  org.jetbrains.kotlin.ui.launch.junit,
  org.jetbrains.kotlin.ui.navigation,
  org.jetbrains.kotlin.ui.overrideImplement,
  org.jetbrains.kotlin.ui.refactorings.extract,
  org.jetbrains.kotlin.ui.refactorings.rename,
- org.jetbrains.kotlin.ui.search,
- org.jetbrains.kotlin.ui.formatter
+ org.jetbrains.kotlin.ui.search

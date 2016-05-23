@@ -1,37 +1,21 @@
-package org.jetbrains.kotlin.ui.formatter
+package com.intellij.formatting
 
-import org.eclipse.jface.text.IDocument
-import com.intellij.psi.codeStyle.CodeStyleSettings
-import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
-import org.jetbrains.kotlin.ui.formatter.KotlinBlock
-import org.jetbrains.kotlin.psi.KtFile
-import com.intellij.formatting.Indent
-import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import com.intellij.formatting.Indent.Type
-import com.intellij.formatting.ASTBlock
-import com.intellij.formatting.Block
-import com.intellij.formatting.DependantSpacingImpl
-import com.intellij.formatting.Spacing
-import com.intellij.formatting.DependentSpacingRule
 import com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
-import com.intellij.formatting.Alignment
+import com.intellij.psi.TokenType
+import com.intellij.psi.impl.source.tree.TreeUtil
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.formatter.KotlinSpacingBuilderUtil
+<<<<<<< HEAD:kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/formatter/formatUtils.kt
 import com.intellij.psi.impl.source.tree.TreeUtil
 import com.intellij.psi.TokenType
 import javax.naming.InitialContext
+=======
+import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
+import org.jetbrains.kotlin.psi.KtFile
+>>>>>>> ca0fcfa... Attempt to rework formatter more creatively:kotlin-bundled-compiler/src/com/intellij/formatting/formatUtils.kt
 
-fun computeAlignment(ktFile: KtFile, offset: Int): IndentInEditor {
-    settings.getCommonSettings(KotlinLanguage.INSTANCE).ALIGN_MULTILINE_BINARY_OPERATION = true
-    val rootBlock = KotlinBlock(ktFile.node, 
-                NULL_ALIGNMENT_STRATEGY, 
-                Indent.getNoneIndent(), 
-                null,
-                settings,
-                createSpacingBuilder(settings, KotlinSpacingBuilderUtilImpl))
-    
+fun computeAlignment(ktFile: KtFile, offset: Int, rootBlock: ASTBlock): IndentInEditor {
     val (blockWithParent, indent, index) = computeBlocks(rootBlock, offset)
     
     val alignmentBlock = getAlignment(blockWithParent)
@@ -65,6 +49,16 @@ fun computeAlignment(ktFile: KtFile, offset: Int): IndentInEditor {
     return IndentInEditor.BlockIndent(blockIndent)
 }
 
+sealed class IndentInEditor {
+    class RawIndent(val rawIndent: Int) : IndentInEditor()
+    
+    class BlockIndent(val indent: Int) : IndentInEditor() {
+        companion object {
+            @JvmField val NO_INDENT = BlockIndent(0)
+        }
+    }
+}
+
 fun getIndentByAlignment(parent: Block, ktFile: KtFile): IndentInEditor.RawIndent {
     val alignmentBlock = parent.subBlocks.find { it.alignment != null }
     val alignmentStartOffset = alignmentBlock!!.textRange.startOffset - 1
@@ -77,7 +71,7 @@ fun getIndentByAlignment(parent: Block, ktFile: KtFile): IndentInEditor.RawInden
     return IndentInEditor.RawIndent(parentIndent)
 }
 
-private fun computeBlocks(root: KotlinBlock, offset: Int): BlockWithIndentation {
+private fun computeBlocks(root: ASTBlock, offset: Int): BlockWithIndentation {
     var indent = 0
     var currentBlock = BlockWithParent(root, null)
     var childIndex: Int
@@ -155,18 +149,6 @@ fun getAlignment(blockWithParent: BlockWithParent): BlockWithParent? {
 }
 
 class BlockWithParent(val block: Block, val parent: BlockWithParent?)
-
-sealed class IndentInEditor {
-    class RawIndent(val rawIndent: Int) : IndentInEditor()
-    
-    class BlockIndent(val indent: Int) : IndentInEditor() {
-        companion object {
-            @JvmField val NO_INDENT = BlockIndent(0)
-        }
-        
-        val rawIndent = indent * IndenterUtil.getDefaultIndent()
-    }
-}
 
 object KotlinSpacingBuilderUtilImpl : KotlinSpacingBuilderUtil {
     override fun createLineFeedDependentSpacing(minSpaces: Int,

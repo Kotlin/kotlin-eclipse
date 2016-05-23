@@ -1,27 +1,26 @@
 package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.TextUtilities
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.psi.KtBlockExpression
 import org.jetbrains.kotlin.psi.KtDeclarationWithBody
+import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.psi.KtPsiFactory
-import com.intellij.psi.util.PsiTreeUtil
-import org.eclipse.jface.text.TextUtilities
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
-import com.intellij.psi.PsiWhiteSpace
-import org.jetbrains.kotlin.psi.KtReturnExpression
-import org.jetbrains.kotlin.psi.KtBlockExpression
 import org.jetbrains.kotlin.psi.KtPsiUtil
+import org.jetbrains.kotlin.psi.KtReturnExpression
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 import org.jetbrains.kotlin.ui.formatter.formatCode
 
 class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {

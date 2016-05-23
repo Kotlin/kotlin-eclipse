@@ -30,12 +30,20 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.idea.formatter.KotlinSpacingRulesKt;
 import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.ui.formatter.FormatUtilsKt;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor.BlockIndent;
+import org.jetbrains.kotlin.ui.formatter.KotlinBlock;
+import org.jetbrains.kotlin.ui.formatter.KotlinFormatModelKt;
+import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 
+import com.intellij.formatting.FormatUtilsKt;
 import com.intellij.formatting.FormatterFactory;
+import com.intellij.formatting.FormatterImpl;
+import com.intellij.formatting.Indent;
+import com.intellij.formatting.IndentInEditor;
+import com.intellij.formatting.IndentInEditor.BlockIndent;
+import com.intellij.formatting.KotlinSpacingBuilderUtilImpl;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
@@ -64,6 +72,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     }
     
     private IndentInEditor computeIndent(IDocument document, int offset) {
+        new FormatterImpl();
         IFile file = EditorUtil.getFile(editor);
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
@@ -79,7 +88,17 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         if (javaProject == null) return BlockIndent.NO_INDENT;
         int resolvedOffset = LineEndUtil.convertCrToDocumentOffset(document, offset);
         
-        return FormatUtilsKt.computeAlignment(ktFile, resolvedOffset);
+        CodeStyleSettings settings = KotlinFormatterKt.getSettings();
+        KotlinBlock rootBlock = new KotlinBlock(ktFile.getNode(), 
+                KotlinFormatterKt.getNULL_ALIGNMENT_STRATEGY(), 
+                Indent.getNoneIndent(), 
+                null,
+                settings,
+                KotlinSpacingRulesKt.createSpacingBuilder(settings, KotlinSpacingBuilderUtilImpl.INSTANCE));
+        
+        KotlinFormatModelKt.tryAdjustIndent(ktFile, rootBlock, settings, resolvedOffset);
+        
+        return FormatUtilsKt.computeAlignment(ktFile, resolvedOffset, rootBlock);
     }
     
     private void autoEditAfterNewLine(IDocument document, DocumentCommand command) {

@@ -1,6 +1,6 @@
 package com.intellij.formatting
 
-class WrapImpl : Wrap() {
-    override fun ignoreParentWraps() {
-    }
-}
+//class WrapImpl : Wrap() {
+//    override fun ignoreParentWraps() {
+//    }
+//}

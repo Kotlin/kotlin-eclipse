@@ -1,48 +1,30 @@
 package org.jetbrains.kotlin.ui.formatter
 
-import org.eclipse.jface.text.IDocument
-import com.intellij.psi.codeStyle.CodeStyleSettings
-import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
-import org.jetbrains.kotlin.ui.formatter.KotlinBlock
-import org.jetbrains.kotlin.psi.KtFile
-import com.intellij.formatting.Indent
-import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import com.intellij.formatting.Indent.Type
 import com.intellij.formatting.ASTBlock
 import com.intellij.formatting.Block
-import com.intellij.lang.ASTNode
-import com.intellij.formatting.Spacing
-import com.intellij.psi.PsiWhiteSpace
-import com.intellij.formatting.SpacingImpl
-import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
-import com.intellij.psi.PsiImportList
-import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.ui.refactorings.rename.FileEdit
-import org.eclipse.text.edits.TextEdit
-import org.eclipse.text.edits.ReplaceEdit
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
-import com.intellij.psi.PsiElement
-import org.eclipse.jface.text.TextUtilities
-import java.util.ArrayList
-import org.eclipse.ltk.core.refactoring.TextFileChange
-import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
-import org.eclipse.core.runtime.NullProgressMonitor
-import org.jetbrains.kotlin.psi.KtImportList
+import com.intellij.formatting.BlockWithParent
 import com.intellij.formatting.DependantSpacingImpl
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.idea.formatter.CommonAlignmentStrategy
-import com.intellij.formatting.Alignment
-import com.intellij.formatting.DependentSpacingRule
-import org.eclipse.ltk.core.refactoring.DocumentChange
-import org.eclipse.jface.text.Document
-import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.psi.KtPsiFactory
+import com.intellij.formatting.Indent
+import com.intellij.formatting.Indent.Type
+import com.intellij.formatting.KotlinSpacingBuilderUtilImpl
+import com.intellij.formatting.Spacing
 import com.intellij.openapi.util.text.StringUtil
-import org.jetbrains.kotlin.idea.KotlinLanguage
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.codeStyle.CodeStyleSettings
+import org.eclipse.core.runtime.NullProgressMonitor
+import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
+import org.eclipse.jface.text.Document
+import org.eclipse.ltk.core.refactoring.DocumentChange
+import org.eclipse.text.edits.ReplaceEdit
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtPsiFactory
+import java.util.ArrayList
+import com.intellij.formatting.getAlignment
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
@@ -135,9 +117,10 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
         
         if (IndenterUtil.getLineSeparatorsOccurences(prevParent.getText()) == 0) return null
         
-        val alignment = getAlignment(blockWithparent)
+//        val alignment = getAlignment(blockWithparent)
+        val alignment = null
         val indent = if (alignment != null) {
-                val indentByAlignment = getIndentByAlignment(alignment.parent!!.block, ktFile)
+                val indentByAlignment = 0
                 IndenterUtil.createWhiteSpace(indentByAlignment, 0, lineSeparator)
             } else {
                 IndenterUtil.createWhiteSpace(blockIndent, 0, lineSeparator)
@@ -175,58 +158,54 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
     
     private fun fixSpacing(whiteSpace: String, spacing: Spacing?): String {
         val fixedSpacing = StringBuilder()
-        if (spacing is SpacingImpl) {
-            val actualLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
-            val expectedLineFeeds = getLineFeeds(spacing)
-            if (actualLineFeeds < expectedLineFeeds || (expectedLineFeeds < actualLineFeeds && !spacing.shouldKeepLineFeeds())) {
-                if (expectedLineFeeds == 0) {
-                    fixedSpacing.append(createWhitespaces(spacing.minSpaces))
-                } else {
-                    fixedSpacing.append(IndenterUtil.createWhiteSpace(0, expectedLineFeeds, lineSeparator))
-                }
-            } else if (actualLineFeeds != 0) {
-                fixedSpacing.append(IndenterUtil.createWhiteSpace(0, actualLineFeeds, lineSeparator))
-            } else if (actualLineFeeds == 0) {
-                val countSpaces = whiteSpace.length
-                if (countSpaces < spacing.minSpaces) {
-                    fixedSpacing.append(createWhitespaces(spacing.minSpaces))
-                } else if (spacing.maxSpaces < countSpaces) {
-                    fixedSpacing.append(createWhitespaces(spacing.maxSpaces))
-                } else {
-                    fixedSpacing.append(whiteSpace)
-                }
-            } else {
-                fixedSpacing.append(whiteSpace)
-            }
-        } else {
-            val countLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
-            if (countLineFeeds != 0) {
-                fixedSpacing.append(IndenterUtil.createWhiteSpace(0, countLineFeeds, lineSeparator))
-            } else {
-                fixedSpacing.append(whiteSpace)
-            }
-        }
-        
+//        if (spacing is SpacingImpl) {
+//            val actualLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
+//            val expectedLineFeeds = getLineFeeds(spacing)
+//            if (actualLineFeeds < expectedLineFeeds || (expectedLineFeeds < actualLineFeeds && !spacing.shouldKeepLineFeeds())) {
+//                if (expectedLineFeeds == 0) {
+//                    fixedSpacing.append(createWhitespaces(spacing.minSpaces))
+//                } else {
+//                    fixedSpacing.append(IndenterUtil.createWhiteSpace(0, expectedLineFeeds, lineSeparator))
+//                }
+//            } else if (actualLineFeeds != 0) {
+//                fixedSpacing.append(IndenterUtil.createWhiteSpace(0, actualLineFeeds, lineSeparator))
+//            } else if (actualLineFeeds == 0) {
+//                val countSpaces = whiteSpace.length
+//                if (countSpaces < spacing.minSpaces) {
+//                    fixedSpacing.append(createWhitespaces(spacing.minSpaces))
+//                } else if (spacing.maxSpaces < countSpaces) {
+//                    fixedSpacing.append(createWhitespaces(spacing.maxSpaces))
+//                } else {
+//                    fixedSpacing.append(whiteSpace)
+//                }
+//            } else {
+//                fixedSpacing.append(whiteSpace)
+//            }
+//        } else {
+//            val countLineFeeds = IndenterUtil.getLineSeparatorsOccurences(whiteSpace)
+//            if (countLineFeeds != 0) {
+//                fixedSpacing.append(IndenterUtil.createWhiteSpace(0, countLineFeeds, lineSeparator))
+//            } else {
+//                fixedSpacing.append(whiteSpace)
+//            }
+//        }
+//        
         return fixedSpacing.toString()
     }
     
-    private fun getLineFeeds(spacing: SpacingImpl): Int {
-        return when (spacing) {
-            is DependantSpacingImpl -> {
-                val hasLineFeeds = spacing.dependentRegionRanges.find { 
-                    IndenterUtil.getLineSeparatorsOccurences(ktFile.text.substring(it.startOffset, it.endOffset)) != 0
-                }
-                
-                val triggerWithLineFeeds = spacing.getRule().getTrigger() == DependentSpacingRule.Trigger.HAS_LINE_FEEDS
-                if ((triggerWithLineFeeds && hasLineFeeds != null) || (!triggerWithLineFeeds && hasLineFeeds == null)) {
-                    spacing.setDependentRegionLinefeedStatusChanged()
-                }
-                
-                spacing.getMinLineFeeds()
-            }
-            else -> spacing.getMinLineFeeds()
-        }
-    }
+//    private fun getLineFeeds(spacing: SpacingImpl): Int {
+//        return when (spacing) {
+//            is DependantSpacingImpl -> {
+//                val hasLineFeeds = spacing.dependentRegionRanges.find { 
+//                    IndenterUtil.getLineSeparatorsOccurences(ktFile.text.substring(it.startOffset, it.endOffset)) != 0
+//                }
+//                
+//                
+//                spacing.getMinLineFeeds()
+//            }
+//            else -> spacing.getMinLineFeeds()
+//        }
+//    }
 }
 
 private fun createKtFile(source: String, javaProject: IJavaProject): KtFile {

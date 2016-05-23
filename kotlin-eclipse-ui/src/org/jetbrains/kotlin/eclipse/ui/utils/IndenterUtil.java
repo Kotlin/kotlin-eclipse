@@ -19,10 +19,10 @@ package org.jetbrains.kotlin.eclipse.ui.utils;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.lexer.KtTokens;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor.BlockIndent;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor.RawIndent;
 
+import com.intellij.formatting.IndentInEditor;
+import com.intellij.formatting.IndentInEditor.BlockIndent;
+import com.intellij.formatting.IndentInEditor.RawIndent;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 
 public class IndenterUtil {

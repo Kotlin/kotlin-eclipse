@@ -210,6 +210,8 @@ public class KotlinEnvironment {
         
         javaApplicationEnvironment.getApplication().registerService(KotlinBinaryClassCache.class,
                 new KotlinBinaryClassCache());
+//        javaApplicationEnvironment.getApplication().registerService(AppCodeStyleSettingsManager.class,
+//                new AppCodeStyleSettingsManager());
         
         return javaApplicationEnvironment;
     }
