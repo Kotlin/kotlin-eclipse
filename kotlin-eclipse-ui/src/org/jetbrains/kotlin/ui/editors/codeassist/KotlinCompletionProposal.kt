@@ -43,12 +43,13 @@ import org.jetbrains.kotlin.resolve.getValueParametersCountFromFunctionType
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
-        proposal: KotlinCompletionProposal): KotlinCompletionProposal {
+        proposal: KotlinCompletionProposal,
+        identifierPart: String): KotlinCompletionProposal {
     return when (descriptor) {
         is FunctionDescriptor -> {
             val parameters = descriptor.getValueParameters()
             when (parameters.size) {
-                0 -> KotlinFunctionCompletionProposal(proposal, CaretPosition.AFTER_BRACKETS, false)
+                0 -> KotlinFunctionCompletionProposal(proposal, CaretPosition.AFTER_BRACKETS, false, identifierPart)
 
                 1 -> {
                     val parameterType = parameters.single().getType()
@@ -56,13 +57,13 @@ public fun withKotlinInsertHandler(
                         val parameterCount = getValueParametersCountFromFunctionType(parameterType)
                         if (parameterCount <= 1) {
                             // otherwise additional item with lambda template is to be added
-                            return KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, true)
+                            return KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, true, identifierPart)
                         }
                     }
-                    KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, false)
+                    KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, false, identifierPart)
                 }
 
-                else -> KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, false)
+                else -> KotlinFunctionCompletionProposal(proposal, CaretPosition.IN_BRACKETS, false, identifierPart)
             }
         }
 
@@ -87,11 +88,16 @@ open class KotlinCompletionProposal(
         val presentableString: String,
         val containmentPresentableString: String? = null,
         val information: IContextInformation? = null,
-        val additionalInfo: String? = null) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
+        val additionalInfo: String? = null,
+        identifierPart: String) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
     
     var selectedOffset = -1
     
-    open fun getRelevance(): Int = 0
+    private @Volatile var identifierPart = identifierPart
+    
+    open fun getRelevance(): Int {
+        return computeCaseMatchingRelevance(identifierPart.toCharArray(), replacementString.toCharArray())
+    }
     
     override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
         val document = viewer.document
@@ -103,6 +109,7 @@ open class KotlinCompletionProposal(
     
     override fun validate(document: IDocument, offset: Int, event: DocumentEvent): Boolean {
         val identiferInfo = getIdentifierInfo(document, offset)
+        identifierPart = identiferInfo.identifierPart
         return KotlinCompletionUtils.applicableNameFor(identiferInfo.identifierPart, replacementString)
     }
     
@@ -135,8 +142,13 @@ open class KotlinCompletionProposal(
     }
 }
 
-class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image, val file: IFile) : 
-            KotlinCompletionProposal(typeName.simpleTypeName, image, typeName.simpleTypeName, typeName.packageName)  {
+class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image, val file: IFile, identifierPart: String) : 
+            KotlinCompletionProposal(
+                    typeName.simpleTypeName,
+                    image,
+                    typeName.simpleTypeName,
+                    typeName.packageName,
+                    identifierPart = identifierPart)  {
 
     var importShift = -1
     

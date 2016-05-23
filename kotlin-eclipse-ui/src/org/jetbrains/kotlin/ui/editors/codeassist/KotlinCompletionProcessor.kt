@@ -88,7 +88,7 @@ class KotlinCompletionProcessor(
         
         return arrayListOf<ICompletionProposal>().apply {
             if (expression != null) {
-                addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, expression)))
+                addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, expression), identifierPart))
                 addAll(generateNonImportedCompletionProposals(identifierPart, expression, editor.javaProject!!))
             }
             addAll(generateKeywordProposals(identifierPart))
@@ -108,7 +108,7 @@ class KotlinCompletionProcessor(
             val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.type.flags, false)
             val image = JavaPlugin.getImageDescriptorRegistry().get(imageDescriptor)
             
-            KotlinImportCompletionProposal(it, image, file)
+            KotlinImportCompletionProposal(it, image, file, identifierPart)
         }
     }
     
@@ -123,7 +123,7 @@ class KotlinCompletionProcessor(
         return KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, file)
     }
     
-    private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>): List<KotlinCompletionProposal> {
+    private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>, part: String): List<KotlinCompletionProposal> {
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
             val image = KotlinImageProvider.getImage(descriptor)!!
@@ -140,9 +140,10 @@ class KotlinCompletionProcessor(
                                 presentableString,
                                 containmentPresentableString,
                                 null,
-                                completion)
+                                completion,
+                                part)
             
-            withKotlinInsertHandler(descriptor, proposal)
+            withKotlinInsertHandler(descriptor, proposal, part)
         }
     }
     
@@ -181,7 +182,7 @@ class KotlinCompletionProcessor(
                 .filter { it.toString().startsWith(identifierPart) }
                 .map { 
                     val keyword = it.toString()
-                    KotlinCompletionProposal(keyword, null, keyword)
+                    KotlinCompletionProposal(keyword, null, keyword, identifierPart = identifierPart)
                 }
     }
     

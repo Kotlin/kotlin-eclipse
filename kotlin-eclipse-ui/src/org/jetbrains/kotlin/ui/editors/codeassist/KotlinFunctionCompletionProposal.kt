@@ -38,7 +38,13 @@ public enum class CaretPosition {
 public class KotlinFunctionCompletionProposal(
         proposal: KotlinCompletionProposal,
         val caretPosition: CaretPosition,
-        val hasLambda: Boolean) : KotlinCompletionProposal(proposal.replacementString, proposal.img, proposal.presentableString) {
+        val hasLambda: Boolean,
+        identifierPart: String) :
+            KotlinCompletionProposal(
+                    proposal.replacementString,
+                    proposal.img,
+                    proposal.presentableString,
+                    identifierPart = identifierPart) {
     
     init {
         if (caretPosition == CaretPosition.AFTER_BRACKETS && hasLambda) {

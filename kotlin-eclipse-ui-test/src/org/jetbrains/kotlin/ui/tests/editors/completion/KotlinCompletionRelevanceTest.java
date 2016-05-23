@@ -17,4 +17,19 @@ public class KotlinCompletionRelevanceTest extends KotlinCompletionRelevanceTest
     public void testSortingForNonImported() {
         doTest("testData/completion/relevance/sortingForNonImported.kt");
     }
+    
+    @Test
+    public void testByCamelCaseLocal() {
+        doTest("testData/completion/relevance/byCamelCaseLocal.kt");
+    }
+    
+    @Test
+    public void testByPrefixMatchLocal() {
+        doTest("testData/completion/relevance/byPrefixMatchLocal.kt");
+    }
+    
+    @Test
+    public void testByPrefixWithImported() {
+        doTest("testData/completion/relevance/byPrefixWithImported.kt");
+    }
 }
