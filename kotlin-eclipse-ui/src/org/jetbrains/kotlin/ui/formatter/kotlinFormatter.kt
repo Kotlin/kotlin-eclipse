@@ -99,9 +99,6 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
             when (subBlock.indent?.type) {
                 Type.NORMAL -> subBlockIndent++
                 Type.CONTINUATION -> subBlockIndent += 2
-                Type.CONTINUATION_WITHOUT_FIRST -> {
-                    if (index > 0 && block.indent?.type == Type.CONTINUATION_WITHOUT_FIRST) subBlockIndent += 2
-                }
             }
             
             if (first) {

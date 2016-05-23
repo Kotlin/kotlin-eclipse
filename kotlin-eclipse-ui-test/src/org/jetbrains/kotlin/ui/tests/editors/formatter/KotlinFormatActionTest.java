@@ -98,4 +98,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void indentInIfExpressionBlock() {
         doAutoTest();
     }
+    
+    @Test
+    public void lambdaInBlock() {
+        doAutoTest();
+    }
 }
