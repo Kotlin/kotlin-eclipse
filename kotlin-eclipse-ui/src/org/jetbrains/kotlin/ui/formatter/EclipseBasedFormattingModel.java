@@ -1,8 +1,22 @@
-package com.intellij.formatting;
+package org.jetbrains.kotlin.ui.formatter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.ltk.core.refactoring.DocumentChange;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 
+import com.intellij.formatting.Block;
+import com.intellij.formatting.FormattingDocumentModel;
+import com.intellij.formatting.FormattingModelEx;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -33,13 +47,16 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
     @NotNull
     private final Block myRootBlock;
     protected boolean myCanModifyAllWhiteSpaces = false;
+    private final IDocument document;
+    private final List<ReplaceEdit> edits = new ArrayList<>();
     
     public EclipseBasedFormattingModel(final PsiFile file, @NotNull final Block rootBlock,
-            final EclipseFormattingModel documentModel) {
+            final EclipseFormattingModel documentModel, @NotNull final IDocument document) {
         myASTNode = SourceTreeToPsiMap.psiElementToTree(file);
         myDocumentModel = documentModel;
         myRootBlock = rootBlock;
         myProject = file.getProject();
+        this.document = document;
     }
     
     @Override
@@ -48,7 +65,7 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
     }
     
     @Override
-    public TextRange replaceWhiteSpace(TextRange textRange, ASTNode nodeAfter, String whiteSpace) {
+    public TextRange replaceWhiteSpace(TextRange textRange, @Nullable ASTNode nodeAfter, String whiteSpace) {
         String whiteSpaceToUse = myDocumentModel.adjustWhiteSpaceIfNecessary(whiteSpace, textRange.getStartOffset(),
                 textRange.getEndOffset(), nodeAfter, true).toString();
         final String wsReplaced = replaceWithPSI(textRange, whiteSpaceToUse);
@@ -110,9 +127,24 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
         
         replaceWhiteSpace(whiteSpace, leafElement, TokenType.WHITE_SPACE, textRange);
         
+        applyChanges();
+        
         return whiteSpace;
     }
     
+    private void applyChanges() {
+        DocumentChange documentChange = new DocumentChange("Format code", document);
+        for (ReplaceEdit edit : edits) {
+            TextChangeCompatibility.addTextEdit(documentChange, "Kotlin change", edit);
+        }
+        
+        try {
+            documentChange.perform(new NullProgressMonitor());
+        } catch (CoreException e) {
+            KotlinLogger.logError(e);
+        }
+    }
+
     @Nullable
     protected ASTNode findElementAt(final int offset) {
         PsiFile containingFile = myASTNode.getPsi().getContainingFile();
@@ -142,7 +174,7 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
         myCanModifyAllWhiteSpaces = true;
     }
     
-    public static void replaceWhiteSpace(final String whiteSpace, final ASTNode leafElement,
+    public void replaceWhiteSpace(final String whiteSpace, final ASTNode leafElement,
             final IElementType whiteSpaceToken, @Nullable final TextRange textRange) {
         final CharTable charTable = SharedImplUtil.findCharTableByTree(leafElement);
         
@@ -177,7 +209,8 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
                         if (!whiteSpace.isEmpty()) {
                             // LOG.assertTrue(textRange == null ||
                             // treeParent.getTextRange().equals(textRange));
-                            treeParent.replaceChild(treePrev, whiteSpaceElement);
+//                            treeParent.replaceChild(treePrev, whiteSpaceElement);
+                            replaceChild(treePrev, whiteSpaceElement);
                         } else {
                             treeParent.removeChild(treePrev);
                         }
@@ -248,14 +281,23 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
         }
     }
     
-    private static void addWhiteSpace(final ASTNode treePrev, final LeafElement whiteSpaceElement) {
+    private void addWhiteSpace(final ASTNode treePrev, final LeafElement whiteSpaceElement) {
         for (WhiteSpaceFormattingStrategy strategy : WhiteSpaceFormattingStrategyFactory.getAllStrategies()) {
             if (strategy.addWhitespace(treePrev, whiteSpaceElement)) {
                 return;
             }
         }
         
-        final ASTNode treeParent = treePrev.getTreeParent();
-        treeParent.addChild(whiteSpaceElement, treePrev); // TODO: here we should do something
+        ReplaceEdit edit = new ReplaceEdit(convertOffset(treePrev.getStartOffset()), 0, whiteSpaceElement.getText());
+        edits.add(edit);
+    }
+    
+    private void replaceChild(@NotNull ASTNode oldChild, @NotNull ASTNode newChild) {
+        ReplaceEdit edit = new ReplaceEdit(convertOffset(oldChild.getStartOffset()), oldChild.getTextLength(), newChild.getText());
+        edits.add(edit);
+    }
+    
+    private int convertOffset(int offset) {
+        return LineEndUtil.convertLfToDocumentOffset(myASTNode.getPsi().getContainingFile().getText(), offset, document);
     }
 }

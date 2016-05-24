@@ -96,7 +96,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 settings,
                 KotlinSpacingRulesKt.createSpacingBuilder(settings, KotlinSpacingBuilderUtilImpl.INSTANCE));
         
-        KotlinFormatModelKt.tryAdjustIndent(ktFile, rootBlock, settings, resolvedOffset);
+        KotlinFormatModelKt.tryAdjustIndent(ktFile, rootBlock, settings, resolvedOffset, document);
         
         return FormatUtilsKt.computeAlignment(ktFile, resolvedOffset, rootBlock);
     }
@@ -112,8 +112,9 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             
             int start = info.getOffset();
             
-            IndentInEditor indent = computeIndent(document, command.offset);
+            document.replace(command.offset, command.length, command.text);
             
+<<<<<<< HEAD
             boolean afterOpenBrace = isAfterOpenBrace(document, command.offset - 1, start);
             boolean beforeCloseBrace = isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength()) && indent instanceof BlockIndent;
             if (beforeCloseBrace && !afterOpenBrace) {
@@ -138,6 +139,37 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
                 command.shiftsCaret = false;
                 command.length += document.get().indexOf(CLOSING_BRACE_CHAR, p) - p;
             }
+=======
+            computeIndent(document, command.offset + command.text.length());
+            
+            command.text = "";
+            command.doit = false;
+            
+            
+//            boolean afterOpenBrace = isAfterOpenBrace(document, command.offset - 1, start);
+//            boolean beforeCloseBrace = isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength()) && indent instanceof BlockIndent;
+//            if (beforeCloseBrace && !afterOpenBrace) {
+//                BlockIndent blockIndent = (BlockIndent) indent;
+//                indent = new BlockIndent(blockIndent.getIndent() - 1);
+//            }
+//            int oldOffset = command.offset;
+//            int newOffset = findEndOfWhiteSpace(document, command.offset - 1) + 1;
+//            if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
+//                command.offset = newOffset;
+//                command.text = IndenterUtil.createWhiteSpace(indent, 1, TextUtilities.getDefaultLineDelimiter(document));
+//                command.length = oldOffset - command.offset;
+//            } else {
+//                command.text += IndenterUtil.createWhiteSpace(indent, 0, TextUtilities.getDefaultLineDelimiter(document));
+//            }
+//            
+//            if (beforeCloseBrace && afterOpenBrace) {
+//                BlockIndent blockIndent = (BlockIndent) indent;
+//                String shift = IndenterUtil.createWhiteSpace(blockIndent.getIndent() - 1, 1, TextUtilities.getDefaultLineDelimiter(document));
+//                command.caretOffset = p + command.text.length();
+//                command.text += shift;
+//                command.shiftsCaret = false;
+//            }
+>>>>>>> 1873856... Enable new formatter
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
