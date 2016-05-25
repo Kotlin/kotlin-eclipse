@@ -107,6 +107,13 @@ public abstract class KotlinFormatActionTestCase extends KotlinEditorWithAfterFi
         for (Pair<String, Integer> setting : settingsToIntValue) {
             setIntSetting(setting.getFirst(), setting.getSecond(), objects);
         }
+        
+        String rightMarginString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "// RIGHT_MARGIN: ");
+        if (rightMarginString != null) {
+            Integer rightMargin = Integer.parseInt(rightMarginString);
+            commonSettings.RIGHT_MARGIN = rightMargin;
+        }
+        
     }
     
     public static void setBooleanSetting(String setting, Boolean value, List<Object> objects) {
