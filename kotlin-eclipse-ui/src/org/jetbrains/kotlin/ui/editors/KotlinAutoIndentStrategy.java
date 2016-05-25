@@ -16,14 +16,27 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.TextUtilities;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
+import org.jetbrains.kotlin.idea.formatter.KotlinSpacingRulesKt;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.psi.KtPsiFactory;
+import org.jetbrains.kotlin.ui.formatter.KotlinBlock;
+import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
+import org.jetbrains.kotlin.ui.formatter.KotlinSpacingBuilderUtilImpl;
+
+import com.intellij.formatting.FormatterImpl;
+import com.intellij.formatting.Indent;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
@@ -31,10 +44,11 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     private static final char CLOSING_BRACE_CHAR = '}';
     private static final String CLOSING_BRACE_STRING = Character.toString(CLOSING_BRACE_CHAR);
     
-    private final JavaEditor editor;
+    private final KotlinFileEditor editor;
     
-    public KotlinAutoIndentStrategy(JavaEditor editor) {
+    public KotlinAutoIndentStrategy(KotlinFileEditor editor) {
         this.editor = editor;
+        new FormatterImpl();
     }
     
     @Override
@@ -68,17 +82,57 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
                 command.offset = newOffset;
                 command.length = oldOffset - newOffset;
-            } else {
             }
             
+            IDocument tempDocument = new Document(document.get());
+            tempDocument.replace(command.offset, command.length, command.text + " ");
+            
+            int newLineOffset = command.offset + command.text.length();
             if (beforeCloseBrace && afterOpenBrace) {
-                command.caretOffset = command.offset + command.text.length();
+                tempDocument.replace(command.offset, 0, command.text);
+                String shift = getIndent(tempDocument, newLineOffset);
+                int beforeBraceIndent = shift.length() / IndenterUtil.getDefaultIndent();
+                if (beforeBraceIndent > 0) beforeBraceIndent--;
+                
+                command.caretOffset = newLineOffset + shift.length();
+                
+                shift += IndenterUtil.createWhiteSpace(beforeBraceIndent, 1, TextUtilities.getDefaultLineDelimiter(document));
+                
+                command.text += shift;
                 command.shiftsCaret = false;
                 command.length += document.get().indexOf(CLOSING_BRACE_CHAR, p) - p;
+            } else {
+                command.text += getIndent(tempDocument, newLineOffset + 1);
             }
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
+    }
+    
+    private String getIndent(IDocument tempDocument, int offset) throws BadLocationException {
+        IJavaProject javaProject = editor.getJavaProject();
+        assert javaProject != null;
+        
+        KtPsiFactory psiFactory = KotlinFormatterKt.createPsiFactory(javaProject);
+        KtFile ktFile = KotlinFormatterKt.createKtFile(tempDocument.get(), psiFactory);
+        
+        CodeStyleSettings settings = KotlinFormatterKt.getSettings();
+        KotlinBlock rootBlock = new KotlinBlock(ktFile.getNode(), 
+                KotlinFormatterKt.getNULL_ALIGNMENT_STRATEGY(), 
+                Indent.getNoneIndent(), 
+                null,
+                settings,
+                KotlinSpacingRulesKt.createSpacingBuilder(settings, KotlinSpacingBuilderUtilImpl.INSTANCE));
+        
+        int resolvedOffset = LineEndUtil.convertCrToDocumentOffset(tempDocument, offset);
+        KotlinFormatterKt.adjustIndent(ktFile, rootBlock, settings, resolvedOffset, tempDocument);
+        
+        int documentLength = tempDocument.getLength();
+        IRegion lineInfo = tempDocument.getLineInformationOfOffset(offset < documentLength ? offset : documentLength);
+        
+        int lineOffset = lineInfo.getOffset();
+        int endOfWhitespace = findEndOfWhiteSpaceAfter(tempDocument, lineOffset, lineOffset + lineInfo.getLength());
+        return tempDocument.get(lineOffset, endOfWhitespace - lineOffset);
     }
     
     private void autoEditBeforeCloseBrace(IDocument document, DocumentCommand command) {
