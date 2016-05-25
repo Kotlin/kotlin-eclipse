@@ -16,24 +16,14 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentCommand;
 import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.TextUtilities;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
-import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.ui.formatter.FormatUtilsKt;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor.BlockIndent;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
@@ -60,25 +50,6 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         }
     }
     
-    private IndentInEditor computeIndent(IDocument document, int offset) {
-        IFile file = EditorUtil.getFile(editor);
-        if (file == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
-            return BlockIndent.NO_INDENT;
-        }
-        
-        KtFile ktFile = KotlinPsiManager.getKotlinFileIfExist(file, document.get());
-        if (ktFile == null) {
-            return BlockIndent.NO_INDENT;
-        }
-        
-        IJavaProject javaProject = ((KotlinFileEditor) editor).getJavaProject();
-        if (javaProject == null) return BlockIndent.NO_INDENT;
-        int resolvedOffset = LineEndUtil.convertCrToDocumentOffset(document, offset);
-        
-        return FormatUtilsKt.computeAlignment(ktFile, resolvedOffset);
-    }
-    
     private void autoEditAfterNewLine(IDocument document, DocumentCommand command) {
         if (command.offset == -1 || document.getLength() == 0) {
             return;
@@ -90,29 +61,18 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             
             int start = info.getOffset();
             
-            IndentInEditor indent = computeIndent(document, command.offset);
-            
             boolean afterOpenBrace = isAfterOpenBrace(document, command.offset - 1, start);
-            boolean beforeCloseBrace = isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength()) && indent instanceof BlockIndent;
-            if (beforeCloseBrace && !afterOpenBrace) {
-                BlockIndent blockIndent = (BlockIndent) indent;
-                indent = new BlockIndent(blockIndent.getIndent() - 1);
-            }
+            boolean beforeCloseBrace = isBeforeCloseBrace(document, command.offset, info.getOffset() + info.getLength());
             int oldOffset = command.offset;
             int newOffset = findEndOfWhiteSpace(document, command.offset - 1) + 1;
             if (newOffset > 0 && !IndenterUtil.isWhiteSpaceOrNewLine(document.getChar(newOffset - 1))) {
                 command.offset = newOffset;
-                command.text = IndenterUtil.createWhiteSpace(indent, 1, TextUtilities.getDefaultLineDelimiter(document));
                 command.length = oldOffset - newOffset;
             } else {
-                command.text += IndenterUtil.createWhiteSpace(indent, 0, TextUtilities.getDefaultLineDelimiter(document));
             }
             
             if (beforeCloseBrace && afterOpenBrace) {
-                BlockIndent blockIndent = (BlockIndent) indent;
-                String shift = IndenterUtil.createWhiteSpace(blockIndent.getIndent() - 1, 1, TextUtilities.getDefaultLineDelimiter(document));
                 command.caretOffset = command.offset + command.text.length();
-                command.text += shift;
                 command.shiftsCaret = false;
                 command.length += document.get().indexOf(CLOSING_BRACE_CHAR, p) - p;
             }
@@ -125,13 +85,6 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         if (isNewLineBefore(document, command.offset)) {
             try {
                 int spaceLength = command.offset - findEndOfWhiteSpaceBefore(document, command.offset - 1, 0) - 1;
-                IndentInEditor indent = computeIndent(document, command.offset);
-                if (indent instanceof BlockIndent) {
-                    BlockIndent blockIndent = (BlockIndent) indent;
-                    indent = new BlockIndent(blockIndent.getIndent() - 1);
-                }
-                command.text = IndenterUtil.createWhiteSpace(indent, 0, 
-                        TextUtilities.getDefaultLineDelimiter(document)) + CLOSING_BRACE_STRING;
                 command.offset -= spaceLength;
                 document.replace(command.offset, spaceLength, "");
             } catch (BadLocationException e) {

@@ -19,9 +19,6 @@ package org.jetbrains.kotlin.eclipse.ui.utils;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jetbrains.kotlin.lexer.KtTokens;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor.BlockIndent;
-import org.jetbrains.kotlin.ui.formatter.IndentInEditor.RawIndent;
 
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 
@@ -31,18 +28,6 @@ public class IndenterUtil {
     public static final String SPACE_STRING = Character.toString(SPACE_CHAR);
     public static final char TAB_CHAR = '\t';
     public static final String TAB_STRING = Character.toString(TAB_CHAR);
-    
-    public static String createWhiteSpace(IndentInEditor indent, int countBreakLines, String lineSeparator) {
-        if (indent instanceof BlockIndent) {
-            BlockIndent blockIndent = (BlockIndent) indent;
-            return createWhiteSpace(blockIndent.getIndent(), countBreakLines, lineSeparator);
-        } else if (indent instanceof RawIndent) {
-            RawIndent rawIndent = (RawIndent) indent;
-            return createWhiteSpaceByRawIndent(rawIndent.getRawIndent(), countBreakLines, lineSeparator);
-        } else {
-            throw new IllegalArgumentException("Indent as " + indent + " is not legal to create whitespaces");
-        }
-    }
     
     public static String createWhiteSpace(int curIndent, int countBreakLines, String lineSeparator) {
         StringBuilder stringBuilder = new StringBuilder();
