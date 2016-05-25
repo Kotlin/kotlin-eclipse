@@ -7,6 +7,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.impl.source.tree.TreeUtil
+import com.intellij.util.text.CharArrayUtil
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jface.text.Document
 import org.eclipse.jface.text.IDocument
@@ -32,13 +33,19 @@ fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String, 
 }
 
 fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, document: IDocument) {
-        val formattingDocumentModel =
-            EclipseFormattingModel(DocumentImpl(containingFile.getViewProvider().getContents(), true), containingFile, settings)
-
-    val formattingModel = EclipseDocumentFormattingModel(containingFile, rootBlock, formattingDocumentModel, document, settings)
+    val formattingModel = buildModel(containingFile, rootBlock, settings, document)
             
     val ranges = FormatTextRanges(containingFile.getTextRange(), true)
     FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges, false);
+}
+
+fun adjustIndent(containingFile: KtFile, rootBlock: Block,
+                 settings: CodeStyleSettings, offset: Int, document: IDocument): EclipseDocumentFormattingModel {
+    val formattingModel = buildModel(containingFile, rootBlock, settings, document)
+    FormatterImpl().adjustLineIndent(
+            formattingModel, settings, settings.indentOptions, offset, getSignificantRange(containingFile, offset))
+    
+    return formattingModel
 }
 
 fun getMockDocument(document: IdeaDocument): IdeaDocument {
@@ -47,6 +54,29 @@ fun getMockDocument(document: IdeaDocument): IdeaDocument {
 }
 
 val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))
+
+private fun buildModel(
+        containingFile: KtFile,
+        rootBlock: Block,
+        settings: CodeStyleSettings,
+        document: IDocument): EclipseDocumentFormattingModel {
+    val formattingDocumentModel =
+            EclipseFormattingModel(DocumentImpl(containingFile.getViewProvider().getContents(), true), containingFile, settings)
+
+    return EclipseDocumentFormattingModel(containingFile, rootBlock, formattingDocumentModel, document, settings)
+}
+
+
+private fun getSignificantRange(file: KtFile, offset: Int): TextRange {
+    val elementAtOffset = file.findElementAt(offset);
+    if (elementAtOffset == null) {
+        val significantRangeStart = CharArrayUtil.shiftBackward(file.getText(), offset - 1, "\r\t ");
+        return TextRange(Math.max(significantRangeStart, 0), offset);
+    }
+
+    return elementAtOffset.getTextRange()
+}
+
 
 private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val initialIndent: Int, val lineSeparator: String) {
     
@@ -69,13 +99,13 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val init
     }
 }
 
-private fun createPsiFactory(javaProject: IJavaProject): KtPsiFactory {
+fun createPsiFactory(javaProject: IJavaProject): KtPsiFactory {
     val environment = KotlinEnvironment.getEnvironment(javaProject)
     val ideaProject = environment.getProject()
     return KtPsiFactory(ideaProject)
 }
 
-private fun createKtFile(source: String, psiFactory: KtPsiFactory): KtFile {
+fun createKtFile(source: String, psiFactory: KtPsiFactory): KtFile {
     return psiFactory.createFile(StringUtil.convertLineSeparators(source))
 }
 
