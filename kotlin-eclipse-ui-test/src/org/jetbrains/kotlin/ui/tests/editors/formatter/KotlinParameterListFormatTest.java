@@ -1,9 +1,7 @@
 package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("not implemented yet")
 public class KotlinParameterListFormatTest extends KotlinFormatActionTestCase {
     @Override
     protected AfterSuffixPosition getAfterPosition() {
