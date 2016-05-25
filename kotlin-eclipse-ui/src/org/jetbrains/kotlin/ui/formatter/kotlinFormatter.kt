@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.idea.formatter.KotlinSpacingBuilderUtil
 import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
+import com.intellij.openapi.editor.Document as IdeaDocument
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
@@ -38,6 +39,11 @@ fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSet
             
     val ranges = FormatTextRanges(containingFile.getTextRange(), true)
     FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges, false);
+}
+
+fun getMockDocument(document: IdeaDocument): IdeaDocument {
+    return object : IdeaDocument by document {
+    }
 }
 
 val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))

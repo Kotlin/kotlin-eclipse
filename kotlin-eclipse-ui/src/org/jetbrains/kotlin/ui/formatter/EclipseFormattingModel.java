@@ -30,6 +30,10 @@ public class EclipseFormattingModel implements FormattingDocumentModel {
     private static final Logger LOG = Logger.getInstance("#com.intellij.psi.formatter.FormattingDocumentModelImpl");
     private final CodeStyleSettings mySettings;
     
+    private final int maxDepthToCheck = 10;
+    private final String applyChangeStateClassName = "com.intellij.formatting.FormatProcessor$ApplyChangesState";
+    private final String prepareMethodName = "prepare";
+    
     public EclipseFormattingModel(@NotNull final Document document, PsiFile file, CodeStyleSettings settings) {
         myDocument = document;
         myFile = file;
@@ -102,6 +106,20 @@ public class EclipseFormattingModel implements FormattingDocumentModel {
     @NotNull
     @Override
     public Document getDocument() {
+        // In the compiler we have shrinked version of DocumentEx interface which doesn't have setInBulkUpdate method
+        // This workaround allows us to avoid place in FormatProcessor where setInBulkUpdate is called 
+        int i = 0;
+        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            if (i > maxDepthToCheck) {
+                break;
+            }
+            
+            if (prepareMethodName.equals(element.getMethodName()) && applyChangeStateClassName.equals(element.getClassName())) {
+                return KotlinFormatterKt.getMockDocument(myDocument);
+            }
+            
+            i++;
+        }
         return myDocument;
     }
     
