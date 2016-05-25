@@ -4,16 +4,8 @@ import com.intellij.formatting.Indent.Type
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.TokenType
 import com.intellij.psi.impl.source.tree.TreeUtil
-import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.formatter.KotlinSpacingBuilderUtil
-<<<<<<< HEAD:kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/formatter/formatUtils.kt
-import com.intellij.psi.impl.source.tree.TreeUtil
-import com.intellij.psi.TokenType
-import javax.naming.InitialContext
-=======
-import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
 import org.jetbrains.kotlin.psi.KtFile
->>>>>>> ca0fcfa... Attempt to rework formatter more creatively:kotlin-bundled-compiler/src/com/intellij/formatting/formatUtils.kt
 
 fun computeAlignment(ktFile: KtFile, offset: Int, rootBlock: ASTBlock): IndentInEditor {
     val (blockWithParent, indent, index) = computeBlocks(rootBlock, offset)

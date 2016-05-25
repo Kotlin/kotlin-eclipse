@@ -8,17 +8,26 @@ import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.util.text.CharArrayUtil
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.psi.KtFile
+import com.intellij.formatting.FormatTextRanges
 
 fun tryAdjustIndent(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, offset: Int, document: IDocument) {
     val formattingDocumentModel =
             EclipseFormattingModel(DocumentImpl(containingFile.getViewProvider().getContents(), true), containingFile, settings);
 
     val formattingModel = EclipseBasedFormattingModel(containingFile, rootBlock, formattingDocumentModel, document)
-    //    val model = DocumentBasedFormattingModel(formattingModel, document, myCodeStyleManager.getProject(), mySettings,
-    //                                                   file.getFileType(), file)
 
     FormatterImpl().adjustLineIndent(
             formattingModel, settings, settings.indentOptions, offset, getSignificantRange(containingFile, offset))
+}
+
+fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, document: IDocument) {
+        val formattingDocumentModel =
+            EclipseFormattingModel(DocumentImpl(containingFile.getViewProvider().getContents(), true), containingFile, settings);
+
+    val formattingModel = EclipseDocumentFormattingModel(containingFile, rootBlock, formattingDocumentModel, document, settings)
+            
+    val ranges = FormatTextRanges(containingFile.getTextRange(), true)
+    FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges, false);
 }
 
 fun getSignificantRange(file: KtFile, offset: Int): TextRange {

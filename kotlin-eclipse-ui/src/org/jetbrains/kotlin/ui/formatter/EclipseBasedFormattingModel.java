@@ -84,6 +84,7 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
     
     @Override
     public void commitChanges() {
+        applyChanges();
     }
     
     @Nullable
@@ -126,8 +127,6 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
         }
         
         replaceWhiteSpace(whiteSpace, leafElement, TokenType.WHITE_SPACE, textRange);
-        
-        applyChanges();
         
         return whiteSpace;
     }
@@ -212,7 +211,7 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
 //                            treeParent.replaceChild(treePrev, whiteSpaceElement);
                             replaceChild(treePrev, whiteSpaceElement);
                         } else {
-                            treeParent.removeChild(treePrev);
+                            removeChild(treePrev);
                         }
                         
                         // There is a possible case that more than one PSI
@@ -289,6 +288,11 @@ public class EclipseBasedFormattingModel implements FormattingModelEx {
         }
         
         ReplaceEdit edit = new ReplaceEdit(convertOffset(treePrev.getStartOffset()), 0, whiteSpaceElement.getText());
+        edits.add(edit);
+    }
+    
+    private void removeChild(@NotNull ASTNode child) {
+        ReplaceEdit edit = new ReplaceEdit(convertOffset(child.getStartOffset()), child.getTextLength(), "");
         edits.add(edit);
     }
     
