@@ -46,12 +46,10 @@ fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSet
 }
 
 fun adjustIndent(containingFile: KtFile, rootBlock: Block,
-                 settings: CodeStyleSettings, offset: Int, document: IDocument): EclipseDocumentFormattingModel {
+                 settings: CodeStyleSettings, offset: Int, document: IDocument) {
     val formattingModel = buildModel(containingFile, rootBlock, settings, document)
     FormatterImpl().adjustLineIndent(
             formattingModel, settings, settings.indentOptions, offset, getSignificantRange(containingFile, offset))
-    
-    return formattingModel
 }
 
 fun getMockDocument(document: IdeaDocument): IdeaDocument {
@@ -74,7 +72,7 @@ private fun buildModel(
 
 
 private fun getSignificantRange(file: KtFile, offset: Int): TextRange {
-    val elementAtOffset = file.findElementAt(offset);
+    val elementAtOffset = file.findElementAt(offset)
     if (elementAtOffset == null) {
         val significantRangeStart = CharArrayUtil.shiftBackward(file.getText(), offset - 1, "\r\t ");
         return TextRange(Math.max(significantRangeStart, 0), offset);
