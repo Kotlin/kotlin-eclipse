@@ -1,9 +1,14 @@
 package org.jetbrains.kotlin.ui.formatter
 
+import com.intellij.formatting.Block
+import com.intellij.formatting.FormatTextRanges
+import com.intellij.formatting.FormatterImpl
+import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jface.text.Document
+import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.psi.KtFile
@@ -20,6 +25,16 @@ fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String,
 fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String, initialIndent: Int = 0): String {
     val firstRun = KotlinFormatter(source, psiFactory, initialIndent, lineSeparator).formatCode()
     return KotlinFormatter(firstRun, psiFactory, initialIndent, lineSeparator).formatCode()
+}
+
+fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, document: IDocument) {
+        val formattingDocumentModel =
+            EclipseFormattingModel(DocumentImpl(containingFile.getViewProvider().getContents(), true), containingFile, settings)
+
+    val formattingModel = EclipseDocumentFormattingModel(containingFile, rootBlock, formattingDocumentModel, document, settings)
+            
+    val ranges = FormatTextRanges(containingFile.getTextRange(), true)
+    FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges, false);
 }
 
 val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))
