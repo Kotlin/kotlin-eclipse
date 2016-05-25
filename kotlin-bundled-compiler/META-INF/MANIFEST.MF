@@ -14,7 +14,8 @@ Bundle-ClassPath: .,
  lib/openapi-shrinked.jar,
  ../kotlin-eclipse-ui-test/lib/gson-2.3.1.jar,
  lib/kotlin-formatter.jar,
- lib/util-shrinked.jar
+ lib/util-shrinked.jar,
+ lib/idea-shrinked.jar
 Export-Package: com.google.common.base,
  com.google.common.collect,
  com.google.common.primitives,
