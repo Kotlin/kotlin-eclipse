@@ -114,4 +114,29 @@ public class KotlinBasicAutoIndentTest extends KotlinAutoIndentTestCase {
 	public void betweenBracesWithSpacesMiddle() {
 	    doAutoTest();
 	}
+	
+	@Test
+	public void newLineInParameters1() {
+	    doAutoTest();
+	}
+	
+	@Test
+    public void newLineInParameters2() {
+        doAutoTest();
+    }
+	
+	@Test
+	public void continuationBeforeFunName() {
+	    doAutoTest();
+	}
+	
+	@Test
+    public void continuationAfterDotCall() {
+        doAutoTest();
+    }
+	
+	@Test
+	public void indentBeforeWhile() {
+	    doAutoTest();
+	}
 }
