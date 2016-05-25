@@ -1,6 +1,5 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAutoIndentTest extends KotlinAutoIndentTestCase {
@@ -144,13 +143,11 @@ public class KotlinAutoIndentTest extends KotlinAutoIndentTestCase {
         doAutoTest();
     }
     
-    @Ignore("Format blocks relative to parent")
     @Test
     public void InLambdaInsideChainCallWithNewLine() {
         doAutoTest();
     }
     
-    @Ignore("Format blocks relative to parent")
     @Test
     public void InLambdaInsideChainCallWithNewLineWithSpaces() {
         doAutoTest();
