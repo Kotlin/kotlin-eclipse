@@ -122,6 +122,7 @@
                 <patternset>
                     <include name="lib/openapi.jar" />
                     <include name="lib/util.jar" />
+                    <include name="lib/idea.jar" />
                 </patternset>
                 <mapper type="flatten"/>
             </unzip>
@@ -139,6 +140,13 @@
                 <patternset>
                     <include name="com/intellij/openapi/util/**/*.class" />
                     <include name="com/intellij/util/containers/**/*.class" />
+                </patternset>
+            </unzip>
+            
+            <unzip src="${target.dir}/idea.jar" dest="${download.dir}/idea-shrinked">
+                <patternset>
+                    <include name="com/intellij/formatting/**/*.class" />
+                    <include name="com/intellij/psi/formatter/**/*.class" />
                 </patternset>
             </unzip>
             
@@ -162,6 +170,18 @@
 
                     <attribute name="Implementation-Vendor" value="JetBrains"/>
                     <attribute name="Implementation-Title" value="util-shrinked"/>
+                    <attribute name="Implementation-Version" value="1.0"/>
+                </manifest>
+            </jar>
+            
+            <jar jarfile="${target.dir}/idea-shrinked.jar">
+                <fileset dir="${download.dir}/idea-shrinked"/>
+
+                <manifest>
+                    <attribute name="Built-By" value="JetBrains"/>
+
+                    <attribute name="Implementation-Vendor" value="JetBrains"/>
+                    <attribute name="Implementation-Title" value="idea-shrinked"/>
                     <attribute name="Implementation-Version" value="1.0"/>
                 </manifest>
             </jar>
