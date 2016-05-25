@@ -1,12 +1,18 @@
 package org.jetbrains.kotlin.ui.formatter
 
-import com.intellij.formatting.*
+import com.intellij.formatting.Block
+import com.intellij.formatting.DependantSpacingImpl
+import com.intellij.formatting.DependentSpacingRule
+import com.intellij.formatting.FormatTextRanges
+import com.intellij.formatting.FormatterImpl
+import com.intellij.formatting.Indent
+import com.intellij.formatting.Spacing
+import com.intellij.lang.ASTNode
 import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
-import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CodeStyleSettings
-import com.intellij.psi.impl.source.tree.TreeUtil
+import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.util.text.CharArrayUtil
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jface.text.Document
@@ -123,29 +129,11 @@ object KotlinSpacingBuilderUtilImpl : KotlinSpacingBuilderUtil {
         }
     }
     
-    override fun getPreviousNonWhitespaceLeaf(node: com.intellij.lang.ASTNode?): com.intellij.lang.ASTNode? {
-        if (node == null) return null
-        val treePrev = node.treePrev
-        if (treePrev != null) {
-            val candidate = TreeUtil.getLastChild(treePrev)
-            if (candidate != null && !isWhitespaceOrEmpty(candidate)) {
-                return candidate
-            } else {
-                return getPreviousNonWhitespaceLeaf(candidate)
-            }
-        }
-        val treeParent = node.treeParent
-    
-        if (treeParent == null || treeParent.treeParent == null) {
-            return null
-        } else {
-            return getPreviousNonWhitespaceLeaf(treeParent)
-        }
+    override fun getPreviousNonWhitespaceLeaf(node: ASTNode?): ASTNode? {
+        return FormatterUtil.getPreviousNonWhitespaceLeaf(node)
     }
     
-    override fun isWhitespaceOrEmpty(node: com.intellij.lang.ASTNode?): kotlin.Boolean {
-        if (node == null) return false
-        val type = node.elementType
-        return type === TokenType.WHITE_SPACE || type !== TokenType.ERROR_ELEMENT && node.textLength == 0
+    override fun isWhitespaceOrEmpty(node: ASTNode?): Boolean {
+        return FormatterUtil.isWhitespaceOrEmpty(node)
     }
 }
