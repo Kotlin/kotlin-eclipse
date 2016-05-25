@@ -57,7 +57,6 @@ import com.intellij.core.CoreApplicationEnvironment;
 import com.intellij.core.CoreJavaFileManager;
 import com.intellij.core.JavaCoreApplicationEnvironment;
 import com.intellij.core.JavaCoreProjectEnvironment;
-import com.intellij.formatting.FormatterFactory;
 import com.intellij.formatting.KotlinLanguageCodeStyleSettingsProvider;
 import com.intellij.formatting.KotlinSettingsProvider;
 import com.intellij.mock.MockProject;
@@ -151,8 +150,6 @@ public class KotlinEnvironment {
         }
         
         cachedEnvironment.putEnvironment(javaProject, this);
-        
-        new FormatterFactory();
     }
     
     private static void registerProjectExtensionPoints(ExtensionsArea area) {

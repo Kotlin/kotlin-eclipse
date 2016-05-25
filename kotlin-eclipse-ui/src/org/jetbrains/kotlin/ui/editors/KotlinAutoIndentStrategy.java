@@ -35,8 +35,6 @@ import org.jetbrains.kotlin.ui.formatter.FormatUtilsKt;
 import org.jetbrains.kotlin.ui.formatter.IndentInEditor;
 import org.jetbrains.kotlin.ui.formatter.IndentInEditor.BlockIndent;
 
-import com.intellij.formatting.FormatterFactory;
-
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
     private static final char OPENING_BRACE_CHAR = '{';
@@ -47,7 +45,6 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
     public KotlinAutoIndentStrategy(JavaEditor editor) {
         this.editor = editor;
-        new FormatterFactory();
     }
     
     @Override
