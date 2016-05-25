@@ -4,8 +4,8 @@ package some.test
 // Some
 class SomeCls {
     //  Test
-    //  Test1
-    //  Test2
+//  Test1
+//  Test2
     fun function() {
     }
 }
