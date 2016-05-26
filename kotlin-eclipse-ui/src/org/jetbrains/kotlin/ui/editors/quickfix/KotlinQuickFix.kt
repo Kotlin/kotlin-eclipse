@@ -65,6 +65,8 @@ private fun initializeQuickFixes(): List<KotlinQuickFix> {
     return listOf(
             KotlinAutoImportQuickFix,
             
+            OVERRIDING_FINAL_MEMBER.createMakeDeclarationOpenFix(),
+
             MUST_BE_INITIALIZED_OR_BE_ABSTRACT.createAddModifierFix(ABSTRACT_KEYWORD),
             MUST_BE_INITIALIZED_OR_BE_ABSTRACT.createAddModifierFix(ABSTRACT_KEYWORD),
             ABSTRACT_CLASS_MEMBER_NOT_IMPLEMENTED.createAddModifierFix(ABSTRACT_KEYWORD),

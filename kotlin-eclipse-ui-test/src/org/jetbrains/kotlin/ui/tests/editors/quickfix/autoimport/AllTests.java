@@ -24,7 +24,8 @@ import org.junit.runners.Suite;
 	KotlinAutoImportTest.class,
 	KotlinMakeClassOpenQuickFixTest.class,
 	KotlinChangeModifiersQuickFixTest.class,
-	KotlinAbstractModifierQuickFixTest.class
+	KotlinAbstractModifierQuickFixTest.class,
+	KotlinMakeOverridenMemberOpenQuickFixTest.class
 } )
 public class AllTests {
 
