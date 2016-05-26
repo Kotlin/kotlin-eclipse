@@ -126,22 +126,6 @@ class KotlinAddModifierResolution(
     
     companion object {
         private val modalityModifiers = setOf(ABSTRACT_KEYWORD, OPEN_KEYWORD, FINAL_KEYWORD)
-        
-        fun getElementName(modifierListOwner: KtModifierListOwner): String {
-            var name: String? = null
-            if (modifierListOwner is PsiNameIdentifierOwner) {
-                val nameIdentifier = modifierListOwner.nameIdentifier
-                if (nameIdentifier != null) {
-                    name = nameIdentifier.text
-                }
-            } else if (modifierListOwner is KtPropertyAccessor) {
-                name = modifierListOwner.namePlaceholder.text
-            }
-            if (name == null) {
-                name = modifierListOwner.text
-            }
-            return "'$name'"
-        }
     }
     
     override fun apply(file: IFile) {
@@ -150,10 +134,26 @@ class KotlinAddModifierResolution(
     
     override fun getLabel(): String? {
         if (modifier in modalityModifiers) {
-            return "Make ${getElementName(element)} ${modifier.value}"
+            return "Make '${getElementName(element)}' ${modifier.value}"
         }
         return "Add '${modifier.value}' modifier"
     }
+}
+
+fun getElementName(modifierListOwner: KtModifierListOwner): String? {
+    var name: String? = null
+    if (modifierListOwner is PsiNameIdentifierOwner) {
+        val nameIdentifier = modifierListOwner.nameIdentifier
+        if (nameIdentifier != null) {
+            name = nameIdentifier.text
+        }
+    } else if (modifierListOwner is KtPropertyAccessor) {
+        name = modifierListOwner.namePlaceholder.text
+    }
+    if (name == null) {
+        name = modifierListOwner.text
+    }
+    return name
 }
 
 // TODO: move to file with util functions 
@@ -165,7 +165,7 @@ fun openEditorAndGetDocument(ktElement: KtElement): IDocument? {
     }
 }
 
-private fun addModifier(owner: KtModifierListOwner, modifier: KtModifierKeywordToken) {
+fun addModifier(owner: KtModifierListOwner, modifier: KtModifierKeywordToken) {
     val elementDocument = openEditorAndGetDocument(owner)
     if (elementDocument == null) return
     

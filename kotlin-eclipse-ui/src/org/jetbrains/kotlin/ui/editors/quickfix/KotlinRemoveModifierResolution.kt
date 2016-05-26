@@ -61,7 +61,7 @@ class KotlinRemoveModifierResolution(
             isRedundant -> "Remove redundant '$modifierText' modifier"
             
             modifier === KtTokens.ABSTRACT_KEYWORD || modifier === KtTokens.OPEN_KEYWORD ->
-                "Make ${KotlinAddModifierResolution.getElementName(element)} not $modifierText"
+                "Make '${getElementName(element)}' not $modifierText"
             
             else -> "Remove '$modifierText' modifier"
         }
