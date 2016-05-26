@@ -42,9 +42,12 @@ abstract class KotlinQuickFixTestCase : KotlinEditorWithAfterFileTestCase() {
         val splittedLine = expectedQuickFixRegex.find(firstLine)
         val expectedLabel = splittedLine!!.groups[1]!!.value
         
-        val resolution = getProposals(testEditor).find { it.label == expectedLabel }
+        val foundProposals = getProposals(testEditor)
+        val resolution = foundProposals.find { it.label == expectedLabel }
         
-        Assert.assertNotNull(resolution)
+        Assert.assertNotNull(
+                "Expected proposal with label \"$expectedLabel\" wasn't found. Found proposals:\n${foundProposals.joinToString("\n") { it.label }}",
+                resolution)
         
         resolution!!.apply(testEditor.getEditingFile())
         
