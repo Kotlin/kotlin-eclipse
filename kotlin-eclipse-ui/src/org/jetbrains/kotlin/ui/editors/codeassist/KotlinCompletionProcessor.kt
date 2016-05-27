@@ -89,10 +89,10 @@ class KotlinCompletionProcessor(
         return arrayListOf<ICompletionProposal>().apply {
             if (expression != null) {
                 addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, expression), identifierPart))
-				
-				if (identifierPart.isNotBlank()) {
-					addAll(generateNonImportedCompletionProposals(identifierPart, expression, editor.javaProject!!))
-				}
+
+                if (identifierPart.isNotBlank()) {
+                    addAll(generateNonImportedCompletionProposals(identifierPart, expression, editor.javaProject!!))
+                }
             }
             addAll(generateKeywordProposals(identifierPart))
             addAll(generateTemplateProposals(viewer, offset, identifierPart))
