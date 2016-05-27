@@ -66,14 +66,15 @@ public object KotlinCompletionUtils {
                 .getResolutionScope(analysisResult.bindingContext)
                 .ownerDescriptor
         
+        val showNonVisibleMembers =
+            !JavaPlugin.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS)
+                    
+        
         val visibilityFilter = { descriptor: DeclarationDescriptor ->
             when (descriptor) {
                 is TypeParameterDescriptor -> descriptor.isVisible(inDescriptor)
                 
                 is DeclarationDescriptorWithVisibility -> {
-                    val showNonVisibleMembers = !JavaPlugin.getDefault().getPreferenceStore().getBoolean(
-                            PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS)
-                    
                     showNonVisibleMembers || descriptor.isVisible(inDescriptor, analysisResult.bindingContext, simpleNameExpression)
                 }
                 
