@@ -34,8 +34,7 @@ fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String,
 
 @JvmOverloads
 fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String, initialIndent: Int = 0): String {
-    val firstRun = KotlinFormatter(source, psiFactory, initialIndent, lineSeparator).formatCode()
-    return KotlinFormatter(firstRun, psiFactory, initialIndent, lineSeparator).formatCode()
+    return KotlinFormatter(source, psiFactory, initialIndent, lineSeparator).formatCode()
 }
 
 fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, document: IDocument) {
