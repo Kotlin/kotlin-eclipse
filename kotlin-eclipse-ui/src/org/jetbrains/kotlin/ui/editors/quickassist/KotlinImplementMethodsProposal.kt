@@ -1,43 +1,37 @@
 package org.jetbrains.kotlin.ui.editors.quickassist
 
+import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.eclipse.jface.text.TextUtilities
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.eclipse.jdt.core.JavaCore
-import org.jetbrains.kotlin.resolve.BindingContextUtils
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.psi.psiUtil.getElementTextWithContext
-import org.jetbrains.kotlin.resolve.OverrideResolver
-import com.intellij.psi.util.PsiTreeUtil
-import org.eclipse.jface.dialogs.MessageDialog
-import java.util.ArrayList
-import org.jetbrains.kotlin.psi.KtPsiFactory
-import org.jetbrains.kotlin.psi.KtClassBody
-import com.intellij.psi.PsiWhiteSpace
-import com.intellij.openapi.util.text.StringUtil
-import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.descriptors.Modality
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
-import org.eclipse.jface.text.TextUtilities
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
+import org.jetbrains.kotlin.psi.KtClassBody
+import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtPsiFactory
+import org.jetbrains.kotlin.renderer.ClassifierNamePolicy
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
 import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.renderer.ClassifierNamePolicy
-import org.jetbrains.kotlin.ui.formatter.formatCode
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
+import org.jetbrains.kotlin.resolve.OverrideResolver
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.formatter.formatRange
+import java.util.ArrayList
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
@@ -87,23 +81,18 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         val insertOffset = findLBraceEndOffset(editor.getViewer().getDocument(), getStartOffset(classOrObject, editor))
         if (insertOffset == null) return
 
-        val generatedText = StringBuilder()
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
-        val indent = AlignmentStrategy.computeIndent(classOrObject.getNode()) + 1
 
-        val newLineWithShift = IndenterUtil.createWhiteSpace(indent, 1, lineDelimiter)
+        val newLine = IndenterUtil.createWhiteSpace(0, 1, lineDelimiter)
 
-        val generatedMembers = generateOverridingMembers(selectedElements, classOrObject)
-        for (i in generatedMembers.indices) {
-            generatedText.append(newLineWithShift)
-            generatedText.append(formatCode(generatedMembers[i].node.text, psiFactory, lineDelimiter, indent))
-            if (i != generatedMembers.lastIndex) {
-                generatedText.append(newLineWithShift)
-            }
-        }
-        generatedText.append(IndenterUtil.createWhiteSpace(indent - 1, 1, lineDelimiter))
+        val generatedText = generateOverridingMembers(selectedElements, classOrObject)
+                .map { it.node.text }
+                .joinToString(newLine, postfix = newLine)
 
-        document.replace(insertOffset, 0, generatedText.toString())
+        document.replace(insertOffset, 0, generatedText)
+        
+        val psiOffset = LineEndUtil.convertCrToDocumentOffset(document, insertOffset)
+        formatRange(document, TextRange(psiOffset, psiOffset + generatedText.length), psiFactory)
     }
 
     private fun removeWhitespaceAfterLBrace(body: KtClassBody, document: IDocument, editor: KotlinFileEditor) {
