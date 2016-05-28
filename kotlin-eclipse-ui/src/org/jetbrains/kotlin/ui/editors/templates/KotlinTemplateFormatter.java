@@ -155,14 +155,14 @@ public class KotlinTemplateFormatter {
         }
     }
     
-    public void format(TemplateBuffer buffer, int lineIndentation, String lineDelimiter, IJavaProject javaProject) { 
+    public void format(TemplateBuffer buffer, String lineDelimiter, IJavaProject javaProject) { 
         VariableOffsetsTracker offsetsTracker = new VariableOffsetsTracker(buffer.getString(), buffer.getVariables());
         Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
         KtFile parsedFile = new KtPsiFactory(ideaProject).createFile(offsetsTracker.getMarkedString());
         
         assert parsedFile != null;
 
-        String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), javaProject, lineDelimiter, lineIndentation);
+        String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), javaProject, lineDelimiter);
         
         offsetsTracker.unmark(formatted);
         

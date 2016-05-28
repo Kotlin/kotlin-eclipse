@@ -21,8 +21,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.templates.DocumentTemplateContext;
 import org.eclipse.jface.text.templates.Template;
@@ -52,20 +50,8 @@ public class KotlinDocumentTemplateContext extends DocumentTemplateContext {
 
         IJavaProject javaProject = JavaCore.create(file.getProject());
         String lineDelimiter = TextUtilities.getDefaultLineDelimiter(getDocument());
-        templateFormatter.format(templateBuffer, getLineIndentation(), lineDelimiter, javaProject);
+        templateFormatter.format(templateBuffer, lineDelimiter, javaProject);
         
         return templateBuffer;
-    }
-    
-    private int getLineIndentation() {
-        int start = getStart();
-    
-        IDocument document = getDocument();
-        try {
-            IRegion region = document.getLineInformationOfOffset(start);
-            return document.get(region.getOffset(), getStart() - region.getOffset()).length();
-        } catch (BadLocationException e) {
-            return 0;
-        }
     }
 }

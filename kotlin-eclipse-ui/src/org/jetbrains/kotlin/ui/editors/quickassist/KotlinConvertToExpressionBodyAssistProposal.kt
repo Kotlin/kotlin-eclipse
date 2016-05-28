@@ -1,46 +1,32 @@
 package org.jetbrains.kotlin.ui.editors.quickassist
 
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.TextUtilities
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
+import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.platform.JvmBuiltIns
+import org.jetbrains.kotlin.psi.KtBinaryExpression
+import org.jetbrains.kotlin.psi.KtBlockExpression
+import org.jetbrains.kotlin.psi.KtCallableDeclaration
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtDeclarationWithBody
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFunctionLiteral
-import org.jetbrains.kotlin.psi.KtBlockExpression
-import org.jetbrains.kotlin.psi.KtReturnExpression
-import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtLoopExpression
-import org.jetbrains.kotlin.psi.KtBinaryExpression
-import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.eclipse.jdt.core.JavaCore
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.psi.KtPsiFactory
-import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtCallableDeclaration
-import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
-import com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.descriptors.CallableDescriptor
-import org.jetbrains.kotlin.analyzer.*
-import com.intellij.psi.PsiWhiteSpace
-import org.eclipse.jface.text.TextUtilities
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
-import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings;
+import org.jetbrains.kotlin.psi.KtReturnExpression
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.container.ComponentProvider
-import org.jetbrains.kotlin.container.getService
-import org.jetbrains.kotlin.types.expressions.ExpressionTypingServices
-import org.jetbrains.kotlin.types.TypeUtils
-import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo
-import org.jetbrains.kotlin.resolve.BindingTraceContext
-import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
-import org.jetbrains.kotlin.platform.JvmBuiltIns
-import org.jetbrains.kotlin.resolve.scopes.MemberScope
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings
 import org.jetbrains.kotlin.ui.formatter.formatCode
 
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
@@ -85,8 +71,7 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
         val eqToken = psiFactory.createEQ().getText()
         
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
-        val indent = AlignmentStrategy.computeIndent(declaration.getNode())        
-        val valueText = formatCode(newBody.node.text, psiFactory, lineDelimiter, indent)
+        val valueText = formatCode(newBody.node.text, psiFactory, lineDelimiter)
         
         replace(body, "$eqToken $valueText")
     }
