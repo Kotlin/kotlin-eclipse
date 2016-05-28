@@ -116,6 +116,8 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         KtPsiFactory psiFactory = KotlinFormatterKt.createPsiFactory(javaProject);
         KtFile ktFile = KotlinFormatterKt.createKtFile(tempDocument.get(), psiFactory);
         
+        int line = tempDocument.getLineOfOffset(offset);
+        
         CodeStyleSettings settings = KotlinFormatterKt.getSettings();
         KotlinBlock rootBlock = new KotlinBlock(ktFile.getNode(), 
                 KotlinFormatterKt.getNULL_ALIGNMENT_STRATEGY(), 
@@ -127,8 +129,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         int resolvedOffset = LineEndUtil.convertCrToDocumentOffset(tempDocument, offset);
         KotlinFormatterKt.adjustIndent(ktFile, rootBlock, settings, resolvedOffset, tempDocument);
         
-        int documentLength = tempDocument.getLength();
-        IRegion lineInfo = tempDocument.getLineInformationOfOffset(offset < documentLength ? offset : documentLength);
+        IRegion lineInfo = tempDocument.getLineInformation(line);
         
         int lineOffset = lineInfo.getOffset();
         int endOfWhitespace = findEndOfWhiteSpaceAfter(tempDocument, lineOffset, lineOffset + lineInfo.getLength());
@@ -138,8 +139,15 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     private void autoEditBeforeCloseBrace(IDocument document, DocumentCommand command) {
         if (isNewLineBefore(document, command.offset)) {
             try {
+                IDocument tempDocument = new Document(document.get());
+                tempDocument.replace(command.offset, command.length, CLOSING_BRACE_STRING);
+                String indent = getIndent(tempDocument, command.offset);
+                
                 int spaceLength = command.offset - findEndOfWhiteSpaceBefore(document, command.offset - 1, 0) - 1;
                 command.offset -= spaceLength;
+                
+                command.text = indent + CLOSING_BRACE_STRING;
+                
                 document.replace(command.offset, spaceLength, "");
             } catch (BadLocationException e) {
                 KotlinLogger.logAndThrow(e);
