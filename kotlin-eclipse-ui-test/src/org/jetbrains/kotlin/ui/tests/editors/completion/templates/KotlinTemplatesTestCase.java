@@ -43,7 +43,7 @@ public abstract class KotlinTemplatesTestCase extends KotlinProjectTestCase {
 	}
 	
 	public void doTest(String input, String expected) {
-		doTest(input, expected, Separator.TAB, 0);
+		doTest(input, expected, Separator.TAB, 4);
 	}
 	
 	public void doTest(String input, String expected, Separator separator, int spacesCount) {

@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.editor.Document as IdeaDocument
+import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
@@ -77,6 +78,14 @@ fun getMockDocument(document: IdeaDocument): IdeaDocument {
     }
 }
 
+fun initializaSettings(options: IndentOptions) {
+    with(options) {
+        USE_TAB_CHARACTER = !IndenterUtil.isSpacesForTabs()
+        INDENT_SIZE = IndenterUtil.getDefaultIndent()
+        TAB_SIZE = IndenterUtil.getDefaultIndent()
+    }
+}
+
 val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))
 
 private fun buildModel(
@@ -84,6 +93,7 @@ private fun buildModel(
         rootBlock: Block,
         settings: CodeStyleSettings,
         document: IDocument): EclipseDocumentFormattingModel {
+    initializaSettings(settings.indentOptions!!)
     val formattingDocumentModel =
             EclipseFormattingModel(DocumentImpl(containingFile.getViewProvider().getContents(), true), containingFile, settings)
 
