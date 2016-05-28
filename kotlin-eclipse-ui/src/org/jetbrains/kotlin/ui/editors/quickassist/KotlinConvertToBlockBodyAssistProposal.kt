@@ -1,28 +1,42 @@
+/*******************************************************************************
+ * Copyright 2000-2016 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.quickassist
 
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.psi.KtBlockExpression
 import org.jetbrains.kotlin.psi.KtDeclarationWithBody
+import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.psi.KtPropertyAccessor
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.psi.KtPsiFactory
-import com.intellij.psi.util.PsiTreeUtil
-import org.eclipse.jface.text.TextUtilities
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
-import com.intellij.psi.PsiWhiteSpace
-import org.jetbrains.kotlin.psi.KtReturnExpression
-import org.jetbrains.kotlin.psi.KtBlockExpression
 import org.jetbrains.kotlin.psi.KtPsiUtil
+import org.jetbrains.kotlin.psi.KtReturnExpression
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
-import org.jetbrains.kotlin.ui.formatter.formatCode
+import org.jetbrains.kotlin.ui.formatter.formatRange
 
 class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
@@ -64,17 +78,17 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
     }
 
     private fun replaceBody(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext, editor: KotlinFileEditor) {
-        val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
-        val indent = AlignmentStrategy.computeIndent(declaration.getNode())
-        
         val newBody = convert(declaration, context, factory)
-        var newBodyText = formatCode(newBody.getNode().text, editor.javaProject!!, lineDelimiter, indent)
+        var newBodyText = newBody.getNode().text
 
-        if (declaration.getEqualsToken()!!.getNextSibling() !is PsiWhiteSpace) {
+        val anchorToken = declaration.getEqualsToken()
+        if (anchorToken!!.getNextSibling() !is PsiWhiteSpace) {
             newBodyText = factory.createWhiteSpace().getText() + newBodyText
         }
 
-        replaceBetween(declaration.getEqualsToken()!!, declaration.getBodyExpression()!!, newBodyText)
+        replaceBetween(anchorToken, declaration.getBodyExpression()!!, newBodyText)
+        val anchorStartOffset = anchorToken.textRange.startOffset
+        formatRange(editor.document, TextRange(anchorStartOffset, anchorStartOffset + newBodyText.length), factory)
     }
     
     private fun specifyType(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext) {
