@@ -38,10 +38,31 @@ fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String, 
 }
 
 fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, document: IDocument) {
+    formatRange(containingFile, rootBlock, settings, document, containingFile.textRange)
+}
+
+fun formatRange(document: IDocument, range: TextRange, psiFactory: KtPsiFactory) {
+    val ktFile = createKtFile(document.get(), psiFactory)
+    val rootBlock = KotlinBlock(ktFile.getNode(), 
+                NULL_ALIGNMENT_STRATEGY, 
+                Indent.getNoneIndent(), 
+                null,
+                settings,
+                createSpacingBuilder(settings, KotlinSpacingBuilderUtilImpl))
+    
+    formatRange(ktFile, rootBlock, settings, document, range)
+}
+
+fun formatRange(
+        containingFile: KtFile,
+        rootBlock: Block,
+        settings: CodeStyleSettings,
+        document: IDocument,
+        range: TextRange) {
     val formattingModel = buildModel(containingFile, rootBlock, settings, document)
             
-    val ranges = FormatTextRanges(containingFile.getTextRange(), true)
-    FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges, false);
+    val ranges = FormatTextRanges(range, true)
+    FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges, false)
 }
 
 fun adjustIndent(containingFile: KtFile, rootBlock: Block,
