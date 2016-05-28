@@ -41,42 +41,42 @@ import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
 
 public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
-            renderDefaultValues = false
-            modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
-            withDefinedIn = false
-            classifierNamePolicy = ClassifierNamePolicy.SHORT
-            overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
-            unitReturnType = false
-            typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES
+        renderDefaultValues = false
+        modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
+        withDefinedIn = false
+        classifierNamePolicy = ClassifierNamePolicy.SHORT
+        overrideRenderingPolicy = OverrideRenderingPolicy.RENDER_OVERRIDE
+        unitReturnType = false
+        typeNormalizer = IdeDescriptorRenderers.APPROXIMATE_FLEXIBLE_TYPES
     }
-	
-	override fun apply(document: IDocument, psiElement: PsiElement) {
+
+    override fun apply(document: IDocument, psiElement: PsiElement) {
         val classOrObject = PsiTreeUtil.getParentOfType(psiElement, KtClassOrObject::class.java, false)
         if (classOrObject == null) return
-        
+
         val missingImplementations = collectMethodsToGenerate(classOrObject)
         if (missingImplementations.isEmpty()) {
             return
         }
-        
-		generateMethods(document, classOrObject, missingImplementations)
-	}
-	
-	override fun getDisplayString(): String = "Implement Members"
-	
-	override fun isApplicable(psiElement: PsiElement): Boolean {
-		val classOrObject = PsiTreeUtil.getParentOfType(psiElement, KtClassOrObject::class.java, false)
-		if (classOrObject != null) {
-			return collectMethodsToGenerate(classOrObject).isNotEmpty()
-		}
-		
-		return false
-	}
-    
-	public fun generateMethods(document: IDocument, classOrObject: KtClassOrObject, selectedElements: Set<CallableMemberDescriptor>) {
-		var body = classOrObject.getBody()
-		val editor = getActiveEditor()!!
-		val psiFactory = KtPsiFactory(classOrObject.getProject())
+
+        generateMethods(document, classOrObject, missingImplementations)
+    }
+
+    override fun getDisplayString(): String = "Implement Members"
+
+    override fun isApplicable(psiElement: PsiElement): Boolean {
+        val classOrObject = PsiTreeUtil.getParentOfType(psiElement, KtClassOrObject::class.java, false)
+        if (classOrObject != null) {
+            return collectMethodsToGenerate(classOrObject).isNotEmpty()
+        }
+
+        return false
+    }
+
+    public fun generateMethods(document: IDocument, classOrObject: KtClassOrObject, selectedElements: Set<CallableMemberDescriptor>) {
+        var body = classOrObject.getBody()
+        val editor = getActiveEditor()!!
+        val psiFactory = KtPsiFactory(classOrObject.getProject())
         if (body == null) {
             val bodyText = "${psiFactory.createWhiteSpace().getText()}${psiFactory.createEmptyClassBody().getText()}"
             insertAfter(classOrObject, bodyText)
@@ -84,48 +84,48 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
             removeWhitespaceAfterLBrace(body, editor.getViewer().getDocument(), editor)
         }
 
-		val insertOffset = findLBraceEndOffset(editor.getViewer().getDocument(), getStartOffset(classOrObject, editor))
+        val insertOffset = findLBraceEndOffset(editor.getViewer().getDocument(), getStartOffset(classOrObject, editor))
         if (insertOffset == null) return
-        
+
         val generatedText = StringBuilder()
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
         val indent = AlignmentStrategy.computeIndent(classOrObject.getNode()) + 1
-        
+
         val newLineWithShift = IndenterUtil.createWhiteSpace(indent, 1, lineDelimiter)
-        
+
         val generatedMembers = generateOverridingMembers(selectedElements, classOrObject)
         for (i in generatedMembers.indices) {
             generatedText.append(newLineWithShift)
             generatedText.append(formatCode(generatedMembers[i].node.text, psiFactory, lineDelimiter, indent))
             if (i != generatedMembers.lastIndex) {
-            	generatedText.append(newLineWithShift)
+                generatedText.append(newLineWithShift)
             }
         }
-		generatedText.append(IndenterUtil.createWhiteSpace(indent - 1, 1, lineDelimiter))
-        
+        generatedText.append(IndenterUtil.createWhiteSpace(indent - 1, 1, lineDelimiter))
+
         document.replace(insertOffset, 0, generatedText.toString())
-	}
-    
+    }
+
     private fun removeWhitespaceAfterLBrace(body: KtClassBody, document: IDocument, editor: KotlinFileEditor) {
         val lBrace = body.lBrace
         if (lBrace != null) {
             val sibling = lBrace.getNextSibling()
             val needNewLine = sibling.getNextSibling() is KtDeclaration
             if (sibling is PsiWhiteSpace && !needNewLine) {
-            	document.replace(getStartOffset(sibling, editor), sibling.getTextLength(), "")
+                document.replace(getStartOffset(sibling, editor), sibling.getTextLength(), "")
             }
         }
     }
-    
-    private fun findLBraceEndOffset(document: IDocument, startIndex: Int) : Int? {	
+
+    private fun findLBraceEndOffset(document: IDocument, startIndex: Int): Int? {
         val text = document.get()
         for (i in startIndex..text.lastIndex) {
             if (text[i] == '{') return i + 1
         }
-        
+
         return null
     }
-	
+
     private fun generateOverridingMembers(selectedElements: Set<CallableMemberDescriptor>,
                                           classOrObject: KtClassOrObject): List<KtElement> {
         val overridingMembers = ArrayList<KtElement>()
@@ -141,7 +141,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 
     private fun overrideFunction(classOrObject: KtClassOrObject, descriptor: FunctionDescriptor): KtNamedFunction {
         val newDescriptor: FunctionDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
-                                            descriptor.getKind(), /* copyOverrides = */ true)
+                descriptor.getKind(), /* copyOverrides = */ true)
         newDescriptor.setOverriddenDescriptors(listOf(descriptor))
 
         val returnType = descriptor.getReturnType()
@@ -154,10 +154,10 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 
         return KtPsiFactory(classOrObject.getProject()).createFunction(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
-	
+
     private fun overrideProperty(classOrObject: KtClassOrObject, descriptor: PropertyDescriptor): KtElement {
         val newDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
-                                            descriptor.getKind(), /* copyOverrides = */ true) as PropertyDescriptor
+                descriptor.getKind(), /* copyOverrides = */ true) as PropertyDescriptor
         newDescriptor.setOverriddenDescriptors(listOf(descriptor))
 
         val body = StringBuilder()
@@ -170,13 +170,11 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         return KtPsiFactory(classOrObject.getProject()).createProperty(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
 
-	
     private fun generateUnsupportedOrSuperCall(descriptor: CallableMemberDescriptor): String {
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
         if (isAbstract) {
             return "throw UnsupportedOperationException()"
-        }
-        else {
+        } else {
             val builder = StringBuilder()
             builder.append("super.${descriptor.escapedName()}")
 
@@ -185,14 +183,13 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
                     val renderedName = it.escapedName()
                     if (it.varargElementType != null) "*$renderedName" else renderedName
                 }
-                paramTexts.joinTo(builder, prefix="(", postfix=")")
+                paramTexts.joinTo(builder, prefix = "(", postfix = ")")
             }
 
             return builder.toString()
         }
     }
 
-	
     private fun findInsertAfterAnchor(body: KtClassBody): PsiElement? {
         val afterAnchor = body.lBrace
         if (afterAnchor == null) return null
@@ -212,7 +209,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 
         return afterAnchor
     }
-	
+
     private fun removeAfterOffset(offset: Int, whiteSpace: PsiWhiteSpace): PsiElement {
         val spaceNode = whiteSpace.getNode()
         if (spaceNode.getTextRange().contains(offset)) {
@@ -236,14 +233,14 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         return whiteSpace
     }
 
-	public fun collectMethodsToGenerate(classOrObject: KtClassOrObject): Set<CallableMemberDescriptor> {
+    public fun collectMethodsToGenerate(classOrObject: KtClassOrObject): Set<CallableMemberDescriptor> {
         val descriptor = classOrObject.resolveToDescriptor()
         if (descriptor is ClassDescriptor) {
             return OverrideResolver.getMissingImplementations(descriptor)
         }
         return emptySet()
     }
-	
-	
-	fun DeclarationDescriptor.escapedName() = DescriptorRenderer.COMPACT.renderName(getName())
+
+
+    fun DeclarationDescriptor.escapedName() = DescriptorRenderer.COMPACT.renderName(getName())
 }
