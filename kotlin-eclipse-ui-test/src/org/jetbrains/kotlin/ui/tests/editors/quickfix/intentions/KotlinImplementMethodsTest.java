@@ -1,6 +1,5 @@
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinImplementMethodsTest extends KotlinImplementMethodsTestCase {
@@ -24,7 +23,6 @@ public class KotlinImplementMethodsTest extends KotlinImplementMethodsTestCase {
 		doTest("common_testData/ide/codeInsight/overrideImplement/functionProperty.kt");
 	}
 	
-	@Ignore("See KT-8942")
 	@Test
 	public void testFunctionWithTypeParameters() {
 		doTest("common_testData/ide/codeInsight/overrideImplement/functionWithTypeParameters.kt");
