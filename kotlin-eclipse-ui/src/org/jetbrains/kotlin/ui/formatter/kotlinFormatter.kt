@@ -28,14 +28,12 @@ import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
-@JvmOverloads
-fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String, initialIndent: Int = 0): String {
-    return formatCode(source, createPsiFactory(javaProject), lineSeparator, initialIndent)
+fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String): String {
+    return formatCode(source, createPsiFactory(javaProject), lineSeparator)
 }
 
-@JvmOverloads
-fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String, initialIndent: Int = 0): String {
-    return KotlinFormatter(source, psiFactory, initialIndent, lineSeparator).formatCode()
+fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String): String {
+    return KotlinFormatter(source, psiFactory, lineSeparator).formatCode()
 }
 
 fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, document: IDocument) {
@@ -112,7 +110,7 @@ private fun getSignificantRange(file: KtFile, offset: Int): TextRange {
 }
 
 
-private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val initialIndent: Int, val lineSeparator: String) {
+private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val lineSeparator: String) {
     
     val ktFile = createKtFile(source, psiFactory)
     
