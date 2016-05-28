@@ -80,7 +80,7 @@ public class EditorTestUtils {
         }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
         try {
-            Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected), LineEndUtil.removeAllCarriageReturns(actual));
+            Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected).trim(), LineEndUtil.removeAllCarriageReturns(actual).trim());
         } catch (ComparisonFailure e) {
             throw new ComparisonFailure(errorMessage, e.getExpected(), e.getActual());
         }

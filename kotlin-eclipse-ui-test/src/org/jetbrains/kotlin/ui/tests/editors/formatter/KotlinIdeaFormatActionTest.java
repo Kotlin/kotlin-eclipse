@@ -1,6 +1,5 @@
 package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
@@ -19,7 +18,6 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
-    @Ignore("Fix test data should be fixed in Intellij plugin")
     @Test
     public void AnonymousInitializers() {
         doAutoTest();
