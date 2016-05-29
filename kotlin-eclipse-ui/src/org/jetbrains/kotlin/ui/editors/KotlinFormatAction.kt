@@ -17,13 +17,20 @@
 package org.jetbrains.kotlin.ui.editors
 
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
-import org.eclipse.jface.action.Action
+import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.formatter.formatCode
+import org.jetbrains.kotlin.ui.formatter.formatRange
+import org.jetbrains.kotlin.ui.formatter.createPsiFactory
+import org.eclipse.jface.text.ITextSelection
+import com.intellij.openapi.util.TextRange
+import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.psi.KtFile
 
-class KotlinFormatAction(private val editor: KotlinFileEditor) : Action() {
+class KotlinFormatAction(private val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     companion object {
         @JvmField val FORMAT_ACTION_TEXT: String = "Format"
     }
@@ -32,8 +39,8 @@ class KotlinFormatAction(private val editor: KotlinFileEditor) : Action() {
         setText(FORMAT_ACTION_TEXT)
         setActionDefinitionId(IJavaEditorActionDefinitionIds.FORMAT)
     }
-
-    override fun run() {
+    
+    override fun run(selection: ITextSelection) {
         val file = EditorUtil.getFile(editor)
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
@@ -46,11 +53,20 @@ class KotlinFormatAction(private val editor: KotlinFileEditor) : Action() {
             return
         }
         
-        val sourceCode = EditorUtil.getSourceCode(editor)
-        val formattedCode = formatCode(sourceCode, javaProject, EditorUtil.getDocumentLineDelimiter(editor))
+        val ktFile = editor.parsedFile ?: return
         
-        editor.document.set(formattedCode)
+        formatRange(editor.document, getRange(selection, ktFile), createPsiFactory(javaProject))
         
         KotlinPsiManager.commitFile(file, editor.document)
+    }
+    
+    private fun getRange(selection: ITextSelection, ktFile: KtFile): TextRange {
+        val selectionLength = selection.length
+        return if (selectionLength == 0) {
+            ktFile.textRange
+        } else {
+            val selectionOffset = LineEndUtil.convertCrToDocumentOffset(editor.document, selection.offset)
+            TextRange(selectionOffset, selectionOffset + selectionLength)
+        }
     }
 }
