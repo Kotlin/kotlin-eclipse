@@ -108,4 +108,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void formatSelection() {
         doAutoTest();
     }
+    
+    @Test
+    public void respectCaretAfterFormatting() {
+        doAutoTest();
+    }
 }
