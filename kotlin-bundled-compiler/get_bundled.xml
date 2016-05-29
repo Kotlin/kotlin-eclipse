@@ -13,6 +13,10 @@
 	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
 	<property name="test-data-file" value="kotlin-test-data.zip" />
 	<property name="testModule.lib" value="../kotlin-eclipse-ui-test/lib" />
+    
+    <property name="openapi-formatter" value="openapi-formatter" />
+    <property name="util-formatter" value="util-formatter" />
+    <property name="idea-formatter" value="idea-formatter" />
 	
 	<condition property="branch" value="?branch=${bootstrap_branch}" else="">
 	    <length string="${bootstrap_branch}" trim="true" when="greater" length="0" />
@@ -127,7 +131,7 @@
                 <mapper type="flatten"/>
             </unzip>
             
-            <unzip src="${target.dir}/openapi.jar" dest="${download.dir}/openapi-shrinked">
+            <unzip src="${target.dir}/openapi.jar" dest="${download.dir}/${openapi-formatter}">
                 <patternset>
                     <include name="com/intellij/psi/codeStyle/**/*.class" />
                     <include name="com/intellij/formatting/**/*.class" />
@@ -136,60 +140,62 @@
                 </patternset>
             </unzip>
             
-            <unzip src="${target.dir}/util.jar" dest="${download.dir}/util-shrinked">
+            <unzip src="${target.dir}/util.jar" dest="${download.dir}/${util-formatter}">
                 <patternset>
                     <include name="com/intellij/openapi/util/**/*.class" />
                     <include name="com/intellij/util/containers/**/*.class" />
                 </patternset>
             </unzip>
             
-            <unzip src="${target.dir}/idea.jar" dest="${download.dir}/idea-shrinked">
+            <unzip src="${target.dir}/idea.jar" dest="${download.dir}/${idea-formatter}">
                 <patternset>
                     <include name="com/intellij/formatting/**/*.class" />
                     <include name="com/intellij/psi/formatter/**/*.class" />
                 </patternset>
             </unzip>
             
-            <jar jarfile="${target.dir}/openapi-shrinked.jar">
-                <fileset dir="${download.dir}/openapi-shrinked"/>
+            <jar jarfile="${target.dir}/${openapi-formatter}.jar">
+                <fileset dir="${download.dir}/${openapi-formatter}"/>
 
                 <manifest>
                     <attribute name="Built-By" value="JetBrains"/>
 
                     <attribute name="Implementation-Vendor" value="JetBrains"/>
-                    <attribute name="Implementation-Title" value="openapi-shrinked"/>
+                    <attribute name="Implementation-Title" value="${openapi-formatter}"/>
                     <attribute name="Implementation-Version" value="1.0"/>
                 </manifest>
             </jar>
             
-            <jar jarfile="${target.dir}/util-shrinked.jar">
-                <fileset dir="${download.dir}/util-shrinked"/>
+            <jar jarfile="${target.dir}/${util-formatter}.jar">
+                <fileset dir="${download.dir}/${util-formatter}"/>
 
                 <manifest>
                     <attribute name="Built-By" value="JetBrains"/>
 
                     <attribute name="Implementation-Vendor" value="JetBrains"/>
-                    <attribute name="Implementation-Title" value="util-shrinked"/>
+                    <attribute name="Implementation-Title" value="${util-formatter}"/>
                     <attribute name="Implementation-Version" value="1.0"/>
                 </manifest>
             </jar>
             
-            <jar jarfile="${target.dir}/idea-shrinked.jar">
-                <fileset dir="${download.dir}/idea-shrinked"/>
+            <jar jarfile="${target.dir}/${idea-formatter}.jar">
+                <fileset dir="${download.dir}/${idea-formatter}"/>
 
                 <manifest>
                     <attribute name="Built-By" value="JetBrains"/>
 
                     <attribute name="Implementation-Vendor" value="JetBrains"/>
-                    <attribute name="Implementation-Title" value="idea-shrinked"/>
+                    <attribute name="Implementation-Title" value="${idea-formatter}"/>
                     <attribute name="Implementation-Version" value="1.0"/>
                 </manifest>
             </jar>
             
-            <delete dir="${download.dir}/openapi-shrinked"/>
+            <delete dir="${download.dir}/${openapi-formatter}"/>
             <delete file="${target.dir}/openapi.jar"/>
-            <delete dir="${download.dir}/util-shrinked"/>
+            <delete dir="${download.dir}/${util-formatter}"/>
             <delete file="${target.dir}/util.jar"/>
+            <delete dir="${download.dir}/${idea-formatter}"/>
+            <delete file="${target.dir}/idea.jar"/>
         </sequential>
 
 		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
