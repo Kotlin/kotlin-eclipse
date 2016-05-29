@@ -103,4 +103,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void lambdaInBlock() {
         doAutoTest();
     }
+    
+    @Test
+    public void formatSelection() {
+        doAutoTest();
+    }
 }
