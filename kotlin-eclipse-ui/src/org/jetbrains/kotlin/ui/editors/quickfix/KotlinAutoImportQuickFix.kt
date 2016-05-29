@@ -16,30 +16,30 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.quickfix
 
-import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.diagnostics.Errors
-import org.eclipse.jface.text.IDocument
-import org.eclipse.jdt.core.IType
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiWhiteSpace
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.core.Flags
+import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.eclipse.jdt.core.search.SearchEngine
 import org.eclipse.jdt.core.search.SearchPattern
-import org.eclipse.jdt.core.search.IJavaSearchConstants
-import org.eclipse.jdt.core.search.TypeNameMatchRequestor
 import org.eclipse.jdt.core.search.TypeNameMatch
-import org.eclipse.jdt.core.Flags
-import org.eclipse.swt.graphics.Image
-import org.eclipse.core.resources.IFile
-import org.eclipse.jdt.ui.JavaUI
+import org.eclipse.jdt.core.search.TypeNameMatchRequestor
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
 import org.eclipse.jdt.ui.ISharedImages
-import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.KtPackageDirective
-import org.jetbrains.kotlin.psi.KtImportList
-import com.intellij.psi.PsiWhiteSpace
-import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.eclipse.jdt.ui.JavaUI
+import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.TextUtilities
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.eclipse.swt.graphics.Image
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.diagnostics.Diagnostic
+import org.jetbrains.kotlin.diagnostics.Errors
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.psi.KtImportList
+import org.jetbrains.kotlin.psi.KtPackageDirective
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
@@ -133,7 +133,8 @@ private fun buildImportsStr(importsDirectives: List<String>, document: IDocument
 
 class KotlinAutoImportResolution(private val type: TypeNameMatch): KotlinMarkerResolution {
     override fun apply(file: IFile) {
-        placeImports(listOf(type), file, EditorUtil.getDocument(file))
+        val editor = EditorUtility.openInEditor(file, true) as KotlinEditor
+        placeImports(listOf(type), file, editor.document)
     }
 
     override fun getLabel(): String? = "Import '${type.simpleTypeName}' (${type.packageName})"
