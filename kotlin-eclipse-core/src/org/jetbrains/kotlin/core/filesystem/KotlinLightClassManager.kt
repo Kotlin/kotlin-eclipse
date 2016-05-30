@@ -31,6 +31,7 @@ import java.util.ArrayList
 import java.util.HashMap
 import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
+import org.eclipse.jdt.internal.core.util.LRUCache
 
 class KotlinLightClassManager(val javaProject: IJavaProject) {
     companion object {
@@ -38,9 +39,25 @@ class KotlinLightClassManager(val javaProject: IJavaProject) {
             val ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject()
             return ServiceManager.getService(ideaProject, KotlinLightClassManager::class.java)
         }
+        
+        private val LIGHT_CLASSES_INITIAL_SIZE = 100
     }
     
     private val sourceFiles = ConcurrentHashMap<File, HashSet<IFile>>()
+    
+    private val cachedLightClasses = LRUCache(LIGHT_CLASSES_INITIAL_SIZE) // File, ByteArray
+    
+    fun getCachedLightClass(file: File): ByteArray? {
+        return cachedLightClasses.get(file) as? ByteArray 
+    }
+    
+    fun cacheLightClass(file: File, byteArray: ByteArray) {
+        cachedLightClasses.put(file, byteArray)
+    }
+    
+    fun removeLightClass(file: File) {
+        cachedLightClasses.flush(file)
+    }
 
     fun computeLightClassesSources() {
         val project = javaProject.getProject()
@@ -74,6 +91,7 @@ class KotlinLightClassManager(val javaProject: IJavaProject) {
             
             for (sourceFile in entry.value) {
                 if (affectedFiles.contains(sourceFile)) {
+                    removeLightClass(lightClassFile.asFile())
                     lightClassFile.touchFile()
                     break
                 }
@@ -153,8 +171,12 @@ class KotlinLightClassManager(val javaProject: IJavaProject) {
                 if (resource is IFile) {
                     val lightClass = LightClassFile(resource)
                     val sources = sourceFiles[lightClass.asFile()]
+                    val dropLightClass = if (sources != null) sources.isEmpty() else true
+                    if (dropLightClass) {
+                        removeLightClass(lightClass.asFile())
+                    }
                     
-                    return if (sources != null) sources.isEmpty() else true
+                    return dropLightClass
                 } else if (resource is IFolder) {
                     return resource.members().isEmpty()
                 }
