@@ -18,17 +18,13 @@ package org.jetbrains.kotlin.ui.editors
 
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction
+import org.eclipse.jface.text.ITextSelection
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.jetbrains.kotlin.ui.formatter.formatCode
-import org.jetbrains.kotlin.ui.formatter.formatRange
+import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.createPsiFactory
-import org.eclipse.jface.text.ITextSelection
-import com.intellij.openapi.util.TextRange
-import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.ui.formatter.formatRange
 
 class KotlinFormatAction(private val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
     companion object {
@@ -53,20 +49,17 @@ class KotlinFormatAction(private val editor: KotlinFileEditor) : SelectionDispat
             return
         }
         
-        val ktFile = editor.parsedFile ?: return
-        
-        formatRange(editor.document, getRange(selection, ktFile), createPsiFactory(javaProject))
+        formatRange(editor.document, getRange(selection), createPsiFactory(javaProject))
         
         KotlinPsiManager.commitFile(file, editor.document)
     }
     
-    private fun getRange(selection: ITextSelection, ktFile: KtFile): TextRange {
+    private fun getRange(selection: ITextSelection): EclipseDocumentRange {
         val selectionLength = selection.length
         return if (selectionLength == 0) {
-            ktFile.textRange
+            EclipseDocumentRange(0, editor.document.length)
         } else {
-            val selectionOffset = LineEndUtil.convertCrToDocumentOffset(editor.document, selection.offset)
-            TextRange(selectionOffset, selectionOffset + selectionLength)
+            EclipseDocumentRange(selection.offset, selection.offset + selectionLength)
         }
     }
 }

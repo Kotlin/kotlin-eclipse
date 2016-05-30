@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.editor.Document as IdeaDocument
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
@@ -40,6 +41,10 @@ fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSet
     formatRange(containingFile, rootBlock, settings, document, containingFile.textRange)
 }
 
+fun formatRange(document: IDocument, range: EclipseDocumentRange, psiFactory: KtPsiFactory) {
+    formatRange(document, range.toPsiRange(document), psiFactory)
+}
+
 fun formatRange(document: IDocument, range: TextRange, psiFactory: KtPsiFactory) {
     val ktFile = createKtFile(document.get(), psiFactory)
     val rootBlock = KotlinBlock(ktFile.getNode(), 
@@ -52,7 +57,7 @@ fun formatRange(document: IDocument, range: TextRange, psiFactory: KtPsiFactory)
     formatRange(ktFile, rootBlock, settings, document, range)
 }
 
-fun formatRange(
+private fun formatRange(
         containingFile: KtFile,
         rootBlock: Block,
         settings: CodeStyleSettings,
@@ -82,6 +87,14 @@ fun initializaSettings(options: IndentOptions) {
         INDENT_SIZE = IndenterUtil.getDefaultIndent()
         TAB_SIZE = IndenterUtil.getDefaultIndent()
     }
+}
+
+data class EclipseDocumentRange(val startOffset: Int, val endOffset: Int)
+
+private fun EclipseDocumentRange.toPsiRange(document: IDocument): TextRange {
+    val startPsiOffset = LineEndUtil.convertCrToDocumentOffset(document, startOffset)
+    val endPsiOffset = LineEndUtil.convertCrToDocumentOffset(document, endOffset)
+    return TextRange(startPsiOffset, endPsiOffset)
 }
 
 val NULL_ALIGNMENT_STRATEGY = NodeAlignmentStrategy.fromTypes(KotlinAlignmentStrategy.wrap(null))
