@@ -88,6 +88,14 @@ public class IndenterUtil {
         return EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
     }
     
+    public static int getDefaultIndentSize() {
+        if (isSpacesForTabs()) {
+            return getDefaultIndent();
+        } else {
+            return 1;
+        }
+    }
+    
     public static boolean isSpacesForTabs() {
         return EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
     }

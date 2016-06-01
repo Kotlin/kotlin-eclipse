@@ -91,7 +91,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
             if (beforeCloseBrace && afterOpenBrace) {
                 tempDocument.replace(command.offset, 0, command.text);
                 String shift = getIndent(tempDocument, newLineOffset);
-                int beforeBraceIndent = shift.length() / IndenterUtil.getDefaultIndent();
+                int beforeBraceIndent = shift.length() / IndenterUtil.getDefaultIndentSize();
                 if (beforeBraceIndent > 0) beforeBraceIndent--;
                 
                 command.caretOffset = newLineOffset + shift.length();
