@@ -90,7 +90,7 @@ public object KotlinCompletionUtils {
                 simpleNameExpression, DescriptorKindFilter.ALL, nameFilter)
     }
     
-    public fun getSimpleNameExpression(editor: JavaEditor, identOffset: Int): KtSimpleNameExpression? {
+    public fun getSimpleNameExpression(editor: JavaEditor, identOffset: Int): PsiElement? {
         val sourceCode = EditorUtil.getSourceCode(editor)
         val sourceCodeWithMarker = StringBuilder(sourceCode).insert(identOffset, KOTLIN_DUMMY_IDENTIFIER).toString()
         val jetFile: KtFile?
@@ -105,8 +105,7 @@ public object KotlinCompletionUtils {
         if (jetFile == null) return null
         
         val offsetWithourCR = LineEndUtil.convertCrToDocumentOffset(sourceCodeWithMarker, identOffset, EditorUtil.getDocument(editor))
-        val psiElement = jetFile.findElementAt(offsetWithourCR)
-        return PsiTreeUtil.getParentOfType(psiElement, KtSimpleNameExpression::class.java)
+        return jetFile.findElementAt(offsetWithourCR)
     }
     
     public fun replaceMarkerInIdentifier(identifier: String): String {

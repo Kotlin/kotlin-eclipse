@@ -167,6 +167,9 @@ class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image, 
     }
 }
 
+class KotlinKeywordCompletionProposal(keyword: String, identifierPart: String) :
+        KotlinCompletionProposal(keyword, null, keyword, identifierPart = identifierPart)
+
 private fun createStyledString(simpleName: String, containingDeclaration: String): StyledString {
     return StyledString().apply { 
         append(simpleName)

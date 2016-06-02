@@ -43,6 +43,7 @@ import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
 import java.util.Comparator
+import com.intellij.psi.PsiElement
 
 class KotlinCompletionProcessor(
         private val editor: KotlinFileEditor,
@@ -93,16 +94,18 @@ class KotlinCompletionProcessor(
                 if (identifierPart.isNotBlank()) {
                     addAll(generateNonImportedCompletionProposals(identifierPart, expression, editor.javaProject!!))
                 }
+                
+                addAll(generateKeywordProposals(identifierPart, expression))
             }
-            addAll(generateKeywordProposals(identifierPart))
             addAll(generateTemplateProposals(viewer, offset, identifierPart))
         }
     }
     
     private fun generateNonImportedCompletionProposals(
             identifierPart: String, 
-            expression: KtSimpleNameExpression,
+            expression: PsiElement,
             javaProject: IJavaProject): List<KotlinCompletionProposal> {
+        if (expression !is KtSimpleNameExpression) return emptyList()
         
         val file = editor.getFile() ?: return emptyList()
         val ktFile = editor.parsedFile ?: return emptyList()
@@ -115,7 +118,9 @@ class KotlinCompletionProcessor(
         }
     }
     
-    private fun generateBasicCompletionProposals(identifierPart: String, expression: KtSimpleNameExpression): Collection<DeclarationDescriptor> {
+    private fun generateBasicCompletionProposals(identifierPart: String, expression: PsiElement): Collection<DeclarationDescriptor> {
+        if (expression !is KtSimpleNameExpression) return emptyList()
+        
         val file = EditorUtil.getFile(editor)
         if (file == null) {
             throw IllegalStateException("Failed to retrieve IFile from editor $editor")
@@ -178,15 +183,12 @@ class KotlinCompletionProcessor(
                 editor, region.getOffset(), region.getLength())
     }
     
-    private fun generateKeywordProposals(identifierPart: String): List<KotlinCompletionProposal> {
-        if (identifierPart.isBlank()) return emptyList()
-        
-        return KtTokens.KEYWORDS.types
-                .filter { it.toString().startsWith(identifierPart) }
-                .map { 
-                    val keyword = it.toString()
-                    KotlinCompletionProposal(keyword, null, keyword, identifierPart = identifierPart)
-                }
+    private fun generateKeywordProposals(identifierPart: String, expression: PsiElement): List<KotlinCompletionProposal> {
+        return arrayListOf<KotlinCompletionProposal>().apply {
+            KeywordCompletion.complete(expression, identifierPart, true) { keywordProposal ->
+                add(KotlinKeywordCompletionProposal(keywordProposal, identifierPart))
+            }
+        }
     }
     
     override fun computeContextInformation(viewer: ITextViewer?, offset: Int): Array<IContextInformation> {
