@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.ui.tests.editors.completion
 
 import org.eclipse.jdt.internal.ui.JavaPlugin
 import org.eclipse.jdt.ui.PreferenceConstants
+import org.eclipse.jface.text.contentassist.ICompletionProposal
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
@@ -48,7 +49,7 @@ abstract class KotlinBasicCompletionTestCase : KotlinProjectTestCase() {
         
         val proposalSet = actualProposals.toSet()
         
-        val expectedProposals = ExpectedCompletionUtils.itemsShouldExist(fileText)
+        val expectedProposals = ExpectedCompletionUtils.itemsShouldExist(fileText).map { it.trim { it == '"' } }
         assertExists(expectedProposals, proposalSet)
         
         val expectedJavaOnlyProposals = ExpectedCompletionUtils.itemsJavaOnlyShouldExists(fileText)
@@ -56,10 +57,26 @@ abstract class KotlinBasicCompletionTestCase : KotlinProjectTestCase() {
         
         val unexpectedProposals = ExpectedCompletionUtils.itemsShouldAbsent(fileText)
         assertNotExists(unexpectedProposals, proposalSet)
+        
+        val nothingElse = ExpectedCompletionUtils.isNothingElseExpected(fileText)
+        if (nothingElse) {
+            if (expectedProposals.size != proposalSet.size) {
+                Assert.fail(getErrorMessage(
+                        "Items must be equal.",
+                        expectedProposals,
+                        proposalSet,
+                        (expectedProposals - proposalSet).toSet(),
+                        (proposalSet - expectedProposals).toSet()))
+            }
+        }
+    }
+    
+    protected open fun getApplicableProposals(editor: KotlinFileEditor): Array<ICompletionProposal> {
+        return getCompletionProposals(editor)
     }
 
     private fun getActualProposals(javaEditor: KotlinFileEditor): List<String> {
-        return getCompletionProposals(javaEditor).map { it.stringToInsert() }
+        return getApplicableProposals(javaEditor).map { it.stringToInsert() }
     }
 
     private fun assertExists(itemsShouldExist: List<String>, actualItems: Set<String>) {
@@ -94,7 +111,7 @@ abstract class KotlinBasicCompletionTestCase : KotlinProjectTestCase() {
                 if (added.contains(proposal)) {
                     append("+")
                 }
-                append("proposal\n")
+                append("$proposal\n")
             }
             append(">")
         }.toString()

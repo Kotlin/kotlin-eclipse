@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.completion;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {

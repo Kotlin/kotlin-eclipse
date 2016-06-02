@@ -13,6 +13,7 @@ public class ExpectedCompletionUtils {
 	private static final String ELEMENT_PREFIX = "ELEMENT:";
 	private static final String COMPLETION_CHAR_PREFIX = "COMPLETION_CHAR:";
 	private static final String INVOCATION_COUNT_PREFIX = "INVOCATION_COUNT:";
+	private static final String NOTHING_ELSE_PREFIX = "NOTHING_ELSE";
 
 	public static List<String> itemsShouldAbsent(String fileText) {
 		return getItems(fileText, ABSENT_LINE_PREFIX);
@@ -20,6 +21,10 @@ public class ExpectedCompletionUtils {
 
 	public static List<String> itemsShouldExist(String fileText) {
 		return getItems(fileText, EXIST_LINE_PREFIX);
+	}
+	
+	public static boolean isNothingElseExpected(String fileText) {
+	    return !InTextDirectivesUtils.findListWithPrefixes(fileText, NOTHING_ELSE_PREFIX).isEmpty();
 	}
 	
 	public static String itemToComplete(String fileText) {
