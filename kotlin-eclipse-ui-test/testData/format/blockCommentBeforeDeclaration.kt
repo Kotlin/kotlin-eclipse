@@ -1,0 +1,13 @@
+class Cls{
+/*
+ */
+fun test() {}
+    
+/*
+ */
+val vls = 1
+    
+/*
+*/
+companion object {}
+}

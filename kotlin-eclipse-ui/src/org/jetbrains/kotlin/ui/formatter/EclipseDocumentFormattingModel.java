@@ -80,8 +80,8 @@ public class EclipseDocumentFormattingModel implements FormattingModelEx {
     @Override
     public TextRange shiftIndentInsideRange(ASTNode node, TextRange range, int indent) {
         try {
-            int newLength = shiftIndentInside(range, indent);
-            return new TextRange(range.getStartOffset(), range.getStartOffset() + newLength);
+            shiftIndentInside(range, indent);
+            return range;
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
