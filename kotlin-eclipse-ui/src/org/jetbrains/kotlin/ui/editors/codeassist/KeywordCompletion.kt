@@ -181,7 +181,9 @@ object KeywordCompletion {
     private val GENERAL_FILTER = NotFilter(OrFilter(
             CommentFilter(),
             ParentFilter(ClassFilter(KtLiteralStringTemplateEntry::class.java)),
-            ParentFilter(ClassFilter(KtConstantExpression::class.java))
+            ParentFilter(ClassFilter(KtConstantExpression::class.java)),
+            LeftNeighbour(TextFilter(".")),
+            LeftNeighbour(TextFilter("?."))
     ))
 
     private class CommentFilter() : ElementFilter {

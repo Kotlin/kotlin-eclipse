@@ -186,7 +186,9 @@ class KotlinCompletionProcessor(
     private fun generateKeywordProposals(identifierPart: String, expression: PsiElement): List<KotlinCompletionProposal> {
         return arrayListOf<KotlinCompletionProposal>().apply {
             KeywordCompletion.complete(expression, identifierPart, true) { keywordProposal ->
-                add(KotlinKeywordCompletionProposal(keywordProposal, identifierPart))
+                if (KotlinCompletionUtils.applicableNameFor(identifierPart, keywordProposal)) {
+                    add(KotlinKeywordCompletionProposal(keywordProposal, identifierPart))
+                }
             }
         }
     }
