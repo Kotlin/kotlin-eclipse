@@ -16,6 +16,7 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.codeassist
 
+import com.intellij.psi.PsiElement
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.internal.ui.JavaPlugin
 import org.eclipse.jdt.internal.ui.JavaPluginImages
@@ -23,7 +24,14 @@ import org.eclipse.jdt.internal.ui.viewsupport.JavaElementImageProvider
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.Region
-import org.eclipse.jface.text.contentassist.*
+import org.eclipse.jface.text.contentassist.ContentAssistEvent
+import org.eclipse.jface.text.contentassist.ContentAssistant
+import org.eclipse.jface.text.contentassist.ICompletionListener
+import org.eclipse.jface.text.contentassist.ICompletionProposal
+import org.eclipse.jface.text.contentassist.ICompletionProposalSorter
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor
+import org.eclipse.jface.text.contentassist.IContextInformation
+import org.eclipse.jface.text.contentassist.IContextInformationValidator
 import org.eclipse.jface.text.templates.TemplateContext
 import org.eclipse.jface.text.templates.TemplateProposal
 import org.jetbrains.kotlin.core.log.KotlinLogger
@@ -32,8 +40,8 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
-import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.resolve.DescriptorUtils
@@ -43,7 +51,6 @@ import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
 import java.util.Comparator
-import com.intellij.psi.PsiElement
 
 class KotlinCompletionProcessor(
         private val editor: KotlinFileEditor,
@@ -184,13 +191,35 @@ class KotlinCompletionProcessor(
     }
     
     private fun generateKeywordProposals(identifierPart: String, expression: PsiElement): List<KotlinCompletionProposal> {
-        return arrayListOf<KotlinCompletionProposal>().apply {
+        val callTypeAndReceiver = if (expression is KtSimpleNameExpression) CallTypeAndReceiver.detect(expression) else null
+        
+        return arrayListOf<String>().apply {
             KeywordCompletion.complete(expression, identifierPart, true) { keywordProposal ->
-                if (KotlinCompletionUtils.applicableNameFor(identifierPart, keywordProposal)) {
-                    add(KotlinKeywordCompletionProposal(keywordProposal, identifierPart))
+                if (!KotlinCompletionUtils.applicableNameFor(identifierPart, keywordProposal)) return@complete
+                
+                when (keywordProposal) {
+                    "break", "continue" -> {
+                        if (expression is KtSimpleNameExpression) {
+                            addAll(breakOrContinueExpressionItems(expression, keywordProposal))
+                        }
+                    }                     
+                    
+                    "class" -> {
+                        if (callTypeAndReceiver !is CallTypeAndReceiver.CALLABLE_REFERENCE) {
+                            add(keywordProposal)
+                        }
+                    }
+                    
+                    "this", "return" -> {
+                        if (expression is KtExpression) {
+                            add(keywordProposal)
+                        }
+                    }
+                    
+                    else -> add(keywordProposal)
                 }
             }
-        }
+        }.map { KotlinKeywordCompletionProposal(it, identifierPart) }
     }
     
     override fun computeContextInformation(viewer: ITextViewer?, offset: Int): Array<IContextInformation> {

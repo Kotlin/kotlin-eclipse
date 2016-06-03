@@ -14,6 +14,7 @@ import com.intellij.psi.filters.position.PositionElementFilter
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.ANNOTATION_CLASS
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.CLASS_ONLY
@@ -68,6 +69,7 @@ import org.jetbrains.kotlin.lexer.KtTokens.TRY_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.TYPE_ALIAS_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.WHEN_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.WHILE_KEYWORD
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtBlockExpression
 import org.jetbrains.kotlin.psi.KtCatchClause
 import org.jetbrains.kotlin.psi.KtClass
@@ -75,10 +77,14 @@ import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtConstantExpression
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtDeclarationWithBody
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtEnumEntry
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtLabeledExpression
 import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
+import org.jetbrains.kotlin.psi.KtLoopExpression
 import org.jetbrains.kotlin.psi.KtModifierList
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtParameter
@@ -94,6 +100,7 @@ import org.jetbrains.kotlin.psi.psiUtil.prevLeaf
 import org.jetbrains.kotlin.psi.psiUtil.prevLeafs
 import org.jetbrains.kotlin.psi.psiUtil.siblings
 import org.jetbrains.kotlin.resolve.ModifierCheckerCore
+import java.util.ArrayList
 
 open class KeywordLookupObject
 
@@ -429,6 +436,31 @@ object KeywordCompletion {
         return parent!!.getStartOffsetInAncestor(ancestor) + startOffsetInParent
     }
 }
+
+fun breakOrContinueExpressionItems(position: KtElement, breakOrContinue: String): Collection<String> {
+    val result = ArrayList<String>()
+
+    parentsLoop@
+    for (parent in position.parentsWithSelf) {
+        when (parent) {
+            is KtLoopExpression -> {
+                if (result.isEmpty()) {
+                    result.add(breakOrContinue)
+                }
+
+                val label = (parent.getParent() as? KtLabeledExpression)?.getLabelNameAsName()
+                if (label != null) {
+                    result.add(breakOrContinue + label.labelNameToTail())
+                }
+            }
+
+            is KtDeclarationWithBody -> break@parentsLoop //TODO: support non-local break's&continue's when they are supported by compiler
+        }
+    }
+    return result
+}
+
+private fun Name?.labelNameToTail(): String = if (this != null) "@" + render() else ""
 
 inline fun <reified T : Any> Sequence<*>.firstIsInstanceOrNull(): T? {
     for (element in this) if (element is T) return element
