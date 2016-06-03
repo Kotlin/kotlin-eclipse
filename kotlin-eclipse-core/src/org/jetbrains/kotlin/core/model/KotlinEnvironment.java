@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.core.model;
 import java.io.File;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
@@ -67,6 +68,7 @@ import com.intellij.openapi.extensions.ExtensionsArea;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElementFinder;
 import com.intellij.psi.PsiManager;
@@ -103,6 +105,8 @@ public class KotlinEnvironment {
     private final Set<VirtualFile> roots = new LinkedHashSet<>();
     
     private KotlinEnvironment(@NotNull IJavaProject javaProject, @NotNull Disposable disposable) {
+        setPropertiesToAvoidLoadingIDEASettings();
+        
         this.javaProject = javaProject;
         
         applicationEnvironment = createJavaCoreApplicationEnvironment(disposable);
@@ -150,6 +154,19 @@ public class KotlinEnvironment {
         }
         
         cachedEnvironment.putEnvironment(javaProject, this);
+    }
+    
+    // See org.jetbrains.kotlin.cli.common.CliCompiler
+    private void setPropertiesToAvoidLoadingIDEASettings() {
+        if (SystemInfo.isWindows) {
+            Properties properties = System.getProperties();
+
+            properties.setProperty("idea.io.use.nio2", Boolean.TRUE.toString());
+
+            if (!(SystemInfo.isJavaVersionAtLeast("1.7") && !"1.7.0-ea".equals(SystemInfo.JAVA_VERSION))) {
+                properties.setProperty("idea.io.use.fallback", Boolean.TRUE.toString());
+            }
+        }
     }
     
     private static void registerProjectExtensionPoints(ExtensionsArea area) {
