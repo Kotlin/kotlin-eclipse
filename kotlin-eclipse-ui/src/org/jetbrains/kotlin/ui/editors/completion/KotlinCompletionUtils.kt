@@ -90,7 +90,7 @@ public object KotlinCompletionUtils {
                 simpleNameExpression, DescriptorKindFilter.ALL, nameFilter)
     }
     
-    public fun getSimpleNameExpression(editor: JavaEditor, identOffset: Int): PsiElement? {
+    public fun getPsiElement(editor: JavaEditor, identOffset: Int): PsiElement? {
         val sourceCode = EditorUtil.getSourceCode(editor)
         val sourceCodeWithMarker = StringBuilder(sourceCode).insert(identOffset, KOTLIN_DUMMY_IDENTIFIER).toString()
         val jetFile: KtFile?

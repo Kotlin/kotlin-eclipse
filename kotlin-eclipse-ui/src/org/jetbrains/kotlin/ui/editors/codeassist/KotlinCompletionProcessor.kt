@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.editors.codeassist
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.internal.ui.JavaPlugin
 import org.eclipse.jdt.internal.ui.JavaPluginImages
@@ -92,17 +93,20 @@ class KotlinCompletionProcessor(
     
     private fun generateCompletionProposals(viewer: ITextViewer, offset: Int): List<ICompletionProposal> {
         val (identifierPart, identifierStart) = getIdentifierInfo(viewer.document, offset)
-        val expression = KotlinCompletionUtils.getSimpleNameExpression(editor, identifierStart)
+        val psiElement = KotlinCompletionUtils.getPsiElement(editor, identifierStart)
+        val simpleNameExpression = PsiTreeUtil.getParentOfType(psiElement, KtSimpleNameExpression::class.java)
         
         return arrayListOf<ICompletionProposal>().apply {
-            if (expression != null) {
-                addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, expression), identifierPart))
+            if (simpleNameExpression != null) {
+                addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, simpleNameExpression), identifierPart))
 
                 if (identifierPart.isNotBlank()) {
-                    addAll(generateNonImportedCompletionProposals(identifierPart, expression, editor.javaProject!!))
+                    addAll(generateNonImportedCompletionProposals(identifierPart, simpleNameExpression, editor.javaProject!!))
                 }
                 
-                addAll(generateKeywordProposals(identifierPart, expression))
+            }
+            if (psiElement != null) {
+                addAll(generateKeywordProposals(identifierPart, psiElement))
             }
             addAll(generateTemplateProposals(viewer, offset, identifierPart))
         }
@@ -110,10 +114,8 @@ class KotlinCompletionProcessor(
     
     private fun generateNonImportedCompletionProposals(
             identifierPart: String, 
-            expression: PsiElement,
+            expression: KtSimpleNameExpression,
             javaProject: IJavaProject): List<KotlinCompletionProposal> {
-        if (expression !is KtSimpleNameExpression) return emptyList()
-        
         val file = editor.getFile() ?: return emptyList()
         val ktFile = editor.parsedFile ?: return emptyList()
         
@@ -125,9 +127,7 @@ class KotlinCompletionProcessor(
         }
     }
     
-    private fun generateBasicCompletionProposals(identifierPart: String, expression: PsiElement): Collection<DeclarationDescriptor> {
-        if (expression !is KtSimpleNameExpression) return emptyList()
-        
+    private fun generateBasicCompletionProposals(identifierPart: String, expression: KtSimpleNameExpression): Collection<DeclarationDescriptor> {
         val file = EditorUtil.getFile(editor)
         if (file == null) {
             throw IllegalStateException("Failed to retrieve IFile from editor $editor")
