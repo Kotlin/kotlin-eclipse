@@ -33,6 +33,8 @@ import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl;
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles;
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension;
+import org.jetbrains.kotlin.config.CommonConfigurationKeys;
+import org.jetbrains.kotlin.config.CompilerConfiguration;
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver;
@@ -102,6 +104,8 @@ public class KotlinEnvironment {
     private final IJavaProject javaProject;
     private final Set<VirtualFile> roots = new LinkedHashSet<>();
     
+    private final CompilerConfiguration configuration = new CompilerConfiguration();
+    
     private KotlinEnvironment(@NotNull IJavaProject javaProject, @NotNull Disposable disposable) {
         this.javaProject = javaProject;
         
@@ -138,6 +142,8 @@ public class KotlinEnvironment {
         project.registerService(KotlinCacheService.class, new KotlinCacheServiceImpl());
         project.registerService(ImportInsertHelper.class, new KotlinImportInserterHelper());
         
+        configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName());
+        
         configureClasspath();
         
         project.registerService(JvmVirtualFileFinderFactory.class, new EclipseVirtualFileFinder(javaProject));
@@ -150,6 +156,16 @@ public class KotlinEnvironment {
         }
         
         cachedEnvironment.putEnvironment(javaProject, this);
+    }
+    
+    @NotNull
+    public IJavaProject getJavaProject() {
+        return javaProject;
+    }
+    
+    @NotNull
+    public CompilerConfiguration getConfiguration() {
+        return configuration;
     }
     
     private static void registerProjectExtensionPoints(ExtensionsArea area) {

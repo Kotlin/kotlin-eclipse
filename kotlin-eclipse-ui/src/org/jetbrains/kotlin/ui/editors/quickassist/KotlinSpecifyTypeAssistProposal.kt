@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2015 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,24 @@
 package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
-import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.diagnostics.Errors
 import com.intellij.psi.util.PsiTreeUtil
+import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.descriptors.CallableDescriptor
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtCodeFragment
-import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
-import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.eclipse.jdt.core.JavaCore
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.descriptors.CallableDescriptor
-import org.jetbrains.kotlin.types.ErrorUtils
-import kotlin.properties.Delegates
-import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
-import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtParameter
+import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.types.ErrorUtils
+import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 
 public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
     private var displayString: String? = null
@@ -61,7 +57,7 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
 
         if (element is KtNamedFunction && element.hasBlockBody()) return false
         
-        if (getTypeForDeclaration(element).isError()) return false
+        if (getTypeForDeclaration(element).isError) return false
 
         displayString = if (element is KtFunction) "Specify return type explicitly" else "Specify type explicitly"
         

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright 2000-2014 JetBrains s.r.o.
+* Copyright 2000-2016 JetBrains s.r.o.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -40,11 +40,15 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.descriptors.PackagePartProvider
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.config.LanguageVersion
 
 public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
 public object EclipseAnalyzerFacadeForJVM {
-    public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
+    public fun analyzeFilesWithJavaIntegration(
+            environment: KotlinEnvironment,
+            filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
         val filesSet = filesToAnalyze.toSet()
         if (filesSet.size != filesToAnalyze.size) {
             KotlinLogger.logWarning("Analyzed files have duplicates")
@@ -52,16 +56,23 @@ public object EclipseAnalyzerFacadeForJVM {
         
         val allFiles = LinkedHashSet<KtFile>(filesSet)
         val addedFiles = filesSet.map { getPath(it) }.filterNotNull().toSet()
-        ProjectUtils.getSourceFilesWithDependencies(javaProject).filterNotTo(allFiles) {
+        ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).filterNotTo(allFiles) {
             getPath(it) in addedFiles
         }
         
-        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project, project.getName())
+        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(environment.project, environment.configuration)
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
-        val containerAndProvider = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
-                GlobalSearchScope.allScope(project), javaProject, LookupTracker.DO_NOTHING, KotlinPackagePartProvider(javaProject))
+        val containerAndProvider = createContainerForTopDownAnalyzerForJvm(
+                moduleContext,
+                trace,
+                providerFactory, 
+                GlobalSearchScope.allScope(environment.project),
+                environment.javaProject,
+                LookupTracker.DO_NOTHING,
+                KotlinPackagePartProvider(environment.javaProject),
+                LanguageVersion.LATEST)
         val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         

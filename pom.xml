@@ -28,7 +28,7 @@
 
 		<ajdt-mars-repo.url>http://download.eclipse.org/tools/ajdt/45/dev/update</ajdt-mars-repo.url>
 
-		<kotlin.version>1.0.2</kotlin.version>
+		<kotlin.version>1.1.0-dev-998</kotlin.version>
 
 		<aspectj.version>1.8.2</aspectj.version>
 		<aspectj.plugin.version>1.7</aspectj.plugin.version>
@@ -67,6 +67,15 @@
             <name>bintray</name>
             <url>http://dl.bintray.com/kotlin/kotlin-eap</url>
         </repository>
+        
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-kotlin-kotlin-dev</id>
+            <name>bintray</name>
+            <url>http://dl.bintray.com/kotlin/kotlin-dev</url>
+        </repository>
     </repositories>
 
 	<pluginRepositories>
@@ -90,6 +99,15 @@
 			<name>bintray-plugins</name>
 			<url>http://dl.bintray.com/kotlin/kotlin-eap</url>
 		</pluginRepository>
+		
+		<pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-kotlin-kotlin-dev</id>
+            <name>bintray-plugins</name>
+            <url>http://dl.bintray.com/kotlin/kotlin-dev</url>
+        </pluginRepository>
 	</pluginRepositories>
 
 	<build>

@@ -102,11 +102,19 @@ public class KotlinCompiler {
         final List<CompilerMessageSeverity> severities = new ArrayList<CompilerMessageSeverity>();
         CompilerOutputParser.parseCompilerMessagesFromReader(
                 new MessageCollector() {
+                    private boolean hasErrors = false;
+                    
                     @Override
                     public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message,
                             @NotNull CompilerMessageLocation messageLocation) {
+                        hasErrors = hasErrors || messageSeverity.isError();
                         severities.add(messageSeverity);
                         compilerOutput.add(messageSeverity, message, messageLocation);
+                    }
+
+                    @Override
+                    public boolean hasErrors() {
+                        return hasErrors;
                     }
                 },
                 reader);

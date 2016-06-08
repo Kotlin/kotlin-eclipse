@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.asJava.DuplicateJvmSignatureUtilKt;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.TextDiagnostic;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.diagnostics.Diagnostic;
@@ -190,7 +191,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             KotlinTestUtils.joinBuildThread();
 
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE
-                    .analyzeFilesWithJavaIntegration(getTestProject().getJavaProject(), getProject(), jetFiles)
+                    .analyzeFilesWithJavaIntegration(KotlinEnvironment.getEnvironment(getTestProject().getJavaProject()), jetFiles)
                     .getAnalysisResult();
             
             moduleBindings.put(testModule, analysisResult.getBindingContext());

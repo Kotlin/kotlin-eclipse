@@ -38,18 +38,21 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.formatter.formatRange
 
-class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
+class KotlinConvertToBlockBodyAssistProposal : KotlinQuickAssistProposal() {
     override fun isApplicable(psiElement: PsiElement): Boolean {
-        val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)?: return false
+        val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java) ?: return false
         if (declaration is KtFunctionLiteral || declaration.hasBlockBody() || !declaration.hasBody()) return false
 
         when (declaration) {
             is KtNamedFunction -> {
-            val bindingContext = getBindingContext(declaration) ?: return false;
-            val returnType: KotlinType = declaration.returnType(bindingContext) ?: return false
-            if (!declaration.hasDeclaredReturnType() && returnType.isError()) return false// do not convert when type is implicit and unknown
-            return true
-        }
+                val bindingContext = getBindingContext(declaration) ?: return false;
+                val returnType: KotlinType = declaration.returnType(bindingContext) ?: return false
+                
+                // do not convert when type is implicit and unknown
+                if (!declaration.hasDeclaredReturnType() && returnType.isError) return false
+                 
+                return true
+            }
 
             is KtPropertyAccessor -> return true
 
@@ -63,9 +66,9 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
         val context = getBindingContext(declaration)!!
 
-        val shouldSpecifyType = declaration is KtNamedFunction 
-            && !declaration.hasDeclaredReturnType() 
-            && !KotlinBuiltIns.isUnit(declaration.returnType(context)!!)
+        val shouldSpecifyType = declaration is KtNamedFunction
+                && !declaration.hasDeclaredReturnType()
+                && !KotlinBuiltIns.isUnit(declaration.returnType(context)!!)
 
         val editor = getActiveEditor() ?: return
         val factory = KtPsiFactory(declaration)
@@ -73,7 +76,7 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
         replaceBody(declaration, factory, context, editor)
 
         if (shouldSpecifyType) {
-        	specifyType(declaration, factory, context)
+            specifyType(declaration, factory, context)
         }
     }
 
@@ -90,11 +93,11 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
         val anchorStartOffset = anchorToken.textRange.startOffset
         formatRange(editor.document, TextRange(anchorStartOffset, anchorStartOffset + newBodyText.length), factory)
     }
-    
+
     private fun specifyType(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext) {
-    	val returnType = (declaration as KtNamedFunction).returnType(context).toString()
+        val returnType = (declaration as KtNamedFunction).returnType(context).toString()
         val stringToInsert = listOf(factory.createColon(), factory.createWhiteSpace())
-            .joinToString(separator = "") { it.getText()} + returnType
+                .joinToString(separator = "") { it.getText() } + returnType
         insertAfter(declaration.getValueParameterList()!!, stringToInsert)
     }
 
@@ -104,17 +107,16 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
         fun generateBody(returnsValue: Boolean): KtExpression {
             val bodyType = bindingContext.getType(body)
             val needReturn = returnsValue &&
-                (bodyType == null || (!KotlinBuiltIns.isUnit(bodyType) && !KotlinBuiltIns.isNothing(bodyType)))
+                    (bodyType == null || (!KotlinBuiltIns.isUnit(bodyType) && !KotlinBuiltIns.isNothing(bodyType)))
 
             val expression = factory.createExpression(body.getText())
             val block: KtBlockExpression = if (needReturn) {
-                    factory.createBlock("return xyz")
-                }
-                    else {
-                    return factory.createBlock(expression.getText())
-                }
+                factory.createBlock("return xyz")
+            } else {
+                return factory.createBlock(expression.getText())
+            }
             val returnExpression = PsiTreeUtil.getChildOfType(block, KtReturnExpression::class.java)
-            val returned = returnExpression?.getReturnedExpression()?: return factory.createBlock("return ${expression.getText()}")
+            val returned = returnExpression?.getReturnedExpression() ?: return factory.createBlock("return ${expression.getText()}")
             if (KtPsiUtil.areParenthesesNecessary(expression, returned, returnExpression!!)) {
                 return factory.createBlock("return (${expression.getText()})")
             }
@@ -122,15 +124,15 @@ class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
         }
 
         val newBody = when (declaration) {
-                is KtNamedFunction -> {
+            is KtNamedFunction -> {
                 val returnType = declaration.returnType(bindingContext)!!
                 generateBody(!KotlinBuiltIns.isUnit(returnType) && !KotlinBuiltIns.isNothing(returnType))
             }
 
-                is KtPropertyAccessor -> generateBody(declaration.isGetter())
+            is KtPropertyAccessor -> generateBody(declaration.isGetter())
 
-                else -> throw RuntimeException("Unknown declaration type: $declaration")
-            }
+            else -> throw RuntimeException("Unknown declaration type: $declaration")
+        }
         return newBody
     }
 
