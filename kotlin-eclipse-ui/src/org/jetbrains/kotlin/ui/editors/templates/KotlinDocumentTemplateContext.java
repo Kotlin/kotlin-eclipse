@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.ui.editors.templates;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.templates.DocumentTemplateContext;
@@ -27,14 +26,14 @@ import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.TemplateException;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 public class KotlinDocumentTemplateContext extends DocumentTemplateContext {
 
-    private final JavaEditor editor; 
+    private final KotlinEditor editor; 
     
-    public KotlinDocumentTemplateContext(TemplateContextType type, JavaEditor editor, int offset, int length) {
-        super(type, editor.getViewer().getDocument(), offset, length);
+    public KotlinDocumentTemplateContext(TemplateContextType type, KotlinEditor editor, int offset, int length) {
+        super(type, editor.getDocument(), offset, length);
         this.editor = editor;
     }
     
@@ -44,7 +43,7 @@ public class KotlinDocumentTemplateContext extends DocumentTemplateContext {
         
         KotlinTemplateFormatter templateFormatter = new KotlinTemplateFormatter();
         
-        IFile file = EditorUtil.getFile(editor);
+        IFile file = editor.getEclipseFile();
 
         assert file != null : "Failed to retrieve IFile from editor " + editor;
 

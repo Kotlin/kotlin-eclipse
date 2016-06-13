@@ -16,23 +16,23 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.codeassist
 
-import org.eclipse.jface.text.contentassist.IContextInformationPresenter
-import org.eclipse.jface.text.contentassist.IContextInformationValidator
-import org.eclipse.jface.text.contentassist.IContextInformation
+import com.intellij.psi.PsiErrorElement
+import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.TextPresentation
-import kotlin.properties.Delegates
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.psi.KtValueArgumentList
-import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.eclipse.jface.text.contentassist.IContextInformation
+import org.eclipse.jface.text.contentassist.IContextInformationPresenter
+import org.eclipse.jface.text.contentassist.IContextInformationValidator
 import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.StyleRange
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.lexer.KtTokens
-import com.intellij.psi.PsiErrorElement
+import org.jetbrains.kotlin.psi.KtValueArgumentList
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import kotlin.properties.Delegates
 
-public class KotlinParameterListValidator(val editor: KotlinFileEditor) : IContextInformationValidator, 
+public class KotlinParameterListValidator(val editor: KotlinEditor) : IContextInformationValidator, 
         IContextInformationPresenter {
     var info: KotlinFunctionParameterContextInformation by Delegates.notNull()
     var viewer: ITextViewer by Delegates.notNull()
