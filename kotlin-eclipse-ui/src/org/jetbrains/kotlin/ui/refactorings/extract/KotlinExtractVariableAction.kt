@@ -16,24 +16,17 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.refactorings.extract
 
-import org.eclipse.jdt.ui.actions.SelectionDispatchAction
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.eclipse.jdt.internal.ui.refactoring.RefactoringMessages
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
-import org.eclipse.ui.PlatformUI
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
-import org.eclipse.jface.text.ITextSelection
+import org.eclipse.jdt.internal.ui.refactoring.RefactoringMessages
 import org.eclipse.jdt.internal.ui.refactoring.actions.RefactoringStarter
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
+import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper
-import com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction
-import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction
-import org.jetbrains.kotlin.core.references.getReferenceExpression
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import com.intellij.psi.util.PsiTreeUtil
+import org.eclipse.jface.text.ITextSelection
+import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 
-public class KotlinExtractVariableAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
+public class KotlinExtractVariableAction(val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.EXTRACT_LOCAL_VARIABLE)
         setText(RefactoringMessages.ExtractTempAction_label)

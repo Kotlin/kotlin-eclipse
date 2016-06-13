@@ -16,68 +16,44 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.refactorings.rename
 
-import org.eclipse.jdt.ui.actions.SelectionDispatchAction
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.eclipse.jface.text.ITextSelection
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.jetbrains.kotlin.core.references.getReferenceExpression
-import org.jetbrains.kotlin.core.references.createReferences
-import org.jetbrains.kotlin.core.references.resolveToSourceElements
-import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
-import org.eclipse.jdt.internal.ui.refactoring.reorg.RenameLinkedMode
-import org.eclipse.jdt.core.IJavaElement
-import org.eclipse.jface.text.link.LinkedModeModel
-import org.eclipse.jface.text.link.LinkedPositionGroup
-import org.eclipse.jface.text.link.LinkedPosition
-import com.intellij.psi.PsiElement
-import org.eclipse.jdt.internal.ui.javaeditor.EditorHighlightingSynchronizer
-import org.eclipse.jface.text.link.ILinkedModeListener
-import org.eclipse.ui.texteditor.link.EditorLinkedModeUI
-import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy
-import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.eclipse.jdt.core.refactoring.IJavaRefactorings
-import org.eclipse.ltk.core.refactoring.RefactoringCore
-import org.eclipse.jdt.core.refactoring.descriptors.RenameJavaElementDescriptor
-import org.eclipse.jdt.ui.refactoring.RenameSupport
-import org.eclipse.jdt.core.IType
-import org.eclipse.core.resources.IResource
-import org.eclipse.core.resources.IFile
-import org.eclipse.jdt.core.ICompilationUnit
-import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
-import org.eclipse.jdt.core.ISourceRange
-import org.eclipse.jdt.core.IMethod
-import org.eclipse.jdt.internal.core.CompilationUnit
-import org.eclipse.text.edits.TextEdit
-import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.text.edits.UndoEdit
-import org.eclipse.jdt.core.compiler.CharOperation
-import org.eclipse.jdt.internal.compiler.env.ICompilationUnit as ContentProviderCompilationUnit
-import org.jetbrains.kotlin.psi.KtElement
-import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.core.model.toLightElements
-import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.eclipse.jface.text.ITextViewerExtension6
-import org.eclipse.jface.text.IUndoManagerExtension
-import org.eclipse.core.commands.operations.OperationHistoryFactory
 import org.eclipse.core.commands.operations.IUndoableOperation
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.eclipse.jface.text.source.ISourceViewer
-import org.eclipse.jface.text.IUndoManager
-import org.jetbrains.kotlin.core.model.KotlinJavaManager
+import org.eclipse.core.commands.operations.OperationHistoryFactory
+import org.eclipse.core.resources.IResource
 import org.eclipse.core.runtime.NullProgressMonitor
-import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.eclipse.jdt.core.IJavaElement
+import org.eclipse.jdt.core.IMethod
+import org.eclipse.jdt.core.IType
+import org.eclipse.jdt.internal.ui.javaeditor.EditorHighlightingSynchronizer
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper
+import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
+import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper
-import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.ui.refactoring.RenameSupport
+import org.eclipse.jface.text.ITextSelection
+import org.eclipse.jface.text.ITextViewerExtension6
+import org.eclipse.jface.text.IUndoManager
+import org.eclipse.jface.text.IUndoManagerExtension
+import org.eclipse.jface.text.link.ILinkedModeListener
+import org.eclipse.jface.text.link.LinkedModeModel
+import org.eclipse.jface.text.link.LinkedPosition
+import org.eclipse.jface.text.link.LinkedPositionGroup
+import org.eclipse.ltk.core.refactoring.RefactoringCore
 import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring
+import org.eclipse.ui.texteditor.link.EditorLinkedModeUI
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.eclipse.jdt.internal.compiler.env.ICompilationUnit as ContentProviderCompilationUnit
 
-public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
+public class KotlinRenameAction(val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.RENAME_ELEMENT)
     }
@@ -100,7 +76,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         beginRenameRefactoring(sourceElements, jetElement, editor)
     }
     
-    fun undo(editor: KotlinFileEditor, startingUndoOperation: IUndoableOperation?) {
+    fun undo(editor: KotlinCommonEditor, startingUndoOperation: IUndoableOperation?) {
         editor.getSite().getWorkbenchWindow().run(false, true) {
             val undoManager = getUndoManager(editor)
             if (undoManager is IUndoManagerExtension) {
@@ -117,7 +93,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         }
     }
     
-    fun getCurrentUndoOperation(editor: KotlinFileEditor): IUndoableOperation? {
+    fun getCurrentUndoOperation(editor: KotlinCommonEditor): IUndoableOperation? {
         val undoManager = getUndoManager(editor)
         if (undoManager is IUndoManagerExtension) {
             val undoContext = undoManager.getUndoContext()
@@ -128,12 +104,12 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
         return null
     }
     
-    fun getUndoManager(editor: KotlinFileEditor): IUndoManager? {
+    fun getUndoManager(editor: KotlinCommonEditor): IUndoManager? {
         val viewer = editor.getViewer()
         return if (viewer is ITextViewerExtension6) viewer.getUndoManager() else null
     }
     
-    fun beginRenameRefactoring(sourceElements: List<SourceElement>, selectedElement: KtElement, editor: KotlinFileEditor) {
+    fun beginRenameRefactoring(sourceElements: List<SourceElement>, selectedElement: KtElement, editor: KotlinCommonEditor) {
         val linkedPositionGroup = LinkedPositionGroup()
         val offsetInDocument = selectedElement.getTextDocumentOffset(editor.document)
         
@@ -198,7 +174,7 @@ fun createRenameSupport(javaElement: IJavaElement, newName: String): RenameSuppo
     }
 }
 
-fun doRename(sourceElements: List<SourceElement>, newName: String, editor: KotlinFileEditor) {
+fun doRename(sourceElements: List<SourceElement>, newName: String, editor: KotlinCommonEditor) {
     fun renameByJavaElement(javaElements: List<IJavaElement>) {
         val javaElement = javaElements[0]
         val renameSupport = createRenameSupport(javaElement, newName)

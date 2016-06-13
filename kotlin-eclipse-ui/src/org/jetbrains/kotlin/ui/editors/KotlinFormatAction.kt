@@ -26,7 +26,7 @@ import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.createPsiFactory
 import org.jetbrains.kotlin.ui.formatter.formatRange
 
-class KotlinFormatAction(private val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
+class KotlinFormatAction(private val editor: KotlinEditor) : SelectionDispatchAction(editor.javaEditor.site) {
     companion object {
         @JvmField val FORMAT_ACTION_TEXT: String = "Format"
     }
@@ -37,7 +37,7 @@ class KotlinFormatAction(private val editor: KotlinFileEditor) : SelectionDispat
     }
     
     override fun run(selection: ITextSelection) {
-        val file = EditorUtil.getFile(editor)
+        val file = editor.eclipseFile
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
             return

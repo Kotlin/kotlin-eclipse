@@ -63,7 +63,7 @@ public class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
         val colorManager: IColorManager,
         val presentationReconciler: KotlinPresentationReconciler,
-        val editor: KotlinFileEditor) : KotlinReconcilingListener, ITextPresentationListener, IPropertyChangeListener, ITextInputListener {
+        val editor: KotlinEditor) : KotlinReconcilingListener, ITextPresentationListener, IPropertyChangeListener, ITextInputListener {
     private val positionUpdater by lazy { KotlinPositionUpdater(category) }
     
     private val category by lazy { toString() }
@@ -145,7 +145,7 @@ public class KotlinSemanticHighlighter(
     }
     
     fun install() {
-        val viewer = editor.getViewer()
+        val viewer = editor.javaEditor.getViewer()
         val file = editor.eclipseFile
         if (file != null && viewer is JavaSourceViewer) {
             manageDocument(editor.document)
@@ -165,7 +165,7 @@ public class KotlinSemanticHighlighter(
     }
     
     fun uninstall() {
-        val viewer = editor.getViewer()
+        val viewer = editor.javaEditor.getViewer()
         if (viewer is JavaSourceViewer) {
             viewer.removeTextPresentationListener(this)
             viewer.removeTextInputListener(this)
@@ -197,14 +197,14 @@ public class KotlinSemanticHighlighter(
     }
     
     private fun invalidateTextPresentation() {
-        val shell = editor.getSite()?.getShell()
+        val shell = editor.javaEditor.getSite()?.getShell()
         if (shell == null || shell.isDisposed()) return
         
         val display = shell.getDisplay()
         if (display == null || display.isDisposed()) return
         
         display.asyncExec {
-            editor.getViewer()?.invalidateTextPresentation()
+            editor.javaEditor.getViewer()?.invalidateTextPresentation()
         }
     }
     

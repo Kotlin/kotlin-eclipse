@@ -16,32 +16,30 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.overrideImplement
 
-import org.eclipse.jdt.ui.actions.SelectionDispatchAction
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.eclipse.jface.text.ITextSelection
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
-import org.eclipse.jdt.internal.ui.actions.ActionMessages
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.SmartList
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
+import org.eclipse.jdt.ui.actions.SelectionDispatchAction
+import org.eclipse.jface.text.ITextSelection
+import org.eclipse.jface.window.Window
 import org.eclipse.ui.PlatformUI
-import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.eclipse.ui.dialogs.CheckedTreeSelectionDialog
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import java.util.LinkedHashSet
-import org.jetbrains.kotlin.descriptors.Modality
-import java.util.LinkedHashMap
-import java.util.ArrayList
 import org.jetbrains.kotlin.descriptors.ClassKind
-import org.jetbrains.kotlin.ui.editors.quickassist.resolveToDescriptor
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibilities
-import com.intellij.util.SmartList
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import com.intellij.psi.util.PsiTreeUtil
-import org.eclipse.ui.dialogs.CheckedTreeSelectionDialog
-import org.eclipse.jface.window.Window
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinImplementMethodsProposal
+import org.jetbrains.kotlin.ui.editors.quickassist.resolveToDescriptor
+import java.util.LinkedHashMap
+import java.util.LinkedHashSet
 
 public class KotlinOverrideMembersAction(
-        val editor: KotlinFileEditor, 
+        val editor: KotlinCommonEditor, 
         val filterMembersFromAny: Boolean = false) : SelectionDispatchAction(editor.getSite()) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.OVERRIDE_METHODS)

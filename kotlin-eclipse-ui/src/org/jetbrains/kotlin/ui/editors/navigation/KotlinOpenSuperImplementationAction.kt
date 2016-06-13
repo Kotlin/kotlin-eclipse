@@ -17,36 +17,33 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.navigation
 
-import org.eclipse.jdt.ui.actions.SelectionDispatchAction
+import com.intellij.psi.util.PsiTreeUtil
+import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.internal.ui.actions.ActionMessages
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
+import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.eclipse.jface.text.ITextSelection
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtClass
-import org.jetbrains.kotlin.psi.KtObjectDeclaration
-import org.jetbrains.kotlin.psi.KtProperty
-import org.jetbrains.kotlin.psi.KtDeclaration
-import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
-import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.resolve.OverrideResolver
-import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
-import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
-import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.MemberDescriptor
+import org.eclipse.jface.viewers.ArrayContentProvider
+import org.eclipse.jface.window.Window
 import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.dialogs.ListDialog
-import org.eclipse.jface.viewers.ArrayContentProvider
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.MemberDescriptor
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.psi.KtClass
+import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtObjectDeclaration
+import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.OverrideResolver
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.overrideImplement.KotlinCallableLabelProvider
-import org.eclipse.jface.window.Window
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 
-public class KotlinOpenSuperImplementationAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
+public class KotlinOpenSuperImplementationAction(val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.site) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.OPEN_SUPER_IMPLEMENTATION)
         setText(ActionMessages.OpenSuperImplementationAction_label)

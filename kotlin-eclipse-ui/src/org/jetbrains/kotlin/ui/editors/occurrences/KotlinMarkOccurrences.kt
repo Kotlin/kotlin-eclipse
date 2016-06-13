@@ -16,47 +16,35 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.occurrences
 
-import org.eclipse.ui.ISelectionListener
-import org.eclipse.jface.viewers.ISelection
-import org.eclipse.ui.IWorkbenchPart
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.eclipse.jface.text.ITextSelection
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant
-import org.eclipse.search.ui.text.Match
-import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
-import org.eclipse.jdt.core.search.IJavaSearchConstants
-import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
+import org.eclipse.core.resources.IFile
 import org.eclipse.core.runtime.NullProgressMonitor
-import org.jetbrains.kotlin.ui.search.KotlinElementMatch
-import org.jetbrains.kotlin.ui.refactorings.rename.getLengthOfIdentifier
-import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.eclipse.jface.text.TextSelection
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.jdt.core.search.IJavaSearchConstants
+import org.eclipse.jface.text.ITextSelection
 import org.eclipse.jface.text.Position
 import org.eclipse.jface.text.source.Annotation
-import org.eclipse.jface.text.source.IAnnotationModel
-import org.eclipse.jface.text.ISynchronizable
-import org.eclipse.jface.text.source.IAnnotationModelExtension
-import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.core.runtime.IStatus
-import org.eclipse.core.runtime.Status
-import org.eclipse.core.resources.ResourcesPlugin
-import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.ui.editors.annotations.withLock
-import org.eclipse.jface.text.source.AnnotationModel
-import org.eclipse.ui.progress.UIJob
-import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
+import org.eclipse.jface.viewers.ISelection
+import org.eclipse.search.ui.text.Match
+import org.eclipse.ui.ISelectionListener
+import org.eclipse.ui.IWorkbenchPart
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
-import org.jetbrains.kotlin.psi.KtConstructor
-import org.jetbrains.kotlin.ui.search.getContainingClassOrObjectForConstructor
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.runJob
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
+import org.jetbrains.kotlin.ui.refactorings.rename.getLengthOfIdentifier
+import org.jetbrains.kotlin.ui.search.KotlinElementMatch
+import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant
+import org.jetbrains.kotlin.ui.search.getContainingClassOrObjectForConstructor
 
-public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelectionListener {
+public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISelectionListener {
     companion object {
         private val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
     }
