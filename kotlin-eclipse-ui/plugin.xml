@@ -204,6 +204,15 @@
             id="org.jetbrains.kotlin.ui.editors.KotlinFileEditor"
             name="Kotlin Editor">
       </editor>
+      <editor
+            class="org.jetbrains.kotlin.ui.editors.KotlinScriptEditor"
+            contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
+            default="false"
+            extensions="kts"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.ui.editors.KotlinScriptEditor"
+            name="Kotlin Script Editor">
+      </editor>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
