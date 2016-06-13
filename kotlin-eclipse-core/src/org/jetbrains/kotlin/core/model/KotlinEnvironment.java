@@ -51,6 +51,8 @@ import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager;
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
+import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider;
+import org.jetbrains.kotlin.script.StandardScriptDefinition;
 
 import com.intellij.codeInsight.ContainerProvider;
 import com.intellij.codeInsight.NullableNotNullManager;
@@ -120,6 +122,8 @@ public class KotlinEnvironment {
         
         project = projectEnvironment.getProject();
         
+        project.registerService(KotlinScriptDefinitionProvider.class, new KotlinScriptDefinitionProvider());
+        
         project.registerService(ModuleVisibilityManager.class, new CliModuleVisibilityManagerImpl());
 
 //        For j2k converter
@@ -143,6 +147,8 @@ public class KotlinEnvironment {
         project.registerService(ImportInsertHelper.class, new KotlinImportInserterHelper());
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName());
+        
+        KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(StandardScriptDefinition.INSTANCE);
         
         configureClasspath();
         
@@ -214,10 +220,8 @@ public class KotlinEnvironment {
         
         // ability to get text from annotations xml files
         javaApplicationEnvironment.registerFileType(PlainTextFileType.INSTANCE, "xml");
-        
         javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, "kt");
-        javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, "jet");
-        javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, "ktm");
+        javaApplicationEnvironment.registerFileType(KotlinFileType.INSTANCE, KotlinParserDefinition.STD_SCRIPT_SUFFIX);
         
         javaApplicationEnvironment.registerParserDefinition(new KotlinParserDefinition());
         
