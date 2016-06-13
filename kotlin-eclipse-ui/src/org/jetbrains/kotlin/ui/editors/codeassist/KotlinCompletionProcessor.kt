@@ -46,7 +46,7 @@ import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.resolve.DescriptorUtils
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
@@ -54,7 +54,7 @@ import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
 import java.util.Comparator
 
 class KotlinCompletionProcessor(
-        private val editor: KotlinFileEditor,
+        private val editor: KotlinEditor,
         private val assistant: ContentAssistant? = null,
         private val needSorting: Boolean = false) : IContentAssistProcessor, ICompletionListener {
     companion object {
@@ -128,7 +128,7 @@ class KotlinCompletionProcessor(
     }
     
     private fun generateBasicCompletionProposals(identifierPart: String, expression: KtSimpleNameExpression): Collection<DeclarationDescriptor> {
-        val file = EditorUtil.getFile(editor)
+        val file = editor.eclipseFile
         if (file == null) {
             throw IllegalStateException("Failed to retrieve IFile from editor $editor")
         }
@@ -163,7 +163,7 @@ class KotlinCompletionProcessor(
     }
     
     private fun generateTemplateProposals(viewer: ITextViewer, offset: Int, identifierPart: String): List<ICompletionProposal> {
-        val file = EditorUtil.getFile(editor)
+        val file = editor.eclipseFile
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor $editor", null)
             return emptyList()

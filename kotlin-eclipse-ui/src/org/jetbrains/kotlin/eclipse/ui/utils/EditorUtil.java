@@ -32,7 +32,6 @@ import org.jetbrains.kotlin.psi.KtElement;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtReferenceExpression;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -111,7 +110,7 @@ public class EditorUtil {
     }
     
     @Nullable
-    public static KtFile updatePsiFile(@NotNull KotlinFileEditor editor) {
+    public static KtFile updatePsiFile(@NotNull KotlinEditor editor) {
         IFile file = editor.getEclipseFile();
         return file != null ? KotlinPsiManager.getKotlinFileIfExist(file, editor.getDocument().get()) : null;
     }

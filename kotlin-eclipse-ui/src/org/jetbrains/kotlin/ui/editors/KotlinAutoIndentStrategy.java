@@ -44,9 +44,9 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     private static final char CLOSING_BRACE_CHAR = '}';
     private static final String CLOSING_BRACE_STRING = Character.toString(CLOSING_BRACE_CHAR);
     
-    private final KotlinFileEditor editor;
+    private final KotlinEditor editor;
     
-    public KotlinAutoIndentStrategy(KotlinFileEditor editor) {
+    public KotlinAutoIndentStrategy(KotlinEditor editor) {
         this.editor = editor;
         new FormatterImpl();
     }

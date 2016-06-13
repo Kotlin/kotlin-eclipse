@@ -45,14 +45,14 @@ import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.types.KotlinType
 
 public object KotlinFunctionParameterInfoAssist {
-    public fun computeContextInformation(editor: KotlinFileEditor, offset: Int): Array<IContextInformation> {
+    public fun computeContextInformation(editor: KotlinEditor, offset: Int): Array<IContextInformation> {
         val expression = getCallSimpleNameExpression(editor, offset)
         if (expression == null) return emptyArray()
         
         val referencedName = expression.getReferencedName()
 
         val nameFilter: (Name) -> Boolean = { name -> name.asString() == referencedName }
-        val variants = KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, EditorUtil.getFile(editor)!!)
+        val variants = KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, editor.eclipseFile!!)
         
         return variants
                 .flatMap { 
@@ -68,7 +68,7 @@ public object KotlinFunctionParameterInfoAssist {
     }
 }
 
-fun getCallSimpleNameExpression(editor: KotlinFileEditor, offset: Int): KtSimpleNameExpression? {
+fun getCallSimpleNameExpression(editor: KotlinEditor, offset: Int): KtSimpleNameExpression? {
     val psiElement = EditorUtil.getPsiElement(editor, offset)
     val argumentList = PsiTreeUtil.getParentOfType(psiElement, KtValueArgumentList::class.java)
     if (argumentList == null) return null
