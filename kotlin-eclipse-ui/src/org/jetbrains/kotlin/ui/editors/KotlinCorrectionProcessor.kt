@@ -65,7 +65,7 @@ class KotlinCorrectionProcessor(val editor: KotlinFileEditor) : IQuickAssistProc
         val quickFixResolutions = KotlinMarkerResolutionGenerator.getResolutions(diagnostics)
         
         return arrayListOf<ICompletionProposal>().apply { 
-            val file = editor.getFile()
+            val file = editor.eclipseFile
             if (file != null) {
                 addAll(quickFixResolutions.map { KotlinMarkerResolutionProposal(file, it) })
             }

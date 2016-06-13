@@ -162,7 +162,7 @@ private fun clearProblemAnnotationsFromOpenEditorsExcept(affectedFiles: List<IFi
             page.getEditorReferences()
                 .map { it.getEditor(false) }
                 .filterIsInstance(KotlinFileEditor::class.java)
-                .filterNot { it.getFile() in affectedFiles }
+                .filterNot { it.eclipseFile in affectedFiles }
                 .forEach { 
                     AnnotationManager.removeAnnotations(it, AnnotationManager.ANNOTATION_ERROR_TYPE)
                     AnnotationManager.removeAnnotations(it, AnnotationManager.ANNOTATION_WARNING_TYPE)

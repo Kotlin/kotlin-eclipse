@@ -54,6 +54,8 @@ import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.eclipse.ui.utils.runJob
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.core.runtime.Status
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
 
 private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
 
@@ -90,8 +92,13 @@ public class KotlinSemanticHighlighter(
             }
     }
 
-    override fun reconcile(file: IFile, editor: KotlinFileEditor) {
-        val document = editor.getDocumentSafely()
+    override fun reconcile(file: IFile, editor: KotlinEditor) {
+        val document = when (editor) {
+            is KotlinFileEditor -> editor.getDocumentSafely()
+            is KotlinScriptEditor -> editor.document
+            else -> null
+        }
+        
         if (document == null) return
         
         removeAllPositions(document)
@@ -118,14 +125,14 @@ public class KotlinSemanticHighlighter(
     
     override fun propertyChange(event: PropertyChangeEvent) {
         if (event.getProperty().startsWith(PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX)) {
-            editor.getFile()?.let { reconcile(it, editor) }
+            editor.eclipseFile?.let { reconcile(it, editor) }
         }
     }
     
     override fun inputDocumentChanged(oldInput: IDocument?, newInput: IDocument?) {
         if (newInput != null) {
             manageDocument(newInput)
-            val file = editor.getFile()
+            val file = editor.eclipseFile
             if (file != null) reconcile(file, editor)
         }
     }
@@ -139,7 +146,7 @@ public class KotlinSemanticHighlighter(
     
     fun install() {
         val viewer = editor.getViewer()
-        val file = editor.getFile()
+        val file = editor.eclipseFile
         if (file != null && viewer is JavaSourceViewer) {
             manageDocument(editor.document)
             

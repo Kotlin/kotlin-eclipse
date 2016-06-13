@@ -150,7 +150,7 @@ public class TextEditorTest {
     }
     
     public String getEditorInput() {
-        return EditorUtil.getSourceCode(editor);
+        return EditorUtil.getDocument(editor).get();
     }
     
     public void deleteEditingFile() {

@@ -214,7 +214,8 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     fun isActive(): Boolean = isActiveEditor()
     
-    public fun getFile(): IFile? = getEditorInput().getAdapter(IFile::class.java)
+    override val eclipseFile: IFile?
+        get() = getEditorInput().getAdapter(IFile::class.java)
     
     override val javaEditor: JavaEditor = this
     
@@ -222,10 +223,10 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
         get() = computeJetFile()
     
     override val javaProject: IJavaProject? by lazy {
-        getFile()?.let { JavaCore.create(it.getProject()) }
+        eclipseFile?.let { JavaCore.create(it.getProject()) }
     }
     
-    override public fun isEditable(): Boolean = getFile() != null
+    override public fun isEditable(): Boolean = eclipseFile != null
     
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
@@ -234,7 +235,7 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     fun getDocumentSafely(): IDocument? = getDocumentProvider()?.getDocument(getEditorInput())
     
     private fun computeJetFile(): KtFile? {
-        val file = getFile()
+        val file = eclipseFile
         if (file != null && file.exists()) {
             return KotlinPsiManager.getKotlinParsedFile(file) // File might be not under the source root
         }

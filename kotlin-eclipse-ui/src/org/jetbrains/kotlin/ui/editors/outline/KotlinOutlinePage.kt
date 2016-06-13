@@ -33,7 +33,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
 
 class KotlinOutlinePage(val editor: KotlinEditor) : ContentOutlinePage(), KotlinReconcilingListener {
-    override fun reconcile(file: IFile, editor: KotlinFileEditor) {
+    override fun reconcile(file: IFile, editor: KotlinEditor) {
         Display.getDefault().asyncExec { refresh() }
     }
     

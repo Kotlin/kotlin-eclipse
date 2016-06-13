@@ -66,7 +66,7 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinFileEditor) : ISelect
         
         runJob("Update occurrence annotations", Job.DECORATE) { 
             if (part is KotlinFileEditor && selection is ITextSelection) {
-                val file = part.getFile()
+                val file = part.eclipseFile
                 if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
                 
                 val document = part.getDocumentSafely()

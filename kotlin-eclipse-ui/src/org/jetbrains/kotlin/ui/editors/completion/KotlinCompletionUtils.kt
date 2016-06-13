@@ -42,6 +42,7 @@ import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
@@ -90,11 +91,11 @@ public object KotlinCompletionUtils {
                 simpleNameExpression, DescriptorKindFilter.ALL, nameFilter)
     }
     
-    public fun getPsiElement(editor: JavaEditor, identOffset: Int): PsiElement? {
+    public fun getPsiElement(editor: KotlinEditor, identOffset: Int): PsiElement? {
         val sourceCode = EditorUtil.getSourceCode(editor)
         val sourceCodeWithMarker = StringBuilder(sourceCode).insert(identOffset, KOTLIN_DUMMY_IDENTIFIER).toString()
         val jetFile: KtFile?
-        val file = EditorUtil.getFile(editor)
+        val file = editor.eclipseFile
         if (file != null) {
             jetFile = KotlinPsiManager.INSTANCE.parseText(StringUtilRt.convertLineSeparators(sourceCodeWithMarker), file)
         } else {
@@ -104,7 +105,7 @@ public object KotlinCompletionUtils {
         
         if (jetFile == null) return null
         
-        val offsetWithourCR = LineEndUtil.convertCrToDocumentOffset(sourceCodeWithMarker, identOffset, EditorUtil.getDocument(editor))
+        val offsetWithourCR = LineEndUtil.convertCrToDocumentOffset(sourceCodeWithMarker, identOffset, editor.document)
         return jetFile.findElementAt(offsetWithourCR)
     }
     

@@ -45,7 +45,7 @@ object KotlinRunToLineAdapter : IRunToLineTarget {
         val editor = getEditor(part)
         if (editor == null) throw CoreException(createErrorStatus("Missing editor for $part"))
         
-        val file = editor.getFile()
+        val file = editor.eclipseFile
         if (file == null) throw CoreException(createErrorStatus("Missing file for $editor"))
         
         if (target is IAdaptable) {

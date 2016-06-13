@@ -18,7 +18,6 @@ package org.jetbrains.kotlin.eclipse.ui.utils;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.ui.IEditorPart;
@@ -46,8 +45,13 @@ public class EditorUtil {
     }
     
     @NotNull
-    public static String getSourceCode(@NotNull JavaEditor editor) {
-        return editor.getViewer().getDocument().get();
+    public static String getSourceCode(@NotNull KotlinEditor editor) {
+        return editor.getDocument().get();
+    }
+    
+    @NotNull
+    public static String getSourceCode(@NotNull AbstractTextEditor editor) {
+        return getDocument(editor).get();
     }
     
     @NotNull
@@ -108,7 +112,7 @@ public class EditorUtil {
     
     @Nullable
     public static KtFile updatePsiFile(@NotNull KotlinFileEditor editor) {
-        IFile file = editor.getFile();
+        IFile file = editor.getEclipseFile();
         return file != null ? KotlinPsiManager.getKotlinFileIfExist(file, editor.getDocument().get()) : null;
     }
 }

@@ -155,7 +155,7 @@ public class KotlinRenameAction(val editor: KotlinFileEditor) : SelectionDispatc
                     val newName = position.getContent()
                     undo(editor, startindUndoOperation)
                     
-                    KotlinPsiManager.getKotlinFileIfExist(editor.getFile()!!, editor.document.get()) // commit document
+                    KotlinPsiManager.getKotlinFileIfExist(editor.eclipseFile!!, editor.document.get()) // commit document
                     
                     doRename(sourceElements, newName, editor)
                 }
@@ -224,7 +224,7 @@ fun doRename(sourceElements: List<SourceElement>, newName: String, editor: Kotli
     val lightElements = sourceElementsToLightElements(sourceElements)
     if (lightElements.isNotEmpty()) {
         renameByJavaElement(lightElements)
-        editor.getFile()!!.getProject().refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+        editor.eclipseFile!!.getProject().refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
     } else {
         if (sourceElements.isNotEmpty()) {
             val element = sourceElements.first()

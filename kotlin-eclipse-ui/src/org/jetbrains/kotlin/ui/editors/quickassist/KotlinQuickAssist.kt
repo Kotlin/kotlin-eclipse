@@ -53,7 +53,7 @@ abstract class KotlinQuickAssist {
         val editor = getActiveEditor()
         if (editor == null) return null
         
-        val file = editor.getFile()
+        val file = editor.eclipseFile
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
             return null
