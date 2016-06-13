@@ -16,6 +16,8 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import com.intellij.openapi.util.text.StringUtilRt
 
 class KotlinScriptEditor : CompilationUnitEditor(), KotlinEditor {
     
@@ -47,13 +49,10 @@ class KotlinScriptEditor : CompilationUnitEditor(), KotlinEditor {
 
     override val parsedFile: KtFile?
         get() {
-            if (javaProject == null) return null
+            val file = eclipseFile ?: return null
             
-            val environment = KotlinEnvironment.getEnvironment(javaProject!!)
-            val ideaProject = environment.getProject()
-            val jetFile = KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(), "\n"))
-            
-            return jetFile
+            val documentWithoutCR = StringUtilRt.convertLineSeparators(document.get())
+            return KotlinPsiManager.INSTANCE.parseText(documentWithoutCR, file)
         }
 
     override val javaProject: IJavaProject? by lazy {

@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.quickfix.kotlinQuickFixes
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
@@ -144,7 +145,12 @@ public object AnnotationManager {
 
 object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
     override fun reconcile(file: IFile, editor: KotlinEditor) {
-        val jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor))
+        val jetFile = when (editor) {
+            is KotlinFileEditor -> KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get())
+            is KotlinScriptEditor -> editor.parsedFile
+            else -> null
+        }
+        
         if (jetFile == null) {
             return
         }
