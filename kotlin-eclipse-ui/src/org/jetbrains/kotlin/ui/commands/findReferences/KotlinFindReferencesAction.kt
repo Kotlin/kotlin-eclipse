@@ -137,7 +137,7 @@ abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : Select
     var javaProject: IJavaProject by Delegates.notNull()
     
     override public fun run(selection: ITextSelection) {
-        val file = editor.getFile()
+        val file = editor.eclipseFile
         if (file == null) return
         
         javaProject = JavaCore.create(file.getProject())

@@ -39,10 +39,10 @@ import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 
 interface KotlinReconcilingListener {
-    fun reconcile(file: IFile, editor: KotlinFileEditor)
+    fun reconcile(file: IFile, editor: KotlinEditor)
 }
 
-class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStrategy {
+class KotlinReconcilingStrategy(val editor: KotlinEditor) : IReconcilingStrategy {
     private val reconcilingListeners = hashSetOf<KotlinReconcilingListener>()
     
     fun addListener(listener: KotlinReconcilingListener) {
@@ -60,7 +60,7 @@ class KotlinReconcilingStrategy(val editor: KotlinFileEditor) : IReconcilingStra
     override fun reconcile(partition: IRegion?) {
         SafeRunnable.run(object : ISafeRunnable {
             override fun run() {
-                val file = EditorUtil.getFile(editor)
+                val file = editor.eclipseFile
                 if (file != null) {
                     resetCache(file)
                     KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get()) // commit file

@@ -59,7 +59,7 @@ class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : Select
     override fun run() {
         val bindingContext = getBindingContext(editor) ?: return
         val ktFile = editor.parsedFile ?: return
-        val file = editor.getFile() ?: return
+        val file = editor.eclipseFile ?: return
         
         val typeNamesToImport = bindingContext.diagnostics
                 .filter { it.factory == Errors.UNRESOLVED_REFERENCE && it.psiFile == ktFile }
@@ -85,7 +85,7 @@ class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : Select
     
     private fun optimizeImports() {
         val ktFile = editor.parsedFile ?: return
-        val file = editor.getFile() ?: return
+        val file = editor.eclipseFile ?: return
         val descriptorsToImport = collectDescriptorsToImport(ktFile)
         
         val optimizedImports = prepareOptimizedImports(ktFile, descriptorsToImport) ?: return

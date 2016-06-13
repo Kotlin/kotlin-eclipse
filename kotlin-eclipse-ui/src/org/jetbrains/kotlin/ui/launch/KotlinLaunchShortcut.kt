@@ -94,7 +94,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     override fun launch(editor: IEditorPart, mode: String) {
         if (editor !is KotlinFileEditor) return
         
-        val file = editor.getFile()
+        val file = editor.eclipseFile
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
             return

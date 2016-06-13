@@ -88,7 +88,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     
     override fun createChange(pm: IProgressMonitor?): Change {
         val edits = introduceVariable()
-        val fileChange = TextFileChange("Introduce variable", editor.getFile()!!)
+        val fileChange = TextFileChange("Introduce variable", editor.eclipseFile!!)
         edits.forEach { TextChangeCompatibility.addTextEdit(fileChange, "Kotlin change", it.edit) }
         
         return fileChange
@@ -130,7 +130,7 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
     
     private fun replaceExpressionWithVariableDeclaration(variableText: String, firstOccurrence: KtExpression): FileEdit {
         val offset = firstOccurrence.getTextDocumentOffset(editor.document)
-        return FileEdit(editor.getFile()!!, ReplaceEdit(offset, firstOccurrence.getTextLength(), variableText))
+        return FileEdit(editor.eclipseFile!!, ReplaceEdit(offset, firstOccurrence.getTextLength(), variableText))
     }
     
     private fun createEdits(
@@ -201,14 +201,14 @@ private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor
     }
     
     val offset = expr.getParent().let { it.getOffsetByDocument(editor.document, endOffset + 1) }
-    return FileEdit(editor.getFile()!!, ReplaceEdit(offset, 0, "$newLineBeforeBrace}"))
+    return FileEdit(editor.eclipseFile!!, ReplaceEdit(offset, 0, "$newLineBeforeBrace}"))
 }
 
 private fun removeNewLineAfter(container: PsiElement, editor: KotlinFileEditor): FileEdit? {
     val next = container.nextSibling
     if (next is PsiWhiteSpace) {
         return FileEdit(
-                editor.getFile()!!, 
+                editor.eclipseFile!!, 
                 ReplaceEdit(next.getTextDocumentOffset(editor.document), next.getTextLength(), " "))
     }
     
@@ -217,7 +217,7 @@ private fun removeNewLineAfter(container: PsiElement, editor: KotlinFileEditor):
 
 private fun replaceOccurrence(newName: String, replaceExpression: KtExpression, editor: KotlinFileEditor): FileEdit {
     val (offset, length) = replaceExpression.getReplacementRange(editor)
-    return FileEdit(editor.getFile()!!, ReplaceEdit(offset, length, newName))
+    return FileEdit(editor.eclipseFile!!, ReplaceEdit(offset, length, newName))
 }
 
 private fun KtExpression.getReplacementRange(editor: KotlinFileEditor): ReplacementRange {
@@ -247,7 +247,7 @@ private fun isElseAfterContainer(container: PsiElement): Boolean {
 
 private fun insertBefore(psiElement: PsiElement, text: String, editor: KotlinFileEditor): FileEdit {
     val startOffset = psiElement.getOffsetByDocument(editor.document, psiElement.getTextRange().getStartOffset())
-    return FileEdit(editor.getFile()!!, ReplaceEdit(startOffset, 0, text))
+    return FileEdit(editor.eclipseFile!!, ReplaceEdit(startOffset, 0, text))
 }
 
 private fun calculateAnchor(commonParent: PsiElement, commonContainer: PsiElement, allReplaces: List<KtExpression>): PsiElement? {

@@ -116,7 +116,7 @@ class KotlinCompletionProcessor(
             identifierPart: String, 
             expression: KtSimpleNameExpression,
             javaProject: IJavaProject): List<KotlinCompletionProposal> {
-        val file = editor.getFile() ?: return emptyList()
+        val file = editor.eclipseFile ?: return emptyList()
         val ktFile = editor.parsedFile ?: return emptyList()
         
         return lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject).map { 

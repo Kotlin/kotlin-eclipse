@@ -12,6 +12,9 @@ import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.eclipse.jdt.core.IJavaProject
 
 class KotlinScriptEditor : CompilationUnitEditor(), KotlinEditor {
+    
+    private val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
+    
     override val javaEditor: JavaEditor
         get() = this
 
@@ -27,11 +30,12 @@ class KotlinScriptEditor : CompilationUnitEditor(), KotlinEditor {
         }
 
     override val javaProject: IJavaProject? by lazy {
-        getFile()?.let { JavaCore.create(it.getProject()) }
+        eclipseFile?.let { JavaCore.create(it.getProject()) }
     }
 
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
     
-    fun getFile(): IFile? = getEditorInput().getAdapter(IFile::class.java)
+    override val eclipseFile: IFile?
+        get() = getEditorInput().getAdapter(IFile::class.java)
 }

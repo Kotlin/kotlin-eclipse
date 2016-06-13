@@ -25,6 +25,7 @@ import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 public class PsiVisualization extends AbstractHandler {
@@ -37,7 +38,7 @@ public class PsiVisualization extends AbstractHandler {
         
         IFile file = EditorUtil.getFile(editor);
         if (file != null) {
-            String sourceCode = EditorUtil.getSourceCode((KotlinFileEditor) editor);
+            String sourceCode = EditorUtil.getSourceCode((KotlinEditor) editor);
 
             new VisualizationPage(HandlerUtil.getActiveShell(event), sourceCode, file).open();
         } else {
