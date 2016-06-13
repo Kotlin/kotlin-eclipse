@@ -16,57 +16,49 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.refactorings.extract
 
-import org.eclipse.ltk.core.refactoring.Refactoring
-import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.ltk.core.refactoring.RefactoringStatus
-import org.eclipse.ltk.core.refactoring.Change
-import org.eclipse.jdt.internal.corext.refactoring.RefactoringCoreMessages
-import org.jetbrains.kotlin.psi.KtExpression
-import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.util.PsiTreeUtil
+import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.jdt.internal.corext.refactoring.RefactoringCoreMessages
+import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
+import org.eclipse.jface.text.ITextSelection
+import org.eclipse.jface.text.TextUtilities
+import org.eclipse.ltk.core.refactoring.Change
+import org.eclipse.ltk.core.refactoring.Refactoring
+import org.eclipse.ltk.core.refactoring.RefactoringStatus
+import org.eclipse.ltk.core.refactoring.TextFileChange
+import org.eclipse.text.edits.ReplaceEdit
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.idea.util.psi.patternMatching.KotlinPsiUnifier
+import org.jetbrains.kotlin.idea.util.psi.patternMatching.toRange
+import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.KtBlockExpression
+import org.jetbrains.kotlin.psi.KtBlockStringTemplateEntry
+import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtContainerNode
-import org.jetbrains.kotlin.psi.KtWhenEntry
 import org.jetbrains.kotlin.psi.KtDeclarationWithBody
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtIfExpression
 import org.jetbrains.kotlin.psi.KtLoopExpression
-import org.jetbrains.kotlin.psi.KtArrayAccessExpression
-import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.eclipse.ltk.core.refactoring.NullChange
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.ui.refactorings.rename.FileEdit
-import org.eclipse.text.edits.TextEdit
-import org.eclipse.text.edits.ReplaceEdit
-import org.jetbrains.kotlin.psi.KtPsiFactory
-import org.eclipse.jface.text.TextUtilities
-import org.eclipse.ltk.core.refactoring.TextFileChange
-import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility
-import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
-import org.eclipse.jface.text.ITextSelection
+import org.jetbrains.kotlin.psi.KtStringTemplateEntryWithExpression
+import org.jetbrains.kotlin.psi.KtWhenEntry
+import org.jetbrains.kotlin.psi.psiUtil.canPlaceAfterSimpleNameEntry
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.isUsedAsStatement
-import org.jetbrains.kotlin.idea.util.psi.patternMatching.KotlinPsiUnifier
-import org.jetbrains.kotlin.idea.util.psi.patternMatching.*
-import org.jetbrains.kotlin.psi.KtStringTemplateEntryWithExpression
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.KtClassBody
-import org.jetbrains.kotlin.psi.KtFile
-import com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.psi.KtBlockStringTemplateEntry
-import org.jetbrains.kotlin.psi.KtNameReferenceExpression
-import org.jetbrains.kotlin.psi.psiUtil.canPlaceAfterSimpleNameEntry
-import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
-import com.intellij.psi.PsiWhiteSpace
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.jetbrains.kotlin.ui.formatter.AlignmentStrategy
+import org.jetbrains.kotlin.ui.refactorings.rename.FileEdit
 
-public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinFileEditor) : Refactoring() {
+public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val editor: KotlinCommonEditor) : Refactoring() {
     public var newName: String = "temp"
     public var replaceAllOccurrences = true
     private lateinit var expression: KtExpression
@@ -192,7 +184,7 @@ private fun KtExpression.findOccurrences(occurrenceContainer: PsiElement): List<
             .filterNotNull()
 }
 
-private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor: KotlinFileEditor): FileEdit {
+private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor: KotlinCommonEditor): FileEdit {
     val parent = expr.getParent()
     var endOffset = parent.getTextRange().getEndOffset()
     val text = editor.document.get()
@@ -204,7 +196,7 @@ private fun addBraceAfter(expr: KtExpression, newLineBeforeBrace: String, editor
     return FileEdit(editor.eclipseFile!!, ReplaceEdit(offset, 0, "$newLineBeforeBrace}"))
 }
 
-private fun removeNewLineAfter(container: PsiElement, editor: KotlinFileEditor): FileEdit? {
+private fun removeNewLineAfter(container: PsiElement, editor: KotlinCommonEditor): FileEdit? {
     val next = container.nextSibling
     if (next is PsiWhiteSpace) {
         return FileEdit(
@@ -215,12 +207,12 @@ private fun removeNewLineAfter(container: PsiElement, editor: KotlinFileEditor):
     return null
 }
 
-private fun replaceOccurrence(newName: String, replaceExpression: KtExpression, editor: KotlinFileEditor): FileEdit {
+private fun replaceOccurrence(newName: String, replaceExpression: KtExpression, editor: KotlinCommonEditor): FileEdit {
     val (offset, length) = replaceExpression.getReplacementRange(editor)
     return FileEdit(editor.eclipseFile!!, ReplaceEdit(offset, length, newName))
 }
 
-private fun KtExpression.getReplacementRange(editor: KotlinFileEditor): ReplacementRange {
+private fun KtExpression.getReplacementRange(editor: KotlinCommonEditor): ReplacementRange {
     val p = getParent()
     if (p is KtBlockStringTemplateEntry) {
         if (canPlaceAfterSimpleNameEntry(p.nextSibling)) {
@@ -245,7 +237,7 @@ private fun isElseAfterContainer(container: PsiElement): Boolean {
     return false
 }
 
-private fun insertBefore(psiElement: PsiElement, text: String, editor: KotlinFileEditor): FileEdit {
+private fun insertBefore(psiElement: PsiElement, text: String, editor: KotlinCommonEditor): FileEdit {
     val startOffset = psiElement.getOffsetByDocument(editor.document, psiElement.getTextRange().getStartOffset())
     return FileEdit(editor.eclipseFile!!, ReplaceEdit(startOffset, 0, text))
 }

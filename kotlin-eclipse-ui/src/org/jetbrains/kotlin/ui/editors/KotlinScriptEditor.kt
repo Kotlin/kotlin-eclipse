@@ -19,34 +19,7 @@ import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import com.intellij.openapi.util.text.StringUtilRt
 
-class KotlinScriptEditor : CompilationUnitEditor(), KotlinEditor {
-    
-    private val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
-    
-    private val colorManager: IColorManager = JavaColorManager()
-    
-    private val kotlinOutlinePage = KotlinOutlinePage(this)
-    
-    private val bracketInserter: KotlinBracketInserter = KotlinBracketInserter()
-    
-    override public fun createPartControl(parent: Composite) {
-        setSourceViewerConfiguration(FileEditorConfiguration(colorManager, this, getPreferenceStore(), kotlinReconcilingStrategy))
-        kotlinReconcilingStrategy.addListener(KotlinLineAnnotationsReconciler)
-        kotlinReconcilingStrategy.addListener(kotlinOutlinePage)
-        
-        super<CompilationUnitEditor>.createPartControl(parent)
-        
-        val sourceViewer = getSourceViewer()
-        if (sourceViewer is ITextViewerExtension) {
-            bracketInserter.setSourceViewer(sourceViewer)
-            bracketInserter.addBrackets('{', '}')
-            sourceViewer.prependVerifyKeyListener(bracketInserter)
-        }
-    }
-    
-    override val javaEditor: JavaEditor
-        get() = this
-
+class KotlinScriptEditor : KotlinCommonEditor() {
     override val parsedFile: KtFile?
         get() {
             val file = eclipseFile ?: return null
@@ -61,7 +34,4 @@ class KotlinScriptEditor : CompilationUnitEditor(), KotlinEditor {
 
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
-    
-    override val eclipseFile: IFile?
-        get() = getEditorInput().getAdapter(IFile::class.java)
 }

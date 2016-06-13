@@ -18,78 +18,56 @@ package org.jetbrains.kotlin.ui.commands.findReferences
 
 import org.eclipse.core.commands.AbstractHandler
 import org.eclipse.core.commands.ExecutionEvent
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.ui.handlers.HandlerUtil
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.eclipse.jdt.core.IJavaElement
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.eclipse.jdt.ui.actions.FindReferencesAction
-import org.jetbrains.kotlin.psi.KtElement
-import org.eclipse.jface.text.ITextSelection
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.core.references.getReferenceExpression
-import org.eclipse.ui.ISources
-import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.core.model.toLightElements
-import org.jetbrains.kotlin.core.references.KotlinReference
-import org.jetbrains.kotlin.core.references.createReferences
-import org.jetbrains.kotlin.core.references.resolveToSourceElements
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.ui.actions.FindReferencesInProjectAction
-import org.eclipse.jdt.internal.core.JavaModelManager
-import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
-import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
-import org.eclipse.jdt.internal.ui.search.SearchUtil
-import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
-import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
-import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
+import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.core.search.IJavaSearchConstants
-import org.eclipse.jdt.ui.search.PatternQuerySpecification
 import org.eclipse.jdt.core.search.IJavaSearchScope
-import kotlin.properties.Delegates
-import org.eclipse.jdt.ui.search.QuerySpecification
-import org.eclipse.jdt.ui.search.ElementQuerySpecification
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.eclipse.jdt.ui.actions.SelectionDispatchAction
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
-import org.eclipse.jface.text.TextSelection
-import org.eclipse.jdt.internal.ui.search.SearchMessages
-import org.eclipse.jdt.internal.ui.JavaPluginImages
-import org.eclipse.ui.PlatformUI
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.ui.search.getKotlinFiles
+import org.eclipse.jdt.internal.ui.JavaPluginImages
+import org.eclipse.jdt.internal.ui.search.JavaSearchQuery
+import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
+import org.eclipse.jdt.internal.ui.search.SearchMessages
+import org.eclipse.jdt.internal.ui.search.SearchUtil
+import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
+import org.eclipse.jdt.ui.actions.SelectionDispatchAction
+import org.eclipse.jdt.ui.search.QuerySpecification
+import org.eclipse.jface.text.ITextSelection
+import org.eclipse.ui.PlatformUI
+import org.eclipse.ui.handlers.HandlerUtil
+import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import kotlin.properties.Delegates
 
 abstract class KotlinFindReferencesHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
         val editor = HandlerUtil.getActiveEditor(event)
-        if (editor !is KotlinFileEditor) return null
+        if (editor !is KotlinCommonEditor) return null
         
         getAction(editor).run(editor.getViewer().getSelectionProvider().getSelection() as ITextSelection)
         
         return null
     }
     
-    abstract fun getAction(editor: KotlinFileEditor): KotlinFindReferencesAction
+    abstract fun getAction(editor: KotlinCommonEditor): KotlinFindReferencesAction
     
 }
 
 class KotlinFindReferencesInProjectHandler : KotlinFindReferencesHandler() {
-    override fun getAction(editor: KotlinFileEditor): KotlinFindReferencesAction {
+    override fun getAction(editor: KotlinCommonEditor): KotlinFindReferencesAction {
         return KotlinFindReferencesInProjectAction(editor)
     }
 
 }
 class KotlinFindReferencesInWorkspaceHandler : KotlinFindReferencesHandler() {
-    override fun getAction(editor: KotlinFileEditor): KotlinFindReferencesAction {
+    override fun getAction(editor: KotlinCommonEditor): KotlinFindReferencesAction {
         return KotlinFindReferencesInWorkspaceAction(editor)
     }
 }
 
-public class KotlinFindReferencesInProjectAction(editor: KotlinFileEditor) : KotlinFindReferencesAction(editor) {
+public class KotlinFindReferencesInProjectAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.SEARCH_REFERENCES_IN_PROJECT)
         setText(SearchMessages.Search_FindReferencesInProjectAction_label)
@@ -111,7 +89,7 @@ public class KotlinFindReferencesInProjectAction(editor: KotlinFileEditor) : Kot
     }
 }
 
-public class KotlinFindReferencesInWorkspaceAction(editor: KotlinFileEditor) : KotlinFindReferencesAction(editor) {
+public class KotlinFindReferencesInWorkspaceAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.SEARCH_REFERENCES_IN_WORKSPACE)
         setText(SearchMessages.Search_FindReferencesAction_label)
@@ -133,7 +111,7 @@ public class KotlinFindReferencesInWorkspaceAction(editor: KotlinFileEditor) : K
     }
 }
 
-abstract class KotlinFindReferencesAction(val editor: KotlinFileEditor) : SelectionDispatchAction(editor.getSite()) {
+abstract class KotlinFindReferencesAction(val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.getSite()) {
     var javaProject: IJavaProject by Delegates.notNull()
     
     override public fun run(selection: ITextSelection) {

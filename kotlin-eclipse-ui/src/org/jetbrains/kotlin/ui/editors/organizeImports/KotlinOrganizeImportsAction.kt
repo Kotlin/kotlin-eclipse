@@ -34,14 +34,14 @@ import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
 import org.jetbrains.kotlin.idea.imports.prepareOptimizedImports
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.ImportPath
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableTypes
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.ui.editors.quickfix.replaceImports
 import org.jetbrains.kotlin.ui.formatter.settings
 import java.util.ArrayList
 
-class KotlinOrganizeImportsAction(private val editor: KotlinFileEditor) : SelectionDispatchAction(editor.site) {
+class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.site) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.ORGANIZE_IMPORTS)
         
