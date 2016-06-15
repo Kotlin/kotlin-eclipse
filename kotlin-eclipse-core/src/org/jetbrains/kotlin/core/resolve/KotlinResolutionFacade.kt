@@ -36,7 +36,7 @@ public class KotlinResolutionFacade(
         val componentProvider: ComponentProvider,
         override val moduleDescriptor: ModuleDescriptor) : ResolutionFacade {
     override val project: Project
-        get() = KotlinEnvironment.getEnvironment(javaProject).getProject()
+        get() = KotlinEnvironment.getEnvironment(javaProject).project
     
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()

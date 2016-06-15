@@ -52,15 +52,15 @@ class CachedEnvironment {
             if (environmentCache.containsKey(javaProject)) {
                 val environment = environmentCache.get(javaProject)!!
                 
-                ideaToEclipseProject.remove(environment.getProject())
+                ideaToEclipseProject.remove(environment.project)
                 
-                Disposer.dispose(environment.getJavaApplicationEnvironment().getParentDisposable())
+                Disposer.dispose(environment.javaApplicationEnvironment.getParentDisposable())
                 ZipHandler.clearFileAccessorCache()
             }
             
             val newEnvironment = createEnvironment(javaProject)
             environmentCache.put(javaProject, newEnvironment);
-            ideaToEclipseProject.put(newEnvironment.getProject(), javaProject);
+            ideaToEclipseProject.put(newEnvironment.project, javaProject);
         }
     }
     

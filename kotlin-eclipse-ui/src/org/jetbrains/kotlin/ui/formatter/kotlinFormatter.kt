@@ -146,8 +146,7 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val line
 
 fun createPsiFactory(javaProject: IJavaProject): KtPsiFactory {
     val environment = KotlinEnvironment.getEnvironment(javaProject)
-    val ideaProject = environment.getProject()
-    return KtPsiFactory(ideaProject)
+    return KtPsiFactory(environment.project)
 }
 
 fun createKtFile(source: String, psiFactory: KtPsiFactory): KtFile {

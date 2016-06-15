@@ -57,8 +57,8 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
 
     override val parsedFile: KtFile 
         get() {
-            val environment = KotlinEnvironment.getEnvironment(javaProject);
-            val ideaProject = environment.getProject();
+            val environment = KotlinEnvironment.getEnvironment(javaProject)
+            val ideaProject = environment.project
             val jetFile = KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(),"\n"))
             jetFile.putUserData(FILE_PROJECT, javaProject)
             return jetFile
