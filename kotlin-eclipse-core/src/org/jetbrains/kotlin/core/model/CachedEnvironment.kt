@@ -23,50 +23,50 @@ import com.intellij.openapi.util.Disposer
 import java.util.HashMap
 import com.intellij.openapi.vfs.impl.ZipHandler
 
-class CachedEnvironment {
+class CachedEnvironment<T, E : KotlinCommonEnvironment> {
     private val environmentLock = Any()
     
-    private val environmentCache: HashMap<IJavaProject, KotlinEnvironment> = hashMapOf()
-    private val ideaToEclipseProject: HashMap<Project, IJavaProject> = hashMapOf()
+    private val environmentCache: HashMap<T, E> = hashMapOf()
+    private val ideaProjectToEclipseResource: HashMap<Project, T> = hashMapOf()
     
-    fun putEnvironment(javaProject: IJavaProject, environment: KotlinEnvironment) {
+    fun putEnvironment(resource: T, environment: E) {
         synchronized(environmentLock) {
-            environmentCache.put(javaProject, environment)
-            ideaToEclipseProject.put(environment.project, javaProject)
+            environmentCache.put(resource, environment)
+            ideaProjectToEclipseResource.put(environment.project, resource)
         }
     }
     
-    fun getOrCreateEnvironment(javaProject: IJavaProject, createEnvironment: (IJavaProject) -> KotlinEnvironment): KotlinEnvironment {
+    fun getOrCreateEnvironment(resource: T, createEnvironment: (T) -> E): E {
         return synchronized(environmentLock) {
-                environmentCache.getOrPut(javaProject) {
-                val newEnvironment = createEnvironment(javaProject)
-                ideaToEclipseProject.put(newEnvironment.project, javaProject)
+                environmentCache.getOrPut(resource) {
+                val newEnvironment = createEnvironment(resource)
+                ideaProjectToEclipseResource.put(newEnvironment.project, resource)
                 
                 newEnvironment
             }
         }
     }
     
-    fun updateEnvironment(javaProject: IJavaProject, createEnvironment: (IJavaProject) -> KotlinEnvironment) {
+    fun updateEnvironment(resource: T, createEnvironment: (T) -> E) {
         synchronized (environmentLock) {
-            if (environmentCache.containsKey(javaProject)) {
-                val environment = environmentCache.get(javaProject)!!
+            if (environmentCache.containsKey(resource)) {
+                val environment = environmentCache.get(resource)!!
                 
-                ideaToEclipseProject.remove(environment.project)
+                ideaProjectToEclipseResource.remove(environment.project)
                 
                 Disposer.dispose(environment.javaApplicationEnvironment.getParentDisposable())
                 ZipHandler.clearFileAccessorCache()
             }
             
-            val newEnvironment = createEnvironment(javaProject)
-            environmentCache.put(javaProject, newEnvironment);
-            ideaToEclipseProject.put(newEnvironment.project, javaProject);
+            val newEnvironment = createEnvironment(resource)
+            environmentCache.put(resource, newEnvironment)
+            ideaProjectToEclipseResource.put(newEnvironment.project, resource)
         }
     }
     
-    fun getJavaProject(ideaProject: Project): IJavaProject? {
+    fun getEclipseResource(ideaProject: Project): T? {
         return synchronized(environmentLock) {
-            ideaToEclipseProject.get(ideaProject)
+            ideaProjectToEclipseResource.get(ideaProject)
         }
     }
 }

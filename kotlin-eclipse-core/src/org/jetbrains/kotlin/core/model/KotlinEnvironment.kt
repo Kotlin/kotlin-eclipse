@@ -24,9 +24,11 @@ import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
+import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
+import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 
 val KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations")
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
@@ -39,6 +41,31 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     
     companion object {
         private val kotlinRuntimePath = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_NAME))
+        
+        private val cachedEnvironment = CachedEnvironment<IFile, KotlinScriptEnvironment>()
+        private val environmentCreation = {
+            eclipseFile: IFile -> KotlinScriptEnvironment(eclipseFile, Disposer.newDisposable())
+        }
+
+        @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment? {
+            if (!isScript(file)) {
+                throw IllegalArgumentException("${file.name} asked for script environment")
+            }
+            
+            return cachedEnvironment.getOrCreateEnvironment(file, environmentCreation)
+        }
+
+        @JvmStatic fun updateKotlinEnvironment(file: IFile) {
+            if (!isScript(file)) {
+                throw IllegalArgumentException("${file.name} asked to update script environment")
+            }
+            
+            cachedEnvironment.updateEnvironment(file, environmentCreation)
+        }
+        
+        fun isScript(file: IFile): Boolean {
+            return file.fileExtension == KotlinParserDefinition.STD_SCRIPT_SUFFIX // TODO: use ScriptDefinitionProvider
+        }
     }
     
     private fun configureClasspath() {
@@ -67,7 +94,7 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
     }
 
     companion object {
-        private val cachedEnvironment = CachedEnvironment()
+        private val cachedEnvironment = CachedEnvironment<IJavaProject, KotlinEnvironment>()
         private val environmentCreation = {
             javaProject: IJavaProject -> KotlinEnvironment(javaProject, Disposer.newDisposable())
         }
@@ -80,6 +107,6 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
             cachedEnvironment.updateEnvironment(javaProject, environmentCreation)
         }
 
-        @JvmStatic fun getJavaProject(project: Project): IJavaProject? = cachedEnvironment.getJavaProject(project)
+        @JvmStatic fun getJavaProject(project: Project): IJavaProject? = cachedEnvironment.getEclipseResource(project)
     }
 }
