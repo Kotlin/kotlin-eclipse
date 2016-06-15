@@ -16,66 +16,15 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.model
 
-import com.intellij.codeInsight.ContainerProvider
-import com.intellij.codeInsight.NullableNotNullManager
-import com.intellij.codeInsight.runner.JavaMainMethodProvider
-import com.intellij.core.CoreApplicationEnvironment
-import com.intellij.core.CoreJavaFileManager
-import com.intellij.core.JavaCoreApplicationEnvironment
-import com.intellij.core.JavaCoreProjectEnvironment
-import com.intellij.formatting.KotlinLanguageCodeStyleSettingsProvider
-import com.intellij.formatting.KotlinSettingsProvider
-import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.openapi.extensions.ExtensionPointName
-import com.intellij.openapi.extensions.Extensions
-import com.intellij.openapi.extensions.ExtensionsArea
-import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiElementFinder
-import com.intellij.psi.augment.PsiAugmentProvider
-import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.psi.codeStyle.CodeStyleSettingsProvider
-import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider
-import com.intellij.psi.compiled.ClassFileDecompilers
-import com.intellij.psi.impl.PsiTreeChangePreprocessor
-import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
-import com.intellij.psi.impl.file.impl.JavaFileManager
-import org.eclipse.core.runtime.IPath
+import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.asJava.KtLightClassForFacade
-import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
-import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
-import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
-import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
-import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
-import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
-import org.jetbrains.kotlin.config.CommonConfigurationKeys
-import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver
-import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl
-import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
-import org.jetbrains.kotlin.core.utils.KotlinImportInserterHelper
 import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider
-import org.jetbrains.kotlin.idea.KotlinFileType
-import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
-import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
-import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
-import org.jetbrains.kotlin.parsing.KotlinParserDefinition
-import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
-import org.jetbrains.kotlin.script.StandardScriptDefinition
-import java.io.File
-import java.util.LinkedHashSet
-import kotlin.reflect.KClass
 
 <<<<<<< HEAD
 import org.eclipse.core.runtime.CoreException;
@@ -142,6 +91,7 @@ val KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations"
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 >>>>>>> ca7e3f6... J2K Kotlin Environment: convert and prettify
 
+<<<<<<< HEAD
 @SuppressWarnings("deprecation")
 class KotlinEnvironment private constructor(val javaProject: IJavaProject, disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
@@ -232,6 +182,13 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
         for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES) {
             registerApplicationExtensionPointsAndExtensionsFrom(config)
         }
+=======
+class KotlinEnvironment private constructor(val javaProject: IJavaProject, disposable: Disposable) :
+        KotlinCommonEnvironment(disposable) {
+    init {
+        registerProjectDependenServices(javaProject)
+        configureClasspath(javaProject)
+>>>>>>> cbcaae6... Separate KotlinEnvironment on two parts: common and project or script dependent
         
 <<<<<<< HEAD
         cachedEnvironment.putEnvironment(javaProject, this);
@@ -326,14 +283,18 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
         cachedEnvironment.putEnvironment(javaProject, this)
     }
     
-    fun getRoots(): Set<VirtualFile> = roots
-
-    private fun configureClasspath() {
+    private fun registerProjectDependenServices(javaProject: IJavaProject) {
+        project.registerService(JvmVirtualFileFinderFactory::class.java, EclipseVirtualFileFinder(javaProject))
+        project.registerService(KotlinLightClassManager::class.java, KotlinLightClassManager(javaProject.project))
+    }
+    
+    private fun configureClasspath(javaProject: IJavaProject) {
         for (file in ProjectUtils.collectClasspathWithDependenciesForBuild(javaProject)) {
             addToClasspath(file)
         }
     }
 
+<<<<<<< HEAD
     private fun createJavaCoreApplicationEnvironment(disposable: Disposable): JavaCoreApplicationEnvironment {
         Extensions.cleanRootArea(disposable)
         registerAppExtensionPoints()
@@ -384,6 +345,8 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
         }
     }
 
+=======
+>>>>>>> cbcaae6... Separate KotlinEnvironment on two parts: common and project or script dependent
     companion object {
         private val cachedEnvironment = CachedEnvironment()
         private val environmentCreation = {
@@ -400,43 +363,4 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
 
         @JvmStatic fun getJavaProject(project: Project): IJavaProject? = cachedEnvironment.getJavaProject(project)
     }
-}
-
-private fun registerProjectExtensionPoints(area: ExtensionsArea) {
-    registerExtensionPoint(area, PsiTreeChangePreprocessor.EP_NAME, PsiTreeChangePreprocessor::class)
-    registerExtensionPoint(area, PsiElementFinder.EP_NAME, PsiElementFinder::class)
-}
-
-private fun registerApplicationExtensionPointsAndExtensionsFrom(configFilePath: String) {
-    val pluginRoot = File(KOTLIN_COMPILER_PATH)
-    CoreApplicationEnvironment.registerExtensionPointAndExtensions(pluginRoot, configFilePath, Extensions.getRootArea())
-
-    registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
-    registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)
-
-    with(Extensions.getRootArea()) {
-        getExtensionPoint(CodeStyleSettingsProvider.EXTENSION_POINT_NAME).registerExtension(KotlinSettingsProvider())
-        getExtensionPoint(LanguageCodeStyleSettingsProvider.EP_NAME).registerExtension(KotlinLanguageCodeStyleSettingsProvider())
-    }
-}
-
-private fun registerAppExtensionPoints() {
-    registerExtensionPointInRoot(ContainerProvider.EP_NAME, ContainerProvider::class)
-    registerExtensionPointInRoot(ClsCustomNavigationPolicy.EP_NAME, ClsCustomNavigationPolicy::class)
-    registerExtensionPointInRoot(ClassFileDecompilers.EP_NAME, ClassFileDecompilers.Decompiler::class)
-
-    // For j2k converter
-    registerExtensionPointInRoot(PsiAugmentProvider.EP_NAME, PsiAugmentProvider::class)
-    registerExtensionPointInRoot(JavaMainMethodProvider.EP_NAME, JavaMainMethodProvider::class)
-}
-
-private fun <T : Any> registerExtensionPoint(
-        area: ExtensionsArea,
-        extensionPointName: ExtensionPointName<T>,
-        aClass: KClass<out T>) {
-    CoreApplicationEnvironment.registerExtensionPoint(area, extensionPointName, aClass.java)
-}
-
-private fun <T : Any> registerExtensionPointInRoot(extensionPointName: ExtensionPointName<T>, aClass: KClass<out T>) {
-    registerExtensionPoint(Extensions.getRootArea(), extensionPointName, aClass)
 }

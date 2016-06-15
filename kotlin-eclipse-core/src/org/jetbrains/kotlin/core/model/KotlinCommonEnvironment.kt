@@ -1,0 +1,224 @@
+/*******************************************************************************
+ * Copyright 2000-2014 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
+package org.jetbrains.kotlin.core.model
+
+import com.intellij.codeInsight.ContainerProvider
+import com.intellij.codeInsight.NullableNotNullManager
+import com.intellij.codeInsight.runner.JavaMainMethodProvider
+import com.intellij.core.CoreApplicationEnvironment
+import com.intellij.core.CoreJavaFileManager
+import com.intellij.core.JavaCoreApplicationEnvironment
+import com.intellij.core.JavaCoreProjectEnvironment
+import com.intellij.formatting.KotlinLanguageCodeStyleSettingsProvider
+import com.intellij.formatting.KotlinSettingsProvider
+import com.intellij.mock.MockProject
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.extensions.Extensions
+import com.intellij.openapi.extensions.ExtensionsArea
+import com.intellij.openapi.fileTypes.PlainTextFileType
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElementFinder
+import com.intellij.psi.augment.PsiAugmentProvider
+import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.psi.codeStyle.CodeStyleSettingsProvider
+import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider
+import com.intellij.psi.compiled.ClassFileDecompilers
+import com.intellij.psi.impl.PsiTreeChangePreprocessor
+import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
+import com.intellij.psi.impl.file.impl.JavaFileManager
+import org.eclipse.core.resources.IProject
+import org.eclipse.core.runtime.IPath
+import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.asJava.KtLightClassForFacade
+import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
+import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
+import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
+import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
+import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
+import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
+import org.jetbrains.kotlin.config.CommonConfigurationKeys
+import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver
+import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl
+import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
+import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
+import org.jetbrains.kotlin.core.utils.KotlinImportInserterHelper
+import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider
+import org.jetbrains.kotlin.idea.KotlinFileType
+import org.jetbrains.kotlin.idea.util.ImportInsertHelper
+import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
+import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
+import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
+import org.jetbrains.kotlin.parsing.KotlinParserDefinition
+import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
+import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
+import org.jetbrains.kotlin.script.StandardScriptDefinition
+import java.io.File
+import java.util.LinkedHashSet
+import kotlin.reflect.KClass
+
+abstract class KotlinCommonEnvironment(disposable: Disposable) {
+    val javaApplicationEnvironment: JavaCoreApplicationEnvironment
+    val project: MockProject
+    
+    private val projectEnvironment: JavaCoreProjectEnvironment
+    private val roots = LinkedHashSet<VirtualFile>()
+    
+    val configuration = CompilerConfiguration()
+
+    init {
+        javaApplicationEnvironment = createJavaCoreApplicationEnvironment(disposable)
+        
+        projectEnvironment = object : JavaCoreProjectEnvironment(disposable, javaApplicationEnvironment) {
+            override fun preregisterServices() {
+                registerProjectExtensionPoints(Extensions.getArea(getProject()))
+            }
+        }
+        
+        project = projectEnvironment.getProject()
+        
+        with(project) {
+            registerService(KotlinScriptDefinitionProvider::class.java, KotlinScriptDefinitionProvider())
+            registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl())
+
+            // For j2k converter
+            registerService(NullableNotNullManager::class.java, KotlinNullableNotNullManager())
+
+            registerService(CoreJavaFileManager::class.java,
+                    ServiceManager.getService(project, JavaFileManager::class.java) as CoreJavaFileManager)
+
+            val cliLightClassGenerationSupport = CliLightClassGenerationSupport(project)
+            registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
+            registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
+            registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
+            
+            registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
+            registerService(CodeStyleManager::class.java, DummyCodeStyleManager())
+            registerService(BuiltInsReferenceResolver::class.java, BuiltInsReferenceResolver(project))
+            registerService(KotlinSourceIndex::class.java, KotlinSourceIndex())
+            registerService(KotlinCacheService::class.java, KotlinCacheServiceImpl())
+            registerService(ImportInsertHelper::class.java, KotlinImportInserterHelper())
+        }
+        
+        configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
+        
+        KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(StandardScriptDefinition)
+        
+        ExternalDeclarationsProvider.Companion.registerExtensionPoint(project)
+        ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
+        for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES) {
+            registerApplicationExtensionPointsAndExtensionsFrom(config)
+        }
+    }
+    
+    fun getRoots(): Set<VirtualFile> = roots
+    
+    private fun createJavaCoreApplicationEnvironment(disposable: Disposable): JavaCoreApplicationEnvironment {
+        Extensions.cleanRootArea(disposable)
+        registerAppExtensionPoints()
+
+        return JavaCoreApplicationEnvironment(disposable).apply {
+            registerFileType(PlainTextFileType.INSTANCE, "xml")
+            registerFileType(KotlinFileType.INSTANCE, "kt")
+            registerFileType(KotlinFileType.INSTANCE, KotlinParserDefinition.STD_SCRIPT_SUFFIX)
+            registerParserDefinition(KotlinParserDefinition())
+            
+            getApplication().registerService(KotlinBinaryClassCache::class.java, KotlinBinaryClassCache())
+        }
+    }
+
+    fun getVirtualFile(location: IPath): VirtualFile? {
+        return javaApplicationEnvironment.getLocalFileSystem().findFileByIoFile(location.toFile())
+    }
+
+    fun getVirtualFileInJar(pathToJar: IPath, relativePath: String): VirtualFile? {
+        return javaApplicationEnvironment.getJarFileSystem().findFileByPath("$pathToJar!/$relativePath")
+    }
+
+    fun isJarFile(pathToJar: IPath): Boolean {
+        val jarFile = javaApplicationEnvironment.getJarFileSystem().findFileByPath("$pathToJar!/")
+        return jarFile != null && jarFile.isValid()
+    }
+
+    protected fun addToClasspath(path: File) {
+        if (path.isFile()) {
+            val jarFile = javaApplicationEnvironment.getJarFileSystem().findFileByPath("$path!/")
+            if (jarFile == null) {
+                KotlinLogger.logWarning("Can't find jar: $path")
+                return
+            }
+            
+            projectEnvironment.addJarToClassPath(path)
+            roots.add(jarFile)
+        } else {
+            val root = javaApplicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath())
+            if (root == null) {
+                KotlinLogger.logWarning("Can't find jar: $path")
+                return
+            }
+            
+            projectEnvironment.addSourcesToClasspath(root)
+            roots.add(root)
+        }
+    }
+}
+
+private fun registerProjectExtensionPoints(area: ExtensionsArea) {
+    registerExtensionPoint(area, PsiTreeChangePreprocessor.EP_NAME, PsiTreeChangePreprocessor::class)
+    registerExtensionPoint(area, PsiElementFinder.EP_NAME, PsiElementFinder::class)
+}
+
+private fun registerApplicationExtensionPointsAndExtensionsFrom(configFilePath: String) {
+    val pluginRoot = File(KOTLIN_COMPILER_PATH)
+    CoreApplicationEnvironment.registerExtensionPointAndExtensions(pluginRoot, configFilePath, Extensions.getRootArea())
+
+    registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
+    registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)
+
+    with(Extensions.getRootArea()) {
+        getExtensionPoint(CodeStyleSettingsProvider.EXTENSION_POINT_NAME).registerExtension(KotlinSettingsProvider())
+        getExtensionPoint(LanguageCodeStyleSettingsProvider.EP_NAME).registerExtension(KotlinLanguageCodeStyleSettingsProvider())
+    }
+}
+
+private fun registerAppExtensionPoints() {
+    registerExtensionPointInRoot(ContainerProvider.EP_NAME, ContainerProvider::class)
+    registerExtensionPointInRoot(ClsCustomNavigationPolicy.EP_NAME, ClsCustomNavigationPolicy::class)
+    registerExtensionPointInRoot(ClassFileDecompilers.EP_NAME, ClassFileDecompilers.Decompiler::class)
+
+    // For j2k converter
+    registerExtensionPointInRoot(PsiAugmentProvider.EP_NAME, PsiAugmentProvider::class)
+    registerExtensionPointInRoot(JavaMainMethodProvider.EP_NAME, JavaMainMethodProvider::class)
+}
+
+private fun <T : Any> registerExtensionPoint(
+        area: ExtensionsArea,
+        extensionPointName: ExtensionPointName<T>,
+        aClass: KClass<out T>) {
+    CoreApplicationEnvironment.registerExtensionPoint(area, extensionPointName, aClass.java)
+}
+
+private fun <T : Any> registerExtensionPointInRoot(extensionPointName: ExtensionPointName<T>, aClass: KClass<out T>) {
+    registerExtensionPoint(Extensions.getRootArea(), extensionPointName, aClass)
+}
