@@ -20,7 +20,9 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import org.eclipse.core.resources.IFile
+import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
 import org.jetbrains.kotlin.core.utils.ProjectUtils
@@ -28,6 +30,21 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 
 val KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations")
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
+
+class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
+        KotlinCommonEnvironment(disposalbe) {
+    init {
+        configureClasspath()
+    }
+    
+    companion object {
+        private val kotlinRuntimePath = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_NAME))
+    }
+    
+    private fun configureClasspath() {
+        addToClasspath(kotlinRuntimePath.toFile())
+    }
+}
 
 class KotlinEnvironment private constructor(val javaProject: IJavaProject, disposable: Disposable) :
         KotlinCommonEnvironment(disposable) {
