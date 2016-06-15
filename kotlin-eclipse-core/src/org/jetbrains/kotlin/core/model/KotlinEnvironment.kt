@@ -22,9 +22,11 @@ import com.intellij.openapi.util.Disposer
 import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
+import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
+import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 
 <<<<<<< HEAD
 import org.eclipse.core.runtime.CoreException;
@@ -98,6 +100,7 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
     val project: MockProject
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     private KotlinEnvironment(@NotNull IJavaProject javaProject, @NotNull Disposable disposable) {
         this.javaProject = javaProject;
         
@@ -105,6 +108,36 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
 =======
     private val projectEnvironment: JavaCoreProjectEnvironment
     private val roots = LinkedHashSet<VirtualFile>()
+=======
+    companion object {
+        private val kotlinRuntimePath = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_NAME))
+        
+        private val cachedEnvironment = CachedEnvironment<IFile, KotlinScriptEnvironment>()
+        private val environmentCreation = {
+            eclipseFile: IFile -> KotlinScriptEnvironment(eclipseFile, Disposer.newDisposable())
+        }
+
+        @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment? {
+            if (!isScript(file)) {
+                throw IllegalArgumentException("${file.name} asked for script environment")
+            }
+            
+            return cachedEnvironment.getOrCreateEnvironment(file, environmentCreation)
+        }
+
+        @JvmStatic fun updateKotlinEnvironment(file: IFile) {
+            if (!isScript(file)) {
+                throw IllegalArgumentException("${file.name} asked to update script environment")
+            }
+            
+            cachedEnvironment.updateEnvironment(file, environmentCreation)
+        }
+        
+        fun isScript(file: IFile): Boolean {
+            return file.fileExtension == KotlinParserDefinition.STD_SCRIPT_SUFFIX // TODO: use ScriptDefinitionProvider
+        }
+    }
+>>>>>>> 2837384... Parametrize CachedEnvironment to reuse it for script environment
     
     val configuration = CompilerConfiguration()
 
@@ -348,7 +381,7 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
 =======
 >>>>>>> cbcaae6... Separate KotlinEnvironment on two parts: common and project or script dependent
     companion object {
-        private val cachedEnvironment = CachedEnvironment()
+        private val cachedEnvironment = CachedEnvironment<IJavaProject, KotlinEnvironment>()
         private val environmentCreation = {
             javaProject: IJavaProject -> KotlinEnvironment(javaProject, Disposer.newDisposable())
         }
@@ -361,6 +394,6 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
             cachedEnvironment.updateEnvironment(javaProject, environmentCreation)
         }
 
-        @JvmStatic fun getJavaProject(project: Project): IJavaProject? = cachedEnvironment.getJavaProject(project)
+        @JvmStatic fun getJavaProject(project: Project): IJavaProject? = cachedEnvironment.getEclipseResource(project)
     }
 }
