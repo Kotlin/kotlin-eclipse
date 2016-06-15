@@ -47,7 +47,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 
 public class KotlinLightClassManager {
-    private final IJavaProject javaProject;
+    private final IProject project;
     
     private final ConcurrentMap<File, Set<IFile>> sourceFiles = new ConcurrentHashMap<>();
     
@@ -57,12 +57,11 @@ public class KotlinLightClassManager {
         return ServiceManager.getService(ideaProject, KotlinLightClassManager.class);
     }
     
-    public KotlinLightClassManager(@NotNull IJavaProject javaProject) {
-        this.javaProject = javaProject;
+    public KotlinLightClassManager(@NotNull IProject project) {
+        this.project = project;
     }
     
     public void computeLightClassesSources() {
-        IProject project = javaProject.getProject();
         Map<File, Set<IFile>> newSourceFilesMap = new HashMap<>();
         for (IFile sourceFile : KotlinPsiManager.INSTANCE.getFilesByProject(project)) {
             List<IPath> lightClassesPaths = getLightClassesPaths(sourceFile);
@@ -84,7 +83,6 @@ public class KotlinLightClassManager {
     }
     
     public void updateLightClasses(@NotNull Set<IFile> affectedFiles) {
-        IProject project = javaProject.getProject();
         for (Map.Entry<File, Set<IFile>> entry : sourceFiles.entrySet()) {
             IFile lightClassIFile = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(entry.getKey().getPath()));
             if (lightClassIFile == null) continue;

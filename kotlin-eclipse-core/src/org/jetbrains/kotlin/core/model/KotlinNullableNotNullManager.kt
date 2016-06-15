@@ -19,11 +19,8 @@ package org.jetbrains.kotlin.core.model
 import com.intellij.codeInsight.NullableNotNullManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiModifierListOwner
-import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.core.JavaCore
-import java.util.ArrayList
 
-public class KotlinNullableNotNullManager(val javaProject: IJavaProject) : NullableNotNullManager() {
+public class KotlinNullableNotNullManager : NullableNotNullManager() {
 //    For now we get unresolved psi elements and as a result annotations qualified names are short 
     init {
         setNotNulls("NotNull")
