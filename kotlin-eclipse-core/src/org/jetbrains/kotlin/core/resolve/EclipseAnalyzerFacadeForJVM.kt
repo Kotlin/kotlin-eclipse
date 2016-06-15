@@ -71,7 +71,7 @@ public object EclipseAnalyzerFacadeForJVM {
                 GlobalSearchScope.allScope(environment.project),
                 environment.javaProject,
                 LookupTracker.DO_NOTHING,
-                KotlinPackagePartProvider(environment.javaProject),
+                KotlinPackagePartProvider(environment),
                 LanguageVersion.LATEST)
         val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
