@@ -68,6 +68,9 @@ import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationA
 import org.jetbrains.kotlin.ui.editors.organizeImports.KotlinOrganizeImportsAction
 
 public class KotlinFileEditor : KotlinCommonEditor() {
+    override val isScript: Boolean
+        get() = false
+    
     override val parsedFile: KtFile?
         get() = computeJetFile()
     

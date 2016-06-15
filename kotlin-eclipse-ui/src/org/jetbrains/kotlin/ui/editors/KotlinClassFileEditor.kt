@@ -52,7 +52,10 @@ import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
 
 public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
     override fun isEditable() = false
-
+    
+    override val isScript: Boolean
+        get() = false
+    
     override val javaEditor = this
 
     override val parsedFile: KtFile 

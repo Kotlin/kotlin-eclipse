@@ -22,21 +22,33 @@ import com.intellij.openapi.util.Disposer
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
+import org.jetbrains.kotlin.cli.jvm.compiler.JvmCliVirtualFileFinderFactory
+import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
-import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
+import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
+import java.util.ArrayList
 
 val KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations")
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
+    val javaRoots = ArrayList<JavaRoot>()
+    
     init {
         configureClasspath()
+        
+        project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
+        
+        val index = JvmDependenciesIndex(javaRoots)
+        project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
     }
     
     companion object {
@@ -70,6 +82,9 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     
     private fun configureClasspath() {
         addToClasspath(kotlinRuntimePath.toFile())
+        
+        val virtualFile = javaApplicationEnvironment.getJarFileSystem().findFileByPath("$kotlinRuntimePath!/")
+        javaRoots.add(JavaRoot(virtualFile!!, JavaRoot.RootType.BINARY))
     }
 }
 

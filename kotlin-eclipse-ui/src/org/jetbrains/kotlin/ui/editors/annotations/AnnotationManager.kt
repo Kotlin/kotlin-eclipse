@@ -45,6 +45,8 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.quickfix.kotlinQuickFixes
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
+import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
+import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
@@ -145,17 +147,18 @@ public object AnnotationManager {
 
 object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
     override fun reconcile(file: IFile, editor: KotlinEditor) {
-        val jetFile = when (editor) {
-            is KotlinFileEditor -> KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get())
-            is KotlinScriptEditor -> editor.parsedFile
-            else -> null
-        }
+        val jetFile = if (editor.isScript) editor.parsedFile else KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get())
         
         if (jetFile == null) {
             return
         }
         
-        val diagnostics = KotlinAnalyzer.analyzeFile(editor.javaProject!!, jetFile).analysisResult.bindingContext.diagnostics
+        val diagnostics = if (editor.isScript) {
+            val scriptEnvironment = KotlinScriptEnvironment.getEnvironment(file)!!
+            EclipseAnalyzerFacadeForJVM.analyzeScript(scriptEnvironment, jetFile).bindingContext.diagnostics
+        } else {
+            KotlinAnalyzer.analyzeFile(editor.javaProject!!, jetFile).analysisResult.bindingContext.diagnostics
+        }
         val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics)
         
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)

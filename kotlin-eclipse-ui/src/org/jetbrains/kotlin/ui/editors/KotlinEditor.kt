@@ -12,5 +12,6 @@ public interface KotlinEditor {
     val javaProject: IJavaProject?
     val document: IDocument
     val eclipseFile: IFile?
+    val isScript: Boolean
     fun isEditable(): Boolean
 }

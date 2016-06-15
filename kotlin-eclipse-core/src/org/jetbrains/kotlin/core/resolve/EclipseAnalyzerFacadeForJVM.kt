@@ -16,32 +16,25 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve
 
-import java.util.LinkedHashSet
-import org.eclipse.jdt.core.IJavaProject
+import com.intellij.psi.search.GlobalSearchScope
+import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
-import org.jetbrains.kotlin.context.GlobalContext
-import org.jetbrains.kotlin.context.ModuleContext
+import org.jetbrains.kotlin.config.LanguageVersion
+import org.jetbrains.kotlin.container.ComponentProvider
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
-import org.jetbrains.kotlin.frontend.java.di.ContainerForTopDownAnalyzerForJvm
+import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.resolve.BindingTrace
 import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
-import com.google.common.collect.Lists
-import com.google.common.collect.Sets
-import com.intellij.openapi.project.Project
-import com.intellij.psi.search.GlobalSearchScope
-import java.util.HashSet
 import org.jetbrains.kotlin.utils.KotlinFrontEndException
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.incremental.components.LookupTracker
-import org.jetbrains.kotlin.container.ComponentProvider
-import org.jetbrains.kotlin.descriptors.PackagePartProvider
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.config.LanguageVersion
+import java.util.LinkedHashSet
+import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
 
 public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
@@ -88,6 +81,37 @@ public object EclipseAnalyzerFacadeForJVM {
         return AnalysisResultWithProvider(
                 AnalysisResult.success(trace.getBindingContext(), moduleContext.module),
                 containerAndProvider.second)
+    }
+    
+    public fun analyzeScript(
+            environment: KotlinScriptEnvironment,
+            scriptFile: KtFile): AnalysisResult {
+        
+        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(environment.project, environment.configuration)
+        val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, listOf(scriptFile))
+        val trace = CliLightClassGenerationSupport.CliBindingTrace()
+        
+        val componentProvider = createContainerForScript(
+                moduleContext,
+                trace,
+                providerFactory, 
+                GlobalSearchScope.allScope(environment.project),
+                LookupTracker.DO_NOTHING,
+                KotlinPackagePartProvider(environment),
+                LanguageVersion.LATEST)
+        val additionalProviders = listOf(componentProvider.javaDescriptorResolver.packageFragmentProvider)
+        
+        try {
+            componentProvider.lazyTopDownAnalyzerForTopLevel.analyzeFiles(
+                    TopDownAnalysisMode.TopLevelDeclarations, listOf(scriptFile), additionalProviders)
+        } catch(e: KotlinFrontEndException) {
+//          Editor will break if we do not catch this exception
+//          and will not be able to save content without reopening it.
+//          In IDEA this exception throws only in CLI
+            KotlinLogger.logError(e)
+        }
+        
+        return AnalysisResult.success(trace.getBindingContext(), moduleContext.module)
     }
     
     private fun getPath(jetFile: KtFile): String? = jetFile.getVirtualFile()?.getPath()

@@ -34,4 +34,7 @@ class KotlinScriptEditor : KotlinCommonEditor() {
 
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
+    
+    override val isScript: Boolean
+        get() = true
 }
