@@ -106,7 +106,7 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
             registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl())
 
             // For j2k converter
-            registerService(NullableNotNullManager::class.java, KotlinNullableNotNullManager(javaProject))
+            registerService(NullableNotNullManager::class.java, KotlinNullableNotNullManager())
 
             registerService(CoreJavaFileManager::class.java,
                     ServiceManager.getService(project, JavaFileManager::class.java) as CoreJavaFileManager)
@@ -117,7 +117,7 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
             registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
             
             registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
-            registerService(KotlinLightClassManager::class.java, KotlinLightClassManager(javaProject))
+            registerService(KotlinLightClassManager::class.java, KotlinLightClassManager(javaProject.project))
             registerService(CodeStyleManager::class.java, DummyCodeStyleManager())
             registerService(BuiltInsReferenceResolver::class.java, BuiltInsReferenceResolver(project))
             registerService(KotlinSourceIndex::class.java, KotlinSourceIndex())
