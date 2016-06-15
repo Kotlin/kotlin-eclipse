@@ -92,7 +92,7 @@ public class KotlinFileEditor : KotlinCommonEditor() {
         }
         
         val environment = KotlinEnvironment.getEnvironment(javaProject!!)
-        val ideaProject = environment.getProject()
+        val ideaProject = environment.project
         return KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(), "\n"))
     }
 }
