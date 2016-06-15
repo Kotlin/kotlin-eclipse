@@ -60,8 +60,20 @@ public object EclipseAnalyzerFacadeForJVM {
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
+<<<<<<< HEAD
         val containerAndProvider = createContainerForTopDownAnalyzerForJvm(moduleContext, trace, providerFactory, 
                 GlobalSearchScope.allScope(project), javaProject, LookupTracker.DO_NOTHING, KotlinPackagePartProvider(javaProject))
+=======
+        val containerAndProvider = createContainerForTopDownAnalyzerForJvm(
+                moduleContext,
+                trace,
+                providerFactory, 
+                GlobalSearchScope.allScope(environment.project),
+                environment.javaProject,
+                LookupTracker.DO_NOTHING,
+                KotlinPackagePartProvider(environment),
+                LanguageVersion.LATEST)
+>>>>>>> ec8d6eb... Get rid of java project in package part provider
         val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         
