@@ -82,9 +82,7 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     
     private fun configureClasspath() {
         addToClasspath(kotlinRuntimePath.toFile())
-        
-        val virtualFile = javaApplicationEnvironment.getJarFileSystem().findFileByPath("$kotlinRuntimePath!/")
-        javaRoots.add(JavaRoot(virtualFile!!, JavaRoot.RootType.BINARY))
+        javaRoots.add(JavaRoot(getRoots().first(), JavaRoot.RootType.BINARY))
     }
 }
 
