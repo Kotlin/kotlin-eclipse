@@ -35,7 +35,6 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import java.util.ArrayList
 
-val KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations")
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
