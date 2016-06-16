@@ -58,7 +58,7 @@ public class KotlinCompiler {
         return execKotlinCompiler(arguments);
     }
     
-    private KotlinCompilerResult execKotlinCompiler(@NotNull String[] arguments) {
+    public KotlinCompilerResult execKotlinCompiler(@NotNull String[] arguments) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(outputStream);
         

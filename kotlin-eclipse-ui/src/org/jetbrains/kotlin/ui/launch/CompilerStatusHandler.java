@@ -38,7 +38,7 @@ import org.jetbrains.kotlin.core.launch.CompilerOutputElement;
 
 public class CompilerStatusHandler implements IStatusHandler {
     
-    private static final String CONSOLE_NAME = "org.jetbrains.kotlin.ui.console";
+    public static final String CONSOLE_NAME = "org.jetbrains.kotlin.ui.console";
     
     private static final RGB CONSOLE_RED = new RGB(229, 43, 80);
     private static final RGB CONSOLE_YELLOW = new RGB(218, 165, 32);

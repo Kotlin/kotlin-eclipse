@@ -456,6 +456,29 @@
             </enablement>
          </contextualLaunch>
       </shortcut>
+      <shortcut
+            class="org.jetbrains.kotlin.ui.launch.KotlinScriptLaunchShortcut"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.ui.launch.scriptLaunchShortcut"
+            label="Kotlin Script"
+            modes="run">
+         <contextualLaunch>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        operator="and">
+                     <test
+                           property="org.jetbrains.kotlin.ui.launching.canLaunchAsScript">
+                     </test>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
    </extension>
    <extension
          point="org.eclipse.debug.core.statusHandlers">
@@ -544,6 +567,13 @@
             id="org.jetbrains.kotlin.ui.launchableTester"
             namespace="org.jetbrains.kotlin.ui.launching"
             properties="canLaunchAsApplication"
+            type="org.eclipse.core.runtime.IAdaptable">
+      </propertyTester>
+      <propertyTester
+            class="org.jetbrains.kotlin.ui.launch.KotlinScriptLaunchableTester"
+            id="org.jetbrains.kotlin.ui.scriptLaunchableTester"
+            namespace="org.jetbrains.kotlin.ui.launching"
+            properties="canLaunchAsScript"
             type="org.eclipse.core.runtime.IAdaptable">
       </propertyTester>
    </extension>
@@ -690,5 +720,23 @@
             class="org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator"
             markerType="org.eclipse.jdt.core.problem">
       </markerResolutionGenerator>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.jetbrains.kotlin.ui.launch.KotlinScriptLaunchConfigurationDelegate"
+            delegateDescription="The Kotlin Script Launcher supports running local Kotlin scripts"
+            id="org.jetbrains.kotlin.ui.scriptLaunchConfiguration"
+            modes="run"
+            name="Kotlin Script Launch Configuration">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.jetbrains.kotlin.ui.launch.KotlinScriptLaunchConfigurationTabGroup"
+            id="org.jetbrains.kotlin.ui.scriptLaunchConfigurationTabGroup"
+            type="org.jetbrains.kotlin.ui.scriptLaunchConfiguration">
+      </launchConfigurationTabGroup>
    </extension>
 </plugin>

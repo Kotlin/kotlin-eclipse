@@ -70,21 +70,11 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     }
     
     override fun launch(selection: ISelection, mode: String) {
-        if (selection !is IStructuredSelection) return
+        val mainFile = findFileToLaunch(selection) ?: return
         
-        val files = ArrayList<IFile>()
-        for (element in selection.toList()) {
-            if (element is IAdaptable) {
-                val resource = element.getAdapter(IResource::class.java)
-                addFiles(files, resource)
-            }
-        }
-        
-        if (files.isEmpty()) return
-        
-        val mainFile = files.first()
         val javaProject = JavaCore.create(mainFile.getProject())
         val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
+        
         val entryPoint = getEntryPoint(ktFile, javaProject)
         if (entryPoint != null) {
             launchWithMainClass(entryPoint, javaProject.project, mode)
