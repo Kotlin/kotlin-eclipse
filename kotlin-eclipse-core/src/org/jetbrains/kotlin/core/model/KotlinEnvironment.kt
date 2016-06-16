@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaProject;
@@ -90,6 +91,8 @@ import com.intellij.psi.impl.file.impl.JavaFileManager;
 import kotlin.jvm.functions.Function1;
 =======
 val KT_JDK_ANNOTATIONS_PATH = ProjectUtils.buildLibPath("kotlin-jdk-annotations")
+=======
+>>>>>>> c7f04a1... Remove unused constant
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 >>>>>>> ca7e3f6... J2K Kotlin Environment: convert and prettify
 
