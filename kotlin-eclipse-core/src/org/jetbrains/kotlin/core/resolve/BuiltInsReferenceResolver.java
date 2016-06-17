@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.core.resources.IProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
@@ -86,8 +86,8 @@ public class BuiltInsReferenceResolver {
     }
     
     @NotNull
-    public static BuiltInsReferenceResolver getInstance(@NotNull IJavaProject javaProject) {
-        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
+    public static BuiltInsReferenceResolver getInstance(@NotNull IProject eclipseProject) {
+        Project ideaProject = KotlinEnvironment.getEnvironment(eclipseProject).getProject();
         return ServiceManager.getService(ideaProject, BuiltInsReferenceResolver.class);
     }
 

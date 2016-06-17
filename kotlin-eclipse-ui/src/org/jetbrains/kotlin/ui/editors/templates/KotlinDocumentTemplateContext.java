@@ -17,8 +17,6 @@
 package org.jetbrains.kotlin.ui.editors.templates;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.templates.DocumentTemplateContext;
@@ -47,9 +45,8 @@ public class KotlinDocumentTemplateContext extends DocumentTemplateContext {
 
         assert file != null : "Failed to retrieve IFile from editor " + editor;
 
-        IJavaProject javaProject = JavaCore.create(file.getProject());
         String lineDelimiter = TextUtilities.getDefaultLineDelimiter(getDocument());
-        templateFormatter.format(templateBuffer, lineDelimiter, javaProject);
+        templateFormatter.format(templateBuffer, lineDelimiter, file.getProject());
         
         return templateBuffer;
     }

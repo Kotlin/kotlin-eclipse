@@ -195,7 +195,7 @@ public class TestJavaProject {
     }
     
     public KotlinEnvironment getKotlinEnvironment() {
-        return KotlinEnvironment.getEnvironment(javaProject);
+        return KotlinEnvironment.getEnvironment(javaProject.getProject());
     }
     
     public IJavaProject getJavaProject() {

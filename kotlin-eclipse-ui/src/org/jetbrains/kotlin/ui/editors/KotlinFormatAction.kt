@@ -21,7 +21,6 @@ import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.eclipse.jface.text.ITextSelection
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.createPsiFactory
 import org.jetbrains.kotlin.ui.formatter.formatRange
@@ -43,13 +42,7 @@ class KotlinFormatAction(private val editor: KotlinEditor) : SelectionDispatchAc
             return
         }
         
-        val javaProject = editor.javaProject
-        if (javaProject == null) {
-            KotlinLogger.logError("Failed to format code as java project is null for editor " + editor, null)
-            return
-        }
-        
-        formatRange(editor.document, getRange(selection), createPsiFactory(javaProject))
+        formatRange(editor.document, getRange(selection), createPsiFactory(file.project))
         
         KotlinPsiManager.commitFile(file, editor.document)
     }

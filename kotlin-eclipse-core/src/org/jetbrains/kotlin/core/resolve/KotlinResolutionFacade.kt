@@ -16,27 +16,27 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve
 
-import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import com.intellij.openapi.project.Project
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.analyzer.AnalysisResult
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.KtDeclaration
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.eclipse.core.resources.IProject
+import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
+import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 
 public class KotlinResolutionFacade(
-        val javaProject: IJavaProject, 
+        val eclipseProject: IProject, 
         val componentProvider: ComponentProvider,
         override val moduleDescriptor: ModuleDescriptor) : ResolutionFacade {
     override val project: Project
-        get() = KotlinEnvironment.getEnvironment(javaProject).project
+        get() = KotlinEnvironment.getEnvironment(eclipseProject.project).project
     
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()

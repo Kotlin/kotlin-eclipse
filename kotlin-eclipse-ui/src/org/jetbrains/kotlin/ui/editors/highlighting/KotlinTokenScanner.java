@@ -2,7 +2,6 @@ package org.jetbrains.kotlin.ui.editors.highlighting;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
@@ -92,7 +91,7 @@ public class KotlinTokenScanner implements ITokenScanner {
         IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
         for (IProject project : projects) {
             if (project.isAccessible() && KotlinNature.hasKotlinNature(project)) {
-                return KotlinEnvironment.getEnvironment(JavaCore.create(project));
+                return KotlinEnvironment.getEnvironment(project);
             }
         }
         

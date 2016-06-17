@@ -12,25 +12,25 @@ import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.codeStyle.CodeStyleSettings
+import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions
 import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.util.text.CharArrayUtil
-import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.core.resources.IProject
 import org.eclipse.jface.text.Document
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.idea.formatter.KotlinSpacingBuilderUtil
 import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.editor.Document as IdeaDocument
-import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
-fun formatCode(source: String, javaProject: IJavaProject, lineSeparator: String): String {
-    return formatCode(source, createPsiFactory(javaProject), lineSeparator)
+fun formatCode(source: String, eclipseProject: IProject, lineSeparator: String): String {
+    return formatCode(source, createPsiFactory(eclipseProject), lineSeparator)
 }
 
 fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String): String {
@@ -144,8 +144,8 @@ private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val line
     }
 }
 
-fun createPsiFactory(javaProject: IJavaProject): KtPsiFactory {
-    val environment = KotlinEnvironment.getEnvironment(javaProject)
+fun createPsiFactory(eclipseProject: IProject): KtPsiFactory {
+    val environment = KotlinEnvironment.getEnvironment(eclipseProject)
     return KtPsiFactory(environment.project)
 }
 

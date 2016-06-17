@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.core.resources.IProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor;
@@ -33,7 +33,7 @@ public class EclipseDescriptorUtils {
     }
 
     @NotNull
-    public static List<SourceElement> descriptorToDeclarations(@NotNull DeclarationDescriptor descriptor, @NotNull IJavaProject project) {
+    public static List<SourceElement> descriptorToDeclarations(@NotNull DeclarationDescriptor descriptor, @NotNull IProject project) {
         if (BuiltInsReferenceResolver.isFromBuiltinModule(descriptor)) {
             
             Collection<DeclarationDescriptor> effectiveReferencedDescriptors = DescriptorToSourceUtils.getEffectiveReferencedDescriptors(descriptor);

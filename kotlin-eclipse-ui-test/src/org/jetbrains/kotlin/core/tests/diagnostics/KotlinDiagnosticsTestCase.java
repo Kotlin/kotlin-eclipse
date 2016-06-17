@@ -190,7 +190,12 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             KotlinTestUtils.joinBuildThread();
 
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE
+<<<<<<< HEAD
                     .analyzeFilesWithJavaIntegration(getTestProject().getJavaProject(), getProject(), jetFiles)
+=======
+                    .analyzeFilesWithJavaIntegration(
+                            KotlinEnvironment.getEnvironment(getTestProject().getJavaProject().getProject()), jetFiles)
+>>>>>>> 4e6f838... Replace IJavaProject with raw IProject in several places
                     .getAnalysisResult();
             
             moduleBindings.put(testModule, analysisResult.getBindingContext());

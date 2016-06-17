@@ -48,9 +48,14 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
             val analysisResult = cachedAnalysisResults.get(project) ?: run {
                 val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject)
                 EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+<<<<<<< HEAD
                     javaProject, 
                     kotlinEnvironment.getProject(), 
                     ProjectUtils.getSourceFiles(javaProject.getProject())).analysisResult
+=======
+                        KotlinEnvironment.getEnvironment(project),
+                        ProjectUtils.getSourceFiles(javaProject.getProject())).analysisResult
+>>>>>>> 4e6f838... Replace IJavaProject with raw IProject in several places
             }
             
             cachedAnalysisResults.putIfAbsent(project, analysisResult) ?: analysisResult

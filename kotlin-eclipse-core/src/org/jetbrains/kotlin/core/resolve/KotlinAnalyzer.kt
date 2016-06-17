@@ -30,9 +30,15 @@ object KotlinAnalyzer {
         if (filesToAnalyze.size == 1) {
             return analyzeFile(javaProject, filesToAnalyze.iterator().next())
         }
+<<<<<<< HEAD
         
         val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject)
         return analyzeFiles(javaProject, kotlinEnvironment, filesToAnalyze)
+=======
+
+        val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject.project)
+        return analyzeFiles(kotlinEnvironment, filesToAnalyze)
+>>>>>>> 4e6f838... Replace IJavaProject with raw IProject in several places
     }
     
     private fun analyzeFiles(javaProject: IJavaProject,

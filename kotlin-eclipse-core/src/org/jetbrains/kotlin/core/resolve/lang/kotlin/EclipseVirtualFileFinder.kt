@@ -49,14 +49,15 @@ public class EclipseVirtualFileFinder(val javaProject: IJavaProject) : VirtualFi
         val resource = type.getResource() // if resource != null then it exists in the workspace and then get absolute path
         val path = if (resource != null) resource.getLocation() else type.getPath()
 
+        val eclipseProject = javaProject.project
 //        In the classpath we can have either path to jar file ot to the class folder
 //        Therefore in path might be location to the jar file or to the class file
         return when {
-            isClassFileName(path.toOSString()) -> KotlinEnvironment.getEnvironment(javaProject).getVirtualFile(path)
+            isClassFileName(path.toOSString()) -> KotlinEnvironment.getEnvironment(eclipseProject).getVirtualFile(path)
 
-            KotlinEnvironment.getEnvironment(javaProject).isJarFile(path) -> {
+            KotlinEnvironment.getEnvironment(eclipseProject).isJarFile(path) -> {
             	val relativePath = "${type.getFullyQualifiedName().replace('.', '/')}.class"
-	            KotlinEnvironment.getEnvironment(javaProject).getVirtualFileInJar(path, relativePath)
+	            KotlinEnvironment.getEnvironment(eclipseProject).getVirtualFileInJar(path, relativePath)
             }
 
             else -> throw IllegalArgumentException("Virtual file not found for $path")

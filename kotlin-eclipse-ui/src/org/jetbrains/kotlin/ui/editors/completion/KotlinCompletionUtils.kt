@@ -85,7 +85,7 @@ public object KotlinCompletionUtils {
         
         return ReferenceVariantsHelper(
                 analysisResult.bindingContext,
-                KotlinResolutionFacade(javaProject, container, analysisResult.moduleDescriptor),
+                KotlinResolutionFacade(file.project, container, analysisResult.moduleDescriptor),
                 analysisResult.moduleDescriptor,
                 visibilityFilter).getReferenceVariants(
                 simpleNameExpression, DescriptorKindFilter.ALL, nameFilter)

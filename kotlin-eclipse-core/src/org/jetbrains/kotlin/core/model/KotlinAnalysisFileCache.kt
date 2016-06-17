@@ -20,9 +20,14 @@ public object KotlinAnalysisFileCache {
         } else {
             val kotlinEnvironment = KotlinEnvironment.getEnvironment(project)
             val analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+<<<<<<< HEAD
                 project, 
                 kotlinEnvironment.getProject(), 
                 listOf(file))
+=======
+                    KotlinEnvironment.getEnvironment(project.project),
+                    listOf(file))
+>>>>>>> 4e6f838... Replace IJavaProject with raw IProject in several places
             lastAnalysedFileCache = FileAnalysisResults(file, analysisResult)
             lastAnalysedFileCache!!.analysisResult
         }

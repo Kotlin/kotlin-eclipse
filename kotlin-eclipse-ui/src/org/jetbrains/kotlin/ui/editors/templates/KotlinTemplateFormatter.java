@@ -24,7 +24,7 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
@@ -155,14 +155,14 @@ public class KotlinTemplateFormatter {
         }
     }
     
-    public void format(TemplateBuffer buffer, String lineDelimiter, IJavaProject javaProject) { 
+    public void format(TemplateBuffer buffer, String lineDelimiter, IProject eclipseProject) { 
         VariableOffsetsTracker offsetsTracker = new VariableOffsetsTracker(buffer.getString(), buffer.getVariables());
-        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
+        Project ideaProject = KotlinEnvironment.getEnvironment(eclipseProject).getProject();
         KtFile parsedFile = new KtPsiFactory(ideaProject).createFile(offsetsTracker.getMarkedString());
         
         assert parsedFile != null;
 
-        String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), javaProject, lineDelimiter);
+        String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), eclipseProject, lineDelimiter);
         
         offsetsTracker.unmark(formatted);
         
