@@ -59,7 +59,7 @@ public class KotlinConvertToExpressionBodyAssistProposal : KotlinQuickAssistProp
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
-        val analysisResultWithProvider = getAnalysisResultWithProvider(declaration.getContainingKtFile())!!
+        val analysisResultWithProvider = getAnalysisResultWithProvider(declaration.getContainingKtFile())
         val context = analysisResultWithProvider.analysisResult.bindingContext
         val value = calcValue(declaration, context)!!
 

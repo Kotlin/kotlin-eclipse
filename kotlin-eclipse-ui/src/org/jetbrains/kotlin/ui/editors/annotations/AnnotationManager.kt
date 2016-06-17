@@ -153,12 +153,7 @@ object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
             return
         }
         
-        val diagnostics = if (editor.isScript) {
-            val scriptEnvironment = KotlinScriptEnvironment.getEnvironment(file)!!
-            EclipseAnalyzerFacadeForJVM.analyzeScript(scriptEnvironment, jetFile).bindingContext.diagnostics
-        } else {
-            KotlinAnalyzer.analyzeFile(editor.javaProject!!, jetFile).analysisResult.bindingContext.diagnostics
-        }
+        val diagnostics = KotlinAnalyzer.analyzeFile(jetFile).analysisResult.bindingContext.diagnostics
         val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics)
         
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)

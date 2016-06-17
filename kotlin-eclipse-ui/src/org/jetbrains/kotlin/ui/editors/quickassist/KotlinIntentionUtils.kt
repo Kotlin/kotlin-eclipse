@@ -38,8 +38,7 @@ fun KtNamedDeclaration.canRemoveTypeSpecificationByVisibility(bindingContext: Bi
 
 fun KtElement.resolveToDescriptor(): DeclarationDescriptor {
     val jetFile = this.getContainingKtFile()
-    val project = KotlinPsiManager.getEclipseFile(jetFile)!!.getProject()
-    val analysisResult = KotlinAnalyzer.analyzeFile(JavaCore.create(project), jetFile).analysisResult
+    val analysisResult = KotlinAnalyzer.analyzeFile(jetFile).analysisResult
     return BindingContextUtils.getNotNull(
             analysisResult.bindingContext, 
             BindingContext.DECLARATION_TO_DESCRIPTOR,

@@ -48,13 +48,12 @@ class KotlinLaunchableTester : PropertyTester() {
         val ktFile = KotlinPsiManager.getKotlinParsedFile(file)
         if (ktFile == null) return false
         
-        val javaProject = JavaCore.create(file.getProject())
-        return checkFileHashMain(ktFile, javaProject)
+        return checkFileHashMain(ktFile)
     }
 }
 
-fun checkFileHashMain(ktFile: KtFile, javaProject: IJavaProject): Boolean {
-    return getEntryPoint(ktFile, javaProject) != null
+fun checkFileHashMain(ktFile: KtFile): Boolean {
+    return getEntryPoint(ktFile) != null
 }
 
 fun getStartClassFqName(mainFunctionDeclaration: KtDeclaration): FqName? {
@@ -75,8 +74,8 @@ fun getStartClassFqName(mainFunctionDeclaration: KtDeclaration): FqName? {
     }
 }
 
-fun getEntryPoint(ktFile: KtFile, javaProject: IJavaProject): KtDeclaration? {
-    val bindingContext = KotlinAnalysisFileCache.getAnalysisResult(ktFile, javaProject).analysisResult.bindingContext
+fun getEntryPoint(ktFile: KtFile): KtDeclaration? {
+    val bindingContext = KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
     val mainFunctionDetector = MainFunctionDetector(bindingContext)
     
     val topLevelDeclarations = ktFile.getDeclarations()

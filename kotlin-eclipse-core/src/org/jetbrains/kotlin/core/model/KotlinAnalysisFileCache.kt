@@ -20,19 +20,26 @@ import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 data class FileAnalysisResults(val file: KtFile, val analysisResult: AnalysisResultWithProvider)
 
 public object KotlinAnalysisFileCache {
     private @Volatile var lastAnalysedFileCache: FileAnalysisResults? = null
 
-    public @Synchronized fun getAnalysisResult(file: KtFile, project: IJavaProject): AnalysisResultWithProvider {
+    public @Synchronized fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
         return if (lastAnalysedFileCache != null && lastAnalysedFileCache!!.file == file) {
             lastAnalysedFileCache!!.analysisResult
         } else {
-            val analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                    KotlinEnvironment.getEnvironment(project.project),
-                    listOf(file))
+            val eclipseFile = KotlinPsiManager.getEclipseFile(file)!!
+            val environment = getEnvironment(eclipseFile)
+            
+            val analysisResult = when (environment) {
+                is KotlinScriptEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeScript(environment, file)
+                is KotlinEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(environment, listOf(file))
+                else -> throw IllegalArgumentException("Could not analyze file with environment: $environment")
+            }
+            
             lastAnalysedFileCache = FileAnalysisResults(file, analysisResult)
             lastAnalysedFileCache!!.analysisResult
         }

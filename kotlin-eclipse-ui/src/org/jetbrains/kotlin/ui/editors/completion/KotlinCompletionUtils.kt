@@ -59,8 +59,11 @@ public object KotlinCompletionUtils {
     
     public fun getReferenceVariants(simpleNameExpression: KtSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
             Collection<DeclarationDescriptor> {
-        val javaProject = JavaCore.create(file.getProject())
-        val (analysisResult, container) = KotlinAnalyzer.analyzeFile(javaProject, simpleNameExpression.getContainingKtFile())
+        val (analysisResult, container) = KotlinAnalyzer.analyzeFile(simpleNameExpression.getContainingKtFile())
+        if (container == null) {
+            KotlinLogger.logWarning("Could not compute reference variatns, there is no container for $simpleNameExpression")
+            return emptyList()
+        }
         
         val inDescriptor = simpleNameExpression
                 .getReferencedNameElement()

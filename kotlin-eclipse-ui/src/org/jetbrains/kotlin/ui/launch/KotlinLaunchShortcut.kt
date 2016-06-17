@@ -72,12 +72,11 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     override fun launch(selection: ISelection, mode: String) {
         val mainFile = findFileToLaunch(selection) ?: return
         
-        val javaProject = JavaCore.create(mainFile.getProject())
         val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
         
-        val entryPoint = getEntryPoint(ktFile, javaProject)
+        val entryPoint = getEntryPoint(ktFile)
         if (entryPoint != null) {
-            launchWithMainClass(entryPoint, javaProject.project, mode)
+            launchWithMainClass(entryPoint, mainFile.getProject(), mode)
         }
     }
     
@@ -93,12 +92,9 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         val parsedFile = editor.parsedFile
         if (parsedFile == null) return
         
-        val javaProject = editor.javaProject
-        if (javaProject == null) return
-        
-        val entryPoint = getEntryPoint(parsedFile, javaProject)
+        val entryPoint = getEntryPoint(parsedFile)
         if (entryPoint != null) {
-            launchWithMainClass(entryPoint, javaProject.project, mode)
+            launchWithMainClass(entryPoint, file.project, mode)
             return
         }
     }

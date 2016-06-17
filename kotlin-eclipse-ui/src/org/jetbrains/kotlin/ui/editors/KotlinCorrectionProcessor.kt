@@ -80,9 +80,8 @@ private class KotlinMarkerResolutionProposal(
 fun findDiagnosticsBy(invocationContext: IQuickAssistInvocationContext, editor: KotlinEditor): List<Diagnostic> {
     val offset = LineEndUtil.convertCrToDocumentOffset(editor.document, invocationContext.offset)
     val ktFile = editor.parsedFile ?: return emptyList()
-    val javaProject = editor.javaProject ?: return emptyList()
     
-    val diagnostics = getBindingContext(ktFile, javaProject)?.diagnostics ?: return emptyList()
+    val diagnostics = getBindingContext(ktFile)?.diagnostics ?: return emptyList()
     return diagnostics.filter { 
        val range = it.psiElement.textRange
        range.startOffset <= offset && offset <= range.endOffset

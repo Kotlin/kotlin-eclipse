@@ -22,13 +22,13 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.psi.KtFile
 
 object KotlinAnalyzer {
-    fun analyzeFile(javaProject: IJavaProject, jetFile: KtFile): AnalysisResultWithProvider {
-        return KotlinAnalysisFileCache.getAnalysisResult(jetFile, javaProject)
+    fun analyzeFile(jetFile: KtFile): AnalysisResultWithProvider {
+        return KotlinAnalysisFileCache.getAnalysisResult(jetFile)
     }
 
     fun analyzeFiles(javaProject: IJavaProject, filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
         if (filesToAnalyze.size == 1) {
-            return analyzeFile(javaProject, filesToAnalyze.iterator().next())
+            return analyzeFile(filesToAnalyze.iterator().next())
         }
 
         val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject.project)

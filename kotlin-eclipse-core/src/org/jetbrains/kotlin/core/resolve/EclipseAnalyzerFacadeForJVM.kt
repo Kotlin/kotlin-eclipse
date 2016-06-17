@@ -36,7 +36,7 @@ import org.jetbrains.kotlin.utils.KotlinFrontEndException
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
 
-public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
+public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?)
 
 public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeFilesWithJavaIntegration(
@@ -85,7 +85,7 @@ public object EclipseAnalyzerFacadeForJVM {
     
     public fun analyzeScript(
             environment: KotlinScriptEnvironment,
-            scriptFile: KtFile): AnalysisResult {
+            scriptFile: KtFile): AnalysisResultWithProvider {
         
         val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(environment.project, environment.configuration)
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, listOf(scriptFile))
@@ -111,7 +111,7 @@ public object EclipseAnalyzerFacadeForJVM {
             KotlinLogger.logError(e)
         }
         
-        return AnalysisResult.success(trace.getBindingContext(), moduleContext.module)
+        return AnalysisResultWithProvider(AnalysisResult.success(trace.getBindingContext(), moduleContext.module), null)
     }
     
     private fun getPath(jetFile: KtFile): String? = jetFile.getVirtualFile()?.getPath()

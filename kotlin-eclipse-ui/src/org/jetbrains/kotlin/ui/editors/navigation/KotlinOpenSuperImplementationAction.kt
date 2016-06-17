@@ -69,7 +69,7 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinCommonEditor)
                 KtObjectDeclaration::class.java)
         if (declaration == null) return
         
-        val descriptor = resolveToDescriptor(declaration, project)
+        val descriptor = resolveToDescriptor(declaration)
         if (descriptor !is DeclarationDescriptor) return
         
         val superDeclarations = findSuperDeclarations(descriptor)
@@ -109,8 +109,8 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinCommonEditor)
         return result[0] as MemberDescriptor
     }
     
-    private fun resolveToDescriptor(declaration: KtDeclaration, project: IJavaProject): DeclarationDescriptor? {
-        val context = KotlinAnalysisFileCache.getAnalysisResult(declaration.getContainingKtFile(), project).analysisResult.bindingContext
+    private fun resolveToDescriptor(declaration: KtDeclaration): DeclarationDescriptor? {
+        val context = KotlinAnalysisFileCache.getAnalysisResult(declaration.getContainingKtFile()).analysisResult.bindingContext
         return context[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]
     }
     

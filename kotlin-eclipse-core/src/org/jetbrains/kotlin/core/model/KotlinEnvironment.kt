@@ -38,6 +38,14 @@ import org.eclipse.core.resources.IProject
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
+fun getEnvironment(eclipseFile: IFile): KotlinCommonEnvironment {
+    return if (KotlinScriptEnvironment.isScript(eclipseFile)) {
+        KotlinScriptEnvironment.getEnvironment(eclipseFile)
+    } else {
+        KotlinEnvironment.getEnvironment(eclipseFile.project)
+    }
+}
+
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     val javaRoots = ArrayList<JavaRoot>()
@@ -59,7 +67,7 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
             eclipseFile: IFile -> KotlinScriptEnvironment(eclipseFile, Disposer.newDisposable())
         }
 
-        @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment? {
+        @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment {
             if (!isScript(file)) {
                 throw IllegalArgumentException("${file.name} asked for script environment")
             }
@@ -114,7 +122,8 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             eclipseProject: IProject -> KotlinEnvironment(eclipseProject, Disposer.newDisposable())
         }
 
-        @JvmStatic fun getEnvironment(eclipseProject: IProject): KotlinEnvironment {
+        @JvmStatic
+        fun getEnvironment(eclipseProject: IProject): KotlinEnvironment {
             return cachedEnvironment.getOrCreateEnvironment(eclipseProject, environmentCreation)
         }
 
