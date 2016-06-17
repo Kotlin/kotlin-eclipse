@@ -149,7 +149,11 @@ object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
             return
         }
         
+<<<<<<< HEAD
         val diagnostics = KotlinAnalyzer.analyzeFile(editor.javaProject!!, jetFile).analysisResult.bindingContext.diagnostics
+=======
+        val diagnostics = KotlinAnalyzer.analyzeFile(jetFile).analysisResult.bindingContext.diagnostics
+>>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
         val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics)
         
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)

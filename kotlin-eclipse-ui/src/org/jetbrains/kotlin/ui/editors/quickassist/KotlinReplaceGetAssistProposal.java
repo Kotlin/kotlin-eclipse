@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextUtilities;
@@ -167,9 +165,8 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         KtExpression call = element.getSelectorExpression();
         if (!(call instanceof KtCallExpression)) return null;
         
-        IJavaProject javaProject = JavaCore.create(file.getProject());
         BindingContext bindingContext = KotlinAnalyzer.INSTANCE
-                .analyzeFile(javaProject, KotlinPsiManager.INSTANCE.getParsedFile(file))
+                .analyzeFile(KotlinPsiManager.INSTANCE.getParsedFile(file))
                 .getAnalysisResult()
                 .getBindingContext();
         

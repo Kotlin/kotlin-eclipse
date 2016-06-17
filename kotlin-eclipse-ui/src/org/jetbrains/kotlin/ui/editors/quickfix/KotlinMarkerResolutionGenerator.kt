@@ -50,8 +50,7 @@ private fun obtainDiagnostics(marker: IMarker): List<Diagnostic> {
     
     val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(resource)
     
-    val javaProject = JavaCore.create(resource.project)
-    val bindingContext = getBindingContext(ktFile, javaProject)
+    val bindingContext = getBindingContext(ktFile)
     if (bindingContext == null) return emptyList()
     
     val document = EditorUtil.getDocument(resource)

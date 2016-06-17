@@ -42,8 +42,13 @@ public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistPropo
     }
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
+<<<<<<< HEAD
     	val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
         val analysisResultWithProvider = getAnalysisResultWithProvider(declaration.getContainingKtFile())!!
+=======
+        val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
+        val analysisResultWithProvider = getAnalysisResultWithProvider(declaration.getContainingKtFile())
+>>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
         val context = analysisResultWithProvider.analysisResult.bindingContext
         val value = calcValue(declaration, context)!!
 

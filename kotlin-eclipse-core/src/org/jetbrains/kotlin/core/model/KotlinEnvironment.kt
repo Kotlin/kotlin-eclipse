@@ -103,10 +103,24 @@ val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 >>>>>>> ca7e3f6... J2K Kotlin Environment: convert and prettify
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 @SuppressWarnings("deprecation")
 class KotlinEnvironment private constructor(val javaProject: IJavaProject, disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
     val project: MockProject
+=======
+fun getEnvironment(eclipseFile: IFile): KotlinCommonEnvironment {
+    return if (KotlinScriptEnvironment.isScript(eclipseFile)) {
+        KotlinScriptEnvironment.getEnvironment(eclipseFile)
+    } else {
+        KotlinEnvironment.getEnvironment(eclipseFile.project)
+    }
+}
+
+class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
+        KotlinCommonEnvironment(disposalbe) {
+    val javaRoots = ArrayList<JavaRoot>()
+>>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
     
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -126,7 +140,7 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
             eclipseFile: IFile -> KotlinScriptEnvironment(eclipseFile, Disposer.newDisposable())
         }
 
-        @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment? {
+        @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment {
             if (!isScript(file)) {
                 throw IllegalArgumentException("${file.name} asked for script environment")
             }
@@ -405,7 +419,8 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             eclipseProject: IProject -> KotlinEnvironment(eclipseProject, Disposer.newDisposable())
         }
 
-        @JvmStatic fun getEnvironment(eclipseProject: IProject): KotlinEnvironment {
+        @JvmStatic
+        fun getEnvironment(eclipseProject: IProject): KotlinEnvironment {
             return cachedEnvironment.getOrCreateEnvironment(eclipseProject, environmentCreation)
         }
 

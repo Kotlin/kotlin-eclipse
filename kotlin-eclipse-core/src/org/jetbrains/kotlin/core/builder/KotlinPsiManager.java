@@ -41,7 +41,7 @@ import org.eclipse.jface.text.IDocument;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.model.KotlinEnvironmentKt;
 import org.jetbrains.kotlin.core.model.KotlinLightVirtualFile;
 import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.core.utils.KotlinFilesCollectorUtilsKt;
@@ -308,7 +308,7 @@ public class KotlinPsiManager {
     public KtFile parseText(@NotNull String text, @NotNull IFile file) {
         StringUtil.assertValidSeparators(text);
         
-        Project project = KotlinEnvironment.getEnvironment(file.getProject()).getProject();
+        Project project = KotlinEnvironmentKt.getEnvironment(file).getProject();
         
         LightVirtualFile virtualFile = new KotlinLightVirtualFile(file, text);
         virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET);

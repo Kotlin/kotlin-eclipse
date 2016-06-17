@@ -27,15 +27,13 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 fun getBindingContext(kotlinEditor: KotlinEditor): BindingContext? {
     val ktFile = kotlinEditor.parsedFile
-    val javaProject = kotlinEditor.javaProject
-    return if (ktFile != null && javaProject != null) getBindingContext(ktFile, javaProject) else null
+    return if (ktFile != null) getBindingContext(ktFile) else null
 }
 
 fun getBindingContext(ktElement: KtElement): BindingContext? {
-    val javaProject = KotlinPsiManager.getJavaProject(ktElement)
-    return if (javaProject != null) getBindingContext(ktElement.getContainingKtFile(), javaProject) else null
+    return getBindingContext(ktElement.getContainingKtFile())
 }
 
-fun getBindingContext(ktFile: KtFile, javaProject: IJavaProject): BindingContext? {
-    return KotlinAnalyzer.analyzeFile(javaProject, ktFile).analysisResult.bindingContext
+fun getBindingContext(ktFile: KtFile): BindingContext? {
+    return KotlinAnalyzer.analyzeFile(ktFile).analysisResult.bindingContext
 }

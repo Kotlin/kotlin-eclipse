@@ -41,7 +41,7 @@ import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.descriptors.PackagePartProvider
 
-public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
+public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?)
 
 public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
@@ -91,5 +91,39 @@ public object EclipseAnalyzerFacadeForJVM {
                 containerAndProvider.second)
     }
     
+<<<<<<< HEAD
+=======
+    public fun analyzeScript(
+            environment: KotlinScriptEnvironment,
+            scriptFile: KtFile): AnalysisResultWithProvider {
+        
+        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(environment.project, environment.configuration)
+        val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, listOf(scriptFile))
+        val trace = CliLightClassGenerationSupport.CliBindingTrace()
+        
+        val componentProvider = createContainerForScript(
+                moduleContext,
+                trace,
+                providerFactory, 
+                GlobalSearchScope.allScope(environment.project),
+                LookupTracker.DO_NOTHING,
+                KotlinPackagePartProvider(environment),
+                LanguageVersion.LATEST)
+        val additionalProviders = listOf(componentProvider.javaDescriptorResolver.packageFragmentProvider)
+        
+        try {
+            componentProvider.lazyTopDownAnalyzerForTopLevel.analyzeFiles(
+                    TopDownAnalysisMode.TopLevelDeclarations, listOf(scriptFile), additionalProviders)
+        } catch(e: KotlinFrontEndException) {
+//          Editor will break if we do not catch this exception
+//          and will not be able to save content without reopening it.
+//          In IDEA this exception throws only in CLI
+            KotlinLogger.logError(e)
+        }
+        
+        return AnalysisResultWithProvider(AnalysisResult.success(trace.getBindingContext(), moduleContext.module), null)
+    }
+    
+>>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
     private fun getPath(jetFile: KtFile): String? = jetFile.getVirtualFile()?.getPath()
 }

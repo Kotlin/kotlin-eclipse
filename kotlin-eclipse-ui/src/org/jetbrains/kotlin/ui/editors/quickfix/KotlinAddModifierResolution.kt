@@ -96,10 +96,8 @@ class KotlinMakeClassOpenQuickFix(private val diagnosticTriggger: DiagnosticFact
         val typeReference = diagnostic.psiElement as KtTypeReference
         
         val ktFile = typeReference.getContainingKtFile()
-        val javaProject = KotlinPsiManager.getJavaProject(ktFile)
-        if (javaProject == null) return emptyList()
         
-        val bindingContext = getBindingContext(ktFile, javaProject)
+        val bindingContext = getBindingContext(ktFile)
         if (bindingContext == null) return emptyList()
         
         val type = bindingContext[BindingContext.TYPE, typeReference]

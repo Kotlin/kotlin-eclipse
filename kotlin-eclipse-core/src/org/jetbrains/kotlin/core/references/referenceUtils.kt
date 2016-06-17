@@ -68,7 +68,7 @@ public fun List<KotlinReference>.resolveToSourceElements(): List<SourceElement> 
     if (javaProject == null) return emptyList()
 
     return resolveToSourceElements(
-                KotlinAnalyzer.analyzeFile(javaProject, jetFile).analysisResult.bindingContext,
+                KotlinAnalyzer.analyzeFile(jetFile).analysisResult.bindingContext,
                 javaProject)
 }
 

@@ -51,7 +51,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
     }
     
     private fun getNavigationData(referenceExpression: KtReferenceExpression, javaProject: IJavaProject): NavigationData? {
-        val context = KotlinAnalyzer.analyzeFile(javaProject, referenceExpression.getContainingKtFile()).analysisResult.bindingContext
+        val context = KotlinAnalyzer.analyzeFile(referenceExpression.getContainingKtFile()).analysisResult.bindingContext
         return createReferences(referenceExpression)
                 .asSequence()
                 .flatMap { it.getTargetDescriptors(context).asSequence() }

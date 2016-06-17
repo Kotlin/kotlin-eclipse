@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.resolve.diagnostics.KotlinSuppressCache
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.container.ComponentProvider
+import java.lang.IllegalStateException
 
 public class KotlinCacheServiceImpl : KotlinCacheService {
     override fun getSuppressionCache(): KotlinSuppressCache {
@@ -54,13 +55,7 @@ class KotlinSimpleResolutionFacade(private val elements: List<KtElement>) : Reso
     
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
         val ktFile = element.getContainingKtFile()
-        val javaProject = KotlinPsiManager.getJavaProject(element)
-        if (javaProject == null) {
-            KotlinLogger.logWarning("JavaProject for $element (in $ktFile) is null")
-            return BindingContext.EMPTY
-        }
-        
-        return KotlinAnalysisFileCache.getAnalysisResult(ktFile, javaProject).analysisResult.bindingContext
+        return KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
     }
     
     override fun analyzeFullyAndGetResult(elements: Collection<KtElement>): AnalysisResult {
@@ -82,7 +77,12 @@ class KotlinSimpleResolutionFacade(private val elements: List<KtElement>) : Reso
                 throw IllegalStateException("Java project for idea project ($project) should not be null")
         val javaProject = JavaCore.create(eclipseProject)
         
-        return KotlinAnalyzer.analyzeFiles(javaProject, files).componentProvider.getService(serviceClass)
+        val componentProvider = KotlinAnalyzer.analyzeFiles(javaProject, files).componentProvider
+        if (componentProvider == null) {
+            throw IllegalStateException("There is not component provider for ${files.joinToString(separator = ",")}")
+        }
+        
+        return componentProvider.getService(serviceClass)
     }
     
     override fun <T : Any> getFrontendService(moduleDescriptor: ModuleDescriptor, serviceClass: Class<T>): T {

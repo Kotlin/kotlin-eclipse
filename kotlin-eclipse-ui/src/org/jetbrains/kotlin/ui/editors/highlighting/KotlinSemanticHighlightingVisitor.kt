@@ -55,14 +55,14 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
 import org.jetbrains.kotlin.psi.KtValueArgumentList
 
-public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument, val project: IJavaProject) : KtVisitorVoid() {
+public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument) : KtVisitorVoid() {
     private lateinit var bindingContext: BindingContext
     
     private val positions = arrayListOf<HighlightPosition>()
     
     fun computeHighlightingRanges(): List<HighlightPosition> {
         positions.clear()
-        bindingContext = KotlinAnalysisFileCache.getAnalysisResult(ktFile, project).analysisResult.bindingContext
+        bindingContext = KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
         ktFile.acceptChildren(this)
         return positions.toList() // make copy
     }

@@ -72,6 +72,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     override fun launch(selection: ISelection, mode: String) {
         if (selection !is IStructuredSelection) return
         
+<<<<<<< HEAD
         val files = ArrayList<IFile>()
         for (element in selection.toList()) {
             if (element is IAdaptable) {
@@ -86,8 +87,13 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         val javaProject = JavaCore.create(mainFile.getProject())
         val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
         val entryPoint = getEntryPoint(ktFile, javaProject)
+=======
+        val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
+        
+        val entryPoint = getEntryPoint(ktFile)
+>>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
         if (entryPoint != null) {
-            launchWithMainClass(entryPoint, javaProject.project, mode)
+            launchWithMainClass(entryPoint, mainFile.getProject(), mode)
         }
     }
     
@@ -103,12 +109,9 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         val parsedFile = editor.parsedFile
         if (parsedFile == null) return
         
-        val javaProject = editor.javaProject
-        if (javaProject == null) return
-        
-        val entryPoint = getEntryPoint(parsedFile, javaProject)
+        val entryPoint = getEntryPoint(parsedFile)
         if (entryPoint != null) {
-            launchWithMainClass(entryPoint, javaProject.project, mode)
+            launchWithMainClass(entryPoint, file.project, mode)
             return
         }
     }

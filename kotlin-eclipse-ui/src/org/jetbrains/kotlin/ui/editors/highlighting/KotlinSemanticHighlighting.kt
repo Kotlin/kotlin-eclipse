@@ -106,10 +106,7 @@ public class KotlinSemanticHighlighter(
         val ktFile = editor.parsedFile
         if (ktFile == null) return
         
-        val javaProject = editor.javaProject
-        if (javaProject == null) return
-        
-        val highlightingVisitor = KotlinSemanticHighlightingVisitor(ktFile, editor.document, javaProject)
+        val highlightingVisitor = KotlinSemanticHighlightingVisitor(ktFile, editor.document)
         val smartCasts = arrayListOf<SmartCast>()
         highlightingVisitor.computeHighlightingRanges().forEach { position -> 
             when (position) {
