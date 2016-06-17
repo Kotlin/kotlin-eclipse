@@ -78,8 +78,9 @@ class KotlinSimpleResolutionFacade(private val elements: List<KtElement>) : Reso
         val files = elements.map { it.getContainingKtFile() }.toSet()
         if (files.isEmpty()) throw IllegalStateException("Elements should not be empty")
         
-        val javaProject = KotlinEnvironment.getJavaProject(project) ?: 
+        val eclipseProject = KotlinEnvironment.getJavaProject(project) ?: 
                 throw IllegalStateException("Java project for idea project ($project) should not be null")
+        val javaProject = JavaCore.create(eclipseProject)
         
         return KotlinAnalyzer.analyzeFiles(javaProject, files).componentProvider.getService(serviceClass)
     }

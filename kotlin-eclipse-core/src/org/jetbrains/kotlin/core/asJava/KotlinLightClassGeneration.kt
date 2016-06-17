@@ -47,7 +47,7 @@ object KotlinLightClassGeneration {
             jetFiles: List<KtFile>,
             requestedClassName: String): GenerationState {
         val state = GenerationState(
-                KotlinEnvironment.getEnvironment(javaProject).project,
+                KotlinEnvironment.getEnvironment(javaProject.project).project,
                 LightClassBuilderFactory(),
                 analysisResult.moduleDescriptor,
                 analysisResult.bindingContext,

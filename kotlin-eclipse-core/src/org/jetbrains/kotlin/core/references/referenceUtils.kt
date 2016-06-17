@@ -72,9 +72,9 @@ public fun List<KotlinReference>.resolveToSourceElements(): List<SourceElement> 
                 javaProject)
 }
 
-public fun List<KotlinReference>.resolveToSourceElements(context: BindingContext, project: IJavaProject): List<SourceElement> {
+public fun List<KotlinReference>.resolveToSourceElements(context: BindingContext, javaProject: IJavaProject): List<SourceElement> {
     return flatMap { it.getTargetDescriptors(context) }
-            .flatMap { EclipseDescriptorUtils.descriptorToDeclarations(it, project) }
+            .flatMap { EclipseDescriptorUtils.descriptorToDeclarations(it, javaProject.project) }
 }
 
 public fun getReferenceExpression(element: PsiElement): KtReferenceExpression? {

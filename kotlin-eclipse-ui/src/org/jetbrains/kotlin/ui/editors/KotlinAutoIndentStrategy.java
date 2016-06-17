@@ -16,7 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
-import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentCommand;
@@ -110,10 +110,10 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     }
     
     private String getIndent(IDocument tempDocument, int offset) throws BadLocationException {
-        IJavaProject javaProject = editor.getJavaProject();
-        assert javaProject != null;
+        IFile eclipseFile = editor.getEclipseFile();
+        assert eclipseFile != null : "Eclipse IFile for " + tempDocument + " must not be null";
         
-        KtPsiFactory psiFactory = KotlinFormatterKt.createPsiFactory(javaProject);
+        KtPsiFactory psiFactory = KotlinFormatterKt.createPsiFactory(eclipseFile.getProject());
         KtFile ktFile = KotlinFormatterKt.createKtFile(tempDocument.get(), psiFactory);
         
         int line = tempDocument.getLineOfOffset(offset);

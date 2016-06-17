@@ -50,13 +50,13 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         gotoElement(data.sourceElement, data.descriptor, selectedExpression, editor, javaProject)
     }
     
-    private fun getNavigationData(referenceExpression: KtReferenceExpression, project: IJavaProject): NavigationData? {
-        val context = KotlinAnalyzer.analyzeFile(project, referenceExpression.getContainingKtFile()).analysisResult.bindingContext
+    private fun getNavigationData(referenceExpression: KtReferenceExpression, javaProject: IJavaProject): NavigationData? {
+        val context = KotlinAnalyzer.analyzeFile(javaProject, referenceExpression.getContainingKtFile()).analysisResult.bindingContext
         return createReferences(referenceExpression)
                 .asSequence()
                 .flatMap { it.getTargetDescriptors(context).asSequence() }
                 .mapNotNull { descriptor ->
-                    val elementWithSource = getElementWithSource(descriptor, project)
+                    val elementWithSource = getElementWithSource(descriptor, javaProject.project)
                     if (elementWithSource != null) NavigationData(elementWithSource, descriptor) else null
                 }
                 .firstOrNull()

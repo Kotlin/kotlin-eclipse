@@ -31,7 +31,7 @@ object KotlinAnalyzer {
             return analyzeFile(javaProject, filesToAnalyze.iterator().next())
         }
 
-        val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject)
+        val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject.project)
         return analyzeFiles(kotlinEnvironment, filesToAnalyze)
     }
 

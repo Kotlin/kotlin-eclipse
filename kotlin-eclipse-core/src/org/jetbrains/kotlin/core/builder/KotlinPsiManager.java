@@ -308,8 +308,7 @@ public class KotlinPsiManager {
     public KtFile parseText(@NotNull String text, @NotNull IFile file) {
         StringUtil.assertValidSeparators(text);
         
-        IJavaProject javaProject = JavaCore.create(file.getProject());
-        Project project = KotlinEnvironment.getEnvironment(javaProject).getProject();
+        Project project = KotlinEnvironment.getEnvironment(file.getProject()).getProject();
         
         LightVirtualFile virtualFile = new KotlinLightVirtualFile(file, text);
         virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET);

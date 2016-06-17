@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import java.util.ArrayList
+import org.eclipse.core.resources.IProject
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -85,13 +86,15 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     }
 }
 
-class KotlinEnvironment private constructor(val javaProject: IJavaProject, disposable: Disposable) :
+class KotlinEnvironment private constructor(val eclipseProject: IProject, disposable: Disposable) :
         KotlinCommonEnvironment(disposable) {
+    val javaProject = JavaCore.create(eclipseProject)
+    
     init {
         registerProjectDependenServices(javaProject)
         configureClasspath(javaProject)
         
-        cachedEnvironment.putEnvironment(javaProject, this)
+        cachedEnvironment.putEnvironment(eclipseProject, this)
     }
     
     private fun registerProjectDependenServices(javaProject: IJavaProject) {
@@ -106,19 +109,19 @@ class KotlinEnvironment private constructor(val javaProject: IJavaProject, dispo
     }
 
     companion object {
-        private val cachedEnvironment = CachedEnvironment<IJavaProject, KotlinEnvironment>()
+        private val cachedEnvironment = CachedEnvironment<IProject, KotlinEnvironment>()
         private val environmentCreation = {
-            javaProject: IJavaProject -> KotlinEnvironment(javaProject, Disposer.newDisposable())
+            eclipseProject: IProject -> KotlinEnvironment(eclipseProject, Disposer.newDisposable())
         }
 
-        @JvmStatic fun getEnvironment(javaProject: IJavaProject): KotlinEnvironment {
-            return cachedEnvironment.getOrCreateEnvironment(javaProject, environmentCreation)
+        @JvmStatic fun getEnvironment(eclipseProject: IProject): KotlinEnvironment {
+            return cachedEnvironment.getOrCreateEnvironment(eclipseProject, environmentCreation)
         }
 
-        @JvmStatic fun updateKotlinEnvironment(javaProject: IJavaProject) {
-            cachedEnvironment.updateEnvironment(javaProject, environmentCreation)
+        @JvmStatic fun updateKotlinEnvironment(eclipseProject: IProject) {
+            cachedEnvironment.updateEnvironment(eclipseProject, environmentCreation)
         }
 
-        @JvmStatic fun getJavaProject(project: Project): IJavaProject? = cachedEnvironment.getEclipseResource(project)
+        @JvmStatic fun getJavaProject(project: Project): IProject? = cachedEnvironment.getEclipseResource(project)
     }
 }

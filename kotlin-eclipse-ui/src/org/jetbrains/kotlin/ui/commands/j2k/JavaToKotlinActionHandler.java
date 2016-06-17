@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.ITypeRoot;
@@ -196,15 +195,16 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     
     private ConvertedKotlinData getConvertedFileData(@NotNull CompilationUnit compilationUnit, @NotNull Shell shell) throws ExecutionException {
         String contents = StringUtil.convertLineSeparators(new String(compilationUnit.getContents()));
-        Project ideaProject = KotlinEnvironment.getEnvironment(compilationUnit.getJavaProject()).getProject();
+        IProject eclipseProject = compilationUnit.getJavaProject().getProject();
+        Project ideaProject = KotlinEnvironment.getEnvironment(eclipseProject).getProject();
         
         String translatedCode = JavaToKotlinTranslator.INSTANCE.prettify(
                 JavaToKotlinTranslatorKt.translateToKotlin(contents, ideaProject));
-        KtFile jetFile = getJetFile(translatedCode, compilationUnit.getJavaProject());
+        KtFile jetFile = getJetFile(translatedCode, eclipseProject);
         
         String formattedCode = KotlinFormatterKt.formatCode(
                 jetFile.getNode().getText(),
-                compilationUnit.getJavaProject(),
+                eclipseProject,
                 getDefaultLineDelimiter(compilationUnit));
         
         String fileName = FileUtil.getNameWithoutExtension(compilationUnit.getElementName());
@@ -234,8 +234,8 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         return null;
     }
     
-    private KtFile getJetFile(@NotNull String sourceCode, @NotNull IJavaProject javaProject) {
-        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
+    private KtFile getJetFile(@NotNull String sourceCode, @NotNull IProject eclipseProject) {
+        Project ideaProject = KotlinEnvironment.getEnvironment(eclipseProject).getProject();
         return new KtPsiFactory(ideaProject).createFile(sourceCode);
     }
 }

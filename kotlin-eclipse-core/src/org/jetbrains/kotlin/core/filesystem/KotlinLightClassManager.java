@@ -53,7 +53,7 @@ public class KotlinLightClassManager {
     
     @NotNull
     public static KotlinLightClassManager getInstance(@NotNull IJavaProject javaProject) {
-        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject).getProject();
+        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject.getProject()).getProject();
         return ServiceManager.getService(ideaProject, KotlinLightClassManager.class);
     }
     

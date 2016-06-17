@@ -31,7 +31,7 @@ public object KotlinAnalysisFileCache {
             lastAnalysedFileCache!!.analysisResult
         } else {
             val analysisResult = EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                    KotlinEnvironment.getEnvironment(project),
+                    KotlinEnvironment.getEnvironment(project.project),
                     listOf(file))
             lastAnalysedFileCache = FileAnalysisResults(file, analysisResult)
             lastAnalysedFileCache!!.analysisResult
