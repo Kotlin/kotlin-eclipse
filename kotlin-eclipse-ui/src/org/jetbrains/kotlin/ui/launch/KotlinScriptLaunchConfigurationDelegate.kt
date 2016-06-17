@@ -26,6 +26,7 @@ import org.eclipse.debug.core.model.ILaunchConfigurationDelegate
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import java.io.PrintStream
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants
 
 class KotlinScriptLaunchConfigurationDelegate : ILaunchConfigurationDelegate {
     override fun launch(configuration: ILaunchConfiguration, mode: String, launch: ILaunch, monitor: IProgressMonitor) {
@@ -34,7 +35,10 @@ class KotlinScriptLaunchConfigurationDelegate : ILaunchConfigurationDelegate {
         
         if (!scriptFile.exists()) return
         
-        execKotlinCompiler(buildCompilerArguments(scriptFile))
+        val programArguments = configuration
+                .getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "")
+                .split(" ")
+        execKotlinCompiler(buildCompilerArguments(scriptFile, programArguments))
     }
     
     private fun execKotlinCompiler(arguments: List<String>) {
@@ -48,13 +52,15 @@ class KotlinScriptLaunchConfigurationDelegate : ILaunchConfigurationDelegate {
         }
     }
     
-    private fun buildCompilerArguments(scriptFile: IFile): List<String> {
+    private fun buildCompilerArguments(scriptFile: IFile, programArguments: List<String>): List<String> {
         return arrayListOf<String>().apply {
             add("-kotlin-home")
             add(ProjectUtils.KT_HOME)
             
             add("-script")
             add(scriptFile.getLocation().toOSString())
+            
+            addAll(programArguments)
         }
     }
 }   
