@@ -27,8 +27,6 @@ import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.console.ConsolePlugin;
-import org.eclipse.ui.console.IConsole;
-import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
@@ -51,21 +49,16 @@ public class CompilerStatusHandler implements IStatusHandler {
         }
         
         List<CompilerOutputElement> outputDataList = ((CompilerOutputData) source).getList(); 
-
-        IConsoleManager consoleManager = ConsolePlugin.getDefault().getConsoleManager();
-        removeConsoles(consoleManager, CONSOLE_NAME);
-        
-        MessageConsole msgConsole = new MessageConsole(CONSOLE_NAME, null);
-        consoleManager.addConsoles(new IConsole[] { msgConsole });
         
         Map<String, List<CompilerOutputElement>> sortedOutput = groupOutputByPath(outputDataList);
         
+        MessageConsole msgConsole = KotlinConsoleKt.createCleanKotlinConsole();
         for (List<CompilerOutputElement> outputList : sortedOutput.values()) {
             printCompilerOutputList(outputList, msgConsole);
         }
         
         if (status.getSeverity() == IStatus.ERROR) {
-            consoleManager.showConsoleView(msgConsole);
+            ConsolePlugin.getDefault().getConsoleManager().showConsoleView(msgConsole);
         }
         
         return null;
@@ -124,14 +117,5 @@ public class CompilerStatusHandler implements IStatusHandler {
         }
         
         return res;
-    }
-    
-    private void removeConsoles(IConsoleManager consoleManager, String name) {
-        IConsole[] consoles = consoleManager.getConsoles();
-        for (IConsole console : consoles) {
-            if (console.getName().equals(name)) {
-                consoleManager.removeConsoles(new IConsole[] { console });
-            }
-        }
     }
 }

@@ -23,8 +23,6 @@ import org.eclipse.core.runtime.Path
 import org.eclipse.debug.core.ILaunch
 import org.eclipse.debug.core.ILaunchConfiguration
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate
-import org.eclipse.ui.console.ConsolePlugin
-import org.eclipse.ui.console.MessageConsole
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import java.io.PrintStream
@@ -40,7 +38,14 @@ class KotlinScriptLaunchConfigurationDelegate : ILaunchConfigurationDelegate {
     }
     
     private fun execKotlinCompiler(arguments: List<String>) {
-        KotlinCompiler.INSTANCE.execKotlinCompiler(arguments.toTypedArray())
+        val systemOut = System.out
+        try {
+            System.setOut(PrintStream(createCleanKotlinConsole().newOutputStream()))
+            
+            KotlinCompiler.INSTANCE.execKotlinCompiler(arguments.toTypedArray())
+        } finally {
+            System.setOut(systemOut)
+        }
     }
     
     private fun buildCompilerArguments(scriptFile: IFile): List<String> {
