@@ -50,4 +50,4 @@ Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.resolve.lang.java.structure,
  org.jetbrains.kotlin.core.resolve.lang.kotlin,
  org.jetbrains.kotlin.core.utils
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
