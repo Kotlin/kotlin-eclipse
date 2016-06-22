@@ -75,7 +75,7 @@ abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
         
         var launch: ILaunch? = null
         try {
-            val entryPoint = getEntryPoint(getEditor().parsedFile!!, getEditor().javaProject!!)
+            val entryPoint = getEntryPoint(getEditor().parsedFile!!)
             val launchConfiguration = KotlinLaunchShortcut.createConfiguration(entryPoint!!, testEditor.getEclipseProject())
             launch = DebugUIPlugin.buildAndLaunch(launchConfiguration, "run", NullProgressMonitor())
             
