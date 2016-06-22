@@ -74,7 +74,7 @@ abstract class KotlinHighlightingPositionUpdaterTestCase : KotlinEditorWithAfter
     private fun addHighlightingPositions() {
         val ktFile = (testEditor.editor as KotlinEditor).parsedFile!!
         val document = testEditor.document
-        val highlightingVisitor = KotlinSemanticHighlightingVisitor(ktFile, document, testEditor.testJavaProject.javaProject)
+        val highlightingVisitor = KotlinSemanticHighlightingVisitor(ktFile, document)
         highlightingVisitor.computeHighlightingRanges().forEach { 
             if (it is StyleAttributes) document.addPosition(testCategory, it)
         }
