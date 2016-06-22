@@ -1,41 +1,22 @@
-/*******************************************************************************
- * Copyright 2000-2016 JetBrains s.r.o.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
-import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.config.LanguageFeatureSettings
-import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.container.createContainer
-import org.jetbrains.kotlin.container.registerSingleton
 import org.jetbrains.kotlin.container.useInstance
 import org.jetbrains.kotlin.context.ModuleContext
-import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache
-import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator
 import org.jetbrains.kotlin.descriptors.PackagePartProvider
 import org.jetbrains.kotlin.frontend.di.configureModule
 import org.jetbrains.kotlin.frontend.java.di.ContainerForTopDownAnalyzerForJvm
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.load.java.InternalFlexibleTypeTransformer
+import org.jetbrains.kotlin.load.java.JavaClassFinderImpl
+import org.jetbrains.kotlin.load.java.components.JavaPropertyInitializerEvaluatorImpl
+import org.jetbrains.kotlin.load.java.components.JavaSourceElementFactoryImpl
+import org.jetbrains.kotlin.load.java.components.LazyResolveBasedCache
+import org.jetbrains.kotlin.load.java.components.PsiBasedExternalAnnotationResolver
 import org.jetbrains.kotlin.load.java.components.SignaturePropagatorImpl
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
 import org.jetbrains.kotlin.load.java.lazy.SingleModuleClassResolver
@@ -54,14 +35,14 @@ import org.jetbrains.kotlin.resolve.lazy.FileScopeProviderImpl
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 
-fun StorageComponentContainer.configureJavaTopDownAnalysis(
+fun StorageComponentContainer.configureJavaTopDownAnalysisForScript(
         moduleContentScope: GlobalSearchScope,
         project: Project,
         lookupTracker: LookupTracker,
-        languageFeatureSettings: LanguageFeatureSettings) {
+        languageFeatureSettings: LanguageFeatureSettings
+) {
     useInstance(moduleContentScope)
     useInstance(lookupTracker)
-
     useImpl<ResolveSession>()
 
     useImpl<LazyTopDownAnalyzer>()
@@ -71,25 +52,27 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
 
     useInstance(JvmVirtualFileFinderFactory.SERVICE.getInstance(project).create(moduleContentScope))
 
-    useImpl<EclipseJavaClassFinder>()
+    useImpl<FileScopeProviderImpl>()
+
+    useImpl<JavaClassFinderImpl>()
     useImpl<SignaturePropagatorImpl>()
-    useImpl<EclipseTraceBasedJavaResolverCache>()
+    useImpl<LazyResolveBasedCache>()
     useImpl<TraceBasedErrorReporter>()
-    useImpl<EclipseExternalAnnotationResolver>()
-    useImpl<EclipseJavaPropertyInitializerEvaluator>()
+    useImpl<PsiBasedExternalAnnotationResolver>()
+    useImpl<JavaPropertyInitializerEvaluatorImpl>()
     useInstance(SamConversionResolverImpl)
-    useImpl<EclipseJavaSourceElementFactory>()
+    useImpl<JavaSourceElementFactoryImpl>()
     useImpl<JavaLazyAnalyzerPostConstruct>()
     useInstance(InternalFlexibleTypeTransformer)
 
     useInstance(languageFeatureSettings)
 }
 
-public fun createContainerForTopDownAnalyzerForJvm(
-        moduleContext: ModuleContext, bindingTrace: BindingTrace,
+fun createContainerForTopDownAnalyzerForScript(
+        moduleContext: ModuleContext,
+        bindingTrace: BindingTrace,
         declarationProviderFactory: DeclarationProviderFactory,
         moduleContentScope: GlobalSearchScope,
-        javaProject: IJavaProject,
         lookupTracker: LookupTracker,
         packagePartProvider: PackagePartProvider,
         languageFeatureSettings: LanguageFeatureSettings
@@ -97,30 +80,21 @@ public fun createContainerForTopDownAnalyzerForJvm(
     useInstance(packagePartProvider)
 
     configureModule(moduleContext, JvmPlatform, bindingTrace)
-    configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, lookupTracker, languageFeatureSettings)
+    configureJavaTopDownAnalysisForScript(moduleContentScope, moduleContext.project, lookupTracker, languageFeatureSettings)
 
-    useInstance(javaProject)
     useInstance(declarationProviderFactory)
 
     CompilerEnvironment.configure(this)
 
     useImpl<SingleModuleClassResolver>()
-    useImpl<FileScopeProviderImpl>()
 }.let {
-    it.javaAnalysisInit()
+    it.javaAnalysisForScriptInit()
 
     Pair(ContainerForTopDownAnalyzerForJvm(it), it)
 }
 
-fun StorageComponentContainer.javaAnalysisInit() {
+fun StorageComponentContainer.javaAnalysisForScriptInit() {
+    get<JavaClassFinderImpl>().initialize()
     get<JavaClassFinderPostConstruct>().postCreate()
 }
 
-// Copy functions from Dsl.kt as they were shrinked by proguard
-inline fun <reified T : Any> StorageComponentContainer.useImpl() {
-    registerSingleton(T::class.java)
-}
-
-inline fun <reified T : Any> ComponentProvider.get(): T {
-    return getService(T::class.java)
-}

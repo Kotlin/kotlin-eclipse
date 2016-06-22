@@ -36,7 +36,7 @@ import org.jetbrains.kotlin.utils.KotlinFrontEndException
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
 
-public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?)
+public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
 public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeFilesWithJavaIntegration(
@@ -91,7 +91,7 @@ public object EclipseAnalyzerFacadeForJVM {
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, listOf(scriptFile))
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
-        val componentProvider = createContainerForScript(
+        val containerAndProvider = createContainerForTopDownAnalyzerForScript(
                 moduleContext,
                 trace,
                 providerFactory, 
@@ -99,10 +99,11 @@ public object EclipseAnalyzerFacadeForJVM {
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
                 LanguageVersion.LATEST)
-        val additionalProviders = listOf(componentProvider.javaDescriptorResolver.packageFragmentProvider)
+        val container = containerAndProvider.first
+        val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         
         try {
-            componentProvider.lazyTopDownAnalyzerForTopLevel.analyzeFiles(
+            container.lazyTopDownAnalyzerForTopLevel.analyzeFiles(
                     TopDownAnalysisMode.TopLevelDeclarations, listOf(scriptFile), additionalProviders)
         } catch(e: KotlinFrontEndException) {
 //          Editor will break if we do not catch this exception
@@ -111,7 +112,9 @@ public object EclipseAnalyzerFacadeForJVM {
             KotlinLogger.logError(e)
         }
         
-        return AnalysisResultWithProvider(AnalysisResult.success(trace.getBindingContext(), moduleContext.module), null)
+        return AnalysisResultWithProvider(
+                AnalysisResult.success(trace.getBindingContext(), moduleContext.module),
+                containerAndProvider.second)
     }
     
     private fun getPath(jetFile: KtFile): String? = jetFile.getVirtualFile()?.getPath()
