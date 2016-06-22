@@ -57,7 +57,7 @@ Import-Package: com.intellij.navigation,
  org.eclipse.jdt.core.compiler,
  org.jetbrains.kotlin.progress,
  com.intellij.formatting
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.commands.findReferences,
