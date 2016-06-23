@@ -20,9 +20,13 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import org.eclipse.core.resources.IFile
+import org.eclipse.core.resources.IProject
 import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.asJava.KtLightClassForFacade
+import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
+import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmCliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex
@@ -32,9 +36,9 @@ import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
+import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import java.util.ArrayList
-import org.eclipse.core.resources.IProject
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -101,6 +105,15 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
     init {
         registerProjectDependenServices(javaProject)
         configureClasspath(javaProject)
+        
+        val cliLightClassGenerationSupport = CliLightClassGenerationSupport(project)
+        with(project) {
+            registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
+            registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
+            registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
+            
+            registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
+        }
         
         cachedEnvironment.putEnvironment(eclipseProject, this)
     }

@@ -95,6 +95,6 @@ fun createContainerForTopDownAnalyzerForScript(
 
 fun StorageComponentContainer.javaAnalysisForScriptInit() {
     get<JavaClassFinderImpl>().initialize()
-    get<JavaClassFinderPostConstruct>().postCreate()
+//    get<JavaClassFinderPostConstruct>().postCreate()
 }
 

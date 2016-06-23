@@ -108,12 +108,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(CoreJavaFileManager::class.java,
                     ServiceManager.getService(project, JavaFileManager::class.java) as CoreJavaFileManager)
 
-            val cliLightClassGenerationSupport = CliLightClassGenerationSupport(project)
-            registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
-            registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
-            registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
-            
-            registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
             registerService(CodeStyleManager::class.java, DummyCodeStyleManager())
             registerService(BuiltInsReferenceResolver::class.java, BuiltInsReferenceResolver(project))
             registerService(KotlinSourceIndex::class.java, KotlinSourceIndex())
