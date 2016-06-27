@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 =======
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import java.util.ArrayList
+<<<<<<< HEAD
 import org.eclipse.core.resources.IProject
 >>>>>>> 4e6f838... Replace IJavaProject with raw IProject in several places
 
@@ -93,6 +94,9 @@ import com.intellij.psi.compiled.ClassFileDecompilers;
 import com.intellij.psi.impl.PsiTreeChangePreprocessor;
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy;
 import com.intellij.psi.impl.file.impl.JavaFileManager;
+=======
+import org.eclipse.core.resources.IResource
+>>>>>>> 15b3627... Unify  access to KtFile for scripts and general source files
 
 import kotlin.jvm.functions.Function1;
 =======
@@ -115,6 +119,15 @@ fun getEnvironment(eclipseFile: IFile): KotlinCommonEnvironment {
     } else {
         KotlinEnvironment.getEnvironment(eclipseFile.project)
     }
+}
+
+fun getEclipseResource(ideaProject: Project): IResource? {
+    val project = KotlinEnvironment.getJavaProject(ideaProject)
+    if (project != null) {
+        return project
+    }
+    
+    return KotlinScriptEnvironment.getEclipseFile(ideaProject)
 }
 
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
@@ -156,6 +169,17 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
             cachedEnvironment.updateEnvironment(file, environmentCreation)
         }
         
+<<<<<<< HEAD
+=======
+        @JvmStatic fun removeKotlinEnvironment(file: IFile) {
+            checkIsScript(file)
+            
+            cachedEnvironment.removeEnvironment(file)
+        }
+        
+        @JvmStatic fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
+        
+>>>>>>> 15b3627... Unify  access to KtFile for scripts and general source files
         fun isScript(file: IFile): Boolean {
             return file.fileExtension == KotlinParserDefinition.STD_SCRIPT_SUFFIX // TODO: use ScriptDefinitionProvider
         }
