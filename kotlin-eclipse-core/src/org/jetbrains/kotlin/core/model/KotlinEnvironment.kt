@@ -52,14 +52,14 @@ fun getEnvironment(eclipseFile: IFile): KotlinCommonEnvironment {
 
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
-    val javaRoots = ArrayList<JavaRoot>()
-    
     init {
         configureClasspath()
         
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
         
-        val index = JvmDependenciesIndex(javaRoots)
+        val kotlinRuntimeRoot = JavaRoot(getRoots().first(), JavaRoot.RootType.BINARY)
+        val index = JvmDependenciesIndex(listOf(kotlinRuntimeRoot))
+        
         project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
     }
     
@@ -94,7 +94,6 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     
     private fun configureClasspath() {
         addToClasspath(kotlinRuntimePath.toFile())
-        javaRoots.add(JavaRoot(getRoots().first(), JavaRoot.RootType.BINARY))
     }
 }
 
