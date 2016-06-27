@@ -72,23 +72,31 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         }
 
         @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment {
-            if (!isScript(file)) {
-                throw IllegalArgumentException("${file.name} asked for script environment")
-            }
+            checkIsScript(file)
             
             return cachedEnvironment.getOrCreateEnvironment(file, environmentCreation)
         }
 
         @JvmStatic fun updateKotlinEnvironment(file: IFile) {
-            if (!isScript(file)) {
-                throw IllegalArgumentException("${file.name} asked to update script environment")
-            }
+            checkIsScript(file)
             
             cachedEnvironment.updateEnvironment(file, environmentCreation)
         }
         
+        @JvmStatic fun removeKotlinEnvironment(file: IFile) {
+            checkIsScript(file)
+            
+            cachedEnvironment.removeEnvironment(file)
+        }
+        
         fun isScript(file: IFile): Boolean {
             return file.fileExtension == KotlinParserDefinition.STD_SCRIPT_SUFFIX // TODO: use ScriptDefinitionProvider
+        }
+        
+        private fun checkIsScript(file: IFile) {
+            if (!isScript(file)) {
+                throw IllegalArgumentException("KotlinScriptEnvironment can work only with scripts, not ${file.name}")
+            }
         }
     }
     
