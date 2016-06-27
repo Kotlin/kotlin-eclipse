@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import java.util.ArrayList
+import org.eclipse.core.resources.IResource
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -48,6 +49,15 @@ fun getEnvironment(eclipseFile: IFile): KotlinCommonEnvironment {
     } else {
         KotlinEnvironment.getEnvironment(eclipseFile.project)
     }
+}
+
+fun getEclipseResource(ideaProject: Project): IResource? {
+    val project = KotlinEnvironment.getJavaProject(ideaProject)
+    if (project != null) {
+        return project
+    }
+    
+    return KotlinScriptEnvironment.getEclipseFile(ideaProject)
 }
 
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
@@ -88,6 +98,8 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
             
             cachedEnvironment.removeEnvironment(file)
         }
+        
+        @JvmStatic fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
         
         fun isScript(file: IFile): Boolean {
             return file.fileExtension == KotlinParserDefinition.STD_SCRIPT_SUFFIX // TODO: use ScriptDefinitionProvider
