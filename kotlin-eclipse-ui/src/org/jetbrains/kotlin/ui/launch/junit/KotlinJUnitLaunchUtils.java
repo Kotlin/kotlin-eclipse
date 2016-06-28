@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.psi.KtFile;
 public class KotlinJUnitLaunchUtils {
     @Nullable
     public static KtClass getSingleJetClass(@NotNull IFile file) {
-        if (!KotlinPsiManager.INSTANCE.exists(file)) return null;
+        if (!KotlinPsiManager.INSTANCE.existsSourceFile(file)) return null;
         
         KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
         
