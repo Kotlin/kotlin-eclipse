@@ -202,6 +202,14 @@ class ProjectSourceFiles : PsiFilesStorage {
 object KotlinPsiManager {
     private val projectSourceFiles = ProjectSourceFiles()
     
+    fun getParsedFile(file: IFile): KtFile {
+        return projectSourceFiles.getPsiFile(file) // + scripts
+    }
+    
+    private fun isApplicable(file: IFile): Boolean {
+        return projectSourceFiles.isApplicable(file)
+    }
+    
     fun updateProjectPsiSources(file: IFile, flag: Int) {
         when (flag) {
             IResourceDelta.ADDED -> projectSourceFiles.addFile(file)
@@ -218,11 +226,7 @@ object KotlinPsiManager {
         return projectSourceFiles.getFilesByProject(project)
     }
 
-    fun getParsedFile(file: IFile): KtFile {
-        return projectSourceFiles.getPsiFile(file) // + scripts
-    }
-
-    fun exists(file: IFile): Boolean {
+    fun existsSourceFile(file: IFile): Boolean {
         return projectSourceFiles.exists(file)
     }
 
@@ -233,54 +237,13 @@ object KotlinPsiManager {
         
         return getFilesByProject(project)
     }
-
-    private fun addProject(project: IProject) {
-        projectSourceFiles.addProject(project)
-    }
-
-    private fun addFilesToParse(javaProject: IJavaProject) {
-        projectSourceFiles.addFilesToParse(javaProject)
-    }
-
-    private fun removeProject(project: IProject) {
-        projectSourceFiles.removeProject(project)
-    }
-
-    private fun addFile(file: IFile) {
-        projectSourceFiles.addFile(file)
-    }
-
-    private fun removeFile(file: IFile) {
-        projectSourceFiles.removeFile(file)
-    }
-
+    
     private fun updateProjectPsiSourcesIfNeeded(project: IProject) {
         projectSourceFiles.updateProjectPsiSourcesIfNeeded(project)
     }
 
-    private fun parseFile(file: IFile): KtFile? {
-        if (!file.exists()) {
-            return null
-        }
-        
-        val ioFile = File(file.getRawLocation().toOSString())
-        return parseText(FileUtil.loadFile(ioFile, null, true), file)
-    }
-
     private fun getParsedFile(file: IFile, expectedSourceCode: String): KtFile {
         return projectSourceFiles.getPsiFile(file, expectedSourceCode)
-    }
-
-    fun parseText(text: String, file: IFile): KtFile? {
-        StringUtil.assertValidSeparators(text)
-        
-        val virtualFile = KotlinLightVirtualFile(file, text)
-        virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET)
-        
-        val project = getEnvironment(file).project
-        val psiFileFactory = PsiFileFactory.getInstance(project) as PsiFileFactoryImpl
-        
-        return psiFileFactory.trySetupPsiForFile(virtualFile, KotlinLanguage.INSTANCE, true, false) as? KtFile
     }
 
     @JvmOverloads
@@ -305,16 +268,30 @@ object KotlinPsiManager {
             classpathEntry.entryKind == IClasspathEntry.CPE_SOURCE && resourceRoot == classpathEntry.path.segment(1)
         }
     }
+    
+    fun parseText(text: String, file: IFile): KtFile? {
+        StringUtil.assertValidSeparators(text)
+        
+        val virtualFile = KotlinLightVirtualFile(file, text)
+        virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET)
+        
+        val project = getEnvironment(file).project
+        val psiFileFactory = PsiFileFactory.getInstance(project) as PsiFileFactoryImpl
+        
+        return psiFileFactory.trySetupPsiForFile(virtualFile, KotlinLanguage.INSTANCE, true, false) as? KtFile
+    }
 
     @JvmStatic
     fun isKotlinFile(file: IFile): Boolean = KotlinFileType.INSTANCE.getDefaultExtension() == file.fileExtension
 
     @JvmStatic
-    fun getKotlinParsedFile(file: IFile): KtFile? = if (exists(file)) getParsedFile(file) else null
+    fun getKotlinParsedFile(file: IFile): KtFile? {
+        return if (isApplicable(file)) getParsedFile(file) else null
+    }
 
     @JvmStatic
     fun getKotlinFileIfExist(file: IFile, sourceCode: String): KtFile? {
-        return if (exists(file)) getParsedFile(file, sourceCode) else null
+        return if (isApplicable(file)) getParsedFile(file, sourceCode) else null
     }
 
     @JvmStatic
