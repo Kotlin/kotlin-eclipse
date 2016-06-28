@@ -35,7 +35,7 @@ public class KotlinAnnotationImageProvider implements IAnnotationImageProvider {
                     case AnnotationManager.ANNOTATION_ERROR_TYPE:
                         return JavaPluginImages.get(JavaPluginImages.IMG_OBJS_FIXABLE_ERROR);
                     case AnnotationManager.ANNOTATION_WARNING_TYPE:
-                        return JavaPluginImages.get(JavaPluginImages.IMG_OBJS_FIXABLE_PROBLEM);
+                        return JavaPluginImages.get(JavaPluginImages.IMG_OBJS_FIXABLE_WARNING);
                 }
             }
         }

@@ -80,11 +80,12 @@ abstract class KotlinCommonEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
     
-    override public fun getAdapter(required: Class<*>): Any? {
+    @Suppress("UNCHECKED_CAST")
+    override public fun <T> getAdapter(required: Class<T>): T? {
         return when (required) {
-            IContentOutlinePage::class.java -> kotlinOutlinePage
-            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter
-            IRunToLineTarget::class.java -> KotlinRunToLineAdapter
+            IContentOutlinePage::class.java -> kotlinOutlinePage as T
+            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter as T
+            IRunToLineTarget::class.java -> KotlinRunToLineAdapter as T
             else -> super<CompilationUnitEditor>.getAdapter(required)
         }
     }
