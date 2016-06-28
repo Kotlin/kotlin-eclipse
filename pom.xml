@@ -23,28 +23,28 @@
 		<tycho.version>0.22.0</tycho.version>
 		<tycho-extras.version>0.18.0</tycho-extras.version>
 
-		<mars-repo.url>http://download.eclipse.org/releases/mars</mars-repo.url>
+		<eclipse-repo.url>http://download.eclipse.org/releases/neon</eclipse-repo.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<ajdt-mars-repo.url>http://download.eclipse.org/tools/ajdt/45/dev/update</ajdt-mars-repo.url>
+		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/46/dev/update</ajdt-eclipse-repo.url>
 
 		<kotlin.version>1.1.0-dev-998</kotlin.version>
 
-		<aspectj.version>1.8.2</aspectj.version>
-		<aspectj.plugin.version>1.7</aspectj.plugin.version>
+		<aspectj.version>1.8.7</aspectj.version>
+		<aspectj.plugin.version>1.8</aspectj.plugin.version>
 
-		<weaving-hook.version>1.1.100.v20140821-1915</weaving-hook.version>
+		<weaving-hook.version>1.1.200.v20150730-1648</weaving-hook.version>
 	</properties>
 
 	<repositories>
 		<repository>
-			<id>mars</id>
-			<url>${mars-repo.url}</url>
+			<id>neon</id>
+			<url>${eclipse-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
 		<repository>
 			<id>ajdt</id>
-			<url>${ajdt-mars-repo.url}</url>
+			<url>${ajdt-eclipse-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
         <repository>

@@ -78,10 +78,11 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
         KotlinOutlinePage(this)
     }
     
-    override public fun getAdapter(required: Class<*>) : Any? =
+    @Suppress("UNCHECKED_CAST")
+    override public fun <T> getAdapter(required: Class<T>): T? =
         when (required) {
-            IContentOutlinePage::class.java -> kotlinOutlinePage
-            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter
+            IContentOutlinePage::class.java -> kotlinOutlinePage as T
+            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter as T
             else -> super<ClassFileEditor>.getAdapter(required)
         }
 
