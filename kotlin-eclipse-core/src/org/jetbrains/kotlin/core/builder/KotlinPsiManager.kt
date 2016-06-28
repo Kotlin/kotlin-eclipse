@@ -32,12 +32,12 @@ import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IClasspathEntry
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.core.JavaModelException
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.core.model.KotlinLightVirtualFile
 import org.jetbrains.kotlin.core.model.KotlinNature
+import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
+import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.utils.sourceFolders
 import org.jetbrains.kotlin.idea.KotlinFileType
@@ -47,6 +47,7 @@ import org.jetbrains.kotlin.psi.KtFile
 import java.io.File
 import java.util.Collections
 import java.util.HashSet
+import java.util.concurrent.ConcurrentHashMap
 
 interface PsiFilesStorage {
     fun getPsiFile(eclipseFile: IFile): KtFile
@@ -56,7 +57,30 @@ interface PsiFilesStorage {
     fun isApplicable(file: IFile): Boolean
 }
 
-class ProjectSourceFiles : PsiFilesStorage {
+private class ScriptsFilesStorage : PsiFilesStorage {
+    private val cachedKtFiles = ConcurrentHashMap<IFile, KtFile>()
+    
+    override fun getPsiFile(eclipseFile: IFile): KtFile {
+        return cachedKtFiles.getOrPut(eclipseFile) { KotlinPsiManager.parseFile(eclipseFile)!! }
+    }
+
+    @Synchronized
+    override fun getPsiFile(file: IFile, expectedSourceCode: String): KtFile {
+        val sourceCodeWithouCR = StringUtilRt.convertLineSeparators(expectedSourceCode)
+        
+        val currentParsedFile = getPsiFile(file)
+        if (currentParsedFile.getText() != sourceCodeWithouCR) {
+            val jetFile = KotlinPsiManager.parseText(sourceCodeWithouCR, file)!!
+            cachedKtFiles.put(file, jetFile)
+        }
+        
+        return getPsiFile(file)
+    }
+
+    override fun isApplicable(file: IFile): Boolean = KotlinScriptEnvironment.isScript(file)
+}
+
+private class ProjectSourceFiles : PsiFilesStorage {
     companion object {
         @JvmStatic
         fun isKotlinFile(file: IFile): Boolean = KotlinFileType.INSTANCE.getDefaultExtension() == file.fileExtension
@@ -207,13 +231,14 @@ class ProjectSourceFiles : PsiFilesStorage {
 
 object KotlinPsiManager {
     private val projectSourceFiles = ProjectSourceFiles()
+    private val scriptsFiles = ScriptsFilesStorage()
     
     fun getParsedFile(file: IFile): KtFile {
-        return projectSourceFiles.getPsiFile(file) // + scripts
+        return storage(file).getPsiFile(file)
     }
     
     private fun isApplicable(file: IFile): Boolean {
-        return projectSourceFiles.isApplicable(file)
+        return storage(file).isApplicable(file)
     }
     
     fun updateProjectPsiSources(file: IFile, flag: Int) {
@@ -244,12 +269,20 @@ object KotlinPsiManager {
         return getFilesByProject(project)
     }
     
+    private fun storage(file: IFile): PsiFilesStorage {
+        return when {
+            scriptsFiles.isApplicable(file) -> scriptsFiles
+            projectSourceFiles.isApplicable(file) -> projectSourceFiles
+            else -> throw IllegalStateException("There is not applicable storage for file: $file")
+        }
+    }
+    
     private fun updateProjectPsiSourcesIfNeeded(project: IProject) {
         projectSourceFiles.updateProjectPsiSourcesIfNeeded(project)
     }
 
     private fun getParsedFile(file: IFile, expectedSourceCode: String): KtFile {
-        return projectSourceFiles.getPsiFile(file, expectedSourceCode)
+        return storage(file).getPsiFile(file, expectedSourceCode)
     }
 
     @JvmOverloads
