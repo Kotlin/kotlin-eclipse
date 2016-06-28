@@ -67,7 +67,13 @@ class ProjectSourceFiles : PsiFilesStorage {
     private val mapOperationLock = Any()
     
     override fun getPsiFile(eclipseFile: IFile): KtFile {
-        throw UnsupportedOperationException()
+        synchronized (mapOperationLock) {
+            updateProjectPsiSourcesIfNeeded(eclipseFile.getProject())
+
+            assert(exists(eclipseFile), { "File(" + eclipseFile.getName() + ") does not contain in the psiFiles" })
+
+            return cachedKtFiles.getOrPut(eclipseFile) { KotlinPsiManager.parseFile(eclipseFile)!! }
+        }
     }
     
     override fun getPsiFile(file: IFile, expectedSourceCode: String): KtFile {
@@ -267,6 +273,15 @@ object KotlinPsiManager {
         return classpathEntries.any { classpathEntry ->
             classpathEntry.entryKind == IClasspathEntry.CPE_SOURCE && resourceRoot == classpathEntry.path.segment(1)
         }
+    }
+    
+    fun parseFile(file: IFile): KtFile? {
+        if (!file.exists()) {
+            return null
+        }
+        
+        val ioFile = File(file.getRawLocation().toOSString())
+        return parseText(FileUtil.loadFile(ioFile, null, true), file)
     }
     
     fun parseText(text: String, file: IFile): KtFile? {
