@@ -288,7 +288,7 @@ object KotlinPsiManager {
     }
 
     private fun getParsedFile(file: IFile, expectedSourceCode: String): KtFile {
-        return projectSourceFiles.getPsiFile(file, expectedSourceCode)
+        return storage(file).getPsiFile(file, expectedSourceCode)
     }
 
     @JvmOverloads
