@@ -33,24 +33,25 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.resolve.diagnostics.KotlinSuppressCache
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.model.getEclipseResource
+import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.container.ComponentProvider
 import java.lang.IllegalStateException
 
-public class KotlinCacheServiceImpl : KotlinCacheService {
+public class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheService {
     override fun getSuppressionCache(): KotlinSuppressCache {
         throw UnsupportedOperationException()
     }
 
     override fun getResolutionFacade(elements: List<KtElement>): ResolutionFacade {
-        return KotlinSimpleResolutionFacade(elements)
+        return KotlinSimpleResolutionFacade(ideaProject, elements)
     }
 }
 
-class KotlinSimpleResolutionFacade(private val elements: List<KtElement>) : ResolutionFacade {
+class KotlinSimpleResolutionFacade(
+        override val project: Project,
+        private val elements: List<KtElement>) : ResolutionFacade {
     override val moduleDescriptor: ModuleDescriptor
-        get() = throw UnsupportedOperationException()
-    
-    override val project: Project
         get() = throw UnsupportedOperationException()
     
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
@@ -67,20 +68,13 @@ class KotlinSimpleResolutionFacade(private val elements: List<KtElement>) : Reso
     }
     
     override fun <T : Any> getFrontendService(serviceClass: Class<T>): T {
-        val project = elements.firstOrNull()?.getContainingKtFile()?.getProject() ?: 
-                throw IllegalStateException("Project should not be null")
-        
         val files = elements.map { it.getContainingKtFile() }.toSet()
         if (files.isEmpty()) throw IllegalStateException("Elements should not be empty")
         
-        val eclipseProject = KotlinEnvironment.getJavaProject(project) ?: 
-                throw IllegalStateException("Java project for idea project ($project) should not be null")
-        val javaProject = JavaCore.create(eclipseProject)
+        val environment = getEnvironment(project) ?:
+            throw IllegalStateException("Kotlin environment for idea project ($project) should not be null")
         
-        val componentProvider = KotlinAnalyzer.analyzeFiles(javaProject, files).componentProvider
-        if (componentProvider == null) {
-            throw IllegalStateException("There is not component provider for ${files.joinToString(separator = ",")}")
-        }
+        val componentProvider = KotlinAnalyzer.analyzeFiles(files, environment).componentProvider
         
         return componentProvider.getService(serviceClass)
     }

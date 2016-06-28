@@ -51,6 +51,15 @@ fun getEnvironment(eclipseFile: IFile): KotlinCommonEnvironment {
     }
 }
 
+fun getEnvironment(ideaProject: Project): KotlinCommonEnvironment? {
+    val eclipseResource = getEclipseResource(ideaProject) ?: return null
+    return when (eclipseResource) {
+        is IFile -> KotlinScriptEnvironment.getEnvironment(eclipseResource)
+        is IProject -> KotlinEnvironment.getEnvironment(eclipseResource)
+        else -> throw IllegalStateException("Could not get environment for resource: $eclipseResource")
+    }
+}
+
 fun getEclipseResource(ideaProject: Project): IResource? {
     val project = KotlinEnvironment.getJavaProject(ideaProject)
     if (project != null) {

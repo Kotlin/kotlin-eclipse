@@ -27,25 +27,43 @@ data class FileAnalysisResults(val file: KtFile, val analysisResult: AnalysisRes
 public object KotlinAnalysisFileCache {
     private @Volatile var lastAnalysedFileCache: FileAnalysisResults? = null
 
-    public @Synchronized fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
-        return if (lastAnalysedFileCache != null && lastAnalysedFileCache!!.file == file) {
-            lastAnalysedFileCache!!.analysisResult
-        } else {
+    // This method can work only with real files that are present in VFS
+    @Synchronized fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
+        return getImmediatlyFromCache(file) ?: run {
             val eclipseFile = KotlinPsiManager.getEclipseFile(file)!!
             val environment = getEnvironment(eclipseFile)
             
-            val analysisResult = when (environment) {
-                is KotlinScriptEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeScript(environment, file)
-                is KotlinEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(environment, listOf(file))
-                else -> throw IllegalArgumentException("Could not analyze file with environment: $environment")
-            }
+            getAnalysisResult(file, environment)
+        }
+    }
+    
+    // This method can take synthetic files
+    @Synchronized fun getAnalysisResult(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
+        return getImmediatlyFromCache(file) ?: run {
+            val analysisResult = resolve(file, environment)
             
             lastAnalysedFileCache = FileAnalysisResults(file, analysisResult)
             lastAnalysedFileCache!!.analysisResult
         }
     }
-
-    public fun resetCache() {
+    
+    fun resetCache() {
         lastAnalysedFileCache = null
+    }
+    
+    private fun resolve(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
+        return when (environment) {
+            is KotlinScriptEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeScript(environment, file)
+            is KotlinEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(environment, listOf(file))
+            else -> throw IllegalArgumentException("Could not analyze file with environment: $environment")
+        }
+    }
+    
+    @Synchronized
+    private fun getImmediatlyFromCache(file: KtFile): AnalysisResultWithProvider? {
+        return if (lastAnalysedFileCache != null && lastAnalysedFileCache!!.file == file)
+            lastAnalysedFileCache!!.analysisResult
+        else
+            null
     }
 }
