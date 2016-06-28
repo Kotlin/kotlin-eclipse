@@ -80,13 +80,15 @@ public class KotlinFileEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
     
-    override public fun getAdapter(required: Class<*>): Any? {
-        return when (required) {
+    override public fun <T> getAdapter(required: Class<T>): T? {
+        val adapter: Any? = when (required) {
             IContentOutlinePage::class.java -> kotlinOutlinePage
             IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter
             IRunToLineTarget::class.java -> KotlinRunToLineAdapter
             else -> super<CompilationUnitEditor>.getAdapter(required)
         }
+        
+        return required.cast(adapter)
     }
     
     override public fun createPartControl(parent: Composite) {

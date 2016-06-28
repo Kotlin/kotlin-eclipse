@@ -88,7 +88,7 @@ abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
             
             if (!launch.isTerminated) stdout.append("Launch not terminated")
         } finally {
-            launch!!.terminate()
+            launch?.terminate()
             DebugPlugin.getDefault().getLaunchManager().removeLaunchListener(launchListener)
         }
         
