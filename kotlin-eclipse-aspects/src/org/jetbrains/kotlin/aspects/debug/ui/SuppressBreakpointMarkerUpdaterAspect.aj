@@ -19,7 +19,7 @@ public aspect SuppressBreakpointMarkerUpdaterAspect {
 	boolean around(BreakpointMarkerUpdater markerUpdater, IMarker marker, IDocument document, Position position):  
 			updateMarker(markerUpdater, marker, document, position) {
 		IFile resource = (IFile) marker.getResource();
-		if (resource != null && KotlinPsiManager.INSTANCE.exists(resource)) {
+		if (resource != null && KotlinPsiManager.INSTANCE.existsSourceFile(resource)) {
 			return true;
 		}
 
