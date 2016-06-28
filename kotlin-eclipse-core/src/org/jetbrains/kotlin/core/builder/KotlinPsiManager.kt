@@ -55,6 +55,8 @@ interface PsiFilesStorage {
     fun getPsiFile(file: IFile, expectedSourceCode: String): KtFile
     
     fun isApplicable(file: IFile): Boolean
+    
+    fun removeFile(file: IFile)
 }
 
 private class ScriptsFilesStorage : PsiFilesStorage {
@@ -78,6 +80,10 @@ private class ScriptsFilesStorage : PsiFilesStorage {
     }
 
     override fun isApplicable(file: IFile): Boolean = KotlinScriptEnvironment.isScript(file)
+    
+    override fun removeFile(file: IFile) {
+        cachedKtFiles.remove(file)
+    }
 }
 
 private class ProjectSourceFiles : PsiFilesStorage {
@@ -151,7 +157,7 @@ private class ProjectSourceFiles : PsiFilesStorage {
         }
     }
     
-    fun removeFile(file: IFile) {
+    override fun removeFile(file: IFile) {
         synchronized (mapOperationLock) {
             assert(exists(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
             
@@ -244,7 +250,7 @@ object KotlinPsiManager {
     fun updateProjectPsiSources(file: IFile, flag: Int) {
         when (flag) {
             IResourceDelta.ADDED -> projectSourceFiles.addFile(file)
-            IResourceDelta.REMOVED -> projectSourceFiles.removeFile(file)
+            IResourceDelta.REMOVED -> storage(file).removeFile(file)
             else -> throw IllegalArgumentException()
         }
     }
