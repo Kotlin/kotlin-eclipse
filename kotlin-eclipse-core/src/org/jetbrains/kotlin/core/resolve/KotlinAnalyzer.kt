@@ -18,12 +18,17 @@ package org.jetbrains.kotlin.core.resolve
 
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
+import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.psi.KtFile
 
 object KotlinAnalyzer {
     fun analyzeFile(jetFile: KtFile): AnalysisResultWithProvider {
         return KotlinAnalysisFileCache.getAnalysisResult(jetFile)
+    }
+    
+    fun analyzeFile(jetFile: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
+        return KotlinAnalysisFileCache.getAnalysisResult(jetFile, environment)
     }
 
     fun analyzeFiles(javaProject: IJavaProject, filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
@@ -41,8 +46,24 @@ object KotlinAnalyzer {
 >>>>>>> 4e6f838... Replace IJavaProject with raw IProject in several places
     }
     
+<<<<<<< HEAD
     private fun analyzeFiles(javaProject: IJavaProject,
                              kotlinEnvironment: KotlinEnvironment,
+=======
+    fun analyzeFiles(files: Collection<KtFile>, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
+        if (files.size == 1) {
+            return analyzeFile(files.single(), environment)
+        }
+        
+        if (environment !is KotlinEnvironment) {
+            throw IllegalStateException("It is impossible to resolve several files at once with non KotlinEnvironment: $environment")
+        }
+        
+        return analyzeFiles(environment, files)
+    }
+
+    private fun analyzeFiles(kotlinEnvironment: KotlinEnvironment,
+>>>>>>> c00d89f... Fix organize imports for scripts: generalize KotlinCacheService
                              filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
         return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
                 javaProject,

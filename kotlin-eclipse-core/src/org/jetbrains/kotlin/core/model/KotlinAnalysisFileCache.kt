@@ -36,18 +36,20 @@ public object KotlinAnalysisFileCache {
 >>>>>>> 4e6f838... Replace IJavaProject with raw IProject in several places
 =======
 
-    public @Synchronized fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
-        return if (lastAnalysedFileCache != null && lastAnalysedFileCache!!.file == file) {
-            lastAnalysedFileCache!!.analysisResult
-        } else {
+    // This method can work only with real files that are present in VFS
+    @Synchronized fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
+        return getImmediatlyFromCache(file) ?: run {
             val eclipseFile = KotlinPsiManager.getEclipseFile(file)!!
             val environment = getEnvironment(eclipseFile)
             
-            val analysisResult = when (environment) {
-                is KotlinScriptEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeScript(environment, file)
-                is KotlinEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(environment, listOf(file))
-                else -> throw IllegalArgumentException("Could not analyze file with environment: $environment")
-            }
+            getAnalysisResult(file, environment)
+        }
+    }
+    
+    // This method can take synthetic files
+    @Synchronized fun getAnalysisResult(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
+        return getImmediatlyFromCache(file) ?: run {
+            val analysisResult = resolve(file, environment)
             
 >>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
             lastAnalysedFileCache = FileAnalysisResults(file, analysisResult)
@@ -55,7 +57,27 @@ public object KotlinAnalysisFileCache {
         }
     }
     
+<<<<<<< HEAD
     public fun resetCache() {
+=======
+    fun resetCache() {
+>>>>>>> c00d89f... Fix organize imports for scripts: generalize KotlinCacheService
         lastAnalysedFileCache = null
+    }
+    
+    private fun resolve(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
+        return when (environment) {
+            is KotlinScriptEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeScript(environment, file)
+            is KotlinEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(environment, listOf(file))
+            else -> throw IllegalArgumentException("Could not analyze file with environment: $environment")
+        }
+    }
+    
+    @Synchronized
+    private fun getImmediatlyFromCache(file: KtFile): AnalysisResultWithProvider? {
+        return if (lastAnalysedFileCache != null && lastAnalysedFileCache!!.file == file)
+            lastAnalysedFileCache!!.analysisResult
+        else
+            null
     }
 }
