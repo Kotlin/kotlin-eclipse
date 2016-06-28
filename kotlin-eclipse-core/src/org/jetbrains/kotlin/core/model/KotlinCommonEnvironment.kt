@@ -111,7 +111,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(CodeStyleManager::class.java, DummyCodeStyleManager())
             registerService(BuiltInsReferenceResolver::class.java, BuiltInsReferenceResolver(project))
             registerService(KotlinSourceIndex::class.java, KotlinSourceIndex())
-            registerService(KotlinCacheService::class.java, KotlinCacheServiceImpl())
+            registerService(KotlinCacheService::class.java, KotlinCacheServiceImpl(project))
             registerService(ImportInsertHelper::class.java, KotlinImportInserterHelper())
         }
         
