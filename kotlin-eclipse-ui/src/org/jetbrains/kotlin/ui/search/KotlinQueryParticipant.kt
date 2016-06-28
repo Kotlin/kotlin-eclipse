@@ -233,7 +233,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
         val elements = ArrayList<KtElement>()
         for (file in files) {
             val matches = searchResult.getMatches(file)
-            val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
+            val jetFile = KotlinPsiManager.getParsedFile(file)
             val document = EditorUtil.getDocument(file)
             
             matches
@@ -292,7 +292,7 @@ fun IJavaSearchScope.getKotlinFiles(): List<IFile> {
     return enclosingProjectsAndJars()
             .map { JavaModel.getTarget(it, true) }
             .filterIsInstance(IProject::class.java)
-            .flatMap { KotlinPsiManager.INSTANCE.getFilesByProject(it) }
+            .flatMap { KotlinPsiManager.getFilesByProject(it) }
 }
 
 public class KotlinElementMatch(val jetElement: KtElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(), 

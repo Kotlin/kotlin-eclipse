@@ -94,7 +94,7 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
     }
     
     private fun checkResult(sourceFolderAfter: File, base: IPath) {
-        val actualFiles = KotlinPsiManager.INSTANCE.getFilesByProject(getTestProject().getJavaProject().getProject())
+        val actualFiles = KotlinPsiManager.getFilesByProject(getTestProject().getJavaProject().getProject())
         for (expectedFile in sourceFolderAfter.listFiles()) {
             if (expectedFile.isFile()) {
                 val expectedSource = KotlinTestUtils.getText(expectedFile.getAbsolutePath())

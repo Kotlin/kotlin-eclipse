@@ -60,7 +60,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         }
         
         fun getFileClassName(mainFile: IFile): FqName {
-            val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
+            val ktFile = KotlinPsiManager.getParsedFile(mainFile)
             return NoResolveFileClassesProvider.getFileClassFqName(ktFile)
         }
         
@@ -72,6 +72,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     override fun launch(selection: ISelection, mode: String) {
         if (selection !is IStructuredSelection) return
         
+<<<<<<< HEAD
 <<<<<<< HEAD
         val files = ArrayList<IFile>()
         for (element in selection.toList()) {
@@ -89,6 +90,9 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         val entryPoint = getEntryPoint(ktFile, javaProject)
 =======
         val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
+=======
+        val ktFile = KotlinPsiManager.getParsedFile(mainFile)
+>>>>>>> 6da58a7... J2K KotlinPsiManager: convert and prettify
         
         val entryPoint = getEntryPoint(ktFile)
 >>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts

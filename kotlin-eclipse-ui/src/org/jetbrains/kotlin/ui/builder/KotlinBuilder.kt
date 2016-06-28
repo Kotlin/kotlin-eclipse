@@ -68,7 +68,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         }
         
         val kotlinAffectedFiles = if (kind == FULL_BUILD) {
-            KotlinPsiManager.INSTANCE.getFilesByProject(project)
+            KotlinPsiManager.getFilesByProject(project)
         } else {
             allAffectedFiles
                 .filter { KotlinPsiManager.isKotlinSourceFile(it, javaProject) }
@@ -88,7 +88,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
             }
         }
         
-        val ktFiles = existingAffectedFiles.map { KotlinPsiManager.INSTANCE.getParsedFile(it) }
+        val ktFiles = existingAffectedFiles.map { KotlinPsiManager.getParsedFile(it) }
         val analysisResult = KotlinAnalyzer.analyzeFiles(javaProject, ktFiles).analysisResult
         
         clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)

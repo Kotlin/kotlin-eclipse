@@ -77,7 +77,7 @@ object KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
 }
 
 fun findTopmostTypeName(document: IDocument, lineNumber: Int, file: IFile): FqName? {
-    val kotlinParsedFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
+    val kotlinParsedFile = KotlinPsiManager.getParsedFile(file)
     return findTopmostType(document.getLineOffset(lineNumber - 1), kotlinParsedFile)
 }
 

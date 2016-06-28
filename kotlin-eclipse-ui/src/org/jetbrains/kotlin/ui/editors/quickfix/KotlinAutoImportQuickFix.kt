@@ -84,7 +84,7 @@ fun placeImports(typeNames: List<TypeNameMatch>, file: IFile, document: IDocumen
 }
 
 fun replaceImports(newImports: List<String>, file: IFile, document: IDocument) {
-    val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
+    val ktFile = KotlinPsiManager.getParsedFile(file)
     val importDirectives = ktFile.getImportDirectives()
     if (importDirectives.isEmpty()) {
         placeStrImports(newImports, file, document)
@@ -183,7 +183,7 @@ private fun computeBreakLineBeforeImport(element:PsiElement):Int {
 }
 
 private fun findNodeToNewImport(file: IFile): PsiElement? {
-    val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file)
+    val jetFile = KotlinPsiManager.getParsedFile(file)
     val jetImportDirective = jetFile.getImportDirectives()
     return if (jetImportDirective.isNotEmpty()) jetImportDirective.last() else jetFile.getPackageDirective()
 }

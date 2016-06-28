@@ -61,7 +61,7 @@ private fun updateManager(resource: IResource, deltaKind: Int): Boolean {
     return when (resource) {
         is IFile -> {
             if (KotlinPsiManager.isKotlinSourceFile(resource)) {
-                KotlinPsiManager.INSTANCE.updateProjectPsiSources(resource, deltaKind)
+                KotlinPsiManager.updateProjectPsiSources(resource, deltaKind)
             }
             
             false
@@ -73,7 +73,7 @@ private fun updateManager(resource: IResource, deltaKind: Int): Boolean {
             }
             
             if (deltaKind == IResourceDelta.REMOVED) {
-                KotlinPsiManager.INSTANCE.removeProjectFromManager(resource)
+                KotlinPsiManager.removeProjectFromManager(resource)
             }
             
             if (deltaKind == IResourceDelta.ADDED && KotlinNature.hasKotlinBuilder(resource)) {

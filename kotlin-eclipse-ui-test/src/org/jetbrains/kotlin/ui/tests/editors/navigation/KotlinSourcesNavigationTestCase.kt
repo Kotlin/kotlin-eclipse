@@ -76,7 +76,7 @@ abstract class KotlinSourcesNavigationTestCase: KotlinProjectTestCase() {
         val referenceOffset = getReferenceOffset(fileText)
         val editorFile = testEditor.getEditingFile()
         
-        val initialFile = KotlinPsiManager.INSTANCE.getParsedFile(editorFile)
+        val initialFile = KotlinPsiManager.getParsedFile(editorFile)
         val editor = testEditor.getEditor()
         testEditor.setCaret(referenceOffset)
         
