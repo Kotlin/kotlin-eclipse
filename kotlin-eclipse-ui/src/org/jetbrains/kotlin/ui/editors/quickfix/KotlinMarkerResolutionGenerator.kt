@@ -48,7 +48,7 @@ private fun obtainDiagnostics(marker: IMarker): List<Diagnostic> {
     val resource = marker.getResource()
     if (resource !is IFile) return emptyList()
     
-    val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(resource)
+    val ktFile = KotlinPsiManager.getParsedFile(resource)
     
     val bindingContext = getBindingContext(ktFile)
     if (bindingContext == null) return emptyList()

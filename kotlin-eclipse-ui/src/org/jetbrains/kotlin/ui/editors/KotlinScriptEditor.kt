@@ -26,7 +26,7 @@ class KotlinScriptEditor : KotlinCommonEditor() {
             val file = eclipseFile ?: return null
             
             val documentWithoutCR = StringUtilRt.convertLineSeparators(document.get())
-            return KotlinPsiManager.INSTANCE.parseText(documentWithoutCR, file)
+            return KotlinPsiManager.parseText(documentWithoutCR, file)
         }
 
     override val javaProject: IJavaProject? by lazy {

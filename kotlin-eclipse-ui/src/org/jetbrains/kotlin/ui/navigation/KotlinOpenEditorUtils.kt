@@ -59,7 +59,7 @@ fun chooseSourceFile(sourceFiles: List<KtFile>): IFile? {
 }
 
 fun chooseFile(jetFiles: List<KtFile>): IFile? {
-    val eclipseFiles = jetFiles.map(KotlinPsiManager::getEclipseFile)
+    val eclipseFiles = jetFiles.map { KotlinPsiManager.getEclipseFile(it) }
     
     val dialog = ListDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell())
     dialog.setBlockOnOpen(true)

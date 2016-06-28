@@ -69,7 +69,7 @@ public object AnnotationManager {
     
     public fun clearAllMarkersFromProject(project: IProject) {
         try {
-            KotlinPsiManager.INSTANCE.getFilesByProject(project).forEach { 
+            KotlinPsiManager.getFilesByProject(project).forEach { 
                 it.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE) 
             }
         } catch (e: CoreException) {

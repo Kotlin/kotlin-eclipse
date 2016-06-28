@@ -60,7 +60,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         }
         
         fun getFileClassName(mainFile: IFile): FqName {
-            val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
+            val ktFile = KotlinPsiManager.getParsedFile(mainFile)
             return NoResolveFileClassesProvider.getFileClassFqName(ktFile)
         }
         
@@ -72,7 +72,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     override fun launch(selection: ISelection, mode: String) {
         val mainFile = findFileToLaunch(selection) ?: return
         
-        val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
+        val ktFile = KotlinPsiManager.getParsedFile(mainFile)
         
         val entryPoint = getEntryPoint(ktFile)
         if (entryPoint != null) {

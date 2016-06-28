@@ -51,7 +51,7 @@ public class KotlinAnalysisJob(
             })
             
             val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-            val projectFiles = KotlinPsiManager.INSTANCE.getFilesByProject(javaProject.project)
+            val projectFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
             updateLineMarkers(analysisResult.bindingContext.diagnostics, (projectFiles - affectedFiles).toList())
             
             return Status.OK_STATUS

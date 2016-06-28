@@ -75,7 +75,7 @@ public class KotlinNature: IProjectNature {
     
     override public fun deconfigure() {
         removeKotlinBuilder(eclipseProject)
-        KotlinPsiManager.INSTANCE.removeProjectFromManager(eclipseProject)
+        KotlinPsiManager.removeProjectFromManager(eclipseProject)
     }
     
     override public fun setProject(project: IProject) {

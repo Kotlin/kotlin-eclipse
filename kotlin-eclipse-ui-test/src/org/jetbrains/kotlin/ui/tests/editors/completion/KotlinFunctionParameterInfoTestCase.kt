@@ -34,7 +34,7 @@ open public class KotlinFunctionParameterInfoTestCase : KotlinProjectTestCase() 
     }
     
     private fun getExpectedResult(testEditor: TextEditorTest): List<String> {
-        val jetFile = KotlinPsiManager.INSTANCE.getParsedFile(testEditor.getEditingFile())
+        val jetFile = KotlinPsiManager.getParsedFile(testEditor.getEditingFile())
         val lastChild = jetFile.getLastChild()
         val expectedText = if (lastChild.getNode().getElementType() == KtTokens.BLOCK_COMMENT) {
             val lastChildText = lastChild.getText()

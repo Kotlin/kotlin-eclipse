@@ -96,7 +96,7 @@ public object KotlinCompletionUtils {
         val jetFile: KtFile?
         val file = editor.eclipseFile
         if (file != null) {
-            jetFile = KotlinPsiManager.INSTANCE.parseText(StringUtilRt.convertLineSeparators(sourceCodeWithMarker), file)
+            jetFile = KotlinPsiManager.parseText(StringUtilRt.convertLineSeparators(sourceCodeWithMarker), file)
         } else {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null)
             return null
