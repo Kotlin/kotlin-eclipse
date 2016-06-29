@@ -48,7 +48,13 @@ import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.formatRange
 import java.util.ArrayList
 
-public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
+public class KotlinImplementMethodsProposal(private val fromTest: Boolean = false) : KotlinQuickAssistProposal() {
+    companion object {
+        private const val DEFAULT_EXCEPTION_CALL = "UnsupportedOperationException()"
+        private const val IDEA_EXCEPTION_CALL =
+                "UnsupportedOperationException(\"not implemented\") //To change body of created functions use File | Settings | File Templates."
+    }
+    
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
         renderDefaultValues = false
         modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
@@ -152,7 +158,8 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         val returnsNotUnit = returnType != null && !KotlinBuiltIns.isUnit(returnType)
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
 
-        val delegation = generateUnsupportedOrSuperCall(descriptor)
+        val exceptionCall = if (fromTest) IDEA_EXCEPTION_CALL else DEFAULT_EXCEPTION_CALL
+        val delegation = generateUnsupportedOrSuperCall(descriptor, exceptionCall)
 
         val body = "{$lineDelimiter" + (if (returnsNotUnit && !isAbstract) "return " else "") + delegation + "$lineDelimiter}"
 
@@ -176,10 +183,11 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         return KtPsiFactory(classOrObject.getProject()).createProperty(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
 
-    private fun generateUnsupportedOrSuperCall(descriptor: CallableMemberDescriptor): String {
+    private fun generateUnsupportedOrSuperCall(descriptor: CallableMemberDescriptor,
+                                               exceptionCall: String = DEFAULT_EXCEPTION_CALL): String {
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
         if (isAbstract) {
-            return "throw UnsupportedOperationException()"
+            return "throw $exceptionCall"
         } else {
             val builder = StringBuilder()
             builder.append("super.${descriptor.escapedName()}")

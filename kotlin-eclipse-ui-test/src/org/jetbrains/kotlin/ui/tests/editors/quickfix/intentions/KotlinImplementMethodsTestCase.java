@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.ui.editors.quickassist.KotlinImplementMethodsProposa
 
 public class KotlinImplementMethodsTestCase extends KotlinSpacesForTabsQuickAssistTestCase<KotlinImplementMethodsProposal> {
 	protected void doTest(String testPath) {
-		doTestFor(testPath, new KotlinImplementMethodsProposal());
+		doTestFor(testPath, new KotlinImplementMethodsProposal(true));
 	}
 
 	@Override
