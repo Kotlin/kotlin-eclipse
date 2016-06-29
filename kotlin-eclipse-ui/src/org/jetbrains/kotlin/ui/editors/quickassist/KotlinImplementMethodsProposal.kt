@@ -98,11 +98,9 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
 
-        val newLine = IndenterUtil.createWhiteSpace(0, 1, lineDelimiter)
-
-        val generatedText = generateOverridingMembers(selectedElements, classOrObject)
+        val generatedText = generateOverridingMembers(selectedElements, classOrObject, lineDelimiter)
                 .map { it.node.text }
-                .joinToString(newLine, postfix = newLine)
+                .joinToString(lineDelimiter, postfix = lineDelimiter)
 
         document.replace(insertOffset, 0, generatedText)
         
@@ -130,19 +128,22 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
     }
 
     private fun generateOverridingMembers(selectedElements: Set<CallableMemberDescriptor>,
-                                          classOrObject: KtClassOrObject): List<KtElement> {
+                                          classOrObject: KtClassOrObject,
+                                          lineDelimiter: String): List<KtElement> {
         val overridingMembers = ArrayList<KtElement>()
         for (selectedElement in selectedElements) {
             if (selectedElement is SimpleFunctionDescriptor) {
-                overridingMembers.add(overrideFunction(classOrObject, selectedElement))
+                overridingMembers.add(overrideFunction(classOrObject, selectedElement, lineDelimiter))
             } else if (selectedElement is PropertyDescriptor) {
-                overridingMembers.add(overrideProperty(classOrObject, selectedElement))
+                overridingMembers.add(overrideProperty(classOrObject, selectedElement, lineDelimiter))
             }
         }
         return overridingMembers
     }
 
-    private fun overrideFunction(classOrObject: KtClassOrObject, descriptor: FunctionDescriptor): KtNamedFunction {
+    private fun overrideFunction(classOrObject: KtClassOrObject,
+                                 descriptor: FunctionDescriptor,
+                                 lineDelimiter: String): KtNamedFunction {
         val newDescriptor: FunctionDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
                 descriptor.getKind(), /* copyOverrides = */ true)
         newDescriptor.setOverriddenDescriptors(listOf(descriptor))
@@ -153,22 +154,24 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
 
         val delegation = generateUnsupportedOrSuperCall(descriptor)
 
-        val body = "{\n" + (if (returnsNotUnit && !isAbstract) "return " else "") + delegation + "\n}"
+        val body = "{$lineDelimiter" + (if (returnsNotUnit && !isAbstract) "return " else "") + delegation + "$lineDelimiter}"
 
         return KtPsiFactory(classOrObject.getProject()).createFunction(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
 
-    private fun overrideProperty(classOrObject: KtClassOrObject, descriptor: PropertyDescriptor): KtElement {
+    private fun overrideProperty(classOrObject: KtClassOrObject,
+                                 descriptor: PropertyDescriptor,
+                                 lineDelimiter: String): KtElement {
         val newDescriptor = descriptor.copy(descriptor.getContainingDeclaration(), Modality.OPEN, descriptor.getVisibility(),
                 descriptor.getKind(), /* copyOverrides = */ true) as PropertyDescriptor
         newDescriptor.setOverriddenDescriptors(listOf(descriptor))
 
         val body = StringBuilder()
-        body.append("\nget()")
+        body.append("${lineDelimiter}get()")
         body.append(" = ")
         body.append(generateUnsupportedOrSuperCall(descriptor))
         if (descriptor.isVar()) {
-            body.append("\nset(value) {\n}")
+            body.append("${lineDelimiter}set(value) {\n}")
         }
         return KtPsiFactory(classOrObject.getProject()).createProperty(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
