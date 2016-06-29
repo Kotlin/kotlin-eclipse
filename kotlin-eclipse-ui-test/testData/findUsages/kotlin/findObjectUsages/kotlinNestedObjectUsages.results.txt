@@ -1,2 +1,2 @@
-Receiver (10: 28) println("foo = ${a.O.foo}")
-Value read (11: 21) val obj = a.O
+Receiver 10 println("foo = ${a.O.foo}")
+Value read 11 val obj = a.O
