@@ -1,2 +1,2 @@
-Unclassified usage (2: 26) public open class X: A()
-Unclassified usage (4: 25) public interface T: A
+Unclassified usage 2 public open class X: A()
+Unclassified usage 4 public interface T: A

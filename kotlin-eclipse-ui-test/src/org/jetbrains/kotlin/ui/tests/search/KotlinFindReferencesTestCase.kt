@@ -116,8 +116,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         val agreement = expectedResults.all { expectedResult ->
             actualResults.any { actualResult ->
                 (expectedResult.fileName == null || expectedResult == actualResult) && 
-                    expectedResult.lineNumber == actualResult.lineNumber && 
-                	expectedResult.offsetInLine == actualResult.offsetInLine
+                    expectedResult.lineNumber == actualResult.lineNumber 
             }
         }
         
@@ -126,7 +125,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
     
     private fun loadResultsFile(resultFile: File): List<TestResult> {
         val fileNameRegex = "\\[(.+)\\]".toRegex()
-        val offsetRegex = "\\((\\d+):\\s*(\\d+)\\)".toRegex()
+        val offsetRegex = "([\\d]+\\s)".toRegex()
         return FileUtil.loadFile(resultFile).splitToSequence("\n")
             .filter { it.isNotBlank() }
             .map { line ->
@@ -136,8 +135,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
                 val offsetMatch= offsetRegex.find(line)!!
 	            TestResult(
 	                fileName, 
-	                offsetMatch.groups[1]!!.value.toInt(), 
-	                offsetMatch.groups[2]!!.value.toInt())
+	                offsetMatch.groups[1]!!.value.trim().toInt())
         	}.toList()
     }
     
@@ -150,8 +148,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         val document = EditorUtil.getDocument(testFile.file)
         if (document is AbstractDocument) {
         	val lineNumber = document.getLineOfOffset(offset) + 1
-			val lineInformation = document.getLineInformationOfOffset(offset)
-            return TestResult(testFile.name, lineNumber, offset - lineInformation.getOffset() + 1)
+            return TestResult(testFile.name, lineNumber)
         }
         
         throw RuntimeException()
@@ -182,7 +179,7 @@ abstract class KotlinFindReferencesTestCase : KotlinProjectTestCase() {
         return TestConfiguration(editor, sourceFiles, File(rootPath, "${prefix}results.txt"))
     }
     
-    data class TestResult(val fileName: String?, val lineNumber: Int, val offsetInLine: Int)
+    data class TestResult(val fileName: String?, val lineNumber: Int)
     
     data class TestConfiguration(val editor: TextEditorTest, val sourceFiles: List<TestFile>, val resultFile: File)
     
