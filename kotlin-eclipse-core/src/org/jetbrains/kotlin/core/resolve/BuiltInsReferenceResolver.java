@@ -48,7 +48,6 @@ import org.jetbrains.kotlin.platform.PlatformToKotlinClassMap;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
-import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.kotlin.resolve.TargetPlatform;
 import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform;
@@ -248,7 +247,9 @@ public class BuiltInsReferenceResolver {
     public static boolean isFromBuiltinModule(@NotNull DeclarationDescriptor originalDescriptor) {
         // TODO This is optimization only
         // It should be rewritten by checking declarationDescriptor.getSource(), when the latter returns something non-trivial for builtins.
-        return DefaultBuiltIns.getInstance().getBuiltInsModule().equals(DescriptorUtils.getContainingModule(originalDescriptor));
+        ModuleDescriptor module = DescriptorUtilsKt.getModule(originalDescriptor);
+        KotlinBuiltIns builtIns = module.getBuiltIns();
+        return module.equals(builtIns.getBuiltInsModule());
     }
 
     @Nullable
