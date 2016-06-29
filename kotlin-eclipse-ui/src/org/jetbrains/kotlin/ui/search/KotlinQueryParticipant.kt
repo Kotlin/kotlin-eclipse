@@ -86,7 +86,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 val searchElements = getSearchElements(querySpecification)
                 if (searchElements.isEmpty()) return
                 
-                if (querySpecification is KotlinJavaQuerySpecification) {
+                if (querySpecification is KotlinAndJavaSearchable) {
                     runCompositeSearch(searchElements, requestor, querySpecification, monitor)
                     return
                 }
@@ -119,7 +119,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
     
     override public fun getUIParticipant() = KotlinReferenceMatchPresentation()
     
-    private fun runCompositeSearch(elements: List<SearchElement>, requestor: ISearchRequestor, specification: QuerySpecification, 
+    private fun runCompositeSearch(elements: List<SearchElement>, requestor: ISearchRequestor, originSpecification: QuerySpecification, 
             monitor: IProgressMonitor?) {
         
         fun reportSearchResults(result: AbstractJavaSearchResult) {
@@ -133,24 +133,29 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 is SearchElement.JavaSearchElement -> 
                     ElementQuerySpecification(
                         searchElement.javaElement, 
-                        specification.getLimitTo(), 
-                        specification.getScope(), 
-                        specification.getScopeDescription())
+                        originSpecification.getLimitTo(), 
+                        originSpecification.getScope(), 
+                        originSpecification.getScopeDescription())
                 
                 is SearchElement.KotlinSearchElement -> 
                     KotlinOnlyQuerySpecification(
                         searchElement.kotlinElement,
-                        specification.getScope().getKotlinFiles(), 
-                        specification.getLimitTo(), 
-                        specification.getScopeDescription())
+                        originSpecification.getScope().getKotlinFiles(), 
+                        originSpecification.getLimitTo(), 
+                        originSpecification.getScopeDescription())
             }
         }
         
-        
-        specifications.forEach { 
-            val searchQuery = JavaSearchQuery(it)
-            searchQuery.run(monitor)
-            reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
+        if (originSpecification is KotlinScoped) {
+            for (specification in specifications) {
+                KotlinQueryParticipant().search({ requestor.reportMatch(it) }, specification, monitor)
+            }
+        } else {
+            for (specification in specifications) {
+                val searchQuery = JavaSearchQuery(specification)
+                searchQuery.run(monitor)
+                reportSearchResults(searchQuery.getSearchResult() as AbstractJavaSearchResult)
+            }
         }
     }
     
