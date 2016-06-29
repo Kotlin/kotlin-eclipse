@@ -6,7 +6,8 @@ import org.jetbrains.kotlin.ui.editors.quickassist.KotlinImplementMethodsProposa
 
 public class KotlinImplementMethodsTestCase extends KotlinSpacesForTabsQuickAssistTestCase<KotlinImplementMethodsProposal> {
 	protected void doTest(String testPath) {
-		doTestFor(testPath, new KotlinImplementMethodsProposal());
+		String exceptionCall = "UnsupportedOperationException(\"not implemented\") //To change body of created functions use File | Settings | File Templates.";
+        doTestFor(testPath, new KotlinImplementMethodsProposal(exceptionCall));
 	}
 
 	@Override

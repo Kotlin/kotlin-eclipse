@@ -48,7 +48,8 @@ import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.formatRange
 import java.util.ArrayList
 
-public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
+public class KotlinImplementMethodsProposal(
+        private val exceptionCall: String = "UnsupportedOperationException()") : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
         renderDefaultValues = false
         modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
@@ -152,7 +153,7 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         val returnsNotUnit = returnType != null && !KotlinBuiltIns.isUnit(returnType)
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
 
-        val delegation = generateUnsupportedOrSuperCall(descriptor)
+        val delegation = generateUnsupportedOrSuperCall(descriptor, exceptionCall)
 
         val body = "{$lineDelimiter" + (if (returnsNotUnit && !isAbstract) "return " else "") + delegation + "$lineDelimiter}"
 
@@ -176,10 +177,11 @@ public class KotlinImplementMethodsProposal : KotlinQuickAssistProposal() {
         return KtPsiFactory(classOrObject.getProject()).createProperty(OVERRIDE_RENDERER.render(newDescriptor) + body)
     }
 
-    private fun generateUnsupportedOrSuperCall(descriptor: CallableMemberDescriptor): String {
+    private fun generateUnsupportedOrSuperCall(descriptor: CallableMemberDescriptor,
+                                               exception: String = exceptionCall): String {
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
         if (isAbstract) {
-            return "throw UnsupportedOperationException()"
+            return "throw $exception"
         } else {
             val builder = StringBuilder()
             builder.append("super.${descriptor.escapedName()}")
