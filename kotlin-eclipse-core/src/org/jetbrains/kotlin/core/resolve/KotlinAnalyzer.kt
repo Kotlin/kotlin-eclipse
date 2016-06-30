@@ -16,9 +16,8 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve
 
-import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.core.resources.IProject
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
-import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.psi.KtFile
@@ -47,6 +46,11 @@ object KotlinAnalyzer {
                 analyzeFiles(environment, files)
             }
         }
+    }
+    
+    fun analyzeProject(eclipseProject: IProject): AnalysisResultWithProvider {
+        val environment = KotlinEnvironment.getEnvironment(eclipseProject)
+        return analyzeFiles(environment, emptyList())
     }
 
     private fun analyzeFiles(kotlinEnvironment: KotlinEnvironment,
