@@ -27,19 +27,9 @@ data class FileAnalysisResults(val file: KtFile, val analysisResult: AnalysisRes
 public object KotlinAnalysisFileCache {
     private @Volatile var lastAnalysedFileCache: FileAnalysisResults? = null
 
-    // This method can work only with real files that are present in VFS
     @Synchronized fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
         return getImmediatlyFromCache(file) ?: run {
-            val eclipseFile = KotlinPsiManager.getEclipseFile(file)!!
-            val environment = getEnvironment(eclipseFile)
-            
-            getAnalysisResult(file, environment)
-        }
-    }
-    
-    // This method can take synthetic files
-    @Synchronized fun getAnalysisResult(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
-        return getImmediatlyFromCache(file) ?: run {
+            val environment = getEnvironment(file.project)!!
             val analysisResult = resolve(file, environment)
             
             lastAnalysedFileCache = FileAnalysisResults(file, analysisResult)

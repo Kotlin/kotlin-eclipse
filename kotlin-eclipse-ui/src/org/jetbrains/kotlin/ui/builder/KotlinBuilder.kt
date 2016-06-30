@@ -89,7 +89,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         }
         
         val ktFiles = existingAffectedFiles.map { KotlinPsiManager.getParsedFile(it) }
-        val analysisResult = KotlinAnalyzer.analyzeFiles(javaProject, ktFiles).analysisResult
+        val analysisResult = KotlinAnalyzer.analyzeFiles(ktFiles).analysisResult
         
         clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
         updateLineMarkers(analysisResult.bindingContext.diagnostics, existingAffectedFiles)
