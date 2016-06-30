@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
+import org.eclipse.core.resources.IResource
 import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
@@ -38,8 +39,6 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
-import java.util.ArrayList
-import org.eclipse.core.resources.IResource
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -170,6 +169,10 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
         @JvmStatic fun updateKotlinEnvironment(eclipseProject: IProject) {
             cachedEnvironment.updateEnvironment(eclipseProject, environmentCreation)
+        }
+        
+        @JvmStatic fun removeEnvironment(eclipseProject: IProject) {
+            cachedEnvironment.removeEnvironment(eclipseProject)
         }
 
         @JvmStatic fun getJavaProject(project: Project): IProject? = cachedEnvironment.getEclipseResource(project)
