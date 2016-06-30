@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.psi.KtFile
 
 object KotlinAnalyzer {
@@ -27,29 +28,25 @@ object KotlinAnalyzer {
         return KotlinAnalysisFileCache.getAnalysisResult(jetFile)
     }
     
-    fun analyzeFile(jetFile: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
-        return KotlinAnalysisFileCache.getAnalysisResult(jetFile, environment)
-    }
-
-    fun analyzeFiles(javaProject: IJavaProject, filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
-        if (filesToAnalyze.size == 1) {
-            return analyzeFile(filesToAnalyze.iterator().next())
+    fun analyzeFiles(files: Collection<KtFile>): AnalysisResultWithProvider {
+        return when {
+            files.isEmpty() -> throw IllegalStateException("There should be at least one file to analyze")
+            
+            files.size == 1 -> analyzeFile(files.single())
+            
+            else -> {
+                val environment = getEnvironment(files.single().project)
+                if (environment == null) {
+                    throw IllegalStateException("There is no environment for project: ${files.single().project}")
+                }
+                
+                if (environment !is KotlinEnvironment) {
+                    throw IllegalStateException("Only KotlinEnvironment can be used to analyze several files")
+                }
+                
+                analyzeFiles(environment, files)
+            }
         }
-
-        val kotlinEnvironment = KotlinEnvironment.getEnvironment(javaProject.project)
-        return analyzeFiles(kotlinEnvironment, filesToAnalyze)
-    }
-    
-    fun analyzeFiles(files: Collection<KtFile>, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
-        if (files.size == 1) {
-            return analyzeFile(files.single(), environment)
-        }
-        
-        if (environment !is KotlinEnvironment) {
-            throw IllegalStateException("It is impossible to resolve several files at once with non KotlinEnvironment: $environment")
-        }
-        
-        return analyzeFiles(environment, files)
     }
 
     private fun analyzeFiles(kotlinEnvironment: KotlinEnvironment,
