@@ -47,16 +47,16 @@ public object KotlinAnalysisFileCache {
         }
     }
     
-    fun resolve(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
+    fun resetCache() {
+        lastAnalysedFileCache = null
+    }
+    
+    private fun resolve(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
         return when (environment) {
             is KotlinScriptEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeScript(environment, file)
             is KotlinEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(environment, listOf(file))
             else -> throw IllegalArgumentException("Could not analyze file with environment: $environment")
         }
-    }
-    
-    fun resetCache() {
-        lastAnalysedFileCache = null
     }
     
     @Synchronized
