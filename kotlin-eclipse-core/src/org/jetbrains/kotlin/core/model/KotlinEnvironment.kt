@@ -20,6 +20,12 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import org.eclipse.core.resources.IFile
+<<<<<<< HEAD
+=======
+import org.eclipse.core.resources.IProject
+import org.eclipse.core.resources.IResource
+import org.eclipse.core.runtime.Path
+>>>>>>> bd9e985... Remove Kotlin environment when project was removed or closed
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
@@ -30,6 +36,7 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 <<<<<<< HEAD
 =======
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
+<<<<<<< HEAD
 import java.util.ArrayList
 <<<<<<< HEAD
 import org.eclipse.core.resources.IProject
@@ -97,6 +104,8 @@ import com.intellij.psi.impl.file.impl.JavaFileManager;
 =======
 import org.eclipse.core.resources.IResource
 >>>>>>> 15b3627... Unify  access to KtFile for scripts and general source files
+=======
+>>>>>>> bd9e985... Remove Kotlin environment when project was removed or closed
 
 import kotlin.jvm.functions.Function1;
 =======
@@ -459,6 +468,10 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
         @JvmStatic fun updateKotlinEnvironment(eclipseProject: IProject) {
             cachedEnvironment.updateEnvironment(eclipseProject, environmentCreation)
+        }
+        
+        @JvmStatic fun removeEnvironment(eclipseProject: IProject) {
+            cachedEnvironment.removeEnvironment(eclipseProject)
         }
 
         @JvmStatic fun getJavaProject(project: Project): IProject? = cachedEnvironment.getEclipseResource(project)
