@@ -36,19 +36,9 @@ public object KotlinAnalysisFileCache {
 >>>>>>> 4e6f838... Replace IJavaProject with raw IProject in several places
 =======
 
-    // This method can work only with real files that are present in VFS
     @Synchronized fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
         return getImmediatlyFromCache(file) ?: run {
-            val eclipseFile = KotlinPsiManager.getEclipseFile(file)!!
-            val environment = getEnvironment(eclipseFile)
-            
-            getAnalysisResult(file, environment)
-        }
-    }
-    
-    // This method can take synthetic files
-    @Synchronized fun getAnalysisResult(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
-        return getImmediatlyFromCache(file) ?: run {
+            val environment = getEnvironment(file.project)!!
             val analysisResult = resolve(file, environment)
             
 >>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
