@@ -89,10 +89,14 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         }
         
         val ktFiles = existingAffectedFiles.map { KotlinPsiManager.getParsedFile(it) }
-        val analysisResult = KotlinAnalyzer.analyzeFiles(ktFiles).analysisResult
         
+        val analysisResultWithProvider = if (ktFiles.isEmpty())
+            KotlinAnalyzer.analyzeProject(project)
+        else
+            KotlinAnalyzer.analyzeFiles(ktFiles)
+                
         clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
-        updateLineMarkers(analysisResult.bindingContext.diagnostics, existingAffectedFiles)
+        updateLineMarkers(analysisResultWithProvider.analysisResult.bindingContext.diagnostics, existingAffectedFiles)
         
         runCancellableAnalysisFor(javaProject, existingAffectedFiles)
         
