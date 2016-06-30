@@ -74,11 +74,6 @@ public class KotlinAbstractModifierQuickFixTest extends KotlinQuickFixTestCase {
     }
     
     @Test
-    public void redundantAbstract() {
-        doAutoTest();
-    }
-    
-    @Test
     public void replaceOpen() {
         doAutoTest();
     }
