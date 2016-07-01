@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import com.intellij.openapi.util.text.StringUtilRt
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
+import org.eclipse.core.resources.IResourceDelta
 
 class KotlinScriptEditor : KotlinCommonEditor() {
     override val parsedFile: KtFile?
@@ -40,8 +41,9 @@ class KotlinScriptEditor : KotlinCommonEditor() {
     override fun dispose() {
         super.dispose()
         
-        if (eclipseFile != null) {
-            KotlinScriptEnvironment.removeKotlinEnvironment(eclipseFile!!)
+        eclipseFile?.let {
+            KotlinScriptEnvironment.removeKotlinEnvironment(it)
+            KotlinPsiManager.updateProjectPsiSources(it, IResourceDelta.REMOVED)
         }
     }
 }
