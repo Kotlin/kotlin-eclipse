@@ -1,45 +1,29 @@
 package org.jetbrains.kotlin.ui.tests.refactoring.rename
 
-import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase
-import org.junit.Before
-import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
-import org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils
-import java.io.File
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import org.eclipse.core.resources.IFile
+import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
+import org.eclipse.jdt.core.ICompilationUnit
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
+import org.eclipse.jface.text.ITextSelection
+import org.eclipse.jface.text.TextSelection
+import org.eclipse.ui.IEditorPart
 import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.ide.IDE
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.eclipse.jface.text.TextSelection
-import org.junit.Assert
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.eclipse.core.resources.IFile
-import org.eclipse.jface.text.ITextSelection
-import org.eclipse.jdt.core.IType
-import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
-import org.jetbrains.kotlin.ui.refactorings.rename.doRename
-import org.jetbrains.kotlin.ui.refactorings.rename.createRenameSupport
-import com.google.gson.JsonParser
-import com.google.gson.JsonObject
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
-import org.eclipse.core.runtime.IPath
-import org.eclipse.jdt.core.ICompilationUnit
-import org.eclipse.jdt.internal.ui.javaeditor.ASTProvider
-import org.eclipse.ui.IEditorPart
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
-import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
-import org.eclipse.jdt.core.refactoring.IJavaRefactorings
-import org.eclipse.jdt.internal.core.refactoring.descriptors.RefactoringSignatureDescriptorFactory
-import org.eclipse.jdt.core.refactoring.descriptors.RenameJavaElementDescriptor
-import org.eclipse.ltk.core.refactoring.RefactoringDescriptor
-import org.eclipse.ltk.core.refactoring.RefactoringStatus
-import org.eclipse.ltk.core.refactoring.Refactoring
-import org.eclipse.ltk.core.refactoring.CheckConditionsOperation
-import org.eclipse.ltk.core.refactoring.CreateChangeOperation
-import org.eclipse.core.runtime.NullProgressMonitor
-import org.jetbrains.kotlin.ui.refactorings.rename.KotlinLightType
-import org.eclipse.ltk.core.refactoring.PerformChangeOperation
-import org.eclipse.core.resources.ResourcesPlugin
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.jetbrains.kotlin.ui.refactorings.rename.createRenameSupport
+import org.jetbrains.kotlin.ui.refactorings.rename.doRename
+import org.junit.Assert
+import org.junit.Before
+import java.io.File
 
 abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
     @Before
@@ -69,7 +53,7 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         
         val newName = renameObject["newName"].asString
         when (editor) {
-            is KotlinFileEditor -> performRename(selection, newName, editor)
+            is KotlinCommonEditor -> performRename(selection, newName, editor)
             else -> performRenameFromJava(selection, newName, editor as JavaEditor)
         }
         
@@ -77,7 +61,7 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
         checkResult(base.toFile(), base)
     }
     
-    fun performRename(selection: ITextSelection, newName: String, editor: KotlinFileEditor) {
+    fun performRename(selection: ITextSelection, newName: String, editor: KotlinCommonEditor) {
         val selectedElement = EditorUtil.getJetElement(editor, selection.getOffset())
         if (selectedElement == null) return
         
@@ -101,6 +85,9 @@ abstract class KotlinRenameTestCase : KotlinProjectTestCase() {
                 val actualSource = if (expectedFile.extension == "kt") {
                     val actualFile = actualFiles.find { it.getName() == expectedFile.getName() }!!
                     EditorUtil.getDocument(actualFile).get()
+                } else if (expectedFile.extension == "kts") {
+                    val actualFile = getTestProject().getJavaProject().getProject().findMember("src/${expectedFile.getName()}")
+                    EditorUtil.getDocument(actualFile as IFile).get()
                 } else {
                     val relative = Path(expectedFile.getPath()).makeRelativeTo(base)
                     val element = getTestProject().getJavaProject().findElement(relative)

@@ -1,0 +1,5 @@
+{
+  "oldName": "longVarName",
+  "newName": "renamedName",
+  "mainFile": "main.kts"
+}

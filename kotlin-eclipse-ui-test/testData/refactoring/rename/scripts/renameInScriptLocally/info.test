@@ -1,0 +1,5 @@
+{
+  "oldName": "sampleFun",
+  "newName": "renamedFun",
+  "mainFile": "main.kts"
+}
