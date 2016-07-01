@@ -37,22 +37,34 @@ public abstract class KotlinEditorAutoTestCase extends KotlinProjectTestCase {
     private static final String TEST_DATA_PATH = "testData";
     
     protected static final String KT_FILE_EXTENSION = ".kt";
+    protected static final String KT_SCRIPT_FILE_EXTENSION = ".kts";
     protected static final String AFTER_FILE_EXTENSION = ".after";
     protected static final String BEFORE_FILE_EXTENSION = ".before";
-    protected static final String FILE_DEPENDENCY_SUFFIX = ".dependency.kt";
+    
+    protected static final String FILE_DEPENDENCY_SUFFIX = ".dependency";
     
     protected final void doAutoTest() {
         String testPath = TEST_DATA_PATH + "/" + getTestDataRelativePath() + "/" + name.getMethodName();
         File testFolder = new File(testPath);
+        
         File testFile = new File(testPath + KT_FILE_EXTENSION);
-        File dependencyFile = new File(testPath + FILE_DEPENDENCY_SUFFIX);
+        File scriptTestFile = new File(testPath + KT_SCRIPT_FILE_EXTENSION);
+        String extension;
+        if (testFile.exists()) {
+            extension = KT_FILE_EXTENSION;
+        } else {
+            testFile = scriptTestFile;
+            extension = KT_SCRIPT_FILE_EXTENSION;
+        }
+        
+        File dependencyFile = new File(testPath + FILE_DEPENDENCY_SUFFIX + extension);
         
         if (testFolder.exists() && testFolder.isDirectory()) {
             doMultiFileAutoTest(testFolder);
         } else if (testFile.exists() && testFile.isFile() && dependencyFile.exists()) {
-            doAutoTestWithDependencyFile(testPath + KT_FILE_EXTENSION, dependencyFile);
+            doAutoTestWithDependencyFile(testPath + extension, dependencyFile);
         } else if (testFile.exists() && testFile.isFile() && !dependencyFile.exists()) {
-            doSingleFileAutoTest(testPath + KT_FILE_EXTENSION);
+            doSingleFileAutoTest(testPath + extension);
         } else {
             throw new RuntimeException(String.format("Neither file \'%s\' nor directory \'%s\' was found", testFile.getAbsolutePath(), testFolder.getAbsolutePath()));
         }

@@ -143,7 +143,7 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
         try {
             SourceFileData dependencySourceFile = new SourceFileData(dependencyFile);
             String fileName = dependencySourceFile.getFileName();
-            String dependencyFileName = fileName.substring(0, fileName.length() - FILE_DEPENDENCY_SUFFIX.length()) + 
+            String dependencyFileName = fileName.substring(0, fileName.indexOf(FILE_DEPENDENCY_SUFFIX)) + 
                     "_dependency" + KT_FILE_EXTENSION;
             createSourceFile(dependencySourceFile.getPackageName(), dependencyFileName, 
                     dependencySourceFile.getContent());
