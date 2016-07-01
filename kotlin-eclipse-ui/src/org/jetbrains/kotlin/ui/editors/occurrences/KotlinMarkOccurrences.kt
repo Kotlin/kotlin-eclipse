@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.runJob
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.refactorings.rename.getLengthOfIdentifier
@@ -53,11 +54,11 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         if (!kotlinEditor.isActive()) return
         
         runJob("Update occurrence annotations", Job.DECORATE) { 
-            if (part is KotlinFileEditor && selection is ITextSelection) {
+            if (part is KotlinEditor && selection is ITextSelection) {
                 val file = part.eclipseFile
                 if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
                 
-                val document = part.getDocumentSafely()
+                val document = if (part is KotlinFileEditor) part.getDocumentSafely() else part.document
                 if (document == null) return@runJob Status.CANCEL_STATUS
                 
                 KotlinPsiManager.getKotlinFileIfExist(file, document.get())
@@ -75,12 +76,12 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         }
     }
     
-    private fun updateOccurrences(editor: KotlinFileEditor, occurrences: List<Position>) {
+    private fun updateOccurrences(editor: KotlinEditor, occurrences: List<Position>) {
         val annotationMap = occurrences.associateBy { Annotation(ANNOTATION_TYPE, false, null) }
         AnnotationManager.updateAnnotations(editor, annotationMap, ANNOTATION_TYPE)
     }
     
-    private fun findOccurrences(editor: KotlinFileEditor, jetElement: KtElement, file: IFile): List<Position> {
+    private fun findOccurrences(editor: KotlinEditor, jetElement: KtElement, file: IFile): List<Position> {
         val sourceElements = jetElement.resolveToSourceDeclaration()
         if (sourceElements.isEmpty()) return emptyList()
         

@@ -140,7 +140,7 @@ public class KotlinQueryParticipant : IQueryParticipant {
                 is SearchElement.KotlinSearchElement -> 
                     KotlinOnlyQuerySpecification(
                         searchElement.kotlinElement,
-                        originSpecification.getScope().getKotlinFiles(), 
+                        originSpecification.getFilesInScope(), 
                         originSpecification.getLimitTo(), 
                         originSpecification.getScopeDescription())
             }
@@ -298,6 +298,13 @@ fun IJavaSearchScope.getKotlinFiles(): List<IFile> {
             .map { JavaModel.getTarget(it, true) }
             .filterIsInstance(IProject::class.java)
             .flatMap { KotlinPsiManager.getFilesByProject(it) }
+}
+
+fun QuerySpecification.getFilesInScope(): List<IFile> {
+    return when (this) {
+        is KotlinScoped -> this.searchScope
+        else -> this.scope.getKotlinFiles()
+    }
 }
 
 public class KotlinElementMatch(val jetElement: KtElement) : Match(KotlinAdaptableElement(jetElement), jetElement.getTextOffset(), 
