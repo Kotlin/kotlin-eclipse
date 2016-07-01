@@ -6,6 +6,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.internal.debug.ui.BreakpointMarkerUpdater;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
+import org.jetbrains.kotlin.aspects.AspectsUtils;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 
 public aspect SuppressBreakpointMarkerUpdaterAspect {
@@ -19,7 +20,7 @@ public aspect SuppressBreakpointMarkerUpdaterAspect {
 	boolean around(BreakpointMarkerUpdater markerUpdater, IMarker marker, IDocument document, Position position):  
 			updateMarker(markerUpdater, marker, document, position) {
 		IFile resource = (IFile) marker.getResource();
-		if (resource != null && KotlinPsiManager.INSTANCE.existsSourceFile(resource)) {
+		if (resource != null && AspectsUtils.existsSourceFile(resource)) {
 			return true;
 		}
 
