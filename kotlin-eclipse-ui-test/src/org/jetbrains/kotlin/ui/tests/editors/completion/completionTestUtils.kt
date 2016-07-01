@@ -18,15 +18,13 @@ package org.jetbrains.kotlin.ui.tests.editors.completion
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProposal
 
-fun getCompletionProposals(editor: KotlinFileEditor): Array<ICompletionProposal> {
+fun getCompletionProposals(editor: KotlinEditor): Array<ICompletionProposal> {
     val processor = KotlinCompletionProcessor(editor, null, needSorting = true)
-    val proposals = processor.computeCompletionProposals(editor.getViewer(), KotlinTestUtils.getCaret(editor))
-    
-    return proposals
+    return processor.computeCompletionProposals(editor.javaEditor.getViewer(), KotlinTestUtils.getCaret(editor.javaEditor))
 }
 
 fun ICompletionProposal.stringToInsert(): String {
