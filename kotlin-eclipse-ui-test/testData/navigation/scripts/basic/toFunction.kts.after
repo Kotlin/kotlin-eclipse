@@ -1,0 +1,4 @@
+fun <caret>someFun() {
+}
+
+someFun()

@@ -1,0 +1,3 @@
+var <caret>sample = 10
+
+println(sample)
