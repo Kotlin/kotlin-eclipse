@@ -5,7 +5,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.debug.core.refactoring.BreakpointChange;
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
+import org.jetbrains.kotlin.ui.builder.AspectsUtils;
 
 @SuppressWarnings("restriction")
 public aspect KotlinBreakpointRenamingParticipantAspect {
@@ -18,7 +18,7 @@ public aspect KotlinBreakpointRenamingParticipantAspect {
     @SuppressAjWarnings({"adviceDidNotMatch"})
     IJavaElement around(IJavaElement parent, IJavaElement element): findElement(parent, element) {
         IResource resource = parent.getResource();
-        if (resource instanceof IFile && KotlinPsiManager.isKotlinFile((IFile) resource)) {
+        if (resource instanceof IFile && AspectsUtils.isKotlinFile((IFile) resource)) {
             return null;
         }
         
