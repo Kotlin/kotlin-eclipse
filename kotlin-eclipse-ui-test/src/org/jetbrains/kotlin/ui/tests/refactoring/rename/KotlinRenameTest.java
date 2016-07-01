@@ -74,4 +74,24 @@ public class KotlinRenameTest extends KotlinRenameTestCase {
     public void testRenameKotlinTopLevelFunFromJava() {
         doTest("testData/refactoring/rename/renameKotlinTopLevelFunFromJava/renameKotlinTopLevelFunFromJava.test");
     }
+    
+    @Test
+    public void testRenameClassInScript() {
+        doTest("testData/refactoring/rename/scripts/renameClassInScript/info.test");
+    }
+    
+    @Test
+    public void testRenameFunctionInScript() {
+        doTest("testData/refactoring/rename/scripts/renameFunctionInScript/info.test");
+    }
+    
+    @Test
+    public void testRenamePropertyInScript() {
+        doTest("testData/refactoring/rename/scripts/renamePropertyInScript/info.test");
+    }
+    
+    @Test
+    public void testRenameInScriptLocally() {
+        doTest("testData/refactoring/rename/scripts/renameInScriptLocally/info.test");
+    }
 }
