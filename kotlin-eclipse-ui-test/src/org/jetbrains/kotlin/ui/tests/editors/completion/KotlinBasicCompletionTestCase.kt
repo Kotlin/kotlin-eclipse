@@ -22,7 +22,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.junit.Assert
 import org.junit.Before
 
@@ -40,7 +40,7 @@ abstract class KotlinBasicCompletionTestCase : KotlinProjectTestCase() {
         
         val testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText)
         
-        val actualProposals = getActualProposals(testEditor.getEditor() as KotlinFileEditor)
+        val actualProposals = getActualProposals(testEditor.getEditor() as KotlinEditor)
         
         val expectedNumber = ExpectedCompletionUtils.numberOfItemsShouldPresent(fileText)
         if (expectedNumber != null) {
@@ -71,11 +71,11 @@ abstract class KotlinBasicCompletionTestCase : KotlinProjectTestCase() {
         }
     }
     
-    protected open fun getApplicableProposals(editor: KotlinFileEditor): Array<ICompletionProposal> {
+    protected open fun getApplicableProposals(editor: KotlinEditor): Array<ICompletionProposal> {
         return getCompletionProposals(editor)
     }
 
-    private fun getActualProposals(javaEditor: KotlinFileEditor): List<String> {
+    private fun getActualProposals(javaEditor: KotlinEditor): List<String> {
         return getApplicableProposals(javaEditor).map { it.stringToInsert() }
     }
 
