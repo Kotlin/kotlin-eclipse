@@ -63,6 +63,8 @@ private class ScriptsFilesStorage : PsiFilesStorage {
     private val cachedKtFiles = ConcurrentHashMap<IFile, KtFile>()
     
     override fun getPsiFile(eclipseFile: IFile): KtFile {
+        assert(isApplicable(eclipseFile)) { "$eclipseFile is not applicable for Kotlin scripts storage" }
+        
         return cachedKtFiles.getOrPut(eclipseFile) { KotlinPsiManager.parseFile(eclipseFile)!! }
     }
 
@@ -100,7 +102,7 @@ private class ProjectSourceFiles : PsiFilesStorage {
         synchronized (mapOperationLock) {
             updateProjectPsiSourcesIfNeeded(eclipseFile.getProject())
 
-            assert(exists(eclipseFile), { "File(" + eclipseFile.getName() + ") does not contain in the psiFiles" })
+            assert(existsInProjectSources(eclipseFile), { "File(" + eclipseFile.getName() + ") does not contain in the psiFiles" })
 
             return cachedKtFiles.getOrPut(eclipseFile) { KotlinPsiManager.parseFile(eclipseFile)!! }
         }
@@ -113,9 +115,9 @@ private class ProjectSourceFiles : PsiFilesStorage {
         }
     }
     
-    override fun isApplicable(file: IFile): Boolean = exists(file)
+    override fun isApplicable(file: IFile): Boolean = existsInProjectSources(file)
 
-    fun exists(file: IFile): Boolean {
+    fun existsInProjectSources(file: IFile): Boolean {
         synchronized (mapOperationLock) {
             val project = file.getProject() ?: return false
             
@@ -149,7 +151,7 @@ private class ProjectSourceFiles : PsiFilesStorage {
             assert(KotlinNature.hasKotlinNature(file.getProject()),
                     { "Project (" + file.getProject().getName() + ") does not have Kotlin nature" })
             
-            assert(!exists(file), { "File(" + file.getName() + ") is already added" })
+            assert(!existsInProjectSources(file), { "File(" + file.getName() + ") is already added" })
             
             projectFiles
                     .getOrPut(file.project) { hashSetOf<IFile>() }
@@ -159,7 +161,7 @@ private class ProjectSourceFiles : PsiFilesStorage {
     
     override fun removeFile(file: IFile) {
         synchronized (mapOperationLock) {
-            assert(exists(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
+            assert(existsInProjectSources(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
             
             cachedKtFiles.remove(file)
             projectFiles.get(file.project)?.remove(file)
@@ -224,7 +226,7 @@ private class ProjectSourceFiles : PsiFilesStorage {
         val sourceCodeWithouCR = StringUtilRt.convertLineSeparators(sourceCode)
         
         synchronized (mapOperationLock) {
-            assert(exists(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
+            assert(existsInProjectSources(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
             
             val currentParsedFile = getPsiFile(file)
             if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
@@ -264,7 +266,7 @@ object KotlinPsiManager {
     }
 
     fun existsSourceFile(file: IFile): Boolean {
-        return projectSourceFiles.exists(file)
+        return projectSourceFiles.existsInProjectSources(file)
     }
 
     fun getFilesByProject(projectName: String): Set<IFile> {
