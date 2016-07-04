@@ -214,6 +214,9 @@ abstract class KotlinCommonEditor : CompilationUnitEditor(), KotlinEditor {
         getEditorSite().getPage().removePostSelectionListener(kotlinMarkOccurrences)
     }
     
+     // Use this method instead of property `document` when document is getting in deferred thread 
+    fun getDocumentSafely(): IDocument? = getDocumentProvider()?.getDocument(getEditorInput())
+    
     fun isActive(): Boolean = isActiveEditor()
     
     override val eclipseFile: IFile?

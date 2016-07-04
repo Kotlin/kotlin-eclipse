@@ -53,7 +53,11 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         if (!kotlinEditor.isActive()) return
         
         runJob("Update occurrence annotations", Job.DECORATE) { 
+<<<<<<< HEAD
             if (part is KotlinFileEditor && selection is ITextSelection) {
+=======
+            if (part is KotlinCommonEditor && selection is ITextSelection) {
+>>>>>>> c655ca1... Place method to KotlinCommonEditor to reuse it in editor for scripts
                 val file = part.eclipseFile
                 if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
                 
