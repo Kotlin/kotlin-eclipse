@@ -54,11 +54,11 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         if (!kotlinEditor.isActive()) return
         
         runJob("Update occurrence annotations", Job.DECORATE) { 
-            if (part is KotlinEditor && selection is ITextSelection) {
+            if (part is KotlinCommonEditor && selection is ITextSelection) {
                 val file = part.eclipseFile
                 if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
                 
-                val document = if (part is KotlinFileEditor) part.getDocumentSafely() else part.document
+                val document = part.getDocumentSafely()
                 if (document == null) return@runJob Status.CANCEL_STATUS
                 
                 KotlinPsiManager.getKotlinFileIfExist(file, document.get())
