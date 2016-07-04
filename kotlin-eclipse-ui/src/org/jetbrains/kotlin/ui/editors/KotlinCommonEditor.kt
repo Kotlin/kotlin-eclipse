@@ -80,14 +80,15 @@ abstract class KotlinCommonEditor : CompilationUnitEditor(), KotlinEditor {
     
     private val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
     
-    @Suppress("UNCHECKED_CAST")
     override public fun <T> getAdapter(required: Class<T>): T? {
-        return when (required) {
-            IContentOutlinePage::class.java -> kotlinOutlinePage as T
-            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter as T
-            IRunToLineTarget::class.java -> KotlinRunToLineAdapter as T
+        val adapter: Any? = when (required) {
+            IContentOutlinePage::class.java -> kotlinOutlinePage
+            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter
+            IRunToLineTarget::class.java -> KotlinRunToLineAdapter
             else -> super<CompilationUnitEditor>.getAdapter(required)
         }
+        
+        return required.cast(adapter)
     }
     
     override public fun createPartControl(parent: Composite) {

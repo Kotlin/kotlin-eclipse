@@ -78,13 +78,15 @@ public class KotlinClassFileEditor : ClassFileEditor(), KotlinEditor {
         KotlinOutlinePage(this)
     }
     
-    @Suppress("UNCHECKED_CAST")
-    override public fun <T> getAdapter(required: Class<T>): T? =
-        when (required) {
-            IContentOutlinePage::class.java -> kotlinOutlinePage as T
-            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter as T
+    override public fun <T> getAdapter(required: Class<T>): T? {
+        val adapter: Any? = when (required) {
+            IContentOutlinePage::class.java -> kotlinOutlinePage
+            IToggleBreakpointsTarget::class.java -> KotlinToggleBreakpointAdapter
             else -> super<ClassFileEditor>.getAdapter(required)
         }
+        
+        return required.cast(adapter)
+    }
 
     override public fun createPartControl(parent:Composite) {
         setSourceViewerConfiguration(Configuration(colorManager, this, getPreferenceStore()))
