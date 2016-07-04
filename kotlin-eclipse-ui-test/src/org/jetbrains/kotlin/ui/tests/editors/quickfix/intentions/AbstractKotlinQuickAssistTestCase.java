@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProposal;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,6 +25,7 @@ public abstract class AbstractKotlinQuickAssistTestCase<Proposal extends KotlinQ
 	protected void doTestFor(String testPath, Proposal proposal, boolean joinBuildThread) {
 		String fileText = KotlinTestUtils.getText(testPath);
 		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
+		proposal.setEditor((KotlinEditor) testEditor.getEditor()); 
 		
 		String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");

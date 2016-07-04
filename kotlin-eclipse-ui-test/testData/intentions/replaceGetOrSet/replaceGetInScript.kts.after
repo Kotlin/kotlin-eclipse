@@ -1,0 +1,2 @@
+val p = listOf(1, 2)
+p[0]

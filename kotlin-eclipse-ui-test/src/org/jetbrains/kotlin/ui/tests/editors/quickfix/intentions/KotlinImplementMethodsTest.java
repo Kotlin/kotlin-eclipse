@@ -72,4 +72,9 @@ public class KotlinImplementMethodsTest extends KotlinImplementMethodsTestCase {
 	public void testTraitNullableFunction() {
 		doTest("common_testData/ide/codeInsight/overrideImplement/traitNullableFunction.kt");
 	}
+	
+	@Test
+    public void testImplementMethodInScript() {
+        doTest("testData/intentions/implementMethods/implementMethodInScript.kts");
+    }
 }

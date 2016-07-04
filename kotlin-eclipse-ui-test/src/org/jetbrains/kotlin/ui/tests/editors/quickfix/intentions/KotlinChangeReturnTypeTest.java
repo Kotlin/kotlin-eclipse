@@ -42,4 +42,9 @@ public class KotlinChangeReturnTypeTest extends KotlinChangeReturnTypeTestCase {
     public void testTypeMismatchInReturnLambdaWithLabel() {
         doTest("testData/intentions/changeReturnType/typeMismatchInReturnLambdaWithLabel.kt");
     }
+    
+    @Test
+    public void testChangeReturnTypeInScript() {
+        doTest("testData/intentions/changeReturnType/changeReturnTypeInScript.kts");
+    }
 }

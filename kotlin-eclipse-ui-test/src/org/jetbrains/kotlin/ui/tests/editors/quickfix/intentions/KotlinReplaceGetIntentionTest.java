@@ -99,4 +99,9 @@ public class KotlinReplaceGetIntentionTest extends KotlinReplaceGetIntentionTest
     public void testUnnamedAndNamed() throws Exception {
         doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/unnamedAndNamed.kt");
     }
+	
+	@Test
+    public void testReplaceGetInScript() throws Exception {
+        doTest("testData/intentions/replaceGetOrSet/replaceGetInScript.kts");
+    }
 }
