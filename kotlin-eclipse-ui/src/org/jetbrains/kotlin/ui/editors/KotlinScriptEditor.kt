@@ -43,7 +43,7 @@ class KotlinScriptEditor : KotlinCommonEditor() {
         
         eclipseFile?.let {
             KotlinScriptEnvironment.removeKotlinEnvironment(it)
-            KotlinPsiManager.updateProjectPsiSources(it, IResourceDelta.REMOVED)
+            KotlinPsiManager.removeFile(it)
         }
     }
 }

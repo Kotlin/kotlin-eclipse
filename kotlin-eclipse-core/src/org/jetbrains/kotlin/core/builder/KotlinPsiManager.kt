@@ -252,9 +252,13 @@ object KotlinPsiManager {
     fun updateProjectPsiSources(file: IFile, flag: Int) {
         when (flag) {
             IResourceDelta.ADDED -> projectSourceFiles.addFile(file)
-            IResourceDelta.REMOVED -> storage(file).removeFile(file)
+            IResourceDelta.REMOVED -> removeFile(file)
             else -> throw IllegalArgumentException()
         }
+    }
+    
+    fun removeFile(file: IFile) {
+        storage(file).removeFile(file)
     }
 
     fun removeProjectFromManager(project: IProject) {
