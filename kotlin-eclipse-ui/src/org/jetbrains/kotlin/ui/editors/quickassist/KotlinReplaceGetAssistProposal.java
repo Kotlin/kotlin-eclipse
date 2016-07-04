@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.psi.KtCallExpression;
 import org.jetbrains.kotlin.psi.KtExpression;
@@ -25,7 +24,6 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilKt;
 import org.jetbrains.kotlin.resolve.calls.model.DefaultValueArgument;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedValueArgument;
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
 
 import com.google.common.collect.Lists;
 import com.intellij.psi.PsiElement;
@@ -45,14 +43,9 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             return; 
         }
         
-        KotlinFileEditor activeEditor = getActiveEditor();
-        if (activeEditor == null) {
-            return;
-        }
-        
-        IFile file = EditorUtil.getFile(activeEditor);
+        IFile file = editor.getEclipseFile();
         if (file == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + activeEditor, null);
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
             return;
         }
 
@@ -65,12 +58,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     }
     
     private void replaceGetForElement(@NotNull KtQualifiedExpression element, @NotNull String arguments) {
-        KotlinFileEditor editor = getActiveEditor();
-        if (editor == null) {
-            return;
-        }
-        
-        IDocument document = editor.getViewer().getDocument();
+        IDocument document = editor.getDocument();
         
         try {
             int textLength = element.getTextLength();
@@ -86,7 +74,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
                     textLength, 
                     receiverExpressionText + "[" + arguments + "]");
             
-            editor.getViewer().getTextWidget().setCaretOffset(startOffset + receiverExpressionText.length());
+            editor.getJavaEditor().getViewer().getTextWidget().setCaretOffset(startOffset + receiverExpressionText.length());
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
@@ -209,10 +197,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         KtExpression receiver = expression.getReceiverExpression();
         if (receiver instanceof KtSuperExpression) return false;
         
-        KotlinFileEditor editor = getActiveEditor();
-        if (editor == null) return false;
-        
-        IFile file = EditorUtil.getFile(editor);
+        IFile file = editor.getEclipseFile();
         if (file == null) return false;
         
         BindingContext bindingContext = getBindingContext(expression, file);

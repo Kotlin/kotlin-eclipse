@@ -41,7 +41,7 @@ import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.psi.KtReturnExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings
 import org.jetbrains.kotlin.ui.formatter.formatCode
 
@@ -70,8 +70,6 @@ public class KotlinConvertToExpressionBodyAssistProposal : KotlinQuickAssistProp
             false
         }
 
-        val editor = getActiveEditor() ?: return
-
         replaceBody(declaration, value, editor)
 
         val omitType = (declaration.hasDeclaredReturnType() || setUnitType) &&
@@ -81,18 +79,18 @@ public class KotlinConvertToExpressionBodyAssistProposal : KotlinQuickAssistProp
 
     }
 
-    private fun replaceBody(declaration: KtDeclarationWithBody, newBody: KtExpression, editor: KotlinFileEditor) {
+    private fun replaceBody(declaration: KtDeclarationWithBody, newBody: KtExpression, editor: KotlinEditor) {
         val body = declaration.getBodyExpression()!!
         val psiFactory = KtPsiFactory(declaration)
         val eqToken = psiFactory.createEQ().getText()
 
-        val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
+        val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.javaEditor.getViewer().getDocument())
         val valueText = formatCode(newBody.node.text, psiFactory, lineDelimiter)
 
         replace(body, "$eqToken $valueText")
     }
 
-    private fun insertAndSelectType(declaration: KtDeclarationWithBody, setUnitType: Boolean, omitType: Boolean, editor: KotlinFileEditor) {
+    private fun insertAndSelectType(declaration: KtDeclarationWithBody, setUnitType: Boolean, omitType: Boolean, editor: KotlinEditor) {
         val body = declaration.getBodyExpression()!!
 
         if (omitType && !setUnitType) {
@@ -100,7 +98,7 @@ public class KotlinConvertToExpressionBodyAssistProposal : KotlinQuickAssistProp
             val typeRef = callableDeclaration.getTypeReference()!!
             val colon = callableDeclaration.getColon()!!
             val range = TextRange(getStartOffset(colon, editor), getEndOffset(typeRef, editor))
-            editor.selectAndReveal(range.getStartOffset(), range.getLength())
+            editor.javaEditor.selectAndReveal(range.getStartOffset(), range.getLength())
         }
         if (setUnitType) {
             val elementToPlaceTypeAfter = body.siblings(forward = false, withItself = false).
@@ -109,7 +107,7 @@ public class KotlinConvertToExpressionBodyAssistProposal : KotlinQuickAssistProp
             val stringToInsert = ": ${DefaultBuiltIns.Instance.getUnitType().toString()}"
             insertAfter(elementToPlaceTypeAfter, stringToInsert)
             if (omitType) {
-                editor.selectAndReveal(offset, stringToInsert.length)
+                editor.javaEditor.selectAndReveal(offset, stringToInsert.length)
             }
         }
     }

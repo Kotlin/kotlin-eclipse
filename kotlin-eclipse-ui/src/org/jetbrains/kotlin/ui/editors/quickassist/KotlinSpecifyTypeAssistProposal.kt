@@ -34,7 +34,7 @@ import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.ErrorUtils
 import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
     private var displayString: String? = null
@@ -48,8 +48,6 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
         if (element is KtConstructor<*>) return false
         if (element.getTypeReference() != null) return false
         
-        val editor = getActiveEditor()
-        if (editor == null) return false
         val caretOffset = getCaretOffsetInPSI(editor, editor.document)
         
         val initializer = (element as? KtWithExpressionInitializer)?.getInitializer()
@@ -72,15 +70,12 @@ public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
         val anchor = getAnchor(element)
         
         if (anchor != null) {
-            val editor = getActiveEditor()
-            if (editor == null) return
-            
             val offset = addTypeAnnotation(editor, document, anchor, type)
-            editor.getViewer().setSelectedRange(offset, 0)
+            editor.javaEditor.getViewer().setSelectedRange(offset, 0)
         }
     }
     
-    private fun addTypeAnnotation(editor: KotlinFileEditor, document: IDocument, element: PsiElement, type: KotlinType): Int {
+    private fun addTypeAnnotation(editor: KotlinEditor, document: IDocument, element: PsiElement, type: KotlinType): Int {
         val offset = getEndOffset(element, editor)
         val text = ": ${IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.renderType(type)}"
         document.replace(getEndOffset(element, editor), 0, text)

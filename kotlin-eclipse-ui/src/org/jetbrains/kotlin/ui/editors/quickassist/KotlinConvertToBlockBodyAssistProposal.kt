@@ -35,7 +35,7 @@ import org.jetbrains.kotlin.psi.KtPsiUtil
 import org.jetbrains.kotlin.psi.KtReturnExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.formatter.formatRange
 
 class KotlinConvertToBlockBodyAssistProposal : KotlinQuickAssistProposal() {
@@ -70,7 +70,6 @@ class KotlinConvertToBlockBodyAssistProposal : KotlinQuickAssistProposal() {
                 && !declaration.hasDeclaredReturnType()
                 && !KotlinBuiltIns.isUnit(declaration.returnType(context)!!)
 
-        val editor = getActiveEditor() ?: return
         val factory = KtPsiFactory(declaration)
 
         replaceBody(declaration, factory, context, editor)
@@ -80,7 +79,7 @@ class KotlinConvertToBlockBodyAssistProposal : KotlinQuickAssistProposal() {
         }
     }
 
-    private fun replaceBody(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext, editor: KotlinFileEditor) {
+    private fun replaceBody(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext, editor: KotlinEditor) {
         val newBody = convert(declaration, context, factory)
         var newBodyText = newBody.getNode().text
 

@@ -16,22 +16,18 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.quickassist
 
-import java.util.Collections
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 abstract class KotlinQuickAssistProposalsGenerator : KotlinQuickAssist() {
     fun getProposals(): List<KotlinQuickAssistProposal> {
-        val activeEditor = getActiveEditor()
-        if (activeEditor == null) return emptyList()
-        
         val activeElement = getActiveElement()
         if (activeElement == null) return emptyList()
         
-        return getProposals(activeEditor, activeElement)
+        return getProposals(editor, activeElement)
     }
     
     fun hasProposals(): Boolean = getProposals().isNotEmpty()
     
-    protected abstract fun getProposals(kotlinFileEditor: KotlinFileEditor, psiElement: PsiElement): List<KotlinQuickAssistProposal>
+    protected abstract fun getProposals(kotlinFileEditor: KotlinEditor, psiElement: PsiElement): List<KotlinQuickAssistProposal>
 }

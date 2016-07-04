@@ -129,9 +129,6 @@ class KotlinChangeReturnTypeProposal : KotlinQuickAssistProposal() {
     }
     
     private fun getBindingContext(): BindingContext? {
-        val editor = getActiveEditor()
-        if (editor == null) return null
-        
         val ktFile = editor.parsedFile
         if (ktFile == null) return null
         

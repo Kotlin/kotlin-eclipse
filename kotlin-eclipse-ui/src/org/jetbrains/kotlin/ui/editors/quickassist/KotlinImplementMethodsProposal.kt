@@ -30,7 +30,6 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
-import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.psi.KtClassBody
 import org.jetbrains.kotlin.psi.KtClassOrObject
@@ -43,7 +42,7 @@ import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.renderer.DescriptorRendererModifier
 import org.jetbrains.kotlin.renderer.OverrideRenderingPolicy
 import org.jetbrains.kotlin.resolve.OverrideResolver
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.formatRange
 import java.util.ArrayList
@@ -85,19 +84,18 @@ public class KotlinImplementMethodsProposal(
 
     public fun generateMethods(document: IDocument, classOrObject: KtClassOrObject, selectedElements: Set<CallableMemberDescriptor>) {
         var body = classOrObject.getBody()
-        val editor = getActiveEditor()!!
         val psiFactory = KtPsiFactory(classOrObject.getProject())
         if (body == null) {
             val bodyText = "${psiFactory.createWhiteSpace().getText()}${psiFactory.createEmptyClassBody().getText()}"
             insertAfter(classOrObject, bodyText)
         } else {
-            removeWhitespaceAfterLBrace(body, editor.getViewer().getDocument(), editor)
+            removeWhitespaceAfterLBrace(body, editor.document, editor)
         }
 
-        val insertOffset = findLBraceEndOffset(editor.getViewer().getDocument(), getStartOffset(classOrObject, editor))
+        val insertOffset = findLBraceEndOffset(editor.document, getStartOffset(classOrObject, editor))
         if (insertOffset == null) return
 
-        val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.getViewer().getDocument())
+        val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.document)
 
         val generatedText = generateOverridingMembers(selectedElements, classOrObject, lineDelimiter)
                 .map { it.node.text }
@@ -108,7 +106,7 @@ public class KotlinImplementMethodsProposal(
         formatRange(document, EclipseDocumentRange(insertOffset, insertOffset + generatedText.length), psiFactory)
     }
 
-    private fun removeWhitespaceAfterLBrace(body: KtClassBody, document: IDocument, editor: KotlinFileEditor) {
+    private fun removeWhitespaceAfterLBrace(body: KtClassBody, document: IDocument, editor: KotlinEditor) {
         val lBrace = body.lBrace
         if (lBrace != null) {
             val sibling = lBrace.getNextSibling()
@@ -202,7 +200,7 @@ public class KotlinImplementMethodsProposal(
         val afterAnchor = body.lBrace
         if (afterAnchor == null) return null
 
-        val offset = getCaretOffset(getActiveEditor()!!)
+        val offset = getCaretOffset(editor)
         val offsetCursorElement = PsiTreeUtil.findFirstParent(body.getContainingFile().findElementAt(offset)) {
             it.getParent() == body
         }
