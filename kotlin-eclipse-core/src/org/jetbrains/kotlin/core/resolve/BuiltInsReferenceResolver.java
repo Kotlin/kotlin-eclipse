@@ -28,6 +28,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
+import org.jetbrains.kotlin.config.LanguageVersion;
 import org.jetbrains.kotlin.context.ContextKt;
 import org.jetbrains.kotlin.context.MutableModuleContext;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
@@ -114,7 +115,7 @@ public class BuiltInsReferenceResolver {
                 newModuleContext.getStorageManager(), jetBuiltInsFiles);
         
         ResolveSession resolveSession = InjectionKt.createLazyResolveSession(newModuleContext, declarationFactory,
-                new BindingTraceContext(), TargetPlatform.Default.INSTANCE);
+                new BindingTraceContext(), TargetPlatform.Default.INSTANCE, LanguageVersion.LATEST);
         
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
         
