@@ -38,7 +38,7 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.formatter.formatRange
 
-class KotlinConvertToBlockBodyAssistProposal : KotlinQuickAssistProposal() {
+class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     override fun isApplicable(psiElement: PsiElement): Boolean {
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java) ?: return false
         if (declaration is KtFunctionLiteral || declaration.hasBlockBody() || !declaration.hasBody()) return false

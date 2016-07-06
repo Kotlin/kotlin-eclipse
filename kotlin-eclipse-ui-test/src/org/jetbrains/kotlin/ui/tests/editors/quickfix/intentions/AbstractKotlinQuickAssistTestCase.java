@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
@@ -12,20 +13,24 @@ import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProposal;
 import org.junit.Assert;
 import org.junit.Before;
 
+import kotlin.jvm.functions.Function1;
+
 public abstract class AbstractKotlinQuickAssistTestCase<Proposal extends KotlinQuickAssistProposal> extends KotlinProjectTestCase {
 	@Before
 	public void configure() {
 		configureProject();
 	}
 	
-	protected void doTestFor(String testPath, Proposal proposal) {
-		doTestFor(testPath, proposal, false);
+	protected void doTestFor(String testPath, Function1<KotlinEditor, KotlinQuickAssistProposal> createProposal) {
+		doTestFor(testPath, createProposal, false);
 	}
 	
-	protected void doTestFor(String testPath, Proposal proposal, boolean joinBuildThread) {
+	protected void doTestFor(String testPath, 
+	        Function1<KotlinEditor, KotlinQuickAssistProposal> createProposal, 
+	        boolean joinBuildThread) {
 		String fileText = KotlinTestUtils.getText(testPath);
 		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
-		proposal.setEditor((KotlinEditor) testEditor.getEditor()); 
+		KotlinQuickAssistProposal proposal = createProposal.invoke((KotlinEditor) testEditor.getEditor()); 
 		
 		String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");

@@ -24,6 +24,7 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilKt;
 import org.jetbrains.kotlin.resolve.calls.model.DefaultValueArgument;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedValueArgument;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 import com.google.common.collect.Lists;
 import com.intellij.psi.PsiElement;
@@ -31,6 +32,10 @@ import com.intellij.psi.util.PsiTreeUtil;
 
 public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     
+    public KotlinReplaceGetAssistProposal(KotlinEditor editor) {
+        super(editor);
+    }
+
     @Override
     public void apply(@NotNull IDocument document, @NotNull PsiElement psiElement) {
         KtCallExpression callElement = PsiTreeUtil.getParentOfType(psiElement, KtCallExpression.class);
@@ -43,9 +48,9 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             return; 
         }
         
-        IFile file = editor.getEclipseFile();
+        IFile file = getEditor().getEclipseFile();
         if (file == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + editor, null);
+            KotlinLogger.logError("Failed to retrieve IFile from editor " + getEditor(), null);
             return;
         }
 
@@ -58,7 +63,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     }
     
     private void replaceGetForElement(@NotNull KtQualifiedExpression element, @NotNull String arguments) {
-        IDocument document = editor.getDocument();
+        IDocument document = getEditor().getDocument();
         
         try {
             int textLength = element.getTextLength();
@@ -66,7 +71,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
                 textLength += IndenterUtil.getLineSeparatorsOccurences(element.getText());
             }
             
-            int startOffset = KotlinQuickAssistProposalKt.getStartOffset(element, editor);
+            int startOffset = KotlinQuickAssistProposalKt.getStartOffset(element, getEditor());
             String receiverExpressionText = element.getReceiverExpression().getText();
             
             document.replace(
@@ -74,7 +79,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
                     textLength, 
                     receiverExpressionText + "[" + arguments + "]");
             
-            editor.getJavaEditor().getViewer().getTextWidget().setCaretOffset(startOffset + receiverExpressionText.length());
+            getEditor().getJavaEditor().getViewer().getTextWidget().setCaretOffset(startOffset + receiverExpressionText.length());
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
@@ -197,7 +202,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         KtExpression receiver = expression.getReceiverExpression();
         if (receiver instanceof KtSuperExpression) return false;
         
-        IFile file = editor.getEclipseFile();
+        IFile file = getEditor().getEclipseFile();
         if (file == null) return false;
         
         BindingContext bindingContext = getBindingContext(expression, file);

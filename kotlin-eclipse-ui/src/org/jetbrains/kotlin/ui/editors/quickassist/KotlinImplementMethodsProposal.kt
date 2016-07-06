@@ -50,7 +50,8 @@ import java.util.ArrayList
 private const val DEFAULT_EXCEPTION_CALL = "UnsupportedOperationException()"
 
 public class KotlinImplementMethodsProposal(
-        private val exceptionCall: String = DEFAULT_EXCEPTION_CALL) : KotlinQuickAssistProposal() {
+        editor: KotlinEditor,
+        private val exceptionCall: String = DEFAULT_EXCEPTION_CALL) : KotlinQuickAssistProposal(editor) {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
         renderDefaultValues = false
         modifiers = setOf(DescriptorRendererModifier.OVERRIDE)

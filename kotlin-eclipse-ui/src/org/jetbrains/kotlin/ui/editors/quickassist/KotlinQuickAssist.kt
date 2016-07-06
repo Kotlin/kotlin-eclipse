@@ -25,9 +25,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
-abstract class KotlinQuickAssist {
-    // TODO: get rid of lateinit, propagate through assists hierarchy instead
-    lateinit var editor: KotlinEditor
+abstract class KotlinQuickAssist(val editor: KotlinEditor) {
     
     abstract fun isApplicable(psiElement: PsiElement): Boolean
     

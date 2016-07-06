@@ -36,7 +36,7 @@ import org.jetbrains.kotlin.types.ErrorUtils
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
-public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
+public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     private var displayString: String? = null
     
     override fun isApplicable(psiElement: PsiElement): Boolean {

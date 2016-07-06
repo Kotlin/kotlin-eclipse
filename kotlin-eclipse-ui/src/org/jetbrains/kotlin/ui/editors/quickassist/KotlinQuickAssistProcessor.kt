@@ -10,19 +10,13 @@ object KotlinQuickAssistProcessor {
     }
     
     private fun getSingleKotlinQuickAssistProposals(editor: KotlinEditor) : List<KotlinQuickAssistProposal> {
-        val quickAssists = listOf(
-            KotlinReplaceGetAssistProposal(), 
-            KotlinSpecifyTypeAssistProposal(),
-            KotlinRemoveExplicitTypeAssistProposal(),
-            KotlinImplementMethodsProposal(),
-            KotlinConvertToExpressionBodyAssistProposal(),
-            KotlinConvertToBlockBodyAssistProposal(),
-            KotlinChangeReturnTypeProposal())
-        
-        for (assist in quickAssists) {
-            assist.editor = editor
-        }
-        
-        return quickAssists
+        return listOf(
+            KotlinReplaceGetAssistProposal(editor), 
+            KotlinSpecifyTypeAssistProposal(editor),
+            KotlinRemoveExplicitTypeAssistProposal(editor),
+            KotlinImplementMethodsProposal(editor),
+            KotlinConvertToExpressionBodyAssistProposal(editor),
+            KotlinConvertToBlockBodyAssistProposal(editor),
+            KotlinChangeReturnTypeProposal(editor))
     }
 }

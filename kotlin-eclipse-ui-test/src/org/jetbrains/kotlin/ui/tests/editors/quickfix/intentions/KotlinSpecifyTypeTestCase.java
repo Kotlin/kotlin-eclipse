@@ -18,10 +18,22 @@ package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProposal;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinSpecifyTypeAssistProposal;
 import org.junit.Before;
 
+import kotlin.jvm.functions.Function1;
+
 public abstract class KotlinSpecifyTypeTestCase extends AbstractKotlinQuickAssistTestCase<KotlinSpecifyTypeAssistProposal> {
+    private static final Function1<KotlinEditor, KotlinQuickAssistProposal> createProposal = 
+            new Function1<KotlinEditor, KotlinQuickAssistProposal>() {
+                @Override
+                public KotlinQuickAssistProposal invoke(KotlinEditor editor) {
+                    return new KotlinSpecifyTypeAssistProposal(editor);
+                }
+            };
+    
     @Override
     @Before
     public void configure() {
@@ -29,11 +41,11 @@ public abstract class KotlinSpecifyTypeTestCase extends AbstractKotlinQuickAssis
     }
     
 	protected void doTest(String testPath) {
-		doTestFor(testPath, new KotlinSpecifyTypeAssistProposal());
+		doTestFor(testPath, createProposal);
 	}
 	
 	protected void doTestWithBuildThreadJoin(String testPath) {
-		doTestFor(testPath, new KotlinSpecifyTypeAssistProposal(), true);
+		doTestFor(testPath, createProposal, true);
 	}
 	
 	@Override

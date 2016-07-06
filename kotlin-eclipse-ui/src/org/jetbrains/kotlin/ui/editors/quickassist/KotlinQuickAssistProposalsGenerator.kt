@@ -19,7 +19,7 @@ package org.jetbrains.kotlin.ui.editors.quickassist
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
-abstract class KotlinQuickAssistProposalsGenerator : KotlinQuickAssist() {
+abstract class KotlinQuickAssistProposalsGenerator(editor: KotlinEditor) : KotlinQuickAssist(editor) {
     fun getProposals(): List<KotlinQuickAssistProposal> {
         val activeElement = getActiveElement()
         if (activeElement == null) return emptyList()

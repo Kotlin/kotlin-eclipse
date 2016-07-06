@@ -17,20 +17,19 @@
 package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
-import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import com.intellij.psi.util.PsiTreeUtil
+import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtCodeFragment
-import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
-import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtTypeReference
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
-public class KotlinRemoveExplicitTypeAssistProposal : KotlinQuickAssistProposal() {
+public class KotlinRemoveExplicitTypeAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     private var displayString: String? = null
     
     override fun isApplicable(psiElement: PsiElement): Boolean {

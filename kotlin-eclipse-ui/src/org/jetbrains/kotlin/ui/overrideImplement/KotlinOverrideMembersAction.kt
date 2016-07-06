@@ -71,7 +71,7 @@ public class KotlinOverrideMembersAction(
         
         if (selectedMembers.isEmpty()) return
         
-        KotlinImplementMethodsProposal().generateMethods(editor.document, jetClassOrObject, selectedMembers.toSet())
+        KotlinImplementMethodsProposal(editor).generateMethods(editor.document, jetClassOrObject, selectedMembers.toSet())
     }
     
     private fun getKtClassOrObject(selection: ITextSelection): KtClassOrObject? {
