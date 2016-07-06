@@ -47,8 +47,10 @@ import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.formatRange
 import java.util.ArrayList
 
+private const val DEFAULT_EXCEPTION_CALL = "UnsupportedOperationException()"
+
 public class KotlinImplementMethodsProposal(
-        private val exceptionCall: String = "UnsupportedOperationException()") : KotlinQuickAssistProposal() {
+        private val exceptionCall: String = DEFAULT_EXCEPTION_CALL) : KotlinQuickAssistProposal() {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
         renderDefaultValues = false
         modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
@@ -168,7 +170,7 @@ public class KotlinImplementMethodsProposal(
         val body = StringBuilder()
         body.append("${lineDelimiter}get()")
         body.append(" = ")
-        body.append(generateUnsupportedOrSuperCall(descriptor))
+        body.append(generateUnsupportedOrSuperCall(descriptor, exception = DEFAULT_EXCEPTION_CALL))
         if (descriptor.isVar()) {
             body.append("${lineDelimiter}set(value) {\n}")
         }
