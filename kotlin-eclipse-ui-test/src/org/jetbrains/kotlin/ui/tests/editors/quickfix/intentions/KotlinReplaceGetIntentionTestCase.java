@@ -18,11 +18,20 @@ package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
+import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProposal;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinReplaceGetAssistProposal;
+
+import kotlin.jvm.functions.Function1;
 
 public abstract class KotlinReplaceGetIntentionTestCase extends AbstractKotlinQuickAssistTestCase<KotlinReplaceGetAssistProposal> {
 	protected void doTest(String testPath) {
-		doTestFor(testPath, new KotlinReplaceGetAssistProposal());	
+		doTestFor(testPath, new Function1<KotlinEditor, KotlinQuickAssistProposal>() {
+            @Override
+            public KotlinQuickAssistProposal invoke(KotlinEditor editor) {
+                return new KotlinReplaceGetAssistProposal(editor);
+            }
+        });	
 	}
 	
 	@Override

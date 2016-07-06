@@ -42,7 +42,7 @@ import com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
 import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
 
-abstract class KotlinQuickAssistProposal : KotlinQuickAssist(), IJavaCompletionProposal {
+abstract class KotlinQuickAssistProposal(editor: KotlinEditor) : KotlinQuickAssist(editor), IJavaCompletionProposal {
     abstract fun apply(document: IDocument, psiElement: PsiElement)
     
     abstract override fun getDisplayString(): String

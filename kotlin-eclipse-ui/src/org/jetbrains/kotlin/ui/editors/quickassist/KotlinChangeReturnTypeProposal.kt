@@ -1,31 +1,27 @@
 package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
-import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.psi.KtFunction
-import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics
+import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.Errors
-import org.jetbrains.kotlin.psi.KtReturnExpression
-import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
-import org.jetbrains.kotlin.idea.util.approximateWithResolvableType
-import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
-import org.jetbrains.kotlin.types.typeUtil.makeNullable
-import org.jetbrains.kotlin.resolve.bindingContextUtil.getTargetFunction
-import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
-import org.jetbrains.kotlin.psi.KtCallExpression
-import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
-import org.jetbrains.kotlin.psi.KtFunctionLiteral
-import org.jetbrains.kotlin.idea.core.quickfix.QuickFixUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.idea.core.quickfix.QuickFixUtil
+import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
+import org.jetbrains.kotlin.idea.util.approximateWithResolvableType
+import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.psi.KtReturnExpression
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.bindingContextUtil.getTargetFunction
+import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics
+import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.typeUtil.makeNullable
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
 
-class KotlinChangeReturnTypeProposal : KotlinQuickAssistProposal() {
+class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     private lateinit var function: KtFunction
     private lateinit var type: KotlinType
     

@@ -19,6 +19,7 @@ object KotlinQuickAssistProcessor : IQuickAssistProcessor {
         return allApplicableProposals.toTypedArray()
     }
     
+<<<<<<< HEAD
     private fun getSingleKotlinQuickAssistProposals() : List<KotlinQuickAssistProposal> {
         return listOf(
             KotlinReplaceGetAssistProposal(), 
@@ -28,5 +29,16 @@ object KotlinQuickAssistProcessor : IQuickAssistProcessor {
             KotlinConvertToExpressionBodyAssistProposal(),
             KotlinConvertToBlockBodyAssistProposal(),
             KotlinChangeReturnTypeProposal())
+=======
+    private fun getSingleKotlinQuickAssistProposals(editor: KotlinEditor) : List<KotlinQuickAssistProposal> {
+        return listOf(
+            KotlinReplaceGetAssistProposal(editor), 
+            KotlinSpecifyTypeAssistProposal(editor),
+            KotlinRemoveExplicitTypeAssistProposal(editor),
+            KotlinImplementMethodsProposal(editor),
+            KotlinConvertToExpressionBodyAssistProposal(editor),
+            KotlinConvertToBlockBodyAssistProposal(editor),
+            KotlinChangeReturnTypeProposal(editor))
+>>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
     }
 }

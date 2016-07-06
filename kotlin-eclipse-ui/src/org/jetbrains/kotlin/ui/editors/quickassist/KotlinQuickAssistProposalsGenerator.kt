@@ -20,7 +20,7 @@ import java.util.Collections
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import com.intellij.psi.PsiElement
 
-abstract class KotlinQuickAssistProposalsGenerator : KotlinQuickAssist() {
+abstract class KotlinQuickAssistProposalsGenerator(editor: KotlinEditor) : KotlinQuickAssist(editor) {
     fun getProposals(): List<KotlinQuickAssistProposal> {
         val activeEditor = getActiveEditor()
         if (activeEditor == null) return emptyList()

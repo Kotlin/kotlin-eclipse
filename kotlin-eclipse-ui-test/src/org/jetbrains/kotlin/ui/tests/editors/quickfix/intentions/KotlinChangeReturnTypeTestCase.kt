@@ -32,6 +32,6 @@ abstract class KotlinChangeReturnTypeTestCase : AbstractKotlinQuickAssistTestCas
     }
     
     protected fun doTest(testPath: String) {
-        doTestFor(testPath, KotlinChangeReturnTypeProposal());
+        doTestFor(testPath) { KotlinChangeReturnTypeProposal(it) }
     }
 }

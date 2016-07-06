@@ -29,7 +29,11 @@ import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings
 import org.jetbrains.kotlin.ui.formatter.formatCode
 
+<<<<<<< HEAD
 public class KotlinConvertToExpressionBodyAssistProposal: KotlinQuickAssistProposal() {
+=======
+public class KotlinConvertToExpressionBodyAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
+>>>>>>> 0fb9d7f... Propagate editor through assists hierarchy to fix issues about uninitialized editor
     override fun isApplicable(psiElement: PsiElement): Boolean {
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java) ?: return false
         val context = getBindingContext(declaration.getContainingKtFile()) ?: return false

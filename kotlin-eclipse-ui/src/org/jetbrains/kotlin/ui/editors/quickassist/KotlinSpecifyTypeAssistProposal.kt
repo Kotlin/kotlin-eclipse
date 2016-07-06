@@ -40,7 +40,7 @@ import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 
-public class KotlinSpecifyTypeAssistProposal : KotlinQuickAssistProposal() {
+public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     private var displayString: String? = null
     
     override fun isApplicable(psiElement: PsiElement): Boolean {

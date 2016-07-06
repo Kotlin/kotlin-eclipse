@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
 
 abstract class KotlinRemoveExplicitTypeTestCase : AbstractKotlinQuickAssistTestCase<KotlinRemoveExplicitTypeAssistProposal>() {
     fun doTest(testPath: String) {
-        doTestFor(testPath, KotlinRemoveExplicitTypeAssistProposal())
+        doTestFor(testPath) { KotlinRemoveExplicitTypeAssistProposal(it) }
     }
     
     override fun assertByEditor(editor: JavaEditor, expected: String) {

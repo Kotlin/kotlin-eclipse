@@ -36,7 +36,12 @@ import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 
+<<<<<<< HEAD
 abstract class KotlinQuickAssist {
+=======
+abstract class KotlinQuickAssist(val editor: KotlinEditor) {
+    
+>>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
     abstract fun isApplicable(psiElement: PsiElement): Boolean
     
     fun isApplicable(): Boolean {
