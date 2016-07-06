@@ -111,7 +111,7 @@ public class KotlinCompiler {
                         severities.add(messageSeverity);
                         compilerOutput.add(messageSeverity, message, messageLocation);
                     }
-
+                    
                     @Override
                     public boolean hasErrors() {
                         return hasErrors;
