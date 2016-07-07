@@ -222,6 +222,10 @@ private class ProjectSourceFiles : PsiFilesStorage {
         }
     }
     
+    fun invalidateProjectSourceFiles() {
+        cachedKtFiles.clear()
+    }
+    
     private fun updatePsiFile(file: IFile, sourceCode: String) {
         val sourceCodeWithouCR = StringUtilRt.convertLineSeparators(sourceCode)
         
@@ -255,6 +259,10 @@ object KotlinPsiManager {
             IResourceDelta.REMOVED -> removeFile(file)
             else -> throw IllegalArgumentException()
         }
+    }
+    
+    fun invalidateCachedProjectSourceFiles() {
+        projectSourceFiles.invalidateProjectSourceFiles()
     }
     
     fun removeFile(file: IFile) {

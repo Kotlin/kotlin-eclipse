@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -169,6 +170,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
         @JvmStatic fun updateKotlinEnvironment(eclipseProject: IProject) {
             cachedEnvironment.updateEnvironment(eclipseProject, environmentCreation)
+            KotlinPsiManager.invalidateCachedProjectSourceFiles()
         }
         
         @JvmStatic fun removeEnvironment(eclipseProject: IProject) {
