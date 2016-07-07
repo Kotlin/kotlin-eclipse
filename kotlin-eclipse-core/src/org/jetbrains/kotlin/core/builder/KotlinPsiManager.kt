@@ -250,7 +250,7 @@ object KotlinPsiManager {
     }
     
     private fun isApplicable(file: IFile): Boolean {
-        return storage(file).isApplicable(file)
+        return applicableStorage(file)?.isApplicable(file) ?: false
     }
     
     fun updateProjectPsiSources(file: IFile, flag: Int) {
@@ -290,10 +290,14 @@ object KotlinPsiManager {
     }
     
     private fun storage(file: IFile): PsiFilesStorage {
+        return applicableStorage(file) ?: throw IllegalStateException("There is not applicable storage for file: $file")
+    }
+    
+    private fun applicableStorage(file: IFile): PsiFilesStorage? {
         return when {
             scriptsFiles.isApplicable(file) -> scriptsFiles
             projectSourceFiles.isApplicable(file) -> projectSourceFiles
-            else -> throw IllegalStateException("There is not applicable storage for file: $file")
+            else -> null
         }
     }
     
