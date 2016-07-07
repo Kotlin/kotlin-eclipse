@@ -40,6 +40,9 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.eclipse.jdt.internal.core.JavaProject
+import org.eclipse.jdt.core.IClasspathEntry
+import org.eclipse.jdt.core.IClasspathContainer
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -76,8 +79,8 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
         
-        val kotlinRuntimeRoot = JavaRoot(getRoots().first(), JavaRoot.RootType.BINARY)
-        val index = JvmDependenciesIndex(listOf(kotlinRuntimeRoot))
+        val roots = getRoots().map { JavaRoot(it, JavaRoot.RootType.BINARY) }
+        val index = JvmDependenciesIndex(roots)
         
         project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
     }
@@ -123,6 +126,27 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     
     private fun configureClasspath() {
         addToClasspath(kotlinRuntimePath.toFile())
+        addJREToClasspath()
+    }
+    
+    private fun addJREToClasspath() {
+        val project = eclipseFile.project
+        if (JavaProject.hasJavaNature(project)) {
+            val javaProject = JavaCore.create(project)
+            javaProject.getRawClasspath().mapNotNull { entry ->
+                if (entry.entryKind == IClasspathEntry.CPE_CONTAINER) {
+                    val container = JavaCore.getClasspathContainer(entry.getPath(), javaProject)
+                    if (container != null && container.kind == IClasspathContainer.K_DEFAULT_SYSTEM) {
+                        return@mapNotNull container
+                    }
+                }
+                
+                null
+            }
+            .flatMap { it.getClasspathEntries().toList() }
+            .flatMap { ProjectUtils.getFileByEntry(it, javaProject) }
+            .forEach { addToClasspath(it) }
+        }
     }
 }
 

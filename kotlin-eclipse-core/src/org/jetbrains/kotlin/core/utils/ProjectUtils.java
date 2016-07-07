@@ -163,29 +163,34 @@ public class ProjectUtils {
     
     public static List<File> collectClasspathWithDependenciesForBuild(@NotNull IJavaProject javaProject)
             throws JavaModelException {
-        return expandClasspath(javaProject, true, false, Predicates.<IClasspathEntry>alwaysTrue());
+        return expandClasspath(javaProject, true, false, new Function1<IClasspathEntry, Boolean>() {
+            @Override
+            public Boolean invoke(IClasspathEntry entry) {
+                return true;
+            }
+        });
     }
     
     public static List<File> collectClasspathWithDependenciesForLaunch(@NotNull IJavaProject javaProject) 
             throws JavaModelException {
-        return expandClasspath(javaProject, true, true, new Predicate<IClasspathEntry>() {
+        return expandClasspath(javaProject, true, true, new Function1<IClasspathEntry, Boolean>() {
             @Override
-            public boolean apply(IClasspathEntry entry) {
+            public Boolean invoke(IClasspathEntry entry) {
                 return entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY;
             }
         });
     }
     
     @NotNull
-    private static List<File> expandClasspath(@NotNull IJavaProject javaProject, boolean includeDependencies,
-            boolean includeBinFolders, @NotNull Predicate<IClasspathEntry> entryPredicate) throws JavaModelException {
+    public static List<File> expandClasspath(@NotNull IJavaProject javaProject, boolean includeDependencies,
+            boolean includeBinFolders, @NotNull Function1<IClasspathEntry, Boolean> entryPredicate) throws JavaModelException {
         Set<File> orderedFiles = Sets.newLinkedHashSet();
         
         for (IClasspathEntry classpathEntry : javaProject.getResolvedClasspath(true)) {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT && includeDependencies) {
                 orderedFiles.addAll(expandDependentProjectClasspath(classpathEntry, includeBinFolders, entryPredicate));
             } else { // Source folder or library
-                if (entryPredicate.apply(classpathEntry)) {
+                if (entryPredicate.invoke(classpathEntry)) {
                     orderedFiles.addAll(getFileByEntry(classpathEntry, javaProject));
                 }
             }
@@ -195,7 +200,7 @@ public class ProjectUtils {
     }
     
     @NotNull
-    private static List<File> getFileByEntry(@NotNull IClasspathEntry entry, @NotNull IJavaProject javaProject) {
+    public static List<File> getFileByEntry(@NotNull IClasspathEntry entry, @NotNull IJavaProject javaProject) {
         List<File> files = Lists.newArrayList();
         
         IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
@@ -220,7 +225,7 @@ public class ProjectUtils {
     
     @NotNull
     private static List<File> expandDependentProjectClasspath(@NotNull IClasspathEntry projectEntry,
-            boolean includeBinFolders, @NotNull Predicate<IClasspathEntry> entryPredicate) throws JavaModelException {
+            boolean includeBinFolders, @NotNull Function1<IClasspathEntry, Boolean> entryPredicate) throws JavaModelException {
         IPath projectPath = projectEntry.getPath();
         IProject dependentProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectPath.toString());
         IJavaProject javaProject = JavaCore.create(dependentProject);
@@ -235,7 +240,7 @@ public class ProjectUtils {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
                 orderedFiles.addAll(expandDependentProjectClasspath(classpathEntry, includeBinFolders, entryPredicate));
             } else {
-                if (entryPredicate.apply(classpathEntry)) {
+                if (entryPredicate.invoke(classpathEntry)) {
                     orderedFiles.addAll(getFileByEntry(classpathEntry, javaProject));
                 }
             }
@@ -254,9 +259,9 @@ public class ProjectUtils {
     
     @NotNull
     public static List<File> getSrcDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
-        return expandClasspath(javaProject, false, false, new Predicate<IClasspathEntry>() {
+        return expandClasspath(javaProject, false, false, new Function1<IClasspathEntry, Boolean>() {
             @Override
-            public boolean apply(IClasspathEntry entry) {
+            public Boolean invoke(IClasspathEntry entry) {
                 return entry.getEntryKind() == IClasspathEntry.CPE_SOURCE;
             }
         });

@@ -33,4 +33,9 @@ public class CompletionInScriptsTest extends KotlinBasicCompletionTestCase {
     public void testLocalDeclarations() {
         doTest("testData/completion/basic/scripts/localDeclarations.kts");
     }
+    
+    @Test
+    public void testClassFromJRE() {
+        doTest("testData/completion/basic/scripts/classFromJRE.kts");
+    }
 }
