@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 =======
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 <<<<<<< HEAD
+<<<<<<< HEAD
 import java.util.ArrayList
 <<<<<<< HEAD
 import org.eclipse.core.resources.IProject
@@ -106,6 +107,9 @@ import org.eclipse.core.resources.IResource
 >>>>>>> 15b3627... Unify  access to KtFile for scripts and general source files
 =======
 >>>>>>> bd9e985... Remove Kotlin environment when project was removed or closed
+=======
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+>>>>>>> cafb031... Invalidate parsed cache files when project environment was changed
 
 import kotlin.jvm.functions.Function1;
 =======
@@ -468,6 +472,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
         @JvmStatic fun updateKotlinEnvironment(eclipseProject: IProject) {
             cachedEnvironment.updateEnvironment(eclipseProject, environmentCreation)
+            KotlinPsiManager.invalidateCachedProjectSourceFiles()
         }
         
         @JvmStatic fun removeEnvironment(eclipseProject: IProject) {

@@ -222,6 +222,10 @@ private class ProjectSourceFiles : PsiFilesStorage {
         }
     }
     
+    fun invalidateProjectSourceFiles() {
+        cachedKtFiles.clear()
+    }
+    
     private fun updatePsiFile(file: IFile, sourceCode: String) {
         val sourceCodeWithouCR = StringUtilRt.convertLineSeparators(sourceCode)
         
@@ -256,6 +260,17 @@ object KotlinPsiManager {
             else -> throw IllegalArgumentException()
         }
     }
+<<<<<<< HEAD
+=======
+    
+    fun invalidateCachedProjectSourceFiles() {
+        projectSourceFiles.invalidateProjectSourceFiles()
+    }
+    
+    fun removeFile(file: IFile) {
+        storage(file).removeFile(file)
+    }
+>>>>>>> d2d80b9... Invalidate parsed cache files when project environment was changed
 
     fun removeProjectFromManager(project: IProject) {
         projectSourceFiles.updateProjectPsiSources(project, IResourceDelta.REMOVED)
