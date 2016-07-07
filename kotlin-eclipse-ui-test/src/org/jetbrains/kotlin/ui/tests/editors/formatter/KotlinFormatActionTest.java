@@ -123,4 +123,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void formatScriptFile() {
         doAutoTest();
     }
+    
+    @Test
+    public void commentOnTheLastLineOfLambda() {
+        doAutoTest();
+    }
 }
