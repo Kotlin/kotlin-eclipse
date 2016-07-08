@@ -20,6 +20,8 @@ import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.Path
+import org.eclipse.core.variables.VariablesPlugin
+import org.eclipse.debug.core.DebugPlugin
 import org.eclipse.debug.core.ILaunch
 import org.eclipse.debug.core.ILaunchConfiguration
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate
@@ -36,9 +38,12 @@ class KotlinScriptLaunchConfigurationDelegate : ILaunchConfigurationDelegate {
         
         if (!scriptFile.exists()) return
         
-        val programArguments = configuration
+        val rawArguments = configuration
                 .getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "")
-                .split(" ")
+        val substitutedArguments = VariablesPlugin.getDefault().getStringVariableManager()
+                .performStringSubstitution(rawArguments)
+        val programArguments = DebugPlugin.parseArguments(substitutedArguments).toList()
+        
         execKotlinCompiler(buildCompilerArguments(scriptFile, programArguments))
     }
     
