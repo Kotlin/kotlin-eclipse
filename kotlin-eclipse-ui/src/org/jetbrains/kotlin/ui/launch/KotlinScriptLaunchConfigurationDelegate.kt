@@ -23,10 +23,11 @@ import org.eclipse.core.runtime.Path
 import org.eclipse.debug.core.ILaunch
 import org.eclipse.debug.core.ILaunchConfiguration
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler
+import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import java.io.PrintStream
-import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants
 
 class KotlinScriptLaunchConfigurationDelegate : ILaunchConfigurationDelegate {
     override fun launch(configuration: ILaunchConfiguration, mode: String, launch: ILaunch, monitor: IProgressMonitor) {
@@ -44,9 +45,17 @@ class KotlinScriptLaunchConfigurationDelegate : ILaunchConfigurationDelegate {
     private fun execKotlinCompiler(arguments: List<String>) {
         val systemOut = System.out
         try {
-            System.setOut(PrintStream(createCleanKotlinConsole().newOutputStream()))
+            val kotlinConsole = createCleanKotlinConsole()
+            kotlinConsole.activate()
             
-            KotlinCompiler.INSTANCE.execKotlinCompiler(arguments.toTypedArray())
+            val consoleStream = PrintStream(kotlinConsole.newOutputStream())
+            System.setOut(consoleStream)
+            
+            val compilerResult = KotlinCompiler.INSTANCE.execKotlinCompiler(arguments.toTypedArray())
+            
+            if (!compilerResult.compiledCorrectly()) {
+                KotlinCompilerUtils.handleCompilerOutput(compilerResult.getCompilerOutput())
+            }
         } finally {
             System.setOut(systemOut)
         }
