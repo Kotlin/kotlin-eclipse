@@ -29,8 +29,12 @@ import org.eclipse.ltk.core.refactoring.participants.ParticipantManager
 import org.eclipse.jdt.internal.corext.refactoring.participants.JavaProcessors
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.core.model.KotlinNature
 
-public class KotlinRenameProcessor(element: KotlinSourceElement, val newName: String) : RenameProcessor() {
+public class KotlinRenameProcessor(
+        element: KotlinSourceElement,
+        val newName: String,
+        val isFromScript: Boolean) : RenameProcessor() {
     val jetElement = element.psi
     
     val project = KotlinPsiManager.getJavaProject(jetElement)
@@ -38,12 +42,18 @@ public class KotlinRenameProcessor(element: KotlinSourceElement, val newName: St
     override fun isApplicable(): Boolean = true
     
     override fun loadParticipants(status: RefactoringStatus?, sharedParticipants: SharableParticipants?): Array<out RefactoringParticipant> {
+        val affectedNatures = if (isFromScript) {
+            arrayOf(KotlinNature.KOTLIN_NATURE)
+        } else {
+            JavaProcessors.computeAffectedNatures(project)
+        }
+        
         return ParticipantManager.loadRenameParticipants(
                 status, 
                 this, 
                 jetElement, 
                 RenameArguments(newName, true), 
-                JavaProcessors.computeAffectedNatures(project),
+                affectedNatures,
                 sharedParticipants)
     }
     

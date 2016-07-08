@@ -185,7 +185,7 @@ fun doRename(sourceElements: List<SourceElement>, newName: String, editor: Kotli
     
     fun renameLocalKotlinElement(sourceElement: KotlinSourceElement) {
         val helper = RefactoringExecutionHelper(
-                RenameRefactoring(KotlinRenameProcessor(sourceElement, newName)), 
+                RenameRefactoring(KotlinRenameProcessor(sourceElement, newName, editor.isScript)), 
                 RefactoringCore.getConditionCheckingFailedSeverity(),
                 RefactoringSaveHelper.SAVE_REFACTORING,
                 editor.getSite().getShell(),
