@@ -77,6 +77,8 @@ import org.jetbrains.kotlin.script.StandardScriptDefinition
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
+import com.intellij.psi.PsiManager
+import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 
 abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
@@ -94,6 +96,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             override fun preregisterServices() {
                 registerProjectExtensionPoints(Extensions.getArea(getProject()))
             }
+            
+            override fun createCoreFileManager() = KotlinCliJavaFileManagerImpl(PsiManager.getInstance(project))
         }
         
         project = projectEnvironment.getProject()

@@ -16,22 +16,34 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.model
 
+import com.intellij.core.CoreJavaFileManager
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
+import com.intellij.psi.PsiElementFinder
+import com.intellij.psi.impl.PsiElementFinderImpl
+import com.intellij.psi.impl.file.impl.JavaFileManager
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResource
 import org.eclipse.core.runtime.Path
+import org.eclipse.jdt.core.IClasspathContainer
+import org.eclipse.jdt.core.IClasspathEntry
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.internal.core.JavaProject
+import org.jetbrains.kotlin.asJava.JavaElementFinder
 import org.jetbrains.kotlin.asJava.KtLightClassForFacade
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
-import org.jetbrains.kotlin.cli.jvm.compiler.JvmCliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex
+import org.jetbrains.kotlin.cli.jvm.compiler.JvmLazyCliVirtualFileFinderFactory
+import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
 import org.jetbrains.kotlin.core.utils.ProjectUtils
@@ -39,10 +51,6 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.eclipse.jdt.internal.core.JavaProject
-import org.eclipse.jdt.core.IClasspathEntry
-import org.eclipse.jdt.core.IClasspathContainer
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -82,7 +90,14 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         val roots = getRoots().map { JavaRoot(it, JavaRoot.RootType.BINARY) }
         val index = JvmDependenciesIndex(roots)
         
-        project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
+        project.registerService(JvmVirtualFileFinderFactory::class.java, JvmLazyCliVirtualFileFinderFactory { index })
+        
+        val area = Extensions.getArea(project)
+        area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(
+                PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
+        
+        val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
+        (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
     }
     
     companion object {
