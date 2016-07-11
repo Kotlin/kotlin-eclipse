@@ -445,11 +445,6 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     }
     
     @Test
-    public void testReservedAsync() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/ReservedAsync.kt");
-    }
-    
-    @Test
     public void testResolveOfJavaGenerics() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/ResolveOfJavaGenerics.kt");
     }

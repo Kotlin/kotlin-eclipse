@@ -1,5 +1,5 @@
 <project default="get_bundled">
-	<property name="compiler.tag" value="forBenchmarks" />
+	<property name="compiler.tag" value="for_eclipse" />
 	<property name="bootstrap_branch" value="1.1-M1"/>
 	<property name="idea-version" value="143.1015.7"/>
 	
