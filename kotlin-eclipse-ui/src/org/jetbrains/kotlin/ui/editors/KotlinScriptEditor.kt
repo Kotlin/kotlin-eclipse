@@ -35,6 +35,13 @@ class KotlinScriptEditor : KotlinCommonEditor() {
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
     
+    override fun createPartControl(parent: Composite) {
+        super.createPartControl(parent)
+        
+        val file = eclipseFile ?: return
+        KotlinLineAnnotationsReconciler.reconcile(file, this)
+    }
+    
     override val isScript: Boolean
         get() = true
     
