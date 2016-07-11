@@ -52,6 +52,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.runJob
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 
 class KotlinBuilder : IncrementalProjectBuilder() {
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
@@ -63,7 +64,8 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         
         val delta = getDelta(project)
         val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
-        if (isAllFromOutputFolder(allAffectedFiles, javaProject)) {
+        if (isAllFromOutputFolder(allAffectedFiles, javaProject) ||
+                isAllScripts(allAffectedFiles)) {
             return null
         }
         
@@ -105,6 +107,10 @@ class KotlinBuilder : IncrementalProjectBuilder() {
     
     private fun commitFiles(files: Collection<IFile>) {
         files.forEach { KotlinPsiManager.commitFile(it, EditorUtil.getDocument(it)) }
+    }
+    
+    private fun isAllScripts(files: Set<IFile>): Boolean {
+        return files.all { KotlinScriptEnvironment.isScript(it) }
     }
     
     private fun isAllFromOutputFolder(files: Set<IFile>, javaProject: IJavaProject): Boolean {
