@@ -85,7 +85,8 @@ public class KotlinConvertToExpressionBodyAssistProposal(editor: KotlinEditor) :
         val eqToken = psiFactory.createEQ().getText()
 
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.javaEditor.getViewer().getDocument())
-        val valueText = formatCode(newBody.node.text, psiFactory, lineDelimiter)
+        val file = editor.eclipseFile ?: return
+        val valueText = formatCode(newBody.node.text, file.name, psiFactory, lineDelimiter)
 
         replace(body, "$eqToken $valueText")
     }

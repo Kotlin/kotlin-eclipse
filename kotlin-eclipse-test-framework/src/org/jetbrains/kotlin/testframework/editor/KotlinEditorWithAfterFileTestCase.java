@@ -112,7 +112,7 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
         if (afterPosition == AfterSuffixPosition.AFTER_NAME) {
             afterTestPath = testPath + AFTER_FILE_EXTENSION;
         } else {
-            afterTestPath = testPath.substring(0, testPath.length() - ".kt".length()) + AFTER_FILE_EXTENSION + ".kt";
+            afterTestPath = testPath.substring(0, testPath.length() - getExtension().length()) + AFTER_FILE_EXTENSION + getExtension();
         }
         
         performTest(fileText, KotlinTestUtils.getText(afterTestPath));
@@ -144,7 +144,7 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
             SourceFileData dependencySourceFile = new SourceFileData(dependencyFile);
             String fileName = dependencySourceFile.getFileName();
             String dependencyFileName = fileName.substring(0, fileName.indexOf(FILE_DEPENDENCY_SUFFIX)) + 
-                    "_dependency" + KT_FILE_EXTENSION;
+                    "_dependency" + getExtension();
             createSourceFile(dependencySourceFile.getPackageName(), dependencyFileName, 
                     dependencySourceFile.getContent());
         } catch (IOException e) {

@@ -36,8 +36,10 @@ public abstract class KotlinEditorAutoTestCase extends KotlinProjectTestCase {
     
     private static final String TEST_DATA_PATH = "testData";
     
-    protected static final String KT_FILE_EXTENSION = ".kt";
-    protected static final String KT_SCRIPT_FILE_EXTENSION = ".kts";
+    private static String fileExtension;
+    
+    private static final String KT_FILE_EXTENSION = ".kt";
+    private static final String KT_SCRIPT_FILE_EXTENSION = ".kts";
     protected static final String AFTER_FILE_EXTENSION = ".after";
     protected static final String BEFORE_FILE_EXTENSION = ".before";
     
@@ -49,22 +51,21 @@ public abstract class KotlinEditorAutoTestCase extends KotlinProjectTestCase {
         
         File testFile = new File(testPath + KT_FILE_EXTENSION);
         File scriptTestFile = new File(testPath + KT_SCRIPT_FILE_EXTENSION);
-        String extension;
         if (testFile.exists()) {
-            extension = KT_FILE_EXTENSION;
+            fileExtension = KT_FILE_EXTENSION;
         } else {
             testFile = scriptTestFile;
-            extension = KT_SCRIPT_FILE_EXTENSION;
+            fileExtension = KT_SCRIPT_FILE_EXTENSION;
         }
         
-        File dependencyFile = new File(testPath + FILE_DEPENDENCY_SUFFIX + extension);
+        File dependencyFile = new File(testPath + FILE_DEPENDENCY_SUFFIX + getExtension());
         
         if (testFolder.exists() && testFolder.isDirectory()) {
             doMultiFileAutoTest(testFolder);
         } else if (testFile.exists() && testFile.isFile() && dependencyFile.exists()) {
-            doAutoTestWithDependencyFile(testPath + extension, dependencyFile);
+            doAutoTestWithDependencyFile(testPath + getExtension(), dependencyFile);
         } else if (testFile.exists() && testFile.isFile() && !dependencyFile.exists()) {
-            doSingleFileAutoTest(testPath + extension);
+            doSingleFileAutoTest(testPath + getExtension());
         } else {
             throw new RuntimeException(String.format("Neither file \'%s\' nor directory \'%s\' was found", testFile.getAbsolutePath(), testFolder.getAbsolutePath()));
         }
@@ -79,4 +80,8 @@ public abstract class KotlinEditorAutoTestCase extends KotlinProjectTestCase {
     }
     
     protected abstract String getTestDataRelativePath();
+    
+    protected String getExtension() {
+        return fileExtension;
+    }
 }

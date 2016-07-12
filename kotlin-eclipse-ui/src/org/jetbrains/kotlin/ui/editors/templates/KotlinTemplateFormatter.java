@@ -162,7 +162,8 @@ public class KotlinTemplateFormatter {
         
         assert parsedFile != null;
 
-        String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), eclipseProject, lineDelimiter);
+        String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), parsedFile.getName(), 
+                eclipseProject, lineDelimiter);
         
         offsetsTracker.unmark(formatted);
         

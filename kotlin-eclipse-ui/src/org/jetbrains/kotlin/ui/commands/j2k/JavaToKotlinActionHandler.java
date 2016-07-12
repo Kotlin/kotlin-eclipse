@@ -204,6 +204,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         
         String formattedCode = KotlinFormatterKt.formatCode(
                 jetFile.getNode().getText(),
+                jetFile.getName(),
                 eclipseProject,
                 getDefaultLineDelimiter(compilationUnit));
         

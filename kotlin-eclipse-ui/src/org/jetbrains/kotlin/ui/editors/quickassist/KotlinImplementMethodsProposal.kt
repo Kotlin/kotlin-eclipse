@@ -106,7 +106,12 @@ public class KotlinImplementMethodsProposal(
 
         document.replace(insertOffset, 0, generatedText)
         
-        formatRange(document, EclipseDocumentRange(insertOffset, insertOffset + generatedText.length), psiFactory)
+        val file = editor.eclipseFile ?: return
+        formatRange(
+                document,
+                EclipseDocumentRange(insertOffset, insertOffset + generatedText.length),
+                psiFactory,
+                file.name)
     }
 
     private fun removeWhitespaceAfterLBrace(body: KtClassBody, document: IDocument, editor: KotlinEditor) {

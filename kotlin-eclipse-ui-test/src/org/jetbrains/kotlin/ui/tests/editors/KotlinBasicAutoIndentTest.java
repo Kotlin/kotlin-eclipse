@@ -139,4 +139,9 @@ public class KotlinBasicAutoIndentTest extends KotlinAutoIndentTestCase {
 	public void indentBeforeWhile() {
 	    doAutoTest();
 	}
+	
+	@Test
+	public void afterFunCallInScript() {
+	    doAutoTest();
+	}
 }

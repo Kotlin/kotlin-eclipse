@@ -29,24 +29,24 @@ import com.intellij.openapi.editor.Document as IdeaDocument
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
 
-fun formatCode(source: String, eclipseProject: IProject, lineSeparator: String): String {
-    return formatCode(source, createPsiFactory(eclipseProject), lineSeparator)
+fun formatCode(source: String, fileName: String, eclipseProject: IProject, lineSeparator: String): String {
+    return formatCode(source, fileName, createPsiFactory(eclipseProject), lineSeparator)
 }
 
-fun formatCode(source: String, psiFactory: KtPsiFactory, lineSeparator: String): String {
-    return KotlinFormatter(source, psiFactory, lineSeparator).formatCode()
+fun formatCode(source: String, fileName: String, psiFactory: KtPsiFactory, lineSeparator: String): String {
+    return KotlinFormatter(source, fileName, psiFactory, lineSeparator).formatCode()
 }
 
 fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, document: IDocument) {
     formatRange(containingFile, rootBlock, settings, document, containingFile.textRange)
 }
 
-fun formatRange(document: IDocument, range: EclipseDocumentRange, psiFactory: KtPsiFactory) {
-    formatRange(document, range.toPsiRange(document), psiFactory)
+fun formatRange(document: IDocument, range: EclipseDocumentRange, psiFactory: KtPsiFactory, fileName: String) {
+    formatRange(document, range.toPsiRange(document), psiFactory, fileName)
 }
 
-fun formatRange(document: IDocument, range: TextRange, psiFactory: KtPsiFactory) {
-    val ktFile = createKtFile(document.get(), psiFactory)
+fun formatRange(document: IDocument, range: TextRange, psiFactory: KtPsiFactory, fileName: String) {
+    val ktFile = createKtFile(document.get(), psiFactory, fileName)
     val rootBlock = KotlinBlock(ktFile.getNode(), 
                 NULL_ALIGNMENT_STRATEGY, 
                 Indent.getNoneIndent(), 
@@ -123,9 +123,9 @@ private fun getSignificantRange(file: KtFile, offset: Int): TextRange {
 }
 
 
-private class KotlinFormatter(source: String, psiFactory: KtPsiFactory, val lineSeparator: String) {
+private class KotlinFormatter(source: String, fileName: String, psiFactory: KtPsiFactory, val lineSeparator: String) {
     
-    val ktFile = createKtFile(source, psiFactory)
+    val ktFile = createKtFile(source, psiFactory, fileName)
     
     val sourceDocument = Document(source)
     
@@ -149,8 +149,8 @@ fun createPsiFactory(eclipseProject: IProject): KtPsiFactory {
     return KtPsiFactory(environment.project)
 }
 
-fun createKtFile(source: String, psiFactory: KtPsiFactory): KtFile {
-    return psiFactory.createFile(StringUtil.convertLineSeparators(source))
+fun createKtFile(source: String, psiFactory: KtPsiFactory, fileName: String): KtFile {
+    return psiFactory.createFile(fileName, StringUtil.convertLineSeparators(source))
 }
 
 private fun createWhitespaces(countSpaces: Int) = IndenterUtil.SPACE_STRING.repeat(countSpaces)

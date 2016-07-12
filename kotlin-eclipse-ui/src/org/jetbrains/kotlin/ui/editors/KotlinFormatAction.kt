@@ -42,7 +42,7 @@ class KotlinFormatAction(private val editor: KotlinEditor) : SelectionDispatchAc
             return
         }
         
-        formatRange(editor.document, getRange(selection), createPsiFactory(file.project))
+        formatRange(editor.document, getRange(selection), createPsiFactory(file.project), file.name)
         
         KotlinPsiManager.commitFile(file, editor.document)
     }

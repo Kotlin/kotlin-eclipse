@@ -90,7 +90,12 @@ class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuick
 
         replaceBetween(anchorToken, declaration.getBodyExpression()!!, newBodyText)
         val anchorStartOffset = anchorToken.textRange.startOffset
-        formatRange(editor.document, TextRange(anchorStartOffset, anchorStartOffset + newBodyText.length), factory)
+        val file = editor.eclipseFile ?: return
+        formatRange(
+                editor.document,
+                TextRange(anchorStartOffset, anchorStartOffset + newBodyText.length),
+                factory,
+                file.name)
     }
 
     private fun specifyType(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext) {
