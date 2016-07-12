@@ -344,10 +344,11 @@ object KotlinPsiManager {
     fun parseText(text: String, file: IFile): KtFile? {
         StringUtil.assertValidSeparators(text)
         
+        val project = getEnvironment(file).project
+        
         val virtualFile = KotlinLightVirtualFile(file, text)
         virtualFile.setCharset(CharsetToolkit.UTF8_CHARSET)
         
-        val project = getEnvironment(file).project
         val psiFileFactory = PsiFileFactory.getInstance(project) as PsiFileFactoryImpl
         
         return psiFileFactory.trySetupPsiForFile(virtualFile, KotlinLanguage.INSTANCE, true, false) as? KtFile
