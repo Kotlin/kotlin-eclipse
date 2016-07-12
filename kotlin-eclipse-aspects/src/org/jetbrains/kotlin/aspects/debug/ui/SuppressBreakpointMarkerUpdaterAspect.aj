@@ -19,7 +19,7 @@ public aspect SuppressBreakpointMarkerUpdaterAspect {
 	boolean around(BreakpointMarkerUpdater markerUpdater, IMarker marker, IDocument document, Position position):  
 			updateMarker(markerUpdater, marker, document, position) {
 		IFile resource = (IFile) marker.getResource();
-		if (resource != null && AspectsUtils.existsSourceFile(resource)) {
+		if (resource != null && (AspectsUtils.existsSourceFile(resource) || AspectsUtils.isScript(resource))) {
 			return true;
 		}
 
