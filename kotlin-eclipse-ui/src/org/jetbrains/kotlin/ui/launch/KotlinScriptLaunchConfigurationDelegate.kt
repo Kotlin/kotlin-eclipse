@@ -24,14 +24,14 @@ import org.eclipse.core.variables.VariablesPlugin
 import org.eclipse.debug.core.DebugPlugin
 import org.eclipse.debug.core.ILaunch
 import org.eclipse.debug.core.ILaunchConfiguration
-import org.eclipse.debug.core.model.ILaunchConfigurationDelegate
+import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants
 import org.jetbrains.kotlin.core.compiler.KotlinCompiler
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import java.io.PrintStream
 
-class KotlinScriptLaunchConfigurationDelegate : ILaunchConfigurationDelegate {
+class KotlinScriptLaunchConfigurationDelegate : LaunchConfigurationDelegate() {
     override fun launch(configuration: ILaunchConfiguration, mode: String, launch: ILaunch, monitor: IProgressMonitor) {
         val scriptFilePath = configuration.getAttribute(SCRIPT_FILE_PATH, null as String?) ?: return
         val scriptFile = ResourcesPlugin.getWorkspace().getRoot().getFile(Path(scriptFilePath))
