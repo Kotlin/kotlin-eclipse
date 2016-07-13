@@ -35,7 +35,8 @@ class KotlinMergeViewer(parent: Composite, configuration: CompareConfiguration):
 		
 		val configuration = object : SourceViewerConfiguration() {
 			override fun getPresentationReconciler(sourceViewer: ISourceViewer): IPresentationReconciler? {
-				val scanner = KotlinTokenScanner(JavaPlugin.getDefault().getPreferenceStore(), colorManager)
+				val scanner = KotlinTokenScanner.createScannerForCompareViewOfKtSourceFile(
+                        JavaPlugin.getDefault().getPreferenceStore(), colorManager)
 				return Configuration.getKotlinPresentaionReconciler(scanner)
 			}
 		}
