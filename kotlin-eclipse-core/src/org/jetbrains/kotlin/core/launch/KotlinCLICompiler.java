@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.cli.jvm.compiler.CompileEnvironmentException;
 import org.jetbrains.kotlin.cli.jvm.compiler.CompilerJarLocator;
 import org.jetbrains.kotlin.config.Services;
 import org.jetbrains.kotlin.config.Services.Builder;
-import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.core.model.KotlinEnvironmentKt;
 
 public class KotlinCLICompiler {
     public static ExitCode doMain(@NotNull CLICompiler<?> compiler, @NotNull PrintStream errorStream, @NotNull String[] args) {
@@ -45,7 +45,7 @@ public class KotlinCLICompiler {
                 @NotNull
                 @Override
                 public File getCompilerJar() {
-                    return new File(ProjectUtils.buildLibPath("kotlin-compiler"));
+                    return new File(KotlinEnvironmentKt.getKOTLIN_COMPILER_PATH());
                 }
             });
             
