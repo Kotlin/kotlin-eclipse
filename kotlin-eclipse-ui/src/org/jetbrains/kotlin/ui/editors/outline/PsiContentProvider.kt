@@ -37,6 +37,7 @@ class PsiContentProvider : ITreeContentProvider {
         
         return parentElement
                 .declarations
+                .filter { it !is KtScriptInitializer }
                 .toTypedArray()
     }
 
