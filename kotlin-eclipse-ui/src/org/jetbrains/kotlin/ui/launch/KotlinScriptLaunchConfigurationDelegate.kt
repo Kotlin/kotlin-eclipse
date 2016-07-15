@@ -20,53 +20,83 @@ import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.Path
-import org.eclipse.core.variables.VariablesPlugin
-import org.eclipse.debug.core.DebugPlugin
 import org.eclipse.debug.core.ILaunch
 import org.eclipse.debug.core.ILaunchConfiguration
-import org.eclipse.debug.core.model.LaunchConfigurationDelegate
-import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants
-import org.jetbrains.kotlin.core.compiler.KotlinCompiler
-import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils
+import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate
+import org.eclipse.jdt.launching.ExecutionArguments
+import org.eclipse.jdt.launching.VMRunnerConfiguration
+import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
+import org.jetbrains.kotlin.core.model.KOTLIN_COMPILER_PATH
 import org.jetbrains.kotlin.core.utils.ProjectUtils
-import java.io.PrintStream
+import java.io.File
 
-class KotlinScriptLaunchConfigurationDelegate : LaunchConfigurationDelegate() {
-    override fun launch(configuration: ILaunchConfiguration, mode: String, launch: ILaunch, monitor: IProgressMonitor) {
-        val scriptFilePath = configuration.getAttribute(SCRIPT_FILE_PATH, null as String?) ?: return
-        val scriptFile = ResourcesPlugin.getWorkspace().getRoot().getFile(Path(scriptFilePath))
-        
-        if (!scriptFile.exists()) return
-        
-        val rawArguments = configuration
-                .getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "")
-        val substitutedArguments = VariablesPlugin.getDefault().getStringVariableManager()
-                .performStringSubstitution(rawArguments)
-        val programArguments = DebugPlugin.parseArguments(substitutedArguments).toList()
-        
-        execKotlinCompiler(buildCompilerArguments(scriptFile, programArguments))
+class KotlinScriptLaunchConfigurationDelegate : AbstractJavaLaunchConfigurationDelegate() {
+    companion object {
+        private val compilerMainClass = K2JVMCompiler::class.java.name
+        private val classpathForCompiler = arrayOf(File(KOTLIN_COMPILER_PATH).absolutePath)
     }
     
-    private fun execKotlinCompiler(arguments: List<String>) {
-        val systemOut = System.out
+    override fun launch(configuration: ILaunchConfiguration, mode: String, launch: ILaunch, monitor: IProgressMonitor) {
+        monitor.beginTask("${configuration.name}...", 2)
         try {
-            val kotlinConsole = createCleanKotlinConsole()
-            kotlinConsole.activate()
+            monitor.subTask("Verifying launch attributes...")
             
-            val consoleStream = PrintStream(kotlinConsole.newOutputStream())
-            System.setOut(consoleStream)
+            val runConfig = verifyAndCreateRunnerConfiguration(configuration) ?: return
             
-            val compilerResult = KotlinCompiler.INSTANCE.execKotlinCompiler(arguments.toTypedArray())
+            if (monitor.isCanceled()) {
+                return;
+            }       
             
-            if (!compilerResult.compiledCorrectly()) {
-                KotlinCompilerUtils.handleCompilerOutput(compilerResult.getCompilerOutput())
-            }
+            monitor.worked(1)
+            
+            val runner = getVMRunner(configuration, mode)
+            runner.run(runConfig, launch, monitor)
+            
+            if (monitor.isCanceled()) {
+                return;
+            }   
         } finally {
-            System.setOut(systemOut)
+            monitor.done()
         }
     }
     
-    private fun buildCompilerArguments(scriptFile: IFile, programArguments: List<String>): List<String> {
+    private fun verifyAndCreateRunnerConfiguration(configuration: ILaunchConfiguration): VMRunnerConfiguration? {
+        val scriptFile = getScriptFile(configuration) ?: return null
+        if (!scriptFile.exists()) return null
+
+        val workingDir = verifyWorkingDirectory(configuration)?.absolutePath
+
+        val programArgs = getProgramArguments(configuration)
+        val vmArgs = getVMArguments(configuration)
+        val executionArgs = ExecutionArguments(vmArgs, programArgs)
+
+        val environmentVars = getEnvironment(configuration)
+
+        val vmAttributesMap: MutableMap<String, Any>? = getVMSpecificAttributesMap(configuration)
+
+        return VMRunnerConfiguration(compilerMainClass, classpathForCompiler).apply {
+            setProgramArguments(buildCompilerArguments(
+                    scriptFile,
+                    executionArgs.programArgumentsArray).toTypedArray())
+
+            setEnvironment(environmentVars)
+            setVMArguments(executionArgs.vmArgumentsArray)
+            setWorkingDirectory(workingDir);
+            setVMSpecificAttributesMap(vmAttributesMap)
+
+            setBootClassPath(getBootpath(configuration))
+        }
+    }
+    
+    
+    
+    private fun getScriptFile(configuration: ILaunchConfiguration): IFile? {
+        return configuration.getAttribute(SCRIPT_FILE_PATH, null as String?)?.let { scriptFilePath ->
+            ResourcesPlugin.getWorkspace().root.getFile(Path(scriptFilePath))
+        }
+    }
+    
+    private fun buildCompilerArguments(scriptFile: IFile, programArguments: Array<String>): List<String> {
         return arrayListOf<String>().apply {
             add("-kotlin-home")
             add(ProjectUtils.KT_HOME)
@@ -77,4 +107,4 @@ class KotlinScriptLaunchConfigurationDelegate : LaunchConfigurationDelegate() {
             addAll(programArguments)
         }
     }
-}   
+}
