@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,43 +14,33 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.editors.outline;
+package org.jetbrains.kotlin.ui.editors.outline
 
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
-import org.jetbrains.kotlin.psi.KtDeclarationContainer;
+import org.eclipse.jface.viewers.ITreeContentProvider
+import org.eclipse.jface.viewers.Viewer
+import org.jetbrains.kotlin.psi.KtDeclarationContainer
+import org.jetbrains.kotlin.psi.KtScriptInitializer
 
-public class PsiContentProvider implements ITreeContentProvider {
-
-    @Override
-    public void dispose() {
+class PsiContentProvider : ITreeContentProvider {
+    override fun dispose() {
     }
 
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+    override fun inputChanged(viewer: Viewer?, oldInput: Any?, newInput: Any?) {
     }
 
-    @Override
-    public Object[] getElements(Object inputElement) {
-        return getChildren(inputElement);
-    }
+    override fun getElements(inputElement: Any?): Array<Any> = getChildren(inputElement)
 
-    @Override
-    public Object[] getChildren(Object parentElement) {
-        if (parentElement instanceof KtDeclarationContainer) {
-            return ((KtDeclarationContainer) parentElement).getDeclarations().toArray();
+    override fun getChildren(parentElement: Any?): Array<Any> {
+        if (parentElement !is KtDeclarationContainer) {
+            return arrayOf<Any>()
         }
         
-        return new Object[] {};
+        return parentElement
+                .declarations
+                .toTypedArray()
     }
 
-    @Override
-    public Object getParent(Object element) {
-        return null;
-    }
+    override fun getParent(element: Any?): Any? = null
 
-    @Override
-    public boolean hasChildren(Object element) {
-        return getChildren(element).length > 0;
-    }
+    override fun hasChildren(element: Any?): Boolean = getChildren(element).isNotEmpty()
 }
