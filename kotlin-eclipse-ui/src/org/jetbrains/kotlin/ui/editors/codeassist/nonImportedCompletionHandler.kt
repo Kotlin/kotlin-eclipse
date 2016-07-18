@@ -47,8 +47,7 @@ private fun searchFor(identifierPart: String, javaProject: IJavaProject): List<T
     val foundTypes = arrayListOf<TypeNameMatch>()
     val collector = object : TypeNameMatchRequestor() {
         override fun acceptTypeNameMatch(match: TypeNameMatch) {
-            val type = match.type
-            if (Flags.isPublic(type.flags)) {
+            if (Flags.isPublic(match.modifiers)) {
                 foundTypes.add(match)
             }
         }
