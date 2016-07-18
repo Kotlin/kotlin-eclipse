@@ -36,7 +36,7 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
         @JvmField
         val CONTAINER_ENTRY: IClasspathEntry = JavaCore.newContainerEntry(runtimeContainerId)
         val LIB_RUNTIME_NAME = "kotlin-runtime"
-        private val LIB_RUNTIME_SRC_NAME = "kotlin-runtime-sources"
+        val LIB_RUNTIME_SRC_NAME = "kotlin-runtime-sources"
         private val LIB_REFLECT_NAME = "kotlin-reflect"
         
         @JvmStatic

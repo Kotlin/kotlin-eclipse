@@ -52,6 +52,11 @@ class LibrarySourcesIndex(private val sourcePath: IPath) {
                     index.getOrPut(shortName) { ArrayList() }.add(SourceFile(it))
                 }
     }
+    
+    fun resolve(shortName: String, packageFolder: IPath): String? {
+        val packageFqName = packageFolder.segments().joinToString(".")
+        return resolve(shortName, packageFqName)
+    }
 
     fun resolve(shortName: String, packageFqName: String): String? {
         val sourcesList = index[shortName] ?: return null
@@ -65,12 +70,12 @@ class LibrarySourcesIndex(private val sourcePath: IPath) {
             if (it.effectivePackage == null) {
                 it.effectivePackage = getPackageName(sourceArchive, sourceArchive.getEntry(it.path))
             }
-            if (packageFqName == it.effectivePackage) {
-                return it.path
-            }
         }
         
-        return null
+        return sourcesList
+                .filter { packageFqName == it.effectivePackage }
+                .singleOrNull()
+                ?.path
     }
 
     private fun getPackageName(zipFile: ZipFile, entry: ZipEntry): String? {

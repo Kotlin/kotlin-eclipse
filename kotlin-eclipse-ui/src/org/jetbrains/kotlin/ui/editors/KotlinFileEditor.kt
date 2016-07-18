@@ -66,8 +66,9 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationAction
 import org.jetbrains.kotlin.ui.editors.organizeImports.KotlinOrganizeImportsAction
+import org.jetbrains.kotlin.ui.editors.navigation.StringInput
 
-public class KotlinFileEditor : KotlinCommonEditor() {
+open class KotlinFileEditor : KotlinCommonEditor() {
     override val isScript: Boolean
         get() = false
     
@@ -95,4 +96,13 @@ public class KotlinFileEditor : KotlinCommonEditor() {
         val ideaProject = environment.project
         return KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(), "\n"))
     }
+}
+
+class KotlinExternalSealedFileEditor : KotlinFileEditor() {
+    companion object {
+        const val EDITOR_ID = "org.jetbrains.kotlin.ui.editors.KotlinExternalSealedFileEditor"
+    }
+    
+    override val parsedFile: KtFile?
+        get() = (getEditorInput() as StringInput).getKtFile()
 }
