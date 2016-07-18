@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
@@ -13,22 +12,18 @@ import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jdt.internal.core.SourceMapper;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.sources.LibrarySourcesIndex;
 import org.jetbrains.kotlin.core.resolve.sources.LibrarySourcesIndexKt;
 import org.jetbrains.kotlin.idea.KotlinFileType;
 
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.project.Project;
-
 public class KotlinSourceIndex {
     
-    private final HashMap<IPackageFragmentRoot, LibrarySourcesIndex> packageIndexes = new HashMap<>();
-    
-    public static KotlinSourceIndex getInstance(IJavaProject javaProject) {
-        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject.getProject()).getProject();
-        return ServiceManager.getService(ideaProject, KotlinSourceIndex.class);
+    private KotlinSourceIndex() {
     }
+    
+    public static final KotlinSourceIndex INSTANCE = new KotlinSourceIndex();
+    
+    private final HashMap<IPackageFragmentRoot, LibrarySourcesIndex> packageIndexes = new HashMap<>();
     
     public static boolean isKotlinSource(String shortFileName) {
         return KotlinFileType.EXTENSION.equals(new Path(shortFileName).getFileExtension());
@@ -36,10 +31,9 @@ public class KotlinSourceIndex {
     
     @Nullable
     public static char[] getSource(SourceMapper mapper, IType type, String simpleSourceFileName) {
-        KotlinSourceIndex index = KotlinSourceIndex.getInstance(type.getJavaProject());
         IPackageFragment packageFragment = type.getPackageFragment();
         if (packageFragment instanceof PackageFragment) {
-            String resolvedPath = index.resolvePath((PackageFragment) packageFragment, simpleSourceFileName);
+            String resolvedPath = INSTANCE.resolvePath((PackageFragment) packageFragment, simpleSourceFileName);
             return mapper.findSource(resolvedPath);
         }
         return null;
