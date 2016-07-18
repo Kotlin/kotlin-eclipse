@@ -39,6 +39,14 @@ public class KotlinSourceIndex {
         return null;
     }
     
+    @Nullable
+    public static char[] getSource(SourceMapper mapper, String sourceFileName, IPath packageFolder, IPath sourcePath) {
+        LibrarySourcesIndex index = new LibrarySourcesIndex(sourcePath);
+        String result = index.resolve(sourceFileName, packageFolder);
+        return result != null ? 
+                mapper.findSource(result) : mapper.findSource(packageFolder.append(sourceFileName).toPortableString());
+    }
+    
     public String resolvePath(PackageFragment packageFragment, String pathToSource) {
         IPackageFragmentRoot packageFragmentRoot = packageFragment.getPackageFragmentRoot();
         LibrarySourcesIndex packageIndex = getIndexForRoot(packageFragmentRoot);

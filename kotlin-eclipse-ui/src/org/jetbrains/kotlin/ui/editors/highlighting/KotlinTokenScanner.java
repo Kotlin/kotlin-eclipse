@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.psi.KtPsiFactory;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 
 public class KotlinTokenScanner implements ITokenScanner {
@@ -99,26 +98,26 @@ public class KotlinTokenScanner implements ITokenScanner {
     
     @Nullable
     private KtFile createKtFile(@NotNull IDocument document) {
-        KotlinCommonEnvironment environment;
-        String fileName;
         if (editor != null) {
             IFile eclipseFile = editor.getEclipseFile();
-            if (eclipseFile == null) return null;
+            if (eclipseFile != null) {
+                return createKtFile(KotlinEnvironmentKt.getEnvironment(eclipseFile), eclipseFile.getName());
+            } 
             
-            environment = KotlinEnvironmentKt.getEnvironment(eclipseFile);
-            fileName = eclipseFile.getName();
-        } else {
-            environment = getAnyKotlinEnvironmentForSourceFile();
-            fileName = "dummy.kt";
-        }
+            if (editor.getJavaEditor().isEditorInputReadOnly()) {
+                return editor.getParsedFile();
+            }
+        } 
         
+        return createKtFile(getAnyKotlinEnvironmentForSourceFile(), "dummy.kt");
+    }
+    
+    private KtFile createKtFile(@Nullable KotlinCommonEnvironment environment, String fileName) {
         if (environment == null) {
             return null;
         }
         
-        Project ideaProject = environment.getProject();
-        
-        return KotlinFormatterKt.createKtFile(document.get(), new KtPsiFactory(ideaProject), fileName);
+        return KotlinFormatterKt.createKtFile(document.get(), new KtPsiFactory(environment.getProject()), fileName);
     }
     
     @Nullable

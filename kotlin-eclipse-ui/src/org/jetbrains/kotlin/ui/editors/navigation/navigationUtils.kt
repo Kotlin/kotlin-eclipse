@@ -56,6 +56,19 @@ import org.jetbrains.kotlin.serialization.deserialization.descriptors.Deserializ
 import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader
+import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.core.KotlinClasspathContainer
+import org.eclipse.jdt.internal.core.SourceMapper
+import org.jetbrains.kotlin.core.model.KotlinNature
+import org.jetbrains.kotlin.ui.formatter.createKtFile
+import org.jetbrains.kotlin.psi.KtPsiFactory
+import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
+import org.jetbrains.kotlin.ui.editors.KotlinExternalSealedFileEditor
+import org.jetbrains.kotlin.psi.KtFile
+
+private val KOTLIN_SOURCE_PATH = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_SRC_NAME))
+private val RUNTIME_SOURCE_MAPPER = SourceMapper(KOTLIN_SOURCE_PATH, "", mapOf<Any, Any>())
 
 fun gotoElement(descriptor: DeclarationDescriptor, fromElement: KtElement,
                 fromEditor: KotlinEditor, javaProject: IJavaProject) {
@@ -82,9 +95,9 @@ fun gotoElement(
         
         is KotlinSourceElement -> gotoKotlinDeclaration(element.psi, fromElement, fromEditor, project)
         
-        is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, descriptor, project)
+        is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, descriptor, fromElement, project)
         
-        is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, descriptor, project)
+        is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, fromElement, descriptor, project)
     }
 }
 
@@ -94,7 +107,7 @@ private fun getClassFile(binaryClass: KotlinJvmBinaryClass, javaProject: IJavaPr
     return fragment?.getClassFile(file.name)
 }
 
-private fun findImplementingClass(
+private fun findImplementingClassInClasspath(
             binaryClass: KotlinJvmBinaryClass, 
             descriptor: DeclarationDescriptor, 
             javaProject: IJavaProject): IClassFile? {
@@ -161,7 +174,8 @@ private fun getImplClassName(memberDescriptor: DeserializedCallableMemberDescrip
 }
 
 private fun gotoClassByPackageSourceElement(
-        sourceElement: KotlinJvmBinaryPackageSourceElement, 
+        sourceElement: KotlinJvmBinaryPackageSourceElement,
+        fromElement: KtElement,
         descriptor: DeclarationDescriptor, 
         javaProject: IJavaProject) {
     if (descriptor !is DeserializedCallableMemberDescriptor) return 
@@ -172,24 +186,30 @@ private fun gotoClassByPackageSourceElement(
         return
     }
     
-    gotoElementInBinaryClass(binaryClass, descriptor, javaProject)
+    gotoElementInBinaryClass(binaryClass, descriptor, fromElement, javaProject)
 }
 
 private fun gotoElementInBinaryClass(
         binaryClass: KotlinJvmBinaryClass, 
         descriptor: DeclarationDescriptor,
+        fromElement: KtElement,
         javaProject: IJavaProject) {
-    val classFile = findImplementingClass(binaryClass, descriptor, javaProject)
-    if (classFile == null) return
+    val classFile = findImplementingClassInClasspath(binaryClass, descriptor, javaProject)
     
-    val targetEditor = KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen())
-    if (targetEditor !is KotlinClassFileEditor) return
+    var targetEditor: IEditorPart?
+    if (classFile != null) {
+        targetEditor = KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen())
+    } else {
+        targetEditor = tryToFindExternalClassInStdlib(binaryClass, fromElement, javaProject)
+    }
     
-    val targetKtFile = targetEditor.parsedFile
+    if (targetEditor !is KotlinEditor) return
+    
+    val targetKtFile = targetEditor.parsedFile ?: return
     val offset = findDeclarationInParsedFile(descriptor, targetKtFile)
     val start = LineEndUtil.convertLfToDocumentOffset(targetKtFile.getText(), offset, targetEditor.document)
     
-    targetEditor.selectAndReveal(start, 0)
+    targetEditor.javaEditor.selectAndReveal(start, 0)
 }
 
 private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, fromEditor: KotlinEditor, javaProject: IJavaProject) {
@@ -199,6 +219,41 @@ private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, f
     val start = element.getTextDocumentOffset(targetEditor.document)
     targetEditor.selectAndReveal(start, 0)
 }
+
+private fun tryToFindExternalClassInStdlib(
+        binaryClass: KotlinJvmBinaryClass,
+        fromElement: KtElement,
+        javaProject: IJavaProject): IEditorPart? {
+    if (KotlinNature.hasKotlinNature(javaProject.project)) {
+        // If project has Kotlin nature, then search in stdlib should be done earlier by searching class in the classpath
+        return null
+    }
+    
+    if (binaryClass !is VirtualFileKotlinClass) {
+        return null
+    }
+    
+    val (name, pckg, source) = findSourceForElementInStdlib(binaryClass) ?: return null
+    val content = String(source)
+    val ktFile = createKtFile(content, KtPsiFactory(fromElement), "dummy.kt")
+    
+    return openEditorForExternalFile(content, name, pckg, ktFile)
+}
+
+private fun findSourceForElementInStdlib(binaryClass: VirtualFileKotlinClass): ExternalSourceFile? {
+    val file = binaryClass.file
+    val reader = ClassFileReader(file.contentsToByteArray(), file.name.toCharArray())
+    val sourceName = String(reader.sourceFileName())
+    
+    val fileNameWithPackage = Path(String(reader.getName()))
+    val packageFqName = fileNameWithPackage.removeLastSegments(1)
+    
+    val source = KotlinSourceIndex.getSource(RUNTIME_SOURCE_MAPPER, sourceName, packageFqName, KOTLIN_SOURCE_PATH)
+    
+    return if (source != null) ExternalSourceFile(sourceName, packageFqName.toPortableString(), source) else null
+}
+
+private data class ExternalSourceFile(val name: String, val packageFqName: String, val source: CharArray)
 
 private fun findEditorForReferencedElement(
         element: PsiElement,
@@ -245,24 +300,33 @@ private fun findEditorPart(
     
     //external jar
     if (targetFile.getFullPath().toOSString().contains("jar")) {
-        val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-        if (page == null) return null
-        
         val elementFile = element.getContainingFile()
         if (elementFile == null) return null
         
         val directory = elementFile.getContainingDirectory()
-        val storage = StringStorage(elementFile.text, elementFile.name, getFqNameInsideArchive(directory.toString()))
-        val input = StringInput(storage)
-        val reusedEditor = page.findEditor(input)
-        if (reusedEditor != null) {
-            page.reuseEditor(reusedEditor as IReusableEditor?, input)
-        }
-        
-        return page.openEditor(input, "org.jetbrains.kotlin.ui.editors.KotlinFileEditor")
+        return openEditorForExternalFile(
+                elementFile.text,
+                elementFile.name,
+                getFqNameInsideArchive(directory.toString()),
+                elementFile as KtFile)
     }
     
     return null
+}
+
+private fun openEditorForExternalFile(sourceText: String, sourceName: String,
+                                      packageFqName: String, ktFile: KtFile): IEditorPart? {
+    val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+    if (page == null) return null
+
+    val storage = StringStorage(sourceText, sourceName, packageFqName)
+    val input = StringInput(storage, ktFile)
+    val reusedEditor = page.findEditor(input)
+    if (reusedEditor != null) {
+        page.reuseEditor(reusedEditor as IReusableEditor?, input)
+    }
+
+    return page.openEditor(input, KotlinExternalSealedFileEditor.EDITOR_ID)
 }
 
 private fun openInEditor(file: IFile): IEditorPart {

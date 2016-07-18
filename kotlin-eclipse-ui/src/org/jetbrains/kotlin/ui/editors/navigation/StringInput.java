@@ -4,13 +4,17 @@ import org.eclipse.core.resources.IStorage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.psi.KtFile;
 
 public class StringInput implements IStorageEditorInput {
     
     private final StringStorage storage;
+    private final KtFile ktFile;
     
-    StringInput(StringStorage storage) {
+    StringInput(StringStorage storage, KtFile ktFile) {
         this.storage = storage;
+        this.ktFile = ktFile;
     }
     
     @Override
@@ -46,6 +50,11 @@ public class StringInput implements IStorageEditorInput {
     @Override
     public <T> T getAdapter(Class<T> required) {
         return storage.getAdapter(required);
+    }
+    
+    @Nullable
+    public KtFile getKtFile() {
+        return ktFile;
     }
     
     @Override
