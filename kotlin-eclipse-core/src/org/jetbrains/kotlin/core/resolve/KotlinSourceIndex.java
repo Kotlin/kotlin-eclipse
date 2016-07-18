@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.core.resolve;
 
 import java.util.HashMap;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.sources.LibrarySourcesIndex;
+import org.jetbrains.kotlin.core.resolve.sources.LibrarySourcesIndexKt;
 import org.jetbrains.kotlin.idea.KotlinFileType;
 
 import com.intellij.openapi.components.ServiceManager;
@@ -50,7 +52,7 @@ public class KotlinSourceIndex {
             return pathToSource;
         }
         String simpleName = new Path(pathToSource).lastSegment();
-        String result = packageIndex.resolve(simpleName, packageFragment);
+        String result = packageIndex.resolve(simpleName, packageFragment.getElementName());
         return result != null ? result : pathToSource;
     }
     
@@ -64,8 +66,15 @@ public class KotlinSourceIndex {
             if (packageRoot.getKind() != IPackageFragmentRoot.K_BINARY) {
                 return null;
             }
-            LibrarySourcesIndex index = new LibrarySourcesIndex(packageRoot);
+            
+            IPath sourcePath = LibrarySourcesIndexKt.getSourcePath(packageRoot);
+            if (sourcePath == null) {
+                return null;
+            }
+            
+            LibrarySourcesIndex index = new LibrarySourcesIndex(sourcePath);
             packageIndexes.put(packageRoot, index);
+            
             return index;
         } catch (JavaModelException e) {
             KotlinLogger.logError("Unable to analyze sources for package", e);
