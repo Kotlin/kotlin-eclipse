@@ -8,14 +8,12 @@ import com.intellij.lang.ASTNode;
 import com.intellij.lang.Language;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.impl.DocumentImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
-import com.intellij.psi.formatter.FormattingDocumentModelImpl;
 import com.intellij.psi.formatter.WhiteSpaceFormattingStrategy;
 import com.intellij.psi.formatter.WhiteSpaceFormattingStrategyFactory;
 
@@ -34,7 +32,13 @@ public class EclipseFormattingModel implements FormattingDocumentModel {
     private final String applyChangeStateClassName = "com.intellij.formatting.FormatProcessor$ApplyChangesState";
     private final String prepareMethodName = "prepare";
     
-    public EclipseFormattingModel(@NotNull final Document document, PsiFile file, CodeStyleSettings settings) {
+    private final boolean forLineIndentation;
+    
+    public EclipseFormattingModel(
+            @NotNull final Document document, 
+            PsiFile file, 
+            CodeStyleSettings settings,
+            boolean forLineIndentation) {
         myDocument = document;
         myFile = file;
         if (file != null) {
@@ -44,21 +48,7 @@ public class EclipseFormattingModel implements FormattingDocumentModel {
             myWhiteSpaceStrategy = WhiteSpaceFormattingStrategyFactory.getStrategy();
         }
         mySettings = settings;
-    }
-    
-    public static FormattingDocumentModelImpl createOn(PsiFile file) {
-        Document document = getDocumentToBeUsedFor(file);
-        if (document != null) {
-            checkDocument(file, document);
-            return new FormattingDocumentModelImpl(document, file);
-        } else {
-            return new FormattingDocumentModelImpl(new DocumentImpl(file.getViewProvider().getContents(), true), file);
-        }
-    }
-    
-    private static void checkDocument(PsiFile file, Document document) {
-        if (file.getTextLength() != document.getTextLength()) {
-        }
+        this.forLineIndentation = forLineIndentation;
     }
     
     @Nullable
@@ -106,6 +96,10 @@ public class EclipseFormattingModel implements FormattingDocumentModel {
     @NotNull
     @Override
     public Document getDocument() {
+        if (forLineIndentation) { // Optimization to avoid getStackTrace() calls
+            return myDocument;
+        }
+        
         // In the compiler we have shrinked version of DocumentEx interface which doesn't have setInBulkUpdate method
         // This workaround allows us to avoid place in FormatProcessor where setInBulkUpdate is called 
         int i = 0;

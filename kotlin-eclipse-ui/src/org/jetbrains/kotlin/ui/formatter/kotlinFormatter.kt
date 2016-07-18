@@ -63,7 +63,7 @@ private fun formatRange(
         settings: CodeStyleSettings,
         document: IDocument,
         range: TextRange) {
-    val formattingModel = buildModel(containingFile, rootBlock, settings, document)
+    val formattingModel = buildModel(containingFile, rootBlock, settings, document, false)
             
     val ranges = FormatTextRanges(range, true)
     FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges, false)
@@ -71,7 +71,7 @@ private fun formatRange(
 
 fun adjustIndent(containingFile: KtFile, rootBlock: Block,
                  settings: CodeStyleSettings, offset: Int, document: IDocument) {
-    val formattingModel = buildModel(containingFile, rootBlock, settings, document)
+    val formattingModel = buildModel(containingFile, rootBlock, settings, document, true)
     FormatterImpl().adjustLineIndent(
             formattingModel, settings, settings.indentOptions, offset, getSignificantRange(containingFile, offset))
 }
@@ -103,10 +103,15 @@ private fun buildModel(
         containingFile: KtFile,
         rootBlock: Block,
         settings: CodeStyleSettings,
-        document: IDocument): EclipseDocumentFormattingModel {
+        document: IDocument,
+        forLineIndentation: Boolean): EclipseDocumentFormattingModel {
     initializaSettings(settings.indentOptions!!)
     val formattingDocumentModel =
-            EclipseFormattingModel(DocumentImpl(containingFile.getViewProvider().getContents(), true), containingFile, settings)
+            EclipseFormattingModel(
+                    DocumentImpl(containingFile.getViewProvider().getContents(), true),
+                    containingFile,
+                    settings,
+                    forLineIndentation)
 
     return EclipseDocumentFormattingModel(containingFile, rootBlock, formattingDocumentModel, document, settings)
 }
