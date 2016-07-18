@@ -30,43 +30,42 @@ import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import kotlin.io.use
 import org.eclipse.core.resources.ResourcesPlugin
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.eclipse.core.runtime.IPath
 
-public class LibrarySourcesIndex(root: IPackageFragmentRoot) {
+fun getSourcePath(root: IPackageFragmentRoot): IPath? {
+    return ProjectUtils.convertToGlobalPath(root.resolvedClasspathEntry?.sourceAttachmentPath)
+}
+
+class LibrarySourcesIndex(private val sourcePath: IPath) {
+    
     private val index = hashMapOf<String, ArrayList<SourceFile>>()
     private val PACKAGE_LINE_PREFIX = "package "
 
-    private val sourcePath = ProjectUtils.convertToGlobalPath(root.resolvedClasspathEntry?.sourceAttachmentPath)
-
     init {
-        if (sourcePath != null) {
-            val sourceArchive = ZipFile(sourcePath.toOSString())
-            
-            sourceArchive.entries().toList()
-                    .map { it.getName() }
-                    .filter { KotlinSourceIndex.isKotlinSource(it) }
-                    .forEach {
-                        val shortName = Path(it).lastSegment()
-                        index.getOrPut(shortName) { ArrayList() }.add(SourceFile(it))
-                    }
-        }
+        val sourceArchive = ZipFile(sourcePath.toOSString())
+
+        sourceArchive.entries().toList()
+                .map { it.getName() }
+                .filter { KotlinSourceIndex.isKotlinSource(it) }
+                .forEach {
+                    val shortName = Path(it).lastSegment()
+                    index.getOrPut(shortName) { ArrayList() }.add(SourceFile(it))
+                }
     }
 
-    public fun resolve(shortName: String, packageFragment: IPackageFragment): String? {
-        if (sourcePath == null) return null
-        
+    fun resolve(shortName: String, packageFqName: String): String? {
         val sourcesList = index[shortName] ?: return null
         if (sourcesList.size == 1) {
             return sourcesList.first().path
         }
         
-        val packageName = packageFragment.getElementName()
         val sourceArchive = ZipFile(sourcePath.toOSString())
         
         for (it in sourcesList) {
             if (it.effectivePackage == null) {
                 it.effectivePackage = getPackageName(sourceArchive, sourceArchive.getEntry(it.path))
             }
-            if (packageName == it.effectivePackage) {
+            if (packageFqName == it.effectivePackage) {
                 return it.path
             }
         }
