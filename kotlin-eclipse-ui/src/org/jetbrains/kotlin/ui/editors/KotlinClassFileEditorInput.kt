@@ -12,22 +12,25 @@ import org.eclipse.jdt.internal.core.PackageFragment
 import org.eclipse.jdt.internal.core.ClassFile
 import org.eclipse.jdt.internal.core.BinaryType
 
-public class KotlinClassFileEditorInput(classFile:IClassFile, private val javaProject:IJavaProject?):InternalClassFileEditorInput(classFile) {
+public class KotlinClassFileEditorInput(
+        classFile: IClassFile,
+        private val javaProject: IJavaProject?) : InternalClassFileEditorInput(classFile) {
+    
     private val sourceShortName: String?
     private val sourceFullPath: String?
 
     init {
         sourceShortName = (getClassFile().getType() as? BinaryType)?.getSourceFileName(null)?.toString()
+        
         sourceFullPath = if (sourceShortName != null) {
-            val index = KotlinSourceIndex.getInstance(javaProject)
             val packageFragment = getClassFile().getParent() as PackageFragment
-            index.resolvePath(packageFragment, sourceShortName)
+            KotlinSourceIndex.INSTANCE.resolvePath(packageFragment, sourceShortName)
         } else {
             null
         }
     }
 
-    private fun compareSources(another:KotlinClassFileEditorInput):Boolean {
+    private fun compareSources(another: KotlinClassFileEditorInput): Boolean {
         if (sourceShortName == null || another.sourceShortName == null) {
             return false
         }
@@ -38,16 +41,14 @@ public class KotlinClassFileEditorInput(classFile:IClassFile, private val javaPr
         }
     }
 
-    override public fun equals(other: Any?):Boolean =
+    override public fun equals(other: Any?): Boolean =
             when {
                 super.equals(other) -> true
                 other is KotlinClassFileEditorInput -> compareSources(other)
                 else -> false
             }
 
-    override fun getName() =
-            sourceShortName ?: super.getName()
+    override fun getName() = sourceShortName ?: super.getName()
 
-    override fun getToolTipText() =
-            sourceFullPath ?: super.getToolTipText()
+    override fun getToolTipText() = sourceFullPath ?: super.getToolTipText()
 }
