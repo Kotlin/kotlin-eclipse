@@ -28,6 +28,8 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.IPackageFragment
 import org.eclipse.jdt.core.dom.IBinding
 import org.eclipse.jdt.core.dom.IMethodBinding
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader
+import org.eclipse.jdt.internal.core.SourceMapper
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
 import org.eclipse.jdt.ui.JavaUI
 import org.eclipse.jface.util.OpenStrategy
@@ -36,10 +38,14 @@ import org.eclipse.ui.IReusableEditor
 import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.ide.IDE
 import org.eclipse.ui.texteditor.AbstractTextEditor
+import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.model.KotlinNature
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
+import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement
+import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
@@ -51,21 +57,14 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClass
 import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor
-import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
-import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader
-import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.core.KotlinClasspathContainer
-import org.eclipse.jdt.internal.core.SourceMapper
-import org.jetbrains.kotlin.core.model.KotlinNature
+import org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor
 import org.jetbrains.kotlin.ui.formatter.createKtFile
-import org.jetbrains.kotlin.psi.KtPsiFactory
-import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
-import org.jetbrains.kotlin.ui.editors.KotlinExternalSealedFileEditor
-import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
 
 private val KOTLIN_SOURCE_PATH = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_SRC_NAME))
 private val RUNTIME_SOURCE_MAPPER = SourceMapper(KOTLIN_SOURCE_PATH, "", mapOf<Any, Any>())
@@ -326,7 +325,7 @@ private fun openEditorForExternalFile(sourceText: String, sourceName: String,
         page.reuseEditor(reusedEditor as IReusableEditor?, input)
     }
 
-    return page.openEditor(input, KotlinExternalSealedFileEditor.EDITOR_ID)
+    return page.openEditor(input, KotlinExternalReadOnlyEditor.EDITOR_ID)
 }
 
 private fun openInEditor(file: IFile): IEditorPart {
