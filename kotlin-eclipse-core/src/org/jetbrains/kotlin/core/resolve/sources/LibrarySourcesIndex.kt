@@ -31,18 +31,23 @@ import kotlin.io.use
 import org.eclipse.core.resources.ResourcesPlugin
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.eclipse.core.runtime.IPath
+import java.io.File
 
 fun getSourcePath(root: IPackageFragmentRoot): IPath? {
     return ProjectUtils.convertToGlobalPath(root.resolvedClasspathEntry?.sourceAttachmentPath)
 }
 
-class LibrarySourcesIndex(private val sourcePath: IPath) {
+class LibrarySourcesIndex(private val jarWithSources: File) {
     
     private val index = hashMapOf<String, ArrayList<SourceFile>>()
     private val PACKAGE_LINE_PREFIX = "package "
 
     init {
-        val sourceArchive = ZipFile(sourcePath.toOSString())
+        if (!jarWithSources.exists()) {
+            throw IllegalArgumentException("File with sources ($jarWithSources) should exist")
+        }
+        
+        val sourceArchive = ZipFile(jarWithSources)
 
         sourceArchive.entries().toList()
                 .map { it.getName() }
@@ -64,7 +69,7 @@ class LibrarySourcesIndex(private val sourcePath: IPath) {
             return sourcesList.first().path
         }
         
-        val sourceArchive = ZipFile(sourcePath.toOSString())
+        val sourceArchive = ZipFile(jarWithSources)
         
         for (it in sourcesList) {
             if (it.effectivePackage == null) {
