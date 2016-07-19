@@ -104,14 +104,19 @@ fun gotoElement(
     }
 }
 
-private fun getClassFile(binaryClass: KotlinJvmBinaryClass, javaProject: IJavaProject): IClassFile? {
-    val file = (binaryClass as VirtualFileKotlinClass).file
+private fun getClassFile(binaryClass: VirtualFileKotlinClass, javaProject: IJavaProject): IClassFile? {
+    val file = binaryClass.file
     val fragment = javaProject.findPackageFragment(pathFromUrlInArchive(file.parent.path))
     return fragment?.getClassFile(file.name)
 }
 
+<<<<<<< HEAD
 private fun findImplementingClass(
             binaryClass: KotlinJvmBinaryClass, 
+=======
+private fun findImplementingClassInClasspath(
+            binaryClass: VirtualFileKotlinClass, 
+>>>>>>> 1a440c9... Simplify: replace usages with subclasses
             descriptor: DeclarationDescriptor, 
             javaProject: IJavaProject): IClassFile? {
         return if (KotlinClassHeader.Kind.MULTIFILE_CLASS == binaryClass.classHeader.kind) 
@@ -121,7 +126,7 @@ private fun findImplementingClass(
     }
     
 private fun getImplementingFacadePart(
-        binaryClass: KotlinJvmBinaryClass, 
+        binaryClass: VirtualFileKotlinClass, 
         descriptor: DeclarationDescriptor,
         javaProject: IJavaProject): IClassFile? {
     if (descriptor !is DeserializedCallableMemberDescriptor) return null
@@ -195,8 +200,20 @@ private fun gotoElementInBinaryClass(
         binaryClass: KotlinJvmBinaryClass, 
         descriptor: DeclarationDescriptor,
         javaProject: IJavaProject) {
+<<<<<<< HEAD
     val classFile = findImplementingClass(binaryClass, descriptor, javaProject)
     if (classFile == null) return
+=======
+    if (binaryClass !is VirtualFileKotlinClass) return
+    
+    val classFile = findImplementingClassInClasspath(binaryClass, descriptor, javaProject)
+
+    val targetEditor = if (classFile != null) {
+        KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen())
+    } else {
+        tryToFindExternalClassInStdlib(binaryClass, fromElement, javaProject)
+    }
+>>>>>>> 1a440c9... Simplify: replace usages with subclasses
     
     val targetEditor = KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen())
     if (targetEditor !is KotlinClassFileEditor) return
@@ -216,6 +233,40 @@ private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, f
     targetEditor.selectAndReveal(start, 0)
 }
 
+<<<<<<< HEAD
+=======
+private fun tryToFindExternalClassInStdlib(
+        binaryClass: VirtualFileKotlinClass,
+        fromElement: KtElement,
+        javaProject: IJavaProject): IEditorPart? {
+    if (KotlinNature.hasKotlinNature(javaProject.project)) {
+        // If project has Kotlin nature, then search in stdlib should be done earlier by searching class in the classpath
+        return null
+    }
+    
+    val (name, pckg, source) = findSourceForElementInStdlib(binaryClass) ?: return null
+    val content = String(source)
+    val ktFile = createKtFile(content, KtPsiFactory(fromElement), "dummy.kt")
+    
+    return openEditorForExternalFile(content, name, pckg, ktFile)
+}
+
+private fun findSourceForElementInStdlib(binaryClass: VirtualFileKotlinClass): ExternalSourceFile? {
+    val file = binaryClass.file
+    val reader = ClassFileReader(file.contentsToByteArray(), file.name.toCharArray())
+    val sourceName = String(reader.sourceFileName())
+    
+    val fileNameWithPackage = Path(String(reader.getName()))
+    val packageFqName = fileNameWithPackage.removeLastSegments(1)
+    
+    val source = KotlinSourceIndex.getSource(RUNTIME_SOURCE_MAPPER, sourceName, packageFqName, KOTLIN_SOURCE_PATH)
+    
+    return if (source != null) ExternalSourceFile(sourceName, packageFqName.toPortableString(), source) else null
+}
+
+private data class ExternalSourceFile(val name: String, val packageFqName: String, val source: CharArray)
+
+>>>>>>> 1a440c9... Simplify: replace usages with subclasses
 private fun findEditorForReferencedElement(
         element: PsiElement,
         fromElement: KtElement, 
