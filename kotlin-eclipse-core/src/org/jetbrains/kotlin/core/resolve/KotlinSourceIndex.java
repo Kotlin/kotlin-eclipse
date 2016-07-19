@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.core.resolve;
 
+import java.io.File;
 import java.util.HashMap;
 
 import org.eclipse.core.runtime.IPath;
@@ -41,8 +42,8 @@ public class KotlinSourceIndex {
     
     @Nullable
     public static char[] getSource(SourceMapper mapper, String sourceFileName, IPath packageFolder, IPath sourcePath) {
-        LibrarySourcesIndex index = new LibrarySourcesIndex(sourcePath);
-        String result = index.resolve(sourceFileName, packageFolder);
+        LibrarySourcesIndex index = createSourcesIndex(sourcePath);
+        String result = index != null ? index.resolve(sourceFileName, packageFolder) : null;
         return result != null ? 
                 mapper.findSource(result) : mapper.findSource(packageFolder.append(sourceFileName).toPortableString());
     }
@@ -74,7 +75,7 @@ public class KotlinSourceIndex {
                 return null;
             }
             
-            LibrarySourcesIndex index = new LibrarySourcesIndex(sourcePath);
+            LibrarySourcesIndex index = createSourcesIndex(sourcePath);
             packageIndexes.put(packageRoot, index);
             
             return index;
@@ -82,5 +83,11 @@ public class KotlinSourceIndex {
             KotlinLogger.logError("Unable to analyze sources for package", e);
         }
         return null;
+    }
+    
+    @Nullable
+    private static LibrarySourcesIndex createSourcesIndex(IPath sourcePath) {
+        File jarFile = sourcePath.toFile();
+        return jarFile.exists() ? new LibrarySourcesIndex(jarFile) : null;
     }
 }
