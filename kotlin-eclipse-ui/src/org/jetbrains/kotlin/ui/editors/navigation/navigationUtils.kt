@@ -100,14 +100,14 @@ fun gotoElement(
     }
 }
 
-private fun getClassFile(binaryClass: KotlinJvmBinaryClass, javaProject: IJavaProject): IClassFile? {
-    val file = (binaryClass as VirtualFileKotlinClass).file
+private fun getClassFile(binaryClass: VirtualFileKotlinClass, javaProject: IJavaProject): IClassFile? {
+    val file = binaryClass.file
     val fragment = javaProject.findPackageFragment(pathFromUrlInArchive(file.parent.path))
     return fragment?.getClassFile(file.name)
 }
 
 private fun findImplementingClassInClasspath(
-            binaryClass: KotlinJvmBinaryClass, 
+            binaryClass: VirtualFileKotlinClass, 
             descriptor: DeclarationDescriptor, 
             javaProject: IJavaProject): IClassFile? {
         return if (KotlinClassHeader.Kind.MULTIFILE_CLASS == binaryClass.classHeader.kind) 
@@ -117,7 +117,7 @@ private fun findImplementingClassInClasspath(
     }
     
 private fun getImplementingFacadePart(
-        binaryClass: KotlinJvmBinaryClass, 
+        binaryClass: VirtualFileKotlinClass, 
         descriptor: DeclarationDescriptor,
         javaProject: IJavaProject): IClassFile? {
     if (descriptor !is DeserializedCallableMemberDescriptor) return null
@@ -193,13 +193,14 @@ private fun gotoElementInBinaryClass(
         descriptor: DeclarationDescriptor,
         fromElement: KtElement,
         javaProject: IJavaProject) {
-    val classFile = findImplementingClassInClasspath(binaryClass, descriptor, javaProject)
+    if (binaryClass !is VirtualFileKotlinClass) return
     
-    var targetEditor: IEditorPart?
-    if (classFile != null) {
-        targetEditor = KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen())
+    val classFile = findImplementingClassInClasspath(binaryClass, descriptor, javaProject)
+
+    val targetEditor = if (classFile != null) {
+        KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen())
     } else {
-        targetEditor = tryToFindExternalClassInStdlib(binaryClass, fromElement, javaProject)
+        tryToFindExternalClassInStdlib(binaryClass, fromElement, javaProject)
     }
     
     if (targetEditor !is KotlinEditor) return
@@ -220,15 +221,11 @@ private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, f
 }
 
 private fun tryToFindExternalClassInStdlib(
-        binaryClass: KotlinJvmBinaryClass,
+        binaryClass: VirtualFileKotlinClass,
         fromElement: KtElement,
         javaProject: IJavaProject): IEditorPart? {
     if (KotlinNature.hasKotlinNature(javaProject.project)) {
         // If project has Kotlin nature, then search in stdlib should be done earlier by searching class in the classpath
-        return null
-    }
-    
-    if (binaryClass !is VirtualFileKotlinClass) {
         return null
     }
     
