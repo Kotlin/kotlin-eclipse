@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.core.resolve;
 
+import java.io.File;
 import java.util.HashMap;
 
 import org.eclipse.core.runtime.IPath;
@@ -39,6 +40,17 @@ public class KotlinSourceIndex {
         return null;
     }
     
+<<<<<<< HEAD
+=======
+    @Nullable
+    public static char[] getSource(SourceMapper mapper, String sourceFileName, IPath packageFolder, IPath sourcePath) {
+        LibrarySourcesIndex index = createSourcesIndex(sourcePath);
+        String result = index != null ? index.resolve(sourceFileName, packageFolder) : null;
+        return result != null ? 
+                mapper.findSource(result) : mapper.findSource(packageFolder.append(sourceFileName).toPortableString());
+    }
+    
+>>>>>>> 5e9b722... Check for existance before create library sources index
     public String resolvePath(PackageFragment packageFragment, String pathToSource) {
         IPackageFragmentRoot packageFragmentRoot = packageFragment.getPackageFragmentRoot();
         LibrarySourcesIndex packageIndex = getIndexForRoot(packageFragmentRoot);
@@ -66,7 +78,7 @@ public class KotlinSourceIndex {
                 return null;
             }
             
-            LibrarySourcesIndex index = new LibrarySourcesIndex(sourcePath);
+            LibrarySourcesIndex index = createSourcesIndex(sourcePath);
             packageIndexes.put(packageRoot, index);
             
             return index;
@@ -74,5 +86,11 @@ public class KotlinSourceIndex {
             KotlinLogger.logError("Unable to analyze sources for package", e);
         }
         return null;
+    }
+    
+    @Nullable
+    private static LibrarySourcesIndex createSourcesIndex(IPath sourcePath) {
+        File jarFile = sourcePath.toFile();
+        return jarFile.exists() ? new LibrarySourcesIndex(jarFile) : null;
     }
 }
