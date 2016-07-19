@@ -225,7 +225,7 @@ private fun tryToFindExternalClassInStdlib(
         fromElement: KtElement,
         javaProject: IJavaProject): IEditorPart? {
     if (KotlinNature.hasKotlinNature(javaProject.project)) {
-        // If project has Kotlin nature, then it should have Kotlin runtime library with sources
+        // If project has Kotlin nature, then search in stdlib should be done earlier by searching class in the classpath
         return null
     }
     
