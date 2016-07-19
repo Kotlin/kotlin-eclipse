@@ -98,9 +98,9 @@ open class KotlinFileEditor : KotlinCommonEditor() {
     }
 }
 
-class KotlinExternalSealedFileEditor : KotlinFileEditor() {
+class KotlinExternalReadOnlyEditor : KotlinFileEditor() {
     companion object {
-        const val EDITOR_ID = "org.jetbrains.kotlin.ui.editors.KotlinExternalSealedFileEditor"
+        const val EDITOR_ID = "org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
     }
     
     override val parsedFile: KtFile?

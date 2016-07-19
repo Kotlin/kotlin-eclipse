@@ -225,12 +225,12 @@
             name="Kotlin Script Editor">
       </editor>
       <editor
-            class="org.jetbrains.kotlin.ui.editors.KotlinExternalSealedFileEditor"
+            class="org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
             contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
             default="false"
             extensions="kt"
             icon="icons/kotlin-file.gif"
-            id="org.jetbrains.kotlin.ui.editors.KotlinExternalSealedFileEditor"
+            id="org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
             name="Kotlin External Editor">
       </editor>
    </extension>
