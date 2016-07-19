@@ -215,6 +215,30 @@
             id="org.jetbrains.kotlin.ui.editors.KotlinFileEditor"
             name="Kotlin Editor">
       </editor>
+<<<<<<< HEAD
+=======
+      <editor
+            class="org.jetbrains.kotlin.ui.editors.KotlinScriptEditor"
+            contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
+            default="false"
+            extensions="kts"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.ui.editors.KotlinScriptEditor"
+            name="Kotlin Script Editor">
+      </editor>
+<<<<<<< HEAD
+=======
+      <editor
+            class="org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
+            contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
+            default="false"
+            extensions="kt"
+            icon="icons/kotlin-file.gif"
+            id="org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
+            name="Kotlin External Editor">
+      </editor>
+>>>>>>> 56e772c... Make editor name more readable
+>>>>>>> e9e4a14... Make editor name more readable
    </extension>
    <extension
          point="org.eclipse.ui.editors">

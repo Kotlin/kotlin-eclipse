@@ -92,4 +92,16 @@ public class KotlinFileEditor : KotlinCommonEditor() {
         val ideaProject = environment.project
         return KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(), "\n"))
     }
+<<<<<<< HEAD
+=======
+}
+
+class KotlinExternalReadOnlyEditor : KotlinFileEditor() {
+    companion object {
+        const val EDITOR_ID = "org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
+    }
+    
+    override val parsedFile: KtFile?
+        get() = (getEditorInput() as StringInput).getKtFile()
+>>>>>>> 56e772c... Make editor name more readable
 }
