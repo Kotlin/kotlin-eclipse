@@ -1,7 +1,8 @@
 package org.jetbrains.kotlin.core.resolve;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -24,7 +25,7 @@ public class KotlinSourceIndex {
     
     public static final KotlinSourceIndex INSTANCE = new KotlinSourceIndex();
     
-    private final HashMap<IPackageFragmentRoot, LibrarySourcesIndex> packageIndexes = new HashMap<>();
+    private final Map<IPackageFragmentRoot, LibrarySourcesIndex> packageIndexes = new WeakHashMap<>();
     
     public static boolean isKotlinSource(String shortFileName) {
         return KotlinFileType.EXTENSION.equals(new Path(shortFileName).getFileExtension());
