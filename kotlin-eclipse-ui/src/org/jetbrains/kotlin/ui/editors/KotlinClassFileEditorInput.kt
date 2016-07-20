@@ -24,7 +24,7 @@ public class KotlinClassFileEditorInput(
         
         sourceFullPath = if (sourceShortName != null) {
             val packageFragment = getClassFile().getParent() as PackageFragment
-            KotlinSourceIndex.INSTANCE.resolvePath(packageFragment, sourceShortName)
+            KotlinSourceIndex.getInstance(javaProject).resolvePath(packageFragment, sourceShortName)
         } else {
             null
         }
