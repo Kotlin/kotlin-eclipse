@@ -62,7 +62,9 @@ import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
+import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 import org.jetbrains.kotlin.script.StandardScriptDefinition
+import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
@@ -90,7 +92,12 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         project = projectEnvironment.getProject()
         
         with(project) {
-            registerService(KotlinScriptDefinitionProvider::class.java, KotlinScriptDefinitionProvider())
+            val scriptDefinitionProvider = KotlinScriptDefinitionProvider()
+            registerService(KotlinScriptDefinitionProvider::class.java, scriptDefinitionProvider)
+            registerService(
+                    KotlinScriptExternalImportsProvider::class.java,
+                    KotlinScriptExternalImportsProvider(project, scriptDefinitionProvider))
+            
             registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl())
 
             // For j2k converter
@@ -107,7 +114,9 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
         
-        KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(StandardScriptDefinition)
+        KotlinScriptDefinitionProvider.getInstance(project).setScriptDefinitions(
+                loadAndCreateDefinitionsByTemplateProviders().ifEmpty { listOf(StandardScriptDefinition) }
+        )
         
         ExternalDeclarationsProvider.Companion.registerExtensionPoint(project)
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
