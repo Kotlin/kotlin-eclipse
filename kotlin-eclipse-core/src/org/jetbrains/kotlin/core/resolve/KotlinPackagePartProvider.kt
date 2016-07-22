@@ -23,7 +23,10 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 
 public class KotlinPackagePartProvider(environment: KotlinCommonEnvironment) : PackagePartProvider {
-    val roots = environment.getRoots().filter { it.findChild("META-INF") != null }
+    val roots = environment
+            .getRoots()
+            .map { it.file }
+            .filter { it.findChild("META-INF") != null }
     
     override fun findPackageParts(packageFqName: String): List<String> {
         val pathParts = packageFqName.split('.')

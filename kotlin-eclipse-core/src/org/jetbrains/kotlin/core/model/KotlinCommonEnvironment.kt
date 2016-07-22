@@ -70,13 +70,14 @@ import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
+import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 
 abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
     val project: MockProject
     
     private val projectEnvironment: JavaCoreProjectEnvironment
-    private val roots = LinkedHashSet<VirtualFile>()
+    private val roots = LinkedHashSet<JavaRoot>()
     
     val configuration = CompilerConfiguration()
 
@@ -117,10 +118,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
         
-        KotlinScriptDefinitionProvider.getInstance(project).setScriptDefinitions(
-                loadAndCreateDefinitionsByTemplateProviders().ifEmpty { listOf(StandardScriptDefinition) }
-        )
-        
         ExternalDeclarationsProvider.Companion.registerExtensionPoint(project)
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
         for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES) {
@@ -128,7 +125,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         }
     }
     
-    fun getRoots(): Set<VirtualFile> = roots
+    fun getRoots(): Set<JavaRoot> = roots
     
     private fun createJavaCoreApplicationEnvironment(disposable: Disposable): JavaCoreApplicationEnvironment {
         Extensions.cleanRootArea(disposable)
@@ -166,7 +163,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             }
             
             projectEnvironment.addJarToClassPath(path)
-            roots.add(jarFile)
+            roots.add(JavaRoot(jarFile, JavaRoot.RootType.BINARY))
         } else {
             val root = javaApplicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath())
             if (root == null) {
@@ -175,7 +172,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             }
             
             projectEnvironment.addSourcesToClasspath(root)
-            roots.add(root)
+            roots.add(JavaRoot(root, JavaRoot.RootType.SOURCE))
         }
     }
 }
