@@ -2,7 +2,6 @@ package org.jetbrains.kotlin.core.model
 
 import org.eclipse.core.runtime.IConfigurationElement
 import org.eclipse.core.runtime.Platform
-import org.jetbrains.kotlin.core.Activator
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionFromTemplate
 import org.jetbrains.kotlin.script.ScriptTemplateProvider
 import org.jetbrains.kotlin.script.makeScriptDefsFromTemplateProviders
@@ -17,7 +16,7 @@ fun loadAndCreateDefinitionsByTemplateProviders(): List<KotlinScriptDefinitionFr
 fun loadScriptTemplateProviders(): List<ScriptTemplateProviderDescriptor> {
     return Platform
             .getExtensionRegistry()
-            .getConfigurationElementsFor(Activator.PLUGIN_ID, SCRIPT_TEMPLATE_PROVIDER_EP_ID)
+            .getConfigurationElementsFor(SCRIPT_TEMPLATE_PROVIDER_EP_ID)
             .map(::ScriptTemplateProviderDescriptor)
 }
 

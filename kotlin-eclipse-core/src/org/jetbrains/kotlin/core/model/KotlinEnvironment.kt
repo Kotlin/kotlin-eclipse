@@ -34,11 +34,9 @@ import org.eclipse.jdt.core.IClasspathEntry
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.core.JavaProject
-import org.jetbrains.kotlin.asJava.JavaElementFinder
 import org.jetbrains.kotlin.asJava.KtLightClassForFacade
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
-import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmLazyCliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
@@ -51,6 +49,13 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
+import org.jetbrains.kotlin.script.KotlinScriptDefinitionFromTemplate
+import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
+import org.jetbrains.kotlin.script.StandardScriptDefinition
+import org.jetbrains.kotlin.utils.ifEmpty
+import java.io.File
+import java.net.URLClassLoader
+import java.net.URL
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -83,12 +88,18 @@ fun getEclipseResource(ideaProject: Project): IResource? {
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
+        loadAndCreateDefinitionsByTemplateProviders()
+                .filter { it.isScript(File(eclipseFile.name)) }
+                .ifEmpty { listOf(StandardScriptDefinition) }
+                .forEach {
+                    KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
+                }
+        
         configureClasspath()
         
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
         
-        val roots = getRoots().map { JavaRoot(it, JavaRoot.RootType.BINARY) }
-        val index = JvmDependenciesIndex(roots)
+        val index = JvmDependenciesIndex(getRoots().toList())
         
         project.registerService(JvmVirtualFileFinderFactory::class.java, JvmLazyCliVirtualFileFinderFactory { index })
         
@@ -142,8 +153,26 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     private fun configureClasspath() {
         addToClasspath(kotlinRuntimePath.toFile())
         addJREToClasspath()
+        configureScriptDependencies()
     }
     
+    private fun configureScriptDependencies() {
+        val ioFile = eclipseFile.getLocation().toFile()
+        val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(ioFile) ?: return
+        
+        val dependencies = definition.getDependenciesFor(ioFile, project, null) ?: return
+        for (entry in dependencies.classpath) {
+            addToClasspath(entry)
+        }
+        
+        if (definition is KotlinScriptDefinitionFromTemplate) {
+            val classLoader = definition.template.java.classLoader
+            for (file in classpathFromClassloader(classLoader)) {
+                addToClasspath(file)
+            }
+        }
+    }
+
     private fun addJREToClasspath() {
         val project = eclipseFile.project
         if (JavaProject.hasJavaNature(project)) {
@@ -165,6 +194,20 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     }
 }
 
+private fun URL.toFile() =
+        try {
+            File(toURI().schemeSpecificPart)
+        } catch (e: java.net.URISyntaxException) {
+            if (protocol != "file") null
+            else File(file)
+        }
+
+
+private fun classpathFromClassloader(classLoader: ClassLoader): List<File> =
+        (classLoader as? URLClassLoader)?.urLs
+                ?.mapNotNull { it.toFile() }
+                ?: emptyList()
+
 class KotlinEnvironment private constructor(val eclipseProject: IProject, disposable: Disposable) :
         KotlinCommonEnvironment(disposable) {
     val javaProject = JavaCore.create(eclipseProject)
@@ -181,6 +224,8 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             
             registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
         }
+        
+        KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(StandardScriptDefinition)
         
         cachedEnvironment.putEnvironment(eclipseProject, this)
     }
