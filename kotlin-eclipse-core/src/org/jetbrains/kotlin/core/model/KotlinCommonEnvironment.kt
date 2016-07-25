@@ -65,12 +65,9 @@ import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
-import org.jetbrains.kotlin.script.StandardScriptDefinition
-import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
-import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 
 abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
@@ -154,7 +151,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         return jarFile != null && jarFile.isValid()
     }
 
-    protected fun addToClasspath(path: File) {
+    protected fun addToClasspath(path: File, rootType: JavaRoot.RootType? = null) {
         if (path.isFile()) {
             val jarFile = javaApplicationEnvironment.getJarFileSystem().findFileByPath("$path!/")
             if (jarFile == null) {
@@ -163,7 +160,9 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             }
             
             projectEnvironment.addJarToClassPath(path)
-            roots.add(JavaRoot(jarFile, JavaRoot.RootType.BINARY))
+            
+            val type = rootType ?: JavaRoot.RootType.BINARY
+            roots.add(JavaRoot(jarFile, type))
         } else {
             val root = javaApplicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath())
             if (root == null) {
@@ -172,7 +171,9 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             }
             
             projectEnvironment.addSourcesToClasspath(root)
-            roots.add(JavaRoot(root, JavaRoot.RootType.SOURCE))
+            
+            val type = rootType ?: JavaRoot.RootType.SOURCE
+            roots.add(JavaRoot(root, type))
         }
     }
 }

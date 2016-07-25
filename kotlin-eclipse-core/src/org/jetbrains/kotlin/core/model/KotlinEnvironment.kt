@@ -37,6 +37,7 @@ import org.eclipse.jdt.internal.core.JavaProject
 import org.jetbrains.kotlin.asJava.KtLightClassForFacade
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
+import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmLazyCliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
@@ -54,8 +55,8 @@ import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.StandardScriptDefinition
 import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
-import java.net.URLClassLoader
 import java.net.URL
+import java.net.URLClassLoader
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -168,7 +169,7 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         if (definition is KotlinScriptDefinitionFromTemplate) {
             val classLoader = definition.template.java.classLoader
             for (file in classpathFromClassloader(classLoader)) {
-                addToClasspath(file)
+                addToClasspath(file, JavaRoot.RootType.BINARY)
             }
         }
     }
