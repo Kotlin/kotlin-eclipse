@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.jetbrains.kotlin.core.scriptTemplateProvider">
+      <provider
+            class="org.jetbrains.kotlin.ui.tests.scripts.templates.TestKtScriptTemplateProvider"
+            id="org.jetbrains.kotlin.test.scriptTemplateProvider"
+            name="Test Script Template Provider">
+      </provider>
+   </extension>
+
+</plugin>
