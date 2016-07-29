@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.script.ScriptTemplateProvider
 
 class TestKtScriptTemplateProvider : ScriptTemplateProvider {
     override val dependenciesClasspath: Iterable<String>
-        get() = listOf("bin/")
+        get() = listOf("bin/", "target/classes/")
     
     override val environment: Map<String, Any?>?
         get() = emptyMap()
