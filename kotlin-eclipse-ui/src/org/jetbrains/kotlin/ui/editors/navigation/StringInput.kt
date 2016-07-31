@@ -1,73 +1,34 @@
-package org.jetbrains.kotlin.ui.editors.navigation;
+package org.jetbrains.kotlin.ui.editors.navigation
 
-import org.eclipse.core.resources.IStorage;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.IStorageEditorInput;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.psi.KtFile;
+import org.eclipse.core.resources.IStorage
+import org.eclipse.jface.resource.ImageDescriptor
+import org.eclipse.ui.IPersistableElement
+import org.eclipse.ui.IStorageEditorInput
+import org.jetbrains.kotlin.psi.KtFile
 
-public class StringInput implements IStorageEditorInput {
-    
-    private final StringStorage storage;
-    private final KtFile ktFile;
-    
-    StringInput(StringStorage storage, KtFile ktFile) {
-        this.storage = storage;
-        this.ktFile = ktFile;
+class StringInput internal constructor(private val storage: StringStorage, val ktFile: KtFile?) : IStorageEditorInput {
+    override fun exists(): Boolean {
+        return true
     }
+
+    override fun getImageDescriptor(): ImageDescriptor? = null
     
-    @Override
-    public boolean exists() {
-        return true;
-    }
+    override fun getName(): String? = storage.name
     
-    @Override
-    public ImageDescriptor getImageDescriptor() {
-        return null;
-    }
-    
-    @Override
-    public String getName() {
-        return storage.getName();
-    }
-    
-    @Override
-    public IPersistableElement getPersistable() {
-        return null;
-    }
-    
-    @Override
-    public IStorage getStorage() {
-        return storage;
-    }
-    
-    @Override
-    public String getToolTipText() {
-        return storage.getFqName();
-    }
-    
-    @Override
-    public <T> T getAdapter(Class<T> required) {
-        return storage.getAdapter(required);
-    }
-    
-    @Nullable
-    public KtFile getKtFile() {
-        return ktFile;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof StringInput) {
-            StringInput inputObj = (StringInput) obj;
-            return storage.equals(inputObj.storage);
+    override fun getPersistable(): IPersistableElement? = null
+
+    override fun getStorage(): IStorage? = storage
+
+    override fun getToolTipText(): String? = storage.fqName
+
+    override fun <T> getAdapter(required: Class<T>?): T? = storage.getAdapter(required)
+
+    override fun equals(other: Any?): Boolean {
+        if (other is StringInput) {
+            return storage.equals(other.storage)
         }
-        return false;
+        return false
     }
-    
-    @Override
-    public int hashCode() {
-        return storage.hashCode();
-    }
+
+    override fun hashCode(): Int = storage.hashCode()
 }
