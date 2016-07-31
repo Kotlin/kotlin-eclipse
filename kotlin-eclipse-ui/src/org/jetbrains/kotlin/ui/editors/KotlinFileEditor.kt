@@ -104,5 +104,5 @@ class KotlinExternalReadOnlyEditor : KotlinFileEditor() {
     }
     
     override val parsedFile: KtFile?
-        get() = (getEditorInput() as StringInput).getKtFile()
+        get() = (getEditorInput() as StringInput).ktFile
 }
