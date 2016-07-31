@@ -102,6 +102,10 @@ class KotlinExternalReadOnlyEditor : KotlinFileEditor() {
     }
     
     override val parsedFile: KtFile?
+<<<<<<< HEAD
         get() = (getEditorInput() as StringInput).getKtFile()
 >>>>>>> 56e772c... Make editor name more readable
+=======
+        get() = (getEditorInput() as StringInput).ktFile
+>>>>>>> e209cd9... J2K StringInput and StringStorage: convert and prettify
 }
