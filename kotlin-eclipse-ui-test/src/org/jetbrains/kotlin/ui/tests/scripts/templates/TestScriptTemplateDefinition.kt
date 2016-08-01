@@ -19,6 +19,10 @@ open class TestScriptTemplateDefinition(testNameParam: String, secondParam: Int,
     }
 }
 
+fun TestScriptTemplateDefinition.testExtension(x: Int): String {
+    return x.toString()
+}
+
 class TestKotlinScriptResolver : ScriptDependenciesResolverEx {
     override fun resolve(script: ScriptContents,
                          environment: Map<String, Any?>?,
@@ -35,5 +39,8 @@ object TestScriptExternalDependencies : KotlinScriptExternalDependencies {
         get() = listOf()
 
     override val imports: Iterable<String>
-        get() = listOf("java.io.File", "java.util.concurrent.*")
+        get() = listOf(
+                "java.io.File",
+                "java.util.concurrent.*",
+                "org.jetbrains.kotlin.ui.tests.scripts.templates.*")
 }
