@@ -66,7 +66,7 @@
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  A subclass of org.jetbrains.kotlin.script.ScriptTemplateProvider which is become a base class for generated script class
+                  A subclass of org.jetbrains.kotlin.script.ScriptTemplateProvider which will become a base class for generated script class
                </documentation>
                <appinfo>
                   <meta.attribute kind="java" basedOn=":org.jetbrains.kotlin.script.ScriptTemplateProvider"/>
