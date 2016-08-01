@@ -81,6 +81,7 @@ import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
 import com.intellij.openapi.vfs.VirtualFile
 import org.eclipse.core.runtime.IPath
 import org.jetbrains.kotlin.ui.editors.getScriptDependencies
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 
 private val KOTLIN_SOURCE_PATH = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_SRC_NAME))
 private val RUNTIME_SOURCE_MAPPER = KOTLIN_SOURCE_PATH.createSourceMapperWithRoot()
@@ -116,14 +117,26 @@ fun gotoElement(
         
         is PsiSourceElement -> {
             if (element is JavaSourceElement) {
-                gotoJavaDeclarationFromNonClassPath(element.javaElement, element.psi, fromEditor)
+                gotoJavaDeclarationFromNonClassPath(element.javaElement, element.psi, fromEditor, project)
             }
         }
     }
 }
 
-private fun gotoJavaDeclarationFromNonClassPath(javaElement: JavaElement, psi: PsiElement?, fromEditor: KotlinEditor) {
+private fun gotoJavaDeclarationFromNonClassPath(
+        javaElement: JavaElement,
+        psi: PsiElement?,
+        fromEditor: KotlinEditor,
+        javaProject: IJavaProject) {
     if (!fromEditor.isScript) return
+    
+    val javaPsi = (javaElement as JavaElementImpl<*>).psi
+    
+    val editorPart = tryToFindSourceInJavaProject(javaPsi, javaProject)
+    if (editorPart != null) {
+        revealJavaElementInEditor(editorPart, javaElement, EditorUtil.getSourceCode(editorPart))
+        return
+    }
     
     val virtualFile = psi?.containingFile?.virtualFile ?: return
     val (sourceName, packagePath) = findSourceFilePath(virtualFile)
@@ -140,12 +153,16 @@ private fun gotoJavaDeclarationFromNonClassPath(javaElement: JavaElement, psi: P
     val sourceString = String(source)
     val targetEditor = openJavaEditorForExternalFile(sourceString, sourceName, packagePath.toOSString()) ?: return
     
-    val offset = findDeclarationInJavaFile(javaElement, sourceString)
-    if (offset != null) {
-        (targetEditor as JavaEditor).selectAndReveal(offset, 0)
-    }
+    revealJavaElementInEditor(targetEditor, javaElement, sourceString)
     
     return
+}
+
+private fun revealJavaElementInEditor(editor: IEditorPart, javaElement: JavaElement, source: String) {
+    val offset = findDeclarationInJavaFile(javaElement, source)
+    if (offset != null && editor is AbstractTextEditor) {
+        editor.selectAndReveal(offset, 0)
+    }
 }
 
 private fun getClassFile(binaryClass: VirtualFileKotlinClass, javaProject: IJavaProject): IClassFile? {
@@ -341,10 +358,9 @@ private fun findEditorPart(
         javaProject: IJavaProject): IEditorPart? {
     if (targetFile.exists()) return openInEditor(targetFile)
     
-    val psiClass = PsiTreeUtil.getParentOfType(element, PsiClass::class.java)
-    if (psiClass != null) {
-        val targetType = javaProject.findType(psiClass.getQualifiedName())
-        return EditorUtility.openInEditor(targetType, true)
+    val editor = tryToFindSourceInJavaProject(element, javaProject)
+    if (editor != null) {
+        return editor
     }
     
     //external jar
@@ -361,6 +377,13 @@ private fun findEditorPart(
     }
     
     return null
+}
+
+private fun tryToFindSourceInJavaProject(element: PsiElement, javaProject: IJavaProject): AbstractTextEditor? {
+    val psiClass = PsiTreeUtil.getParentOfType(element, PsiClass::class.java, false) ?: return null
+    val targetType = javaProject.findType(psiClass.getQualifiedName()) ?: return null
+    
+    return EditorUtility.openInEditor(targetType, true) as? AbstractTextEditor?
 }
 
 private fun openKotlinEditorForExternalFile(
