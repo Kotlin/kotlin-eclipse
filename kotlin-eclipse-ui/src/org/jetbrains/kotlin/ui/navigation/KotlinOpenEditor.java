@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.core.BinaryType;
@@ -61,7 +62,12 @@ public class KotlinOpenEditor {
     
     @NotNull
     public static List<KtFile> findSourceFiles(@NotNull IJavaElement element) {
-        File lightClass = element.getResource().getFullPath().toFile();
+        IResource resource = element.getResource();
+        if (resource == null) {
+            return Collections.emptyList();
+        }
+        
+        File lightClass = resource.getFullPath().toFile();
         List<KtFile> sourceFiles = KotlinLightClassManager.getInstance(element.getJavaProject()).getSourceFiles(
                 lightClass);
         KtFile navigationFile = KotlinOpenEditorUtilsKt.findNavigationFileFromSources(element, sourceFiles);
