@@ -1,25 +1,32 @@
+/*******************************************************************************
+ * Copyright 2000-2016 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors
 
-import com.intellij.openapi.util.text.StringUtil
-import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
-import org.eclipse.jdt.internal.ui.text.JavaColorManager
-import org.eclipse.jdt.ui.text.IColorManager
 import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.ITextViewerExtension
 import org.eclipse.swt.widgets.Composite
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.psi.KtPsiFactory
-import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
-import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import com.intellij.openapi.util.text.StringUtilRt
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
-import org.eclipse.core.resources.IResourceDelta
+import org.jetbrains.kotlin.core.model.getEnvironment
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
+import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
+import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
 
 class KotlinScriptEditor : KotlinCommonEditor() {
     override val parsedFile: KtFile?
@@ -53,4 +60,14 @@ class KotlinScriptEditor : KotlinCommonEditor() {
             KotlinPsiManager.removeFile(it)
         }
     }
+}
+
+fun getScriptDependencies(editor: KotlinScriptEditor): KotlinScriptExternalDependencies? {
+    val eclipseFile = editor.eclipseFile ?: return null
+    val file = eclipseFile.location.toFile()
+    
+    val project = getEnvironment(eclipseFile).project
+    val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(file) ?: return null
+    
+    return definition.getDependenciesFor(file, project, null)
 }

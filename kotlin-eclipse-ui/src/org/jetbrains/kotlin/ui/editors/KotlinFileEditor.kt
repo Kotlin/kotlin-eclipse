@@ -17,56 +17,15 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors
 
-import org.eclipse.core.resources.IFile
-import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget
-import org.eclipse.jdt.core.IJavaElement
+import com.intellij.openapi.util.text.StringUtil
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
-import org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
-import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.SelectionHistory
-import org.eclipse.jdt.internal.ui.javaeditor.selectionactions.StructureSelectHistoryAction
-import org.eclipse.jdt.internal.ui.text.JavaColorManager
-import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
-import org.eclipse.jdt.ui.text.IColorManager
-import org.eclipse.jface.action.IAction
 import org.eclipse.jface.text.IDocument
-import org.eclipse.jface.text.ITextViewerExtension
-import org.eclipse.jface.text.source.ISourceViewer
-import org.eclipse.swt.widgets.Composite
-import org.eclipse.ui.PlatformUI
-import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
-import org.jetbrains.kotlin.ui.debug.KotlinToggleBreakpointAdapter
-import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
-import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectEnclosingAction
-import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectNextAction
-import org.jetbrains.kotlin.ui.editors.selection.KotlinSelectPreviousAction
-import org.jetbrains.kotlin.ui.editors.selection.KotlinSemanticSelectionAction
-import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.text.StringUtil
-import org.jetbrains.kotlin.ui.debug.KotlinRunToLineAdapter
-import org.eclipse.debug.ui.actions.IRunToLineTarget
-import org.jetbrains.kotlin.ui.overrideImplement.KotlinOverrideMembersAction
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInProjectAction
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindReferencesInWorkspaceAction
-import org.jetbrains.kotlin.ui.refactorings.rename.KotlinRenameAction
-import org.jetbrains.kotlin.ui.editors.occurrences.KotlinMarkOccurrences
-import org.jetbrains.kotlin.ui.refactorings.extract.KotlinExtractVariableAction
-import org.jetbrains.kotlin.ui.editors.highlighting.KotlinSemanticHighlighter
-import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
-import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
-import org.eclipse.jface.text.source.SourceViewerConfiguration
-import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
-import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationAction
-import org.jetbrains.kotlin.ui.editors.organizeImports.KotlinOrganizeImportsAction
-import org.jetbrains.kotlin.ui.editors.navigation.StringInput
+import org.jetbrains.kotlin.ui.editors.navigation.KotlinExternalEditorInput
 
 open class KotlinFileEditor : KotlinCommonEditor() {
     override val isScript: Boolean
@@ -104,5 +63,5 @@ class KotlinExternalReadOnlyEditor : KotlinFileEditor() {
     }
     
     override val parsedFile: KtFile?
-        get() = (getEditorInput() as StringInput).ktFile
+        get() = (getEditorInput() as KotlinExternalEditorInput).ktFile
 }

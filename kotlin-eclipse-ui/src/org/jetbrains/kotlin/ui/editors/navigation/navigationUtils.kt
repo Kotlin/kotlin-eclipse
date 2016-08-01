@@ -16,12 +16,14 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.navigation
 
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IClassFile
 import org.eclipse.jdt.core.IJavaProject
@@ -35,6 +37,7 @@ import org.eclipse.jdt.ui.JavaUI
 import org.eclipse.jface.util.OpenStrategy
 import org.eclipse.ui.IEditorPart
 import org.eclipse.ui.IReusableEditor
+import org.eclipse.ui.IStorageEditorInput
 import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.ide.IDE
 import org.eclipse.ui.texteditor.AbstractTextEditor
@@ -48,8 +51,12 @@ import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.load.java.sources.JavaSourceElement
+import org.jetbrains.kotlin.load.java.structure.JavaElement
+import org.jetbrains.kotlin.load.java.structure.impl.JavaElementImpl
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryPackageSourceElement
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement
@@ -60,14 +67,25 @@ import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.resolve.source.PsiSourceElement
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor
+import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
+import org.jetbrains.kotlin.ui.editors.getScriptDependencies
 import org.jetbrains.kotlin.ui.formatter.createKtFile
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
+<<<<<<< HEAD
+import com.intellij.psi.PsiMethod
+import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
+import com.intellij.openapi.vfs.VirtualFile
+import org.eclipse.core.runtime.IPath
+import org.jetbrains.kotlin.ui.editors.getScriptDependencies
+=======
+>>>>>>> 95723cc... something
 
 private val KOTLIN_SOURCE_PATH = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_SRC_NAME))
-private val RUNTIME_SOURCE_MAPPER = SourceMapper(KOTLIN_SOURCE_PATH, "", mapOf<Any, Any>())
+private val RUNTIME_SOURCE_MAPPER = KOTLIN_SOURCE_PATH.createSourceMapperWithRoot()
 
 fun gotoElement(descriptor: DeclarationDescriptor, fromElement: KtElement,
                 fromEditor: KotlinEditor, javaProject: IJavaProject) {
@@ -97,7 +115,39 @@ fun gotoElement(
         is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, descriptor, fromElement, project)
         
         is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, fromElement, descriptor, project)
+        
+        is PsiSourceElement -> {
+            if (element is JavaSourceElement) {
+                gotoJavaDeclarationFromNonClassPath(element.javaElement, element.psi, fromEditor)
+            }
+        }
     }
+}
+
+private fun gotoJavaDeclarationFromNonClassPath(javaElement: JavaElement, psi: PsiElement?, fromEditor: KotlinEditor) {
+    if (!fromEditor.isScript) return
+    
+    val virtualFile = psi?.containingFile?.virtualFile ?: return
+    val (sourceName, packagePath) = findSourceFilePath(virtualFile)
+    
+    val dependencies = getScriptDependencies(fromEditor as KotlinScriptEditor) ?: return
+    
+    val pathToSource = packagePath.append(sourceName)
+
+    val source = dependencies.sources.asSequence()
+            .map { Path(it.absolutePath).createSourceMapperWithRoot() }
+            .mapNotNull { it.findSource(pathToSource.toOSString()) }
+            .firstOrNull() ?: return
+    
+    val sourceString = String(source)
+    val targetEditor = openJavaEditorForExternalFile(sourceString, sourceName, packagePath.toOSString()) ?: return
+    
+    val offset = findDeclarationInJavaFile(javaElement, sourceString)
+    if (offset != null) {
+        (targetEditor as JavaEditor).selectAndReveal(offset, 0)
+    }
+    
+    return
 }
 
 private fun getClassFile(binaryClass: VirtualFileKotlinClass, javaProject: IJavaProject): IClassFile? {
@@ -233,20 +283,15 @@ private fun tryToFindExternalClassInStdlib(
     val content = String(source)
     val ktFile = createKtFile(content, KtPsiFactory(fromElement), "dummy.kt")
     
-    return openEditorForExternalFile(content, name, pckg, ktFile)
+    return openKotlinEditorForExternalFile(content, name, pckg, ktFile)
 }
 
 private fun findSourceForElementInStdlib(binaryClass: VirtualFileKotlinClass): ExternalSourceFile? {
-    val file = binaryClass.file
-    val reader = ClassFileReader(file.contentsToByteArray(), file.name.toCharArray())
-    val sourceName = String(reader.sourceFileName())
+    val (sourceName, packagePath) = findSourceFilePath(binaryClass.file)
     
-    val fileNameWithPackage = Path(String(reader.getName()))
-    val packageFqName = fileNameWithPackage.removeLastSegments(1)
+    val source = KotlinSourceIndex.getSource(RUNTIME_SOURCE_MAPPER, sourceName, packagePath, KOTLIN_SOURCE_PATH)
     
-    val source = KotlinSourceIndex.getSource(RUNTIME_SOURCE_MAPPER, sourceName, packageFqName, KOTLIN_SOURCE_PATH)
-    
-    return if (source != null) ExternalSourceFile(sourceName, packageFqName.toPortableString(), source) else null
+    return if (source != null) ExternalSourceFile(sourceName, packagePath.toPortableString(), source) else null
 }
 
 private data class ExternalSourceFile(val name: String, val packageFqName: String, val source: CharArray)
@@ -282,6 +327,16 @@ private fun gotoJavaDeclaration(binding: IBinding) {
     }
 }
 
+private fun findSourceFilePath(virtualFile: VirtualFile): Pair<String, IPath> {
+    val reader = ClassFileReader(virtualFile.contentsToByteArray(), virtualFile.name.toCharArray())
+    val sourceName = String(reader.sourceFileName())
+    
+    val fileNameWithPackage = Path(String(reader.getName()))
+    val packagePath = fileNameWithPackage.removeLastSegments(1)
+    
+    return Pair(sourceName, packagePath)
+}
+
 private fun findEditorPart(
         targetFile: IFile, 
         element: PsiElement,
@@ -300,7 +355,7 @@ private fun findEditorPart(
         if (elementFile == null) return null
         
         val directory = elementFile.getContainingDirectory()
-        return openEditorForExternalFile(
+        return openKotlinEditorForExternalFile(
                 elementFile.text,
                 elementFile.name,
                 getFqNameInsideArchive(directory.toString()),
@@ -310,22 +365,40 @@ private fun findEditorPart(
     return null
 }
 
-private fun openEditorForExternalFile(sourceText: String, sourceName: String,
-                                      packageFqName: String, ktFile: KtFile): IEditorPart? {
+private fun openKotlinEditorForExternalFile(
+        sourceText: String,
+        sourceName: String,
+        packageFqName: String,
+        ktFile: KtFile): IEditorPart? {
+    val storage = StringStorage(sourceText, sourceName, packageFqName)
+    val input = KotlinExternalEditorInput(ktFile, storage)
+    return openEditorForExternalFile(input, KotlinExternalReadOnlyEditor.EDITOR_ID)
+}
+
+private fun openJavaEditorForExternalFile(
+        sourceText: String,
+        sourceName: String,
+        packageFqName: String): IEditorPart? {
+    val storage = StringStorage(sourceText, sourceName, packageFqName)
+    val input = StringInput(storage)
+    return openEditorForExternalFile(input, JavaUI.ID_CU_EDITOR)
+}
+
+private fun openEditorForExternalFile(storageInput: IStorageEditorInput, editorId: String): IEditorPart? {
     val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
     if (page == null) return null
 
-    val storage = StringStorage(sourceText, sourceName, packageFqName)
-    val input = StringInput(storage, ktFile)
-    val reusedEditor = page.findEditor(input)
+    val reusedEditor = page.findEditor(storageInput)
     if (reusedEditor != null) {
-        page.reuseEditor(reusedEditor as IReusableEditor?, input)
+        page.reuseEditor(reusedEditor as IReusableEditor?, storageInput)
     }
 
-    return page.openEditor(input, KotlinExternalReadOnlyEditor.EDITOR_ID)
+    return page.openEditor(storageInput, editorId)
 }
 
 private fun openInEditor(file: IFile): IEditorPart {
     val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
     return IDE.openEditor(page, file, false)
 }
+
+private fun IPath.createSourceMapperWithRoot(): SourceMapper = SourceMapper(this, "", emptyMap<Any, Any>())
