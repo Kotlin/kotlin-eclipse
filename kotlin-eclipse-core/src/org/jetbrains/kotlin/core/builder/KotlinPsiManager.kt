@@ -104,7 +104,9 @@ private class ProjectSourceFiles : PsiFilesStorage {
 
             assert(existsInProjectSources(eclipseFile), { "File(" + eclipseFile.getName() + ") does not contain in the psiFiles" })
 
-            return cachedKtFiles.getOrPut(eclipseFile) { KotlinPsiManager.parseFile(eclipseFile)!! }
+            return cachedKtFiles.getOrPut(eclipseFile) {
+                KotlinPsiManager.parseFile(eclipseFile) ?: throw IllegalStateException("Can't parse file $eclipseFile")
+            }
         }
     }
     
