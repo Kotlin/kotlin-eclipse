@@ -144,10 +144,11 @@ class KotlinCompletionProcessor(
             val image = KotlinImageProvider.getImage(descriptor)!!
             val presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
             val containmentPresentableString = if (descriptor is ClassDescriptor) {
-                    val fqName = DescriptorUtils.getFqName(descriptor)
-                    if (fqName.isRoot) "<root>" else fqName.parent().asString()
-                } else 
-                    null
+                val fqName = DescriptorUtils.getFqName(descriptor)
+                if (fqName.isRoot) "<root>" else fqName.parent().asString()
+            } else {
+                null
+            }
             
             val proposal = KotlinCompletionProposal(
                                 completion,

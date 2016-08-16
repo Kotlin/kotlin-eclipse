@@ -68,7 +68,6 @@ public object KotlinCompletionUtils {
         
         val showNonVisibleMembers =
             !JavaPlugin.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS)
-                    
         
         val visibilityFilter = { descriptor: DeclarationDescriptor ->
             when (descriptor) {
