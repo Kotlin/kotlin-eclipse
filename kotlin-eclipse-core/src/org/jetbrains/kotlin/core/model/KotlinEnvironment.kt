@@ -89,7 +89,7 @@ fun getEclipseResource(ideaProject: Project): IResource? {
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
-        loadAndCreateDefinitionsByTemplateProviders()
+		loadAndCreateDefinitionsByTemplateProviders(eclipseFile)
                 .filter { it.isScript(File(eclipseFile.name)) }
                 .ifEmpty { listOf(StandardScriptDefinition) }
                 .forEach {

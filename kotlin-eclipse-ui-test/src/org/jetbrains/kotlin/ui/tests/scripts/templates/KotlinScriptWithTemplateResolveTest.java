@@ -12,4 +12,9 @@ public class KotlinScriptWithTemplateResolveTest extends KotlinScriptWithTemplat
     public void testStandard() {
         doTest("testData/scripts/templates/standard.kts");
     }
+    
+    @Test
+    public void testSampleEx() {
+        doTest("testData/scripts/templates/sampleEx.testDef.kts");
+    }
 }

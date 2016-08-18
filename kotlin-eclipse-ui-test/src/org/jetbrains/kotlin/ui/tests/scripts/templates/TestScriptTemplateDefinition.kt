@@ -19,6 +19,12 @@ open class TestScriptTemplateDefinition(testNameParam: String, secondParam: Int,
     }
 }
 
+@ScriptTemplateDefinition(
+        resolver = TestKotlinScriptResolver::class,
+        scriptFilePattern = "sampleEx.testDef.kts"
+)
+open class TestScriptTemplateDefinitionEx(testNameParam: String, secondParam: Int, thirdParam: Int = 10)
+
 fun TestScriptTemplateDefinition.testExtension(x: Int): String {
     return x.toString()
 }
