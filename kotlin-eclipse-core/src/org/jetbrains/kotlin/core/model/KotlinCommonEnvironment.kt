@@ -69,9 +69,23 @@ import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
+import com.intellij.openapi.util.SystemInfo
+import java.util.Properties
+
+private fun setIdeaIoUseFallback() {
+    if (SystemInfo.isWindows) {
+        val properties = System.getProperties()
+
+        properties.setProperty("idea.io.use.nio2", java.lang.Boolean.TRUE.toString());
+
+        if (!(SystemInfo.isJavaVersionAtLeast("1.7") && !"1.7.0-ea".equals(SystemInfo.JAVA_VERSION))) {
+            properties.setProperty("idea.io.use.fallback", java.lang.Boolean.TRUE.toString());
+        }
+    }
+}
 
 abstract class KotlinCommonEnvironment(disposable: Disposable) {
-    val javaApplicationEnvironment: JavaCoreApplicationEnvironment
+	val javaApplicationEnvironment: JavaCoreApplicationEnvironment
     val project: MockProject
     
     private val projectEnvironment: JavaCoreProjectEnvironment
@@ -80,6 +94,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val configuration = CompilerConfiguration()
 
     init {
+		setIdeaIoUseFallback()
+		
         javaApplicationEnvironment = createJavaCoreApplicationEnvironment(disposable)
         
         projectEnvironment = object : JavaCoreProjectEnvironment(disposable, javaApplicationEnvironment) {
