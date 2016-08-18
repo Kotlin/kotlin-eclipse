@@ -32,6 +32,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.extensions.ExtensionsArea
 import com.intellij.openapi.fileTypes.PlainTextFileType
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElementFinder
 import com.intellij.psi.PsiManager
@@ -70,6 +71,18 @@ import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
 
+private fun setIdeaIoUseFallback() {
+    if (SystemInfo.isWindows) {
+        val properties = System.getProperties()
+
+        properties.setProperty("idea.io.use.nio2", java.lang.Boolean.TRUE.toString());
+
+        if (!(SystemInfo.isJavaVersionAtLeast("1.7") && !"1.7.0-ea".equals(SystemInfo.JAVA_VERSION))) {
+            properties.setProperty("idea.io.use.fallback", java.lang.Boolean.TRUE.toString());
+        }
+    }
+}
+
 abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
     val project: MockProject
@@ -80,6 +93,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val configuration = CompilerConfiguration()
 
     init {
+        setIdeaIoUseFallback()
+
         javaApplicationEnvironment = createJavaCoreApplicationEnvironment(disposable)
         
         projectEnvironment = object : JavaCoreProjectEnvironment(disposable, javaApplicationEnvironment) {
