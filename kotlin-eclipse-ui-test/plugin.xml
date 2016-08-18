@@ -9,5 +9,12 @@
             name="Test Script Template Provider">
       </provider>
    </extension>
+   <extension
+         point="org.jetbrains.kotlin.core.scriptTemplateProviderEx">
+      <provider
+            class="org.jetbrains.kotlin.ui.tests.scripts.templates.TestKtScriptTemplateProviderEx"
+            id="org.jetbrains.kotlin.test.scriptTemplateProviderEx">
+      </provider>
+   </extension>
 
 </plugin>

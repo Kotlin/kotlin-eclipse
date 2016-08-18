@@ -22,6 +22,12 @@ open class TestScriptTemplateDefinition(val testNameParam: String, val secondPar
     }
 }
 
+@ScriptTemplateDefinition(
+        resolver = TestKotlinScriptResolver::class,
+        scriptFilePattern = "sampleEx.testDef.kts"
+)
+open class TestScriptTemplateDefinitionEx(val testNameParam: String, val secondParam: Int, val thirdParam: Int = 10)
+
 fun TestScriptTemplateDefinition.testExtension(x: Int): String {
     return x.toString()
 }
