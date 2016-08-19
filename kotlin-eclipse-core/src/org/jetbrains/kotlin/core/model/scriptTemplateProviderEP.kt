@@ -28,7 +28,6 @@ fun loadAndCreateDefinitionsByTemplateProviders(eclipseFile: IFile): List<Kotlin
 	val definitionsFromProvidersEx = makeScriptDefsFromEclipseTemplatesProviders(eclipseFile, scriptTemplateProvidersEx)
 	
 	return definitionsFromProviders + definitionsFromProvidersEx
-	 
 }
 
 fun <T: Any> getScriptProvidersExtensions(extensionID: String): List<T> {
@@ -75,21 +74,23 @@ interface ScriptTemplateProviderEx {
 }
 
 fun makeScriptDefsFromEclipseTemplatesProviders(eclipseFile: IFile, providers: Iterable<ScriptTemplateProviderEx>): List<KotlinScriptDefinitionFromTemplate> {
-	return providers.flatMap { provider ->
-		try {
-			val loader = URLClassLoader(
-					provider.dependenciesClasspath.map { File(it).toURI().toURL() }.toTypedArray(),
-					ScriptTemplateProviderEx::class.java.classLoader)
+	return providers
+			.filter { it. isApplicable(eclipseFile) }
+			.flatMap { provider ->
+				try {
+					val loader = URLClassLoader(
+							provider.dependenciesClasspath.map { File(it).toURI().toURL() }.toTypedArray(),
+							ScriptTemplateProviderEx::class.java.classLoader)
 
-			provider.templateClassNames.map {
-				val cl = loader.loadClass(it)
-				KotlinScriptDefinitionFromTemplate(cl.kotlin, provider.environment(eclipseFile))
+					provider.templateClassNames.map {
+						val cl = loader.loadClass(it)
+						KotlinScriptDefinitionFromTemplate(cl.kotlin, provider.environment(eclipseFile))
+					}
+				} catch (ex: Exception) {
+					KotlinLogger.logError(
+							"Extension (EclipseScriptTemplateProvider) ${provider.javaClass.name} with templates ${provider.templateClassNames} " +
+									"could not be initialized", ex)
+					emptyList<KotlinScriptDefinitionFromTemplate>()
+				}
 			}
-		} catch (ex: Exception) {
-			KotlinLogger.logError(
-				"Extension (EclipseScriptTemplateProvider) ${provider.javaClass.name} with templates ${provider.templateClassNames} " +
-                "could not be initialized", ex)
-			emptyList<KotlinScriptDefinitionFromTemplate>()
-		}
-	}
 }
