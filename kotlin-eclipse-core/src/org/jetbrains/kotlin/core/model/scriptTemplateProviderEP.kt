@@ -70,7 +70,7 @@ interface ScriptTemplateProviderEx {
     val resolver: ScriptDependenciesResolver? get() = null
 	
 	fun isApplicable(file: IFile): Boolean
-	fun environment(file: IFile): Map<String, Any?>? = null
+	fun getEnvironment(file: IFile): Map<String, Any?>? = null
 }
 
 fun makeScriptDefsFromEclipseTemplatesProviders(eclipseFile: IFile, providers: Iterable<ScriptTemplateProviderEx>): List<KotlinScriptDefinitionFromTemplate> {
@@ -84,7 +84,7 @@ fun makeScriptDefsFromEclipseTemplatesProviders(eclipseFile: IFile, providers: I
 
 					provider.templateClassNames.map {
 						val cl = loader.loadClass(it)
-						KotlinScriptDefinitionFromTemplate(cl.kotlin, provider.environment(eclipseFile))
+						KotlinScriptDefinitionFromTemplate(cl.kotlin, provider.getEnvironment(eclipseFile))
 					}
 				} catch (ex: Exception) {
 					KotlinLogger.logError(

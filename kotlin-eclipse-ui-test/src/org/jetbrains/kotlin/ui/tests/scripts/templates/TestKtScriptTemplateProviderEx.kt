@@ -11,7 +11,7 @@ class TestKtScriptTemplateProviderEx : ScriptTemplateProviderEx {
 		return file.name.contains("Ex")
 	}
 	
-	override fun environment(file: IFile): Map<String, Any?>? {
-		return super.environment(file)
+	override fun getEnvironment(file: IFile): Map<String, Any?>? {
+		return super.getEnvironment(file)
 	}
 }
