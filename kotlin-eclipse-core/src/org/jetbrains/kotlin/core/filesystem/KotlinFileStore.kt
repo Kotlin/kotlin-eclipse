@@ -16,15 +16,9 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.filesystem
 
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.InputStream
-import java.io.OutputStream
-import java.util.ArrayList
-import java.util.Collections
 import org.eclipse.core.filesystem.IFileInfo
 import org.eclipse.core.filesystem.IFileStore
+import org.eclipse.core.filesystem.IFileSystem
 import org.eclipse.core.filesystem.provider.FileInfo
 import org.eclipse.core.internal.filesystem.local.LocalFile
 import org.eclipse.core.resources.IContainer
@@ -39,13 +33,15 @@ import org.eclipse.core.runtime.Status
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.compiler.util.Util
-import org.jetbrains.kotlin.analyzer.AnalysisResult
-import org.jetbrains.kotlin.backend.common.output.OutputFile
-import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
-import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.URI
 
 public class KotlinFileStore(file: File) : LocalFile(file) {
 	override public fun openInputStream(options: Int, monitor: IProgressMonitor?): InputStream {
@@ -100,6 +96,8 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
 
 		return emptyArray()
 	}
+    
+    override fun getFileSystem(): IFileSystem = KotlinFileSystem.getInstance()
 
 	override public fun mkdir(options: Int, monitor: IProgressMonitor?): IFileStore = this
 
@@ -114,24 +112,23 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
 	override public fun getParent(): IFileStore? = file.getParentFile()?.let { KotlinFileStore(it) }
 
 	private fun findFileInWorkspace(): IFile? {
-		val files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toURI())
-		return if (files != null && files.isNotEmpty()) {
-			assert(files.size == 1, { "By ${file.toURI()} found more than one file" })
-			files[0]
-		} else {
-			null
-		}
+        return findResourceInWorkspace { ResourcesPlugin.getWorkspace().root.findFilesForLocationURI(it) }
 	}
 
 	private fun findFolderInWorkspace(): IContainer? {
-		val containers = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(file.toURI())
-		return if (containers != null && containers.isNotEmpty()) {
-			assert(containers.size == 1, { "By ${file.toURI()} found more than one file" })
-			containers[0]
-		} else {
-			null
-		}
+        return findResourceInWorkspace { ResourcesPlugin.getWorkspace().root.findContainersForLocationURI(it) }
 	}
+    
+    private inline fun <reified T : IResource> findResourceInWorkspace(search: (URI) -> Array<T>?): T? {
+        val pathRelatedToKtFileSystem = URI(KotlinFileSystem.SCHEME, null, file.absolutePath, null)
+        val resources = search(pathRelatedToKtFileSystem)
+        return if (resources != null && resources.isNotEmpty()) {
+            assert(resources.size == 1, { "By ${pathRelatedToKtFileSystem} found more than one file" })
+            resources[0]
+        } else {
+            null
+        }
+    }
 
-	private fun getJavaProject(): IJavaProject? = findFileInWorkspace()?.let { JavaCore.create(it.getProject()) }
+	fun getJavaProject(): IJavaProject? = findFileInWorkspace()?.let { JavaCore.create(it.getProject()) }
 }
