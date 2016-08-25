@@ -81,7 +81,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         
         commitFiles(existingAffectedFiles)
         
-        KotlinLightClassGeneration.updateLightClasses(javaProject, kotlinAffectedFiles)
+        KotlinLightClassGeneration.updateLightClasses(javaProject.project, kotlinAffectedFiles)
         if (kotlinAffectedFiles.isNotEmpty()) {
             
             runJob("Checking for update", Job.DECORATE) { 

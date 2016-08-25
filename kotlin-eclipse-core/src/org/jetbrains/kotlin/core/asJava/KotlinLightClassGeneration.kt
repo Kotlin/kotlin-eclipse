@@ -17,8 +17,8 @@
 package org.jetbrains.kotlin.core.asJava
 
 import org.eclipse.core.resources.IFile
+import org.eclipse.core.resources.IProject
 import org.eclipse.core.runtime.Path
-import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
 import org.jetbrains.kotlin.codegen.binding.PsiCodegenPredictor
@@ -34,20 +34,20 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtScript
 
 object KotlinLightClassGeneration {
-    fun updateLightClasses(javaProject: IJavaProject, affectedFiles: Set<IFile>) {
-        if (!KotlinJavaManager.hasLinkedKotlinBinFolder(javaProject)) return
+    fun updateLightClasses(project: IProject, affectedFiles: Set<IFile>) {
+        if (!KotlinJavaManager.hasLinkedKotlinBinFolder(project)) return
         
-        KotlinLightClassManager.getInstance(javaProject).computeLightClassesSources()
-        KotlinLightClassManager.getInstance(javaProject).updateLightClasses(affectedFiles)
+        KotlinLightClassManager.getInstance(project).computeLightClassesSources()
+        KotlinLightClassManager.getInstance(project).updateLightClasses(affectedFiles)
     }
     
     fun buildLightClasses(
             analysisResult: AnalysisResult, 
-            javaProject: IJavaProject, 
+            eclipseProject: IProject, 
             jetFiles: List<KtFile>,
             requestedClassName: String): GenerationState {
         val state = GenerationState(
-                KotlinEnvironment.getEnvironment(javaProject.project).project,
+                KotlinEnvironment.getEnvironment(eclipseProject).project,
                 LightClassBuilderFactory(),
                 analysisResult.moduleDescriptor,
                 analysisResult.bindingContext,

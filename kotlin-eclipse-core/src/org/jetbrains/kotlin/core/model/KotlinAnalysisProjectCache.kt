@@ -50,8 +50,8 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
         }
     }
 
-    public @Synchronized fun getAnalysisResultIfCached(javaProject: IJavaProject): AnalysisResult? {
-        return cachedAnalysisResults.get(javaProject.getProject())
+    public @Synchronized fun getAnalysisResultIfCached(project: IProject): AnalysisResult? {
+        return cachedAnalysisResults.get(project)
     }
 
     override fun resourceChanged(event: IResourceChangeEvent) {
