@@ -78,8 +78,7 @@ class KotlinReconcilingStrategy(val editor: KotlinEditor) : IReconcilingStrategy
     }
     
     private fun resetCache(file: IFile) {
-        val javaProject = JavaCore.create(file.getProject())
-        KotlinAnalysisProjectCache.resetCache(javaProject)
+        KotlinAnalysisProjectCache.resetCache(file.project)
         KotlinAnalysisFileCache.resetCache()
     }
 }

@@ -34,11 +34,16 @@ import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
 
 public object KotlinAnalysisProjectCache : IResourceChangeListener {
     private val cachedAnalysisResults = ConcurrentHashMap<IProject, AnalysisResult>()
+<<<<<<< HEAD
     
     public fun resetCache(javaProject: IJavaProject) {
         val project = javaProject.getProject()
+=======
+
+    public fun resetCache(project: IProject) {
+>>>>>>> 6ce053c... Recompute light class files when Kotlin nature modified
         synchronized(project) {
-            cachedAnalysisResults.remove(javaProject.getProject())
+            cachedAnalysisResults.remove(project)
         }
     }
     
