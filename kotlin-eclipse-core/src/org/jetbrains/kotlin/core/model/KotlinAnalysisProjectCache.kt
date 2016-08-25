@@ -66,9 +66,15 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
             cachedAnalysisResults.putIfAbsent(project, analysisResult) ?: analysisResult
         }
     }
+<<<<<<< HEAD
     
     public @Synchronized fun getAnalysisResultIfCached(javaProject: IJavaProject): AnalysisResult? {
         return cachedAnalysisResults.get(javaProject.getProject())
+=======
+
+    public @Synchronized fun getAnalysisResultIfCached(project: IProject): AnalysisResult? {
+        return cachedAnalysisResults.get(project)
+>>>>>>> eb48831... Get rid of IJavaProject in several places
     }
     
     override fun resourceChanged(event: IResourceChangeEvent) {

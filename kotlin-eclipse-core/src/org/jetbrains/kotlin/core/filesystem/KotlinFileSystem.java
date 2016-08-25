@@ -7,9 +7,9 @@ import java.util.Collections;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.IFileTree;
 import org.eclipse.core.filesystem.provider.FileSystem;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration;
 
 public class KotlinFileSystem extends FileSystem {
@@ -44,9 +44,9 @@ public class KotlinFileSystem extends FileSystem {
     @Override
     public IFileTree fetchFileTree(IFileStore root, IProgressMonitor monitor) throws CoreException {
         if (root instanceof KotlinFileStore) {
-            IJavaProject javaProject = ((KotlinFileStore) root).getJavaProject();
-            if (javaProject != null) {
-                KotlinLightClassGeneration.INSTANCE.updateLightClasses(javaProject, Collections.emptySet());
+            IProject eclipseProject = ((KotlinFileStore) root).getProject();
+            if (eclipseProject != null) {
+                KotlinLightClassGeneration.INSTANCE.updateLightClasses(eclipseProject, Collections.emptySet());
             }
         }
         return super.fetchFileTree(root, monitor);

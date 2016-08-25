@@ -20,7 +20,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.codegen.binding.PsiCodegenPredictor;
@@ -52,8 +51,8 @@ public class KotlinLightClassManager {
     private final ConcurrentMap<File, Set<IFile>> sourceFiles = new ConcurrentHashMap<>();
     
     @NotNull
-    public static KotlinLightClassManager getInstance(@NotNull IJavaProject javaProject) {
-        Project ideaProject = KotlinEnvironment.getEnvironment(javaProject.getProject()).getProject();
+    public static KotlinLightClassManager getInstance(@NotNull IProject project) {
+        Project ideaProject = KotlinEnvironment.getEnvironment(project).getProject();
         return ServiceManager.getService(ideaProject, KotlinLightClassManager.class);
     }
     

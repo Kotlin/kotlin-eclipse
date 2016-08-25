@@ -85,8 +85,8 @@ public object KotlinJavaManager {
             }
     }
     
-    public fun hasLinkedKotlinBinFolder(javaProject: IJavaProject): Boolean {
-        val folder = javaProject.getProject().getFolder(KotlinJavaManager.KOTLIN_BIN_FOLDER)
+    public fun hasLinkedKotlinBinFolder(project: IProject): Boolean {
+        val folder = project.getFolder(KotlinJavaManager.KOTLIN_BIN_FOLDER)
         return folder.isLinked() && KotlinFileSystem.SCHEME == folder.getLocationURI().getScheme()
     }
     
