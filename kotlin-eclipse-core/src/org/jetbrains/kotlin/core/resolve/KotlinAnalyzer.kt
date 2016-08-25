@@ -34,9 +34,9 @@ object KotlinAnalyzer {
             files.size == 1 -> analyzeFile(files.single())
             
             else -> {
-                val environment = getEnvironment(files.single().project)
+                val environment = getEnvironment(files.first().project)
                 if (environment == null) {
-                    throw IllegalStateException("There is no environment for project: ${files.single().project}")
+                    throw IllegalStateException("There is no environment for project: ${files.first().project}")
                 }
                 
                 if (environment !is KotlinEnvironment) {
