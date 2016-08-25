@@ -63,7 +63,12 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         
         val delta = getDelta(project)
         val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
+<<<<<<< HEAD
         if (isAllFromOutputFolder(allAffectedFiles, javaProject)) {
+=======
+        if (allAffectedFiles.isNotEmpty() &&
+                (isAllFromOutputFolder(allAffectedFiles, javaProject) || isAllScripts(allAffectedFiles))) {
+>>>>>>> 593ca42... Process building light class files even if there is no changed Kotlin files
             return null
         }
         
