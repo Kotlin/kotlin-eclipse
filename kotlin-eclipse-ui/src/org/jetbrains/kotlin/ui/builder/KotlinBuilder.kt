@@ -64,8 +64,8 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         
         val delta = getDelta(project)
         val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
-        if (isAllFromOutputFolder(allAffectedFiles, javaProject) ||
-                isAllScripts(allAffectedFiles)) {
+        if (allAffectedFiles.isNotEmpty() &&
+                (isAllFromOutputFolder(allAffectedFiles, javaProject) || isAllScripts(allAffectedFiles))) {
             return null
         }
         
