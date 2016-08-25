@@ -68,8 +68,8 @@ public class KotlinOpenEditor {
         }
         
         File lightClass = resource.getFullPath().toFile();
-        List<KtFile> sourceFiles = KotlinLightClassManager.getInstance(element.getJavaProject()).getSourceFiles(
-                lightClass);
+        List<KtFile> sourceFiles = KotlinLightClassManager
+                .getInstance(element.getJavaProject().getProject()).getSourceFiles(lightClass);
         KtFile navigationFile = KotlinOpenEditorUtilsKt.findNavigationFileFromSources(element, sourceFiles);
         
         if (navigationFile != null) {

@@ -23,6 +23,7 @@ import org.eclipse.core.filesystem.provider.FileInfo
 import org.eclipse.core.internal.filesystem.local.LocalFile
 import org.eclipse.core.resources.IContainer
 import org.eclipse.core.resources.IFile
+import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResource
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.core.runtime.CoreException
@@ -30,8 +31,6 @@ import org.eclipse.core.runtime.IPath
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.Path
 import org.eclipse.core.runtime.Status
-import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.compiler.util.Util
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
@@ -45,18 +44,18 @@ import java.net.URI
 
 public class KotlinFileStore(file: File) : LocalFile(file) {
 	override public fun openInputStream(options: Int, monitor: IProgressMonitor?): InputStream {
-		val javaProject = getJavaProject()
-		if (javaProject == null) {
+		val project = getProject()
+		if (project == null) {
 			throw CoreException(Status.CANCEL_STATUS)
 		}
 
-		val jetFiles = KotlinLightClassManager.getInstance(javaProject).getSourceFiles(file)
+		val jetFiles = KotlinLightClassManager.getInstance(project).getSourceFiles(file)
 		if (jetFiles.isNotEmpty()) {
-			val analysisResult = KotlinAnalysisProjectCache.getAnalysisResultIfCached(javaProject) ?:
+			val analysisResult = KotlinAnalysisProjectCache.getAnalysisResultIfCached(project) ?:
 			KotlinAnalyzer.analyzeFiles(jetFiles).analysisResult
 
 			val requestedClassName = Path(file.getAbsolutePath()).lastSegment()
-			val state = KotlinLightClassGeneration.buildLightClasses(analysisResult, javaProject, jetFiles, requestedClassName)
+			val state = KotlinLightClassGeneration.buildLightClasses(analysisResult, project, jetFiles, requestedClassName)
 			val generatedClass = state.factory.asList().find {
 				val generatedClassName = Path(it.relativePath).lastSegment()
 				requestedClassName == generatedClassName
@@ -110,6 +109,8 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
 	override public fun getFileStore(path: IPath): IFileStore = KotlinFileStore(Path(file.getPath()).append(path).toFile())
 
 	override public fun getParent(): IFileStore? = file.getParentFile()?.let { KotlinFileStore(it) }
+    
+    fun getProject(): IProject? = findFileInWorkspace()?.let { it.project }
 
 	private fun findFileInWorkspace(): IFile? {
         return findResourceInWorkspace { ResourcesPlugin.getWorkspace().root.findFilesForLocationURI(it) }
@@ -129,6 +130,4 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
             null
         }
     }
-
-	fun getJavaProject(): IJavaProject? = findFileInWorkspace()?.let { JavaCore.create(it.getProject()) }
 }

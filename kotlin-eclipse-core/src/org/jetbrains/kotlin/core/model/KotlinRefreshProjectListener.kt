@@ -12,8 +12,7 @@ public object KotlinRefreshProjectListener : IResourceChangeListener {
             event.getDelta()?.accept { delta ->
                 val resource = delta.getResource()
                 if (resource != null && resource is IProject) {
-                    val javaProject = JavaCore.create(resource)
-                    KotlinLightClassGeneration.updateLightClasses(javaProject, emptySet())
+                    KotlinLightClassGeneration.updateLightClasses(resource, emptySet())
                     
                     return@accept false
                 }
