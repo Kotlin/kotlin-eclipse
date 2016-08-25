@@ -121,7 +121,8 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
 	}
     
     private inline fun <reified T : IResource> findResourceInWorkspace(search: (URI) -> Array<T>?): T? {
-        val pathRelatedToKtFileSystem = URI(KotlinFileSystem.SCHEME, null, file.absolutePath, null)
+        val absolutePath = file.toURI().path
+        val pathRelatedToKtFileSystem = URI(KotlinFileSystem.SCHEME, null, absolutePath, null)
         val resources = search(pathRelatedToKtFileSystem)
         return if (resources != null && resources.isNotEmpty()) {
             assert(resources.size == 1, { "By ${pathRelatedToKtFileSystem} found more than one file" })
