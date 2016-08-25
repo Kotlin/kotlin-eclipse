@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.ITypeParameter
 import org.eclipse.jdt.internal.core.ImportContainer
 import org.eclipse.jdt.core.IPackageFragment
 import org.eclipse.jdt.core.IPackageDeclaration
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 
 public class KotlinClassPathListener : IElementChangedListener {
     override public fun elementChanged(event: ElementChangedEvent) {
@@ -48,6 +49,8 @@ public class KotlinClassPathListener : IElementChangedListener {
             if ((flags and IJavaElementDelta.F_CLASSPATH_CHANGED) != 0 || 
                 (flags and IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED) != 0) {
                 KotlinEnvironment.updateKotlinEnvironment(element.project)
+                KotlinAnalysisFileCache.resetCache()
+                KotlinAnalysisProjectCache.resetCache(element.project)
             }
         }
     }
@@ -70,7 +73,7 @@ public class KotlinJavaDeclarationsListener : IElementChangedListener {
             is IPackageDeclaration -> {
                 val javaProject = element.getJavaProject()
                 if (javaProject != null) {
-                    KotlinAnalysisProjectCache.resetCache(javaProject)
+                    KotlinAnalysisProjectCache.resetCache(javaProject.project)
                 }
             }
         }

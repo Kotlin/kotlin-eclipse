@@ -31,10 +31,9 @@ import java.util.concurrent.ConcurrentHashMap
 public object KotlinAnalysisProjectCache : IResourceChangeListener {
     private val cachedAnalysisResults = ConcurrentHashMap<IProject, AnalysisResult>()
 
-    public fun resetCache(javaProject: IJavaProject) {
-        val project = javaProject.getProject()
+    public fun resetCache(project: IProject) {
         synchronized(project) {
-            cachedAnalysisResults.remove(javaProject.getProject())
+            cachedAnalysisResults.remove(project)
         }
     }
 
