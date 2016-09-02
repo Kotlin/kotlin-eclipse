@@ -749,4 +749,11 @@
             type="org.jetbrains.kotlin.ui.scriptLaunchConfiguration">
       </launchConfigurationTabGroup>
    </extension>
+   <extension
+         point="org.jetbrains.kotlin.ui.editor.textHover">
+      <hover
+            class="org.jetbrains.kotlin.ui.editors.hover.KotlinTextHoverExtension"
+            name="Kotlin Hover For Java Declarations">
+      </hover>
+   </extension>
 </plugin>
