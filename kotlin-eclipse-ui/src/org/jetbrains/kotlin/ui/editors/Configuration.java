@@ -31,6 +31,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IInformationControl;
 import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextPresentation;
@@ -57,6 +58,7 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.ui.editors.highlighting.KotlinTokenScanner;
 import org.jetbrains.kotlin.ui.editors.hover.KotlinInformationProvider;
+import org.jetbrains.kotlin.ui.editors.hover.KotlinTextHover;
 import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePopup;
 
 public class Configuration extends JavaSourceViewerConfiguration {
@@ -121,6 +123,16 @@ public class Configuration extends JavaSourceViewerConfiguration {
         return new DefaultAnnotationHover();
     }
     
+    @Override
+    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType, int stateMask) {
+        return getTextHover(sourceViewer, contentType);
+    }
+
+    @Override
+    public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+        return new KotlinTextHover(editor);
+    }
+
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
         return null;
