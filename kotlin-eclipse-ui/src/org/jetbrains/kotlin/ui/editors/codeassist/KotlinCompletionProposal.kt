@@ -16,30 +16,26 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.codeassist
 
-import org.eclipse.jface.text.contentassist.ICompletionProposal
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.core.search.TypeNameMatch
+import org.eclipse.jdt.ui.JavaElementLabels
+import org.eclipse.jface.text.DocumentEvent
 import org.eclipse.jface.text.IDocument
-import org.eclipse.swt.graphics.Point
-import org.eclipse.swt.graphics.Image
+import org.eclipse.jface.text.ITextViewer
+import org.eclipse.jface.text.contentassist.ICompletionProposal
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2
+import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6
 import org.eclipse.jface.text.contentassist.IContextInformation
+import org.eclipse.jface.viewers.StyledString
+import org.eclipse.swt.graphics.Image
+import org.eclipse.swt.graphics.Point
+import org.jetbrains.kotlin.builtins.isExtensionFunctionType
+import org.jetbrains.kotlin.builtins.isFunctionType
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.eclipse.jface.text.contentassist.CompletionProposal
-import org.eclipse.jface.viewers.StyledString
-import org.eclipse.jface.text.contentassist.ICompletionProposalExtension6
-import org.eclipse.jdt.core.search.TypeNameMatch
-import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
-import org.jetbrains.kotlin.psi.KtFile
-import org.eclipse.core.resources.IFile
-import org.eclipse.jdt.ui.JavaElementLabels
-import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2
-import org.eclipse.jface.text.ITextViewer
-import org.eclipse.jface.text.DocumentEvent
+import org.jetbrains.kotlin.resolve.calls.util.getValueParametersCountFromFunctionType
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
-import org.jetbrains.kotlin.builtins.isFunctionType
-import org.jetbrains.kotlin.builtins.isExtensionFunctionType
-import org.jetbrains.kotlin.resolve.getValueParametersCountFromFunctionType
+import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,

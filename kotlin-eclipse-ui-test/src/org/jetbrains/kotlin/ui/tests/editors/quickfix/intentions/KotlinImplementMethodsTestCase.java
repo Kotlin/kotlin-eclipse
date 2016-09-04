@@ -10,7 +10,7 @@ import kotlin.jvm.functions.Function1;
 
 public class KotlinImplementMethodsTestCase extends KotlinSpacesForTabsQuickAssistTestCase<KotlinImplementMethodsProposal> {
 	protected void doTest(String testPath) {
-		String exceptionCall = "UnsupportedOperationException(\"not implemented\") //To change body of created functions use File | Settings | File Templates.";
+		String exceptionCall = "TODO(\"not implemented\") //To change body of created functions use File | Settings | File Templates.";
         doTestFor(testPath, new Function1<KotlinEditor, KotlinQuickAssistProposal>() {
             @Override
             public KotlinQuickAssistProposal invoke(KotlinEditor editor) {

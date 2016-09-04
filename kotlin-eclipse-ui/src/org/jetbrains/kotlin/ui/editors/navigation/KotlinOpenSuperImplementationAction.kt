@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-* Copyright 2000-2015 JetBrains s.r.o.
+* Copyright 2000-2016 JetBrains s.r.o.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package org.jetbrains.kotlin.ui.editors.navigation
 
 import com.intellij.psi.util.PsiTreeUtil
-import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.internal.ui.actions.ActionMessages
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction
@@ -29,6 +28,10 @@ import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.dialogs.ListDialog
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.DECLARATION
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.DELEGATION
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.FAKE_OVERRIDE
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.SYNTHESIZED
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.MemberDescriptor
@@ -39,9 +42,10 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.OverrideResolver
+import org.jetbrains.kotlin.resolve.OverridingUtil
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.overrideImplement.KotlinCallableLabelProvider
+import java.util.LinkedHashSet
 
 public class KotlinOpenSuperImplementationAction(val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -123,11 +127,27 @@ public class KotlinOpenSuperImplementationAction(val editor: KotlinCommonEditor)
                 }.toSet()
             }
             
-            is CallableMemberDescriptor -> OverrideResolver.getDirectlyOverriddenDeclarations(descriptor).toSet()
+            is CallableMemberDescriptor -> descriptor.getDirectlyOverriddenDeclarations().toSet()
             
             else -> emptySet<MemberDescriptor>()
         }
         
         return superDescriptors
+    }
+
+    fun <D : CallableMemberDescriptor> D.getDirectlyOverriddenDeclarations(): Collection<D> {
+        val result = LinkedHashSet<D>()
+        for (overriddenDescriptor in overriddenDescriptors) {
+            @Suppress("UNCHECKED_CAST")
+            when (overriddenDescriptor.kind) {
+                DECLARATION -> result.add(overriddenDescriptor as D)
+                FAKE_OVERRIDE, DELEGATION -> result.addAll((overriddenDescriptor as D).getDirectlyOverriddenDeclarations())
+                SYNTHESIZED -> {
+                    //do nothing
+                }
+                else -> throw AssertionError("Unexpected callable kind ${overriddenDescriptor.kind}: $overriddenDescriptor")
+            }
+        }
+        return OverridingUtil.filterOutOverridden(result)
     }
 }

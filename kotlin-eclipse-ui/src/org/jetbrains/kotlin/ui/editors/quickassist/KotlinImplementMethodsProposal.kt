@@ -47,7 +47,7 @@ import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.formatRange
 import java.util.ArrayList
 
-private const val DEFAULT_EXCEPTION_CALL = "UnsupportedOperationException()"
+private const val DEFAULT_EXCEPTION_CALL = "throw UnsupportedOperationException()"
 
 public class KotlinImplementMethodsProposal(
         editor: KotlinEditor,
@@ -187,7 +187,7 @@ public class KotlinImplementMethodsProposal(
                                                exception: String = exceptionCall): String {
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
         if (isAbstract) {
-            return "throw $exception"
+            return "$exception"
         } else {
             val builder = StringBuilder()
             builder.append("super.${descriptor.escapedName()}")

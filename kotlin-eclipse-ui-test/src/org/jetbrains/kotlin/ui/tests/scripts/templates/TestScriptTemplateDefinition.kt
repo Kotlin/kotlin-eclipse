@@ -2,15 +2,18 @@ package org.jetbrains.kotlin.ui.tests.scripts.templates
 
 import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.jetbrains.kotlin.script.ScriptContents
-import org.jetbrains.kotlin.script.ScriptDependenciesResolverEx
+import org.jetbrains.kotlin.script.ScriptDependenciesResolver
+import org.jetbrains.kotlin.script.ScriptDependenciesResolver.ReportSeverity
 import org.jetbrains.kotlin.script.ScriptTemplateDefinition
 import java.io.File
+import java.util.concurrent.Future
+import org.jetbrains.kotlin.script.asFuture
 
 @ScriptTemplateDefinition(
         resolver = TestKotlinScriptResolver::class,
         scriptFilePattern = "sample.testDef.kts"
 )
-open class TestScriptTemplateDefinition(testNameParam: String, secondParam: Int, thirdParam: Int = 10) {
+open class TestScriptTemplateDefinition(val testNameParam: String, val secondParam: Int, val thirdParam: Int = 10) {
     fun doSomething() {
     }
 
@@ -23,11 +26,12 @@ fun TestScriptTemplateDefinition.testExtension(x: Int): String {
     return x.toString()
 }
 
-class TestKotlinScriptResolver : ScriptDependenciesResolverEx {
+class TestKotlinScriptResolver : ScriptDependenciesResolver {
     override fun resolve(script: ScriptContents,
                          environment: Map<String, Any?>?,
-                         previousDependencies: KotlinScriptExternalDependencies?): KotlinScriptExternalDependencies? {
-        return TestScriptExternalDependencies
+                         report: (ReportSeverity, String, ScriptContents.Position?) -> Unit,
+                         previousDependencies: KotlinScriptExternalDependencies?): Future<KotlinScriptExternalDependencies?> {
+        return TestScriptExternalDependencies.asFuture()
     }
 }
 

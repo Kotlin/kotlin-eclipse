@@ -34,12 +34,12 @@ import org.eclipse.jdt.core.IClasspathEntry
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.core.JavaProject
-import org.jetbrains.kotlin.asJava.KtLightClassForFacade
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
+import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
-import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndex
-import org.jetbrains.kotlin.cli.jvm.compiler.JvmLazyCliVirtualFileFinderFactory
+import org.jetbrains.kotlin.cli.jvm.compiler.JvmCliVirtualFileFinderFactory
+import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndexImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
@@ -100,9 +100,9 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
         
-        val index = JvmDependenciesIndex(getRoots().toList())
+        val index = JvmDependenciesIndexImpl(getRoots().toList())
         
-        project.registerService(JvmVirtualFileFinderFactory::class.java, JvmLazyCliVirtualFileFinderFactory { index })
+        project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
         
         val area = Extensions.getArea(project)
         area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(

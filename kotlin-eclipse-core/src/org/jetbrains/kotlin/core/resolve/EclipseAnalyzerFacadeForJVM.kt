@@ -17,13 +17,11 @@
 package org.jetbrains.kotlin.core.resolve
 
 import com.intellij.psi.search.GlobalSearchScope
-import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.utils.ProjectUtils
@@ -32,7 +30,7 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
-import org.jetbrains.kotlin.utils.KotlinFrontEndException
+import org.jetbrains.kotlin.util.KotlinFrontEndException
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
 

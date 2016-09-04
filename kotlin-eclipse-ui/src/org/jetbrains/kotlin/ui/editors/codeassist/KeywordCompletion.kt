@@ -106,10 +106,7 @@ open class KeywordLookupObject
 
 // This code is mostly copied from Idea plugin
 object KeywordCompletion {
-    private val NON_ACTUAL_KEYWORDS = setOf(TYPE_ALIAS_KEYWORD)
-    private val ALL_KEYWORDS = (KEYWORDS.types + SOFT_KEYWORDS.types)
-            .filter { it !in NON_ACTUAL_KEYWORDS }
-            .map { it as KtKeywordToken }
+    private val ALL_KEYWORDS = (KEYWORDS.types + SOFT_KEYWORDS.types).map { it as KtKeywordToken }
 
     private val KEYWORDS_TO_IGNORE_PREFIX = TokenSet.create(OVERRIDE_KEYWORD /* it's needed to complete overrides that should be work by member name too */)
 

@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IProject
 import org.eclipse.core.runtime.Path
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
-import org.jetbrains.kotlin.codegen.binding.PsiCodegenPredictor
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
@@ -57,8 +56,7 @@ object KotlinLightClassGeneration {
                     override fun shouldAnnotateClass(processingClassOrObject: KtClassOrObject): Boolean = true
                     
                     override fun shouldGenerateClass(processingClassOrObject: KtClassOrObject): Boolean {
-                        val internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(processingClassOrObject,
-                                NoResolveFileClassesProvider)
+                        val internalName = KotlinLightClassManager.getInternalName(processingClassOrObject)
                         return checkByInternalName(internalName, requestedClassName)
                     }
                     
