@@ -17,15 +17,14 @@
 package org.jetbrains.kotlin.ui.editors.hover
 
 import org.eclipse.jdt.internal.ui.text.java.hover.JavadocHover
-import org.eclipse.jface.text.IInformationControlCreator
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
+import org.eclipse.jface.internal.text.html.BrowserInformationControlInput
 import org.eclipse.jface.text.Region
+import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
 
 class KotlinTextHoverExtension : KotlinEditorTextHover() {
     private val javadocHover = JavadocHover()
     
-    override fun getHoverInfo(hoverData: HoverData): Any? {
+    override fun getHoverInfo(hoverData: HoverData): BrowserInformationControlInput? {
         val (element, editor) = hoverData
         
         javadocHover.setEditor(editor.javaEditor)
@@ -35,8 +34,8 @@ class KotlinTextHoverExtension : KotlinEditorTextHover() {
         
         val region = Region(startOffset, psiTextRange.length)
         
-        return javadocHover.getHoverInfo2(editor.javaEditor.viewer, region)
+        return javadocHover.getHoverInfo2(editor.javaEditor.viewer, region) as? BrowserInformationControlInput
     }
-
+    
     override fun isAvailable(hoverData: HoverData): Boolean = true
 }

@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.core.model.loadExecutableEP
 import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.eclipse.jface.internal.text.html.BrowserInformationControlInput
 
 const val TEXT_HOVER_EP_ID = "org.jetbrains.kotlin.ui.editor.textHover"
 
@@ -79,11 +80,11 @@ class KotlinTextHover(private val editor: KotlinEditor) : ITextHover, ITextHover
 }
 
 abstract class KotlinEditorTextHover {
-    abstract fun getHoverInfo(hoverData: HoverData): Any?
-    
+    abstract fun getHoverInfo(hoverData: HoverData): BrowserInformationControlInput?
+        
     abstract fun isAvailable(hoverData: HoverData): Boolean
     
-    open fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator? {
+    fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator? {
         return JavadocHover.PresenterControlCreator(editor.javaEditor.getSite())
     }
 }
