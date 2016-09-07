@@ -59,10 +59,10 @@
          <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
-                  The name of a class that extends class org.jetbrains.kotlin.ui.editors.hover.KotlinEditorTextHover
+                  The name of a class that implements interface org.jetbrains.kotlin.ui.editors.hover.KotlinEditorTextHover
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.jetbrains.kotlin.ui.editors.hover.KotlinEditorTextHover:"/>
+                  <meta.attribute kind="java" basedOn=":org.jetbrains.kotlin.ui.editors.hover.KotlinEditorTextHover"/>
                </appinfo>
             </annotation>
          </attribute>

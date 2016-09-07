@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
 import org.eclipse.jdt.internal.ui.text.java.hover.JavadocHover
 import org.eclipse.jface.internal.text.html.BrowserInformationControlInput
+import org.eclipse.jface.text.IInformationControlCreator
 import org.eclipse.jface.text.Region
 import org.jetbrains.kotlin.core.model.toLightElements
 import org.jetbrains.kotlin.core.references.createReferences
@@ -27,8 +28,9 @@ import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.core.references.resolveToSourceElements
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
-class KotlinJavadocTextHover : KotlinEditorTextHover() {
+class KotlinJavadocTextHover : KotlinEditorTextHover<BrowserInformationControlInput> {
     companion object {
         private val DUMMY_REGION = Region(0, 0)
     }
@@ -45,6 +47,10 @@ class KotlinJavadocTextHover : KotlinEditorTextHover() {
     }
     
     override fun isAvailable(hoverData: HoverData): Boolean = true
+    
+    override fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator? {
+        return JavadocHover.PresenterControlCreator(editor.javaEditor.getSite())
+    }
     
     private fun obtainJavaElements(element: KtElement): List<IJavaElement> {
         val expression = getReferenceExpression(element) ?: return emptyList()
