@@ -16,26 +16,42 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.hover
 
+import org.eclipse.jdt.core.IJavaElement
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
 import org.eclipse.jdt.internal.ui.text.java.hover.JavadocHover
 import org.eclipse.jface.internal.text.html.BrowserInformationControlInput
 import org.eclipse.jface.text.Region
-import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
+import org.jetbrains.kotlin.core.model.toLightElements
+import org.jetbrains.kotlin.core.references.createReferences
+import org.jetbrains.kotlin.core.references.getReferenceExpression
+import org.jetbrains.kotlin.core.references.resolveToSourceElements
+import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
+import org.jetbrains.kotlin.psi.KtElement
 
 class KotlinTextHoverExtension : KotlinEditorTextHover() {
-    private val javadocHover = JavadocHover()
+    companion object {
+        private val DUMMY_REGION = Region(0, 0)
+    }
     
     override fun getHoverInfo(hoverData: HoverData): BrowserInformationControlInput? {
         val (element, editor) = hoverData
         
-        javadocHover.setEditor(editor.javaEditor)
+        val javaElements = obtainJavaElements(element)
+        if (javaElements.isEmpty()) return null
         
-        val psiTextRange = element.getTextRange()
-        val startOffset = element.getOffsetByDocument(editor.document, psiTextRange.startOffset)
+        val editorInputElement = EditorUtility.getEditorInputJavaElement(editor.javaEditor, false)
         
-        val region = Region(startOffset, psiTextRange.length)
-        
-        return javadocHover.getHoverInfo2(editor.javaEditor.viewer, region) as? BrowserInformationControlInput
+        return JavadocHover.getHoverInfo(javaElements.toTypedArray(), editorInputElement, DUMMY_REGION, null)
     }
     
     override fun isAvailable(hoverData: HoverData): Boolean = true
+    
+    private fun obtainJavaElements(element: KtElement): List<IJavaElement> {
+        val expression = getReferenceExpression(element) ?: return emptyList()
+        
+        return createReferences(expression)
+                .resolveToSourceElements()
+                .filterIsInstance(EclipseJavaSourceElement::class.java)
+                .flatMap { it.toLightElements() }
+    }
 }
