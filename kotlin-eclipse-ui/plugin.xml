@@ -733,6 +733,10 @@
             class="org.jetbrains.kotlin.ui.editors.hover.KotlinJavadocTextHover"
             name="Kotlin Hover For Java Declarations">
       </hover>
+      <hover
+            class="org.jetbrains.kotlin.ui.editors.hover.KotlinAnnotationTextHover"
+            name="Kotlin Annotation Hover ">
+      </hover>
    </extension>
 >>>>>>> 67db8c4... Register hover extension to show javadoc for Java declarations
 </plugin>

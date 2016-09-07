@@ -18,26 +18,26 @@ package org.jetbrains.kotlin.ui.editors.hover
 
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jdt.internal.ui.text.JavaWordFinder
-import org.eclipse.jdt.internal.ui.text.java.hover.JavadocHover
 import org.eclipse.jface.text.IInformationControlCreator
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.ITextHover
 import org.eclipse.jface.text.ITextHoverExtension
 import org.eclipse.jface.text.ITextHoverExtension2
 import org.eclipse.jface.text.ITextViewer
+import org.eclipse.jface.text.Region
 import org.jetbrains.kotlin.core.model.loadExecutableEP
 import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
+import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.eclipse.jface.internal.text.html.BrowserInformationControlInput
 
 const val TEXT_HOVER_EP_ID = "org.jetbrains.kotlin.ui.editor.textHover"
 
 class KotlinTextHover(private val editor: KotlinEditor) : ITextHover, ITextHoverExtension, ITextHoverExtension2 {
-    val extensionsHovers = loadExecutableEP<KotlinEditorTextHover>(TEXT_HOVER_EP_ID).mapNotNull { it.createProvider() }
+    val extensionsHovers = loadExecutableEP<KotlinEditorTextHover<*>>(TEXT_HOVER_EP_ID).mapNotNull { it.createProvider() }
     
     private var hoverData: HoverData? = null
-    private var bestHover: KotlinEditorTextHover? = null
+    private var bestHover: KotlinEditorTextHover<*>? = null
     
     override fun getHoverRegion(textViewer: ITextViewer, offset: Int): IRegion? {
         return JavaWordFinder.findWord(textViewer.getDocument(), offset)
@@ -79,14 +79,21 @@ class KotlinTextHover(private val editor: KotlinEditor) : ITextHover, ITextHover
     }
 }
 
-abstract class KotlinEditorTextHover {
-    abstract fun getHoverInfo(hoverData: HoverData): BrowserInformationControlInput?
+interface KotlinEditorTextHover<out Info> {
+    fun getHoverInfo(hoverData: HoverData): Info?
         
-    abstract fun isAvailable(hoverData: HoverData): Boolean
+    fun isAvailable(hoverData: HoverData): Boolean
     
-    fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator? {
-        return JavadocHover.PresenterControlCreator(editor.javaEditor.getSite())
-    }
+    fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator?
 }
 
 data class HoverData(val hoverElement: KtElement, val editor: KotlinEditor)
+
+fun HoverData.getRegion(): Region {
+    val (element, editor) = this
+
+    val psiTextRange = element.getTextRange()
+    val startOffset = element.getOffsetByDocument(editor.document, psiTextRange.startOffset)
+
+    return Region(startOffset, psiTextRange.length)
+}
