@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.core.references.resolveToSourceElements
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
 import org.jetbrains.kotlin.psi.KtElement
 
-class KotlinTextHoverExtension : KotlinEditorTextHover() {
+class KotlinJavadocTextHover : KotlinEditorTextHover() {
     companion object {
         private val DUMMY_REGION = Region(0, 0)
     }
