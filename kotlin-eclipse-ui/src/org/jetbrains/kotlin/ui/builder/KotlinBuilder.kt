@@ -62,21 +62,23 @@ class KotlinBuilder : IncrementalProjectBuilder() {
             return null
         }
         
+        if (kind == FULL_BUILD) {
+            makeClean(javaProject)
+            return null
+        }
+        
         val delta = getDelta(project)
         val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
         if (allAffectedFiles.isNotEmpty() &&
                 (isAllFromOutputFolder(allAffectedFiles, javaProject) || isAllScripts(allAffectedFiles))) {
             return null
         }
-        
-        val kotlinAffectedFiles = if (kind == FULL_BUILD) {
-            KotlinPsiManager.getFilesByProject(project)
-        } else {
-            allAffectedFiles
-                .filter { KotlinPsiManager.isKotlinSourceFile(it, javaProject) }
-                .toSet()
-        }
-        
+
+        val kotlinAffectedFiles =
+                allAffectedFiles
+                        .filter { KotlinPsiManager.isKotlinSourceFile(it, javaProject) }
+                        .toSet()
+
         val existingAffectedFiles = kotlinAffectedFiles.filter { it.exists() }
         
         commitFiles(existingAffectedFiles)
@@ -103,6 +105,20 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         runCancellableAnalysisFor(javaProject, existingAffectedFiles)
         
         return null
+    }
+    
+    private fun makeClean(javaProject: IJavaProject) {
+        val kotlinFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
+        val existingFiles = kotlinFiles.filter { it.exists() }
+        
+        commitFiles(existingFiles)
+        
+        clearProblemAnnotationsFromOpenEditorsExcept(emptyList())
+        clearMarkersFromFiles(existingFiles)
+        
+        runCancellableAnalysisFor(javaProject) {
+            KotlinLightClassGeneration.updateLightClasses(javaProject.project, kotlinFiles)
+        }
     }
     
     private fun commitFiles(files: Collection<IFile>) {
