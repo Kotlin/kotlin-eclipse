@@ -191,6 +191,10 @@ public class EclipseJavaElementUtil {
             return false;
         }
         
+        return isFromKotlinBinFolder(resource);
+    }
+    
+    public static boolean isFromKotlinBinFolder(@NotNull IResource resource) {
         IContainer parent = resource.getParent();
         while (parent != null) {
             if (KotlinFileSystem.SCHEME.equals(parent.getLocationURI().getScheme())) {
