@@ -53,8 +53,12 @@ import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
+import org.eclipse.jdt.internal.compiler.util.Util
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 
 class KotlinBuilder : IncrementalProjectBuilder() {
+    private val fileFilters = listOf(ScriptFileFilter, FileFromOuputFolderFilter, FileFromKotlinBinFolderFilter)
+    
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
         val javaProject = JavaCore.create(project)
         if (isBuildingForLaunch()) {
@@ -69,9 +73,11 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         
         val delta = getDelta(project)
         val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
-        if (allAffectedFiles.isNotEmpty() &&
-                (isAllFromOutputFolder(allAffectedFiles, javaProject) || isAllScripts(allAffectedFiles))) {
-            return null
+        
+        if (allAffectedFiles.isNotEmpty()) {
+            if (isAllFilesApplicableForFilters(allAffectedFiles, javaProject)) {
+                return null
+            }
         }
 
         val kotlinAffectedFiles =
@@ -107,6 +113,14 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         return null
     }
     
+    private fun isAllFilesApplicableForFilters(files: Set<IFile>, javaProject: IJavaProject): Boolean {
+        return files.all { file ->
+            fileFilters.any { filter ->
+                filter.isApplicable(file, javaProject)
+            }
+        }
+    }
+    
     private fun makeClean(javaProject: IJavaProject) {
         val kotlinFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
         val existingFiles = kotlinFiles.filter { it.exists() }
@@ -127,6 +141,10 @@ class KotlinBuilder : IncrementalProjectBuilder() {
     
     private fun isAllScripts(files: Set<IFile>): Boolean {
         return files.all { KotlinScriptEnvironment.isScript(it) }
+    }
+    
+    private fun isAllClassFiles(files: Set<IFile>): Boolean {
+        return files.all { Util.isClassFileName(it.name) }
     }
     
     private fun isAllFromOutputFolder(files: Set<IFile>, javaProject: IJavaProject): Boolean {
@@ -201,5 +219,31 @@ private fun addMarkersToProject(annotations: Map<IFile, List<DiagnosticAnnotatio
     for (file in affectedFiles) {
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)
         annotations[file]?.forEach { AnnotationManager.addProblemMarker(it, file) }
+    }
+}
+
+interface KotlinFileFilterForBuild {
+    fun isApplicable(file: IFile, javaProject: IJavaProject): Boolean
+}
+
+object ScriptFileFilter : KotlinFileFilterForBuild {
+    override fun isApplicable(file: IFile, javaProject: IJavaProject): Boolean {
+        return KotlinScriptEnvironment.isScript(file) 
+    }
+}
+
+object FileFromOuputFolderFilter : KotlinFileFilterForBuild {
+    override fun isApplicable(file: IFile, javaProject: IJavaProject): Boolean {
+        val workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getFullPath()
+        val outputLocation = javaProject.outputLocation
+        
+        val filePathLocation = file.getFullPath().makeRelativeTo(workspaceLocation)
+        return outputLocation.isPrefixOf(filePathLocation)
+    }
+}
+
+object FileFromKotlinBinFolderFilter : KotlinFileFilterForBuild {
+    override fun isApplicable(file: IFile, javaProject: IJavaProject): Boolean {
+        return EclipseJavaElementUtil.isFromKotlinBinFolder(file)
     }
 }
