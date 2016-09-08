@@ -121,7 +121,7 @@ public fun KtElement.toLightElements(): List<IJavaElement> {
     }
 }
 
-public fun SourceElement.toLightElements(): List<IJavaElement> {
+public fun SourceElement.toJavaElements(): List<IJavaElement> {
     return when (this) {
         is EclipseJavaSourceElement -> obtainJavaElement(this.getElementBinding()).singletonOrEmptyList()
         is KotlinSourceElement -> this.psi.toLightElements()
@@ -130,7 +130,7 @@ public fun SourceElement.toLightElements(): List<IJavaElement> {
 }
 
 public fun sourceElementsToLightElements(sourceElements: List<SourceElement>): List<IJavaElement> {
-    return sourceElements.flatMap { it.toLightElements() }
+    return sourceElements.flatMap { it.toJavaElements() }
 }
 
 private fun obtainJavaElement(binding: IBinding): IJavaElement? {
