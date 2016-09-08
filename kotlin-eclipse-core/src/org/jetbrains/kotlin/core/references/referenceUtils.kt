@@ -36,7 +36,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import com.intellij.openapi.util.Key
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtDeclaration
-import org.jetbrains.kotlin.core.model.toLightElements
+import org.jetbrains.kotlin.core.model.toJavaElements
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtParenthesizedExpression
