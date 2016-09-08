@@ -16,21 +16,16 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.search
 
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
-import org.jetbrains.kotlin.psi.KtReferenceExpression
-import org.jetbrains.kotlin.psi.KtSimpleNameExpression
-import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
-import org.eclipse.jdt.ui.search.QuerySpecification
-import org.jetbrains.kotlin.descriptors.SourceElement
-import org.eclipse.jdt.ui.search.ElementQuerySpecification
-import org.jetbrains.kotlin.core.model.toLightElements
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.search.IJavaSearchConstants
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
+import org.eclipse.jdt.ui.search.QuerySpecification
+import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
+import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement
-import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement.JavaSearchElement
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement.KotlinSearchElement
 

@@ -22,7 +22,7 @@ import org.eclipse.jdt.internal.ui.text.java.hover.JavadocHover
 import org.eclipse.jface.internal.text.html.BrowserInformationControlInput
 import org.eclipse.jface.text.IInformationControlCreator
 import org.eclipse.jface.text.Region
-import org.jetbrains.kotlin.core.model.toLightElements
+import org.jetbrains.kotlin.core.model.toJavaElements
 import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.core.references.getReferenceExpression
 import org.jetbrains.kotlin.core.references.resolveToSourceElements
@@ -58,6 +58,6 @@ class KotlinJavadocTextHover : KotlinEditorTextHover<BrowserInformationControlIn
         return createReferences(expression)
                 .resolveToSourceElements()
                 .filterIsInstance(EclipseJavaSourceElement::class.java)
-                .flatMap { it.toLightElements() }
+                .flatMap { it.toJavaElements() }
     }
 }
