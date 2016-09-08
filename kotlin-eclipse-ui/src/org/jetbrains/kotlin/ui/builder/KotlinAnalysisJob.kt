@@ -31,7 +31,8 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public class KotlinAnalysisJob(
         private val javaProject: IJavaProject, 
-        private val affectedFiles: List<IFile>) : Job("Kotlin Analysis") {
+        private val affectedFiles: List<IFile>,
+        private val leaveTask: () -> Unit) : Job("Kotlin Analysis") {
     init {
         setPriority(DECORATE)
     }
@@ -54,6 +55,8 @@ public class KotlinAnalysisJob(
             val projectFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
             updateLineMarkers(analysisResult.bindingContext.diagnostics, (projectFiles - affectedFiles).toList())
             
+            leaveTask()
+            
             return Status.OK_STATUS
         } catch (e: CompilationCanceledException) {
             return Status.CANCEL_STATUS
@@ -74,10 +77,14 @@ private fun constructFamilyIndicator(javaProject: IJavaProject): String {
     return javaProject.getProject().getName() + "_kotlinAnalysisFamily"
 }
 
-fun runCancellableAnalysisFor(javaProject: IJavaProject, affectedFiles: List<IFile>) {
+fun runCancellableAnalysisFor(javaProject: IJavaProject, leaveTask: () -> Unit) {
+    runCancellableAnalysisFor(javaProject, emptyList(), leaveTask)
+}
+
+fun runCancellableAnalysisFor(javaProject: IJavaProject, affectedFiles: List<IFile>, leaveTask: () -> Unit = {}) {
     val family = constructFamilyIndicator(javaProject)
     Job.getJobManager().cancel(family)
     Job.getJobManager().join(family, NullProgressMonitor()) // It should be fast enough
     
-    KotlinAnalysisJob(javaProject, affectedFiles).schedule()
+    KotlinAnalysisJob(javaProject, affectedFiles, leaveTask).schedule()
 }
