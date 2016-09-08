@@ -16,18 +16,20 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.builder
 
-import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.resources.IFile
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.NullProgressMonitor
 import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.IJobChangeEvent
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.jobs.JobChangeAdapter
+import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
+import org.jetbrains.kotlin.progress.CompilationCanceledException
 import org.jetbrains.kotlin.progress.CompilationCanceledStatus
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
-import org.jetbrains.kotlin.progress.CompilationCanceledException
-import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.core.runtime.NullProgressMonitor
-import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
-import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
 public class KotlinAnalysisJob(
         private val javaProject: IJavaProject, 
@@ -74,10 +76,24 @@ private fun constructFamilyIndicator(javaProject: IJavaProject): String {
     return javaProject.getProject().getName() + "_kotlinAnalysisFamily"
 }
 
-fun runCancellableAnalysisFor(javaProject: IJavaProject, affectedFiles: List<IFile>) {
+fun runCancellableAnalysisFor(javaProject: IJavaProject, leaveTask: () -> Unit) {
+    runCancellableAnalysisFor(javaProject, emptyList(), leaveTask)
+}
+
+fun runCancellableAnalysisFor(javaProject: IJavaProject, affectedFiles: List<IFile>, leaveTask: () -> Unit = {}) {
     val family = constructFamilyIndicator(javaProject)
     Job.getJobManager().cancel(family)
     Job.getJobManager().join(family, NullProgressMonitor()) // It should be fast enough
     
-    KotlinAnalysisJob(javaProject, affectedFiles).schedule()
+    val analysisJob = KotlinAnalysisJob(javaProject, affectedFiles)
+    
+    analysisJob.addJobChangeListener(object : JobChangeAdapter() {
+        override fun done(event: IJobChangeEvent) {
+            if (event.result.isOK) {
+                leaveTask()
+            }
+        }
+    })
+    
+    analysisJob.schedule()
 }
