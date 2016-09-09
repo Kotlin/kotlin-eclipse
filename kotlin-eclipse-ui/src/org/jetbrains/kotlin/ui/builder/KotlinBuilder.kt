@@ -121,7 +121,10 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
         updateLineMarkers(analysisResultWithProvider.analysisResult.bindingContext.diagnostics, existingAffectedFiles)
         
-        runCancellableAnalysisFor(javaProject, existingAffectedFiles)
+        runCancellableAnalysisFor(javaProject) { analysisResult ->
+            val projectFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
+            updateLineMarkers(analysisResult.bindingContext.diagnostics, (projectFiles - existingAffectedFiles).toList())
+        }
         
         return null
     }
@@ -143,7 +146,8 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         clearProblemAnnotationsFromOpenEditorsExcept(emptyList())
         clearMarkersFromFiles(existingFiles)
         
-        runCancellableAnalysisFor(javaProject) {
+        runCancellableAnalysisFor(javaProject) { analysisResult ->
+            updateLineMarkers(analysisResult.bindingContext.diagnostics, existingFiles)
             KotlinLightClassGeneration.updateLightClasses(javaProject.project, kotlinFiles)
         }
     }
@@ -158,11 +162,14 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         return files.all { KotlinScriptEnvironment.isScript(it) }
     }
     
+<<<<<<< HEAD
     private fun isAllClassFiles(files: Set<IFile>): Boolean {
         return files.all { Util.isClassFileName(it.name) }
     }
     
 >>>>>>> ed2274b... Do not start build if files from kotlin_bin folder changed
+=======
+>>>>>>> efdb548... Make Kotlin analysis job system for smoother file saving
     private fun isAllFromOutputFolder(files: Set<IFile>, javaProject: IJavaProject): Boolean {
         val workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getFullPath()
         val outputLocation = javaProject.outputLocation
