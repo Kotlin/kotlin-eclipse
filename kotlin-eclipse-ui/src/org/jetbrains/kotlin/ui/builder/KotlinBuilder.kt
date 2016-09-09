@@ -108,7 +108,10 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
         updateLineMarkers(analysisResultWithProvider.analysisResult.bindingContext.diagnostics, existingAffectedFiles)
         
-        runCancellableAnalysisFor(javaProject, existingAffectedFiles)
+        runCancellableAnalysisFor(javaProject) { analysisResult ->
+            val projectFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
+            updateLineMarkers(analysisResult.bindingContext.diagnostics, (projectFiles - existingAffectedFiles).toList())
+        }
         
         return null
     }
@@ -130,7 +133,8 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         clearProblemAnnotationsFromOpenEditorsExcept(emptyList())
         clearMarkersFromFiles(existingFiles)
         
-        runCancellableAnalysisFor(javaProject) {
+        runCancellableAnalysisFor(javaProject) { analysisResult ->
+            updateLineMarkers(analysisResult.bindingContext.diagnostics, existingFiles)
             KotlinLightClassGeneration.updateLightClasses(javaProject.project, kotlinFiles)
         }
     }
