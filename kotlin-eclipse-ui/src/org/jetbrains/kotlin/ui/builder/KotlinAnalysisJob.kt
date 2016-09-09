@@ -30,12 +30,12 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
 import org.jetbrains.kotlin.progress.CompilationCanceledException
 import org.jetbrains.kotlin.progress.CompilationCanceledStatus
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
+import org.jetbrains.kotlin.analyzer.AnalysisResult
 
-public class KotlinAnalysisJob(
-        private val javaProject: IJavaProject, 
-        private val affectedFiles: List<IFile>) : Job("Kotlin Analysis") {
+public class KotlinAnalysisJob(private val javaProject: IJavaProject) : Job("Kotlin Analysis") {
     init {
         setPriority(DECORATE)
+        setSystem(true)
     }
     
     val familyIndicator = constructFamilyIndicator(javaProject)
@@ -53,12 +53,10 @@ public class KotlinAnalysisJob(
             })
             
             val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-            val projectFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
-            updateLineMarkers(analysisResult.bindingContext.diagnostics, (projectFiles - affectedFiles).toList())
             
-            return Status.OK_STATUS
+            return AnalysisResultStatus(Status.OK_STATUS, analysisResult)
         } catch (e: CompilationCanceledException) {
-            return Status.CANCEL_STATUS
+            return AnalysisResultStatus(Status.CANCEL_STATUS, AnalysisResult.EMPTY)
         } finally {
             ProgressIndicatorAndCompilationCanceledStatus.setCompilationCanceledStatus(null)
         }
@@ -70,27 +68,26 @@ public class KotlinAnalysisJob(
         super.canceling()
         canceled = true
     }
+    
+    class AnalysisResultStatus(val status: IStatus, val analysisResult: AnalysisResult): IStatus by status
 }
 
 private fun constructFamilyIndicator(javaProject: IJavaProject): String {
     return javaProject.getProject().getName() + "_kotlinAnalysisFamily"
 }
 
-fun runCancellableAnalysisFor(javaProject: IJavaProject, leaveTask: () -> Unit) {
-    runCancellableAnalysisFor(javaProject, emptyList(), leaveTask)
-}
-
-fun runCancellableAnalysisFor(javaProject: IJavaProject, affectedFiles: List<IFile>, leaveTask: () -> Unit = {}) {
+fun runCancellableAnalysisFor(javaProject: IJavaProject, postAnalysisTask: (AnalysisResult) -> Unit = {}) {
     val family = constructFamilyIndicator(javaProject)
     Job.getJobManager().cancel(family)
     Job.getJobManager().join(family, NullProgressMonitor()) // It should be fast enough
     
-    val analysisJob = KotlinAnalysisJob(javaProject, affectedFiles)
+    val analysisJob = KotlinAnalysisJob(javaProject)
     
     analysisJob.addJobChangeListener(object : JobChangeAdapter() {
         override fun done(event: IJobChangeEvent) {
-            if (event.result.isOK) {
-                leaveTask()
+            val result = event.result
+            if (result is KotlinAnalysisJob.AnalysisResultStatus && result.isOK) {
+                postAnalysisTask(result.analysisResult)
             }
         }
     })
