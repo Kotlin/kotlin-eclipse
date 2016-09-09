@@ -84,7 +84,11 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         AnnotationManager.updateAnnotations(editor, annotationMap, ANNOTATION_TYPE)
     }
     
+<<<<<<< HEAD
     private fun findOccurrences(editor: KotlinFileEditor, jetElement: KtElement, file: IFile): List<Position> {
+=======
+    private fun findOccurrences(editor: KotlinCommonEditor, jetElement: KtElement, file: IFile): List<Position> {
+>>>>>>> f05c625... Fix exception about getting document on disposed editor
         val sourceElements = jetElement.resolveToSourceDeclaration()
         if (sourceElements.isEmpty()) return emptyList()
         
@@ -103,7 +107,8 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
             val length = getLengthOfIdentifier(element)
             if (length == null) return@map null
             
-            Position(element.getTextDocumentOffset(editor.document), length)
+            val document = editor.getDocumentSafely() ?: return@map null
+            Position(element.getTextDocumentOffset(document), length)
         }.filterNotNull()
     }
     
