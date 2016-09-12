@@ -56,6 +56,7 @@ import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.core.runtime.Status
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 
 private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
 
@@ -94,8 +95,7 @@ public class KotlinSemanticHighlighter(
 
     override fun reconcile(file: IFile, editor: KotlinEditor) {
         val document = when (editor) {
-            is KotlinFileEditor -> editor.getDocumentSafely()
-            is KotlinScriptEditor -> editor.document
+            is KotlinCommonEditor -> editor.getDocumentSafely()
             else -> null
         }
         
