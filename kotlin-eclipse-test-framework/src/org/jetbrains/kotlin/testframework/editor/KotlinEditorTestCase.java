@@ -66,16 +66,21 @@ public abstract class KotlinEditorTestCase {
     public void afterTest() {
         deleteProjectAndCloseEditors();
         
-        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, (Separator.SPACE == initialSeparator));
-        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, initialSpacesCount);
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS,
+                (Separator.SPACE == initialSeparator));
+        EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH,
+                initialSpacesCount);
     }
     
     @Before
     public void beforeTest() {
         refreshWorkspace();
         
-        initialSeparator = EditorsUI.getPreferenceStore().getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.SPACE : Separator.TAB;
-        initialSpacesCount = EditorsUI.getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+        initialSeparator = EditorsUI.getPreferenceStore().getBoolean(
+                AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS) ? Separator.SPACE
+                        : Separator.TAB;
+        initialSpacesCount = EditorsUI.getPreferenceStore().getInt(
+                AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
     }
     
     protected KotlinFileEditor getEditor() {
@@ -110,7 +115,8 @@ public abstract class KotlinEditorTestCase {
         return configureEditor(fileName, content, TextEditorTest.TEST_PROJECT_NAME, packageName);
     }
     
-    protected static TextEditorTest configureEditor(String fileName, String content, String projectName, String packageName) {
+    protected static TextEditorTest configureEditor(String fileName, String content, String projectName,
+            String packageName) {
         TextEditorTest testEditor = new TextEditorTest(projectName);
         testEditor.createEditor(fileName, resolveTestTags(content), packageName);
         
@@ -123,10 +129,10 @@ public abstract class KotlinEditorTestCase {
             PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().closeAllEditors(false);
             
             if (testEditor != null) {
-            	TestJavaProject testJavaProject = testEditor.getTestJavaProject();
-            	if (testJavaProject != null) {
-            		testJavaProject.clean();
-            	}
+                TestJavaProject testJavaProject = testEditor.getTestJavaProject();
+                if (testJavaProject != null) {
+                    testJavaProject.clean();
+                }
             }
             
             IProject projects[] = ResourcesPlugin.getWorkspace().getRoot().getProjects();
@@ -163,7 +169,7 @@ public abstract class KotlinEditorTestCase {
     public static void joinBuildThread() {
         while (true) {
             try {
-            	Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
+                Job.getJobManager().join(ResourcesPlugin.FAMILY_AUTO_BUILD, null);
                 break;
             } catch (OperationCanceledException | InterruptedException e) {
             }
@@ -171,7 +177,8 @@ public abstract class KotlinEditorTestCase {
     }
     
     public static String resolveTestTags(String text) {
-        return text.replaceAll(ERROR_TAG_OPEN, "")
+        return text
+                .replaceAll(ERROR_TAG_OPEN, "")
                 .replaceAll(ERROR_TAG_CLOSE, "")
                 .replaceAll(WARNING_TAG_OPEN, "")
                 .replaceAll(WARNING_TAG_CLOSE, "")
@@ -179,10 +186,11 @@ public abstract class KotlinEditorTestCase {
     }
     
     public static String removeTags(String text) {
-        return resolveTestTags(text).replaceAll(CARET_TAG, "")
-        		.replaceAll(SELECTION_TAG_OPEN, "")
-        		.replaceAll(SELECTION_TAG_CLOSE, "")
-        		.replaceAll(REFERENCE_TAG, "");
+        return resolveTestTags(text)
+                .replaceAll(CARET_TAG, "")
+                .replaceAll(SELECTION_TAG_OPEN, "")
+                .replaceAll(SELECTION_TAG_CLOSE, "")
+                .replaceAll(REFERENCE_TAG, "");
     }
     
     public static String getNameByPath(String testPath) {

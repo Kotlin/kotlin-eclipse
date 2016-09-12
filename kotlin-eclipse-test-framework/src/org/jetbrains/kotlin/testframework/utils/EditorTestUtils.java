@@ -40,47 +40,53 @@ public class EditorTestUtils {
         IWorkbenchPage page = window.getActivePage();
         
         FileEditorInput fileEditorInput = new FileEditorInput(file);
-        IEditorDescriptor defaultEditor = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+        IEditorDescriptor defaultEditor = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(
+                file.getName());
         
         return page.openEditor(fileEditorInput, defaultEditor.getId());
     }
     
     public static void assertByEditorWithErrorMessage(JavaEditor activeEditor, String expected, String message) {
         StyledText editorTextWidget = activeEditor.getViewer().getTextWidget();
-		assertByStringWithEditorWidgetAndErrorMessage(EditorUtil.getSourceCode(activeEditor), expected, editorTextWidget, message);
+        assertByStringWithEditorWidgetAndErrorMessage(EditorUtil.getSourceCode(activeEditor), expected,
+                editorTextWidget, message);
     }
     
     public static void assertByEditor(JavaEditor activeEditor, String expected) {
-    	assertByEditorWithErrorMessage(activeEditor, expected, "");
+        assertByEditorWithErrorMessage(activeEditor, expected, "");
     }
     
-    private static void assertByStringWithEditorWidgetAndErrorMessage(String actual, String expected, StyledText editorTextWidget, String errorMessage) {
+    private static void assertByStringWithEditorWidgetAndErrorMessage(String actual, String expected,
+            StyledText editorTextWidget, String errorMessage) {
         int caretOffset = editorTextWidget.getCaretOffset();
         Point selection = editorTextWidget.getSelection();
-    	expected = expected.replaceAll(KotlinEditorTestCase.BREAK_TAG, System.lineSeparator());
-    	int selectionStartOffset = selection.x;
+        expected = expected.replaceAll(KotlinEditorTestCase.BREAK_TAG, System.lineSeparator());
+        int selectionStartOffset = selection.x;
         int selectionEndOffset = selection.y;
         if (expected.contains(KotlinEditorTestCase.CARET_TAG) && caretOffset != -1) {
             actual = actual.substring(0, caretOffset) + KotlinEditorTestCase.CARET_TAG + actual.substring(caretOffset);
             int caretTagLength = KotlinEditorTestCase.CARET_TAG.length();
             if (selectionStartOffset > caretOffset) {
-				selectionStartOffset += caretTagLength;
+                selectionStartOffset += caretTagLength;
             }
             if (selectionEndOffset >= caretOffset) {
-            	selectionEndOffset += caretTagLength;
+                selectionEndOffset += caretTagLength;
             }
         }
-        // caret tag is expected to be absent if selection is present or to be within selection
+        // caret tag is expected to be absent if selection is present or to be
+        // within selection
         if (expected.contains(KotlinEditorTestCase.SELECTION_TAG_OPEN) && selection.x != selection.y) {
-        	StringBuilder taggedBuilder = new StringBuilder(actual);
-        	//insert closing tag first, because then there's no need to recalc end offset
-        	taggedBuilder.insert(selectionEndOffset, KotlinEditorTestCase.SELECTION_TAG_CLOSE);
-        	taggedBuilder.insert(selectionStartOffset, KotlinEditorTestCase.SELECTION_TAG_OPEN);
-			actual = taggedBuilder.toString();
+            StringBuilder taggedBuilder = new StringBuilder(actual);
+            // insert closing tag first, because then there's no need to recalc
+            // end offset
+            taggedBuilder.insert(selectionEndOffset, KotlinEditorTestCase.SELECTION_TAG_CLOSE);
+            taggedBuilder.insert(selectionStartOffset, KotlinEditorTestCase.SELECTION_TAG_OPEN);
+            actual = taggedBuilder.toString();
         }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+        
         try {
-            Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected).trim(), LineEndUtil.removeAllCarriageReturns(actual).trim());
+            Assert.assertEquals(LineEndUtil.removeAllCarriageReturns(expected).trim(),
+                    LineEndUtil.removeAllCarriageReturns(actual).trim());
         } catch (ComparisonFailure e) {
             throw new ComparisonFailure(errorMessage, e.getExpected(), e.getActual());
         }

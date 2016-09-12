@@ -1,5 +1,4 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,23 +133,23 @@ public class TestJavaProject {
     }
     
     public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
-    	String ext = FileUtilRt.getExtension(fileName);
-    	String refinedFileName;
-    	if ("java".equals(ext)) {
-    		refinedFileName = getJavaClassName(content);
-    		if (refinedFileName != null) {
-    		    refinedFileName += ".java";
-    		} else {
-    		    refinedFileName = fileName;
-    		}
-    		pkg = SourceFileData.getPackageFromContent(content);
-    	} else {
-    		refinedFileName = fileName;
-    	}
-    	
-    	
+        String ext = FileUtilRt.getExtension(fileName);
+        String refinedFileName;
+        if ("java".equals(ext)) {
+            refinedFileName = getJavaClassName(content);
+            if (refinedFileName != null) {
+                refinedFileName += ".java";
+            } else {
+                refinedFileName = fileName;
+            }
+            pkg = SourceFileData.getPackageFromContent(content);
+        } else {
+            refinedFileName = fileName;
+        }
+        
         IPackageFragment fragment = createPackage(pkg);
-        IFile file = createFile((IFolder) fragment.getResource(), refinedFileName, new ByteArrayInputStream(content.getBytes()));
+        IFile file = createFile((IFolder) fragment.getResource(), refinedFileName,
+                new ByteArrayInputStream(content.getBytes()));
         
         return file;
     }
@@ -230,13 +229,14 @@ public class TestJavaProject {
     }
     
     private String getJavaClassName(String content) {
-    	PsiJavaFile javaPsiFile = createJavaPsiFile(content, getKotlinEnvironment().getProject());
-    	PsiClass[] classes = javaPsiFile.getClasses();
-    	return classes.length > 0 ? classes[0].getName() : null;
+        PsiJavaFile javaPsiFile = createJavaPsiFile(content, getKotlinEnvironment().getProject());
+        PsiClass[] classes = javaPsiFile.getClasses();
+        return classes.length > 0 ? classes[0].getName() : null;
     }
     
     private PsiJavaFile createJavaPsiFile(String text, Project ideaProject) {
-    	return (PsiJavaFile) PsiFileFactory.getInstance(ideaProject).createFileFromText("test.java", JavaLanguage.INSTANCE, text);
+        return (PsiJavaFile) PsiFileFactory.getInstance(ideaProject).createFileFromText("test.java",
+                JavaLanguage.INSTANCE, text);
     }
     
     private void cleanSourceFolder() throws CoreException {
