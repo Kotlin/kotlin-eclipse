@@ -16,12 +16,10 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.model
 
-import org.eclipse.jdt.core.IJavaProject
 import com.intellij.openapi.project.Project
-import org.jetbrains.kotlin.core.model.CachedEnvironment
 import com.intellij.openapi.util.Disposer
-import java.util.HashMap
 import com.intellij.openapi.vfs.impl.ZipHandler
+import java.util.HashMap
 
 class CachedEnvironment<T, E : KotlinCommonEnvironment> {
     private val environmentLock = Any()
