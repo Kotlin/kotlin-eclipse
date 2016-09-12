@@ -1,12 +1,14 @@
 package org.jetbrains.kotlin.ui.tests.scripts.templates
 
 import org.eclipse.core.resources.IFile
+import org.eclipse.core.resources.ResourcesPlugin
 import org.jetbrains.kotlin.core.model.ScriptTemplateProviderEx
 import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.jetbrains.kotlin.script.ScriptContents
 import org.jetbrains.kotlin.script.ScriptDependenciesResolver
 import org.jetbrains.kotlin.script.ScriptTemplateDefinition
 import org.jetbrains.kotlin.script.asFuture
+import org.junit.Assert
 import java.util.concurrent.Future
 
 class CustomEPResolverScriptTemplateProvider : ScriptTemplateProviderEx {
@@ -28,6 +30,9 @@ class CustomScriptDependenciesResolver : ScriptDependenciesResolver {
             previousDependencies: KotlinScriptExternalDependencies?): Future<KotlinScriptExternalDependencies?> {
         return object : KotlinScriptExternalDependencies {
             override val imports: Iterable<String> get() {
+                // Test workspace is available
+                Assert.assertTrue(ResourcesPlugin.getWorkspace().getRoot().getLocation() != null)
+                
                 return listOf("java.util.Date")
             }
         }.asFuture()
