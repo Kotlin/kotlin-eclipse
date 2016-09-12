@@ -10,8 +10,11 @@ class TestKtScriptTemplateProviderEx : ScriptTemplateProviderEx {
     override fun isApplicable(file: IFile): Boolean {
         return file.name.contains("Ex")
     }
-
+    
     override fun getEnvironment(file: IFile): Map<String, Any?>? {
-        return super.getEnvironment(file)
+        return mapOf(
+                "projectName" to file.project.name,
+                "additionalImports" to arrayOf("java.util.Date") 
+        )
     }
 }

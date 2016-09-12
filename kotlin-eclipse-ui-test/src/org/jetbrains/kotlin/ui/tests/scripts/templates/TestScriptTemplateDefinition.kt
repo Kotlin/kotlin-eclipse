@@ -23,7 +23,7 @@ open class TestScriptTemplateDefinition(val testNameParam: String, val secondPar
 }
 
 @ScriptTemplateDefinition(
-        resolver = TestKotlinScriptResolver::class,
+        resolver = TestKotlinScriptResolverEx::class,
         scriptFilePattern = "sampleEx.testDef.kts"
 )
 open class TestScriptTemplateDefinitionEx(val testNameParam: String, val secondParam: Int, val thirdParam: Int = 10)
@@ -38,6 +38,31 @@ class TestKotlinScriptResolver : ScriptDependenciesResolver {
                          report: (ReportSeverity, String, ScriptContents.Position?) -> Unit,
                          previousDependencies: KotlinScriptExternalDependencies?): Future<KotlinScriptExternalDependencies?> {
         return TestScriptExternalDependencies.asFuture()
+    }
+}
+
+class TestKotlinScriptResolverEx : ScriptDependenciesResolver {
+    override fun resolve(script: ScriptContents,
+                         environment: Map<String, Any?>?,
+                         report: (ReportSeverity, String, ScriptContents.Position?) -> Unit,
+                         previousDependencies: KotlinScriptExternalDependencies?): Future<KotlinScriptExternalDependencies?> {
+        val additionalImports = if (environment != null) {
+            @Suppress("UNCHECKED_CAST")
+            val importsArray = environment["additionalImports"] as? Array<String> 
+            importsArray?.toList()
+        } else {
+            null
+        }
+
+        val standardImports = listOf(
+                "java.io.File",
+                "java.util.concurrent.*",
+                "org.jetbrains.kotlin.ui.tests.scripts.templates.*") 
+        
+        return object : KotlinScriptExternalDependencies {
+            override val imports: Iterable<String>
+                get() =  standardImports + (additionalImports ?: emptyList())
+        }.asFuture()
     }
 }
 
