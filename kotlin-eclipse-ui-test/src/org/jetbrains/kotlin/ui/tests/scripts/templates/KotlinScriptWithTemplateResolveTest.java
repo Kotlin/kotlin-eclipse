@@ -17,4 +17,9 @@ public class KotlinScriptWithTemplateResolveTest extends KotlinScriptWithTemplat
     public void testSampleEx() {
         doTest("testData/scripts/templates/sampleEx.testDef.kts");
     }
+    
+    @Test
+    public void testCustomEPResolver() {
+        doTest("testData/scripts/templates/customEPResolver.kts");
+    }
 }

@@ -16,5 +16,11 @@
             id="org.jetbrains.kotlin.test.scriptTemplateProviderEx">
       </provider>
    </extension>
-
+   <extension
+         point="org.jetbrains.kotlin.core.scriptTemplateProviderEx">
+      <provider
+            class="org.jetbrains.kotlin.ui.tests.scripts.templates.CustomEPResolverScriptTemplateProvider"
+            id="org.jetbrains.kotlin.test.CustomEPResolverScriptTemplateProvider">
+      </provider>
+   </extension>
 </plugin>
