@@ -27,8 +27,8 @@ fun loadAndCreateDefinitionsByTemplateProviders(eclipseFile: IFile): List<Kotlin
 }
 
 interface ScriptTemplateProviderEx {
-    val templateClassNames: Iterable<String>
-    val dependenciesClasspath: Iterable<String>
+    val templateClassName: String
+    val templateClassClasspath: Iterable<String>
 
     val resolver: ScriptDependenciesResolver? get() = null
 
@@ -39,21 +39,19 @@ interface ScriptTemplateProviderEx {
 fun makeScriptDefsFromEclipseTemplatesProviders(eclipseFile: IFile, providers: Iterable<ScriptTemplateProviderEx>): List<KotlinScriptDefinitionFromTemplate> {
     return providers
             .filter { it.isApplicable(eclipseFile) }
-            .flatMap { provider ->
+            .map { provider: ScriptTemplateProviderEx ->
                 try {
                     val loader = URLClassLoader(
-                            provider.dependenciesClasspath.map { File(it).toURI().toURL() }.toTypedArray(),
-                            ScriptTemplateProviderEx::class.java.classLoader)
-
-                    provider.templateClassNames.map {
-                        val cl = loader.loadClass(it)
-                        KotlinScriptDefinitionFromTemplate(cl.kotlin, provider.resolver, null, provider.getEnvironment(eclipseFile))
-                    }
+                            provider.templateClassClasspath.map { File(it).toURI().toURL() }.toTypedArray(),
+                            ScriptTemplateProviderEx::class.java.classLoader
+                    )
+                    val cl = loader.loadClass(provider.templateClassName)
+                    KotlinScriptDefinitionFromTemplate(cl.kotlin, provider.resolver, null, provider.getEnvironment(eclipseFile))
                 } catch (ex: Exception) {
                     KotlinLogger.logError(
-                            "Extension (EclipseScriptTemplateProvider) ${provider.javaClass.name} with templates ${provider.templateClassNames} " +
-                                    "could not be initialized", ex)
-                    emptyList<KotlinScriptDefinitionFromTemplate>()
+                            "Extension (EclipseScriptTemplateProvider) ${provider.javaClass.name} with templates ${provider.templateClassName} " +
+                            "could not be initialized", ex)
+                    null
                 }
-            }
+            }.filterNotNull()
 }
