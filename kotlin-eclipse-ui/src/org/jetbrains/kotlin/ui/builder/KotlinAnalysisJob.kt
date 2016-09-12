@@ -16,7 +16,6 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.builder
 
-import org.eclipse.core.resources.IFile
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.NullProgressMonitor
@@ -25,12 +24,11 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.core.runtime.jobs.JobChangeAdapter
 import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
 import org.jetbrains.kotlin.progress.CompilationCanceledException
 import org.jetbrains.kotlin.progress.CompilationCanceledStatus
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
-import org.jetbrains.kotlin.analyzer.AnalysisResult
 
 public class KotlinAnalysisJob(private val javaProject: IJavaProject) : Job("Kotlin Analysis") {
     init {
@@ -51,6 +49,10 @@ public class KotlinAnalysisJob(private val javaProject: IJavaProject) : Job("Kot
                     if (canceled) throw CompilationCanceledException()
                 }
             })
+            
+            if (!javaProject.isOpen) {
+                return Status.OK_STATUS
+            }
             
             val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
             
