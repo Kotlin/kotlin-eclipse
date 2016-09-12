@@ -23,7 +23,7 @@ import java.util.List;
 public class TypingUtils {
     
     private static final String TYPE_PREFIX = "TYPE: ";
-
+    
     public static Character typedCharacter(String fileText) {
         List<String> items = getItems(fileText, TYPE_PREFIX);
         

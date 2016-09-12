@@ -27,13 +27,14 @@ public class SourceFileData {
     
     private final static String DEFAULT_PACKAGE_NAME = "";
     private final static String JAVA_IDENTIFIER_REGEXP = "[_a-zA-Z]\\w*";
-    private final static String PACKAGE_REGEXP = "package\\s((" + JAVA_IDENTIFIER_REGEXP + ")(\\." + JAVA_IDENTIFIER_REGEXP + ")*)";
+    private final static String PACKAGE_REGEXP = "package\\s((" + JAVA_IDENTIFIER_REGEXP + ")(\\."
+            + JAVA_IDENTIFIER_REGEXP + ")*)";
     private final static Pattern PATTERN = Pattern.compile(PACKAGE_REGEXP);
     
     private final String fileName;
     private final String packageName;
     private final String content;
-
+    
     public SourceFileData(String fileName, String content) {
         this.fileName = fileName;
         this.content = content;
@@ -41,21 +42,21 @@ public class SourceFileData {
     }
     
     public SourceFileData(File file) throws IOException {
-    	this(file.getName(), FileUtil.loadFile(file));
-	}
+        this(file.getName(), FileUtil.loadFile(file));
+    }
     
     public String getFileName() {
-        return fileName; 
+        return fileName;
     }
     
     public String getPackageName() {
         return packageName;
     }
-
+    
     public String getContent() {
         return content;
     }
-
+    
     public static String getPackageFromContent(String content) {
         Matcher matcher = PATTERN.matcher(content);
         return matcher.find() ? matcher.group(1) : DEFAULT_PACKAGE_NAME;

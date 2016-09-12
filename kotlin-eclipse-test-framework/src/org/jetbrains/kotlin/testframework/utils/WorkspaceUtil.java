@@ -23,15 +23,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 public class WorkspaceUtil {
-
-	public static void refreshWorkspace() {
-		try {
-			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-			for (IProject project : projects) {
-				project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
+    
+    public static void refreshWorkspace() {
+        try {
+            IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+            for (IProject project : projects) {
+                project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+    }
 }
