@@ -18,25 +18,16 @@ package org.jetbrains.kotlin.ui.editors
 
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.runtime.ISafeRunnable
-import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.reconciler.DirtyRegion
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy
 import org.eclipse.jface.util.SafeRunnable
-import org.eclipse.swt.widgets.Display
-import org.eclipse.ui.views.contentoutline.IContentOutlinePage
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics
-import org.jetbrains.kotlin.ui.editors.outline.KotlinOutlinePage
-import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
+import org.jetbrains.kotlin.core.model.KotlinScriptDependenciesClassFinder
 
 interface KotlinReconcilingListener {
     fun reconcile(file: IFile, editor: KotlinEditor)
@@ -80,5 +71,7 @@ class KotlinReconcilingStrategy(val editor: KotlinEditor) : IReconcilingStrategy
     private fun resetCache(file: IFile) {
         KotlinAnalysisProjectCache.resetCache(file.project)
         KotlinAnalysisFileCache.resetCache()
+        
+        KotlinScriptDependenciesClassFinder.resetScriptExternalDependencies(file)
     }
 }

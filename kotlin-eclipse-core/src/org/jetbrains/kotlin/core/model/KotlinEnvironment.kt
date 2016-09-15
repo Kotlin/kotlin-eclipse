@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ fun getEclipseResource(ideaProject: Project): IResource? {
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
-		loadAndCreateDefinitionsByTemplateProviders(eclipseFile)
+        loadAndCreateDefinitionsByTemplateProviders(eclipseFile)
                 .filter { it.isScript(File(eclipseFile.name)) }
                 .ifEmpty { listOf(StandardScriptDefinition) }
                 .forEach {
@@ -105,8 +105,10 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
         
         val area = Extensions.getArea(project)
-        area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(
-                PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
+        with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
+            registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
+            registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
+        }
         
         val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
         (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
@@ -154,18 +156,13 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     private fun configureClasspath() {
         addToClasspath(kotlinRuntimePath.toFile())
         addJREToClasspath()
-        configureScriptDependencies()
+        addToCPFromScriptTemplateClassLoader()
     }
     
-    private fun configureScriptDependencies() {
+    private fun addToCPFromScriptTemplateClassLoader() {
         val ioFile = eclipseFile.getLocation().toFile()
         val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(ioFile) ?: return
-        
-        val dependencies = definition.getDependenciesFor(ioFile, project, null) ?: return
-        for (entry in dependencies.classpath) {
-            addToClasspath(entry)
-        }
-        
+
         if (definition is KotlinScriptDefinitionFromTemplate) {
             val classLoader = definition.template.java.classLoader
             for (file in classpathFromClassloader(classLoader)) {
@@ -173,7 +170,7 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
             }
         }
     }
-
+    
     private fun addJREToClasspath() {
         val project = eclipseFile.project
         if (JavaProject.hasJavaNature(project)) {
