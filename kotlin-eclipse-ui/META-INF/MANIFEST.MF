@@ -29,9 +29,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.director,
  org.eclipse.core.variables
 Bundle-ActivationPolicy: lazy
-Import-Package: com.intellij.formatting,
- com.intellij.navigation,
- org.eclipse.core.expressions,
+Import-Package: org.eclipse.core.expressions,
  org.eclipse.core.resources,
  org.eclipse.jdt.core,
  org.eclipse.jdt.core.compiler,
@@ -57,9 +55,7 @@ Import-Package: com.intellij.formatting,
  org.eclipse.ui.texteditor.link,
  org.eclipse.ui.texteditor.templates,
  org.eclipse.ui.views.contentoutline,
- org.eclipse.ui.wizards.newresource,
- org.jetbrains.kotlin.j2k,
- org.jetbrains.kotlin.progress
+ org.eclipse.ui.wizards.newresource
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,

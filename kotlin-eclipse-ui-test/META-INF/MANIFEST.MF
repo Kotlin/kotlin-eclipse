@@ -24,10 +24,7 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.ltk.core.refactoring,
  org.eclipse.jdt.core.manipulation,
  org.eclipse.osgi
-Import-Package: com.intellij.openapi.util,
- com.intellij.openapi.util.io,
- com.intellij.util.containers,
- org.eclipse.core.resources,
+Import-Package: org.eclipse.core.resources,
  org.eclipse.core.runtime,
  org.eclipse.core.runtime.jobs,
  org.eclipse.debug.core,
@@ -58,5 +55,4 @@ Import-Package: com.intellij.openapi.util,
  org.eclipse.swt.graphics,
  org.eclipse.ui,
  org.eclipse.ui.console,
- org.eclipse.ui.ide,
- org.jetbrains.kotlin.ui.overrideImplement
+ org.eclipse.ui.ide
