@@ -56,7 +56,6 @@ public class SequentialModalProgressTask extends Task.Modal {
         }
         
         myIndicator = indicator;
-        indicator.setIndeterminate(false);
         prepare(task);
         
         // We need to sync background thread and EDT here in order to avoid
