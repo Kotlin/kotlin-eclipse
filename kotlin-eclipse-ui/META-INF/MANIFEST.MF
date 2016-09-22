@@ -7,10 +7,10 @@ Bundle-Activator: org.jetbrains.kotlin.ui.Activator
 Bundle-Vendor: JetBrains
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.jetbrains.kotlin.core,
+ org.jetbrains.kotlin.core;bundle-version="[0.7.2,0.7.2]",
  org.eclipse.jface.text,
  org.eclipse.ui.editors;visibility:=reexport,
- org.jetbrains.kotlin.bundled-compiler,
+ org.jetbrains.kotlin.bundled-compiler;bundle-version="[0.7.2,0.7.2]",
  org.eclipse.debug.ui,
  org.eclipse.jdt.debug.ui,
  org.eclipse.jdt.ui,
