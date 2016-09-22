@@ -9,11 +9,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase;
 import org.junit.Before
 
 public abstract class KotlinCommonSelectionTestCase: KotlinEditorSequentialAutoTestCase() {
-<<<<<<< HEAD
-	private val INITIAL_FILE_NAME = "0" + KotlinEditorAutoTestCase.KT_FILE_EXTENSION;
-=======
 	private val INITIAL_FILE_NAME = "0.kt";
->>>>>>> bbc1d79... Fix tests configuration
 	protected val COMMON_DIR: String = "wordSelection"
 	abstract protected val RELATIVE_DIR: String
     
@@ -30,11 +26,7 @@ public abstract class KotlinCommonSelectionTestCase: KotlinEditorSequentialAutoT
 		var fileIndex = 1
 		
 		while (true) {
-<<<<<<< HEAD
-			val filePath = testFolder.getAbsolutePath() + File.separator + fileIndex + KotlinEditorAutoTestCase.KT_FILE_EXTENSION
-=======
 			val filePath = "${testFolder.getAbsolutePath()}${File.separator}${fileIndex}.kt"
->>>>>>> bbc1d79... Fix tests configuration
 			val afterFile = File(filePath)
 			if (!afterFile.exists()) {
 				break;

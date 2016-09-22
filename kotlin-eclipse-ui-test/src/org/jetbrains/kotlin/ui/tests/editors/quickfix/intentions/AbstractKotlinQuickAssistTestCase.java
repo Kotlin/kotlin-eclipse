@@ -8,6 +8,7 @@ import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.jetbrains.kotlin.testframework.editor.TextEditorTest;
 import org.jetbrains.kotlin.testframework.utils.InTextDirectivesUtils;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProposal;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,10 +30,7 @@ public abstract class AbstractKotlinQuickAssistTestCase<Proposal extends KotlinQ
 	        boolean joinBuildThread) {
 		String fileText = KotlinTestUtils.getText(testPath);
 		TextEditorTest testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText);
-<<<<<<< HEAD
-=======
 		KotlinQuickAssistProposal proposal = createProposal.invoke((KotlinEditor) testEditor.getEditor()); 
->>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
 		
 		String isApplicableString = InTextDirectivesUtils.findStringWithPrefixes(fileText, "IS_APPLICABLE: ");
         boolean isApplicableExpected = isApplicableString == null || isApplicableString.equals("true");

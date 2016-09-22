@@ -118,17 +118,9 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     public void blockCommentBeforeDeclaration() {
         doAutoTest();
     }
-<<<<<<< HEAD
-=======
-    
-    @Test
-    public void formatScriptFile() {
-        doAutoTest();
-    }
     
     @Test
     public void commentOnTheLastLineOfLambda() {
         doAutoTest();
     }
->>>>>>> d381b1b... Fix NSME which is prevents new lines from being added
 }
