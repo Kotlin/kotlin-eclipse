@@ -2,21 +2,21 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-ui-test
 Bundle-SymbolicName: org.jetbrains.kotlin.ui.tests;singleton:=true
-Bundle-Version: 0.7.0.qualifier
+Bundle-Version: 0.7.2
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
  lib/gson-2.3.1.jar
-Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
- org.jetbrains.kotlin.core,
- org.jetbrains.kotlin.ui,
- org.jetbrains.kotlin.testframework,
+Require-Bundle: org.jetbrains.kotlin.bundled-compiler;bundle-version="[0.7.2,0.7.2]",
+ org.jetbrains.kotlin.core;bundle-version="[0.7.2,0.7.2]",
+ org.jetbrains.kotlin.ui;bundle-version="[0.7.2,0.7.2]",
+ org.jetbrains.kotlin.testframework;bundle-version="[0.7.2,0.7.2]",
  org.junit,
  org.eclipse.jdt.ui,
  org.aspectj.runtime,
  org.aspectj.weaver,
  org.eclipse.equinox.weaving.aspectj,
- org.jetbrains.kotlin.aspects,
+ org.jetbrains.kotlin.aspects;bundle-version="[0.7.2,0.7.2]",
  org.eclipse.core.commands,
  org.eclipse.ui.workbench,
  org.eclipse.search,
