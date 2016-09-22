@@ -70,32 +70,11 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     }
     
     override fun launch(selection: ISelection, mode: String) {
-        if (selection !is IStructuredSelection) return
+        val mainFile = findFileToLaunch(selection) ?: return
         
-<<<<<<< HEAD
-<<<<<<< HEAD
-        val files = ArrayList<IFile>()
-        for (element in selection.toList()) {
-            if (element is IAdaptable) {
-                val resource = element.getAdapter(IResource::class.java)
-                addFiles(files, resource)
-            }
-        }
-        
-        if (files.isEmpty()) return
-        
-        val mainFile = files.first()
-        val javaProject = JavaCore.create(mainFile.getProject())
-        val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
-        val entryPoint = getEntryPoint(ktFile, javaProject)
-=======
-        val ktFile = KotlinPsiManager.INSTANCE.getParsedFile(mainFile)
-=======
         val ktFile = KotlinPsiManager.getParsedFile(mainFile)
->>>>>>> 6da58a7... J2K KotlinPsiManager: convert and prettify
         
         val entryPoint = getEntryPoint(ktFile)
->>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
         if (entryPoint != null) {
             launchWithMainClass(entryPoint, mainFile.getProject(), mode)
         }
@@ -118,6 +97,16 @@ class KotlinLaunchShortcut : ILaunchShortcut {
             launchWithMainClass(entryPoint, file.project, mode)
             return
         }
+    }
+
+    fun findFileToLaunch(selection: ISelection): IFile? {
+        if (selection !is IStructuredSelection) return null
+
+        return selection.toList()
+                .filterIsInstance(IAdaptable::class.java)
+                .mapNotNull { it.getAdapter(IFile::class.java) }
+                .firstOrNull()
+
     }
     
     private fun launchWithMainClass(entryPoint: KtDeclaration, project: IProject, mode: String) {

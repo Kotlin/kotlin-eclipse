@@ -16,62 +16,48 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.navigation
 
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiTreeUtil
-import org.eclipse.core.resources.IFile
-import org.eclipse.core.resources.IProject
-import org.eclipse.core.resources.ResourcesPlugin
-import org.eclipse.core.runtime.Path
-import org.eclipse.jdt.core.IClassFile
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.core.IPackageFragment
-import org.eclipse.jdt.core.dom.IBinding
-import org.eclipse.jdt.core.dom.IMethodBinding
-import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader
-import org.eclipse.jdt.internal.core.SourceMapper
-import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
-import org.eclipse.jdt.ui.JavaUI
-import org.eclipse.jface.util.OpenStrategy
-import org.eclipse.ui.IEditorPart
-import org.eclipse.ui.IReusableEditor
-import org.eclipse.ui.PlatformUI
-import org.eclipse.ui.ide.IDE
-import org.eclipse.ui.texteditor.AbstractTextEditor
-import org.jetbrains.kotlin.core.KotlinClasspathContainer
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.model.KotlinNature
+import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
-import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement
-import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass
-import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryPackageSourceElement
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinarySourceElement
+import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryPackageSourceElement
+import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass
+import org.eclipse.jdt.core.IClassFile
 import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClass
 import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader
-import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.psi.KtPsiFactory
-import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.eclipse.jdt.core.IPackageFragment
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
+import org.eclipse.jface.util.OpenStrategy
+import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-<<<<<<< HEAD
-import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
-=======
-import org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor
-import org.jetbrains.kotlin.ui.formatter.createKtFile
-import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
-
-private val KOTLIN_SOURCE_PATH = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_SRC_NAME))
-private val RUNTIME_SOURCE_MAPPER = SourceMapper(KOTLIN_SOURCE_PATH, "", mapOf<Any, Any>())
->>>>>>> 56e772c... Make editor name more readable
+import org.eclipse.ui.texteditor.AbstractTextEditor
+import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.core.runtime.Path
+import org.eclipse.jdt.core.dom.IBinding
+import org.eclipse.jdt.core.dom.IMethodBinding
+import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
+import org.eclipse.jdt.ui.JavaUI
+import org.eclipse.core.resources.IFile
+import org.eclipse.ui.IEditorPart
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.PsiClass
+import org.eclipse.ui.PlatformUI
+import org.eclipse.ui.IReusableEditor
+import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.eclipse.ui.ide.IDE
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.core.references.getReferenceExpression
+import org.jetbrains.kotlin.psi.KtElement
+import org.eclipse.core.resources.IProject
 
 fun gotoElement(descriptor: DeclarationDescriptor, fromElement: KtElement,
                 fromEditor: KotlinEditor, javaProject: IJavaProject) {
@@ -104,19 +90,14 @@ fun gotoElement(
     }
 }
 
-private fun getClassFile(binaryClass: VirtualFileKotlinClass, javaProject: IJavaProject): IClassFile? {
-    val file = binaryClass.file
+private fun getClassFile(binaryClass: KotlinJvmBinaryClass, javaProject: IJavaProject): IClassFile? {
+    val file = (binaryClass as VirtualFileKotlinClass).file
     val fragment = javaProject.findPackageFragment(pathFromUrlInArchive(file.parent.path))
     return fragment?.getClassFile(file.name)
 }
 
-<<<<<<< HEAD
 private fun findImplementingClass(
             binaryClass: KotlinJvmBinaryClass, 
-=======
-private fun findImplementingClassInClasspath(
-            binaryClass: VirtualFileKotlinClass, 
->>>>>>> 1a440c9... Simplify: replace usages with subclasses
             descriptor: DeclarationDescriptor, 
             javaProject: IJavaProject): IClassFile? {
         return if (KotlinClassHeader.Kind.MULTIFILE_CLASS == binaryClass.classHeader.kind) 
@@ -126,7 +107,7 @@ private fun findImplementingClassInClasspath(
     }
     
 private fun getImplementingFacadePart(
-        binaryClass: VirtualFileKotlinClass, 
+        binaryClass: KotlinJvmBinaryClass, 
         descriptor: DeclarationDescriptor,
         javaProject: IJavaProject): IClassFile? {
     if (descriptor !is DeserializedCallableMemberDescriptor) return null
@@ -200,20 +181,8 @@ private fun gotoElementInBinaryClass(
         binaryClass: KotlinJvmBinaryClass, 
         descriptor: DeclarationDescriptor,
         javaProject: IJavaProject) {
-<<<<<<< HEAD
     val classFile = findImplementingClass(binaryClass, descriptor, javaProject)
     if (classFile == null) return
-=======
-    if (binaryClass !is VirtualFileKotlinClass) return
-    
-    val classFile = findImplementingClassInClasspath(binaryClass, descriptor, javaProject)
-
-    val targetEditor = if (classFile != null) {
-        KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen())
-    } else {
-        tryToFindExternalClassInStdlib(binaryClass, fromElement, javaProject)
-    }
->>>>>>> 1a440c9... Simplify: replace usages with subclasses
     
     val targetEditor = KotlinOpenEditor.openKotlinClassFileEditor(classFile, OpenStrategy.activateOnOpen())
     if (targetEditor !is KotlinClassFileEditor) return
@@ -233,40 +202,6 @@ private fun gotoKotlinDeclaration(element: PsiElement, fromElement: KtElement, f
     targetEditor.selectAndReveal(start, 0)
 }
 
-<<<<<<< HEAD
-=======
-private fun tryToFindExternalClassInStdlib(
-        binaryClass: VirtualFileKotlinClass,
-        fromElement: KtElement,
-        javaProject: IJavaProject): IEditorPart? {
-    if (KotlinNature.hasKotlinNature(javaProject.project)) {
-        // If project has Kotlin nature, then search in stdlib should be done earlier by searching class in the classpath
-        return null
-    }
-    
-    val (name, pckg, source) = findSourceForElementInStdlib(binaryClass) ?: return null
-    val content = String(source)
-    val ktFile = createKtFile(content, KtPsiFactory(fromElement), "dummy.kt")
-    
-    return openEditorForExternalFile(content, name, pckg, ktFile)
-}
-
-private fun findSourceForElementInStdlib(binaryClass: VirtualFileKotlinClass): ExternalSourceFile? {
-    val file = binaryClass.file
-    val reader = ClassFileReader(file.contentsToByteArray(), file.name.toCharArray())
-    val sourceName = String(reader.sourceFileName())
-    
-    val fileNameWithPackage = Path(String(reader.getName()))
-    val packageFqName = fileNameWithPackage.removeLastSegments(1)
-    
-    val source = KotlinSourceIndex.getSource(RUNTIME_SOURCE_MAPPER, sourceName, packageFqName, KOTLIN_SOURCE_PATH)
-    
-    return if (source != null) ExternalSourceFile(sourceName, packageFqName.toPortableString(), source) else null
-}
-
-private data class ExternalSourceFile(val name: String, val packageFqName: String, val source: CharArray)
-
->>>>>>> 1a440c9... Simplify: replace usages with subclasses
 private fun findEditorForReferencedElement(
         element: PsiElement,
         fromElement: KtElement, 
@@ -332,24 +267,6 @@ private fun findEditorPart(
     return null
 }
 
-<<<<<<< HEAD
-=======
-private fun openEditorForExternalFile(sourceText: String, sourceName: String,
-                                      packageFqName: String, ktFile: KtFile): IEditorPart? {
-    val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-    if (page == null) return null
-
-    val storage = StringStorage(sourceText, sourceName, packageFqName)
-    val input = StringInput(storage, ktFile)
-    val reusedEditor = page.findEditor(input)
-    if (reusedEditor != null) {
-        page.reuseEditor(reusedEditor as IReusableEditor?, input)
-    }
-
-    return page.openEditor(input, KotlinExternalReadOnlyEditor.EDITOR_ID)
-}
-
->>>>>>> 56e772c... Make editor name more readable
 private fun openInEditor(file: IFile): IEditorPart {
     val page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
     return IDE.openEditor(page, file, false)

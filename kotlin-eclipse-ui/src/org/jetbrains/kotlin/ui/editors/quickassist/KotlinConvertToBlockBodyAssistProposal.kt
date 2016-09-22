@@ -35,25 +35,24 @@ import org.jetbrains.kotlin.psi.KtPsiUtil
 import org.jetbrains.kotlin.psi.KtReturnExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.formatter.formatRange
 
-<<<<<<< HEAD
-class KotlinConvertToBlockBodyAssistProposal: KotlinQuickAssistProposal() {
-=======
 class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
->>>>>>> 0fb9d7f... Propagate editor through assists hierarchy to fix issues about uninitialized editor
     override fun isApplicable(psiElement: PsiElement): Boolean {
-        val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)?: return false
+        val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java) ?: return false
         if (declaration is KtFunctionLiteral || declaration.hasBlockBody() || !declaration.hasBody()) return false
 
         when (declaration) {
             is KtNamedFunction -> {
-            val bindingContext = getBindingContext(declaration) ?: return false;
-            val returnType: KotlinType = declaration.returnType(bindingContext) ?: return false
-            if (!declaration.hasDeclaredReturnType() && returnType.isError()) return false// do not convert when type is implicit and unknown
-            return true
-        }
+                val bindingContext = getBindingContext(declaration) ?: return false;
+                val returnType: KotlinType = declaration.returnType(bindingContext) ?: return false
+                
+                // do not convert when type is implicit and unknown
+                if (!declaration.hasDeclaredReturnType() && returnType.isError) return false
+                 
+                return true
+            }
 
             is KtPropertyAccessor -> return true
 
@@ -67,21 +66,20 @@ class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuick
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
         val context = getBindingContext(declaration)!!
 
-        val shouldSpecifyType = declaration is KtNamedFunction 
-            && !declaration.hasDeclaredReturnType() 
-            && !KotlinBuiltIns.isUnit(declaration.returnType(context)!!)
+        val shouldSpecifyType = declaration is KtNamedFunction
+                && !declaration.hasDeclaredReturnType()
+                && !KotlinBuiltIns.isUnit(declaration.returnType(context)!!)
 
-        val editor = getActiveEditor() ?: return
         val factory = KtPsiFactory(declaration)
 
         replaceBody(declaration, factory, context, editor)
 
         if (shouldSpecifyType) {
-        	specifyType(declaration, factory, context)
+            specifyType(declaration, factory, context)
         }
     }
 
-    private fun replaceBody(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext, editor: KotlinFileEditor) {
+    private fun replaceBody(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext, editor: KotlinEditor) {
         val newBody = convert(declaration, context, factory)
         var newBodyText = newBody.getNode().text
 
@@ -92,13 +90,18 @@ class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuick
 
         replaceBetween(anchorToken, declaration.getBodyExpression()!!, newBodyText)
         val anchorStartOffset = anchorToken.textRange.startOffset
-        formatRange(editor.document, TextRange(anchorStartOffset, anchorStartOffset + newBodyText.length), factory)
+        val file = editor.eclipseFile ?: return
+        formatRange(
+                editor.document,
+                TextRange(anchorStartOffset, anchorStartOffset + newBodyText.length),
+                factory,
+                file.name)
     }
-    
+
     private fun specifyType(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext) {
-    	val returnType = (declaration as KtNamedFunction).returnType(context).toString()
+        val returnType = (declaration as KtNamedFunction).returnType(context).toString()
         val stringToInsert = listOf(factory.createColon(), factory.createWhiteSpace())
-            .joinToString(separator = "") { it.getText()} + returnType
+                .joinToString(separator = "") { it.getText() } + returnType
         insertAfter(declaration.getValueParameterList()!!, stringToInsert)
     }
 
@@ -108,17 +111,16 @@ class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuick
         fun generateBody(returnsValue: Boolean): KtExpression {
             val bodyType = bindingContext.getType(body)
             val needReturn = returnsValue &&
-                (bodyType == null || (!KotlinBuiltIns.isUnit(bodyType) && !KotlinBuiltIns.isNothing(bodyType)))
+                    (bodyType == null || (!KotlinBuiltIns.isUnit(bodyType) && !KotlinBuiltIns.isNothing(bodyType)))
 
             val expression = factory.createExpression(body.getText())
             val block: KtBlockExpression = if (needReturn) {
-                    factory.createBlock("return xyz")
-                }
-                    else {
-                    return factory.createBlock(expression.getText())
-                }
+                factory.createBlock("return xyz")
+            } else {
+                return factory.createBlock(expression.getText())
+            }
             val returnExpression = PsiTreeUtil.getChildOfType(block, KtReturnExpression::class.java)
-            val returned = returnExpression?.getReturnedExpression()?: return factory.createBlock("return ${expression.getText()}")
+            val returned = returnExpression?.getReturnedExpression() ?: return factory.createBlock("return ${expression.getText()}")
             if (KtPsiUtil.areParenthesesNecessary(expression, returned, returnExpression!!)) {
                 return factory.createBlock("return (${expression.getText()})")
             }
@@ -126,15 +128,15 @@ class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuick
         }
 
         val newBody = when (declaration) {
-                is KtNamedFunction -> {
+            is KtNamedFunction -> {
                 val returnType = declaration.returnType(bindingContext)!!
                 generateBody(!KotlinBuiltIns.isUnit(returnType) && !KotlinBuiltIns.isNothing(returnType))
             }
 
-                is KtPropertyAccessor -> generateBody(declaration.isGetter())
+            is KtPropertyAccessor -> generateBody(declaration.isGetter())
 
-                else -> throw RuntimeException("Unknown declaration type: $declaration")
-            }
+            else -> throw RuntimeException("Unknown declaration type: $declaration")
+        }
         return newBody
     }
 

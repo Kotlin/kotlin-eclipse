@@ -52,15 +52,11 @@ import org.jetbrains.kotlin.eclipse.ui.utils.runJob
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-<<<<<<< HEAD
-=======
-import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.eclipse.jdt.internal.compiler.util.Util
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
->>>>>>> ed2274b... Do not start build if files from kotlin_bin folder changed
 
 class KotlinBuilder : IncrementalProjectBuilder() {
-    private val fileFilters = listOf(ScriptFileFilter, FileFromOuputFolderFilter, FileFromKotlinBinFolderFilter)
+    private val fileFilters = listOf(FileFromOuputFolderFilter, FileFromKotlinBinFolderFilter)
     
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
         val javaProject = JavaCore.create(project)
@@ -76,21 +72,11 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         
         val delta = getDelta(project)
         val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
-<<<<<<< HEAD
-<<<<<<< HEAD
-        if (isAllFromOutputFolder(allAffectedFiles, javaProject)) {
-=======
-        if (allAffectedFiles.isNotEmpty() &&
-                (isAllFromOutputFolder(allAffectedFiles, javaProject) || isAllScripts(allAffectedFiles))) {
->>>>>>> 593ca42... Process building light class files even if there is no changed Kotlin files
-            return null
-=======
         
         if (allAffectedFiles.isNotEmpty()) {
             if (isAllFilesApplicableForFilters(allAffectedFiles, javaProject)) {
                 return null
             }
->>>>>>> ed2274b... Do not start build if files from kotlin_bin folder changed
         }
 
         val kotlinAffectedFiles =
@@ -156,20 +142,6 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         files.forEach { KotlinPsiManager.commitFile(it, EditorUtil.getDocument(it)) }
     }
     
-<<<<<<< HEAD
-=======
-    private fun isAllScripts(files: Set<IFile>): Boolean {
-        return files.all { KotlinScriptEnvironment.isScript(it) }
-    }
-    
-<<<<<<< HEAD
-    private fun isAllClassFiles(files: Set<IFile>): Boolean {
-        return files.all { Util.isClassFileName(it.name) }
-    }
-    
->>>>>>> ed2274b... Do not start build if files from kotlin_bin folder changed
-=======
->>>>>>> efdb548... Make Kotlin analysis job system for smoother file saving
     private fun isAllFromOutputFolder(files: Set<IFile>, javaProject: IJavaProject): Boolean {
         val workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getFullPath()
         val outputLocation = javaProject.outputLocation
@@ -247,12 +219,6 @@ private fun addMarkersToProject(annotations: Map<IFile, List<DiagnosticAnnotatio
 
 interface KotlinFileFilterForBuild {
     fun isApplicable(file: IFile, javaProject: IJavaProject): Boolean
-}
-
-object ScriptFileFilter : KotlinFileFilterForBuild {
-    override fun isApplicable(file: IFile, javaProject: IJavaProject): Boolean {
-        return KotlinScriptEnvironment.isScript(file) 
-    }
 }
 
 object FileFromOuputFolderFilter : KotlinFileFilterForBuild {

@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.quickfix.kotlinQuickFixes
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
 
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
@@ -144,16 +145,13 @@ public object AnnotationManager {
 
 object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
     override fun reconcile(file: IFile, editor: KotlinEditor) {
-        val jetFile = KotlinPsiManager.getKotlinFileIfExist(file, EditorUtil.getSourceCode(editor))
+        val jetFile = KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get())
+        
         if (jetFile == null) {
             return
         }
         
-<<<<<<< HEAD
-        val diagnostics = KotlinAnalyzer.analyzeFile(editor.javaProject!!, jetFile).analysisResult.bindingContext.diagnostics
-=======
         val diagnostics = KotlinAnalyzer.analyzeFile(jetFile).analysisResult.bindingContext.diagnostics
->>>>>>> 9cc72ba... Generalize api to analyze files with respect to scripts
         val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics)
         
         DiagnosticAnnotationUtil.INSTANCE.addParsingDiagnosticAnnotations(file, annotations)

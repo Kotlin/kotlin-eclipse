@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.runJob
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.refactorings.rename.getLengthOfIdentifier
@@ -53,11 +54,7 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         if (!kotlinEditor.isActive()) return
         
         runJob("Update occurrence annotations", Job.DECORATE) { 
-<<<<<<< HEAD
-            if (part is KotlinFileEditor && selection is ITextSelection) {
-=======
             if (part is KotlinCommonEditor && selection is ITextSelection) {
->>>>>>> c655ca1... Place method to KotlinCommonEditor to reuse it in editor for scripts
                 val file = part.eclipseFile
                 if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
                 
@@ -79,16 +76,12 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         }
     }
     
-    private fun updateOccurrences(editor: KotlinFileEditor, occurrences: List<Position>) {
+    private fun updateOccurrences(editor: KotlinEditor, occurrences: List<Position>) {
         val annotationMap = occurrences.associateBy { Annotation(ANNOTATION_TYPE, false, null) }
         AnnotationManager.updateAnnotations(editor, annotationMap, ANNOTATION_TYPE)
     }
     
-<<<<<<< HEAD
-    private fun findOccurrences(editor: KotlinFileEditor, jetElement: KtElement, file: IFile): List<Position> {
-=======
     private fun findOccurrences(editor: KotlinCommonEditor, jetElement: KtElement, file: IFile): List<Position> {
->>>>>>> f05c625... Fix exception about getting document on disposed editor
         val sourceElements = jetElement.resolveToSourceDeclaration()
         if (sourceElements.isEmpty()) return emptyList()
         

@@ -54,7 +54,7 @@ class KotlinCorrectionProcessor(val editor: KotlinEditor) : IQuickAssistProcesso
                 addAll(quickFixResolutions.map { KotlinMarkerResolutionProposal(file, it) })
             }
             
-            addAll(KotlinQuickAssistProcessor.getAssists(null, null))
+            addAll(KotlinQuickAssistProcessor.getAssists(editor))
         }.toTypedArray()
     }
 }

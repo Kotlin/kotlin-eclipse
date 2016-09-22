@@ -39,8 +39,6 @@ public class KotlinRemoveExplicitTypeAssistProposal(editor: KotlinEditor) : Kotl
         if (element.getContainingFile() is KtCodeFragment) return false
         if (element.getTypeReference() == null) return false
 
-        val editor = getActiveEditor()
-        if (editor == null) return false
         val caretOffset = getCaretOffsetInPSI(editor, editor.document)
         
         val initializer = (element as? KtWithExpressionInitializer)?.getInitializer()
@@ -71,9 +69,6 @@ public class KotlinRemoveExplicitTypeAssistProposal(editor: KotlinEditor) : Kotl
     }
     
     private fun removeTypeAnnotation(document: IDocument, removeAfter: PsiElement, typeReference: KtTypeReference) {
-        val editor = getActiveEditor()
-        if (editor == null) return
-        
         val endOffset = getEndOffset(removeAfter, editor)
         val endOfType = getEndOffset(typeReference, editor)
         document.replace(endOffset, endOfType - endOffset, "")

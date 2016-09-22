@@ -94,7 +94,6 @@ private fun initializeQuickFixes(): List<KotlinQuickFix> {
             ABSTRACT_PROPERTY_IN_NON_ABSTRACT_CLASS.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
             ABSTRACT_FUNCTION_IN_NON_ABSTRACT_CLASS.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
             ABSTRACT_FUNCTION_WITH_BODY.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD),
-            ABSTRACT_MODIFIER_IN_INTERFACE.createRemoveModifierFromListOwnerFactory(ABSTRACT_KEYWORD, true),
             
             NOTHING_TO_OVERRIDE.createRemoveModifierFromListOwnerFactory(OVERRIDE_KEYWORD),
     

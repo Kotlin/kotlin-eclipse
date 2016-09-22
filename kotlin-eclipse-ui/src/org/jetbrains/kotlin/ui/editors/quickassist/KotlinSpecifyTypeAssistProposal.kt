@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2015 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,24 @@
 package org.jetbrains.kotlin.ui.editors.quickassist
 
 import com.intellij.psi.PsiElement
-import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.diagnostics.Errors
 import com.intellij.psi.util.PsiTreeUtil
+import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.descriptors.CallableDescriptor
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtCodeFragment
-import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.psi.KtConstructor
 import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
-import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.eclipse.jdt.core.JavaCore
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.descriptors.CallableDescriptor
-import org.jetbrains.kotlin.types.ErrorUtils
-import kotlin.properties.Delegates
-import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
-import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.types.ErrorUtils
+import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     private var displayString: String? = null
@@ -52,8 +48,6 @@ public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuick
         if (element is KtConstructor<*>) return false
         if (element.getTypeReference() != null) return false
         
-        val editor = getActiveEditor()
-        if (editor == null) return false
         val caretOffset = getCaretOffsetInPSI(editor, editor.document)
         
         val initializer = (element as? KtWithExpressionInitializer)?.getInitializer()
@@ -61,7 +55,7 @@ public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuick
 
         if (element is KtNamedFunction && element.hasBlockBody()) return false
         
-        if (getTypeForDeclaration(element).isError()) return false
+        if (getTypeForDeclaration(element).isError) return false
 
         displayString = if (element is KtFunction) "Specify return type explicitly" else "Specify type explicitly"
         
@@ -76,15 +70,12 @@ public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuick
         val anchor = getAnchor(element)
         
         if (anchor != null) {
-            val editor = getActiveEditor()
-            if (editor == null) return
-            
             val offset = addTypeAnnotation(editor, document, anchor, type)
-            editor.getViewer().setSelectedRange(offset, 0)
+            editor.javaEditor.getViewer().setSelectedRange(offset, 0)
         }
     }
     
-    private fun addTypeAnnotation(editor: KotlinFileEditor, document: IDocument, element: PsiElement, type: KotlinType): Int {
+    private fun addTypeAnnotation(editor: KotlinEditor, document: IDocument, element: PsiElement, type: KotlinType): Int {
         val offset = getEndOffset(element, editor)
         val text = ": ${IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.renderType(type)}"
         document.replace(getEndOffset(element, editor), 0, text)

@@ -1,35 +1,14 @@
 package org.jetbrains.kotlin.ui.editors.quickassist
 
-import org.eclipse.core.runtime.CoreException
-import org.eclipse.jdt.ui.text.java.IInvocationContext
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal
-import org.eclipse.jdt.ui.text.java.IProblemLocation
-import org.eclipse.jdt.ui.text.java.IQuickAssistProcessor
-import com.google.common.collect.Lists
-import java.util.ArrayList
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
-object KotlinQuickAssistProcessor : IQuickAssistProcessor {
-    override public fun hasAssists(context: IInvocationContext) : Boolean = getAssists(context, null).isNotEmpty()
-    
-    override public fun getAssists(context: IInvocationContext?, locations: Array<IProblemLocation>?) : Array<IJavaCompletionProposal> {
-        val allApplicableProposals = ArrayList<IJavaCompletionProposal>()
-        
-        getSingleKotlinQuickAssistProposals().filterTo(allApplicableProposals) { it.isApplicable() }
-        
-        return allApplicableProposals.toTypedArray()
+object KotlinQuickAssistProcessor {
+    fun getAssists(editor: KotlinEditor) : List<KotlinQuickAssistProposal> {
+        return getSingleKotlinQuickAssistProposals(editor)
+                .filter { it.isApplicable() }
     }
     
-<<<<<<< HEAD
-    private fun getSingleKotlinQuickAssistProposals() : List<KotlinQuickAssistProposal> {
-        return listOf(
-            KotlinReplaceGetAssistProposal(), 
-            KotlinSpecifyTypeAssistProposal(),
-            KotlinRemoveExplicitTypeAssistProposal(),
-            KotlinImplementMethodsProposal(),
-            KotlinConvertToExpressionBodyAssistProposal(),
-            KotlinConvertToBlockBodyAssistProposal(),
-            KotlinChangeReturnTypeProposal())
-=======
     private fun getSingleKotlinQuickAssistProposals(editor: KotlinEditor) : List<KotlinQuickAssistProposal> {
         return listOf(
             KotlinReplaceGetAssistProposal(editor), 
@@ -39,6 +18,5 @@ object KotlinQuickAssistProcessor : IQuickAssistProcessor {
             KotlinConvertToExpressionBodyAssistProposal(editor),
             KotlinConvertToBlockBodyAssistProposal(editor),
             KotlinChangeReturnTypeProposal(editor))
->>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
     }
 }
