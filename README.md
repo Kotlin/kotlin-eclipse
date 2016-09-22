@@ -23,12 +23,12 @@ Alternatively, you can use *Help -> Eclipse Marketplace…* menu, or the followi
 
 ###Building and Development
 
-*Eclipse IDE for Eclipse Committers* is the recomended way to build and develop the `kotlin-eclipse` project. Eclipse [Mars 4.5.1](http://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers-451/mars1) is used so far.
+*Eclipse IDE for Eclipse Committers* is the recomended way to build and develop the `kotlin-eclipse` project. Eclipse [Neon 4.6](https://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/neonr) is used so far.
 
 In order to start development in Eclipse:
- - Install the [AspectJ Eclipse plug-in for Eclipse 4.5](http://www.eclipse.org/ajdt/downloads/index.php). To install AJDT 2.2.4 use the following update site: 
+ - Install the [AspectJ Eclipse plug-in for Eclipse 4.6](http://www.eclipse.org/ajdt/downloads/index.php). To install AJDT 2.2.4 use the following update site:
 
- 		http://download.eclipse.org/tools/ajdt/45/dev/update
+		http://download.eclipse.org/tools/ajdt/46/dev/update
 
  - Since Kotlin plugin contains code written in Kotlin itself, you will also need a Kotlin plugin to build the project in Eclipse. To install the Kotlin Eclipse plugin use the following update site:
 
