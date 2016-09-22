@@ -2,15 +2,15 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-maven
 Bundle-SymbolicName: org.jetbrains.kotlin.maven;singleton:=true
-Bundle-Version: 0.7.0.qualifier
+Bundle-Version: 0.7.2.qualifier
 Bundle-Activator: org.jetbrains.kotlin.maven.Activator
 Bundle-Vendor: JetBrains
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.m2e.core,
  org.eclipse.m2e.jdt,
  org.eclipse.m2e.maven.runtime,
- org.jetbrains.kotlin.core,
- org.jetbrains.kotlin.bundled-compiler
+ org.jetbrains.kotlin.core;bundle-version="[0.7.2,0.7.3)",
+ org.jetbrains.kotlin.bundled-compiler;bundle-version="[0.7.2,0.7.3)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.core.resources,
