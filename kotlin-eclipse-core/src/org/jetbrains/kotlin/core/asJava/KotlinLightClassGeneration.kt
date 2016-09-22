@@ -17,31 +17,20 @@
 package org.jetbrains.kotlin.core.asJava
 
 import org.eclipse.core.resources.IFile
-<<<<<<< HEAD
-import org.eclipse.core.runtime.CoreException
-import org.eclipse.jdt.core.IJavaProject
-=======
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.runtime.Path
->>>>>>> eb48831... Get rid of IJavaProject in several places
 import org.jetbrains.kotlin.analyzer.AnalysisResult
-import org.jetbrains.kotlin.codegen.CompilationErrorHandler
 import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
 import org.jetbrains.kotlin.codegen.state.GenerationState
+import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
-import org.jetbrains.kotlin.psi.KtFile
-import com.intellij.openapi.project.Project
-import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.psi.KtScript
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
-import org.jetbrains.kotlin.codegen.binding.PsiCodegenPredictor
-import org.eclipse.core.runtime.Path
 import org.jetbrains.kotlin.fileClasses.getFileClassInternalName
-import org.jetbrains.kotlin.psi.KtObjectDeclaration
-import org.jetbrains.kotlin.psi.KtClass
-import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtScript
 
 object KotlinLightClassGeneration {
     fun updateLightClasses(project: IProject, affectedFiles: Set<IFile>) {
@@ -63,15 +52,15 @@ object KotlinLightClassGeneration {
                 analysisResult.bindingContext,
                 jetFiles,
                 generateDeclaredClassFilter = object : GenerationState.GenerateClassFilter() {
-                    override fun shouldAnnotateClass(classOrObject: KtClassOrObject): Boolean = true
+                    override fun shouldAnnotateClass(processingClassOrObject: KtClassOrObject): Boolean = true
                     
-                    override fun shouldGenerateClass(classOrObject: KtClassOrObject): Boolean {
-                        val internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(classOrObject, NoResolveFileClassesProvider)
+                    override fun shouldGenerateClass(processingClassOrObject: KtClassOrObject): Boolean {
+                        val internalName = KotlinLightClassManager.getInternalName(processingClassOrObject)
                         return checkByInternalName(internalName, requestedClassName)
                     }
                     
-                    override fun shouldGeneratePackagePart(ktFile: KtFile): Boolean {
-                        val internalName = NoResolveFileClassesProvider.getFileClassInternalName(ktFile)
+                    override fun shouldGeneratePackagePart(jetFile: KtFile): Boolean {
+                        val internalName = NoResolveFileClassesProvider.getFileClassInternalName(jetFile)
                         return checkByInternalName(internalName, requestedClassName)
                     }
                     

@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.codegen.binding.PsiCodegenPredictor;
 import org.jetbrains.kotlin.core.asJava.LightClassFile;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
@@ -32,6 +31,7 @@ import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.fileClasses.FileClasses;
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider;
 import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
+import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.KtClassOrObject;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtNamedFunction;
@@ -44,6 +44,7 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 
 public class KotlinLightClassManager {
     private final IProject project;
@@ -110,6 +111,26 @@ public class KotlinLightClassManager {
         return getSourceKtFiles(file);
     }
     
+    @Nullable
+    public static String getInternalName(KtClassOrObject classOrObject) {
+        FqName fullFqName = classOrObject.getFqName();
+        if (fullFqName == null) return null;
+        
+        KtClassOrObject topmostClassOrObject = PsiTreeUtil.getTopmostParentOfType(classOrObject, KtClassOrObject.class);
+        if (topmostClassOrObject == null) return makeInternalByToplevel(fullFqName);
+        
+        FqName topLevelFqName = topmostClassOrObject.getFqName();
+        if (topLevelFqName == null) return null;
+        
+        String nestedPart = fullFqName.asString().substring(topLevelFqName.asString().length()).replaceAll("\\.", "\\$");
+        
+        return makeInternalByToplevel(topLevelFqName) + nestedPart;
+    }
+    
+    private static String makeInternalByToplevel(FqName fqName) {
+        return fqName.asString().replaceAll("\\.", "/");
+    }
+    
     @NotNull
     private List<KtFile> getSourceKtFiles(@NotNull File lightClass) {
         Set<IFile> sourceIOFiles = sourceFiles.get(lightClass);
@@ -134,7 +155,7 @@ public class KotlinLightClassManager {
         
         KtFile ktFile = KotlinPsiManager.INSTANCE.getParsedFile(sourceFile);
         for (KtClassOrObject classOrObject : findLightClasses(ktFile)) {
-            String internalName = PsiCodegenPredictor.getPredefinedJvmInternalName(classOrObject, NoResolveFileClassesProvider.INSTANCE);
+            String internalName = getInternalName(classOrObject);
             if (internalName != null) {
                 lightClasses.add(computePathByInternalName(internalName));
             }

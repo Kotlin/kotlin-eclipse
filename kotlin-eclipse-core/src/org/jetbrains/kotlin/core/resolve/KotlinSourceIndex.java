@@ -47,8 +47,6 @@ public class KotlinSourceIndex {
         return null;
     }
     
-<<<<<<< HEAD
-=======
     @Nullable
     public static char[] getSource(SourceMapper mapper, String sourceFileName, IPath packageFolder, IPath sourcePath) {
         LibrarySourcesIndex index = createSourcesIndex(sourcePath);
@@ -57,7 +55,6 @@ public class KotlinSourceIndex {
                 mapper.findSource(result) : mapper.findSource(packageFolder.append(sourceFileName).toPortableString());
     }
     
->>>>>>> 5e9b722... Check for existance before create library sources index
     public String resolvePath(PackageFragment packageFragment, String pathToSource) {
         IPackageFragmentRoot packageFragmentRoot = packageFragment.getPackageFragmentRoot();
         LibrarySourcesIndex packageIndex = getIndexForRoot(packageFragmentRoot);

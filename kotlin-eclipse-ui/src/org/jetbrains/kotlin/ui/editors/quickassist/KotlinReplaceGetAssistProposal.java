@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer;
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.psi.KtCallExpression;
 import org.jetbrains.kotlin.psi.KtExpression;
@@ -25,11 +24,7 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.CallUtilKt;
 import org.jetbrains.kotlin.resolve.calls.model.DefaultValueArgument;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedValueArgument;
-<<<<<<< HEAD
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor;
-=======
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
->>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
 
 import com.google.common.collect.Lists;
 import com.intellij.psi.PsiElement;
@@ -53,20 +48,9 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             return; 
         }
         
-<<<<<<< HEAD
-        KotlinFileEditor activeEditor = getActiveEditor();
-        if (activeEditor == null) {
-            return;
-        }
-        
-        IFile file = EditorUtil.getFile(activeEditor);
-        if (file == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor " + activeEditor, null);
-=======
         IFile file = getEditor().getEclipseFile();
         if (file == null) {
             KotlinLogger.logError("Failed to retrieve IFile from editor " + getEditor(), null);
->>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
             return;
         }
 
@@ -79,16 +63,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
     }
     
     private void replaceGetForElement(@NotNull KtQualifiedExpression element, @NotNull String arguments) {
-<<<<<<< HEAD
-        KotlinFileEditor editor = getActiveEditor();
-        if (editor == null) {
-            return;
-        }
-        
-        IDocument document = editor.getViewer().getDocument();
-=======
         IDocument document = getEditor().getDocument();
->>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
         
         try {
             int textLength = element.getTextLength();
@@ -104,11 +79,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
                     textLength, 
                     receiverExpressionText + "[" + arguments + "]");
             
-<<<<<<< HEAD
-            editor.getViewer().getTextWidget().setCaretOffset(startOffset + receiverExpressionText.length());
-=======
             getEditor().getJavaEditor().getViewer().getTextWidget().setCaretOffset(startOffset + receiverExpressionText.length());
->>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
         } catch (BadLocationException e) {
             KotlinLogger.logAndThrow(e);
         }
@@ -231,14 +202,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         KtExpression receiver = expression.getReceiverExpression();
         if (receiver instanceof KtSuperExpression) return false;
         
-<<<<<<< HEAD
-        KotlinFileEditor editor = getActiveEditor();
-        if (editor == null) return false;
-        
-        IFile file = EditorUtil.getFile(editor);
-=======
         IFile file = getEditor().getEclipseFile();
->>>>>>> abf1e11... Propagate editor through assists hierarchy to fix issues about uninitialized editor
         if (file == null) return false;
         
         BindingContext bindingContext = getBindingContext(expression, file);

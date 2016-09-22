@@ -36,7 +36,6 @@ import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinLightVirtualFile
 import org.jetbrains.kotlin.core.model.KotlinNature
-import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.utils.sourceFolders
@@ -57,35 +56,6 @@ interface PsiFilesStorage {
     fun isApplicable(file: IFile): Boolean
     
     fun removeFile(file: IFile)
-}
-
-private class ScriptsFilesStorage : PsiFilesStorage {
-    private val cachedKtFiles = ConcurrentHashMap<IFile, KtFile>()
-    
-    override fun getPsiFile(eclipseFile: IFile): KtFile {
-        assert(isApplicable(eclipseFile)) { "$eclipseFile is not applicable for Kotlin scripts storage" }
-        
-        return cachedKtFiles.getOrPut(eclipseFile) { KotlinPsiManager.parseFile(eclipseFile)!! }
-    }
-
-    @Synchronized
-    override fun getPsiFile(file: IFile, expectedSourceCode: String): KtFile {
-        val sourceCodeWithouCR = StringUtilRt.convertLineSeparators(expectedSourceCode)
-        
-        val currentParsedFile = getPsiFile(file)
-        if (currentParsedFile.getText() != sourceCodeWithouCR) {
-            val jetFile = KotlinPsiManager.parseText(sourceCodeWithouCR, file)!!
-            cachedKtFiles.put(file, jetFile)
-        }
-        
-        return getPsiFile(file)
-    }
-
-    override fun isApplicable(file: IFile): Boolean = KotlinScriptEnvironment.isScript(file)
-    
-    override fun removeFile(file: IFile) {
-        cachedKtFiles.remove(file)
-    }
 }
 
 private class ProjectSourceFiles : PsiFilesStorage {
@@ -245,7 +215,6 @@ private class ProjectSourceFiles : PsiFilesStorage {
 
 object KotlinPsiManager {
     private val projectSourceFiles = ProjectSourceFiles()
-    private val scriptsFiles = ScriptsFilesStorage()
     
     fun getParsedFile(file: IFile): KtFile {
         return storage(file).getPsiFile(file)
@@ -262,8 +231,6 @@ object KotlinPsiManager {
             else -> throw IllegalArgumentException()
         }
     }
-<<<<<<< HEAD
-=======
     
     fun invalidateCachedProjectSourceFiles() {
         projectSourceFiles.invalidateProjectSourceFiles()
@@ -272,7 +239,6 @@ object KotlinPsiManager {
     fun removeFile(file: IFile) {
         storage(file).removeFile(file)
     }
->>>>>>> d2d80b9... Invalidate parsed cache files when project environment was changed
 
     fun removeProjectFromManager(project: IProject) {
         projectSourceFiles.updateProjectPsiSources(project, IResourceDelta.REMOVED)
@@ -300,7 +266,6 @@ object KotlinPsiManager {
     
     private fun applicableStorage(file: IFile): PsiFilesStorage? {
         return when {
-            scriptsFiles.isApplicable(file) -> scriptsFiles
             projectSourceFiles.isApplicable(file) -> projectSourceFiles
             else -> null
         }

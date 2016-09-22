@@ -66,10 +66,13 @@ import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.StandardScriptDefinition
-import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
+import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
+import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
+import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
+import org.jetbrains.kotlin.asJava.KtLightClassForFacade
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -127,8 +130,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(KotlinCacheService::class.java, KotlinCacheServiceImpl(project))
             registerService(ImportInsertHelper::class.java, KotlinImportInserterHelper())
         }
-        
-        configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
         
         KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(StandardScriptDefinition)
         
