@@ -32,11 +32,14 @@ import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import org.jetbrains.kotlin.utils.KotlinFrontEndException
 import java.util.LinkedHashSet
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
 
 public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
 public object EclipseAnalyzerFacadeForJVM {
-    public fun analyzeFilesWithJavaIntegration(javaProject: IJavaProject, project: Project, filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
+    public fun analyzeFilesWithJavaIntegration(
+            environment: KotlinEnvironment,
+            filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
         val filesSet = filesToAnalyze.toSet()
         if (filesSet.size != filesToAnalyze.size) {
             KotlinLogger.logWarning("Analyzed files have duplicates")
@@ -44,11 +47,14 @@ public object EclipseAnalyzerFacadeForJVM {
         
         val allFiles = LinkedHashSet<KtFile>(filesSet)
         val addedFiles = filesSet.map { getPath(it) }.filterNotNull().toSet()
+        val javaProject = environment.javaProject
         ProjectUtils.getSourceFilesWithDependencies(javaProject).filterNotTo(allFiles) {
             getPath(it) in addedFiles
         }
         
-        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project, project.getName())
+        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(
+                environment.project,
+                javaProject.project.name)
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
@@ -56,10 +62,10 @@ public object EclipseAnalyzerFacadeForJVM {
                 moduleContext,
                 trace,
                 providerFactory, 
-                GlobalSearchScope.allScope(project),
+                GlobalSearchScope.allScope(environment.project),
                 javaProject,
                 LookupTracker.DO_NOTHING,
-                KotlinPackagePartProvider(javaProject),
+                KotlinPackagePartProvider(environment),
                 LanguageVersion.LATEST)
         val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
