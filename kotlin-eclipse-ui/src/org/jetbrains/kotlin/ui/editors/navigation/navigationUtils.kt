@@ -72,7 +72,6 @@ import org.jetbrains.kotlin.serialization.deserialization.descriptors.Deserializ
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor
 import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
-import org.jetbrains.kotlin.ui.editors.getScriptDependencies
 import org.jetbrains.kotlin.ui.formatter.createKtFile
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
 
@@ -128,27 +127,7 @@ private fun gotoJavaDeclarationFromNonClassPath(
     val editorPart = tryToFindSourceInJavaProject(javaPsi, javaProject)
     if (editorPart != null) {
         revealJavaElementInEditor(editorPart, javaElement, EditorUtil.getSourceCode(editorPart))
-        return
     }
-    
-    val virtualFile = psi?.containingFile?.virtualFile ?: return
-    val (sourceName, packagePath) = findSourceFilePath(virtualFile)
-    
-    val dependencies = getScriptDependencies(fromEditor as KotlinScriptEditor) ?: return
-    
-    val pathToSource = packagePath.append(sourceName)
-
-    val source = dependencies.sources.asSequence()
-            .map { Path(it.absolutePath).createSourceMapperWithRoot() }
-            .mapNotNull { it.findSource(pathToSource.toOSString()) }
-            .firstOrNull() ?: return
-    
-    val sourceString = String(source)
-    val targetEditor = openJavaEditorForExternalFile(sourceString, sourceName, packagePath.toOSString()) ?: return
-    
-    revealJavaElementInEditor(targetEditor, javaElement, sourceString)
-    
-    return
 }
 
 private fun revealJavaElementInEditor(editor: IEditorPart, javaElement: JavaElement, source: String) {
