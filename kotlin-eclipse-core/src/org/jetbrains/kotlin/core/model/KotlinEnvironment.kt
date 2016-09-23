@@ -35,7 +35,6 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.core.JavaProject
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
-import org.jetbrains.kotlin.asJava.KtLightClassForFacade
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmCliVirtualFileFinderFactory
@@ -49,8 +48,6 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
-import org.jetbrains.kotlin.script.StandardScriptDefinition
 import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
 import java.net.URL
@@ -84,11 +81,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
-            
-            registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
         }
-        
-        KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(StandardScriptDefinition)
         
         cachedEnvironment.putEnvironment(eclipseProject, this)
     }

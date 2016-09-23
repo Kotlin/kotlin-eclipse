@@ -39,6 +39,7 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import com.google.common.collect.Lists
 import org.jetbrains.kotlin.name.SpecialNames
+import org.jetbrains.kotlin.load.java.structure.LightClassOriginKind
 
 public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(javaElement), JavaClass {
     override val name: Name = SpecialNames.safeIdentifier(getBinding().getName())
@@ -90,6 +91,11 @@ public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier
     override val annotations: Collection<JavaAnnotation> 
         get() = getBinding().annotations.map(::EclipseJavaAnnotation)
     
-    override val isKotlinLightClass: Boolean
-        get() = getBinding().javaElement.let { EclipseJavaElementUtil.isKotlinLightClass(it) }
+    override val lightClassOriginKind: LightClassOriginKind?
+        get() = getBinding().javaElement.let {
+            if (EclipseJavaElementUtil.isKotlinLightClass(it))
+                LightClassOriginKind.SOURCE
+            else
+                null
+        }
 }

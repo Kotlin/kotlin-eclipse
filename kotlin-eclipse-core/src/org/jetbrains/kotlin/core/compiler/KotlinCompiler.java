@@ -116,6 +116,11 @@ public class KotlinCompiler {
                     public boolean hasErrors() {
                         return hasErrors;
                     }
+
+                    @Override
+                    public void clear() {
+                        hasErrors = false;
+                    }
                 },
                 reader);
         

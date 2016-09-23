@@ -72,7 +72,7 @@ import kotlin.reflect.KClass
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
-import org.jetbrains.kotlin.asJava.KtLightClassForFacade
+import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {

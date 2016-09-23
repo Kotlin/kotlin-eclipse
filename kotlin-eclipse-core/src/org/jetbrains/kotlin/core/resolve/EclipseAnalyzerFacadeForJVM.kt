@@ -30,9 +30,9 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
-import org.jetbrains.kotlin.utils.KotlinFrontEndException
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.util.KotlinFrontEndException
 
 public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
