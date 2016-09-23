@@ -76,13 +76,6 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
         registerProjectDependenServices(javaProject)
         configureClasspath(javaProject)
         
-        val cliLightClassGenerationSupport = CliLightClassGenerationSupport(project)
-        with(project) {
-            registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
-            registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
-            registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
-        }
-        
         cachedEnvironment.putEnvironment(eclipseProject, this)
     }
     
