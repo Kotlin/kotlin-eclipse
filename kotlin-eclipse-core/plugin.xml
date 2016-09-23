@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="org.jetbrains.kotlin.core.scriptTemplateProvider" name="Kotlin Script Template Provider" schema="schema/org.jetbrains.kotlin.core.scriptTemplateProvider.exsd"/>
-   <extension-point id="org.jetbrains.kotlin.core.scriptTemplateProviderEx" name="Kotlin Script Template Provider" schema="schema/org.jetbrains.kotlin.core.scriptTemplateProviderEx.exsd"/>
    <extension
          id="org.jetbrains.kotlin.core.kotlinNature"
          name="KotlinNature"

@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
-import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
 
 class KotlinScriptEditor : KotlinCommonEditor() {
@@ -60,14 +59,4 @@ class KotlinScriptEditor : KotlinCommonEditor() {
             KotlinPsiManager.removeFile(it)
         }
     }
-}
-
-fun getScriptDependencies(editor: KotlinScriptEditor): KotlinScriptExternalDependencies? {
-    val eclipseFile = editor.eclipseFile ?: return null
-    val file = eclipseFile.location.toFile()
-    
-    val project = getEnvironment(eclipseFile).project
-    val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(file) ?: return null
-    
-    return definition.getDependenciesFor(file, project, null)
 }

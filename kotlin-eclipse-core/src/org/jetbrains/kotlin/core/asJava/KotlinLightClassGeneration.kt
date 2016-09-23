@@ -51,7 +51,6 @@ object KotlinLightClassGeneration {
                 analysisResult.moduleDescriptor,
                 analysisResult.bindingContext,
                 jetFiles,
-                CompilerConfiguration.EMPTY,
                 generateDeclaredClassFilter = object : GenerationState.GenerateClassFilter() {
                     override fun shouldAnnotateClass(processingClassOrObject: KtClassOrObject): Boolean = true
                     
