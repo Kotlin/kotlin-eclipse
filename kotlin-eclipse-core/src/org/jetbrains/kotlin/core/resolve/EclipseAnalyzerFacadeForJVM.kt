@@ -47,11 +47,14 @@ public object EclipseAnalyzerFacadeForJVM {
         
         val allFiles = LinkedHashSet<KtFile>(filesSet)
         val addedFiles = filesSet.map { getPath(it) }.filterNotNull().toSet()
-        ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).filterNotTo(allFiles) {
+        val javaProject = environment.javaProject
+        ProjectUtils.getSourceFilesWithDependencies(javaProject).filterNotTo(allFiles) {
             getPath(it) in addedFiles
         }
         
-        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(environment.project, environment.configuration)
+        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(
+                environment.project,
+                javaProject.project.name)
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
@@ -60,7 +63,7 @@ public object EclipseAnalyzerFacadeForJVM {
                 trace,
                 providerFactory, 
                 GlobalSearchScope.allScope(environment.project),
-                environment.javaProject,
+                javaProject,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
                 LanguageVersion.LATEST)
@@ -85,7 +88,9 @@ public object EclipseAnalyzerFacadeForJVM {
             environment: KotlinScriptEnvironment,
             scriptFile: KtFile): AnalysisResultWithProvider {
         
-        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(environment.project, environment.configuration)
+        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(
+                environment.project,
+                environment.eclipseFile.project.name)
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, listOf(scriptFile))
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
