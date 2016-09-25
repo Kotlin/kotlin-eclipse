@@ -15,10 +15,11 @@ import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions
 import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.util.text.CharArrayUtil
+import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.jface.text.Document
 import org.eclipse.jface.text.IDocument
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.idea.formatter.KotlinSpacingBuilderUtil
@@ -28,10 +29,6 @@ import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.editor.Document as IdeaDocument
 
 @Volatile var settings: CodeStyleSettings = CodeStyleSettings(true)
-
-fun formatCode(source: String, fileName: String, eclipseProject: IProject, lineSeparator: String): String {
-    return formatCode(source, fileName, createPsiFactory(eclipseProject), lineSeparator)
-}
 
 fun formatCode(source: String, fileName: String, psiFactory: KtPsiFactory, lineSeparator: String): String {
     return KotlinFormatter(source, fileName, psiFactory, lineSeparator).formatCode()
@@ -149,8 +146,8 @@ private class KotlinFormatter(source: String, fileName: String, psiFactory: KtPs
     }
 }
 
-fun createPsiFactory(eclipseProject: IProject): KtPsiFactory {
-    val environment = KotlinEnvironment.getEnvironment(eclipseProject)
+fun createPsiFactory(eclipseFile: IFile): KtPsiFactory {
+    val environment = getEnvironment(eclipseFile)
     return KtPsiFactory(environment.project)
 }
 
