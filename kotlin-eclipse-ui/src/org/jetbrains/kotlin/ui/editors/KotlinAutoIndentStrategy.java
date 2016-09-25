@@ -113,7 +113,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         IFile eclipseFile = editor.getEclipseFile();
         assert eclipseFile != null : "Eclipse IFile for " + tempDocument + " must not be null";
         
-        KtPsiFactory psiFactory = KotlinFormatterKt.createPsiFactory(eclipseFile.getProject());
+        KtPsiFactory psiFactory = KotlinFormatterKt.createPsiFactory(eclipseFile);
         KtFile ktFile = KotlinFormatterKt.createKtFile(tempDocument.get(), psiFactory, eclipseFile.getName());
         
         int line = tempDocument.getLineOfOffset(offset);
