@@ -37,15 +37,14 @@ public class KotlinRenameProcessor(
         val isFromScript: Boolean) : RenameProcessor() {
     val jetElement = element.psi
     
-    val project = KotlinPsiManager.getJavaProject(jetElement)
-    
     override fun isApplicable(): Boolean = true
     
     override fun loadParticipants(status: RefactoringStatus?, sharedParticipants: SharableParticipants?): Array<out RefactoringParticipant> {
         val affectedNatures = if (isFromScript) {
             arrayOf(KotlinNature.KOTLIN_NATURE)
         } else {
-            JavaProcessors.computeAffectedNatures(project)
+            val project = KotlinPsiManager.getJavaProject(jetElement)
+            if (project != null) JavaProcessors.computeAffectedNatures(project) else emptyArray()
         }
         
         return ParticipantManager.loadRenameParticipants(
