@@ -48,6 +48,7 @@ import org.jetbrains.kotlin.j2k.JavaToKotlinTranslator;
 import org.jetbrains.kotlin.j2k.JavaToKotlinTranslatorKt;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtPsiFactory;
+import org.jetbrains.kotlin.psi.KtPsiFactoryKt;
 import org.jetbrains.kotlin.ui.Activator;
 import org.jetbrains.kotlin.ui.commands.CommandsUtilsKt;
 import org.jetbrains.kotlin.ui.commands.ConvertedKotlinData;
@@ -205,7 +206,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         String formattedCode = KotlinFormatterKt.formatCode(
                 jetFile.getNode().getText(),
                 jetFile.getName(),
-                eclipseProject,
+                KtPsiFactoryKt.KtPsiFactory(jetFile),
                 getDefaultLineDelimiter(compilationUnit));
         
         String fileName = FileUtil.getNameWithoutExtension(compilationUnit.getElementName());

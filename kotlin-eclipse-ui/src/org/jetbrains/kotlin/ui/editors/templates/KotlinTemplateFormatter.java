@@ -30,6 +30,7 @@ import org.eclipse.jface.text.templates.TemplateVariable;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtPsiFactory;
+import org.jetbrains.kotlin.psi.KtPsiFactoryKt;
 import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 
 import com.intellij.openapi.project.Project;
@@ -161,9 +162,10 @@ public class KotlinTemplateFormatter {
         KtFile parsedFile = new KtPsiFactory(ideaProject).createFile(offsetsTracker.getMarkedString());
         
         assert parsedFile != null;
-
+        
+        KtPsiFactory psiFactory = KtPsiFactoryKt.KtPsiFactory(parsedFile);
         String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), parsedFile.getName(), 
-                eclipseProject, lineDelimiter);
+                psiFactory, lineDelimiter);
         
         offsetsTracker.unmark(formatted);
         
