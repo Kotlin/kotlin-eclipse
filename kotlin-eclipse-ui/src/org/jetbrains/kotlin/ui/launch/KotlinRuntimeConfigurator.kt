@@ -17,19 +17,21 @@
 package org.jetbrains.kotlin.ui.launch
 
 import org.eclipse.core.resources.IProject
-import org.eclipse.jface.dialogs.MessageDialogWithToggle
+import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup
+import org.eclipse.swt.SWT
+import org.eclipse.swt.layout.GridLayout
+import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Display
+import org.eclipse.swt.widgets.Label
 import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.eclipse.ui.utils.ProjectScopedPreferenceUtils
+import org.jetbrains.kotlin.ui.gridData
+import org.eclipse.swt.custom.StyledText
+import org.jetbrains.kotlin.core.KotlinClasspathContainer
+import org.jetbrains.kotlin.ui.gridData
+import org.eclipse.swt.custom.StyleRange
 
 class KotlinRuntimeConfigurator(private val project: IProject) : Runnable {
     companion object {
-        private val SUGGESTION = "the Kotlin runtime library"
-        private val MESSAGE_DIALOG_TITLE = "Add $SUGGESTION"
-        private val MESSAGE_DIALOG_TEXT_FORMAT = "Would you like to add %s to the project \'%s\'?"
-        private val MESSAGE_DIALOG_TOOGLE_TEXT = "Don't ask again for this project"
-        private val PREFERENCE_KEY = "suggest.Configure.Runtime"
-
         @JvmStatic fun suggestForProject(project: IProject) {
             Display.getDefault().asyncExec(KotlinRuntimeConfigurator(project))
         }
@@ -38,22 +40,46 @@ class KotlinRuntimeConfigurator(private val project: IProject) : Runnable {
     override fun run() {
         if (ProjectUtils.hasKotlinRuntime(project)) return
 
-        if (ProjectScopedPreferenceUtils.getBooleanPreference(project, PREFERENCE_KEY, true)) {
-            val dialogWithToogle = MessageDialogWithToggle.openYesNoQuestion(
-                    Display.getDefault().getActiveShell(),
-                    MESSAGE_DIALOG_TITLE,
-                    String.format(MESSAGE_DIALOG_TEXT_FORMAT, SUGGESTION, project.getName()),
-                    MESSAGE_DIALOG_TOOGLE_TEXT,
-                    false,
-                    null,
-                    null)
-            if (dialogWithToogle.returnCode == 2) {
-                ProjectUtils.addKotlinRuntime(project)
-            }
+        ProjectUtils.addKotlinRuntime(project)
+        
+        RuntimeNotificationPopup(Display.getDefault()).open()
+    }
+}
 
-            if (dialogWithToogle.getToggleState()) {
-                ProjectScopedPreferenceUtils.putBooleanPreference(project, PREFERENCE_KEY, false)
-            }
+private class RuntimeNotificationPopup(display: Display) : AbstractNotificationPopup(display) {
+    companion object {
+        private val RUNTIME_JAR = KotlinClasspathContainer.LIB_RUNTIME_NAME.toJar()
+        private val REFLECT_JAR = KotlinClasspathContainer.LIB_REFLECT_NAME.toJar()
+        
+        private fun String.toJar() = "$this.jar" 
+    }
+    
+    init {
+        setDelayClose(0)
+    }
+    
+    override fun createContentArea(parent: Composite) {
+        val parentLayout = GridLayout(1, true)
+        
+        parent.setLayout(parentLayout)
+        parent.setLayoutData(gridData())
+        
+        StyledText(parent, SWT.LEFT).apply {
+            setText("$RUNTIME_JAR, $REFLECT_JAR were added to the project classpath.")
+            makeBold(RUNTIME_JAR, REFLECT_JAR)
         }
+    }
+    
+    override fun getPopupShellTitle(): String = "Configure Kotlin in Project"
+    
+    private fun StyledText.makeBold(vararg strs: String) {
+        val styleRanges = strs.mapNotNull { str ->
+            val start = text.indexOf(str)
+            if (start < 0) return@mapNotNull null
+
+            StyleRange(start, str.length, foreground, background, SWT.BOLD)
+        }
+        
+        setStyleRanges(styleRanges.toTypedArray())
     }
 }
