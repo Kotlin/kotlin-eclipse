@@ -53,7 +53,7 @@ import org.jetbrains.kotlin.ui.Activator;
 import org.jetbrains.kotlin.ui.commands.CommandsUtilsKt;
 import org.jetbrains.kotlin.ui.commands.ConvertedKotlinData;
 import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
-import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
+import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurator;
 import org.jetbrains.kotlin.wizards.FileCreationOp;
 
 import com.intellij.openapi.project.Project;
@@ -118,7 +118,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     private void configureProjectsWithKotlin(@NotNull Set<IProject> projects) {
         for (IProject project : projects) {
             KotlinNature.addNature(project);
-            KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
+            KotlinRuntimeConfigurator.suggestForProject(project);
         }
     }
     
