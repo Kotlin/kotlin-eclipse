@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.editors.codeassist
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.internal.ui.JavaPlugin
@@ -35,10 +36,8 @@ import org.eclipse.jface.text.contentassist.IContextInformation
 import org.eclipse.jface.text.contentassist.IContextInformationValidator
 import org.eclipse.jface.text.templates.TemplateContext
 import org.eclipse.jface.text.templates.TemplateProposal
-import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
 import org.jetbrains.kotlin.name.Name
@@ -107,8 +106,8 @@ class KotlinCompletionProcessor(
             }
             if (psiElement != null) {
                 addAll(generateKeywordProposals(identifierPart, psiElement))
+                addAll(generateTemplateProposals(psiElement.containingFile, viewer, offset, identifierPart))
             }
-            addAll(generateTemplateProposals(viewer, offset, identifierPart))
         }
     }
     
@@ -163,14 +162,10 @@ class KotlinCompletionProcessor(
         }
     }
     
-    private fun generateTemplateProposals(viewer: ITextViewer, offset: Int, identifierPart: String): List<ICompletionProposal> {
-        val file = editor.eclipseFile
-        if (file == null) {
-            KotlinLogger.logError("Failed to retrieve IFile from editor $editor", null)
-            return emptyList()
-        }
+    private fun generateTemplateProposals(
+            psiFile: PsiFile, viewer: ITextViewer, offset: Int, identifierPart: String): List<ICompletionProposal> {
         
-        val contextTypeIds = KotlinApplicableTemplateContext.getApplicableContextTypeIds(viewer, file, offset - identifierPart.length)
+        val contextTypeIds = KotlinApplicableTemplateContext.getApplicableContextTypeIds(viewer, psiFile, offset - identifierPart.length)
         val region = Region(offset - identifierPart.length, identifierPart.length)
         
         val templateIcon = JavaPluginImages.get(JavaPluginImages.IMG_OBJS_TEMPLATE)
