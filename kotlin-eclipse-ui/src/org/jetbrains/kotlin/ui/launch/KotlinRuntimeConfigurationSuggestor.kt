@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2014 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,63 +14,46 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.ui.launch;
+package org.jetbrains.kotlin.ui.launch
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.swt.widgets.Display;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
-import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.eclipse.ui.utils.ProjectScopedPreferenceUtils;
-import org.osgi.service.prefs.BackingStoreException;
+import org.eclipse.core.resources.IProject
+import org.eclipse.jface.dialogs.MessageDialogWithToggle
+import org.eclipse.swt.widgets.Display
+import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.eclipse.ui.utils.ProjectScopedPreferenceUtils
 
-public class KotlinRuntimeConfigurationSuggestor implements Runnable {
-    
-    private static final String SUGGESTION = "the Kotlin runtime library";
-    private static final String MESSAGE_DIALOG_TITLE = String.format("Add %s", SUGGESTION);
-    private static final String MESSAGE_DIALOG_TEXT_FORMAT = "Would you like to add %s to the project \'%s\'?";
-    
-    private static final String MESSAGE_DIALOG_TOOGLE_TEXT = "Don't ask again for this project";
-    
-    private static final String PREFERENCE_KEY = "suggest.Configure.Runtime";
-    
-    @NotNull
-    private final IProject project;
-    
-    protected KotlinRuntimeConfigurationSuggestor(@NotNull IProject project) {
-        this.project = project;
-    }
-    
-    @Override
-    public final void run() {
-        try {
-            if (!ProjectUtils.hasKotlinRuntime(project)) {
-                if (ProjectScopedPreferenceUtils.getBooleanPreference(project, PREFERENCE_KEY, true)) {
-                    MessageDialogWithToggle dialogWithToogle = MessageDialogWithToggle.openYesNoQuestion(
-                            Display.getDefault().getActiveShell(),
-                            MESSAGE_DIALOG_TITLE,
-                            String.format(MESSAGE_DIALOG_TEXT_FORMAT, SUGGESTION, project.getName()),
-                            MESSAGE_DIALOG_TOOGLE_TEXT,
-                            false,
-                            null,
-                            null);
-                    
-                    if (dialogWithToogle.getReturnCode() == 2) {
-                        ProjectUtils.addKotlinRuntime(project);
-                    }
-                    if (dialogWithToogle.getToggleState()) {
-                        ProjectScopedPreferenceUtils.putBooleanPreference(project, PREFERENCE_KEY, false);
-                    }
-                }
-            }
-        } catch (CoreException | BackingStoreException e) {
-            KotlinLogger.logAndThrow(e);
+class KotlinRuntimeConfigurationSuggestor(private val project: IProject) : Runnable {
+    companion object {
+        private val SUGGESTION = "the Kotlin runtime library"
+        private val MESSAGE_DIALOG_TITLE = "Add $SUGGESTION"
+        private val MESSAGE_DIALOG_TEXT_FORMAT = "Would you like to add %s to the project \'%s\'?"
+        private val MESSAGE_DIALOG_TOOGLE_TEXT = "Don't ask again for this project"
+        private val PREFERENCE_KEY = "suggest.Configure.Runtime"
+
+        @JvmStatic fun suggestForProject(project: IProject) {
+            Display.getDefault().asyncExec(KotlinRuntimeConfigurationSuggestor(project))
         }
     }
-    
-    public static void suggestForProject(@NotNull IProject project) {
-        Display.getDefault().asyncExec(new KotlinRuntimeConfigurationSuggestor(project));
+
+    override fun run() {
+        if (ProjectUtils.hasKotlinRuntime(project)) return
+
+        if (ProjectScopedPreferenceUtils.getBooleanPreference(project, PREFERENCE_KEY, true)) {
+            val dialogWithToogle = MessageDialogWithToggle.openYesNoQuestion(
+                    Display.getDefault().getActiveShell(),
+                    MESSAGE_DIALOG_TITLE,
+                    String.format(MESSAGE_DIALOG_TEXT_FORMAT, SUGGESTION, project.getName()),
+                    MESSAGE_DIALOG_TOOGLE_TEXT,
+                    false,
+                    null,
+                    null)
+            if (dialogWithToogle.returnCode == 2) {
+                ProjectUtils.addKotlinRuntime(project)
+            }
+
+            if (dialogWithToogle.getToggleState()) {
+                ProjectScopedPreferenceUtils.putBooleanPreference(project, PREFERENCE_KEY, false)
+            }
+        }
     }
 }
