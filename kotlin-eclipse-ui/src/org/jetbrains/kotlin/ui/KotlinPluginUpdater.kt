@@ -259,7 +259,7 @@ private class UpdatePluginNotification(
     }
 }
 
-private fun gridData(
+fun gridData(
             horizontalAlignment: Int = SWT.BEGINNING,
             verticalAlignment: Int = SWT.CENTER,
             grabExcessHorizontalSpace: Boolean = false,
