@@ -34,7 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinNature;
-import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor;
+import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurator;
 
 public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     
@@ -125,7 +125,7 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         IProject project = root.getJavaProject().getProject();
         
         KotlinNature.addNature(project);
-        KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
+        KotlinRuntimeConfigurator.suggestForProject(project);
         
         return operation.getResult();
     }

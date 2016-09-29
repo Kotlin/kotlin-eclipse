@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Display
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.eclipse.ui.utils.ProjectScopedPreferenceUtils
 
-class KotlinRuntimeConfigurationSuggestor(private val project: IProject) : Runnable {
+class KotlinRuntimeConfigurator(private val project: IProject) : Runnable {
     companion object {
         private val SUGGESTION = "the Kotlin runtime library"
         private val MESSAGE_DIALOG_TITLE = "Add $SUGGESTION"
@@ -31,7 +31,7 @@ class KotlinRuntimeConfigurationSuggestor(private val project: IProject) : Runna
         private val PREFERENCE_KEY = "suggest.Configure.Runtime"
 
         @JvmStatic fun suggestForProject(project: IProject) {
-            Display.getDefault().asyncExec(KotlinRuntimeConfigurationSuggestor(project))
+            Display.getDefault().asyncExec(KotlinRuntimeConfigurator(project))
         }
     }
 

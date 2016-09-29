@@ -24,7 +24,7 @@ import org.eclipse.ui.ISources
 import org.jetbrains.kotlin.eclipse.ui.utils.isConfigurationMissing
 import org.eclipse.ui.handlers.HandlerUtil
 import org.jetbrains.kotlin.wizards.NewUnitWizard
-import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurationSuggestor
+import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurator
 import org.jetbrains.kotlin.core.model.KotlinNature
 
 public class ConfigureKotlinActionHandler : AbstractHandler() {
@@ -33,7 +33,7 @@ public class ConfigureKotlinActionHandler : AbstractHandler() {
         val project = getFirstOrNullJavaProject(selection as IStructuredSelection)!!.getProject()
         
         KotlinNature.addNature(project)
-        KotlinRuntimeConfigurationSuggestor.suggestForProject(project);
+        KotlinRuntimeConfigurator.suggestForProject(project);
         
         return null
     }
