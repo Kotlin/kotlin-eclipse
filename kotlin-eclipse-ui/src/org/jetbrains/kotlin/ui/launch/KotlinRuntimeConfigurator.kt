@@ -19,16 +19,17 @@ package org.jetbrains.kotlin.ui.launch
 import org.eclipse.core.resources.IProject
 import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup
 import org.eclipse.swt.SWT
+import org.eclipse.swt.custom.StyleRange
+import org.eclipse.swt.custom.StyledText
+import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Display
-import org.eclipse.swt.widgets.Label
+import org.eclipse.ui.ISharedImages
+import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.ui.gridData
-import org.eclipse.swt.custom.StyledText
-import org.jetbrains.kotlin.core.KotlinClasspathContainer
-import org.jetbrains.kotlin.ui.gridData
-import org.eclipse.swt.custom.StyleRange
 
 class KotlinRuntimeConfigurator(private val project: IProject) : Runnable {
     companion object {
@@ -59,25 +60,27 @@ private class RuntimeNotificationPopup(display: Display) : AbstractNotificationP
     }
     
     override fun createContentArea(parent: Composite) {
-        val parentLayout = GridLayout(1, true)
-        
-        parent.setLayout(parentLayout)
-        parent.setLayoutData(gridData())
+        parent.setLayout(GridLayout(1, true))
+        parent.setLayoutData(gridData().apply { widthHint = 300 })
         
         StyledText(parent, SWT.LEFT).apply {
-            setText("$RUNTIME_JAR, $REFLECT_JAR were added to the project classpath.")
+            setText("$RUNTIME_JAR, $REFLECT_JAR were added\nto the project classpath.")
             makeBold(RUNTIME_JAR, REFLECT_JAR)
         }
     }
     
     override fun getPopupShellTitle(): String = "Configure Kotlin in Project"
     
+    override fun getPopupShellImage(maximumHeight: Int): Image? {
+        return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_INFO_TSK);
+    }
+    
     private fun StyledText.makeBold(vararg strs: String) {
         val styleRanges = strs.mapNotNull { str ->
             val start = text.indexOf(str)
             if (start < 0) return@mapNotNull null
 
-            StyleRange(start, str.length, foreground, background, SWT.BOLD)
+            StyleRange(start, str.length, null, null, SWT.BOLD)
         }
         
         setStyleRanges(styleRanges.toTypedArray())
