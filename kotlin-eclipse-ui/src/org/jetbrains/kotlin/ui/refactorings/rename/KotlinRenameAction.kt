@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.IType
 import org.eclipse.jdt.internal.ui.javaeditor.EditorHighlightingSynchronizer
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringExecutionHelper
+import org.eclipse.jdt.internal.ui.refactoring.RefactoringMessages
 import org.eclipse.jdt.internal.ui.text.correction.proposals.LinkedNamesAssistProposal.DeleteBlockingExitPolicy
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction
@@ -56,6 +57,7 @@ import org.eclipse.jdt.internal.compiler.env.ICompilationUnit as ContentProvider
 public class KotlinRenameAction(val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.getSite()) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.RENAME_ELEMENT)
+        setText(RefactoringMessages.RenameAction_text)
     }
     
     companion object {
