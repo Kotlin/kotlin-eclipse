@@ -760,4 +760,104 @@
             name="Kotlin Annotation Hover ">
       </hover>
    </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu?after=edit">
+         <menu
+               label="Source">
+            <separator
+                  name="commentGroup"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.toggle.comment"
+                  label="Toggle Comment"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.add.block.comment"
+                  label="Add Block Comment"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.remove.block.comment"
+                  label="Remove Block Comment"
+                  style="push">
+            </command>
+            <separator
+                  name="editGroup"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.indent"
+                  label="Correct Indentation"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.format"
+                  label="Format"
+                  style="push">
+            </command>
+            <separator
+                  name="importGroup"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.organize.imports"
+                  label="Organize Imports"
+                  style="push">
+            </command>
+            <separator
+                  name="generateGroup"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.override.methods"
+                  label="Override/Implement members..."
+                  style="push">
+            </command>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeEditor">
+                  <instanceof
+                        value="org.jetbrains.kotlin.ui.editors.KotlinCommonEditor">
+                  </instanceof>
+               </with>
+            </visibleWhen>
+         </menu>
+         <menu
+               label="Refactor">
+            <separator
+                  name="reorgGroup"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.rename.element"
+                  label="Rename..."
+                  style="push">
+            </command>
+            <separator
+                  name="codingGroup"
+                  visible="true">
+            </separator>
+            <command
+                  commandId="org.eclipse.jdt.ui.edit.text.java.extract.local.variable"
+                  label="Extract Local Variable"
+                  style="push">
+            </command>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeEditor">
+                  <instanceof
+                        value="org.jetbrains.kotlin.ui.editors.KotlinCommonEditor">
+                  </instanceof>
+               </with>
+            </visibleWhen>
+         </menu>
+      </menuContribution>
+   </extension>
 </plugin>
