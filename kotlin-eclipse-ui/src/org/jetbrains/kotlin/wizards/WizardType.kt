@@ -24,9 +24,10 @@ enum class WizardType(val wizardTypeName: String, val fileBodyFormat: String = "
     CLASS("Class", buildFileBody(KtTokens.CLASS_KEYWORD)),
     INTERFACE("Interface", buildFileBody(KtTokens.INTERFACE_KEYWORD)),
     OBJECT("Object", buildFileBody(KtTokens.OBJECT_KEYWORD)),
-    ENUM("Enum", buildFileBody(KtTokens.ENUM_KEYWORD))
+    ENUM("Enum", buildFileBody(KtTokens.ENUM_KEYWORD, KtTokens.CLASS_KEYWORD))
 }
 
 private val NOT_EMPTY_BODY_FORMAT = "%s {\n}"
 
-private fun buildFileBody(modifier: KtToken): String = "$modifier $NOT_EMPTY_BODY_FORMAT"
+private fun buildFileBody(vararg modifiers: KtToken): String =
+        "${modifiers.joinToString(separator = " ")} $NOT_EMPTY_BODY_FORMAT"
