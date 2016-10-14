@@ -96,7 +96,9 @@ public class ProjectUtils {
                         cleanFolder((IContainer) member, predicate);
                     }
                     if (predicate.apply(member)) {
-                        member.delete(true, null);
+                        if (member.exists()) {
+                            member.delete(true, null);
+                        }
                     }
                 }
             }
