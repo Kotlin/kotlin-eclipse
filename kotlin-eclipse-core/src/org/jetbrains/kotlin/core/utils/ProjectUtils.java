@@ -151,7 +151,7 @@ public class ProjectUtils {
             if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
                 IPath path = classPathEntry.getPath();
                 IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(path.toString());
-                if (project.exists()) {
+                if (project.isAccessible()) {
                     projects.add(project);
                     getDependencyProjects(JavaCore.create(project));
                 }
