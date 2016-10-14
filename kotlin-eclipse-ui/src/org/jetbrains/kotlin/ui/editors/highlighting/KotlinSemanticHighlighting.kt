@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2015 JetBrains s.r.o.
+ * Copyright 2000-2016 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,47 +16,37 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.highlighting
 
-import org.jetbrains.kotlin.ui.editors.KotlinReconcilingListener
 import org.eclipse.core.resources.IFile
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer
+import org.eclipse.jdt.ui.PreferenceConstants
 import org.eclipse.jdt.ui.text.IColorManager
 import org.eclipse.jface.preference.IPreferenceStore
-import org.jetbrains.kotlin.ui.editors.Configuration.KotlinPresentationReconciler
+import org.eclipse.jface.preference.PreferenceConverter
+import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.ITextInputListener
 import org.eclipse.jface.text.ITextPresentationListener
 import org.eclipse.jface.text.TextPresentation
-import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.eclipse.jface.text.IPositionUpdater
-import org.eclipse.jface.text.DocumentEvent
-import org.eclipse.swt.custom.StyleRange
-import org.eclipse.jface.text.Position
-import org.eclipse.swt.graphics.TextStyle
-import org.eclipse.jface.text.IRegion
-import org.eclipse.jface.text.Region
-import org.eclipse.swt.graphics.RGB
-import org.eclipse.jdt.ui.PreferenceConstants
-import org.eclipse.jface.preference.PreferenceConverter
-import org.eclipse.swt.graphics.Color
-import org.eclipse.swt.widgets.Display
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.eclipse.swt.SWT
-import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.StyleAttributes
-import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.SmartCast
 import org.eclipse.jface.text.source.Annotation
-import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
-import org.jetbrains.kotlin.ui.editors.annotations.withLock
-import org.eclipse.jface.text.source.IAnnotationModelExtension
-import org.jetbrains.kotlin.ui.editors.KotlinReconcilingStrategy
 import org.eclipse.jface.util.IPropertyChangeListener
 import org.eclipse.jface.util.PropertyChangeEvent
-import org.eclipse.jface.text.ITextInputListener
-import org.eclipse.jface.text.IDocument
+import org.eclipse.swt.SWT
+import org.eclipse.swt.custom.StyleRange
+import org.eclipse.swt.graphics.Color
+import org.eclipse.swt.graphics.RGB
+import org.eclipse.swt.graphics.TextStyle
+import org.eclipse.swt.widgets.Display
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.eclipse.ui.utils.runJob
-import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.core.runtime.Status
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
+import org.jetbrains.kotlin.ui.editors.Configuration.KotlinPresentationReconciler
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinReconcilingListener
+import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
+import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.SmartCast
+import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.StyleAttributes
 
 private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
 
@@ -100,6 +90,8 @@ public class KotlinSemanticHighlighter(
         }
         
         if (document == null) return
+        
+        KotlinPsiManager.commitFile(file, document)
         
         removeAllPositions(document)
         
