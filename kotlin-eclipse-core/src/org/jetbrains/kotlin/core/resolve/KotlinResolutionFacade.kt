@@ -35,10 +35,15 @@ public class KotlinResolutionFacade(
         val eclipseProject: IProject, 
         val componentProvider: ComponentProvider,
         override val moduleDescriptor: ModuleDescriptor) : ResolutionFacade {
+
     override val project: Project
         get() = KotlinEnvironment.getEnvironment(eclipseProject.project).project
     
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
+        throw UnsupportedOperationException()
+    }
+    
+    override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()
     }
     

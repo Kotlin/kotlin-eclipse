@@ -21,10 +21,12 @@ import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.container.ComponentProvider
+import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.frontend.java.di.ContainerForTopDownAnalyzerForJvm
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
@@ -118,6 +120,38 @@ public object EclipseAnalyzerFacadeForJVM {
         return AnalysisResultWithProvider(
                 AnalysisResult.success(trace.getBindingContext(), moduleContext.module),
                 containerAndProvider.second)
+    }
+    
+    fun createContainerAndProvider(
+            environment: KotlinEnvironment,
+            filesToAnalyze: Collection<KtFile>): Pair<ContainerForTopDownAnalyzerForJvm, StorageComponentContainer> {
+        val filesSet = filesToAnalyze.toSet()
+        if (filesSet.size != filesToAnalyze.size) {
+            KotlinLogger.logWarning("Analyzed files have duplicates")
+        }
+        
+        val allFiles = LinkedHashSet<KtFile>(filesSet)
+        val addedFiles = filesSet.map { getPath(it) }.filterNotNull().toSet()
+        val javaProject = environment.javaProject
+        ProjectUtils.getSourceFilesWithDependencies(javaProject).filterNotTo(allFiles) {
+            getPath(it) in addedFiles
+        }
+        
+        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(
+                environment.project,
+                javaProject.project.name)
+        val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
+        val trace = CliLightClassGenerationSupport.CliBindingTrace()
+        
+        return createContainerForTopDownAnalyzerForJvm(
+                moduleContext,
+                trace,
+                providerFactory, 
+                GlobalSearchScope.allScope(environment.project),
+                javaProject,
+                LookupTracker.DO_NOTHING,
+                KotlinPackagePartProvider(environment),
+                LanguageVersion.LATEST)
     }
     
     private fun getPath(jetFile: KtFile): String? = jetFile.getVirtualFile()?.getPath()

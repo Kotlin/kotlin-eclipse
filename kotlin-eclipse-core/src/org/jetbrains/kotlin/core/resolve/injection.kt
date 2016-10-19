@@ -63,6 +63,7 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
     useInstance(lookupTracker)
 
     useImpl<ResolveSession>()
+    useImpl<EclipseResolveElementCache>()
 
     useImpl<LazyTopDownAnalyzer>()
     useImpl<LazyTopDownAnalyzerForTopLevel>()

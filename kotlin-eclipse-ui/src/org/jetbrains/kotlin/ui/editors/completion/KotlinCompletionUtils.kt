@@ -16,33 +16,41 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.completion
 
+import com.intellij.openapi.util.text.StringUtilRt
+import com.intellij.psi.PsiElement
 import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.core.search.SearchPattern
-import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
+import org.eclipse.jdt.internal.ui.JavaPlugin
+import org.eclipse.jdt.ui.PreferenceConstants
+import org.jetbrains.kotlin.container.getService
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.model.getEnvironment
+import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
+import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
-import com.intellij.openapi.util.text.StringUtilRt
-import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.resolve.lazy.ResolveSession
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
 import org.jetbrains.kotlin.ui.editors.codeassist.isVisible
-import org.eclipse.jdt.ui.PreferenceConstants
-import org.eclipse.jdt.internal.ui.JavaPlugin
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
-import org.jetbrains.kotlin.idea.codeInsight.ReferenceVariantsHelper
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
-import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.idea.analysis.performElementAdditionalResolve
+import org.jetbrains.kotlin.idea.analysis.findElementOfAdditionalResolve
+import org.jetbrains.kotlin.idea.analysis.CodeFragmentAnalyzer
+import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
+import org.jetbrains.kotlin.resolve.lazy.ProbablyNothingCallableNames
+import org.jetbrains.kotlin.resolve.TargetPlatform
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
@@ -59,7 +67,26 @@ public object KotlinCompletionUtils {
     
     public fun getReferenceVariants(simpleNameExpression: KtSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
             Collection<DeclarationDescriptor> {
-        val (analysisResult, container) = KotlinAnalyzer.analyzeFile(simpleNameExpression.getContainingKtFile())
+        val ktFile = simpleNameExpression.getContainingKtFile()
+        val (analysisResult, container) = KotlinAnalyzer.analyzeFile(ktFile)
+        val environment = getEnvironment(simpleNameExpression.project) as KotlinEnvironment
+        
+        val provider = EclipseAnalyzerFacadeForJVM.createContainerAndProvider(environment, listOf(ktFile)).second
+        val resolveSession = provider.getService(ResolveSession::class.java)
+        val fragmentAnalyzer = provider.getService(CodeFragmentAnalyzer::class.java)
+        val elementOfAdditionalResolve = findElementOfAdditionalResolve(simpleNameExpression)!!
+        val bc = performElementAdditionalResolve(
+                elementOfAdditionalResolve,
+                resolveSession,
+                fragmentAnalyzer,
+                emptyList(),
+                BodyResolveMode.PARTIAL_FOR_COMPLETION,
+                object : ProbablyNothingCallableNames {
+                    override fun functionNames(): Collection<String> = emptyList()
+                    override fun propertyNames(): Collection<String> = emptyList()
+                },
+                JvmPlatform)
+        
         
         val inDescriptor = simpleNameExpression
                 .getReferencedNameElement()
