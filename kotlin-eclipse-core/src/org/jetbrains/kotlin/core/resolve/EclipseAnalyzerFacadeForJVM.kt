@@ -20,6 +20,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.config.LanguageVersion
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
@@ -66,7 +67,7 @@ public object EclipseAnalyzerFacadeForJVM {
                 javaProject,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
-                LanguageVersion.LATEST)
+                LanguageVersionSettingsImpl.DEFAULT)
         val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         
@@ -101,7 +102,7 @@ public object EclipseAnalyzerFacadeForJVM {
                 GlobalSearchScope.allScope(environment.project),
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
-                LanguageVersion.LATEST)
+                LanguageVersionSettingsImpl.DEFAULT)
         val container = containerAndProvider.first
         val additionalProviders = listOf(container.javaDescriptorResolver.packageFragmentProvider)
         

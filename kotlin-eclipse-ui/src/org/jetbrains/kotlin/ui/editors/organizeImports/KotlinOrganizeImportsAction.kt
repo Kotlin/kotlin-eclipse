@@ -31,7 +31,7 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
-import org.jetbrains.kotlin.idea.imports.prepareOptimizedImports
+import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.ImportPath
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
@@ -140,11 +140,12 @@ fun prepareOptimizedImports(file: KtFile,
                             descriptorsToImport: Collection<DeclarationDescriptor>): List<ImportPath>? {
     val settings = settings.getCustomSettings(KotlinCodeStyleSettings::class.java)
     
-    return prepareOptimizedImports(
+    return OptimizedImportsBuilder(
             file,
-            descriptorsToImport,
-            settings.NAME_COUNT_TO_USE_STAR_IMPORT,
-            settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS) { fqName ->
-        fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS
-    }
+            OptimizedImportsBuilder.InputData(descriptorsToImport.toSet(), emptyList()),
+            OptimizedImportsBuilder.Options(
+                    settings.NAME_COUNT_TO_USE_STAR_IMPORT,
+                    settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS,
+                    { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS })
+    ).buildOptimizedImports()
 }

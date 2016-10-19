@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
-import org.jetbrains.kotlin.config.LanguageVersion;
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
 import org.jetbrains.kotlin.context.ContextKt;
 import org.jetbrains.kotlin.context.MutableModuleContext;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
@@ -39,12 +39,10 @@ import org.jetbrains.kotlin.descriptors.ConstructorDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.MemberDescriptor;
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor;
-import org.jetbrains.kotlin.descriptors.ModuleDescriptorKt;
 import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor;
 import org.jetbrains.kotlin.descriptors.PackageViewDescriptor;
 import org.jetbrains.kotlin.frontend.di.InjectionKt;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.platform.PlatformToKotlinClassMap;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
@@ -103,10 +101,7 @@ public class BuiltInsReferenceResolver {
         
         MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(myProject,
                 Name.special("<built-ins resolver module>"), 
-                ModuleDescriptorKt.ModuleParameters(
-                        JvmPlatform.INSTANCE.getDefaultModuleParameters().getDefaultImports(),
-                        PlatformToKotlinClassMap.EMPTY
-                ), 
+                JvmPlatform.INSTANCE.getDefaultImports(),
                 DefaultBuiltIns.getInstance());
         newModuleContext.setDependencies(newModuleContext.getModule());
         
@@ -114,7 +109,7 @@ public class BuiltInsReferenceResolver {
                 newModuleContext.getStorageManager(), jetBuiltInsFiles);
         
         ResolveSession resolveSession = InjectionKt.createLazyResolveSession(newModuleContext, declarationFactory,
-                new BindingTraceContext(), TargetPlatform.Default.INSTANCE, LanguageVersion.LATEST);
+                new BindingTraceContext(), TargetPlatform.Default.INSTANCE, LanguageVersionSettingsImpl.DEFAULT);
         
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
         

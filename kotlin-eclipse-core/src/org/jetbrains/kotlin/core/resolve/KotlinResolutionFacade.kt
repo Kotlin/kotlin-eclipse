@@ -42,6 +42,10 @@ public class KotlinResolutionFacade(
         throw UnsupportedOperationException()
     }
     
+    override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext {
+        throw UnsupportedOperationException()
+    }
+    
     override fun analyzeFullyAndGetResult(elements: Collection<KtElement>): AnalysisResult {
         throw UnsupportedOperationException()
     }

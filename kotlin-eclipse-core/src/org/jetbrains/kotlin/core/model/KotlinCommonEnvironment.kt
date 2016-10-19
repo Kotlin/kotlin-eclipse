@@ -58,7 +58,6 @@ import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver
 import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import org.jetbrains.kotlin.core.utils.KotlinImportInserterHelper
-import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
@@ -123,7 +122,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(ImportInsertHelper::class.java, KotlinImportInserterHelper())
         }
         
-        ExternalDeclarationsProvider.Companion.registerExtensionPoint(project)
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
         for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES) {
             registerApplicationExtensionPointsAndExtensionsFrom(config)
