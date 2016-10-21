@@ -65,17 +65,7 @@ public class KotlinRenameAction(val editor: KotlinCommonEditor) : SelectionDispa
     }
     
     override fun run(selection: ITextSelection) {
-        val jetElement = EditorUtil.getJetElement(editor, selection.getOffset())
-        if (jetElement == null) return
-        
-        performRefactoring(jetElement)
-    }
-    
-    fun performRefactoring(jetElement: KtElement) {
-        val sourceElements = jetElement.resolveToSourceDeclaration()
-        if (sourceElements.isEmpty()) return
-        
-        beginRenameRefactoring(sourceElements, jetElement, editor)
+        beginRenameRefactoring(selection, editor)
     }
     
     fun undo(editor: KotlinCommonEditor, startingUndoOperation: IUndoableOperation?) {
@@ -111,46 +101,57 @@ public class KotlinRenameAction(val editor: KotlinCommonEditor) : SelectionDispa
         return if (viewer is ITextViewerExtension6) viewer.getUndoManager() else null
     }
     
-    fun beginRenameRefactoring(sourceElements: List<SourceElement>, selectedElement: KtElement, editor: KotlinCommonEditor) {
-        val linkedPositionGroup = LinkedPositionGroup()
+    fun beginRenameRefactoring(selection: ITextSelection, editor: KotlinCommonEditor) {
+        val selectedElement = EditorUtil.getJetElement(editor, selection.getOffset()) ?: return
         val offsetInDocument = selectedElement.getTextDocumentOffset(editor.document)
         
-        val textLength = getLengthOfIdentifier(selectedElement)
-        if (textLength == null) return
+        val textLength = getLengthOfIdentifier(selectedElement) ?: return
         
         val position = LinkedPosition(editor.document, offsetInDocument, textLength)
-        linkedPositionGroup.addPosition(position)
+        val linkedPositionGroup = LinkedPositionGroup().apply { addPosition(position) }
         
         val startindUndoOperation = getCurrentUndoOperation(editor)
         
-        val linkedModeModel = LinkedModeModel()
-        linkedModeModel.addGroup(linkedPositionGroup)
-        linkedModeModel.forceInstall()
-        linkedModeModel.addLinkingListener(EditorHighlightingSynchronizer(editor))
-        linkedModeModel.addLinkingListener(object : ILinkedModeListener {
-            override fun left(model: LinkedModeModel, flags: Int) {
-                if ((flags and ILinkedModeListener.UPDATE_CARET) != 0) {
+        val linkedModeModel = LinkedModeModel().apply {
+            addGroup(linkedPositionGroup)
+            forceInstall()
+            addLinkingListener(EditorHighlightingSynchronizer(editor))
+            
+            addLinkingListener(object : ILinkedModeListener {
+                override fun left(model: LinkedModeModel, flags: Int) {
+                    if ((flags and ILinkedModeListener.UPDATE_CARET) == 0) return
+                    
                     val newName = position.getContent()
                     undo(editor, startindUndoOperation)
+
+                    val file = editor.eclipseFile ?: return
+                    KotlinPsiManager.commitFile(file, editor.document)
                     
-                    KotlinPsiManager.getKotlinFileIfExist(editor.eclipseFile!!, editor.document.get()) // commit document
-                    
+                    val sourceElements = computeSourceElements(selection, editor)
+                    if (sourceElements.isEmpty()) return
+
                     doRename(sourceElements, newName, editor)
                 }
-            }
-            
-            override fun resume(model: LinkedModeModel?, flags: Int) {
-            }
-            
-            override fun suspend(model: LinkedModeModel?) {
-            }
-        })
+
+                override fun resume(model: LinkedModeModel?, flags: Int) {
+                }
+
+                override fun suspend(model: LinkedModeModel?) {
+                }
+            })
+        } 
         
-        val ui = EditorLinkedModeUI(linkedModeModel, editor.getViewer())
-        ui.setExitPosition(editor.getViewer(), offsetInDocument, 0, Integer.MAX_VALUE)
-        ui.setExitPolicy(DeleteBlockingExitPolicy(editor.document))
-        ui.enter()
+        EditorLinkedModeUI(linkedModeModel, editor.getViewer()).apply {
+            setExitPosition(editor.getViewer(), offsetInDocument, 0, Integer.MAX_VALUE)
+            setExitPolicy(DeleteBlockingExitPolicy(editor.document))
+            enter()
+        }
     }
+}
+
+private fun computeSourceElements(selection: ITextSelection, editor: KotlinCommonEditor): List<SourceElement> {
+    val jetElement = EditorUtil.getJetElement(editor, selection.getOffset()) ?: return emptyList()
+    return jetElement.resolveToSourceDeclaration()
 }
 
 private inline fun <T : IJavaElement> wrapIntoLightElementForKotlin(element: T, wrap: (T) -> T): T {
