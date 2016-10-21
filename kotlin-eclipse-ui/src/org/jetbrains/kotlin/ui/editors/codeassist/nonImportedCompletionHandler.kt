@@ -14,12 +14,15 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.eclipse.jdt.core.JavaCore
+import com.intellij.openapi.util.text.StringUtil
 
 fun lookupNonImportedTypes(
         simpleNameExpression: KtSimpleNameExpression,
         identifierPart: String,
         ktFile: KtFile,
         javaProject: IJavaProject): List<TypeNameMatch> {
+    if (!identifierPart.isCapitalized()) return emptyList()
+    
     val callTypeAndReceiver = CallTypeAndReceiver.detect(simpleNameExpression)
      
     if ((callTypeAndReceiver !is CallTypeAndReceiver.TYPE && 
@@ -42,6 +45,8 @@ fun lookupNonImportedTypes(
                 it.packageName != originPackage
             }
 }
+
+private fun String.isCapitalized(): Boolean = isNotEmpty() && this[0].isUpperCase()
 
 private fun searchFor(identifierPart: String, javaProject: IJavaProject): List<TypeNameMatch> {
     val foundTypes = arrayListOf<TypeNameMatch>()
