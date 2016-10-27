@@ -144,7 +144,7 @@ public class EclipseJavaElementUtil {
         try {
             IMethod methodElement = (IMethod) methodBinding.getJavaElement();
             String[] parameterNames;
-            if (methodElement != null) {
+            if (methodElement != null && methodElement.exists()) {
                 parameterNames = methodElement.getParameterNames();
             } else {
                 int parametersCount = methodBinding.getParameterTypes().length;
