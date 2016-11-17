@@ -1,12 +1,16 @@
 <project default="get_bundled">
 	<property name="compiler.tag" value="for_eclipse" />
-	<property name="bootstrap_branch" value="1.0.4"/>
+	<property name="bootstrap_branch" value=""/>
 	<property name="idea-version" value="162.1812.17"/>
 	
 	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
 	
 	<property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
-	<property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/bt345/${compiler.query}" />
+    
+    <property name="kotlin-version" value="1.0.5" />
+    <property name="kotlin-idea-compatible-version" value="IJ2016.3-2" />
+    <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_105_CompilerAndPlugin_NoTests/922959:id" />
+    
 	<property name="idea-sdk-url" value="https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea" />
 	
 	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
@@ -81,10 +85,10 @@
 		<mkdir dir="${download.dir}" />
 
 		<get 
-			src="${teamcity-kotlin-url}/kotlin-plugin-%7Bbuild.number%7D.zip${branch}" 
+			src="${teamcity-kotlin-url}/kotlin-plugin-${kotlin-version}-release-${kotlin-idea-compatible-version}.zip" 
 			dest="${download.dir}/${compiler-artifact-file}" 
 			usetimestamp="true" />
-		
+	    
 		<sequential>
 			<unzip src="${download.dir}/${compiler-artifact-file}" dest="${download.dir}">
 				<patternset>
