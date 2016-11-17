@@ -1,11 +1,13 @@
 package com.intellij.formatting;
 
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.intellij.formatting.engine.BlockRangesMap;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.containers.ContainerUtil;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * Extends {@link SpacingImpl} in order to add notion of dependency range.
@@ -66,20 +68,18 @@ public class DependantSpacingImpl extends SpacingImpl {
     }
     
     @Override
-    public void refresh(FormatProcessor formatter) {
-        if (isDependentRegionLinefeedStatusChanged()) {
-            return;
-        }
-        
-        boolean atLeastOneDependencyRangeContainsLf = false;
-        for (TextRange dependency : myDependentRegionRanges) {
-            atLeastOneDependencyRangeContainsLf |= formatter.containsLineFeeds(dependency);
-        }
-        
-        if (atLeastOneDependencyRangeContainsLf)
-            myFlags |= DEPENDENCE_CONTAINS_LF_MASK;
-        else
-            myFlags &= ~DEPENDENCE_CONTAINS_LF_MASK;
+    public void refresh(BlockRangesMap helper) {
+      if (isDependentRegionLinefeedStatusChanged()) {
+        return;
+      }
+
+      boolean atLeastOneDependencyRangeContainsLf = false;
+      for (TextRange dependency : myDependentRegionRanges) {
+        atLeastOneDependencyRangeContainsLf |= helper.containsLineFeeds(dependency);
+      }
+
+      if (atLeastOneDependencyRangeContainsLf) myFlags |= DEPENDENCE_CONTAINS_LF_MASK;
+      else myFlags &= ~DEPENDENCE_CONTAINS_LF_MASK;
     }
     
     @NotNull
