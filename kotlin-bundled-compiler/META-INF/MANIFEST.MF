@@ -412,4 +412,5 @@ Export-Package: com.google.common.base,
  org.jetbrains.org.objectweb.asm.util,
  org.picocontainer,
  org.picocontainer.defaults,
- org.picocontainer.monitors
+ org.picocontainer.monitors,
+ com.intellij.configurationStore
