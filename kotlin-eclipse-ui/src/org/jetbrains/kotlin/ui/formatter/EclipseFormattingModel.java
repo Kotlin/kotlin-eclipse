@@ -29,7 +29,7 @@ public class EclipseFormattingModel implements FormattingDocumentModel {
     private final CodeStyleSettings mySettings;
     
     private final int maxDepthToCheck = 10;
-    private final String applyChangeStateClassName = "com.intellij.formatting.FormatProcessor$ApplyChangesState";
+    private final String applyChangeStateClassName = "com.intellij.formatting.engine.ApplyChangesState";
     private final String prepareMethodName = "prepare";
     
     private final boolean forLineIndentation;
