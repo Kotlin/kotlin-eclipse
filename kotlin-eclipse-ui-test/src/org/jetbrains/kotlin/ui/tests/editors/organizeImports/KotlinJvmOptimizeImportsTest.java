@@ -3,20 +3,14 @@ package org.jetbrains.kotlin.ui.tests.editors.organizeImports;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class KotlinOptimizeImportsTest extends KotlinOrganizeImportsTestCase {
+public class KotlinJvmOptimizeImportsTest extends KotlinOrganizeImportsTestCase {
     @Override
     protected String getTestDataRelativePath() {
-        return "../common_testData/ide/editor/optimizeImports";
+        return "../common_testData/ide/editor/optimizeImports/jvm";
     }
     
     @Test
     public void AlreadyOptimized() {
-        doAutoTest();
-    }
-    
-    @Ignore("Enable this test when autoimport for functions will be ready")
-    @Test
-    public void ArrayAccessExpression() {
         doAutoTest();
     }
     
@@ -31,32 +25,6 @@ public class KotlinOptimizeImportsTest extends KotlinOrganizeImportsTestCase {
     }
     
     @Test
-    public void ClassMemberImported() {
-        doAutoTest();
-    }
-    
-    @Ignore("Enable this test when autoimport for functions will be ready")
-    @Test
-    public void ComponentFunction() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void CurrentPackage() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void DefaultJsImports() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void DefaultObjectReference() {
-        doAutoTest();
-    }
-    
-    @Test
     public void DoNotTouchIfNoChanges() {
         doAutoTest();
     }
@@ -67,34 +35,12 @@ public class KotlinOptimizeImportsTest extends KotlinOrganizeImportsTestCase {
     }
     
     @Test
-    public void Enums() {
-        doAutoTest();
-    }
-    
-    @Test
     public void FromCompanionObject() {
         doAutoTest();
     }
     
     @Test
     public void FromCompanionObjectGeneric() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void InvokeFunction() {
-        doAutoTest();
-    }
-    
-    
-    @Ignore("Enable this test when autoimport for functions will be ready")
-    @Test
-    public void IteratorFunction() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void KeywordNames() {
         doAutoTest();
     }
     
@@ -114,32 +60,7 @@ public class KotlinOptimizeImportsTest extends KotlinOrganizeImportsTestCase {
     }
     
     @Test
-    public void Kt2488EnumEntry() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void Kt2709() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void KT9875() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void MembersInScope() {
-        doAutoTest();
-    }
-    
-    @Test
     public void NestedClassInObject() {
-        doAutoTest();
-    }
-    
-    @Test
-    public void NestedClassReferenceOutsideClassBody() {
         doAutoTest();
     }
     
