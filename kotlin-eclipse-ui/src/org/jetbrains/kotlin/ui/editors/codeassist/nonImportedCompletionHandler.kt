@@ -24,10 +24,13 @@ fun lookupNonImportedTypes(
     if (!identifierPart.isCapitalized()) return emptyList()
     
     val callTypeAndReceiver = CallTypeAndReceiver.detect(simpleNameExpression)
+    
+    val isAnnotation = callTypeAndReceiver is CallTypeAndReceiver.ANNOTATION
      
-    if ((callTypeAndReceiver !is CallTypeAndReceiver.TYPE && 
-        callTypeAndReceiver !is CallTypeAndReceiver.DEFAULT) ||
-        callTypeAndReceiver.receiver != null) {
+    if ((callTypeAndReceiver !is CallTypeAndReceiver.TYPE &&
+            callTypeAndReceiver !is CallTypeAndReceiver.DEFAULT &&
+            !isAnnotation) ||
+            callTypeAndReceiver.receiver != null) {
         return emptyList()
     }
     
@@ -38,7 +41,7 @@ fun lookupNonImportedTypes(
     val originPackage = ktFile.packageFqName.asString()
     
     // TODO: exclude variants by callType.descriptorKind
-    return searchFor(identifierPart, javaProject)
+    return searchFor(identifierPart, javaProject, isAnnotation)
             .filter {
                 it.fullyQualifiedName !in importsSet &&
                 it.packageName !in importsSet &&
@@ -48,7 +51,7 @@ fun lookupNonImportedTypes(
 
 private fun String.isCapitalized(): Boolean = isNotEmpty() && this[0].isUpperCase()
 
-private fun searchFor(identifierPart: String, javaProject: IJavaProject): List<TypeNameMatch> {
+private fun searchFor(identifierPart: String, javaProject: IJavaProject, isAnnotation: Boolean): List<TypeNameMatch> {
     val foundTypes = arrayListOf<TypeNameMatch>()
     val collector = object : TypeNameMatchRequestor() {
         override fun acceptTypeNameMatch(match: TypeNameMatch) {
@@ -70,7 +73,7 @@ private fun searchFor(identifierPart: String, javaProject: IJavaProject): List<T
                 SearchPattern.R_EXACT_MATCH, 
                 identifierPart.toCharArray(), 
                 SearchPattern.R_CAMELCASE_MATCH, 
-                IJavaSearchConstants.TYPE, 
+                if (isAnnotation) IJavaSearchConstants.ANNOTATION_TYPE else IJavaSearchConstants.TYPE, 
                 javaProjectSearchScope, 
                 collector,
                 IJavaSearchConstants.FORCE_IMMEDIATE_SEARCH, 
