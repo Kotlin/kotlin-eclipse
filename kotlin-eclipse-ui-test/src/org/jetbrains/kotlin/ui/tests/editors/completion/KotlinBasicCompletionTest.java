@@ -468,4 +468,9 @@ public class KotlinBasicCompletionTest extends KotlinBasicCompletionTestCase {
     public void testOneProposalWithStarImport() {
         doTest("testData/completion/basic/common/OneWithStarImport.kt");
     }
+    
+    @Test
+    public void testNotImportedAnnotation() {
+        doTest("testData/completion/basic/common/notImportedAnnotation.kt");
+    }
 }
