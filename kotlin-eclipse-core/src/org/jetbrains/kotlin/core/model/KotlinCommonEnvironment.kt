@@ -47,13 +47,14 @@ import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
 import com.intellij.psi.impl.file.impl.JavaFileManager
 import org.eclipse.core.runtime.IPath
+import org.jetbrains.kotlin.annotation.AnnotationCollectorExtension
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
-import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
 import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
+import org.jetbrains.kotlin.codegen.extensions.ClassBuilderInterceptorExtension
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.core.log.KotlinLogger
@@ -69,10 +70,12 @@ import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
 import org.jetbrains.kotlin.resolve.diagnostics.SuppressStringProvider
+import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
+import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisCompletedHandlerExtension
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -132,9 +135,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         }
         
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
-        for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES) {
-            registerApplicationExtensionPointsAndExtensionsFrom(config)
-        }
+        registerApplicationExtensionPointsAndExtensionsFrom()
     }
     
     fun getRoots(): Set<JavaRoot> = roots
@@ -198,13 +199,14 @@ private fun registerProjectExtensionPoints(area: ExtensionsArea) {
     registerExtensionPoint(area, PsiElementFinder.EP_NAME, PsiElementFinder::class)
 }
 
-private fun registerApplicationExtensionPointsAndExtensionsFrom(configFilePath: String) {
-    val pluginRoot = File(KOTLIN_COMPILER_PATH)
-//    CoreApplicationEnvironment.registerExtensionPointAndExtensions(pluginRoot, configFilePath, Extensions.getRootArea())
-
+private fun registerApplicationExtensionPointsAndExtensionsFrom() {
     registerExtensionPointInRoot(DiagnosticSuppressor.EP_NAME, DiagnosticSuppressor::class)
     registerExtensionPointInRoot(DefaultErrorMessages.Extension.EP_NAME, DefaultErrorMessages.Extension::class)
     registerExtensionPointInRoot(SuppressStringProvider.EP_NAME, SuppressStringProvider::class)
+    
+    registerExtensionPointInRoot(DefaultErrorMessages.Extension.EP_NAME, DefaultErrorMessagesJvm::class)
+    registerExtensionPointInRoot(ClassBuilderInterceptorExtension.extensionPointName, AnnotationCollectorExtension::class)
+    registerExtensionPointInRoot(AnalysisCompletedHandlerExtension.extensionPointName, AnalysisCompletedHandlerExtension::class)
     
     registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
     registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)
