@@ -48,8 +48,8 @@ import org.eclipse.core.runtime.IPath
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
-import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
+import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -58,7 +58,6 @@ import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver
 import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import org.jetbrains.kotlin.core.utils.KotlinImportInserterHelper
-import org.jetbrains.kotlin.extensions.ExternalDeclarationsProvider
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
@@ -130,7 +129,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
         
-        ExternalDeclarationsProvider.Companion.registerExtensionPoint(project)
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
         for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES) {
             registerApplicationExtensionPointsAndExtensionsFrom(config)

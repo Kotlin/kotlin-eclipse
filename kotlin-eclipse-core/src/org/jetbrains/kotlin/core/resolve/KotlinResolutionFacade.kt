@@ -35,10 +35,17 @@ public class KotlinResolutionFacade(
         val eclipseProject: IProject, 
         val componentProvider: ComponentProvider,
         override val moduleDescriptor: ModuleDescriptor) : ResolutionFacade {
+    override fun resolveToDescriptor(declaration: KtDeclaration, bodyResolveMode: BodyResolveMode): DeclarationDescriptor {
+        throw UnsupportedOperationException()
+    }
+
     override val project: Project
         get() = KotlinEnvironment.getEnvironment(eclipseProject.project).project
     
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
+        throw UnsupportedOperationException()
+    }
+    override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()
     }
     
@@ -57,10 +64,6 @@ public class KotlinResolutionFacade(
     }
     
     override fun <T : Any> getIdeService(serviceClass: Class<T>): T {
-        throw UnsupportedOperationException()
-    }
-    
-    override fun resolveToDescriptor(declaration: KtDeclaration): DeclarationDescriptor {
         throw UnsupportedOperationException()
     }
 }

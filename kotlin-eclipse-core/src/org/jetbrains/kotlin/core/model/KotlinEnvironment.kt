@@ -37,10 +37,10 @@ import org.eclipse.jdt.internal.core.JavaProject
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
-import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.JvmCliVirtualFileFinderFactory
-import org.jetbrains.kotlin.cli.jvm.compiler.JvmDependenciesIndexImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
+import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
+import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
@@ -50,13 +50,14 @@ import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionFromTemplate
+import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.StandardScriptDefinition
 import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
+import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFactory
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -163,7 +164,7 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         val ioFile = eclipseFile.getLocation().toFile()
         val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(ioFile) ?: return
 
-        if (definition is KotlinScriptDefinitionFromTemplate) {
+        if (definition is KotlinScriptDefinition) {
             val classLoader = definition.template.java.classLoader
             for (file in classpathFromClassloader(classLoader)) {
                 addToClasspath(file, JavaRoot.RootType.BINARY)
@@ -210,6 +211,8 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
         KotlinCommonEnvironment(disposable) {
     val javaProject = JavaCore.create(eclipseProject)
     
+    val index by lazy { JvmDependenciesIndexImpl(getRoots().toList()) }
+    
     init {
         registerProjectDependenServices(javaProject)
         configureClasspath(javaProject)
@@ -229,7 +232,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
     }
     
     private fun registerProjectDependenServices(javaProject: IJavaProject) {
-        project.registerService(JvmVirtualFileFinderFactory::class.java, EclipseVirtualFileFinder(javaProject))
+        project.registerService(JvmVirtualFileFinderFactory::class.java, EclipseVirtualFileFinderFactory(javaProject))
         project.registerService(KotlinLightClassManager::class.java, KotlinLightClassManager(javaProject.project))
     }
     

@@ -23,11 +23,8 @@ import com.intellij.psi.NonClasspathClassFinder
 import com.intellij.psi.PsiElementFinder
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.resolve.jvm.KotlinSafeClassFinder
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionFromTemplate
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import java.io.File
-import java.net.URL
-import java.net.URLClassLoader
 
 class KotlinScriptDependenciesClassFinder(
         project: Project,

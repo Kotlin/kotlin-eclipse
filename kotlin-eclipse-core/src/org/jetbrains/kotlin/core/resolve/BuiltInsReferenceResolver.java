@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
-import org.jetbrains.kotlin.config.LanguageVersion;
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
 import org.jetbrains.kotlin.context.ContextKt;
 import org.jetbrains.kotlin.context.MutableModuleContext;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
@@ -39,18 +39,16 @@ import org.jetbrains.kotlin.descriptors.ConstructorDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.MemberDescriptor;
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor;
-import org.jetbrains.kotlin.descriptors.ModuleDescriptorKt;
 import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor;
 import org.jetbrains.kotlin.descriptors.PackageViewDescriptor;
 import org.jetbrains.kotlin.frontend.di.InjectionKt;
+import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.platform.PlatformToKotlinClassMap;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
 import org.jetbrains.kotlin.resolve.TargetPlatform;
 import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
@@ -101,20 +99,21 @@ public class BuiltInsReferenceResolver {
         //if the sources are present, then the value cannot be null
         assert (jetBuiltInsFiles != null);
         
-        MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(myProject,
+        MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(
+                ContextKt.ProjectContext(myProject),
                 Name.special("<built-ins resolver module>"), 
-                ModuleDescriptorKt.ModuleParameters(
-                        JvmPlatform.INSTANCE.getDefaultModuleParameters().getDefaultImports(),
-                        PlatformToKotlinClassMap.EMPTY
-                ), 
                 DefaultBuiltIns.getInstance());
         newModuleContext.setDependencies(newModuleContext.getModule());
         
         FileBasedDeclarationProviderFactory declarationFactory = new FileBasedDeclarationProviderFactory(
                 newModuleContext.getStorageManager(), jetBuiltInsFiles);
         
-        ResolveSession resolveSession = InjectionKt.createLazyResolveSession(newModuleContext, declarationFactory,
-                new BindingTraceContext(), TargetPlatform.Default.INSTANCE, LanguageVersion.LATEST);
+        ResolveSession resolveSession = InjectionKt.createLazyResolveSession(
+                newModuleContext, 
+                declarationFactory,
+                new BindingTraceContext(), 
+                TargetPlatform.Default.INSTANCE, 
+                LanguageVersionSettingsImpl.DEFAULT);
         
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
         
@@ -226,9 +225,10 @@ public class BuiltInsReferenceResolver {
         }
         
         if (originalDescriptor instanceof ClassDescriptor) {
-            return FindClassInModuleKt.findClassAcrossModuleDependencies(
-                    moduleDescriptor, 
-                    DescriptorUtilsKt.getClassId((ClassDescriptor) originalDescriptor));
+            ClassId classId = DescriptorUtilsKt.getClassId((ClassDescriptor) originalDescriptor);
+            if (classId == null) return null;
+            
+            return FindClassInModuleKt.findClassAcrossModuleDependencies(moduleDescriptor, classId);
         }
         
         if (originalDescriptor instanceof PackageFragmentDescriptor) {

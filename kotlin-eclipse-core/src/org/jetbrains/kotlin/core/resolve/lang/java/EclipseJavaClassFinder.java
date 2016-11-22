@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.core.resolve.lang.java;
 import java.util.Arrays;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.eclipse.core.resources.IFolder;
@@ -49,6 +50,7 @@ import org.eclipse.jdt.internal.core.NameLookup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClass;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPackage;
@@ -57,7 +59,11 @@ import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.load.java.structure.JavaPackage;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
-import org.jetbrains.kotlin.resolve.jvm.JavaClassFinderPostConstruct;
+import org.jetbrains.kotlin.resolve.BindingTrace;
+import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
+import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer;
+
+import com.intellij.mock.MockProject;
 
 public class EclipseJavaClassFinder implements JavaClassFinder {
 
@@ -68,9 +74,14 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
         javaProject = project;
     }
     
-    @Inject
-    public void setComponentPostConstruct(@NotNull JavaClassFinderPostConstruct finderPostConstruct) {
-        // Only activate post create
+    @PostConstruct
+    public void initialize(@NotNull BindingTrace trace, @NotNull KotlinCodeAnalyzer codeAnalyzer) {
+        if (javaProject == null) {
+            return;
+        }
+        
+        MockProject ideaProject = KotlinEnvironment.getEnvironment(javaProject.getProject()).getProject();
+        CodeAnalyzerInitializer.Companion.getInstance(ideaProject).initialize(trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer);
     }
     
     @Override

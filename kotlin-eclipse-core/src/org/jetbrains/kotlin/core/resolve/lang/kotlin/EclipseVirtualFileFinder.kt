@@ -40,8 +40,29 @@ import org.eclipse.jdt.core.dom.ITypeBinding
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClassifier
 import org.eclipse.jdt.internal.compiler.util.Util.isClassFileName
+import org.jetbrains.kotlin.builtins.BuiltInSerializerProtocol
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
+import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndex
+import java.io.InputStream
 
-public class EclipseVirtualFileFinder(val javaProject: IJavaProject) : VirtualFileKotlinClassFinder(), JvmVirtualFileFinderFactory {
+class EclipseVirtualFileFinder(
+        private val javaProject: IJavaProject,
+        private val scope: GlobalSearchScope) : VirtualFileKotlinClassFinder() {
+    override fun findBuiltInsData(packageFqName: FqName): InputStream? {
+        val fileName = BuiltInSerializerProtocol.getBuiltInsFileName(packageFqName)
+
+        // "<builtins-metadata>" is just a made-up name
+        // JvmDependenciesIndex requires the ClassId of the class which we're searching for, to cache the last request+result
+        val classId = ClassId(packageFqName, Name.special("<builtins-metadata>"))
+        
+        val index = KotlinEnvironment.getEnvironment(javaProject.getProject()).index
+
+        return index.findClass(classId, acceptedRootTypes = JavaRoot.OnlyBinary) { dir, rootType ->
+            dir.findChild(fileName)?.check(VirtualFile::isValid)
+        }?.check { it in scope }?.inputStream
+    }
+
     override public fun findVirtualFileWithHeader(classId: ClassId): VirtualFile? {
         val type = javaProject.findType(classId.getPackageFqName().asString(), classId.getRelativeClassName().asString())
         if (type == null || !isBinaryKotlinClass(type)) return null
@@ -91,8 +112,10 @@ public class EclipseVirtualFileFinder(val javaProject: IJavaProject) : VirtualFi
 
         return KotlinBinaryClassCache.getKotlinBinaryClass(file!!)
     }
-
-    override public fun create(scope: GlobalSearchScope): JvmVirtualFileFinder {
-        return EclipseVirtualFileFinder(javaProject)
-    }
 }
+
+class EclipseVirtualFileFinderFactory(private val project: IJavaProject) : JvmVirtualFileFinderFactory {
+    override fun create(scope: GlobalSearchScope): JvmVirtualFileFinder = EclipseVirtualFileFinder(project, scope)
+}
+
+fun <T: Any> T.check(predicate: (T) -> Boolean): T? = if (predicate(this)) this else null
