@@ -17,6 +17,8 @@
 package org.jetbrains.kotlin.core.model
 
 import com.intellij.codeInsight.ContainerProvider
+import com.intellij.codeInsight.ExternalAnnotationsManager
+import com.intellij.codeInsight.InferredAnnotationsManager
 import com.intellij.codeInsight.NullableNotNullManager
 import com.intellij.codeInsight.runner.JavaMainMethodProvider
 import com.intellij.core.CoreApplicationEnvironment
@@ -50,6 +52,8 @@ import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
+import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
+import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.core.log.KotlinLogger
@@ -122,6 +126,9 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(KotlinSourceIndex::class.java, KotlinSourceIndex())
             registerService(KotlinCacheService::class.java, KotlinCacheServiceImpl(project))
             registerService(ImportInsertHelper::class.java, KotlinImportInserterHelper())
+            
+            registerService(ExternalAnnotationsManager::class.java, MockExternalAnnotationsManager())
+            registerService(InferredAnnotationsManager::class.java, MockInferredAnnotationsManager())
         }
         
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
