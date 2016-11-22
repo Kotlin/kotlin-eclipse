@@ -1,8 +1,8 @@
 package org.jetbrains.kotlin.ui.tests.scripts.templates
 
-import org.jetbrains.kotlin.script.ScriptTemplateProvider
+import org.jetbrains.kotlin.script.ScriptTemplatesProvider
 
-class TestKtScriptTemplateProvider : ScriptTemplateProvider {
+class TestKtScriptTemplateProvider : ScriptTemplatesProvider {
     override val dependenciesClasspath: Iterable<String>
         get() = listOf("bin/", "target/classes/")
     
@@ -15,8 +15,8 @@ class TestKtScriptTemplateProvider : ScriptTemplateProvider {
     override val isValid: Boolean
         get() = true
     
-    override val templateClassName: String
-        get() = "org.jetbrains.kotlin.ui.tests.scripts.templates.TestScriptTemplateDefinition"
+    override val templateClassNames: Iterable<String>
+        get() = listOf("org.jetbrains.kotlin.ui.tests.scripts.templates.TestScriptTemplateDefinition")
     
     override val version: Int
         get() = 10

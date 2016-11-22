@@ -22,11 +22,11 @@ import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtCodeFragment
+import org.jetbrains.kotlin.psi.KtDeclarationWithInitializer
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtTypeReference
-import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 public class KotlinRemoveExplicitTypeAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
@@ -41,7 +41,7 @@ public class KotlinRemoveExplicitTypeAssistProposal(editor: KotlinEditor) : Kotl
 
         val caretOffset = getCaretOffsetInPSI(editor, editor.document)
         
-        val initializer = (element as? KtWithExpressionInitializer)?.getInitializer()
+        val initializer = (element as? KtDeclarationWithInitializer)?.getInitializer()
         if (initializer != null && initializer.getTextRange().containsOffset(caretOffset)) return false
         
         val bindingContext = getBindingContext(element)

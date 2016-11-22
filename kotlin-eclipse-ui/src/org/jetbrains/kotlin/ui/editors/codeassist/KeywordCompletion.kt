@@ -14,7 +14,6 @@ import com.intellij.psi.filters.position.PositionElementFilter
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.ANNOTATION_CLASS
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.CLASS_ONLY
@@ -66,7 +65,6 @@ import org.jetbrains.kotlin.lexer.KtTokens.SUPER_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.THIS_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.TRUE_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.TRY_KEYWORD
-import org.jetbrains.kotlin.lexer.KtTokens.TYPE_ALIAS_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.WHEN_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.WHILE_KEYWORD
 import org.jetbrains.kotlin.name.Name
@@ -78,6 +76,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtConstantExpression
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtDeclarationWithBody
+import org.jetbrains.kotlin.psi.KtDeclarationWithInitializer
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtEnumEntry
 import org.jetbrains.kotlin.psi.KtExpression
@@ -93,12 +92,12 @@ import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.psi.KtPsiUtil
 import org.jetbrains.kotlin.psi.KtTryExpression
 import org.jetbrains.kotlin.psi.KtTypeParameter
-import org.jetbrains.kotlin.psi.KtWithExpressionInitializer
 import org.jetbrains.kotlin.psi.psiUtil.nextLeaf
 import org.jetbrains.kotlin.psi.psiUtil.parentsWithSelf
 import org.jetbrains.kotlin.psi.psiUtil.prevLeaf
 import org.jetbrains.kotlin.psi.psiUtil.prevLeafs
 import org.jetbrains.kotlin.psi.psiUtil.siblings
+import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.resolve.ModifierCheckerCore
 import java.util.ArrayList
 
@@ -243,7 +242,7 @@ object KeywordCompletion {
                     }
                 }
 
-                is KtWithExpressionInitializer -> {
+                is KtDeclarationWithInitializer -> {
                     val initializer = parent.initializer
                     if (prevParent == initializer) {
                         return buildFilterWithContext("val v = ", initializer!!, position)
