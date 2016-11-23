@@ -45,11 +45,13 @@ import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
 import com.intellij.psi.impl.file.impl.JavaFileManager
 import org.eclipse.core.runtime.IPath
+import org.jetbrains.kotlin.annotation.AnnotationCollectorExtension
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
+import org.jetbrains.kotlin.codegen.extensions.ClassBuilderInterceptorExtension
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -58,16 +60,25 @@ import org.jetbrains.kotlin.core.resolve.BuiltInsReferenceResolver
 import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import org.jetbrains.kotlin.core.utils.KotlinImportInserterHelper
+import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
+import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
+import org.jetbrains.kotlin.resolve.diagnostics.SuppressStringProvider
+import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
+import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisCompletedHandlerExtension
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
+import com.intellij.codeInsight.ExternalAnnotationsManager
+import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
+import com.intellij.codeInsight.InferredAnnotationsManager
+import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -125,6 +136,9 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(KotlinSourceIndex::class.java, KotlinSourceIndex())
             registerService(KotlinCacheService::class.java, KotlinCacheServiceImpl(project))
             registerService(ImportInsertHelper::class.java, KotlinImportInserterHelper())
+            
+            registerService(ExternalAnnotationsManager::class.java, MockExternalAnnotationsManager())
+            registerService(InferredAnnotationsManager::class.java, MockInferredAnnotationsManager())
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
@@ -197,13 +211,18 @@ private fun registerProjectExtensionPoints(area: ExtensionsArea) {
 }
 
 private fun registerApplicationExtensionPointsAndExtensionsFrom(configFilePath: String) {
-    val pluginRoot = File(KOTLIN_COMPILER_PATH)
-    CoreApplicationEnvironment.registerExtensionPointAndExtensions(pluginRoot, configFilePath, Extensions.getRootArea())
+    registerExtensionPointInRoot(DiagnosticSuppressor.EP_NAME, DiagnosticSuppressor::class)
+    registerExtensionPointInRoot(DefaultErrorMessages.Extension.EP_NAME, DefaultErrorMessages.Extension::class)
+    registerExtensionPointInRoot(SuppressStringProvider.EP_NAME, SuppressStringProvider::class)
+    
+    registerExtensionPointInRoot(ClassBuilderInterceptorExtension.extensionPointName, AnnotationCollectorExtension::class)
+    registerExtensionPointInRoot(AnalysisCompletedHandlerExtension.extensionPointName, AnalysisCompletedHandlerExtension::class)
 
     registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
     registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)
 
     with(Extensions.getRootArea()) {
+        getExtensionPoint(DefaultErrorMessages.Extension.EP_NAME).registerExtension(DefaultErrorMessagesJvm())
         getExtensionPoint(CodeStyleSettingsProvider.EXTENSION_POINT_NAME).registerExtension(KotlinSettingsProvider())
         getExtensionPoint(LanguageCodeStyleSettingsProvider.EP_NAME).registerExtension(KotlinLanguageCodeStyleSettingsProvider())
     }
