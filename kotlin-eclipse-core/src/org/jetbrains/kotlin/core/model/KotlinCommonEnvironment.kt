@@ -17,6 +17,8 @@
 package org.jetbrains.kotlin.core.model
 
 import com.intellij.codeInsight.ContainerProvider
+import com.intellij.codeInsight.ExternalAnnotationsManager
+import com.intellij.codeInsight.InferredAnnotationsManager
 import com.intellij.codeInsight.NullableNotNullManager
 import com.intellij.codeInsight.runner.JavaMainMethodProvider
 import com.intellij.core.CoreApplicationEnvironment
@@ -46,10 +48,14 @@ import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
 import com.intellij.psi.impl.file.impl.JavaFileManager
 import org.eclipse.core.runtime.IPath
 import org.jetbrains.kotlin.annotation.AnnotationCollectorExtension
+import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
+import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
+import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
+import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
 import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.codegen.extensions.ClassBuilderInterceptorExtension
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
@@ -66,6 +72,7 @@ import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
+import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
 import org.jetbrains.kotlin.resolve.diagnostics.SuppressStringProvider
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
@@ -75,10 +82,6 @@ import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
-import com.intellij.codeInsight.ExternalAnnotationsManager
-import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
-import com.intellij.codeInsight.InferredAnnotationsManager
-import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -139,6 +142,11 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             
             registerService(ExternalAnnotationsManager::class.java, MockExternalAnnotationsManager())
             registerService(InferredAnnotationsManager::class.java, MockInferredAnnotationsManager())
+            
+            val cliLightClassGenerationSupport = CliLightClassGenerationSupport(project)
+            registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
+            registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
+            registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
