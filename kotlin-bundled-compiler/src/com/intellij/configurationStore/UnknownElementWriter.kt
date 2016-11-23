@@ -18,8 +18,6 @@ package com.intellij.configurationStore
 import gnu.trove.THashMap
 import gnu.trove.THashSet
 import org.jdom.Element
-import java.util.function.Consumer
-import java.util.function.Function
 
 // Empty unknown tags supported to simplify client write code (with and without unknown elements)
 class UnknownElementWriter internal constructor(private val unknownElements: Map<String, Element> = emptyMap()) {
@@ -28,15 +26,15 @@ class UnknownElementWriter internal constructor(private val unknownElements: Map
         val EMPTY = UnknownElementWriter()
     }
 
-    fun <T> write(outElement: Element, items: Collection<T>, itemToTagName: Function<T, String>, writer: Consumer<T>) {
+    fun <T> write(outElement: Element, items: Collection<T>, itemToTagName: (T) -> String, writer: (T) -> Unit) {
         val knownNameToWriter = THashMap<String, T>(items.size)
         for (item in items) {
-            knownNameToWriter.put(itemToTagName.apply(item), item)
+            knownNameToWriter.put(itemToTagName(item), item)
         }
         write(outElement, knownNameToWriter, writer)
     }
 
-    fun <T> write(outElement: Element, knownNameToWriter: Map<String, T>, writer: Consumer<T>) {
+    fun <T> write(outElement: Element, knownNameToWriter: Map<String, T>, writer: (T) -> Unit) {
         val names: Set<String>
         if (unknownElements.isEmpty()) {
             names = knownNameToWriter.keys
@@ -52,7 +50,7 @@ class UnknownElementWriter internal constructor(private val unknownElements: Map
             if (known == null) {
                 outElement.addContent(unknownElements.get(name)!!.clone())
             } else {
-                writer.accept(known)
+                writer(known)
             }
         }
     }
