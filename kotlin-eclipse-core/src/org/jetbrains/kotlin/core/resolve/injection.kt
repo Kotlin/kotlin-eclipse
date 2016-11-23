@@ -36,7 +36,6 @@ import org.jetbrains.kotlin.descriptors.PackagePartProvider
 import org.jetbrains.kotlin.frontend.di.configureModule
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.load.java.InternalFlexibleTypeTransformer
-import org.jetbrains.kotlin.load.java.JavaClassFinderImpl
 import org.jetbrains.kotlin.load.java.components.SignaturePropagatorImpl
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
 import org.jetbrains.kotlin.load.java.lazy.ModuleClassResolver
@@ -122,7 +121,7 @@ public fun createContainerForLazyResolveWithJava(
         useImpl<LazyResolveToken>()
     }
 }.apply {
-    get<JavaClassFinderImpl>().initialize(bindingTrace, get<KotlinCodeAnalyzer>())
+    get<EclipseJavaClassFinder>().initialize(bindingTrace, get<KotlinCodeAnalyzer>())
 }
 
 fun createContainerForTopDownAnalyzerForJvm(
