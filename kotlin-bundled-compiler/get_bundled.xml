@@ -137,6 +137,7 @@
                     <include name="com/intellij/formatting/**/*.class" />
                     <include name="com/intellij/application/options/**/*.class" />
                     <include name="com/intellij/openapi/options/**/*.class" />
+                    <include name="com/intellij/configurationStore/*.class" />
                 </patternset>
             </unzip>
             
