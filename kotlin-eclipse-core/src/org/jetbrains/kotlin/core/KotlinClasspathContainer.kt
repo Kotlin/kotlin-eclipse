@@ -38,6 +38,7 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
         val LIB_RUNTIME_NAME = "kotlin-runtime"
         val LIB_RUNTIME_SRC_NAME = "kotlin-runtime-sources"
         val LIB_REFLECT_NAME = "kotlin-reflect"
+        val LIB_SCRIPT_RUNTIME_NAME = "kotlin-script-runtime"
         
         @JvmStatic
         public fun getPathToLightClassesFolder(javaProject: IJavaProject): IPath {
@@ -54,14 +55,16 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
         val project = javaProject.getProject()
         if (!ProjectUtils.isMavenProject(project) && !ProjectUtils.isGradleProject(project)) {
             val kotlinRuntimeEntry = JavaCore.newLibraryEntry(
-                    Path(ProjectUtils.buildLibPath(LIB_RUNTIME_NAME)),
-                    Path(ProjectUtils.buildLibPath(LIB_RUNTIME_SRC_NAME)),
+                    LIB_RUNTIME_NAME.buildLibPath(),
+                    LIB_RUNTIME_SRC_NAME.buildLibPath(),
                     null,
                     true)
-            val kotlinReflectEntry = newExportedLibraryEntry(Path(ProjectUtils.buildLibPath(LIB_REFLECT_NAME)))
+            val kotlinReflectEntry = newExportedLibraryEntry(LIB_REFLECT_NAME.buildLibPath())
+            val kotlinScriptRuntime = newExportedLibraryEntry(LIB_SCRIPT_RUNTIME_NAME.buildLibPath())
             
             entries.add(kotlinRuntimeEntry)
             entries.add(kotlinReflectEntry)
+            entries.add(kotlinScriptRuntime)
         }
         
         return entries.toTypedArray()
@@ -73,3 +76,5 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
     
     override public fun getPath() : IPath = runtimeContainerId
 }
+
+private fun String.buildLibPath(): Path = Path(ProjectUtils.buildLibPath(this))

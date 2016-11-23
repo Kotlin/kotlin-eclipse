@@ -203,6 +203,7 @@
 				<include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
 				<include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
 				<include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
+			    <include name="Kotlin/kotlinc/lib/kotlin-script-runtime.jar" />
 				<include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
 				<include name="Kotlin/kotlinc/lib/kotlin-runtime-sources.jar" />
 			</patternset>
