@@ -130,15 +130,11 @@ public object EclipseAnalyzerFacadeForJVM {
         
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
-        val configuration = CompilerConfiguration().apply {
-            put(CommonConfigurationKeys.MODULE_NAME, scriptFile.name)
-        }
-        
         val container = TopDownAnalyzerFacadeForJVM.createContainer(
                 environment.project,
                 setOf(scriptFile),
                 trace,
-                configuration,
+                environment.configuration,
                 { KotlinPackagePartProvider(environment) },
                 { storageManager, files -> FileBasedDeclarationProviderFactory(storageManager, files) }
         )
