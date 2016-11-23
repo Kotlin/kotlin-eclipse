@@ -110,6 +110,10 @@ public fun KtElement.toLightElements(): List<IJavaElement> {
         return emptyList()
     }
     
+    if (!javaProject.isOpen) {
+        return emptyList()
+    }
+    
     return when (this) {
         is KtClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
         is KtNamedFunction,
