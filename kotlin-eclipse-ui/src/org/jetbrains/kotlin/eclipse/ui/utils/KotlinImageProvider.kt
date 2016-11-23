@@ -30,11 +30,13 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
+import org.jetbrains.kotlin.descriptors.TypeAliasDescriptor
 
 public object KotlinImageProvider {
     public fun getImage(descriptor: DeclarationDescriptor): Image? {
         return when(descriptor) {
-            is ClassDescriptor, is TypeParameterDescriptor -> getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
+            is ClassDescriptor, is TypeParameterDescriptor, is TypeAliasDescriptor ->
+                getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
             is FunctionDescriptor -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PUBLIC)
             is VariableDescriptor -> getImageFromJavaUI(ISharedImages.IMG_FIELD_PUBLIC)
             is PackageViewDescriptor -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PACKAGE)
