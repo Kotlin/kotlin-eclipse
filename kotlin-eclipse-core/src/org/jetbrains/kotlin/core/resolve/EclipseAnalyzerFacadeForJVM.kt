@@ -99,16 +99,10 @@ public object EclipseAnalyzerFacadeForJVM {
             extension.getPackageFragmentProvider(project, module, storageManager, trace, null)
         }
         
-        val builtInsModule = module.builtIns.builtInsModule
-        module.setDependencies(ModuleDependenciesImpl(
-                listOf(module, builtInsModule),
-                emptySet()
-        ))
         module.initialize(CompositePackageFragmentProvider(
                 listOf(container.get<KotlinCodeAnalyzer>().packageFragmentProvider) +
                 additionalProviders
         ))
-        
         
         try {
             container.get<LazyTopDownAnalyzer>().analyzeDeclarations(TopDownAnalysisMode.TopLevelDeclarations, filesSet)
