@@ -99,8 +99,9 @@ public object EclipseAnalyzerFacadeForJVM {
             extension.getPackageFragmentProvider(project, module, storageManager, trace, null)
         }
         
+        val builtInsModule = module.builtIns.builtInsModule
         module.setDependencies(ModuleDependenciesImpl(
-                listOf(module),
+                listOf(module, builtInsModule),
                 emptySet()
         ))
         module.initialize(CompositePackageFragmentProvider(
