@@ -226,7 +226,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
     }
     
     private fun configureClasspath(javaProject: IJavaProject) {
-        if (!javaProject.isOpen) return
+        if (!javaProject.exists()) return
         
         for (file in ProjectUtils.collectClasspathWithDependenciesForBuild(javaProject)) {
             addToClasspath(file)
