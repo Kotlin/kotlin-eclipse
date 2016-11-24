@@ -81,7 +81,7 @@
 		<mkdir dir="${download.dir}" />
 
 		<get 
-			src="${teamcity-kotlin-url}/kotlin-plugin-%7Bbuild.number%7D-IJ2016.3-1.zip${branch}"   
+			src="${teamcity-kotlin-url}/kotlin-plugin-1.1-M03-release-IJ2016.3-1.zip${branch}"    
 			dest="${download.dir}/${compiler-artifact-file}" 
 			usetimestamp="true" />
 		
