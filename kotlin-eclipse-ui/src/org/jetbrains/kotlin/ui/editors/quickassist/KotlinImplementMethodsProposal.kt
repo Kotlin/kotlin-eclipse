@@ -47,11 +47,13 @@ import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.formatRange
 import java.util.ArrayList
 
-private const val DEFAULT_EXCEPTION_CALL = "throw UnsupportedOperationException()"
+private const val DEFAULT_EXCEPTION_CALL = "TODO()"
+private const val DEFAULT_PROPERTY_BODY = "TODO()"
 
 public class KotlinImplementMethodsProposal(
         editor: KotlinEditor,
-        private val exceptionCall: String = DEFAULT_EXCEPTION_CALL) : KotlinQuickAssistProposal(editor) {
+        private val functionBody: String = DEFAULT_EXCEPTION_CALL,
+        private val propertyBody: String = DEFAULT_PROPERTY_BODY) : KotlinQuickAssistProposal(editor) {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
         renderDefaultValues = false
         modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
@@ -159,7 +161,7 @@ public class KotlinImplementMethodsProposal(
         val returnsNotUnit = returnType != null && !KotlinBuiltIns.isUnit(returnType)
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
 
-        val delegation = generateUnsupportedOrSuperCall(descriptor, exceptionCall)
+        val delegation = generateUnsupportedOrSuperCall(descriptor, functionBody)
 
         val body = "{$lineDelimiter" + (if (returnsNotUnit && !isAbstract) "return " else "") + delegation + "$lineDelimiter}"
 
@@ -176,7 +178,7 @@ public class KotlinImplementMethodsProposal(
         val body = StringBuilder()
         body.append("${lineDelimiter}get()")
         body.append(" = ")
-        body.append(generateUnsupportedOrSuperCall(descriptor, exception = DEFAULT_EXCEPTION_CALL))
+        body.append(generateUnsupportedOrSuperCall(descriptor, propertyBody))
         if (descriptor.isVar()) {
             body.append("${lineDelimiter}set(value) {\n}")
         }
@@ -184,7 +186,7 @@ public class KotlinImplementMethodsProposal(
     }
 
     private fun generateUnsupportedOrSuperCall(descriptor: CallableMemberDescriptor,
-                                               exception: String = exceptionCall): String {
+                                               exception: String = functionBody): String {
         val isAbstract = descriptor.getModality() == Modality.ABSTRACT
         if (isAbstract) {
             return "$exception"
