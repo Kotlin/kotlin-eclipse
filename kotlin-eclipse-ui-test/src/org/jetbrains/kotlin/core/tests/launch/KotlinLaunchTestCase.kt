@@ -16,31 +16,37 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.tests.launch
 
-import org.eclipse.core.resources.WorkspaceJob
-import org.eclipse.core.runtime.CoreException
-import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.core.runtime.IStatus
-import org.eclipse.core.runtime.Status
-import org.eclipse.core.runtime.SubProgressMonitor
-import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.debug.core.ILaunchConfiguration
-import org.eclipse.debug.ui.IDebugUIConstants
-import org.eclipse.ui.console.ConsolePlugin
-import org.eclipse.ui.console.IConsole
-import org.eclipse.ui.console.IConsoleManager
-import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.eclipse.core.runtime.NullProgressMonitor
+import org.eclipse.debug.core.DebugPlugin
+import org.eclipse.debug.core.ILaunch
+import org.eclipse.debug.core.ILaunchListener
+import org.eclipse.debug.internal.ui.DebugUIPlugin
+import org.eclipse.debug.internal.ui.IInternalDebugUIConstants
+import org.eclipse.jface.dialogs.MessageDialogWithToggle
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase
+import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
 import org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut
 import org.jetbrains.kotlin.ui.launch.getEntryPoint
+import org.junit.After
 import org.junit.Assert
-import org.eclipse.core.runtime.NullProgressMonitor
-import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
-import org.eclipse.debug.internal.ui.DebugUIPlugin
-import org.eclipse.debug.core.DebugPlugin
-import org.eclipse.debug.core.ILaunchListener
-import org.eclipse.debug.core.ILaunch
+import org.junit.Before
 
 abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
+    val compileWithErrorPreference = DebugUIPlugin.getDefault().getPreferenceStore()
+            .getString(IInternalDebugUIConstants.PREF_CONTINUE_WITH_COMPILE_ERROR)
+    
+    @Before
+    fun before() {
+        DebugUIPlugin.getDefault().getPreferenceStore().setValue(
+                IInternalDebugUIConstants.PREF_CONTINUE_WITH_COMPILE_ERROR, MessageDialogWithToggle.ALWAYS)
+    }
+    
+    @After
+    fun after() {
+        DebugUIPlugin.getDefault().getPreferenceStore().setValue(
+                IInternalDebugUIConstants.PREF_CONTINUE_WITH_COMPILE_ERROR, compileWithErrorPreference)
+    }
+    
     fun doTest(input: String, projectName: String, packageName: String, additionalSrcFolderName: String?) {
         testEditor = configureEditor("Test.kt", input, projectName, packageName)
         testEditor.getTestJavaProject().addKotlinRuntime()
