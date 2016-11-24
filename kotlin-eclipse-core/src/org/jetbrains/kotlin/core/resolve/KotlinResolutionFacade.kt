@@ -18,11 +18,11 @@ package org.jetbrains.kotlin.core.resolve
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.eclipse.core.resources.IProject
+import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
-import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
@@ -32,7 +32,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 
 public class KotlinResolutionFacade(
-        val eclipseProject: IProject, 
+        val eclipseFile: IFile, 
         val componentProvider: ComponentProvider,
         override val moduleDescriptor: ModuleDescriptor) : ResolutionFacade {
     override fun resolveToDescriptor(declaration: KtDeclaration, bodyResolveMode: BodyResolveMode): DeclarationDescriptor {
@@ -40,7 +40,7 @@ public class KotlinResolutionFacade(
     }
 
     override val project: Project
-        get() = KotlinEnvironment.getEnvironment(eclipseProject.project).project
+        get() = getEnvironment(eclipseFile).project
     
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()
