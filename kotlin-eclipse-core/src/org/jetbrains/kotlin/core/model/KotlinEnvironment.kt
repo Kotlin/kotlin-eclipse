@@ -129,12 +129,6 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
             return cachedEnvironment.getOrCreateEnvironment(file, environmentCreation)
         }
 
-        @JvmStatic fun updateKotlinEnvironment(file: IFile) {
-            checkIsScript(file)
-            
-            cachedEnvironment.updateEnvironment(file, environmentCreation)
-        }
-        
         @JvmStatic fun removeKotlinEnvironment(file: IFile) {
             checkIsScript(file)
             
@@ -250,11 +244,6 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             return cachedEnvironment.getOrCreateEnvironment(eclipseProject, environmentCreation)
         }
 
-        @JvmStatic fun updateKotlinEnvironment(eclipseProject: IProject) {
-            cachedEnvironment.updateEnvironment(eclipseProject, environmentCreation)
-            KotlinPsiManager.invalidateCachedProjectSourceFiles()
-        }
-        
         @JvmStatic fun removeEnvironment(eclipseProject: IProject) {
             cachedEnvironment.removeEnvironment(eclipseProject)
             KotlinPsiManager.invalidateCachedProjectSourceFiles()

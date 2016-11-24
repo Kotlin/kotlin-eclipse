@@ -45,18 +45,6 @@ class CachedEnvironment<T, E : KotlinCommonEnvironment> {
         }
     }
     
-    fun updateEnvironment(resource: T, createEnvironment: (T) -> E) {
-        synchronized (environmentLock) {
-            if (environmentCache.containsKey(resource)) {
-                removeEnvironment(resource)
-            }
-            
-            val newEnvironment = createEnvironment(resource)
-            environmentCache.put(resource, newEnvironment)
-            ideaProjectToEclipseResource.put(newEnvironment.project, resource)
-        }
-    }
-    
     fun removeEnvironment(resource: T) {
         synchronized (environmentLock) {
             if (environmentCache.containsKey(resource)) {
