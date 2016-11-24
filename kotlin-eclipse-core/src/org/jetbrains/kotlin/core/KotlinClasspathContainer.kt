@@ -77,4 +77,4 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
     override public fun getPath() : IPath = runtimeContainerId
 }
 
-private fun String.buildLibPath(): Path = Path(ProjectUtils.buildLibPath(this))
+fun String.buildLibPath(): Path = Path(ProjectUtils.buildLibPath(this))

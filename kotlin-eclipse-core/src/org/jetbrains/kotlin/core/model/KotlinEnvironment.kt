@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
+import org.jetbrains.kotlin.core.buildLibPath
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
@@ -116,7 +117,8 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     }
     
     companion object {
-        private val kotlinRuntimePath = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_NAME))
+        private val KOTLIN_RUNTIME_PATH = KotlinClasspathContainer.LIB_RUNTIME_NAME.buildLibPath()
+        private val KOTLIN_SCRIPT_RUNTIME_PATH = KotlinClasspathContainer.LIB_SCRIPT_RUNTIME_NAME.buildLibPath()
         
         private val cachedEnvironment = CachedEnvironment<IFile, KotlinScriptEnvironment>()
         private val environmentCreation = {
@@ -149,7 +151,8 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     }
     
     private fun configureClasspath() {
-        addToClasspath(kotlinRuntimePath.toFile())
+        addToClasspath(KOTLIN_RUNTIME_PATH.toFile())
+        addToClasspath(KOTLIN_SCRIPT_RUNTIME_PATH.toFile())
         addJREToClasspath()
         addToCPFromScriptTemplateClassLoader()
     }
