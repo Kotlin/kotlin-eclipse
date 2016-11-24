@@ -431,7 +431,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     
     @Test
     public void testRecursiveGetter() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/RecursiveGetter.kt");
+        doTest("common_testData/compiler/diagnostics/tests/properties/inferenceFromGetters/RecursiveGetter.kt");
     }
     
     @Test
