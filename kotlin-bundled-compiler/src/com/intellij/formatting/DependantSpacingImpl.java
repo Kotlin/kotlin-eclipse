@@ -69,17 +69,19 @@ public class DependantSpacingImpl extends SpacingImpl {
     
     @Override
     public void refresh(BlockRangesMap helper) {
-      if (isDependentRegionLinefeedStatusChanged()) {
-        return;
-      }
-
-      boolean atLeastOneDependencyRangeContainsLf = false;
-      for (TextRange dependency : myDependentRegionRanges) {
-        atLeastOneDependencyRangeContainsLf |= helper.containsLineFeeds(dependency);
-      }
-
-      if (atLeastOneDependencyRangeContainsLf) myFlags |= DEPENDENCE_CONTAINS_LF_MASK;
-      else myFlags &= ~DEPENDENCE_CONTAINS_LF_MASK;
+        if (isDependentRegionLinefeedStatusChanged()) {
+            return;
+        }
+        
+        boolean atLeastOneDependencyRangeContainsLf = false;
+        for (TextRange dependency : myDependentRegionRanges) {
+            atLeastOneDependencyRangeContainsLf |= helper.containsLineFeeds(dependency);
+        }
+        
+        if (atLeastOneDependencyRangeContainsLf)
+            myFlags |= DEPENDENCE_CONTAINS_LF_MASK;
+        else
+            myFlags &= ~DEPENDENCE_CONTAINS_LF_MASK;
     }
     
     @NotNull
