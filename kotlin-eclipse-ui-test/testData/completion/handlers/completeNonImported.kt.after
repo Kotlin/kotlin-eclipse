@@ -1,4 +1,4 @@
-import java.util.HashMap
+import java.util.Vector
 
-fun test(k: HashMap) {
+fun test(k: Vector<caret>) {
 }
