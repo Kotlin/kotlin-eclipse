@@ -1,2 +1,2 @@
-fun test(k: HashM<caret>) {
+fun test(k: Vect<caret>) {
 }
