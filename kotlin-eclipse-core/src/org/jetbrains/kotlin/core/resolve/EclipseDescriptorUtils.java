@@ -8,6 +8,7 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor;
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind;
 import org.jetbrains.kotlin.descriptors.ClassDescriptor;
@@ -34,7 +35,7 @@ public class EclipseDescriptorUtils {
 
     @NotNull
     public static List<SourceElement> descriptorToDeclarations(@NotNull DeclarationDescriptor descriptor, @NotNull IProject project) {
-        if (BuiltInsReferenceResolver.isFromBuiltinModule(descriptor)) {
+        if (KotlinBuiltIns.isBuiltIn(descriptor)) {
             
             Collection<DeclarationDescriptor> effectiveReferencedDescriptors = DescriptorToSourceUtils.getEffectiveReferencedDescriptors(descriptor);
             
