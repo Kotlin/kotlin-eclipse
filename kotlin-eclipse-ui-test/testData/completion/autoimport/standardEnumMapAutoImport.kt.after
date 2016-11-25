@@ -1,0 +1,9 @@
+import java.util.EnumMap
+
+fun main(args : Array<String>) {
+	val list = EnumMap
+	println(list)
+}
+
+// EXIST: Import 'EnumMap' (java.util)
+// NUMBER: 1

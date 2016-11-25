@@ -1,5 +1,5 @@
 package testing
 
-import java.util.HashSet
+import java.util.Vector
 
-fun test() = HashSet
+fun test() = Vector

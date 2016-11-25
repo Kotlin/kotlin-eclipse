@@ -1,1 +1,1 @@
-fun test() = <caret>HashSet
+fun test() = <caret>Vector

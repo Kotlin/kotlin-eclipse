@@ -1,3 +1,3 @@
 package testing
 
-fun test() = HashS<caret>et
+fun test() = Vec<caret>tor

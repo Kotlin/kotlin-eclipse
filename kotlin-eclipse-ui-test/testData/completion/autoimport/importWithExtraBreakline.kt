@@ -1,2 +1,2 @@
 package testing
-fun test() = HashSe<caret>t
+fun test() = Vect<caret>or

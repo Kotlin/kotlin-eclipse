@@ -1,0 +1,5 @@
+import java.util.Vector
+
+fun test() = Vector
+
+// NUMBER: 1

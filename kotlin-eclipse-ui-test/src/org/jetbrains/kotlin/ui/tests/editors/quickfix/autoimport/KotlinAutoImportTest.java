@@ -21,7 +21,7 @@ import org.junit.Test;
 public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
 
 	@Test
-	public void standardArrayListAutoImport() {
+	public void standardEnumMapAutoImport() {
 		doAutoTest();
 	}
 
@@ -71,7 +71,7 @@ public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
 	}
 	
 	@Test
-	public void oneStandardHashSetAutoImport() {
+	public void oneStandardVectorAutoImport() {
 		doAutoTest();
 	}
 }
