@@ -16,13 +16,18 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve
 
+import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analyzer.AnalysisResult
+import org.jetbrains.kotlin.builtins.JvmBuiltInsPackageFragmentProvider
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.container.ComponentProvider
+import org.jetbrains.kotlin.context.ContextForNewModule
+import org.jetbrains.kotlin.context.MutableModuleContext
+import org.jetbrains.kotlin.context.ProjectContext
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
@@ -33,6 +38,8 @@ import org.jetbrains.kotlin.descriptors.impl.CompositePackageFragmentProvider
 import org.jetbrains.kotlin.descriptors.impl.ModuleDependenciesImpl
 import org.jetbrains.kotlin.frontend.java.di.initJvmBuiltInsForTopDownAnalysis
 import org.jetbrains.kotlin.incremental.components.LookupTracker
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.platform.JvmBuiltIns
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzer
 import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
@@ -65,22 +72,55 @@ public object EclipseAnalyzerFacadeForJVM {
         }
         
         val project = environment.project
-        val moduleContext = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(project, environment.configuration)
+        
+        val moduleContext = createModuleContext(project, environment.configuration, true)
+        val storageManager = moduleContext.storageManager
+        val module = moduleContext.module
+        
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         
-        val scope = GlobalSearchScope.allScope(project)
-        val moduleClassResolver = SourceOrBinaryModuleClassResolver(scope)
-
+        val sourceScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(project, filesToAnalyze)
+        val moduleClassResolver = SourceOrBinaryModuleClassResolver(sourceScope)
+        
         val languageVersionSettings = LanguageVersionSettingsImpl.DEFAULT
-        val module = moduleContext.module
-        val storageManager = moduleContext.storageManager
+        val optionalBuiltInsModule = JvmBuiltIns(storageManager).apply { initialize(module, true) }.builtInsModule
+        
+        val dependencyModule = run {
+            val dependenciesContext = ContextForNewModule(
+                    moduleContext, Name.special("<dependencies of ${environment.configuration.getNotNull(CommonConfigurationKeys.MODULE_NAME)}>"),
+                    module.builtIns
+            )
+            
+            val dependencyScope = GlobalSearchScope.notScope(sourceScope)
+            val dependenciesContainer = createContainerForTopDownAnalyzerForJvm(
+                moduleContext,
+                trace,
+                providerFactory,
+                dependencyScope,
+                LookupTracker.DO_NOTHING,
+                KotlinPackagePartProvider(environment),
+                languageVersionSettings,
+                moduleClassResolver,
+                environment.javaProject)
+            
+            moduleClassResolver.compiledCodeResolver = dependenciesContainer.get<JavaDescriptorResolver>()
+            
+            dependenciesContext.setDependencies(listOfNotNull(dependenciesContext.module, optionalBuiltInsModule))
+            dependenciesContext.initializeModuleContents(CompositePackageFragmentProvider(listOf(
+                    moduleClassResolver.compiledCodeResolver.packageFragmentProvider,
+                    dependenciesContainer.get<JvmBuiltInsPackageFragmentProvider>()
+            )))
+            dependenciesContext.module
+        }
+        
+        
         
         val container = createContainerForTopDownAnalyzerForJvm(
                 moduleContext,
                 trace,
                 providerFactory,
-                scope,
+                sourceScope,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
                 languageVersionSettings,
@@ -90,7 +130,6 @@ public object EclipseAnalyzerFacadeForJVM {
         }
         
         moduleClassResolver.sourceCodeResolver = container.get<JavaDescriptorResolver>()
-        moduleClassResolver.compiledCodeResolver = container.get<JavaDescriptorResolver>()
         
         val additionalProviders = ArrayList<PackageFragmentProvider>()
         additionalProviders.add(container.get<JavaDescriptorResolver>().packageFragmentProvider)
@@ -99,6 +138,10 @@ public object EclipseAnalyzerFacadeForJVM {
             extension.getPackageFragmentProvider(project, module, storageManager, trace, null)
         }
         
+        module.setDependencies(ModuleDependenciesImpl(
+                listOfNotNull(module, dependencyModule, optionalBuiltInsModule),
+                setOf(dependencyModule)
+        ))
         module.initialize(CompositePackageFragmentProvider(
                 listOf(container.get<KotlinCodeAnalyzer>().packageFragmentProvider) +
                 additionalProviders
@@ -148,4 +191,20 @@ public object EclipseAnalyzerFacadeForJVM {
     }
     
     private fun getPath(jetFile: KtFile): String? = jetFile.getVirtualFile()?.getPath()
+    
+    private fun createModuleContext(
+            project: Project,
+            configuration: CompilerConfiguration,
+            createBuiltInsFromModule: Boolean
+    ): MutableModuleContext {
+        val projectContext = ProjectContext(project)
+        val builtIns = JvmBuiltIns(projectContext.storageManager, !createBuiltInsFromModule)
+        return ContextForNewModule(
+                projectContext, Name.special("<${configuration.getNotNull(CommonConfigurationKeys.MODULE_NAME)}>"), builtIns
+        ).apply {
+            if (createBuiltInsFromModule) {
+                builtIns.builtInsModule = module
+            }
+        }
+    }
 }
