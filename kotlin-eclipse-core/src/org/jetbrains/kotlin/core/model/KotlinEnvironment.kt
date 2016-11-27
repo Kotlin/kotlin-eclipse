@@ -250,6 +250,8 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
         @JvmStatic fun removeEnvironment(eclipseProject: IProject) {
             cachedEnvironment.removeEnvironment(eclipseProject)
             KotlinPsiManager.invalidateCachedProjectSourceFiles()
+            KotlinAnalysisFileCache.resetCache()
+            KotlinAnalysisProjectCache.resetCache(eclipseProject)
         }
 
         @JvmStatic fun getJavaProject(project: Project): IProject? = cachedEnvironment.getEclipseResource(project)

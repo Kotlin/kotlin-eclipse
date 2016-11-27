@@ -49,8 +49,6 @@ public class KotlinClassPathListener : IElementChangedListener {
             if ((flags and IJavaElementDelta.F_CLASSPATH_CHANGED) != 0 || 
                 (flags and IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED) != 0) {
                 KotlinEnvironment.removeEnvironment(element.project)
-                KotlinAnalysisFileCache.resetCache()
-                KotlinAnalysisProjectCache.resetCache(element.project)
             }
         }
     }
