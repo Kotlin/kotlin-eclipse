@@ -64,6 +64,8 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
     useInstance(lookupTracker)
 
     useImpl<ResolveSession>()
+    
+    useImpl<FileScopeProviderImpl>()
 
     useImpl<LazyTopDownAnalyzer>()
     useImpl<LazyTopDownAnalyzerForTopLevel>()
@@ -107,7 +109,6 @@ public fun createContainerForTopDownAnalyzerForJvm(
     CompilerEnvironment.configure(this)
 
     useImpl<SingleModuleClassResolver>()
-    useImpl<FileScopeProviderImpl>()
 }.let {
     it.javaAnalysisInit()
 

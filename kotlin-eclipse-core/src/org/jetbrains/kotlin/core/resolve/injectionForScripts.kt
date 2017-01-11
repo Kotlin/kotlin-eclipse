@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
 import org.jetbrains.kotlin.resolve.CompilerEnvironment
 import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzer
 import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzerForTopLevel
+import org.jetbrains.kotlin.resolve.jvm.JavaClassFinderPostConstruct
 import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver
 import org.jetbrains.kotlin.resolve.jvm.JavaLazyAnalyzerPostConstruct
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
@@ -44,6 +45,8 @@ fun StorageComponentContainer.configureJavaTopDownAnalysisForScript(
     useInstance(moduleContentScope)
     useInstance(lookupTracker)
     useImpl<ResolveSession>()
+    
+    useImpl<FileScopeProviderImpl>()
 
     useImpl<LazyTopDownAnalyzer>()
     useImpl<LazyTopDownAnalyzerForTopLevel>()
@@ -51,8 +54,6 @@ fun StorageComponentContainer.configureJavaTopDownAnalysisForScript(
     useImpl<DeserializationComponentsForJava>()
 
     useInstance(JvmVirtualFileFinderFactory.SERVICE.getInstance(project).create(moduleContentScope))
-
-    useImpl<FileScopeProviderImpl>()
 
     useImpl<JavaClassFinderImpl>()
     useImpl<SignaturePropagatorImpl>()

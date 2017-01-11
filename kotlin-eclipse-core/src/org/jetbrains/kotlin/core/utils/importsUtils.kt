@@ -34,8 +34,7 @@ class KotlinImportInserterHelper : ImportInsertHelper() {
     }
     
     override fun isImportedWithDefault(importPath: ImportPath, contextFile: KtFile): Boolean {
-        val defaultImports = JvmPlatform.defaultImports
-        return importPath.isImported(defaultImports)
+        return importPath.isImported(JvmPlatform.defaultImports)
     }
     
     override fun mayImportOnShortenReferences(descriptor: DeclarationDescriptor): Boolean {

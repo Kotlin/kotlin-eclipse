@@ -4,9 +4,6 @@ fun nonFormatter(x: Int) {
     if (true) {
 
     }
-    <caret>fun local() {
-    }
-
-    fun other() {
-    }
+    <caret>fun local() {}
+    fun other() {}
 }

@@ -52,8 +52,6 @@ import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
-import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
-import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
 import org.jetbrains.kotlin.codegen.extensions.ClassBuilderInterceptorExtension
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -75,7 +73,8 @@ import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
-import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisCompletedHandlerExtension
+import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
+import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -206,7 +205,6 @@ private fun registerApplicationExtensionPointsAndExtensionsFrom() {
     
     registerExtensionPointInRoot(DefaultErrorMessages.Extension.EP_NAME, DefaultErrorMessagesJvm::class)
     registerExtensionPointInRoot(ClassBuilderInterceptorExtension.extensionPointName, AnnotationCollectorExtension::class)
-    registerExtensionPointInRoot(AnalysisCompletedHandlerExtension.extensionPointName, AnalysisCompletedHandlerExtension::class)
     
     registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
     registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)

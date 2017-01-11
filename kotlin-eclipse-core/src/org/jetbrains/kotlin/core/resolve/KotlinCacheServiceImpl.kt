@@ -59,12 +59,11 @@ class KotlinSimpleResolutionFacade(
     }
     
     override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext {
-        if (elements.isEmpty()) return BindingContext.EMPTY
-
-        val ktFiles = elements
-                .map { it.getContainingKtFile() }
-                .distinct()
-        return KotlinAnalyzer.analyzeFiles(ktFiles).analysisResult.bindingContext
+        if (elements.isEmpty()) {
+            return BindingContext.EMPTY
+        }
+        val ktFile = elements.first().getContainingKtFile()
+        return KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
     }
     
     override fun analyzeFullyAndGetResult(elements: Collection<KtElement>): AnalysisResult {

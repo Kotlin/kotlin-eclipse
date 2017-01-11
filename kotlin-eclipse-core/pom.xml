@@ -22,7 +22,7 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
-
+                
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -30,6 +30,11 @@
                         <goals>
                             <goal>compile</goal>
                         </goals>
+                        <configuration>
+                <args>
+                    <arg>-Xskip-metadata-version-check</arg>
+                </args>
+            </configuration>
                     </execution>
                 </executions>
             </plugin>

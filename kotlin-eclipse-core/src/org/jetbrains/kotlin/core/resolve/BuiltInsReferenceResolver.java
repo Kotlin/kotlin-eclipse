@@ -27,7 +27,6 @@ import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
 import org.jetbrains.kotlin.context.ContextKt;
@@ -99,10 +98,10 @@ public class BuiltInsReferenceResolver {
         //if the sources are present, then the value cannot be null
         assert (jetBuiltInsFiles != null);
         
-        MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(myProject,
+        MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(
+                myProject,
                 Name.special("<built-ins resolver module>"), 
-                JvmPlatform.INSTANCE.getDefaultImports(),
-                DefaultBuiltIns.getInstance());
+                JvmPlatform.INSTANCE);
         newModuleContext.setDependencies(newModuleContext.getModule());
         
         FileBasedDeclarationProviderFactory declarationFactory = new FileBasedDeclarationProviderFactory(
