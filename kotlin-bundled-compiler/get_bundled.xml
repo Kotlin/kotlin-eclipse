@@ -141,6 +141,7 @@
                     <include name="com/intellij/formatting/**/*.class" />
                     <include name="com/intellij/application/options/**/*.class" />
                     <include name="com/intellij/openapi/options/**/*.class" />
+                	<include name="com/intellij/configurationStore/*.class" />
                 </patternset>
             </unzip>
             
@@ -202,21 +203,22 @@
             <delete file="${target.dir}/idea.jar"/>
         </sequential>
 
-        <unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
-            <patternset>
-                <include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
-                <include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
-                <include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
-                <include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
-                <include name="Kotlin/kotlinc/lib/kotlin-runtime-sources.jar" />
-            </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-        
-        <get 
-            src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
-            dest="${target.dir}/kotlin-ide-common.jar"
-            usetimestamp="true" />
+    	<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
+    	           <patternset>
+    	               <include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
+    	               <include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
+    	               <include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
+    	               <include name="Kotlin/kotlinc/lib/kotlin-script-runtime.jar" />
+    	               <include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
+    	               <include name="Kotlin/kotlinc/lib/kotlin-runtime-sources.jar" />
+    	           </patternset>
+    	           <mapper type="flatten"/>
+    	       </unzip>
+    	       
+    	       <get 
+    	           src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
+    	           dest="${target.dir}/kotlin-ide-common.jar"
+    	           usetimestamp="true" />
         
         <get 
             src="${teamcity-kotlin-url}/internal/kotlin-formatter.jar${branch}"
