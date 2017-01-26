@@ -80,7 +80,7 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
     useImpl<TraceBasedErrorReporter>()
     useImpl<EclipseExternalAnnotationResolver>()
     useImpl<EclipseJavaPropertyInitializerEvaluator>()
-    useInstance(SamConversionResolverImpl)
+    useImpl<SamConversionResolverImpl>()
     useImpl<EclipseJavaSourceElementFactory>()
     useInstance(InternalFlexibleTypeTransformer)
 
