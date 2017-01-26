@@ -76,7 +76,6 @@ import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
 import org.jetbrains.kotlin.resolve.diagnostics.SuppressStringProvider
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
-import org.jetbrains.kotlin.resolve.jvm.extensions.AnalysisCompletedHandlerExtension
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 import java.io.File
@@ -224,7 +223,6 @@ private fun registerApplicationExtensionPointsAndExtensionsFrom(configFilePath: 
     registerExtensionPointInRoot(SuppressStringProvider.EP_NAME, SuppressStringProvider::class)
     
     registerExtensionPointInRoot(ClassBuilderInterceptorExtension.extensionPointName, AnnotationCollectorExtension::class)
-    registerExtensionPointInRoot(AnalysisCompletedHandlerExtension.extensionPointName, AnalysisCompletedHandlerExtension::class)
 
     registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
     registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)
