@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.core.tests.diagnostics;
 
+import org.jetbrains.kotlin.checkers.KotlinDiagnosticsTestCase;
 import org.junit.Test;
 
 public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
