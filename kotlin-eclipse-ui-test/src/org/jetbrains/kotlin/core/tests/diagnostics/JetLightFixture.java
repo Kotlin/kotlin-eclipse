@@ -24,7 +24,7 @@ public class JetLightFixture {
         });
     }
 	
-	protected static KtFile createCheckAndReturnPsiFile(String testName, String fileName, String text, Project project) {
+	public static KtFile createCheckAndReturnPsiFile(String testName, String fileName, String text, Project project) {
 		text = StringUtilRt.convertLineSeparators(text);
         KtFile myFile = createPsiFile(testName, fileName, text, project);
         ensureParsed(myFile);
@@ -36,7 +36,7 @@ public class JetLightFixture {
         return myFile;
     }
 	
-	protected static KtFile createPsiFile(@Nullable String testName, @Nullable String fileName, String text, Project project) {
+	public static KtFile createPsiFile(@Nullable String testName, @Nullable String fileName, String text, Project project) {
         if (fileName == null) {
             Assert.assertNotNull(testName);
             fileName = testName + ".kt";

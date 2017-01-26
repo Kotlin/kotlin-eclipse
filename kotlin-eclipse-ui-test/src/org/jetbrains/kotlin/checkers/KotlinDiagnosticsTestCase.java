@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.core.tests.diagnostics;
+package org.jetbrains.kotlin.checkers;
 
 import static org.jetbrains.kotlin.diagnostics.Errors.ASSIGN_OPERATOR_AMBIGUITY;
 import static org.jetbrains.kotlin.diagnostics.Errors.CANNOT_COMPLETE_RESOLVE;
@@ -25,18 +25,19 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.TestCase;
-import kotlin.collections.CollectionsKt;
-import kotlin.jvm.functions.Function1;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.asJava.DuplicateJvmSignatureUtilKt;
-import org.jetbrains.kotlin.checkers.CheckerTestUtil;
+import org.jetbrains.kotlin.checkers.CheckerTestUtil.ActualDiagnostic;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.TextDiagnostic;
+import org.jetbrains.kotlin.checkers.KotlinDiagnosticsTestCase.TestFile;
+import org.jetbrains.kotlin.checkers.KotlinDiagnosticsTestCase.TestModule;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
+import org.jetbrains.kotlin.core.tests.diagnostics.AdditionalConditions;
+import org.jetbrains.kotlin.core.tests.diagnostics.JetLightFixture;
+import org.jetbrains.kotlin.core.tests.diagnostics.JetTestUtils;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.diagnostics.Diagnostic;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
@@ -52,6 +53,7 @@ import org.jetbrains.kotlin.psi.KtExpression;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.BindingContext;
+import org.jetbrains.kotlin.resolve.MultiTargetPlatform;
 import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
@@ -77,6 +79,11 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+
+import junit.framework.TestCase;
+import kotlin.Pair;
+import kotlin.collections.CollectionsKt;
+import kotlin.jvm.functions.Function1;
 
 public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     
@@ -433,9 +440,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 String textWithExtras = addExtras(expectedText);
                 this.clearText = CheckerTestUtil.parseDiagnosedRanges(textWithExtras, diagnosedRanges);
                 this.jetFile = JetLightFixture.createCheckAndReturnPsiFile(null, fileName, clearText, getProject());
-                for (CheckerTestUtil.DiagnosedRange diagnosedRange : diagnosedRanges) {
-                    diagnosedRange.setFile(jetFile);
-                }
             }
         }
         
@@ -493,29 +497,40 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 return true;
             }
 
-            Set<Diagnostic> jvmSignatureDiagnostics = skipJvmSignatureDiagnostics
-                                                            ? Collections.<Diagnostic>emptySet()
+            Set<ActualDiagnostic> jvmSignatureDiagnostics = skipJvmSignatureDiagnostics
+                                                            ? Collections.<ActualDiagnostic>emptySet()
                                                             : computeJvmSignatureDiagnostics(bindingContext);
 
             final boolean[] ok = { true };
-            List<Diagnostic> diagnostics = ContainerUtil.filter(
+            List<Pair<MultiTargetPlatform, BindingContext>> implementingModulesBinding = Lists.newArrayList();
+            List<ActualDiagnostic> diagnostics = ContainerUtil.filter(
                     CollectionsKt.plus(
-                    		CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(bindingContext, jetFile, markDynamicCalls, dynamicCallDescriptors), jvmSignatureDiagnostics),
-                    whatDiagnosticsToConsider
-            );
+                    		CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(
+                    		        bindingContext, 
+                    		        implementingModulesBinding,
+                    		        jetFile, 
+                    		        markDynamicCalls, 
+                    		        dynamicCallDescriptors), 
+                    		jvmSignatureDiagnostics),
+                    new Condition<ActualDiagnostic>() {
+                        @Override
+                        public boolean value(final ActualDiagnostic actualDiagnostic) {
+                            return whatDiagnosticsToConsider.value(actualDiagnostic.diagnostic);
+                        }
+                    });
             
-            Map<Diagnostic, CheckerTestUtil.TextDiagnostic> diagnosticToExpectedDiagnostic = ContainerUtil.newHashMap();
-            CheckerTestUtil.diagnosticsDiff(diagnosticToExpectedDiagnostic, diagnosedRanges, diagnostics, new CheckerTestUtil.DiagnosticDiffCallbacks() {
+            Map<ActualDiagnostic, CheckerTestUtil.TextDiagnostic> diagnosticToExpectedDiagnostic = CheckerTestUtil.diagnosticsDiff(
+                    diagnosedRanges, diagnostics, new CheckerTestUtil.DiagnosticDiffCallbacks() {
                 @Override
                 public void missingDiagnostic(TextDiagnostic diagnostic, int expectedStart, int expectedEnd) {
-                    String message = "Missing " + diagnostic.getName() + DiagnosticUtils.atLocation(jetFile, new TextRange(expectedStart, expectedEnd));
+                    String message = "Missing " + diagnostic.getDescription() + DiagnosticUtils.atLocation(jetFile, new TextRange(expectedStart, expectedEnd));
                     System.err.println(message);
                     ok[0] = false;
                 }
 
                 @Override
                 public void unexpectedDiagnostic(TextDiagnostic diagnostic, int actualStart, int actualEnd) {
-                    String message = "Unexpected " + diagnostic.getName() + DiagnosticUtils.atLocation(jetFile, new TextRange(actualStart, actualEnd));
+                    String message = "Unexpected " + diagnostic.getDescription() + DiagnosticUtils.atLocation(jetFile, new TextRange(actualStart, actualEnd));
                     System.err.println(message);
                     ok[0] = false;
                 }
@@ -545,14 +560,20 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             return ok[0];
         }
 
-        private Set<Diagnostic> computeJvmSignatureDiagnostics(BindingContext bindingContext) {
-            Set<Diagnostic> jvmSignatureDiagnostics = new HashSet<Diagnostic>();
+        private Set<ActualDiagnostic> computeJvmSignatureDiagnostics(BindingContext bindingContext) {
+            Set<ActualDiagnostic> jvmSignatureDiagnostics = new HashSet<ActualDiagnostic>();
             Collection<KtDeclaration> declarations = PsiTreeUtil.findChildrenOfType(jetFile, KtDeclaration.class);
             for (KtDeclaration declaration : declarations) {
                 Diagnostics diagnostics = DuplicateJvmSignatureUtilKt.getJvmSignatureDiagnostics(declaration, 
                         bindingContext.getDiagnostics(), GlobalSearchScope.allScope(getProject()));
                 if (diagnostics == null) continue;
-                jvmSignatureDiagnostics.addAll(diagnostics.forElement(declaration));
+                jvmSignatureDiagnostics.addAll(CollectionsKt.map(diagnostics.forElement(declaration), new Function1<Diagnostic, ActualDiagnostic>() {
+                    @Override
+                    public ActualDiagnostic invoke(Diagnostic arg0) {
+                        return new ActualDiagnostic(arg0, null);
+                    }
+                }));
+                  
             }
             return jvmSignatureDiagnostics;
         }
