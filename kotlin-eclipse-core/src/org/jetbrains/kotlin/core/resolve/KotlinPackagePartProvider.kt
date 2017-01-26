@@ -16,13 +16,17 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve
 
+import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.descriptors.PackagePartProvider
 import org.jetbrains.kotlin.load.kotlin.ModuleMapping
+import org.jetbrains.kotlin.load.kotlin.PackageParts
 import org.jetbrains.kotlin.utils.SmartList
 import java.io.EOFException
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
+    private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping)
+    
     private val notLoadedRoots by lazy(LazyThreadSafetyMode.NONE) {
             environment.getRoots()
             .map { it.file }
@@ -30,13 +34,39 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
             .toMutableList()
     }
     
-    private val loadedModules: MutableList<ModuleMapping> = SmartList()
+    private val loadedModules: MutableList<ModuleMappingInfo> = SmartList()
+
+    override fun findPackageParts(packageFqName: String): List<String> {
+        val rootToPackageParts = getPackageParts(packageFqName)
+        if (rootToPackageParts.isEmpty()) return emptyList()
+
+        val result = linkedSetOf<String>()
+        val visitedMultifileFacades = linkedSetOf<String>()
+        for ((virtualFile, packageParts) in rootToPackageParts) {
+            for (name in packageParts.parts) {
+                val facadeName = packageParts.getMultifileFacadeName(name)
+                if (facadeName == null || facadeName !in visitedMultifileFacades) {
+                    result.add(name)
+                }
+            }
+            packageParts.parts.mapNotNullTo(visitedMultifileFacades) { packageParts.getMultifileFacadeName(it) }
+        }
+        return result.toList()
+    }
+
+    override fun findMetadataPackageParts(packageFqName: String): List<String> =
+            getPackageParts(packageFqName).values.flatMap(PackageParts::metadataParts).distinct()
 
     @Synchronized
-    override fun findPackageParts(packageFqName: String): List<String> {
+    private fun getPackageParts(packageFqName: String): Map<VirtualFile, PackageParts> {
         processNotLoadedRelevantRoots(packageFqName)
 
-        return loadedModules.flatMap { it.findPackageParts(packageFqName)?.parts ?: emptySet<String>() }.distinct()
+        val result = mutableMapOf<VirtualFile, PackageParts>()
+        for ((root, mapping) in loadedModules) {
+            val newParts = mapping.findPackageParts(packageFqName) ?: continue
+            result[root]?.let { parts -> parts += newParts } ?: result.put(root, newParts)
+        }
+        return result
     }
 
     private fun processNotLoadedRelevantRoots(packageFqName: String) {
@@ -55,17 +85,19 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
         }
         notLoadedRoots.removeAll(relevantRoots)
 
-        loadedModules.addAll(relevantRoots.mapNotNull {
-            it.findChild("META-INF")
-        }.flatMap {
-            it.children.filter { it.name.endsWith(ModuleMapping.MAPPING_FILE_EXT) }
-        }.map { file ->
-            try {
-                ModuleMapping.create(file.contentsToByteArray(), file.toString())
+        for (root in relevantRoots) {
+            val metaInf = root.findChild("META-INF") ?: continue
+            val moduleFiles = metaInf.children.filter { it.name.endsWith(ModuleMapping.MAPPING_FILE_EXT) }
+            for (moduleFile in moduleFiles) {
+                val mapping = try {
+                    ModuleMapping.create(moduleFile.contentsToByteArray(), moduleFile.toString())
+                }
+                catch (e: EOFException) {
+                    throw RuntimeException("Error on reading package parts for '$packageFqName' package in '$moduleFile', " +
+                                           "roots: $notLoadedRoots", e)
+                }
+                loadedModules.add(ModuleMappingInfo(root, mapping))
             }
-            catch (e: EOFException) {
-                throw RuntimeException("Error on reading package parts for '$packageFqName' package in '$file', roots: $notLoadedRoots", e)
-            }
-        })
+        }
     }
 }
