@@ -1,64 +1,68 @@
 <project default="get_bundled">
-	<property name="compiler.tag" value="for_eclipse" />
-	<property name="bootstrap_branch" value=""/>
-	<property name="idea-version" value="162.1812.17"/>
-	
-	<property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
-	
-	<property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
-	<property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_11M03_CompilerAndPlugin_NoTests/${compiler.query}" />
-	<property name="idea-sdk-url" value="https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea" />
-	
-	<property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
-	<property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
-	<property name="test-data-file" value="kotlin-test-data.zip" />
-	<property name="testModule.lib" value="../kotlin-eclipse-ui-test/lib" />
+    <property name="compiler.tag" value="for_eclipse" />
+    <property name="bootstrap_branch" value=""/>
+    <property name="idea-version" value="162.1812.17"/>
+    
+    <property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
+    
+    <property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
+    
+    <property name="kotlin-idea-compatible-version" value="IJ2016.3-1" />
+    <property name="kotlin-version" value="1.1.0-beta-17" />
+    <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_11Beta_CompilerAndPlugin_NoTests/${compiler.query}" />
+    
+    <property name="idea-sdk-url" value="https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea" />
+    
+    <property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
+    <property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
+    <property name="test-data-file" value="kotlin-test-data.zip" />
+    <property name="testModule.lib" value="../kotlin-eclipse-ui-test/lib" />
     
     <property name="openapi-formatter" value="openapi-formatter" />
     <property name="util-formatter" value="util-formatter" />
     <property name="idea-formatter" value="idea-formatter" />
-	
-	<condition property="branch" value="?branch=${bootstrap_branch}" else="">
-	    <length string="${bootstrap_branch}" trim="true" when="greater" length="0" />
-	</condition>
-	
-	<property name="project.name" value="kotlin-bundled-compiler" />
-		
-	<condition property="target.dir" value="${teamcity.build.workingDir}/lib" else="lib">
-		<isset property="teamcity.build.workingDir"/>
-	</condition>
-	
-	<property name="testData.dir" value="../kotlin-eclipse-ui-test/common_testData" />
-	
-	<property name="download.name" value="downloads" />
-	<property name="download.dir" value="${target.dir}/${download.name}" />
-	
-	<condition property="no_eclipse">
-		<not>
-			<typefound name="eclipse.refreshLocal" />
-		</not>
-	</condition>
+    
+    <condition property="branch" value="?branch=${bootstrap_branch}" else="">
+        <length string="${bootstrap_branch}" trim="true" when="greater" length="0" />
+    </condition>
+    
+    <property name="project.name" value="kotlin-bundled-compiler" />
+        
+    <condition property="target.dir" value="${teamcity.build.workingDir}/lib" else="lib">
+        <isset property="teamcity.build.workingDir"/>
+    </condition>
+    
+    <property name="testData.dir" value="../kotlin-eclipse-ui-test/common_testData" />
+    
+    <property name="download.name" value="downloads" />
+    <property name="download.dir" value="${target.dir}/${download.name}" />
+    
+    <condition property="no_eclipse">
+        <not>
+            <typefound name="eclipse.refreshLocal" />
+        </not>
+    </condition>
 
-	<target name="refresh_eclipse" unless="no_eclipse">
-		<eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
-	</target>
-	
-	<target name="download_test_data">
-		<mkdir dir="${testData.dir}" />
-		<delete includeemptydirs="true">
-			<fileset dir="${testData.dir}" includes="**/*" />
-		</delete>
-		
-		<get 
+    <target name="refresh_eclipse" unless="no_eclipse">
+        <eclipse.refreshLocal resource="${project.name}/${target.dir}" depth="infinite" />
+    </target>
+    
+    <target name="download_test_data">
+        <mkdir dir="${testData.dir}" />
+        <delete includeemptydirs="true">
+            <fileset dir="${testData.dir}" includes="**/*" />
+        </delete>
+        
+        <get 
             src="${teamcity-kotlin-url}/internal/${test-data-file}${branch}" 
             dest="${testData.dir}/${test-data-file}" 
             usetimestamp="true" />
-		
-		<unzip src="${testData.dir}/${test-data-file}" dest="${testData.dir}" />
-		
-		<delete file="${testData.dir}/${test-data-file}}" />
-	</target>
-	
+        
+        <unzip src="${testData.dir}/${test-data-file}" dest="${testData.dir}" />
+        
+        <delete file="${testData.dir}/${test-data-file}}" />
+    </target>
+    
     <target name="download_test_framework_dependencies">
         <mkdir dir="${testModule.lib}" />
         <delete includeemptydirs="true">
@@ -71,33 +75,33 @@
             usetimestamp="true"/>
     </target>
 
-	<target name="download_bundled">
-		<mkdir dir="${target.dir}" />
-		<delete includeemptydirs="true">
-			<fileset dir="${target.dir}" includes="**/*" excludes="${download.name}/*" />
-		</delete>
-		
+    <target name="download_bundled">
+        <mkdir dir="${target.dir}" />
+        <delete includeemptydirs="true">
+            <fileset dir="${target.dir}" includes="**/*" excludes="${download.name}/*" />
+        </delete>
+        
 
-		<mkdir dir="${download.dir}" />
+        <mkdir dir="${download.dir}" />
 
-		<get 
-			src="${teamcity-kotlin-url}/kotlin-plugin-1.1-M03-release-IJ2016.3-1.zip${branch}"    
-			dest="${download.dir}/${compiler-artifact-file}" 
-			usetimestamp="true" />
-		
-		<sequential>
-			<unzip src="${download.dir}/${compiler-artifact-file}" dest="${download.dir}">
-				<patternset>
-					<include name="Kotlin/lib/kotlin-plugin.jar" />
-				</patternset>
-				<mapper type="merge" to="kotlin-plugin.jar" />
-			</unzip>
-			
-			<unzip src="${download.dir}/kotlin-plugin.jar" dest="${download.dir}/j2k">
-				<patternset>
-					<include name="org/jetbrains/kotlin/j2k/**/*.class" />
-				</patternset>
-			</unzip>
+        <get 
+            src="${teamcity-kotlin-url}/kotlin-plugin-${kotlin-version}-${kotlin-idea-compatible-version}.zip" 
+            dest="${download.dir}/${compiler-artifact-file}" 
+            usetimestamp="true" />
+        
+        <sequential>
+            <unzip src="${download.dir}/${compiler-artifact-file}" dest="${download.dir}">
+                <patternset>
+                    <include name="Kotlin/lib/kotlin-plugin.jar" />
+                </patternset>
+                <mapper type="merge" to="kotlin-plugin.jar" />
+            </unzip>
+            
+            <unzip src="${download.dir}/kotlin-plugin.jar" dest="${download.dir}/j2k">
+                <patternset>
+                    <include name="org/jetbrains/kotlin/j2k/**/*.class" />
+                </patternset>
+            </unzip>
 
             <jar jarfile="${target.dir}/kotlin-converter.jar">
                 <fileset dir="${download.dir}/j2k"/>
@@ -112,10 +116,10 @@
                     <attribute name="Main-Class" value="org.jetbrains.kotlin.j2k.JavaToKotlinTranslator"/>
                 </manifest>
             </jar>
-			
+            
             <delete dir="${download.dir}/j2k"/>
         </sequential>
-		
+        
         <sequential>
             <get 
                 src="${idea-sdk-url}/ideaIC/${idea-version}/ideaIC-${idea-version}.zip" 
@@ -137,7 +141,6 @@
                     <include name="com/intellij/formatting/**/*.class" />
                     <include name="com/intellij/application/options/**/*.class" />
                     <include name="com/intellij/openapi/options/**/*.class" />
-                    <include name="com/intellij/configurationStore/*.class" />
                 </patternset>
             </unzip>
             
@@ -199,53 +202,52 @@
             <delete file="${target.dir}/idea.jar"/>
         </sequential>
 
-		<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
-			<patternset>
-				<include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
-				<include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
-				<include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
-			    <include name="Kotlin/kotlinc/lib/kotlin-script-runtime.jar" />
-				<include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
-				<include name="Kotlin/kotlinc/lib/kotlin-runtime-sources.jar" />
-			</patternset>
-			<mapper type="flatten"/>
-		</unzip>
-		
-		<get 
-			src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
-			dest="${target.dir}/kotlin-ide-common.jar"
-			usetimestamp="true" />
-		
+        <unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
+            <patternset>
+                <include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
+                <include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
+                <include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
+                <include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
+                <include name="Kotlin/kotlinc/lib/kotlin-runtime-sources.jar" />
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+        
+        <get 
+            src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
+            dest="${target.dir}/kotlin-ide-common.jar"
+            usetimestamp="true" />
+        
         <get 
             src="${teamcity-kotlin-url}/internal/kotlin-formatter.jar${branch}"
             dest="${target.dir}/kotlin-formatter.jar"
             usetimestamp="true" />
-		
-		<get src="${idea-sdk-url}/intellij-core/${idea-version}/intellij-core-${idea-version}.zip" 
-			dest="${download.dir}/intellij-core.zip" 
-			usetimestamp="true"/>
-		
-		<unzip src="${download.dir}/intellij-core.zip" dest="${target.dir}">
-			<patternset>
-				<include name="intellij-core.jar" />
-		    </patternset>
-			<mapper type="flatten"/>
-		</unzip>
-		
-		<!-- Also retrivive sources -->
-		<get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 
-					dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
-		
-		<!-- Get idea sources -->
-		<get src="${idea-sdk-url}/ideaIC/${idea-version}/ideaIC-${idea-version}-sources.jar" dest="${download.dir}/idea-sdk-sources.jar" usetimestamp="true" />
-		
-		<!-- Pack souces into single archive -->
-		<zip destfile="${target.dir}/${compiler-sources-file}">
-			<zipfileset src="${download.dir}/${compiler-sources-file}" />
-			<zipfileset src="${download.dir}/idea-sdk-sources.jar" />
-		</zip>
-	</target>
-	
+        
+        <get src="${idea-sdk-url}/intellij-core/${idea-version}/intellij-core-${idea-version}.zip" 
+            dest="${download.dir}/intellij-core.zip" 
+            usetimestamp="true"/>
+        
+        <unzip src="${download.dir}/intellij-core.zip" dest="${target.dir}">
+            <patternset>
+                <include name="intellij-core.jar" />
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+        
+        <!-- Also retrivive sources -->
+        <get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 
+                    dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
+        
+        <!-- Get idea sources -->
+        <get src="${idea-sdk-url}/ideaIC/${idea-version}/ideaIC-${idea-version}-sources.jar" dest="${download.dir}/idea-sdk-sources.jar" usetimestamp="true" />
+        
+        <!-- Pack souces into single archive -->
+        <zip destfile="${target.dir}/${compiler-sources-file}">
+            <zipfileset src="${download.dir}/${compiler-sources-file}" />
+            <zipfileset src="${download.dir}/idea-sdk-sources.jar" />
+        </zip>
+    </target>
+    
     <target name="get_bundled" depends="download_bundled, download_test_data,
         download_test_framework_dependencies, refresh_eclipse">
     </target>
