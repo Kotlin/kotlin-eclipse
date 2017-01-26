@@ -16,14 +16,17 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.kotlin
 
-import org.eclipse.core.resources.IResource
-import org.eclipse.core.runtime.IPath
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.GlobalSearchScope
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.IType
-import org.eclipse.jdt.core.JavaModelException
-import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.eclipse.jdt.internal.compiler.util.Util.isClassFileName
+import org.jetbrains.kotlin.builtins.BuiltInSerializerProtocol
+import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClassifier
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 import org.jetbrains.kotlin.load.java.structure.JavaClass
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinder
 import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
@@ -32,23 +35,38 @@ import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass
 import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClassFinder
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.search.GlobalSearchScope
-import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClass
-import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElement
-import org.eclipse.jdt.core.dom.ITypeBinding
-import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
-import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClassifier
-import org.eclipse.jdt.internal.compiler.util.Util.isClassFileName
-import org.jetbrains.kotlin.builtins.BuiltInSerializerProtocol
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
-import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndex
+import org.jetbrains.kotlin.serialization.deserialization.MetadataPackageFragment
 import java.io.InputStream
+import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndex
 
 class EclipseVirtualFileFinder(
         private val javaProject: IJavaProject,
         private val scope: GlobalSearchScope) : VirtualFileKotlinClassFinder() {
+    
+    val index: JvmDependenciesIndex
+        get() = KotlinEnvironment.getEnvironment(javaProject.getProject()).index
+    
+    override fun findMetadata(classId: ClassId): InputStream? {
+        assert(!classId.isNestedClass) { "Nested classes are not supported here: $classId" }
+
+        return findBinaryClass(
+                classId,
+                classId.shortClassName.asString() + MetadataPackageFragment.DOT_METADATA_FILE_EXTENSION)?.inputStream
+    }
+
+    override fun hasMetadataPackage(fqName: FqName): Boolean {
+        var found = false
+        
+        val index = KotlinEnvironment.getEnvironment(javaProject.getProject()).index
+        
+        index.traverseDirectoriesInPackage(fqName, continueSearch = { dir, rootType ->
+            found = found or dir.children.any { it.extension == MetadataPackageFragment.METADATA_FILE_EXTENSION }
+            !found
+        })
+        return found
+    }
+
     override fun findBuiltInsData(packageFqName: FqName): InputStream? {
         val fileName = BuiltInSerializerProtocol.getBuiltInsFileName(packageFqName)
 
@@ -56,8 +74,6 @@ class EclipseVirtualFileFinder(
         // JvmDependenciesIndex requires the ClassId of the class which we're searching for, to cache the last request+result
         val classId = ClassId(packageFqName, Name.special("<builtins-metadata>"))
         
-        val index = KotlinEnvironment.getEnvironment(javaProject.getProject()).index
-
         return index.findClass(classId, acceptedRootTypes = JavaRoot.OnlyBinary) { dir, rootType ->
             dir.findChild(fileName)?.check(VirtualFile::isValid)
         }?.check { it in scope }?.inputStream
@@ -84,7 +100,7 @@ class EclipseVirtualFileFinder(
             else -> throw IllegalArgumentException("Virtual file not found for $path")
         }
     }
-
+    
     private fun isBinaryKotlinClass(type: IType): Boolean = type.isBinary() && !EclipseJavaClassFinder.isInKotlinBinFolder(type)
 
     private fun classFileName(jClass:JavaClass): String {
@@ -92,6 +108,11 @@ class EclipseVirtualFileFinder(
         if (outerClass == null) return jClass.name.asString()
         return classFileName(outerClass) + "$" + jClass.name.asString()
     }
+    
+    private fun findBinaryClass(classId: ClassId, fileName: String): VirtualFile? =
+            index.findClass(classId, acceptedRootTypes = JavaRoot.OnlyBinary) { dir, rootType ->
+                dir.findChild(fileName)?.check(VirtualFile::isValid)
+            }?.check { it in scope }
 
     override public fun findKotlinClass(javaClass: JavaClass): KotlinJvmBinaryClass? {
         val fqName = javaClass.fqName
