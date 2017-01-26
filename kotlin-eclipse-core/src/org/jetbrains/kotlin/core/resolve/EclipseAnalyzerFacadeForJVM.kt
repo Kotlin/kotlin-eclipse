@@ -89,7 +89,7 @@ public object EclipseAnalyzerFacadeForJVM {
         val dependencyModule = run {
             val dependenciesContext = ContextForNewModule(
                     moduleContext, Name.special("<dependencies of ${environment.configuration.getNotNull(CommonConfigurationKeys.MODULE_NAME)}>"),
-                    module.builtIns
+                    module.builtIns, null
             )
             
             val dependencyScope = GlobalSearchScope.notScope(sourceScope)
@@ -200,7 +200,7 @@ public object EclipseAnalyzerFacadeForJVM {
         val projectContext = ProjectContext(project)
         val builtIns = JvmBuiltIns(projectContext.storageManager, !createBuiltInsFromModule)
         return ContextForNewModule(
-                projectContext, Name.special("<${configuration.getNotNull(CommonConfigurationKeys.MODULE_NAME)}>"), builtIns
+                projectContext, Name.special("<${configuration.getNotNull(CommonConfigurationKeys.MODULE_NAME)}>"), builtIns, null
         ).apply {
             if (createBuiltInsFromModule) {
                 builtIns.builtInsModule = module
