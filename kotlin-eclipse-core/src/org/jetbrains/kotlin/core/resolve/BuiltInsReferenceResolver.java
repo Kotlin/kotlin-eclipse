@@ -102,7 +102,8 @@ public class BuiltInsReferenceResolver {
         MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(
                 ContextKt.ProjectContext(myProject),
                 Name.special("<built-ins resolver module>"), 
-                DefaultBuiltIns.getInstance());
+                DefaultBuiltIns.getInstance(),
+                null);
         newModuleContext.setDependencies(newModuleContext.getModule());
         
         FileBasedDeclarationProviderFactory declarationFactory = new FileBasedDeclarationProviderFactory(
