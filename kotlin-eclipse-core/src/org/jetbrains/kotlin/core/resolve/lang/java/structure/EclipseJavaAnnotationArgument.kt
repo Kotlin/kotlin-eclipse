@@ -27,7 +27,7 @@ public abstract class EclipseJavaAnnotationArgument<T : IBinding>(javaElement: T
 	EclipseJavaElement<T>(javaElement), JavaAnnotationArgument {
 	
 	override val name: Name?
-		get() = Name.identifier(getBinding().getName())
+		get() = Name.identifier(binding.getName())
 	
 	companion object {
 		@JvmStatic fun create(value: Any, name: Name, javaProject: IJavaProject): JavaAnnotationArgument {

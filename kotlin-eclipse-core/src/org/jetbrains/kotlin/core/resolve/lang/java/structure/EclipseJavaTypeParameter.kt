@@ -27,8 +27,8 @@ import com.google.common.collect.Lists
 import org.jetbrains.kotlin.name.SpecialNames
 
 public class EclipseJavaTypeParameter(binding: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(binding), JavaTypeParameter {
-    override val name: Name = SpecialNames.safeIdentifier(getBinding().getName())
+    override val name: Name = SpecialNames.safeIdentifier(binding.getName())
     
     override val upperBounds: Collection<JavaClassifierType>
-        get() = getBinding().getTypeBounds().map(::EclipseJavaClassifierType)
+        get() = binding.getTypeBounds().map(::EclipseJavaClassifierType)
 }
