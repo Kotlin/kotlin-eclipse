@@ -98,7 +98,7 @@ fun gotoElement(
         project: IJavaProject) {
     when (element) {
         is EclipseJavaSourceElement -> {
-            val binding = (element.javaElement as EclipseJavaElement<*>).getBinding()
+            val binding = (element.javaElement as EclipseJavaElement<*>).binding
             gotoJavaDeclaration(binding)
         }
         
