@@ -101,6 +101,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
             List<JavaClass> javaClasses = Lists.newArrayList();
             for (IClassFile classFile : javaPackage.getClassFiles()) {
                 IType type = classFile.getType();
+                if (EclipseJavaElementUtil.isKotlinLightClass(type)) continue;
                 if (isOuterClass(classFile)) {
                     String elementName = type.getElementName();
                     if (Name.isValidIdentifier(elementName) && nameFilter.invoke(Name.identifier(elementName))) {
@@ -114,6 +115,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
             
             for (ICompilationUnit cu : javaPackage.getCompilationUnits()) {
                 for (IType javaClass : cu.getAllTypes()) {
+                    if (EclipseJavaElementUtil.isKotlinLightClass(javaClass)) continue;
                     String elementName = javaClass.getElementName();
                     if (Name.isValidIdentifier(elementName) && nameFilter.invoke(Name.identifier(elementName))) {
                         ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(javaClass);
