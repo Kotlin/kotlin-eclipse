@@ -22,11 +22,11 @@ import org.jetbrains.kotlin.load.java.structure.JavaField
 import org.jetbrains.kotlin.load.java.structure.JavaType
 
 public class EclipseJavaField(private val javaField: IVariableBinding) : EclipseJavaMember<IVariableBinding>(javaField), JavaField {
-    override val isEnumEntry: Boolean = getBinding().isEnumConstant()
+    override val isEnumEntry: Boolean = binding.isEnumConstant()
     
     override val type: JavaType
-        get() = EclipseJavaType.create(getBinding().getType())
+        get() = EclipseJavaType.create(binding.getType())
     
     override val containingClass: JavaClass
-        get() = EclipseJavaClass(getBinding().getDeclaringClass())
+        get() = EclipseJavaClass(binding.getDeclaringClass())
 }

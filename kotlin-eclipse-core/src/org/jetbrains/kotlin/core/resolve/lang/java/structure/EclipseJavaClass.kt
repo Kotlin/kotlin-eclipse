@@ -34,41 +34,41 @@ import org.jetbrains.kotlin.name.SpecialNames
 import java.lang.reflect.Modifier
 
 public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(javaElement), JavaClass {
-    override val name: Name = SpecialNames.safeIdentifier(getBinding().getName())
+    override val name: Name = SpecialNames.safeIdentifier(binding.getName())
     
-    override val isAbstract: Boolean = Modifier.isAbstract(getBinding().getModifiers())
+    override val isAbstract: Boolean = Modifier.isAbstract(binding.getModifiers())
     
-    override val isStatic: Boolean = Modifier.isStatic(getBinding().getModifiers())
+    override val isStatic: Boolean = Modifier.isStatic(binding.getModifiers())
     
-    override val isFinal: Boolean = Modifier.isFinal(getBinding().getModifiers())
+    override val isFinal: Boolean = Modifier.isFinal(binding.getModifiers())
     
-    override val visibility: Visibility = EclipseJavaElementUtil.getVisibility(getBinding())
+    override val visibility: Visibility = EclipseJavaElementUtil.getVisibility(binding)
     
     override val typeParameters: List<JavaTypeParameter>
-        get() = typeParameters(getBinding().getTypeParameters())
+        get() = typeParameters(binding.getTypeParameters())
     
     override val innerClasses: Collection<JavaClass>
-        get() = getBinding().declaredTypes.map(::EclipseJavaClass)
+        get() = binding.declaredTypes.map(::EclipseJavaClass)
     
-    override val fqName: FqName? = getBinding().getQualifiedName()?.let { FqName(it) }
+    override val fqName: FqName? = binding.getQualifiedName()?.let { FqName(it) }
     
-    override val isInterface: Boolean = getBinding().isInterface()
+    override val isInterface: Boolean = binding.isInterface()
     
-    override val isAnnotationType: Boolean = getBinding().isAnnotation()
+    override val isAnnotationType: Boolean = binding.isAnnotation()
     
-    override val isEnum: Boolean = getBinding().isEnum()
+    override val isEnum: Boolean = binding.isEnum()
     
     override val outerClass: JavaClass? 
-        get() = getBinding().getDeclaringClass()?.let { EclipseJavaClass(it) }
+        get() = binding.getDeclaringClass()?.let { EclipseJavaClass(it) }
     
     override val supertypes: Collection<JavaClassifierType> 
-        get() = classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(getBinding()))
+        get() = classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(binding))
     
     override val methods: Collection<JavaMethod> 
-        get() = getBinding().declaredMethods.filterNot { it.isConstructor() }.map(::EclipseJavaMethod)
+        get() = binding.declaredMethods.filterNot { it.isConstructor() }.map(::EclipseJavaMethod)
     
     override val fields: Collection<JavaField>
-        get() = getBinding().getDeclaredFields()
+        get() = binding.getDeclaredFields()
                 .filter { 
                     val name = it.getName()
                     name != null && Name.isValidIdentifier(name)
@@ -76,15 +76,15 @@ public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier
                 .map { EclipseJavaField(it) }
     
     override val constructors: Collection<JavaConstructor> 
-        get() = getBinding().declaredMethods.filter { it.isConstructor() }.map(::EclipseJavaConstructor)
+        get() = binding.declaredMethods.filter { it.isConstructor() }.map(::EclipseJavaConstructor)
     
-    override val isDeprecatedInJavaDoc: Boolean = getBinding().isDeprecated
+    override val isDeprecatedInJavaDoc: Boolean = binding.isDeprecated
     
     override val annotations: Collection<JavaAnnotation> 
-        get() = getBinding().annotations.map(::EclipseJavaAnnotation)
+        get() = binding.annotations.map(::EclipseJavaAnnotation)
     
     override val lightClassOriginKind: LightClassOriginKind?
-        get() = getBinding().javaElement.let {
+        get() = binding.javaElement.let {
             if (EclipseJavaElementUtil.isKotlinLightClass(it))
                 LightClassOriginKind.SOURCE
             else

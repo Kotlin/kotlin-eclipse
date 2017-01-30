@@ -118,7 +118,7 @@ class EclipseVirtualFileFinder(
         val fqName = javaClass.fqName
         if (fqName == null) return null
 
-        val classId = EclipseJavaElementUtil.computeClassId((javaClass as EclipseJavaClassifier<*>).getBinding())
+        val classId = EclipseJavaElementUtil.computeClassId((javaClass as EclipseJavaClassifier<*>).binding)
         if (classId == null) return null
 
         var file = findVirtualFileWithHeader(classId)
