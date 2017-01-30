@@ -26,7 +26,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
@@ -105,10 +104,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
                 if (isOuterClass(classFile)) {
                     String elementName = type.getElementName();
                     if (Name.isValidIdentifier(elementName) && nameFilter.invoke(Name.identifier(elementName))) {
-                        ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(type);
-                        if (typeBinding != null) {
-                            javaClasses.add(new EclipseJavaClass(typeBinding));
-                        }
+                        javaClasses.add(new EclipseOptimizedJavaClass(type));
                     }
                 }
             }
@@ -118,10 +114,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
                     if (EclipseJavaElementUtil.isKotlinLightClass(javaClass)) continue;
                     String elementName = javaClass.getElementName();
                     if (Name.isValidIdentifier(elementName) && nameFilter.invoke(Name.identifier(elementName))) {
-                        ITypeBinding typeBinding = EclipseJavaClassFinder.createTypeBinding(javaClass);
-                        if (typeBinding != null) {
-                            javaClasses.add(new EclipseJavaClass(typeBinding));
-                        }
+                        javaClasses.add(new EclipseOptimizedJavaClass(javaClass));
                     }
                 }
             }
