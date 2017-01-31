@@ -48,6 +48,7 @@ import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
 import org.jetbrains.kotlin.resolve.jvm.extensions.PackageFragmentProviderExtension
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
+import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import org.jetbrains.kotlin.util.KotlinFrontEndException
 import java.util.ArrayList
@@ -94,9 +95,9 @@ public object EclipseAnalyzerFacadeForJVM {
             
             val dependencyScope = GlobalSearchScope.notScope(sourceScope)
             val dependenciesContainer = createContainerForTopDownAnalyzerForJvm(
-                moduleContext,
+                dependenciesContext,
                 trace,
-                providerFactory,
+                DeclarationProviderFactory.EMPTY,
                 dependencyScope,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
