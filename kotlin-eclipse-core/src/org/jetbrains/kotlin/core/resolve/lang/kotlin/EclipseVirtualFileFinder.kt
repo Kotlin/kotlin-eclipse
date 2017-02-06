@@ -76,7 +76,7 @@ class EclipseVirtualFileFinder(
         
         return index.findClass(classId, acceptedRootTypes = JavaRoot.OnlyBinary) { dir, rootType ->
             dir.findChild(fileName)?.check(VirtualFile::isValid)
-        }?.check { it in scope }?.inputStream
+        }?.check { it in scope && it.isValid }?.inputStream
     }
 
     override public fun findVirtualFileWithHeader(classId: ClassId): VirtualFile? {
