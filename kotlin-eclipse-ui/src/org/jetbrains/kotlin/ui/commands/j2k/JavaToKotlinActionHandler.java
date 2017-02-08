@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.ui.commands.j2k;
 import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -175,7 +176,14 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
             for (CompilationUnit compilationUnit : compilationUnits) {
                 ConvertedKotlinData convertedFile = getConvertedFileData(compilationUnit, shell);
                 compositeOperation.add(new CreateFileOperation(convertedFile.getFile(), null, 
-                        new ByteArrayInputStream(convertedFile.getKotlinFileData().getBytes()), "Create Kotlin File"));
+                        new ByteArrayInputStream(convertedFile.getKotlinFileData().getBytes(StandardCharsets.UTF_8)), "Create Kotlin File")
+                );
+
+                // File created with CreateFileOperation inherits character encoding from parent container.
+                // Which, of course, can be different from UTF-8.
+                compositeOperation.add(
+                    new SetFileCharsetOperation(convertedFile.getFile(), "UTF-8")
+                );
                 
                 convertedFiles.add(convertedFile.getFile());
             }
