@@ -26,7 +26,8 @@ class KotlinAnnotationTextHover : KotlinEditorTextHover<Any> {
     private val problemHover = object : AbstractAnnotationHover(true) {}
     
     override fun getHoverInfo(hoverData: HoverData): Any? {
-        return problemHover.getHoverInfo2(hoverData.editor.javaEditor.viewer, hoverData.getRegion())
+        val region = hoverData.getRegion() ?: return null
+        return problemHover.getHoverInfo2(hoverData.editor.javaEditor.viewer, region)
     }
 
     override fun isAvailable(hoverData: HoverData): Boolean = true

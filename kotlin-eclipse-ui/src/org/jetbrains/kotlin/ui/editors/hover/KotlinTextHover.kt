@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 
 const val TEXT_HOVER_EP_ID = "org.jetbrains.kotlin.ui.editor.textHover"
 
@@ -89,11 +90,14 @@ interface KotlinEditorTextHover<out Info> {
 
 data class HoverData(val hoverElement: KtElement, val editor: KotlinEditor)
 
-fun HoverData.getRegion(): Region {
+fun HoverData.getRegion(): Region? {
     val (element, editor) = this
 
     val psiTextRange = element.getTextRange()
-    val startOffset = element.getOffsetByDocument(editor.document, psiTextRange.startOffset)
+    val document = if (editor is KotlinCommonEditor) editor.getDocumentSafely() else editor.document
+    if (document == null) return null
+    
+    val startOffset = element.getOffsetByDocument(document, psiTextRange.startOffset)
 
     return Region(startOffset, psiTextRange.length)
 }
