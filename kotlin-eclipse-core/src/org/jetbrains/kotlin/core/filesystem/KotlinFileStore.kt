@@ -51,8 +51,7 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
 
         val jetFiles = KotlinLightClassManager.getInstance(project).getSourceFiles(file)
         if (jetFiles.isNotEmpty()) {
-            val analysisResult = KotlinAnalysisProjectCache.getAnalysisResultIfCached(project) ?:
-                    KotlinAnalyzer.analyzeFiles(jetFiles).analysisResult
+            val analysisResult = KotlinAnalyzer.analyzeFiles(jetFiles).analysisResult
 
             val requestedClassName = Path(file.getAbsolutePath()).lastSegment()
             val state = KotlinLightClassGeneration.buildLightClasses(analysisResult, project, jetFiles, requestedClassName)
