@@ -5,8 +5,8 @@ import org.eclipse.core.commands.ExecutionEvent
 import org.eclipse.ui.handlers.HandlerUtil
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jface.viewers.IStructuredSelection
-import org.jetbrains.kotlin.eclipse.ui.utils.unconfigureKotlinProject
-import org.jetbrains.kotlin.eclipse.ui.utils.canBeDeconfigured
+import org.jetbrains.kotlin.core.model.unconfigureKotlinProject
+import org.jetbrains.kotlin.core.model.canBeDeconfigured
 import org.eclipse.ui.ISources
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.jetbrains.kotlin.core.utils.ProjectUtils

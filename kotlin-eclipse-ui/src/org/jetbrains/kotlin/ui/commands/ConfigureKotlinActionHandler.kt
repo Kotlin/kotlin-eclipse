@@ -21,7 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.ui.ISources
-import org.jetbrains.kotlin.eclipse.ui.utils.isConfigurationMissing
+import org.jetbrains.kotlin.core.model.isConfigurationMissing
 import org.eclipse.ui.handlers.HandlerUtil
 import org.jetbrains.kotlin.wizards.NewUnitWizard
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurator

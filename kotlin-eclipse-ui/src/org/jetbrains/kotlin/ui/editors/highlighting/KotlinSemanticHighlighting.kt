@@ -39,7 +39,7 @@ import org.eclipse.swt.graphics.TextStyle
 import org.eclipse.swt.widgets.Display
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.eclipse.ui.utils.runJob
+import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.ui.editors.Configuration.KotlinPresentationReconciler
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.editors.KotlinEditor

@@ -48,7 +48,7 @@ import org.jetbrains.kotlin.progress.CompilationCanceledStatus
 import org.jetbrains.kotlin.progress.CompilationCanceledException
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 import org.jetbrains.kotlin.ui.KotlinPluginUpdater
-import org.jetbrains.kotlin.eclipse.ui.utils.runJob
+import org.jetbrains.kotlin.core.model.runJob
 import org.eclipse.core.resources.ResourcesPlugin
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
