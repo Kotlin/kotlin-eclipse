@@ -26,13 +26,11 @@ fun loadAndCreateDefinitionsByTemplateProviders(eclipseFile: IFile): List<Kotlin
     return definitionsFromProviders + definitionsFromProvidersEx
 }
 
-typealias Environment = Map<String, Any?>
-
 interface ScriptTemplateProviderEx {
     val templateClassName: String
 
-    fun getTemplateClasspath(environment: Environment?): Iterable<String>
-    fun getEnvironment(file: IFile): Environment?
+    fun getTemplateClasspath(environment: Map<String, Any?>?): Iterable<String>
+    fun getEnvironment(file: IFile): Map<String, Any?>?
 }
 
 fun makeScriptDefsFromEclipseTemplatesProviders(eclipseFile: IFile, providers: Iterable<ScriptTemplateProviderEx>): List<KotlinScriptDefinition> {

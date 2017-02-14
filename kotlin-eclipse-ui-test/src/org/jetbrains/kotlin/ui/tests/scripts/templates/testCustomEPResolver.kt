@@ -12,16 +12,19 @@ import org.junit.Assert
 import java.util.concurrent.Future
 
 class CustomEPResolverScriptTemplateProvider : ScriptTemplateProviderEx {
-    override val templateClassClasspath = listOf("bin/", "target/classes/")
     override val templateClassName = "org.jetbrains.kotlin.ui.tests.scripts.templates.CustomReolverScriptTemplateDefinition"
-
-    override fun isApplicable(file: IFile): Boolean {
-        return file.name.contains("customEPResolver")
-    }
     
-    override val resolver: ScriptDependenciesResolver get() = CustomScriptDependenciesResolver()
+    override fun getTemplateClasspath(environment: Map<String, Any?>?): Iterable<String> {
+        return listOf("bin/", "target/classes/")
+    }
+
+    override fun getEnvironment(file: IFile): Map<String, Any?>? = null
 }
 
+@ScriptTemplateDefinition(
+        resolver = TestKotlinScriptResolver::class, // Default resolver that doesn't conform resolver in extenstion point
+        scriptFilePattern = "customEPResolver.kts"
+)
 class CustomScriptDependenciesResolver : ScriptDependenciesResolver {
     override fun resolve(
             script: ScriptContents,
@@ -38,9 +41,3 @@ class CustomScriptDependenciesResolver : ScriptDependenciesResolver {
         }.asFuture()
     }
 }
-
-@ScriptTemplateDefinition(
-        resolver = TestKotlinScriptResolver::class, // Default resolver that doesn't conform resolver in extenstion point
-        scriptFilePattern = "customEPResolver.kts"
-)
-open class CustomReolverScriptTemplateDefinition
