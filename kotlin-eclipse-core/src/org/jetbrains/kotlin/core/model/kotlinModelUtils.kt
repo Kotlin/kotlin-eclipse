@@ -14,7 +14,7 @@
 * limitations under the License.
 *
 *******************************************************************************/
-package org.jetbrains.kotlin.eclipse.ui.utils
+package org.jetbrains.kotlin.core.model
 
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.model.KotlinNature

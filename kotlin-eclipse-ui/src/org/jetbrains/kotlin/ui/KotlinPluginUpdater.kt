@@ -45,7 +45,7 @@ import java.net.URLEncoder
 import org.eclipse.jface.preference.IPreferenceStore
 import org.eclipse.equinox.p2.metadata.Version
 import java.util.Random
-import org.jetbrains.kotlin.eclipse.ui.utils.runJob
+import org.jetbrains.kotlin.core.model.runJob
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import java.io.IOException
