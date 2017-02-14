@@ -83,6 +83,8 @@ fun runCancellableAnalysisFor(javaProject: IJavaProject, postAnalysisTask: (Anal
     Job.getJobManager().cancel(family)
     Job.getJobManager().join(family, NullProgressMonitor()) // It should be fast enough
     
+    KotlinAnalysisProjectCache.resetCache(javaProject.project)
+    
     val analysisJob = KotlinAnalysisJob(javaProject)
     
     analysisJob.addJobChangeListener(object : JobChangeAdapter() {
