@@ -195,8 +195,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             List<KtFile> jetFiles = getKtFiles(testFilesInModule, true);
             allKtFiles.addAll(jetFiles);
             
-            KotlinTestUtils.joinBuildThread();
-
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE
                     .analyzeFilesWithJavaIntegration(
                             KotlinEnvironment.getEnvironment(getTestProject().getJavaProject().getProject()), jetFiles)
@@ -211,7 +209,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         StringBuilder actualText = new StringBuilder();
         for (TestFile testFile : testFiles) {
-            ok &= testFile.getActualText(moduleBindings.get(testFile.getModule()), actualText, groupedByModule.size() > 1);
+            ok &= testFile.getActualText(moduleBindings.get(testFile.getModule()), actualText, true);
         }
 
         JetTestUtils.assertEqualsToFile(testDataFile, actualText.toString());
