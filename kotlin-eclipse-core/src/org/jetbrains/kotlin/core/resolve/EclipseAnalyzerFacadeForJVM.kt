@@ -54,6 +54,7 @@ import org.jetbrains.kotlin.util.KotlinFrontEndException
 import java.util.ArrayList
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
+import org.jetbrains.kotlin.config.LanguageFeature
 
 public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
@@ -83,8 +84,11 @@ public object EclipseAnalyzerFacadeForJVM {
         
         val sourceScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(project, filesToAnalyze)
         val moduleClassResolver = SourceOrBinaryModuleClassResolver(sourceScope)
-        
-        val languageVersionSettings = LanguageVersionSettingsImpl.DEFAULT
+
+        val languageVersionSettings = LanguageVersionSettingsImpl(
+                LanguageVersionSettingsImpl.DEFAULT.languageVersion,
+                LanguageVersionSettingsImpl.DEFAULT.apiVersion,
+                listOf(LanguageFeature.WarnOnCoroutines))
         val optionalBuiltInsModule = JvmBuiltIns(storageManager).apply { initialize(module, true) }.builtInsModule
         
         val dependencyModule = run {
