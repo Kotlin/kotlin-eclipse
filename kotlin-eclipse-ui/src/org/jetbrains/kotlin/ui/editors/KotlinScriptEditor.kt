@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jface.text.IDocument
 import org.eclipse.swt.widgets.Composite
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.psi.KtFile
@@ -48,7 +49,13 @@ class KotlinScriptEditor : KotlinCommonEditor() {
         super.createPartControl(parent)
         
         val file = eclipseFile ?: return
-        KotlinLineAnnotationsReconciler.reconcile(file, this)
+        val environment = getEnvironment(file) as KotlinScriptEnvironment
+
+        environment.initializeScriptDefinitions {
+            if (file.isAccessible && isActive()) {
+                kotlinReconcilingStrategy.reconcile(null)
+            }
+        }
     }
     
     override val isScript: Boolean

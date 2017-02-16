@@ -87,6 +87,9 @@ class KotlinSimpleResolutionFacade(
         if (files.isEmpty()) throw IllegalStateException("Elements should not be empty")
         
         val componentProvider = KotlinAnalyzer.analyzeFiles(files).componentProvider
+        if (componentProvider == null) {
+            throw IllegalStateException("Trying to get service from non-initialized project")
+        }
         
         return componentProvider.getService(serviceClass)
     }
