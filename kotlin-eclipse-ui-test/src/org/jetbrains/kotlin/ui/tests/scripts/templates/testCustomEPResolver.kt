@@ -1,20 +1,19 @@
 package org.jetbrains.kotlin.ui.tests.scripts.templates
 
 import org.eclipse.core.resources.IFile
-import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.core.runtime.IProgressMonitor
 import org.jetbrains.kotlin.core.model.ScriptTemplateProviderEx
 import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.jetbrains.kotlin.script.ScriptContents
 import org.jetbrains.kotlin.script.ScriptDependenciesResolver
 import org.jetbrains.kotlin.script.ScriptTemplateDefinition
 import org.jetbrains.kotlin.script.asFuture
-import org.junit.Assert
 import java.util.concurrent.Future
 
 class CustomEPResolverScriptTemplateProvider : ScriptTemplateProviderEx {
     override val templateClassName = "org.jetbrains.kotlin.ui.tests.scripts.templates.CustomReolverScriptTemplateDefinition"
     
-    override fun getTemplateClasspath(environment: Map<String, Any?>?): Iterable<String> {
+    override fun getTemplateClasspath(environment: Map<String, Any?>?, monitor: IProgressMonitor): Iterable<String> {
         return listOf("bin/", "target/classes/")
     }
 
