@@ -73,7 +73,7 @@ abstract class KotlinCommonEditor : CompilationUnitEditor(), KotlinEditor {
     
     private var kotlinSemanticHighlighter: KotlinSemanticHighlighter? = null
     
-    private val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
+    protected val kotlinReconcilingStrategy = KotlinReconcilingStrategy(this)
     
     private val compositeContextGroup = CompositeActionGroup()
     

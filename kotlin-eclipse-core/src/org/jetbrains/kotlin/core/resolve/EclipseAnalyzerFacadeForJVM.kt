@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.container.ComponentProvider
+import org.jetbrains.kotlin.container.ValueDescriptor
 import org.jetbrains.kotlin.context.ContextForNewModule
 import org.jetbrains.kotlin.context.MutableModuleContext
 import org.jetbrains.kotlin.context.ProjectContext
@@ -51,12 +52,17 @@ import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import org.jetbrains.kotlin.util.KotlinFrontEndException
+import java.lang.reflect.Type
 import java.util.ArrayList
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
 import org.jetbrains.kotlin.config.LanguageFeature
 
-public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
+data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
+    companion object {
+        val EMPTY = AnalysisResultWithProvider(AnalysisResult.EMPTY, null)
+    }
+}
 
 public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeFilesWithJavaIntegration(
@@ -169,6 +175,11 @@ public object EclipseAnalyzerFacadeForJVM {
     public fun analyzeScript(
             environment: KotlinScriptEnvironment,
             scriptFile: KtFile): AnalysisResultWithProvider {
+        
+        if (!environment.isScriptDefinitionsInitialized) {
+            // We can't start resolve when script definitions are not initialized
+            return AnalysisResultWithProvider.EMPTY
+        }
         
         val trace = CliLightClassGenerationSupport.CliBindingTrace()
         

@@ -16,17 +16,15 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.model
 
-import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.core.model.KotlinNature
 import org.eclipse.core.resources.IProject
-import java.util.ArrayList
-import org.eclipse.core.resources.ICommand
-import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.core.KotlinClasspathContainer
-import org.jetbrains.kotlin.core.model.KotlinJavaManager
-import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.core.runtime.IStatus
+import org.eclipse.core.runtime.jobs.IJobChangeEvent
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.jobs.JobChangeAdapter
+import org.eclipse.jdt.core.IJavaProject
+import org.jetbrains.kotlin.core.KotlinClasspathContainer
+import org.jetbrains.kotlin.core.utils.ProjectUtils
 
 fun unconfigureKotlinProject(javaProject: IJavaProject) {
     val project = javaProject.getProject()
@@ -75,13 +73,34 @@ fun isConfigurationMissing(project: IProject): Boolean {
     }
 }
 
-inline fun runJob(name: String, priority: Int = Job.LONG, crossinline action: (IProgressMonitor) -> IStatus) {
+fun runJob(name: String, priority: Int = Job.LONG, action: (IProgressMonitor) -> IStatus) {
+    runJob(name, priority, null, action, {})
+}
+
+fun runJob(
+        name: String,
+        priority: Int = Job.LONG,
+        jobFamily: Any? = null,
+        action: (IProgressMonitor) -> IStatus,
+        postTask: (IJobChangeEvent) -> Unit
+) {
     val job = object : Job(name) {
         override fun run(monitor: IProgressMonitor): IStatus {
             return action(monitor)
         }
+        
+        override fun belongsTo(family: Any?): Boolean {
+            return jobFamily?.equals(family) ?: super.belongsTo(family)
+        }
     }
     
     job.setPriority(priority)
+    
+    job.addJobChangeListener(object : JobChangeAdapter() {
+        override fun done(event: IJobChangeEvent) {
+            postTask(event)
+        }
+    })
+    
     job.schedule()
 }

@@ -59,6 +59,9 @@ import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFactory
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.IJobChangeEvent
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -91,13 +94,6 @@ fun getEclipseResource(ideaProject: Project): IResource? {
 class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
-        loadAndCreateDefinitionsByTemplateProviders(eclipseFile)
-                .filter { it.isScript(File(eclipseFile.name)) }
-                .ifEmpty { listOf(StandardScriptDefinition) }
-                .forEach {
-                    KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
-                }
-        
         configureClasspath()
         
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
@@ -143,6 +139,9 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
             return file.fileExtension == KotlinParserDefinition.STD_SCRIPT_SUFFIX // TODO: use ScriptDefinitionProvider
         }
         
+        @JvmStatic
+        fun constructFamilyForInitialization(file: IFile): String = file.fullPath.toPortableString() + "scriptDef"
+        
         private fun checkIsScript(file: IFile) {
             if (!isScript(file)) {
                 throw IllegalArgumentException("KotlinScriptEnvironment can work only with scripts, not ${file.name}")
@@ -150,11 +149,47 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         }
     }
     
+    @Volatile var isScriptDefinitionsInitialized = false
+            private set
+    
+    @Volatile private var isInitializingScriptDefinitions = false
+    
+    @Synchronized
+    fun initializeScriptDefinitions(postTask: () -> Unit) {
+        if (isScriptDefinitionsInitialized || isInitializingScriptDefinitions) return
+        isInitializingScriptDefinitions = true
+
+        try {
+            val definitions = arrayListOf<KotlinScriptDefinition>()
+            runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
+                definitions.addAll(loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor))
+
+                monitor.done()
+                
+                Status.OK_STATUS
+            }, { _ ->
+                definitions
+                        .filter { it.isScript(File(eclipseFile.name)) }
+                        .ifEmpty { listOf(StandardScriptDefinition) }
+                        .forEach {
+                            KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
+                        }
+
+                addToCPFromScriptTemplateClassLoader()
+
+                isScriptDefinitionsInitialized = true
+                isInitializingScriptDefinitions = false
+                postTask()
+            })
+        } finally {
+            isInitializingScriptDefinitions = false
+        }
+    }
+    
     private fun configureClasspath() {
         addToClasspath(KOTLIN_RUNTIME_PATH.toFile())
         addToClasspath(KOTLIN_SCRIPT_RUNTIME_PATH.toFile())
         addJREToClasspath()
-        addToCPFromScriptTemplateClassLoader()
     }
     
     private fun addToCPFromScriptTemplateClassLoader() {
