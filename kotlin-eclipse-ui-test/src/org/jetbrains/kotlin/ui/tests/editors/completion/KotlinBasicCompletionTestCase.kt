@@ -39,6 +39,7 @@ abstract class KotlinBasicCompletionTestCase : KotlinProjectTestCase() {
         JavaPlugin.getDefault().getPreferenceStore().setValue(PreferenceConstants.CODEASSIST_SHOW_VISIBLE_PROPOSALS, shouldHideNonVisible)
         
         val testEditor = configureEditor(KotlinTestUtils.getNameByPath(testPath), fileText)
+        waitForEditorInitialization(testEditor)
         
         val actualProposals = getActualProposals(testEditor.getEditor() as KotlinEditor)
         

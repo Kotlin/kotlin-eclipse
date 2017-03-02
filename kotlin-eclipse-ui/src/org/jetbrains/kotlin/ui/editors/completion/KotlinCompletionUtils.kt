@@ -60,6 +60,7 @@ public object KotlinCompletionUtils {
     public fun getReferenceVariants(simpleNameExpression: KtSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
             Collection<DeclarationDescriptor> {
         val (analysisResult, container) = KotlinAnalyzer.analyzeFile(simpleNameExpression.getContainingKtFile())
+        if (container == null) return emptyList()
         
         val inDescriptor = simpleNameExpression
                 .getReferencedNameElement()
