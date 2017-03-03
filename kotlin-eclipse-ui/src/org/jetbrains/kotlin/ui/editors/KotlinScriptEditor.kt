@@ -20,8 +20,8 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jface.text.IDocument
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.psi.KtFile
@@ -52,7 +52,7 @@ class KotlinScriptEditor : KotlinCommonEditor() {
         val environment = getEnvironment(file) as KotlinScriptEnvironment
 
         environment.initializeScriptDefinitions {
-            if (file.isAccessible && isActive()) {
+            if (file.isAccessible && isOpen()) {
                 kotlinReconcilingStrategy.reconcile(null)
             }
         }
@@ -71,10 +71,16 @@ class KotlinScriptEditor : KotlinCommonEditor() {
     }
 }
 
-fun getScriptDependencies(editor: KotlinScriptEditor): ScriptDependencies? {
-    val eclipseFile = editor.eclipseFile ?: return null
-    val file = eclipseFile.location.toFile()
+private fun KotlinCommonEditor.isOpen(): Boolean {
+    for (window in PlatformUI.getWorkbench().getWorkbenchWindows()) {
+        for (page in window.getPages()) {
+            for (editorReference in page.getEditorReferences()) {
+                if (editorReference.getEditor(false) == this) {
+                    return true
+                }
+            }
+        }
+    }
     
-    val project = getEnvironment(eclipseFile).project
-    return ScriptDependenciesProvider.getInstance(project).getScriptDependencies(editor.parsedFile!!)
+    return false
 }
