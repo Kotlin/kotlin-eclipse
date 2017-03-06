@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors
 
+import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jface.text.IDocument
@@ -62,6 +63,12 @@ class KotlinScriptEditor : KotlinCommonEditor() {
         get() = true
     
     override fun dispose() {
+        val file = eclipseFile
+        if (file != null && file.exists()) {
+            val family = KotlinScriptEnvironment.constructFamilyForInitialization(file);
+            Job.getJobManager().cancel(family);
+        }
+        
         super.dispose()
         
         eclipseFile?.let {
