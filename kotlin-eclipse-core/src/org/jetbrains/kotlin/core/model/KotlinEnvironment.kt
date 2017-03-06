@@ -176,7 +176,7 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     fun initializeScriptDefinitions(postTask: () -> Unit) {
         if (isScriptDefinitionsInitialized || isInitializingScriptDefinitions) return
         isInitializingScriptDefinitions = true
-
+        
         try {
             val definitions = arrayListOf<KotlinScriptDefinition>()
             runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
