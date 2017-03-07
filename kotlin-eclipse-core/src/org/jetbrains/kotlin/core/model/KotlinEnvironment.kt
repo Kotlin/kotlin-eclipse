@@ -95,21 +95,6 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         KotlinCommonEnvironment(disposalbe) {
     init {
         configureClasspath()
-        
-        project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
-        
-        val index = JvmDependenciesIndexImpl(getRoots().toList())
-        
-        project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
-        
-        val area = Extensions.getArea(project)
-        with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
-            registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
-            registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
-        }
-        
-        val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
-        (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
     }
     
     companion object {
@@ -176,6 +161,21 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
                         }
 
                 addToCPFromScriptTemplateClassLoader()
+
+                project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
+        
+                val index = JvmDependenciesIndexImpl(getRoots().toList())
+        
+                project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
+        
+                val area = Extensions.getArea(project)
+                with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
+                    registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
+                    registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
+                }
+        
+                val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
+                (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
 
                 isScriptDefinitionsInitialized = true
                 isInitializingScriptDefinitions = false
