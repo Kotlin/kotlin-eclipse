@@ -107,6 +107,7 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
                 }
         
         configureClasspath()
+<<<<<<< HEAD
         
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
         
@@ -128,6 +129,8 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
                 index,
                 SingleJavaFileRootsIndex(singleJavaFileRoots),
                 configuration.getBoolean(JVMConfigurationKeys.USE_FAST_CLASS_FILES_READING))
+=======
+>>>>>>> cc404f8... Move initialization from constructor to main method
     }
     
     companion object {
@@ -194,6 +197,21 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
                         }
 
                 addToCPFromScriptTemplateClassLoader()
+
+                project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
+        
+                val index = JvmDependenciesIndexImpl(getRoots().toList())
+        
+                project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
+        
+                val area = Extensions.getArea(project)
+                with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
+                    registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
+                    registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
+                }
+        
+                val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
+                (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
 
                 isScriptDefinitionsInitialized = true
                 isInitializingScriptDefinitions = false
