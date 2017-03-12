@@ -65,6 +65,8 @@ public class KotlinSourceLookupNavigator {
 	@Nullable
 	private IFile findKotlinSourceFile(@NotNull ISourceLookupDirector lookupDirector, @NotNull IJavaStackFrame frame) throws CoreException {
 		String sourceName = frame.getSourceName();
+		if (sourceName == null) return null;
+		
 		FqName declaringPackage = new FqName(frame.getDeclaringTypeName()).parent();
 		
 	    for (ISourceContainer sourceContainer : lookupDirector.getSourceContainers()) {
