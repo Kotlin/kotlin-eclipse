@@ -2,11 +2,11 @@
 <feature
       id="org.jetbrains.kotlin.feature"
       label="Kotlin"
-      version="0.8.0.qualifier"
+      version="0.8.2.qualifier"
       provider-name="JetBrains">
 
    <description url="http://kotlinlang.org/">
-      Kotlin language support for Kotlin 1.1.0-rc-91
+      Kotlin language support for Kotlin 1.1.1
    </description>
 
    <copyright url="http://www.jetbrains.com/">
