@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-aspects
 Bundle-SymbolicName: org.jetbrains.kotlin.aspects
-Bundle-Version: 0.8.0.qualifier
+Bundle-Version: 0.8.2.qualifier
 Bundle-Activator: org.jetbrains.kotlin.aspects.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
