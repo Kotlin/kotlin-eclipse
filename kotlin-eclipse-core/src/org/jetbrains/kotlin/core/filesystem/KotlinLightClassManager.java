@@ -20,6 +20,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.internal.core.util.LRUCache;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.asJava.LightClassFile;
@@ -47,6 +48,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 
 public class KotlinLightClassManager {
+    private static final int LIGHT_CLASSES_CACHE_SIZE = 300;
+    
+    private final LRUCache cachedLightClasses = new LRUCache(LIGHT_CLASSES_CACHE_SIZE);
+    
     private final IProject project;
     
     private final ConcurrentMap<File, Set<IFile>> sourceFiles = new ConcurrentHashMap<>();
@@ -59,6 +64,22 @@ public class KotlinLightClassManager {
     
     public KotlinLightClassManager(@NotNull IProject project) {
         this.project = project;
+    }
+    
+    @Nullable
+    public synchronized byte[] getCachedLightClass(File file) {
+        Object lightClass = cachedLightClasses.get(file);
+        if (lightClass != null) return (byte[]) lightClass;
+        
+        return null;
+    }
+    
+    public synchronized void cacheLightClass(File file, @NotNull byte[] lightClass) {
+        cachedLightClasses.put(file, lightClass);
+    }
+    
+    public synchronized void removeLightClass(@NotNull File file) {
+        cachedLightClasses.flush(file);
     }
     
     public void computeLightClassesSources() {
@@ -94,6 +115,7 @@ public class KotlinLightClassManager {
             
             for (IFile sourceFile : entry.getValue()) {
                 if (affectedFiles.contains(sourceFile)) {
+                    removeLightClass(lightClassFile.asFile());
                     lightClassFile.touchFile();
                     break;
                 }
@@ -214,7 +236,13 @@ public class KotlinLightClassManager {
                     IFile eclipseFile = (IFile) resource;
                     LightClassFile lightClass = new LightClassFile(eclipseFile);
                     Set<IFile> sources = sourceFiles.get(lightClass.asFile());
-                    return sources != null ? sources.isEmpty() : true;
+                    
+                    boolean dropLightClass = sources != null ? sources.isEmpty() : true;
+                    if (dropLightClass) {
+                        removeLightClass(lightClass.asFile());
+                    }
+                    
+                    return dropLightClass;
                 } else if (resource instanceof IFolder) {
                     try {
                         return ((IFolder) resource).members().length == 0;

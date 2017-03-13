@@ -48,6 +48,11 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
         if (project == null) {
             throw CoreException(Status.CANCEL_STATUS)
         }
+        
+        val lightClass = KotlinLightClassManager.getInstance(project).getCachedLightClass(file)
+        if (lightClass != null) {
+            return ByteArrayInputStream(lightClass)
+        }
 
         val jetFiles = KotlinLightClassManager.getInstance(project).getSourceFiles(file)
         if (jetFiles.isNotEmpty()) {
@@ -60,7 +65,12 @@ public class KotlinFileStore(file: File) : LocalFile(file) {
                 requestedClassName == generatedClassName
             }
 
-            if (generatedClass != null) return ByteArrayInputStream(generatedClass.asByteArray())
+            if (generatedClass != null) {
+                val byteArray = generatedClass.asByteArray()
+                
+                KotlinLightClassManager.getInstance(project).cacheLightClass(file, byteArray)
+                return ByteArrayInputStream(byteArray)
+            }
         }
 
         throw CoreException(Status.CANCEL_STATUS)
