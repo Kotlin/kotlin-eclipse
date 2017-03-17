@@ -8,19 +8,21 @@
     <property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
     
     <property name="kotlin-idea-compatible-version" value="IJ2016.3-1" />
-    <property name="kotlin-version" value="1.1.1-release" />
+    <property name="kotlin-version" value="1.1.1" />
     <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_111_CompilerAndPlugin_NoTests/${compiler.query}" />
     
     <property name="idea-sdk-url" value="https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea" />
     
-    <property name="compiler-artifact-file" value="kotlin-compiler.zip"/>
-    <property name="compiler-sources-file" value="kotlin-compiler-sources.jar"/>
+    <property name="plugin-artifact-file" value="kotlin-plugin.zip"/>
+    <property name="compiler-sources-file" value="kotlin-compiler-embeddable-${kotlin-version}-sources.jar"/>
     <property name="test-data-file" value="kotlin-test-data.zip" />
     <property name="testModule.lib" value="../kotlin-eclipse-ui-test/lib" />
     
     <property name="openapi-formatter" value="openapi-formatter" />
     <property name="util-formatter" value="util-formatter" />
     <property name="idea-formatter" value="idea-formatter" />
+    
+    <property name="kotlin-group-id-path" value="org/jetbrains/kotlin" />
     
     <condition property="branch" value="?branch=${bootstrap_branch}" else="">
         <length string="${bootstrap_branch}" trim="true" when="greater" length="0" />
@@ -74,23 +76,71 @@
             dest="${testModule.lib}/gson-2.3.1.jar" 
             usetimestamp="true"/>
     </target>
+    
+    <macrodef name="maven-get-with-sources">
+        <attribute name="groupIdPath"/>
+        <attribute name="artifactId"/>
+        <attribute name="version"/>
+        <attribute name="dest"/>
 
+        <sequential>
+            <get 
+                src="https://repo1.maven.org/maven2/@{groupIdPath}/@{artifactId}/@{version}/@{artifactId}-@{version}.jar" 
+                dest="@{dest}/@{artifactId}.jar" 
+                usetimestamp="true" />
+            
+            <get 
+                src="https://repo1.maven.org/maven2/@{groupIdPath}/@{artifactId}/@{version}/@{artifactId}-@{version}-sources.jar" 
+                dest="@{dest}/@{artifactId}-sources.jar" 
+                usetimestamp="true" />
+        </sequential>
+    </macrodef>
+    
     <target name="download_bundled">
         <mkdir dir="${target.dir}" />
         <delete includeemptydirs="true">
             <fileset dir="${target.dir}" includes="**/*" excludes="${download.name}/*" />
         </delete>
         
-
         <mkdir dir="${download.dir}" />
 
+        <maven-get-with-sources 
+                    groupIdPath="${kotlin-group-id-path}" 
+                    artifactId="kotlin-compiler-embeddable"
+                    version="${kotlin-version}"
+                    dest="${target.dir}" />
+        
+        <maven-get-with-sources
+                    groupIdPath="${kotlin-group-id-path}" 
+                    artifactId="kotlin-runtime"
+                    version="${kotlin-version}"
+                    dest="${target.dir}" />
+        
+        <maven-get-with-sources 
+                    groupIdPath="${kotlin-group-id-path}" 
+                    artifactId="kotlin-script-runtime"
+                    version="${kotlin-version}"
+                    dest="${target.dir}" />
+        
+        <maven-get-with-sources 
+                    groupIdPath="${kotlin-group-id-path}" 
+                    artifactId="kotlin-reflect"
+                    version="${kotlin-version}"
+                    dest="${target.dir}" />
+        
+        <maven-get-with-sources 
+                    groupIdPath="${kotlin-group-id-path}" 
+                    artifactId="kotlin-script-runtime"
+                    version="${kotlin-version}"
+                    dest="${target.dir}" />
+        
         <get 
-            src="${teamcity-kotlin-url}/kotlin-plugin-${kotlin-version}-${kotlin-idea-compatible-version}.zip" 
-            dest="${download.dir}/${compiler-artifact-file}" 
+            src="${teamcity-kotlin-url}/kotlin-plugin-${kotlin-version}-release-${kotlin-idea-compatible-version}.zip" 
+            dest="${download.dir}/${plugin-artifact-file}" 
             usetimestamp="true" />
         
         <sequential>
-            <unzip src="${download.dir}/${compiler-artifact-file}" dest="${download.dir}">
+            <unzip src="${download.dir}/${plugin-artifact-file}" dest="${download.dir}">
                 <patternset>
                     <include name="Kotlin/lib/kotlin-plugin.jar" />
                 </patternset>
@@ -203,22 +253,10 @@
             <delete file="${target.dir}/idea.jar"/>
         </sequential>
 
-    	<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
-    	           <patternset>
-    	               <include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-script-runtime.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-runtime-sources.jar" />
-    	           </patternset>
-    	           <mapper type="flatten"/>
-    	       </unzip>
-    	       
-    	       <get 
-    	           src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
-    	           dest="${target.dir}/kotlin-ide-common.jar"
-    	           usetimestamp="true" />
+       <get 
+           src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
+           dest="${target.dir}/kotlin-ide-common.jar"
+           usetimestamp="true" />
         
         <get 
             src="${teamcity-kotlin-url}/internal/kotlin-formatter.jar${branch}"
@@ -235,10 +273,6 @@
             </patternset>
             <mapper type="flatten"/>
         </unzip>
-        
-        <!-- Also retrivive sources -->
-        <get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 
-                    dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
         
         <!-- Get idea sources -->
         <get src="${idea-sdk-url}/ideaIC/${idea-version}/ideaIC-${idea-version}-sources.jar" dest="${download.dir}/idea-sdk-sources.jar" usetimestamp="true" />
