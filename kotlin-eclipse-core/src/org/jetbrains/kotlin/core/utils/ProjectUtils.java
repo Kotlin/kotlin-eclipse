@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -47,11 +48,6 @@ import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.osgi.framework.Bundle;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import kotlin.collections.ArraysKt;
 import kotlin.jvm.functions.Function1;
 
@@ -64,6 +60,15 @@ public class ProjectUtils {
     private static final String GRADLE_NATURE_ID = "org.eclipse.buildship.core.gradleprojectnature";
     
     public static final String KT_HOME = getKtHome();
+    
+    public static <T> Function1<T, Boolean> getAlwaysTrue() {
+        return new Function1<T, Boolean>() {
+            @Override
+            public Boolean invoke(T arg0) {
+                return true;
+            }
+        };
+    }
     
     
     public static IJavaProject getJavaProjectFromCollection(Collection<IFile> files) {
@@ -85,7 +90,7 @@ public class ProjectUtils {
         return jetFile.getPackageFqName().asString();
     }
     
-    public static void cleanFolder(IContainer container, @NotNull Predicate<IResource> predicate) {
+    public static void cleanFolder(IContainer container, @NotNull Function1<IResource, Boolean> predicate) {
         try {
             if (container == null) {
                 return;
@@ -95,7 +100,7 @@ public class ProjectUtils {
                     if (member instanceof IContainer) {
                         cleanFolder((IContainer) member, predicate);
                     }
-                    if (predicate.apply(member)) {
+                    if (predicate.invoke(member)) {
                         if (member.exists()) {
                             member.delete(true, null);
                         }
@@ -108,7 +113,7 @@ public class ProjectUtils {
     }
     
     public static void cleanFolder(IContainer container) throws CoreException {
-        cleanFolder(container, Predicates.<IResource>alwaysTrue());
+        cleanFolder(container, getAlwaysTrue());
     }
     
     public static IFolder getOutputFolder(@NotNull IJavaProject javaProject) {
@@ -134,7 +139,7 @@ public class ProjectUtils {
     @NotNull
     public static List<KtFile> getSourceFilesWithDependencies(@NotNull IJavaProject javaProject) {
         try {
-            List<KtFile> jetFiles = Lists.newArrayList();
+            List<KtFile> jetFiles = new ArrayList<>();
             for (IProject project : getDependencyProjects(javaProject)) {
                 jetFiles.addAll(getSourceFiles(project));
             }
@@ -148,7 +153,7 @@ public class ProjectUtils {
     }
     
     public static List<IProject> getDependencyProjects(@NotNull IJavaProject javaProject) throws JavaModelException {
-        List<IProject> projects = Lists.newArrayList();
+        List<IProject> projects = new ArrayList<>();
         for (IClasspathEntry classPathEntry : javaProject.getResolvedClasspath(true)) {
             if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
                 IPath path = classPathEntry.getPath();
@@ -186,7 +191,7 @@ public class ProjectUtils {
     @NotNull
     public static List<File> expandClasspath(@NotNull IJavaProject javaProject, boolean includeDependencies,
             boolean includeBinFolders, @NotNull Function1<IClasspathEntry, Boolean> entryPredicate) throws JavaModelException {
-        Set<File> orderedFiles = Sets.newLinkedHashSet();
+        Set<File> orderedFiles = new LinkedHashSet<>();
         
         for (IClasspathEntry classpathEntry : javaProject.getResolvedClasspath(true)) {
             if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT && includeDependencies) {
@@ -198,12 +203,12 @@ public class ProjectUtils {
             }
         }
         
-        return Lists.newArrayList(orderedFiles);
+        return new ArrayList<>(orderedFiles);
     }
     
     @NotNull
     public static List<File> getFileByEntry(@NotNull IClasspathEntry entry, @NotNull IJavaProject javaProject) {
-        List<File> files = Lists.newArrayList();
+        List<File> files = new ArrayList<>();
         
         IPackageFragmentRoot[] packageFragmentRoots = javaProject.findPackageFragmentRoots(entry);
         if (packageFragmentRoots.length > 0) {
@@ -232,7 +237,7 @@ public class ProjectUtils {
         IProject dependentProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectPath.toString());
         IJavaProject javaProject = JavaCore.create(dependentProject);
         
-        Set<File> orderedFiles = Sets.newLinkedHashSet();
+        Set<File> orderedFiles = new LinkedHashSet<>();
         
         for (IClasspathEntry classpathEntry : javaProject.getResolvedClasspath(true)) {
             if (!(classpathEntry.isExported() || classpathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE)) {
@@ -256,7 +261,7 @@ public class ProjectUtils {
         }
         
         
-        return Lists.newArrayList(orderedFiles);
+        return new ArrayList<>(orderedFiles);
     }
     
     @NotNull
