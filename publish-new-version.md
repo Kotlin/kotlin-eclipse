@@ -2,6 +2,7 @@
 
  * Update TeamCity version prefix and reset counter for [Eclipse Build Configuration](https://teamcity.jetbrains.com/admin/editBuild.html?id=buildType:Kotlin_EclipsePlugin)
  * Update version in `maven-build/maven-update-version.launch` launch configuration and execute it
+ * Update version in description of [kotlin-eclipse-feature](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-feature/feature.xml)
  * Push the changes and wait for the [successful build](https://teamcity.jetbrains.com/viewType.html?buildTypeId=Kotlin_EclipsePlugin&branch_Kotlin=%3Cdefault%3E&tab=buildTypeStatusDiv)
  * *Check that version is correct!*
  * Pin the build and add `release` tag
