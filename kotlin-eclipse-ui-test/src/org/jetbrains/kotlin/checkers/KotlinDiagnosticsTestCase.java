@@ -13,6 +13,7 @@ import static org.jetbrains.kotlin.diagnostics.Errors.UNRESOLVED_REFERENCE_WRONG
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,10 +63,6 @@ import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Assert;
 import org.junit.Before;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
@@ -90,15 +87,15 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     public static final Pattern DIAGNOSTICS_PATTERN = Pattern.compile("([\\+\\-!])(\\w+)\\s*");
     public static final String DIAGNOSTICS_DIRECTIVE = "DIAGNOSTICS";
     @SuppressWarnings("unchecked")
-    public static final ImmutableSet<DiagnosticFactory<?>> DIAGNOSTICS_TO_INCLUDE_ANYWAY =
-        ImmutableSet.of(
+    public static final Set<DiagnosticFactory<?>> DIAGNOSTICS_TO_INCLUDE_ANYWAY =
+        new HashSet<>(Arrays.asList(
                 Errors.UNRESOLVED_REFERENCE,
                 Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER,
                 CheckerTestUtil.SyntaxErrorDiagnosticFactory.INSTANCE,
                 CheckerTestUtil.DebugInfoDiagnosticFactory.ELEMENT_WITH_ERROR_TYPE,
                 CheckerTestUtil.DebugInfoDiagnosticFactory.MISSING_UNRESOLVED,
                 CheckerTestUtil.DebugInfoDiagnosticFactory.UNRESOLVED_WITH_TARGET
-        );
+        ));
     public static final String CHECK_TYPE_DIRECTIVE = "CHECK_TYPE";
     public static final String CHECK_TYPE_PACKAGE = "tests._checkType";
     private static final String CHECK_TYPE_DECLARATIONS = "\npackage " + CHECK_TYPE_PACKAGE +
@@ -224,7 +221,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             }
         }
 
-        ImmutableMap<Call,ResolvedCall<?>> resolvedCallsEntries = bindingContext.getSliceContents(BindingContext.RESOLVED_CALL);
+        Map<Call,ResolvedCall<?>> resolvedCallsEntries = bindingContext.getSliceContents(BindingContext.RESOLVED_CALL);
         for (Entry<Call, ResolvedCall<?>> entry : resolvedCallsEntries.entrySet()) {
             KtElement element = entry.getKey().getCallElement();
             ResolvedCall<?> resolvedCall = entry.getValue();
@@ -241,12 +238,12 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     
     @SuppressWarnings({"unchecked"})
     private static void checkResolvedCallsInDiagnostics(BindingContext bindingContext) {
-        Set<DiagnosticFactory1<PsiElement, Collection<? extends ResolvedCall<?>>>> diagnosticsStoringResolvedCalls1 = Sets.newHashSet(
-                OVERLOAD_RESOLUTION_AMBIGUITY, NONE_APPLICABLE, CANNOT_COMPLETE_RESOLVE, UNRESOLVED_REFERENCE_WRONG_RECEIVER,
-                ASSIGN_OPERATOR_AMBIGUITY, ITERATOR_AMBIGUITY);
+        Set<DiagnosticFactory1<PsiElement, Collection<? extends ResolvedCall<?>>>> diagnosticsStoringResolvedCalls1 = new HashSet<>(
+                Arrays.asList(OVERLOAD_RESOLUTION_AMBIGUITY, NONE_APPLICABLE, CANNOT_COMPLETE_RESOLVE, UNRESOLVED_REFERENCE_WRONG_RECEIVER,
+                ASSIGN_OPERATOR_AMBIGUITY, ITERATOR_AMBIGUITY));
         Set<DiagnosticFactory2<KtExpression,? extends Comparable<?>,Collection<? extends ResolvedCall<?>>>>
-                diagnosticsStoringResolvedCalls2 = Sets.newHashSet(
-                COMPONENT_FUNCTION_AMBIGUITY, DELEGATE_SPECIAL_FUNCTION_AMBIGUITY, DELEGATE_SPECIAL_FUNCTION_NONE_APPLICABLE);
+                diagnosticsStoringResolvedCalls2 = new HashSet<>(Arrays.asList(
+                COMPONENT_FUNCTION_AMBIGUITY, DELEGATE_SPECIAL_FUNCTION_AMBIGUITY, DELEGATE_SPECIAL_FUNCTION_NONE_APPLICABLE));
         
         Diagnostics diagnostics = bindingContext.getDiagnostics();
         for (Diagnostic diagnostic : diagnostics) {
@@ -288,7 +285,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             final String name = matcher.group(2);
 
             Condition<Diagnostic> newCondition;
-            if (ImmutableSet.of("ERROR", "WARNING", "INFO").contains(name)) {
+            if (name.equals("ERROR") || name.equals("WARNING") || name.equals("INFO")) {
                 final Severity severity = Severity.valueOf(name);
                 newCondition = new Condition<Diagnostic>() {
                     @Override
@@ -353,7 +350,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     
     protected List<KtFile> getKtFiles(List<? extends TestFile> testFiles, boolean includeExtras) {
         boolean declareCheckType = false;
-        List<KtFile> jetFiles = Lists.newArrayList();
+        List<KtFile> jetFiles = new ArrayList<>();
         for (TestFile testFile : testFiles) {
             if (testFile.getKtFile() != null) {
                 jetFiles.add(testFile.getKtFile());
@@ -407,7 +404,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     }
     
     protected class TestFile {
-        private final List<CheckerTestUtil.DiagnosedRange> diagnosedRanges = Lists.newArrayList();
+        private final List<CheckerTestUtil.DiagnosedRange> diagnosedRanges = new ArrayList<>();
         private final String expectedText;
         private final TestModule module;
         private final String clearText;
@@ -500,7 +497,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                                                             : computeJvmSignatureDiagnostics(bindingContext);
 
             final boolean[] ok = { true };
-            List<Pair<MultiTargetPlatform, BindingContext>> implementingModulesBinding = Lists.newArrayList();
+            List<Pair<MultiTargetPlatform, BindingContext>> implementingModulesBinding = new ArrayList<>();
             List<ActualDiagnostic> diagnostics = ContainerUtil.filter(
                     CollectionsKt.plus(
                     		CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(

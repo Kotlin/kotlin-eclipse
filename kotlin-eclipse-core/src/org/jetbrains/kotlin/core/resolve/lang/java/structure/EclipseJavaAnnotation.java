@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,8 +32,6 @@ import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.Name;
 
-import com.google.common.collect.Lists;
-
 public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding> implements JavaAnnotation {
     private final IJavaProject javaProject;
     
@@ -44,7 +43,7 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     @Override
     @NotNull
     public Collection<JavaAnnotationArgument> getArguments() {
-        List<JavaAnnotationArgument> arguments = Lists.newArrayList();
+        List<JavaAnnotationArgument> arguments = new ArrayList<>();
         for (IMemberValuePairBinding memberValuePair : getBinding().getDeclaredMemberValuePairs()) {
             arguments.add(EclipseJavaAnnotationArgument.create(
                     memberValuePair.getValue(), 

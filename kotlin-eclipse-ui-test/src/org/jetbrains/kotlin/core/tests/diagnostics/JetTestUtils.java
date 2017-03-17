@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -17,8 +18,6 @@ import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.utils.ExceptionUtilsKt;
 import org.junit.Assert;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.io.FileUtil;
@@ -121,7 +120,7 @@ public class JetTestUtils {
     
     @NotNull
     public static Map<String, String> parseDirectives(String expectedText) {
-        Map<String, String> directives = Maps.newHashMap();
+        Map<String, String> directives = new HashMap<>();
         Matcher directiveMatcher = DIRECTIVE_PATTERN.matcher(expectedText);
         int start = 0;
         while (directiveMatcher.find()) {
@@ -142,7 +141,7 @@ public class JetTestUtils {
             TestFileFactory<M, F> factory) {
         Map<String, String> directives = parseDirectives(expectedText);
         
-        List<F> testFiles = Lists.newArrayList();
+        List<F> testFiles = new ArrayList<>();
         Matcher matcher = FILE_OR_MODULE_PATTERN.matcher(expectedText);
         if (!matcher.find()) {
             // One file

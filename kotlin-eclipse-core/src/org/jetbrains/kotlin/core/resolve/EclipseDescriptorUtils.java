@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.core.resolve;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -16,8 +17,6 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithSource;
 import org.jetbrains.kotlin.descriptors.SourceElement;
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils;
-
-import com.google.common.collect.Lists;
 
 // Note: copied with some changes from DescriptorToSourceUtils
 public class EclipseDescriptorUtils {
@@ -56,7 +55,7 @@ public class EclipseDescriptorUtils {
         if (DeserializedDescriptorUtilsKt.isDeserialized(descriptor)) {
             DeclarationDescriptor containing = DeserializedDescriptorUtilsKt.getContainingClassOrPackage(descriptor);
             if (containing != null) {
-                return Lists.newArrayList(descriptorToDeclaration(containing));
+                return Arrays.asList(descriptorToDeclaration(containing));
             }
         }
         if (descriptor instanceof CallableMemberDescriptor) {
@@ -64,9 +63,9 @@ public class EclipseDescriptorUtils {
         } else {
             SourceElement sourceElement = descriptorToDeclaration(descriptor);
             if (sourceElement != null) {
-                return Lists.newArrayList(sourceElement);
+                return Arrays.asList(sourceElement);
             } else {
-                return Lists.newArrayList();
+                return new ArrayList<SourceElement>();
             }
         }
     }
@@ -88,10 +87,10 @@ public class EclipseDescriptorUtils {
     public static List<SourceElement> callableDescriptorToDeclarations(@NotNull CallableMemberDescriptor callable) {
         if (callable.getKind() == Kind.DECLARATION || callable.getKind() == Kind.SYNTHESIZED) {
             SourceElement sourceElement = doGetDescriptorToDeclaration(callable);
-            return sourceElement != null ? Lists.newArrayList(sourceElement) : Lists.<SourceElement>newArrayList();
+            return sourceElement != null ? Arrays.asList(sourceElement) : Arrays.asList();
         }
 
-        List<SourceElement> r = Lists.newArrayList();
+        List<SourceElement> r = new ArrayList<>();
         Collection<? extends CallableMemberDescriptor> overriddenDescriptors = callable.getOverriddenDescriptors();
         for (CallableMemberDescriptor overridden : overriddenDescriptors) {
             r.addAll(callableDescriptorToDeclarations(overridden));

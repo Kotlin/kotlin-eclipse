@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,8 +30,6 @@ import org.jetbrains.kotlin.load.java.structure.JavaField;
 import org.jetbrains.kotlin.load.java.structure.JavaMethod;
 import org.jetbrains.kotlin.load.java.structure.JavaType;
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter;
-
-import com.google.common.collect.Lists;
 
 public class EclipseJavaElementFactory {
     private EclipseJavaElementFactory() {
@@ -94,7 +93,7 @@ public class EclipseJavaElementFactory {
     @NotNull
     private static <Binding, Java> List<Java> convert(@NotNull Binding[] elements, @NotNull Factory<Binding, Java> factory) {
         if (elements.length == 0) return Collections.emptyList();
-        List<Java> result = Lists.newArrayList();
+        List<Java> result = new ArrayList<Java>();
         for (Binding element : elements) {
             result.add(factory.create(element));
         }
