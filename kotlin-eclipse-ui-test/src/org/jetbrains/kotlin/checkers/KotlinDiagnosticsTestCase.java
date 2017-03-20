@@ -221,7 +221,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             }
         }
 
-        ImmutableMap<Call,ResolvedCall<?>> resolvedCallsEntries = bindingContext.getSliceContents(BindingContext.RESOLVED_CALL);
+        Map<Call,ResolvedCall<?>> resolvedCallsEntries = bindingContext.getSliceContents(BindingContext.RESOLVED_CALL);
         for (Entry<Call, ResolvedCall<?>> entry : resolvedCallsEntries.entrySet()) {
             KtElement element = entry.getKey().getCallElement();
             ResolvedCall<?> resolvedCall = entry.getValue();
@@ -285,7 +285,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             final String name = matcher.group(2);
 
             Condition<Diagnostic> newCondition;
-            if (ImmutableSet.of("ERROR", "WARNING", "INFO").contains(name)) {
+            if (name.equals("ERROR") || name.equals("WARNING") || name.equals("INFO")) {
                 final Severity severity = Severity.valueOf(name);
                 newCondition = new Condition<Diagnostic>() {
                     @Override
