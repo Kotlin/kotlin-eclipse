@@ -40,12 +40,12 @@ import org.jetbrains.kotlin.psi.KtProperty;
 import org.jetbrains.kotlin.psi.KtSecondaryConstructor;
 import org.jetbrains.kotlin.psi.KtVisitorVoid;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
+
+import kotlin.jvm.functions.Function1;
 
 public class KotlinLightClassManager {
     private static final int LIGHT_CLASSES_CACHE_SIZE = 300;
@@ -157,7 +157,7 @@ public class KotlinLightClassManager {
     private List<KtFile> getSourceKtFiles(@NotNull File lightClass) {
         Set<IFile> sourceIOFiles = sourceFiles.get(lightClass);
         if (sourceIOFiles != null) {
-            List<KtFile> jetSourceFiles = Lists.newArrayList();
+            List<KtFile> jetSourceFiles = new ArrayList<>();
             for (IFile sourceFile : sourceIOFiles) {
                 KtFile jetFile = KotlinPsiManager.getKotlinParsedFile(sourceFile);
                 if (jetFile != null) {
@@ -229,9 +229,10 @@ public class KotlinLightClassManager {
     }
     
     private void cleanOutdatedLightClasses(IProject project) {
-        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), new Predicate<IResource>() {
+        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), new Function1<IResource, Boolean>() {
+            
             @Override
-            public boolean apply(IResource resource) {
+            public Boolean invoke(IResource resource) {
                 if (resource instanceof IFile) {
                     IFile eclipseFile = (IFile) resource;
                     LightClassFile lightClass = new LightClassFile(eclipseFile);
@@ -248,7 +249,7 @@ public class KotlinLightClassManager {
                         return ((IFolder) resource).members().length == 0;
                     } catch (CoreException e) {
                         KotlinLogger.logAndThrow(e);
-                    } 
+                    }
                 }
                 
                 return false;

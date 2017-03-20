@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.load.java.structure.JavaType
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameter
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameterListOwner
 import org.jetbrains.kotlin.name.Name
-import com.google.common.collect.Lists
 import org.jetbrains.kotlin.name.SpecialNames
 
 public class EclipseJavaTypeParameter(binding: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(binding), JavaTypeParameter {

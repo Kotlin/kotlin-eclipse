@@ -35,7 +35,6 @@ import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import org.junit.Assert
 import org.junit.Before
-import com.google.common.collect.Lists
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.core.ICompilationUnit

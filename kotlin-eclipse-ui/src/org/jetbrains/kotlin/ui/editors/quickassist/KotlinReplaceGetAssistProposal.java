@@ -1,10 +1,12 @@
 package org.jetbrains.kotlin.ui.editors.quickassist;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.BadLocationException;
+
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextUtilities;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +28,6 @@ import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedValueArgument;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
-import com.google.common.collect.Lists;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 
@@ -115,7 +116,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
         
         int indexOfFirstDefaultArgument = resolvedValueArguments.indexOf(DefaultValueArgument.DEFAULT);
         
-        List<ResolvedValueArgument> valueArgumentGroups = Lists.newArrayList();
+        List<ResolvedValueArgument> valueArgumentGroups = new ArrayList<>();
         if (indexOfFirstDefaultArgument >= 0) {
             ListIterator<ResolvedValueArgument> iter = resolvedValueArguments.listIterator(indexOfFirstDefaultArgument);
             while (iter.hasNext()) {
@@ -130,7 +131,7 @@ public class KotlinReplaceGetAssistProposal extends KotlinQuickAssistProposal {
             valueArgumentGroups = resolvedValueArguments;
         }
         
-        List<ValueArgument> valueArguments = Lists.newArrayList();
+        List<ValueArgument> valueArguments = new ArrayList<>();
         for (ResolvedValueArgument valueArgumentGroup : valueArgumentGroups) {
             for (ValueArgument va : valueArgumentGroup.getArguments()) {
                 valueArguments.add(va);

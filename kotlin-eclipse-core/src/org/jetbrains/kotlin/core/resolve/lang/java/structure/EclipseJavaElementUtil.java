@@ -24,7 +24,6 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -35,7 +34,6 @@ import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.internal.core.BinaryType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,8 +51,9 @@ import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
+import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.Flags;
 
-import com.google.common.collect.Lists;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -78,7 +77,7 @@ public class EclipseJavaElementUtil {
     }
     
     private static List<ITypeBinding> getSuperTypes(@NotNull ITypeBinding typeBinding) {
-        List<ITypeBinding> superTypes = Lists.newArrayList();
+        List<ITypeBinding> superTypes = new ArrayList<>();
         for (ITypeBinding superInterface : typeBinding.getInterfaces()) {
             superTypes.add(superInterface);
         }
@@ -92,7 +91,7 @@ public class EclipseJavaElementUtil {
     }
     
     static ITypeBinding[] getSuperTypesWithObject(@NotNull ITypeBinding typeBinding) {
-        List<ITypeBinding> allSuperTypes = Lists.newArrayList();
+        List<ITypeBinding> allSuperTypes = new ArrayList<>();
         
         boolean javaLangObjectInSuperTypes = false;
         for (ITypeBinding superType : getSuperTypes(typeBinding)) {

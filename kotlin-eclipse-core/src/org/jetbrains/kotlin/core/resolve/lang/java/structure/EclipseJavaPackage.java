@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -35,13 +36,11 @@ import org.jetbrains.kotlin.load.java.structure.JavaPackage;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
 
-import com.google.common.collect.Lists;
-
 import kotlin.jvm.functions.Function1;
 
 public class EclipseJavaPackage implements JavaElement, JavaPackage {
     
-    private final List<IPackageFragment> packages = Lists.newArrayList();
+    private final List<IPackageFragment> packages = new ArrayList<>();
     private final IJavaProject javaProject;
 
     public EclipseJavaPackage(List<IPackageFragment> packages) {
@@ -56,7 +55,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
     @Override
     @NotNull
     public Collection<JavaClass> getClasses(@NotNull Function1<? super Name, Boolean> nameFilter) {
-        List<JavaClass> javaClasses = Lists.newArrayList();
+        List<JavaClass> javaClasses = new ArrayList<>();
         for (IPackageFragment pckg : packages) {
             javaClasses.addAll(getClassesInPackage(pckg, nameFilter));
         }
@@ -74,7 +73,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
                 javaProject, pattern, true, true);
 
         int thisNestedLevel = thisPackageName.split("\\.").length;
-        List<JavaPackage> javaPackages = Lists.newArrayList();
+        List<JavaPackage> javaPackages = new ArrayList<>();
         if (packageFragments != null && packageFragments.length > 0) {
             for (IPackageFragment packageFragment : packageFragments) {
                 int subNestedLevel = packageFragment.getElementName().split("\\.").length;
@@ -97,7 +96,7 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
     
     private List<JavaClass> getClassesInPackage(IPackageFragment javaPackage, Function1<? super Name, ? extends Boolean> nameFilter) {
         try {
-            List<JavaClass> javaClasses = Lists.newArrayList();
+            List<JavaClass> javaClasses = new ArrayList<>();
             for (IClassFile classFile : javaPackage.getClassFiles()) {
                 IType type = classFile.getType();
                 if (isOuterClass(classFile)) {

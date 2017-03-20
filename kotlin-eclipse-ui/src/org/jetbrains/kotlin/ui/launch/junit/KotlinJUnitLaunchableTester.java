@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.launch.junit;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.expressions.PropertyTester;
@@ -26,8 +27,6 @@ import org.eclipse.jdt.internal.junit.launcher.ITestKind;
 import org.eclipse.jdt.internal.junit.launcher.TestKindRegistry;
 import org.eclipse.ui.IFileEditorInput;
 import org.jetbrains.annotations.NotNull;
-
-import com.google.common.collect.Sets;
 
 public class KotlinJUnitLaunchableTester extends PropertyTester {
 
@@ -51,7 +50,7 @@ public class KotlinJUnitLaunchableTester extends PropertyTester {
     private boolean checkElementHasTests(@NotNull IJavaElement element) {
         ITestKind testKind = TestKindRegistry.getDefault().getKind(TestKindRegistry.getContainerTestKindId(element));
         
-        Set<IType> tests = Sets.newHashSet();
+        Set<IType> tests = new HashSet<>();
         try {
             testKind.getFinder().findTestsInContainer(element, tests, null);
         } catch (CoreException e) {

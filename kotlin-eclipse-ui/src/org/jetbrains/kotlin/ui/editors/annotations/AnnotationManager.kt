@@ -32,8 +32,6 @@ import org.eclipse.ui.texteditor.AbstractTextEditor
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
-import com.google.common.base.Predicate
-import com.google.common.collect.Lists
 import org.eclipse.ui.texteditor.MarkerAnnotation
 import org.eclipse.ui.texteditor.MarkerUtilities
 import org.eclipse.jface.text.ISynchronizable

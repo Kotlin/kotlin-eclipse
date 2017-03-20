@@ -37,7 +37,6 @@ import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
-import com.google.common.collect.Sets
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.eclipse.core.resources.IMarker
 import org.eclipse.core.runtime.jobs.Job
