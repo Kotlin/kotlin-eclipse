@@ -80,6 +80,7 @@ import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
+<<<<<<< HEAD
 import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
 import org.jetbrains.kotlin.script.ScriptDependenciesProvider
 import com.intellij.lang.MetaLanguage
@@ -88,6 +89,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.util.io.URLUtil
 import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
+import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -105,7 +107,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
     val project: MockProject
     
-    private val projectEnvironment: JavaCoreProjectEnvironment
+    protected val projectEnvironment: JavaCoreProjectEnvironment
     private val roots = LinkedHashSet<JavaRoot>()
     
     val configuration = CompilerConfiguration()
@@ -155,6 +157,9 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
             
             registerService(JavaModuleResolver::class.java, EclipseKotlinJavaModuleResolver())
+            
+			val area = Extensions.getArea(this)
+			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, cliLightClassGenerationSupport))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())

@@ -67,6 +67,9 @@ import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.runtime.jobs.IJobChangeEvent
+import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
+import org.jetbrains.kotlin.load.kotlin.MetadataFinderFactory
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -199,11 +202,15 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
                 addToCPFromScriptTemplateClassLoader()
 
                 project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
-        
+				project.registerService(KotlinScriptExternalImportsProvider::class.java,
+						KotlinScriptExternalImportsProvider(project, KotlinScriptDefinitionProvider.getInstance(project)))
+				
+				for (file in KotlinScriptExternalImportsProvider.getInstance(project)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile()))) {
+					addToClasspath(file)
+				}
+				
                 val index = JvmDependenciesIndexImpl(getRoots().toList())
-        
-                project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
-        
+				
                 val area = Extensions.getArea(project)
                 with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
                     registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
@@ -212,6 +219,15 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         
                 val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
                 (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
+				
+				val finderFactory = JvmCliVirtualFileFinderFactory(index)
+			    project.registerService(MetadataFinderFactory::class.java, finderFactory)
+//			    project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
+                project.registerService(JvmVirtualFileFinderFactory::class.java, finderFactory)
+				
+				index.indexedRoots.forEach {
+		            projectEnvironment.addSourcesToClasspath(it.file)
+		        }
 
                 isScriptDefinitionsInitialized = true
                 isInitializingScriptDefinitions = false
