@@ -81,6 +81,7 @@ import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
+import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -98,7 +99,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
     val project: MockProject
     
-    private val projectEnvironment: JavaCoreProjectEnvironment
+    protected val projectEnvironment: JavaCoreProjectEnvironment
     private val roots = LinkedHashSet<JavaRoot>()
     
     val configuration = CompilerConfiguration()
@@ -121,9 +122,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         with(project) {
             val scriptDefinitionProvider = KotlinScriptDefinitionProvider()
             registerService(KotlinScriptDefinitionProvider::class.java, scriptDefinitionProvider)
-            registerService(
-                    KotlinScriptExternalImportsProvider::class.java,
-                    KotlinScriptExternalImportsProvider(project, scriptDefinitionProvider))
             
             registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl())
 
@@ -146,6 +144,9 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
+			
+			val area = Extensions.getArea(this)
+			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, cliLightClassGenerationSupport))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())

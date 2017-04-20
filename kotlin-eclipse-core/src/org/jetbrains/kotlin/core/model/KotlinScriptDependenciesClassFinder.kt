@@ -50,7 +50,8 @@ class KotlinScriptDependenciesClassFinder(
         val definition = KotlinScriptDefinitionProvider.getInstance(myProject).findScriptDefinition(ioFile) ?: return emptyList()
 
         val dependencies = definition.getDependenciesFor(ioFile, myProject, null) ?: return emptyList()
-        return dependencies.classpath.mapNotNull { it.classpathEntryToVfs() }
+        val cp = dependencies.classpath.mapNotNull { it.classpathEntryToVfs() }
+		return cp
     }
 
     private fun File.classpathEntryToVfs(): VirtualFile? {
