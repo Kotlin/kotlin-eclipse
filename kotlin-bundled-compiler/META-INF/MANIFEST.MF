@@ -202,6 +202,7 @@ Export-Package:
  org.jetbrains.kotlin.annotation,
  org.jetbrains.kotlin.asJava,
  org.jetbrains.kotlin.asJava.classes,
+ org.jetbrains.kotlin.asJava.finder,
  org.jetbrains.kotlin.backend.common,
  org.jetbrains.kotlin.backend.common.bridges,
  org.jetbrains.kotlin.backend.common.output,
