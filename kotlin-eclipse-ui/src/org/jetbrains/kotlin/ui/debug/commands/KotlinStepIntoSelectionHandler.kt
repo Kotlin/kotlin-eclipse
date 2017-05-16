@@ -39,6 +39,7 @@ import org.eclipse.jdt.internal.debug.ui.actions.StepIntoSelectionUtils
 import org.eclipse.ui.IEditorPart
 import org.eclipse.debug.core.model.IThread
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.eclipse.jdt.core.IType
 
 public class KotlinStepIntoSelectionHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
@@ -68,11 +69,15 @@ private fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelectio
         KotlinLogger.logWarning("There are more than one java element for $sourceElements")
         return
     }
-    
-    val method = javaElements.first() as? IMethod
-    if (method != null) {
-        stepIntoElement(method, frame, selection, editor)
-    }
+
+    val element = javaElements.first()
+    val method = when (element) {
+        is IMethod -> element
+        is IType -> element.getMethod(element.elementName, emptyArray())
+        else -> null
+    } ?: return
+
+    stepIntoElement(method, frame, selection, editor)
 }
 
 private fun stepIntoElement(method: IMethod, frame: IJavaStackFrame, selection: ITextSelection, editor: KotlinFileEditor) {
