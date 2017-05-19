@@ -15,15 +15,15 @@ Welcome to Kotlin for Eclipse project! Some handy links:
 
 To give it a try you will need a clean installation of Eclipse Mars. The Kotlin plugin is available from the Eclipse Marketplace. The easiest way to install the Kotlin plugin is to **drag-and-drop this button into a running Eclipse window**:
 
-<a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2257536" class="drag" title="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse"><img src="https://marketplace.eclipse.org/sites/all/themes/solstice/_themes/solstice_marketplace/public/images/btn-install.png" alt="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse" /></a>
+<a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2257536" class="drag" title="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse"><img src="https://marketplace.eclipse.org/sites/all/themes/solstice/public/images/components/drag-drop/installbutton.png" alt="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse" /></a>
 
 Alternatively, you can use *Help -> Eclipse Marketplace…* menu, or the following update site:
 
     https://dl.bintray.com/jetbrains/kotlin/eclipse-plugin/last/
 
-###Building and Development
+### Building and Development
 
-*Eclipse IDE for Eclipse Committers* is the recomended way to build and develop the `kotlin-eclipse` project. Eclipse [Neon 4.6](https://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/neonr) is used so far.
+*Eclipse IDE for Eclipse Committers* is the recommended way to build and develop the `kotlin-eclipse` project. Eclipse [Neon 4.6](https://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/neonr) is used so far.
 
 In order to start development in Eclipse:
  - Install the [AspectJ Eclipse plug-in for Eclipse 4.6](http://www.eclipse.org/ajdt/downloads/index.php). To install AJDT 2.2.4 use the following update site:
