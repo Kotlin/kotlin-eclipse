@@ -17,6 +17,8 @@ package org.jetbrains.kotlin.testframework.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -50,22 +52,22 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.PsiJavaFile;
 
 public class TestJavaProject {
-    
+
     public final static String SRC_FOLDER = "src";
-    
+
     private IProject project;
     private IJavaProject javaProject;
-    
+
     private IPackageFragmentRoot sourceFolder;
-    
+
     public TestJavaProject(String projectName) {
         this(projectName, null);
     }
-    
+
     public TestJavaProject(String projectName, String location) {
         project = createProject(projectName, location);
     }
-    
+
     private IProject createProject(String projectName, String location) {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IWorkspaceRoot workspaceRoot = workspace.getRoot();
@@ -75,7 +77,7 @@ public class TestJavaProject {
             IPath locationPath = rootPath.append(location);
             projectDescription.setLocation(locationPath);
         }
-        
+
         project = workspaceRoot.getProject(projectName);
         try {
             boolean projectExists = project.exists();
@@ -83,23 +85,23 @@ public class TestJavaProject {
                 project.create(projectDescription, null);
             }
             project.open(null);
-            
+
             javaProject = JavaCore.create(project);
-            
+
             if (!projectExists) {
                 setNatureSpecificProperties();
                 setDefaultSettings();
-                
+
                 IFolder outputFolder = createFolderIfNotExist("bin");
                 createOutputFolder(outputFolder);
             }
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
-        
+
         return project;
     }
-    
+
     public void setDefaultSettings() {
         try {
             javaProject.setRawClasspath(new IClasspathEntry[0], null);
@@ -109,15 +111,15 @@ public class TestJavaProject {
             throw new RuntimeException(e);
         }
     }
-    
+
     private void setNatureSpecificProperties() throws CoreException {
         IProjectDescription description = project.getDescription();
         description.setNatureIds(new String[] { JavaCore.NATURE_ID });
         project.setDescription(description, null);
-        
+
         KotlinNature.addNature(project);
     }
-    
+
     private IFile createFile(IContainer folder, String name, InputStream content) {
         IFile file = folder.getFile(new Path(name));
         try {
@@ -128,11 +130,15 @@ public class TestJavaProject {
         } catch (CoreException e) {
             throw new RuntimeException(e);
         }
-        
+
         return file;
     }
-    
+
     public IFile createSourceFile(String pkg, String fileName, String content) throws CoreException {
+        return createSourceFile(pkg, fileName, content, null);
+    }
+
+    public IFile createSourceFile(String pkg, String fileName, String content, Charset charset) throws CoreException {
         String ext = FileUtilRt.getExtension(fileName);
         String refinedFileName;
         if ("java".equals(ext)) {
@@ -146,26 +152,32 @@ public class TestJavaProject {
         } else {
             refinedFileName = fileName;
         }
-        
+
+        Charset effectiveCharset = (charset == null) ? StandardCharsets.UTF_8 : charset;
+
         IPackageFragment fragment = createPackage(pkg);
         IFile file = createFile((IFolder) fragment.getResource(), refinedFileName,
-                new ByteArrayInputStream(content.getBytes()));
-        
+                new ByteArrayInputStream(content.getBytes(effectiveCharset)));
+
+        if (charset != null) {
+            file.setCharset(charset.name(), null);
+        }
+
         return file;
     }
-    
+
     public IPackageFragment createPackage(String name) throws CoreException {
         if (sourceFolder == null) {
             sourceFolder = createSourceFolder(SRC_FOLDER);
         }
         return sourceFolder.createPackageFragment(name, true, null);
     }
-    
+
     private void createOutputFolder(IFolder outputFolder) throws JavaModelException {
         IPath outputLocation = outputFolder.getFullPath();
         javaProject.setOutputLocation(outputLocation, null);
     }
-    
+
     public IPackageFragmentRoot createSourceFolder(String srcFolderName) throws CoreException {
         IFolder folder = createFolderIfNotExist(srcFolderName);
         IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(folder);
@@ -174,50 +186,50 @@ public class TestJavaProject {
                 return root;
             }
         }
-        
+
         IClasspathEntry[] oldEntries = javaProject.getRawClasspath();
         IClasspathEntry[] newEntries = new IClasspathEntry[oldEntries.length + 1];
         System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
         newEntries[oldEntries.length] = JavaCore.newSourceEntry(root.getPath());
         javaProject.setRawClasspath(newEntries, null);
-        
+
         return root;
     }
-    
+
     public IFolder createFolderIfNotExist(String name) throws CoreException {
         IFolder folder = project.getFolder(name);
         if (!folder.exists()) {
             folder.create(false, true, null);
         }
-        
+
         return folder;
     }
-    
+
     public KotlinEnvironment getKotlinEnvironment() {
         return KotlinEnvironment.getEnvironment(javaProject.getProject());
     }
-    
+
     public IJavaProject getJavaProject() {
         return javaProject;
     }
-    
+
     public void addKotlinRuntime() throws CoreException {
         ProjectUtils.addKotlinRuntime(javaProject);
     }
-    
+
     public void addLibrary(IPath libraryPath, IPath sourcePath) throws JavaModelException {
         IClasspathEntry libraryEntry = JavaCore.newLibraryEntry(libraryPath, sourcePath, null);
         ProjectUtils.addContainerEntryToClasspath(javaProject, libraryEntry);
     }
-    
+
     private void addSystemLibraries() throws JavaModelException {
         ProjectUtils.addContainerEntryToClasspath(javaProject, JavaRuntime.getDefaultJREContainerEntry());
     }
-    
+
     public void clean() {
         try {
             cleanSourceFolder();
-            
+
             IFolder outputFolder = ProjectUtils.getOutputFolder(getJavaProject());
             ProjectUtils.cleanFolder(outputFolder);
             ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project));
@@ -227,18 +239,18 @@ public class TestJavaProject {
             throw new RuntimeException(e);
         }
     }
-    
+
     private String getJavaClassName(String content) {
         PsiJavaFile javaPsiFile = createJavaPsiFile(content, getKotlinEnvironment().getProject());
         PsiClass[] classes = javaPsiFile.getClasses();
         return classes.length > 0 ? classes[0].getName() : null;
     }
-    
+
     private PsiJavaFile createJavaPsiFile(String text, Project ideaProject) {
         return (PsiJavaFile) PsiFileFactory.getInstance(ideaProject).createFileFromText("test.java",
                 JavaLanguage.INSTANCE, text);
     }
-    
+
     private void cleanSourceFolder() throws CoreException {
         for (IClasspathEntry resolvedCP : javaProject.getResolvedClasspath(true)) {
             if (resolvedCP.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
@@ -247,7 +259,7 @@ public class TestJavaProject {
             }
         }
     }
-    
+
     private IResource findResourceInProject(IPath path) {
         return ResourcesPlugin.getWorkspace().getRoot().findMember(path);
     }
