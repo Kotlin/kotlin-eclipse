@@ -94,10 +94,89 @@ fun getEclipseResource(ideaProject: Project): IResource? {
     return KotlinScriptEnvironment.getEclipseFile(ideaProject)
 }
 
-class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, disposalbe: Disposable) :
+class KotlinScriptEnvironment private constructor(
+        val eclipseFile: IFile,
+        val loadScriptDefinitions: Boolean,
+        scriptDefinitions: List<KotlinScriptDefinition>,
+        disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
+        scriptDefinitions
+                .filter { it.isScript(File(eclipseFile.name)) }
+                .ifEmpty { listOf(StandardScriptDefinition) }
+                .forEach {
+                    KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
+                }
+        
         configureClasspath()
+        
+        project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
+        project.registerService(KotlinScriptExternalImportsProvider::class.java,
+        		KotlinScriptExternalImportsProvider(project, KotlinScriptDefinitionProvider.getInstance(project)))
+        
+        for (file in KotlinScriptExternalImportsProvider.getInstance(project)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile()))) {
+        	addToClasspath(file)
+        }
+        
+        val index = JvmDependenciesIndexImpl(getRoots().toList())
+        
+//        project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
+        
+        val area = Extensions.getArea(project)
+        with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
+            registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
+            registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
+        }
+        
+        index.indexedRoots.forEach {
+            projectEnvironment.addSourcesToClasspath(it.file)
+        }
+        
+        val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
+        (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
+        
+        val finderFactory = JvmCliVirtualFileFinderFactory(index)
+        project.registerService(MetadataFinderFactory::class.java, finderFactory)
+        project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
+        project.registerService(JvmVirtualFileFinderFactory::class.java, finderFactory)
+//        configureClasspath()
+//        
+//        scriptDefinitions
+//                .filter { it.isScript(File(eclipseFile.name)) }
+//                .ifEmpty { listOf(StandardScriptDefinition) }
+//                .forEach {
+//                    KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
+//                }
+//
+//        addToCPFromScriptTemplateClassLoader()
+//
+//        project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
+//        project.registerService(KotlinScriptExternalImportsProvider::class.java,
+//                KotlinScriptExternalImportsProvider(project, KotlinScriptDefinitionProvider.getInstance(project)))
+//        
+//        for (file in KotlinScriptExternalImportsProvider.getInstance(project)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile()))) {
+//            addToClasspath(file)
+//        }
+//        
+//        val index = JvmDependenciesIndexImpl(getRoots().toList())
+//        
+//        val area = Extensions.getArea(project)
+//        with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
+//            registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
+//            registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
+//        }
+//
+//        val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
+//        (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
+//        
+//        val finderFactory = JvmCliVirtualFileFinderFactory(index)
+//        project.registerService(MetadataFinderFactory::class.java, finderFactory)
+//        project.registerService(JvmVirtualFileFinderFactory::class.java, finderFactory)
+//        
+//        index.indexedRoots.forEach {
+//            projectEnvironment.addSourcesToClasspath(it.file)
+//        }
+        
     }
     
     companion object {
@@ -105,20 +184,29 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         private val KOTLIN_SCRIPT_RUNTIME_PATH = KotlinClasspathContainer.LIB_SCRIPT_RUNTIME_NAME.buildLibPath()
         
         private val cachedEnvironment = CachedEnvironment<IFile, KotlinScriptEnvironment>()
-        private val environmentCreation = {
-            eclipseFile: IFile -> KotlinScriptEnvironment(eclipseFile, Disposer.newDisposable())
-        }
 
         @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment {
             checkIsScript(file)
             
-            return cachedEnvironment.getOrCreateEnvironment(file, environmentCreation)
+            return cachedEnvironment.getOrCreateEnvironment(file) {
+                KotlinScriptEnvironment(it, true, listOf(StandardScriptDefinition), Disposer.newDisposable())
+            }
         }
 
         @JvmStatic fun removeKotlinEnvironment(file: IFile) {
             checkIsScript(file)
             
             cachedEnvironment.removeEnvironment(file)
+        }
+        
+        fun replaceEnvironment(file: IFile, scriptDefinitions: List<KotlinScriptDefinition>): KotlinScriptEnvironment {
+            checkIsScript(file)
+            val environment = cachedEnvironment.replaceEnvironment(file) {
+            	KotlinScriptEnvironment(it, false, scriptDefinitions, Disposer.newDisposable())
+            }
+            KotlinPsiManager.removeFile(file)
+            
+            return environment
         }
         
         @JvmStatic fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
@@ -137,13 +225,13 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         }
     }
     
-    @Volatile var isScriptDefinitionsInitialized = false
+    @Volatile var isScriptDefinitionsInitialized = !loadScriptDefinitions
             private set
     
     @Volatile private var isInitializingScriptDefinitions = false
     
     @Synchronized
-    fun initializeScriptDefinitions(postTask: () -> Unit) {
+    fun initializeScriptDefinitions(postTask: (List<KotlinScriptDefinition>) -> Unit) {
         if (isScriptDefinitionsInitialized || isInitializingScriptDefinitions) return
         isInitializingScriptDefinitions = true
         
@@ -156,46 +244,9 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
                 
                 Status.OK_STATUS
             }, { _ ->
-                definitions
-                        .filter { it.isScript(File(eclipseFile.name)) }
-                        .ifEmpty { listOf(StandardScriptDefinition) }
-                        .forEach {
-                            KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
-                        }
-
-                addToCPFromScriptTemplateClassLoader()
-
-                project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
-				project.registerService(KotlinScriptExternalImportsProvider::class.java,
-						KotlinScriptExternalImportsProvider(project, KotlinScriptDefinitionProvider.getInstance(project)))
-				
-				for (file in KotlinScriptExternalImportsProvider.getInstance(project)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile()))) {
-					addToClasspath(file)
-				}
-				
-                val index = JvmDependenciesIndexImpl(getRoots().toList())
-				
-                val area = Extensions.getArea(project)
-                with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
-                    registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
-                    registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
-                }
-        
-                val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
-                (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
-				
-				val finderFactory = JvmCliVirtualFileFinderFactory(index)
-			    project.registerService(MetadataFinderFactory::class.java, finderFactory)
-//			    project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
-                project.registerService(JvmVirtualFileFinderFactory::class.java, finderFactory)
-				
-				index.indexedRoots.forEach {
-		            projectEnvironment.addSourcesToClasspath(it.file)
-		        }
-
                 isScriptDefinitionsInitialized = true
                 isInitializingScriptDefinitions = false
-                postTask()
+                postTask(definitions)
             })
         } finally {
             isInitializingScriptDefinitions = false
