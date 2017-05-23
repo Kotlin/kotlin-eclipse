@@ -52,8 +52,10 @@ class KotlinScriptEditor : KotlinCommonEditor() {
         val file = eclipseFile ?: return
         val environment = getEnvironment(file) as KotlinScriptEnvironment
 
-        environment.initializeScriptDefinitions {
+        environment.initializeScriptDefinitions { scriptDefinitions ->
             if (file.isAccessible && isOpen()) {
+                KotlinScriptEnvironment.replaceEnvironment(file, scriptDefinitions)
+                
                 kotlinReconcilingStrategy.reconcile(null)
             }
         }
