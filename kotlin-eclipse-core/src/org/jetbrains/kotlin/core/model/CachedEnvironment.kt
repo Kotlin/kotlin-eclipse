@@ -20,12 +20,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.impl.ZipHandler
 import java.util.HashMap
+import java.util.concurrent.ConcurrentHashMap
 
 class CachedEnvironment<T, E : KotlinCommonEnvironment> {
     private val environmentLock = Any()
 
-    private val environmentCache: HashMap<T, E> = hashMapOf()
-    private val ideaProjectToEclipseResource: HashMap<Project, T> = hashMapOf()
+    private val environmentCache = ConcurrentHashMap<T, E>()
+    private val ideaProjectToEclipseResource = ConcurrentHashMap<Project, T>()
 
     fun putEnvironment(resource: T, environment: E) {
         synchronized(environmentLock) {
@@ -56,6 +57,13 @@ class CachedEnvironment<T, E : KotlinCommonEnvironment> {
                 Disposer.dispose(environment.javaApplicationEnvironment.getParentDisposable())
                 ZipHandler.clearFileAccessorCache()
             }
+        }
+    }
+    
+    fun replaceEnvironment(resource: T, createEnvironment: (T) -> E): E {
+        return synchronized(environmentLock) {
+            removeEnvironment(resource)
+            getOrCreateEnvironment(resource, createEnvironment)
         }
     }
 

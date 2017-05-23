@@ -54,7 +54,7 @@ class KotlinReconcilingStrategy(val editor: KotlinEditor) : IReconcilingStrategy
                 val file = editor.eclipseFile
                 if (file != null) {
                     resetCache(file)
-                    KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get()) // commit file
+                    KotlinPsiManager.commitFile(file, editor.document)
                     
                     reconcilingListeners.forEach { it.reconcile(file, editor) }
                 } else {
