@@ -111,7 +111,7 @@ class KotlinScriptEnvironment private constructor(
                     KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
                 }
         
-        addToCPFromScriptTemplateClassLoader()
+//        addToCPFromScriptTemplateClassLoader()
         
         configureClasspath()
         
