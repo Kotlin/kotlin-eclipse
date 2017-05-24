@@ -26,6 +26,10 @@ import org.jetbrains.kotlin.resolve.jvm.KotlinSafeClassFinder
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import java.io.File
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.script.KotlinScriptDefinition
+import java.net.URLClassLoader
+import org.eclipse.osgi.internal.loader.EquinoxClassLoader
+import java.net.URL
 
 class KotlinScriptDependenciesClassFinder(
         project: Project,
@@ -49,6 +53,38 @@ class KotlinScriptDependenciesClassFinder(
     override fun calcClassRoots(): List<VirtualFile> {
         return emptyList()
     }
+    
+    private fun fromClassLoader(definition: KotlinScriptDefinition): List<File> {
+        val classLoader = definition.template.java.classLoader
+        return classpathFromClassloader(classLoader)
+    }
+    
+    private fun classpathFromClassloader(classLoader: ClassLoader): List<File> {
+        return when (classLoader) {
+            is URLClassLoader -> {
+                classLoader.urLs
+                        ?.mapNotNull { it.toFile() }
+                        ?: emptyList()
+            }
+            is EquinoxClassLoader -> {
+                classLoader.classpathManager.hostClasspathEntries.map { entry ->
+                    entry.bundleFile.baseFile
+                }
+            }
+            else -> {
+                KotlinLogger.logWarning("Could not get dependencies from $classLoader for script provider")
+                emptyList()
+            }
+        }
+    }
+    
+    private fun URL.toFile() =
+        try {
+            File(toURI().schemeSpecificPart)
+        } catch (e: java.net.URISyntaxException) {
+            if (protocol != "file") null
+            else File(file)
+        }
 
     private fun File.classpathEntryToVfs(): VirtualFile? {
         if (!exists()) return null
