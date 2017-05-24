@@ -259,6 +259,7 @@ class KotlinScriptEnvironment private constructor(
         if (definition is KotlinScriptDefinition) {
             val classLoader = definition.template.java.classLoader
             for (file in classpathFromClassloader(classLoader)) {
+                KotlinLogger.logWarning("From classLoder for $ioFile: ${file.absolutePath}")
                 addToClasspath(file, JavaRoot.RootType.BINARY)
             }
         }
