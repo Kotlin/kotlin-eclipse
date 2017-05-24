@@ -70,6 +70,9 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent
 import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 import org.jetbrains.kotlin.load.kotlin.MetadataFinderFactory
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
+import org.eclipse.core.runtime.NullProgressMonitor
+import org.eclipse.osgi.internal.loader.EquinoxClassLoader
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -131,6 +134,8 @@ class KotlinScriptEnvironment private constructor(
                     KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
                 }
         
+        addToCPFromScriptTemplateClassLoader()
+        
         configureClasspath()
         
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
@@ -165,44 +170,6 @@ class KotlinScriptEnvironment private constructor(
         project.registerService(MetadataFinderFactory::class.java, finderFactory)
         project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
         project.registerService(JvmVirtualFileFinderFactory::class.java, finderFactory)
-//        configureClasspath()
-//        
-//        scriptDefinitions
-//                .filter { it.isScript(File(eclipseFile.name)) }
-//                .ifEmpty { listOf(StandardScriptDefinition) }
-//                .forEach {
-//                    KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
-//                }
-//
-//        addToCPFromScriptTemplateClassLoader()
-//
-//        project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
-//        project.registerService(KotlinScriptExternalImportsProvider::class.java,
-//                KotlinScriptExternalImportsProvider(project, KotlinScriptDefinitionProvider.getInstance(project)))
-//        
-//        for (file in KotlinScriptExternalImportsProvider.getInstance(project)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile()))) {
-//            addToClasspath(file)
-//        }
-//        
-//        val index = JvmDependenciesIndexImpl(getRoots().toList())
-//        
-//        val area = Extensions.getArea(project)
-//        with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
-//            registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
-//            registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
-//        }
-//
-//        val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
-//        (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
-//        
-//        val finderFactory = JvmCliVirtualFileFinderFactory(index)
-//        project.registerService(MetadataFinderFactory::class.java, finderFactory)
-//        project.registerService(JvmVirtualFileFinderFactory::class.java, finderFactory)
-//        
-//        index.indexedRoots.forEach {
-//            projectEnvironment.addSourcesToClasspath(it.file)
-//        }
-        
     }
     
     companion object {
@@ -215,7 +182,7 @@ class KotlinScriptEnvironment private constructor(
             checkIsScript(file)
             
             return cachedEnvironment.getOrCreateEnvironment(file) {
-                KotlinScriptEnvironment(it, true, listOf(StandardScriptDefinition), Disposer.newDisposable())
+                KotlinScriptEnvironment(it, true, listOf(), Disposer.newDisposable())
             }
         }
 
@@ -327,10 +294,24 @@ private fun URL.toFile() =
         }
 
 
-private fun classpathFromClassloader(classLoader: ClassLoader): List<File> =
-        (classLoader as? URLClassLoader)?.urLs
-                ?.mapNotNull { it.toFile() }
-                ?: emptyList()
+private fun classpathFromClassloader(classLoader: ClassLoader): List<File> {
+    return when (classLoader) {
+        is URLClassLoader ->  {
+            classLoader.urLs
+                    ?.mapNotNull { it.toFile() }
+                    ?: emptyList()
+        }
+        is EquinoxClassLoader -> {
+            classLoader.classpathManager.hostClasspathEntries.map { entry ->
+                entry.bundleFile.baseFile
+            }
+        }
+        else -> {
+            KotlinLogger.logWarning("Could not get dependencies from $classLoader for script provider")
+            emptyList()
+        }
+    }
+}
 
 class KotlinEnvironment private constructor(val eclipseProject: IProject, disposable: Disposable) :
         KotlinCommonEnvironment(disposable) {
