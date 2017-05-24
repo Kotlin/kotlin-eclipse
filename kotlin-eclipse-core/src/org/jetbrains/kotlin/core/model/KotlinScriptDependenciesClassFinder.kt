@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.resolve.jvm.KotlinSafeClassFinder
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import java.io.File
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 class KotlinScriptDependenciesClassFinder(
         project: Project,
