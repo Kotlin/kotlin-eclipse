@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.resolve.jvm.KotlinSafeClassFinder
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import java.io.File
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 class KotlinScriptDependenciesClassFinder(
         project: Project,
@@ -49,8 +50,16 @@ class KotlinScriptDependenciesClassFinder(
         val ioFile = eclipseFile.getLocation().toFile()
         val definition = KotlinScriptDefinitionProvider.getInstance(myProject).findScriptDefinition(ioFile) ?: return emptyList()
 
-        val dependencies = definition.getDependenciesFor(ioFile, myProject, null) ?: return emptyList()
+        val dependencies = definition.getDependenciesFor(ioFile, myProject, null) ?: run {
+            KotlinLogger.logWarning("No dependencies for $ioFile")
+        	return emptyList()
+        }
         val cp = dependencies.classpath.mapNotNull { it.classpathEntryToVfs() }
+        for (ccp in dependencies.classpath) {
+            KotlinLogger.logWarning("For $ioFile external dep: ${ccp.absolutePath}")
+            val vfs = ccp.classpathEntryToVfs()
+            KotlinLogger.logWarning("For $ioFile vfs: ${vfs}")
+        }
 		return cp
     }
 

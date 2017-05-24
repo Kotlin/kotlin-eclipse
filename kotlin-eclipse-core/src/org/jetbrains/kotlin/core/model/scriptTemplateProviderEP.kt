@@ -58,6 +58,11 @@ fun makeScriptDefsFromEclipseTemplatesProviders(
                             templateClasspath.map { File(it).toURI().toURL() }.toTypedArray(),
                             ScriptTemplateProviderEx::class.java.classLoader
                     )
+                    
+                    for (cp in templateClasspath) {
+                    	KotlinLogger.logWarning("Load for ${provider.templateClassName}: $cp")
+                    }
+                    
                     val cl = loader.loadClass(provider.templateClassName)
                     KotlinScriptDefinitionFromAnnotatedTemplate(cl.kotlin, null, null, provider.getEnvironment(eclipseFile))
                 } catch (ex: Exception) {
