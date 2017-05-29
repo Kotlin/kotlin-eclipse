@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import java.net.URLClassLoader
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader
 import java.net.URL
+import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 
 class KotlinScriptDependenciesClassFinder(
         project: Project,
@@ -51,20 +52,25 @@ class KotlinScriptDependenciesClassFinder(
     }
     
     override fun calcClassRoots(): List<VirtualFile> {
-        val ioFile = eclipseFile.getLocation().toFile()
-        val definition = KotlinScriptDefinitionProvider.getInstance(myProject).findScriptDefinition(ioFile) ?: return emptyList()
+//        val ioFile = eclipseFile.getLocation().toFile()
+//        val definition = KotlinScriptDefinitionProvider.getInstance(myProject).findScriptDefinition(ioFile) ?: return emptyList()
+//
+//        val dependencies = definition.getDependenciesFor(ioFile, myProject, null) ?: run {
+//            KotlinLogger.logWarning("No dependencies for $ioFile")
+//        	return emptyList()
+//        }
+//        val cp = (dependencies.classpath + fromClassLoader(definition)).mapNotNull { it.classpathEntryToVfs() }
+//        for (ccp in dependencies.classpath) {
+//            KotlinLogger.logWarning("For $ioFile external dep: ${ccp.absolutePath}")
+//            val vfs = ccp.classpathEntryToVfs()
+//            KotlinLogger.logWarning("For $ioFile vfs: ${vfs}")
+//        }
+        
+        val classpath =  KotlinScriptExternalImportsProvider.getInstance(myProject)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile())).mapNotNull {
+            it.classpathEntryToVfs()
+        }
 
-        val dependencies = definition.getDependenciesFor(ioFile, myProject, null) ?: run {
-            KotlinLogger.logWarning("No dependencies for $ioFile")
-        	return emptyList()
-        }
-        val cp = (dependencies.classpath + fromClassLoader(definition)).mapNotNull { it.classpathEntryToVfs() }
-        for (ccp in dependencies.classpath) {
-            KotlinLogger.logWarning("For $ioFile external dep: ${ccp.absolutePath}")
-            val vfs = ccp.classpathEntryToVfs()
-            KotlinLogger.logWarning("For $ioFile vfs: ${vfs}")
-        }
-		return cp
+		return classpath
     }
     
     private fun fromClassLoader(definition: KotlinScriptDefinition): List<File> {

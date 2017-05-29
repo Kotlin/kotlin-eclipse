@@ -82,6 +82,7 @@ import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
+import com.intellij.psi.impl.PsiElementFinderImpl
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -147,6 +148,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
 			
 			val area = Extensions.getArea(this)
 			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, cliLightClassGenerationSupport))
+            area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(
+                    PsiElementFinderImpl(this, ServiceManager.getService(this, JavaFileManager::class.java)))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
