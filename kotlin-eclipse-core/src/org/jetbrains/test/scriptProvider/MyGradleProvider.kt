@@ -16,10 +16,10 @@ class MyGradleProvider : ScriptTemplateProviderEx {
         get() = "org.jetbrains.test.scriptProvider.TestScriptTemplateDefinitionEx"
 
     override fun getTemplateClasspath(environment: Map<String, Any?>?, monitor: IProgressMonitor): Iterable<String> {
-        return listOf(
-                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-eclipse-core/bin/",
-                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-eclipse-ui/bin/",
-                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-bundled-compiler/bin/"
+        return listOf("/Users/jetbrains/projects/tests/forScripts/kotlin_core.jar"
+//                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-eclipse-core/bin/",
+//                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-eclipse-ui/bin/",
+//                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-bundled-compiler/bin/"
         )
     }
 

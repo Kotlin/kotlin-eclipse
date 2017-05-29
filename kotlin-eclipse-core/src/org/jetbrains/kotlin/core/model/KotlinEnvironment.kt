@@ -106,6 +106,7 @@ class KotlinScriptEnvironment private constructor(
         val eclipseFile: IFile,
         val loadScriptDefinitions: Boolean,
         scriptDefinitions: List<KotlinScriptDefinition>,
+        providersClasspath: List<String>,
         disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
@@ -134,7 +135,7 @@ class KotlinScriptEnvironment private constructor(
                     KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
                 }
         
-//        addToCPFromScriptTemplateClassLoader()
+        addToCPFromScriptTemplateClassLoader(providersClasspath)
         
         configureClasspath()
         
@@ -182,7 +183,7 @@ class KotlinScriptEnvironment private constructor(
             checkIsScript(file)
             
             return cachedEnvironment.getOrCreateEnvironment(file) {
-                KotlinScriptEnvironment(it, true, listOf(), Disposer.newDisposable())
+                KotlinScriptEnvironment(it, true, listOf(), listOf(), Disposer.newDisposable())
             }
         }
 
@@ -192,10 +193,10 @@ class KotlinScriptEnvironment private constructor(
             cachedEnvironment.removeEnvironment(file)
         }
         
-        fun replaceEnvironment(file: IFile, scriptDefinitions: List<KotlinScriptDefinition>): KotlinScriptEnvironment {
+        fun replaceEnvironment(file: IFile, scriptDefinitions: List<KotlinScriptDefinition>, providersClasspath: List<String>): KotlinScriptEnvironment {
             checkIsScript(file)
             val environment = cachedEnvironment.replaceEnvironment(file) {
-            	KotlinScriptEnvironment(it, false, scriptDefinitions, Disposer.newDisposable())
+            	KotlinScriptEnvironment(it, false, scriptDefinitions, providersClasspath, Disposer.newDisposable())
             }
             KotlinPsiManager.removeFile(file)
             
@@ -224,14 +225,17 @@ class KotlinScriptEnvironment private constructor(
     @Volatile private var isInitializingScriptDefinitions = false
     
     @Synchronized
-    fun initializeScriptDefinitions(postTask: (List<KotlinScriptDefinition>) -> Unit) {
+    fun initializeScriptDefinitions(postTask: (List<KotlinScriptDefinition>, List<String>) -> Unit) {
         if (isScriptDefinitionsInitialized || isInitializingScriptDefinitions) return
         isInitializingScriptDefinitions = true
         
         try {
             val definitions = arrayListOf<KotlinScriptDefinition>()
+            val classpath = arrayListOf<String>()
             runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
-                definitions.addAll(loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor))
+                val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
+                definitions.addAll(definitionsAndClasspath.first)
+                classpath.addAll(definitionsAndClasspath.second)
 
                 monitor.done()
                 
@@ -239,7 +243,7 @@ class KotlinScriptEnvironment private constructor(
             }, { _ ->
                 isScriptDefinitionsInitialized = true
                 isInitializingScriptDefinitions = false
-                postTask(definitions)
+                postTask(definitions, classpath)
             })
         } finally {
             isInitializingScriptDefinitions = false
@@ -250,6 +254,12 @@ class KotlinScriptEnvironment private constructor(
         addToClasspath(KOTLIN_RUNTIME_PATH.toFile())
         addToClasspath(KOTLIN_SCRIPT_RUNTIME_PATH.toFile())
         addJREToClasspath()
+    }
+    
+    private fun addToCPFromScriptTemplateClassLoader(cp: List<String>) {
+        for (entry in cp) {
+            addToClasspath(File(entry), JavaRoot.RootType.BINARY)
+        }
     }
     
     private fun addToCPFromScriptTemplateClassLoader() {

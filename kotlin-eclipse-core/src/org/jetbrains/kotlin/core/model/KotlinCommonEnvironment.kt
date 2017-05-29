@@ -90,6 +90,7 @@ import com.intellij.openapi.vfs.StandardFileSystems
 import com.intellij.util.io.URLUtil
 import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
+import com.intellij.psi.impl.PsiElementFinderImpl
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -160,6 +161,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             
 			val area = Extensions.getArea(this)
 			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, cliLightClassGenerationSupport))
+            area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(
+                    PsiElementFinderImpl(this, ServiceManager.getService(this, JavaFileManager::class.java)))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
