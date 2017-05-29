@@ -30,6 +30,7 @@ import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import java.net.URLClassLoader
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader
 import java.net.URL
+import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 
 class KotlinScriptDependenciesClassFinder(
         project: Project,
