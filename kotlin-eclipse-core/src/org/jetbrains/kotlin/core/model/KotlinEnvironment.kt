@@ -135,6 +135,7 @@ class KotlinScriptEnvironment private constructor(
                 getRoots().partition { (file) -> file.isDirectory || file.extension != "java" }
         
         project.registerService(VirtualFileFinderFactory::class.java, CliVirtualFileFinderFactory(index))
+        StorageComponentContainerContributor.registerExtensionPoint(project)
         
         scriptDefinitions
                 .filter { it.isScript(File(eclipseFile.name)) }
@@ -159,6 +160,11 @@ class KotlinScriptEnvironment private constructor(
                 KotlinLogger.logWarning("From resolve: ${dep.absolutePath}")
     			addToClasspath(dep)
         	}
+        }
+        val annotations = definition.annotationsForSamWithReceivers
+        if (annotations != null) {
+            KotlinLogger.logWarning("Register annotation: ${annotations.joinToString()}")
+            StorageComponentContainerContributor.registerExtension(project, CliSamWithReceiverComponentContributor(annotations))
         }
 //        val testF = File("/Users/jetbrains/.gradle/wrapper/dists/gradle-script-kotlin-4.0-20170518042627+0000-all/ciffvjvjsapgkgqjen4eyzqe9/gradle-4.0-20170518042627+0000/lib/plugins/gradle-plugins-4.0.jar")
 //        if (testF.exists()) {
