@@ -14,7 +14,7 @@ import java.io.File
 
 class MyGradleProvider : ScriptTemplateProviderEx {
     override val templateClassName: String
-        get() = "org.gradle.script.lang.kotlin.KotlinBuildScript"
+        get() = "org.jetbrains.test.scriptProvider.TestScriptTemplateDefinitionEx"
 
     override fun getTemplateClasspath(environment: Map<String, Any?>?, monitor: IProgressMonitor): Iterable<String> {
         val dir = File("/Users/jetbrains/.gradle/wrapper/dists/gradle-script-kotlin-4.0-20170518042627+0000-all/ciffvjvjsapgkgqjen4eyzqe9/gradle-4.0-20170518042627+0000/lib/")
