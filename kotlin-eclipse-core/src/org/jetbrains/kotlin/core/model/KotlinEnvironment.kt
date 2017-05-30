@@ -153,17 +153,11 @@ class KotlinScriptEnvironment private constructor(
         		KotlinScriptExternalImportsProvider(project, KotlinScriptDefinitionProvider.getInstance(project)))
         
         val ioFile = eclipseFile.fullPath.toFile()
-        val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(ioFile)!!
-        val dependencies = definition.getDependenciesFor(ioFile, project, null)
-        if (dependencies != null) {
-        	for (dep in dependencies.classpath) {
-                KotlinLogger.logWarning("From resolve: ${dep.absolutePath}")
-    			addToClasspath(dep)
-        	}
-        }
-        val annotations = definition.annotationsForSamWithReceivers
+        val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(ioFile)
+        addToCPFromExternalDependencies(definition)
+        
+        val annotations = definition?.annotationsForSamWithReceivers
         if (annotations != null) {
-            KotlinLogger.logWarning("Register annotation: ${annotations.joinToString()}")
             StorageComponentContainerContributor.registerExtension(project, CliSamWithReceiverComponentContributor(annotations))
         }
 //        val testF = File("/Users/jetbrains/.gradle/wrapper/dists/gradle-script-kotlin-4.0-20170518042627+0000-all/ciffvjvjsapgkgqjen4eyzqe9/gradle-4.0-20170518042627+0000/lib/plugins/gradle-plugins-4.0.jar")
@@ -291,6 +285,19 @@ class KotlinScriptEnvironment private constructor(
     private fun addToCPFromScriptTemplateClassLoader(cp: List<String>) {
         for (entry in cp) {
             addToClasspath(File(entry), JavaRoot.RootType.BINARY)
+        }
+    }
+    
+    private fun addToCPFromExternalDependencies(definition: KotlinScriptDefinition?) {
+        if (definition == null) return
+        
+        val ioFile = eclipseFile.fullPath.toFile()
+        val dependencies = definition.getDependenciesFor(ioFile, project, null)
+        if (dependencies != null) {
+            for (dep in dependencies.classpath) {
+                KotlinLogger.logWarning("From resolve: ${dep.absolutePath}")
+                addToClasspath(dep)
+            }
         }
     }
     
