@@ -151,14 +151,19 @@ class KotlinScriptEnvironment private constructor(
         project.registerService(KotlinScriptExternalImportsProvider::class.java,
         		KotlinScriptExternalImportsProvider(project, KotlinScriptDefinitionProvider.getInstance(project)))
         
-        for (file in KotlinScriptExternalImportsProvider.getInstance(project)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile()))) {
-        	addToClasspath(file)
+        val ioFile = eclipseFile.fullPath.toFile()
+        val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(ioFile)!!
+        val dependencies = definition.getDependenciesFor(ioFile, project, null)
+        if (dependencies != null) {
+        	for (dep in dependencies.classpath) {
+                KotlinLogger.logWarning("From resolve: ${dep.absolutePath}")
+    			addToClasspath(dep)
+        	}
         }
-        
-        val testF = File("/Users/jetbrains/.gradle/wrapper/dists/gradle-script-kotlin-4.0-20170518042627+0000-all/ciffvjvjsapgkgqjen4eyzqe9/gradle-4.0-20170518042627+0000/lib/plugins/gradle-plugins-4.0.jar")
-        if (testF.exists()) {
-        	addToClasspath(testF)
-        }
+//        val testF = File("/Users/jetbrains/.gradle/wrapper/dists/gradle-script-kotlin-4.0-20170518042627+0000-all/ciffvjvjsapgkgqjen4eyzqe9/gradle-4.0-20170518042627+0000/lib/plugins/gradle-plugins-4.0.jar")
+//        if (testF.exists()) {
+//        	addToClasspath(testF)
+//        }
         
 //        val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(eclipseFile.fullPath.toFile())!!
 //        val dep1 = definition.getDependenciesFor(eclipseFile.fullPath.toFile(), project, null)
