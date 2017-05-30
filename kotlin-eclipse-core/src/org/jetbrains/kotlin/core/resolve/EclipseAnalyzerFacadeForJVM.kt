@@ -59,6 +59,10 @@ import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
 import org.jetbrains.kotlin.config.JvmTarget
+import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
+import org.jetbrains.kotlin.core.model.SamWithReceiverResolverExtension
+import org.jetbrains.kotlin.script.KotlinScriptDefinition
+import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
     companion object {
@@ -194,6 +198,13 @@ public object EclipseAnalyzerFacadeForJVM {
                 { KotlinPackagePartProvider(environment) },
                 { storageManager: StorageManager, files: Collection<KtFile> -> FileBasedDeclarationProviderFactory(storageManager, files) }
         )
+        
+        
+        val definition = KotlinScriptDefinitionProvider.getInstance(environment.project).findScriptDefinition(environment.eclipseFile.fullPath.toFile())
+        val annotations = definition?.annotationsForSamWithReceivers
+        if (annotations != null) {
+        	container.get<SamWithReceiverResolver>().registerExtension(SamWithReceiverResolverExtension(annotations))
+        }
         
         try {
             container.get<LazyTopDownAnalyzer>().analyzeDeclarations(TopDownAnalysisMode.TopLevelDeclarations, setOf(scriptFile))
