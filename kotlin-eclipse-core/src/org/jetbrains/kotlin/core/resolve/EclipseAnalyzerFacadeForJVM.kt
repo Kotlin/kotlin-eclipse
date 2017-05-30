@@ -199,13 +199,6 @@ public object EclipseAnalyzerFacadeForJVM {
                 { storageManager: StorageManager, files: Collection<KtFile> -> FileBasedDeclarationProviderFactory(storageManager, files) }
         )
         
-        
-        val definition = KotlinScriptDefinitionProvider.getInstance(environment.project).findScriptDefinition(environment.eclipseFile.fullPath.toFile())
-        val annotations = definition?.annotationsForSamWithReceivers
-        if (annotations != null) {
-        	container.get<SamWithReceiverResolver>().registerExtension(SamWithReceiverResolverExtension(annotations))
-        }
-        
         try {
             container.get<LazyTopDownAnalyzer>().analyzeDeclarations(TopDownAnalysisMode.TopLevelDeclarations, setOf(scriptFile))
         } catch(e: KotlinFrontEndException) {
