@@ -152,7 +152,7 @@ class KotlinScriptEnvironment private constructor(
         project.registerService(KotlinScriptExternalImportsProvider::class.java,
         		KotlinScriptExternalImportsProvider(project, KotlinScriptDefinitionProvider.getInstance(project)))
         
-        val ioFile = eclipseFile.fullPath.toFile()
+        val ioFile = eclipseFile.location.toFile()
         val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(ioFile)
         addToCPFromExternalDependencies(definition)
         
@@ -279,7 +279,7 @@ class KotlinScriptEnvironment private constructor(
     private fun addToCPFromExternalDependencies(definition: KotlinScriptDefinition?) {
         if (definition == null) return
         
-        val ioFile = eclipseFile.fullPath.toFile()
+        val ioFile = eclipseFile.location.toFile()
         val dependencies = definition.getDependenciesFor(ioFile, project, null)
         if (dependencies != null) {
             for (dep in dependencies.classpath) {
