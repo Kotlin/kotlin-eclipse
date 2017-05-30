@@ -160,18 +160,6 @@ class KotlinScriptEnvironment private constructor(
         if (annotations != null) {
             StorageComponentContainerContributor.registerExtension(project, CliSamWithReceiverComponentContributor(annotations))
         }
-//        val testF = File("/Users/jetbrains/.gradle/wrapper/dists/gradle-script-kotlin-4.0-20170518042627+0000-all/ciffvjvjsapgkgqjen4eyzqe9/gradle-4.0-20170518042627+0000/lib/plugins/gradle-plugins-4.0.jar")
-//        if (testF.exists()) {
-//        	addToClasspath(testF)
-//        }
-        
-//        val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(eclipseFile.fullPath.toFile())!!
-//        val dep1 = definition.getDependenciesFor(eclipseFile.fullPath.toFile(), project, null)
-//        val dep2 = definition.getDependenciesFor(eclipseFile, project, null)
-//        val annotations = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(eclipseFile.fullPath.toFile())?.annotationsForSamWithReceivers
-//        if (annotations != null) {
-//        	StorageComponentContainerContributor.registerExtension(project, CliSamWithReceiverComponentContributor(annotations))
-//        }
         
         val index = JvmDependenciesIndexImpl(getRoots().toList())
         
@@ -295,7 +283,6 @@ class KotlinScriptEnvironment private constructor(
         val dependencies = definition.getDependenciesFor(ioFile, project, null)
         if (dependencies != null) {
             for (dep in dependencies.classpath) {
-                KotlinLogger.logWarning("From resolve: ${dep.absolutePath}")
                 addToClasspath(dep)
             }
         }
@@ -308,7 +295,6 @@ class KotlinScriptEnvironment private constructor(
         if (definition is KotlinScriptDefinition) {
             val classLoader = definition.template.java.classLoader
             for (file in classpathFromClassloader(classLoader)) {
-                KotlinLogger.logWarning("From classLoder for $ioFile: ${file.absolutePath}")
                 addToClasspath(file, JavaRoot.RootType.BINARY)
             }
         }
