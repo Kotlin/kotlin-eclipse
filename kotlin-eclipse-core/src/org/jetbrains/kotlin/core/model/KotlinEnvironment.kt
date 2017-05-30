@@ -73,6 +73,14 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.eclipse.core.runtime.NullProgressMonitor
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
+import org.jetbrains.kotlin.container.ComponentProvider
+import org.jetbrains.kotlin.analyzer.ModuleInfo
+import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
+import org.jetbrains.kotlin.extensions.AnnotationBasedExtension
+import org.jetbrains.kotlin.psi.KtModifierListOwner
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -146,6 +154,19 @@ class KotlinScriptEnvironment private constructor(
         for (file in KotlinScriptExternalImportsProvider.getInstance(project)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile()))) {
         	addToClasspath(file)
         }
+        
+        val testF = File("/Users/jetbrains/.gradle/wrapper/dists/gradle-script-kotlin-4.0-20170518042627+0000-all/ciffvjvjsapgkgqjen4eyzqe9/gradle-4.0-20170518042627+0000/lib/plugins/gradle-plugins-4.0.jar")
+        if (testF.exists()) {
+        	addToClasspath(testF)
+        }
+        
+//        val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(eclipseFile.fullPath.toFile())!!
+//        val dep1 = definition.getDependenciesFor(eclipseFile.fullPath.toFile(), project, null)
+//        val dep2 = definition.getDependenciesFor(eclipseFile, project, null)
+//        val annotations = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(eclipseFile.fullPath.toFile())?.annotationsForSamWithReceivers
+//        if (annotations != null) {
+//        	StorageComponentContainerContributor.registerExtension(project, CliSamWithReceiverComponentContributor(annotations))
+//        }
         
         val index = JvmDependenciesIndexImpl(getRoots().toList())
         
@@ -321,6 +342,33 @@ private fun classpathFromClassloader(classLoader: ClassLoader): List<File> {
             KotlinLogger.logWarning("Could not get dependencies from $classLoader for script provider")
             emptyList()
         }
+    }
+}
+
+class CliSamWithReceiverComponentContributor(val annotations: List<String>): StorageComponentContainerContributor {
+    override fun onContainerComposed(container: ComponentProvider, moduleInfo: ModuleInfo?) {
+        container.get<SamWithReceiverResolver>().registerExtension(SamWithReceiverResolverExtension(annotations))
+    }
+}
+
+inline fun <reified T : Any> ComponentProvider.get(): T {
+    return getService(T::class.java)
+}
+
+fun <T : Any> ComponentProvider.getService(request: Class<T>): T {
+    return tryGetService(request) ?: throw IllegalArgumentException("Unresolved service: $request")
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> ComponentProvider.tryGetService(request: Class<T>): T? {
+    return resolve(request)?.getValue() as T?
+}
+
+class SamWithReceiverResolverExtension(val annotations: List<String>) : SamWithReceiverResolver.Extension, AnnotationBasedExtension {
+    override fun getAnnotationFqNames(modifierListOwner: KtModifierListOwner?) = annotations
+
+    override fun shouldConvertFirstSamParameterToReceiver(function: FunctionDescriptor): Boolean {
+        return (function.containingDeclaration as? ClassDescriptor)?.hasSpecialAnnotation(null) ?: false
     }
 }
 

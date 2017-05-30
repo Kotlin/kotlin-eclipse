@@ -10,17 +10,30 @@ import org.jetbrains.kotlin.script.ScriptDependenciesResolver.ReportSeverity
 import org.jetbrains.kotlin.script.ScriptTemplateDefinition
 import java.util.concurrent.Future
 import org.jetbrains.kotlin.script.asFuture
+import java.io.File
 
 class MyGradleProvider : ScriptTemplateProviderEx {
     override val templateClassName: String
-        get() = "org.jetbrains.test.scriptProvider.TestScriptTemplateDefinitionEx"
+        get() = "org.gradle.script.lang.kotlin.KotlinBuildScript"
 
     override fun getTemplateClasspath(environment: Map<String, Any?>?, monitor: IProgressMonitor): Iterable<String> {
-        return listOf("/Users/jetbrains/projects/tests/forScripts/kotlin_core.jar"
-//                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-eclipse-core/bin/",
-//                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-eclipse-ui/bin/",
-//                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-bundled-compiler/bin/"
-        )
+        val dir = File("/Users/jetbrains/.gradle/wrapper/dists/gradle-script-kotlin-4.0-20170518042627+0000-all/ciffvjvjsapgkgqjen4eyzqe9/gradle-4.0-20170518042627+0000/lib/")
+        val cp = arrayListOf<String>()
+        for (file in dir.listFiles()) {
+            if (file.isDirectory) {
+                for (innerFile in file.listFiles()) {
+                    cp.add(innerFile.absolutePath)
+                }
+            } else {
+                cp.add(file.absolutePath)
+            }
+        }
+        return cp
+//        return listOf("/Users/jetbrains/projects/tests/forScripts/kotlin_core.jar"
+////                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-eclipse-core/bin/",
+////                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-eclipse-ui/bin/",
+////                "/Users/jetbrains/projects/kotlin-eclipse/kotlin-bundled-compiler/bin/"
+//        )
     }
 
     override fun getEnvironment(file: IFile): Map<String, Any?>? {
@@ -60,6 +73,11 @@ class TestKotlinScriptResolverEx : ScriptDependenciesResolver {
         return object : KotlinScriptExternalDependencies {
             override val imports: Iterable<String>
                 get() =  standardImports + (additionalImports ?: emptyList())
+            
+            override val classpath: Iterable<File>
+                get() {
+                    return listOf(File("/Users/jetbrains/projects/tests/forScripts/forScripts.jar"))
+                }
         }.asFuture()
     }
 }
