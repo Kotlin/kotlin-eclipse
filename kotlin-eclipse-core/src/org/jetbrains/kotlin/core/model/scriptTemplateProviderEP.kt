@@ -61,9 +61,20 @@ fun makeScriptDefsFromEclipseTemplatesProviders(
                             ScriptTemplateProviderEx::class.java.classLoader
                     )
                     
-                    for (cp in templateClasspath) {
-                    	KotlinLogger.logWarning("Load for ${provider.templateClassName}: $cp")
-                    }
+//                    for (cp in templateClasspath) {
+//                    	//KotlinLogger.logWarning("Load for ${provider.templateClassName}: $cp")
+//                        val localLoader = URLClassLoader(
+//                            arrayOf(File(cp).toURI().toURL()),
+//                            ScriptTemplateProviderEx::class.java.classLoader)
+//                        try {
+//                        	val cl = localLoader.loadClass("org.gradle.api.plugins.ApplicationPluginConvention")
+//	            			if (cl != null) {
+//	            				KotlinLogger.logWarning("FOUND FOUND FOUND: $cp")
+//	            			}
+//                        } catch(ex: Exception) {
+//                            
+//                        }
+//                    }
                     
                     val cl = loader.loadClass(provider.templateClassName)
                     Pair(KotlinScriptDefinitionFromAnnotatedTemplate(cl.kotlin, null, null, provider.getEnvironment(eclipseFile)), templateClasspath)
