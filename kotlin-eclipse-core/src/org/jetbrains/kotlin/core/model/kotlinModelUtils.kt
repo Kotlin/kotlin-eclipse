@@ -75,7 +75,7 @@ fun isConfigurationMissing(project: IProject): Boolean {
     }
 }
 
-inline fun runJob(name: String, priority: Int = Job.LONG, crossinline action: (IProgressMonitor) -> IStatus) {
+inline fun runJob(name: String, priority: Int = Job.LONG, crossinline action: (IProgressMonitor) -> IStatus): Job {
     val job = object : Job(name) {
         override fun run(monitor: IProgressMonitor): IStatus {
             return action(monitor)
@@ -84,4 +84,5 @@ inline fun runJob(name: String, priority: Int = Job.LONG, crossinline action: (I
     
     job.setPriority(priority)
     job.schedule()
+	return job
 }

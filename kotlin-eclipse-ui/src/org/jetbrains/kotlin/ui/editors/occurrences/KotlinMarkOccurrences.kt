@@ -29,52 +29,59 @@ import org.eclipse.search.ui.text.Match
 import org.eclipse.ui.ISelectionListener
 import org.eclipse.ui.IWorkbenchPart
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.refactorings.rename.getLengthOfIdentifier
 import org.jetbrains.kotlin.ui.search.KotlinElementMatch
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant
 import org.jetbrains.kotlin.ui.search.getContainingClassOrObjectForConstructor
+import java.util.concurrent.atomic.AtomicReference
 
 public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISelectionListener {
     companion object {
         private val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
     }
+	
+	private val currentJob = AtomicReference<Job?>(null)
     
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
         if (!kotlinEditor.isActive()) return
         
-        runJob("Update occurrence annotations", Job.DECORATE) { 
-            if (part is KotlinCommonEditor && selection is ITextSelection) {
-                val file = part.eclipseFile
-                if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
-                
-                val document = part.getDocumentSafely()
-                if (document == null) return@runJob Status.CANCEL_STATUS
-                
-                KotlinPsiManager.getKotlinFileIfExist(file, document.get())
-                
-                val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
-                if (ktElement == null) {
-                    return@runJob Status.CANCEL_STATUS
-                }
-                
-                val occurrences = findOccurrences(part, ktElement, file)
-                updateOccurrences(part, occurrences)
-            }
-            
-            Status.OK_STATUS
+		if (part is KotlinCommonEditor && selection is ITextSelection && selection.length > 0) {
+			currentJob.updateAndGet {
+				if (it == null || it.state == Job.NONE) runOccurencesJob(part, selection)
+				else it
+			}          
         }
     }
+	
+	private fun runOccurencesJob(part: KotlinCommonEditor, selection: ITextSelection) = runJob("Update occurrence annotations", Job.DECORATE) { 
+        val file = part.eclipseFile
+        if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
+        
+        val document = part.getDocumentSafely()
+        if (document == null) return@runJob Status.CANCEL_STATUS
+        
+        KotlinPsiManager.getKotlinFileIfExist(file, document.get())
+        
+        val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
+        if (ktElement == null) {
+            return@runJob Status.CANCEL_STATUS
+        }
+        
+        val occurrences = findOccurrences(part, ktElement, file)
+        updateOccurrences(part, occurrences)
+		
+		Status.OK_STATUS            
+	}
     
     private fun updateOccurrences(editor: KotlinEditor, occurrences: List<Position>) {
         val annotationMap = occurrences.associateBy { Annotation(ANNOTATION_TYPE, false, null) }
