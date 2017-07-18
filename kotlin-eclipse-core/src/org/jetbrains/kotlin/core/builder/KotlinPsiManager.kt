@@ -59,13 +59,22 @@ interface PsiFilesStorage {
     fun removeFile(file: IFile)
 }
 
+private fun parseFile(file: IFile): KtFile =
+		KotlinPsiManager.parseFile(file) ?: throw IllegalStateException("Can't parse file $file")
+
+private fun parseIfNotSame(file: IFile, ktFile: KtFile?, expectedSourceCode: String): KtFile =
+		if (ktFile != null && ktFile.getText().equals(StringUtilRt.convertLineSeparators(expectedSourceCode))) {
+			ktFile 
+		}
+		else parseFile(file)
+
 private class ScriptsFilesStorage : PsiFilesStorage {
     private val cachedKtFiles = ConcurrentHashMap<IFile, KtFile>()
     
     override fun getPsiFile(eclipseFile: IFile): KtFile {
         assert(isApplicable(eclipseFile)) { "$eclipseFile is not applicable for Kotlin scripts storage" }
         
-        return cachedKtFiles.getOrPut(eclipseFile) { KotlinPsiManager.parseFile(eclipseFile)!! }
+        return cachedKtFiles.getOrPut(eclipseFile) { parseFile(eclipseFile) }
     }
 
     @Synchronized
@@ -94,109 +103,116 @@ private class ProjectSourceFiles : PsiFilesStorage {
         fun isKotlinFile(file: IFile): Boolean = KotlinFileType.INSTANCE.getDefaultExtension() == file.fileExtension
     }
     
-    private val projectFiles = hashMapOf<IProject, HashSet<IFile>>()
-    private val cachedKtFiles = hashMapOf<IFile, KtFile>()
-    private val mapOperationLock = Any()
+    private val projectFiles = ConcurrentHashMap<IProject, HashSet<IFile>>()
+    private val cachedKtFiles = ConcurrentHashMap<IFile, KtFile>()
     
     override fun getPsiFile(eclipseFile: IFile): KtFile {
-        synchronized (mapOperationLock) {
-            updateProjectPsiSourcesIfNeeded(eclipseFile.getProject())
+        updateProjectPsiSourcesIfNeeded(eclipseFile.getProject())
 
-            assert(existsInProjectSources(eclipseFile), { "File(" + eclipseFile.getName() + ") does not contain in the psiFiles" })
+        assert(existsInProjectSources(eclipseFile), { "File(" + eclipseFile.getName() + ") does not contain in the psiFiles" })
 
-            return cachedKtFiles.getOrPut(eclipseFile) {
-                KotlinPsiManager.parseFile(eclipseFile) ?: throw IllegalStateException("Can't parse file $eclipseFile")
-            }
-        }
+        return cachedKtFiles.getOrPut(eclipseFile) { parseFile(eclipseFile) }        
     }
     
     override fun getPsiFile(file: IFile, expectedSourceCode: String): KtFile {
-        synchronized (mapOperationLock) {
-            updatePsiFile(file, expectedSourceCode)
-            return getPsiFile(file)
-        }
+        updateProjectPsiSourcesIfNeeded(file.getProject())
+
+        assert(existsInProjectSources(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
+		
+        return cachedKtFiles.compute(file) { _,cachedKtFile ->
+			parseIfNotSame(file, cachedKtFile, expectedSourceCode)			
+        }!!               
     }
     
     override fun isApplicable(file: IFile): Boolean = existsInProjectSources(file)
 
     fun existsInProjectSources(file: IFile): Boolean {
-        synchronized (mapOperationLock) {
-            val project = file.getProject() ?: return false
-            
-            updateProjectPsiSourcesIfNeeded(project)
-            
-            val files = projectFiles[project]
-            return if (files != null) files.contains(file) else false
-        }
+		val project = file.getProject() ?: return false
+		
+		var exists = false;
+		projectFiles.compute(project) { _,origFiles ->
+			val files = origFiles ?: computeProjectPsiSources(project, origFiles)
+			exists = files?.contains(file) ?: false
+			files
+		}
+		
+        return exists        
     }
     
     fun containsProject(project: IProject): Boolean {
-        return synchronized (mapOperationLock) {
-            projectFiles.containsKey(project)
-        }
+        return projectFiles.containsKey(project)        
     }
     
     fun getFilesByProject(project: IProject): Set<IFile> {
-        synchronized (mapOperationLock) {
-            updateProjectPsiSourcesIfNeeded(project)
-            
-            if (projectFiles.containsKey(project)) {
-                return Collections.unmodifiableSet(projectFiles[project])
-            }
-            
-            return emptySet()
-        }
+        var result = emptySet<IFile>();
+		
+		projectFiles.compute(project) { _,origFiles ->
+			val files = origFiles ?: computeProjectPsiSources(project, origFiles)
+			result = if (files != null) Collections.unmodifiableSet(files) else emptySet()
+			files
+		}
+		
+        return result
     }
     
     fun addFile(file: IFile) {
-        synchronized (mapOperationLock) {
-            assert(KotlinNature.hasKotlinNature(file.getProject()),
-                    { "Project (" + file.getProject().getName() + ") does not have Kotlin nature" })
-            
-            assert(!existsInProjectSources(file), { "File(" + file.getName() + ") is already added" })
-            
-            projectFiles
-                    .getOrPut(file.project) { hashSetOf<IFile>() }
-                    .add(file)
-        }
+        assert(KotlinNature.hasKotlinNature(file.getProject()),
+                { "Project (" + file.getProject().getName() + ") does not have Kotlin nature" })
+        
+        assert(!existsInProjectSources(file), { "File(" + file.getName() + ") is already added" })
+        
+        projectFiles.compute(file.project) { _,origFiles -> 
+			val files = origFiles ?: hashSetOf<IFile>()
+			files.add(file)
+			files
+		}
     }
     
     override fun removeFile(file: IFile) {
-        synchronized (mapOperationLock) {
-            assert(existsInProjectSources(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
-            
-            cachedKtFiles.remove(file)
-            projectFiles.get(file.project)?.remove(file)
-        }
+        assert(existsInProjectSources(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
+        
+        projectFiles.compute(file.project) { _,origFiles ->
+			cachedKtFiles.remove(file)
+			origFiles?.remove(file)
+			origFiles
+		}        
     }
     
     fun addProject(project: IProject) {
-        synchronized (mapOperationLock) {
-            if (ProjectUtils.isAccessibleKotlinProject(project)) {
-                addFilesToParse(JavaCore.create(project))
-            }
-        }
+        projectFiles.compute(project) { _,origFiles ->
+			computeProjectPsiSources(project, origFiles) 	
+		}
     }
+	
+	fun computeProjectPsiSources(project: IProject, origFiles: HashSet<IFile>? = null) =
+		if (ProjectUtils.isAccessibleKotlinProject(project)) {
+            getFilesToParse(JavaCore.create(project))
+        }
+		else origFiles	
     
     fun removeProject(project: IProject) {
-        synchronized (mapOperationLock) {
-            val files = getFilesByProject(project)
-            
-            projectFiles.remove(project)
-            for (file in files) {
-                cachedKtFiles.remove(file)
-            }
-        }
+	    projectFiles.computeIfPresent(project) { _,origFiles ->
+			for (file in origFiles) {
+		        cachedKtFiles.remove(file)
+		    }
+			null	
+		}
     }
     
     fun addFilesToParse(javaProject: IJavaProject) {
-        try {
-            projectFiles.put(javaProject.getProject(), HashSet<IFile>())
-            
-            for (sourceFolder in javaProject.sourceFolders) {
+        projectFiles.compute(javaProject.getProject()) { _,_ ->
+			getFilesToParse(javaProject)
+		}
+    }
+	
+	fun getFilesToParse(javaProject: IJavaProject): HashSet<IFile> {
+		val files = hashSetOf<IFile>()
+				
+    	try {
+		    for (sourceFolder in javaProject.sourceFolders) {
                 sourceFolder.getResource().accept { resource ->
                     if (resource is IFile && isKotlinFile(resource)) {
-                        addFile(resource)
+                        files.add(resource)
                     }
                     
                     true
@@ -205,16 +221,14 @@ private class ProjectSourceFiles : PsiFilesStorage {
         } catch (e: CoreException) {
             KotlinLogger.logError(e)
         }
-    }
+		
+		return files;
+	}
     
     fun updateProjectPsiSourcesIfNeeded(project: IProject) {
-        if (projectFiles.containsKey(project)) {
-            return
-        }
-        
-        if (ProjectUtils.isAccessibleKotlinProject(project)) {
-            updateProjectPsiSources(project, IResourceDelta.ADDED)
-        }
+        projectFiles.computeIfAbsent(project) { _ ->
+			computeProjectPsiSources(project)!! 	
+		}
     }
     
     fun updateProjectPsiSources(project: IProject, flag: Int) {
@@ -226,20 +240,6 @@ private class ProjectSourceFiles : PsiFilesStorage {
     
     fun invalidateProjectSourceFiles() {
         cachedKtFiles.clear()
-    }
-    
-    private fun updatePsiFile(file: IFile, sourceCode: String) {
-        val sourceCodeWithouCR = StringUtilRt.convertLineSeparators(sourceCode)
-        
-        synchronized (mapOperationLock) {
-            assert(existsInProjectSources(file), { "File(" + file.getName() + ") does not contain in the psiFiles" })
-            
-            val currentParsedFile = getPsiFile(file)
-            if (!currentParsedFile.getText().equals(sourceCodeWithouCR)) {
-                val jetFile = KotlinPsiManager.parseText(sourceCodeWithouCR, file)!!
-                cachedKtFiles.put(file, jetFile)
-            }
-        }
     }
 }
 
