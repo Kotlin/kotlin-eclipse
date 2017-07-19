@@ -51,19 +51,22 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
     }
 	
 	private val currentJob = AtomicReference<Job?>(null)
+	private val currentElement = AtomicReference<KtElement?>(null)
     
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
         if (!kotlinEditor.isActive()) return
         
-		if (part is KotlinCommonEditor && selection is ITextSelection && selection.length > 0) {
+		if (part is KotlinCommonEditor && selection is ITextSelection) {
 			currentJob.updateAndGet {
-				if (it == null || it.state == Job.NONE) runOccurencesJob(part, selection)
-				else it
+				it?.cancel()
+				runOccurencesJob(part, selection)				
 			}          
         }
     }
 	
-	private fun runOccurencesJob(part: KotlinCommonEditor, selection: ITextSelection) = runJob("Update occurrence annotations", Job.DECORATE) { 
+	private fun runOccurencesJob(part: KotlinCommonEditor, selection: ITextSelection) =
+			runJob("Update occurrence annotations", Job.DECORATE, 300) { monitor ->
+				 
         val file = part.eclipseFile
         if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
         
@@ -71,13 +74,22 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         if (document == null) return@runJob Status.CANCEL_STATUS
         
         KotlinPsiManager.getKotlinFileIfExist(file, document.get())
+		
+		if (monitor.isCanceled) {
+			return@runJob Status.CANCEL_STATUS
+		}
         
-        val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
-        if (ktElement == null) {
-            return@runJob Status.CANCEL_STATUS
+		val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
+		if (currentElement.compareAndSet(ktElement, ktElement) || ktElement == null) {
+			return@runJob Status.CANCEL_STATUS
         }
         
         val occurrences = findOccurrences(part, ktElement, file)
+				
+        if (monitor.isCanceled) {
+			return@runJob Status.CANCEL_STATUS
+		}        
+				
         updateOccurrences(part, occurrences)
 		
 		Status.OK_STATUS            
