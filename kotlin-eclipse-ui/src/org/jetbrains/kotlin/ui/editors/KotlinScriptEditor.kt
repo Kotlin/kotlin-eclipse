@@ -55,8 +55,7 @@ class KotlinScriptEditor : KotlinCommonEditor() {
         environment.initializeScriptDefinitions { scriptDefinitions, classpath ->
             if (file.isAccessible && isOpen()) {
                 KotlinScriptEnvironment.replaceEnvironment(file, scriptDefinitions, classpath)
-                
-                kotlinReconcilingStrategy.reconcile(null)
+                reconcile()
             }
         }
     }
@@ -77,6 +76,10 @@ class KotlinScriptEditor : KotlinCommonEditor() {
             KotlinScriptEnvironment.removeKotlinEnvironment(it)
             KotlinPsiManager.removeFile(it)
         }
+    }
+    
+    internal fun reconcile() {
+        kotlinReconcilingStrategy.reconcile(null)
     }
 }
 
