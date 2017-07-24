@@ -77,7 +77,7 @@ class KotlinScriptEditor : KotlinCommonEditor() {
     }
 }
 
-private fun KotlinCommonEditor.isOpen(): Boolean {
+fun KotlinCommonEditor.isOpen(): Boolean {
     for (window in PlatformUI.getWorkbench().getWorkbenchWindows()) {
         for (page in window.getPages()) {
             for (editorReference in page.getEditorReferences()) {

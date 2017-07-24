@@ -138,7 +138,7 @@ open class KotlinCompletionProposal(
     }
 }
 
-class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image, val file: IFile, identifierPart: String) : 
+class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image?, val file: IFile, identifierPart: String) : 
             KotlinCompletionProposal(
                     typeName.simpleTypeName,
                     image,

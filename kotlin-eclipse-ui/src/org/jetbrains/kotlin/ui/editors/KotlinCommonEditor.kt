@@ -210,6 +210,7 @@ abstract class KotlinCommonEditor : CompilationUnitEditor(), KotlinEditor {
         
         kotlinReconcilingStrategy.removeListener(KotlinLineAnnotationsReconciler)
         kotlinReconcilingStrategy.removeListener(kotlinOutlinePage)
+        kotlinReconcilingStrategy.removeListener(KotlinLineAnnotationsReconciler)
         
         val sourceViewer = getSourceViewer()
         if (sourceViewer is ITextViewerExtension) {
