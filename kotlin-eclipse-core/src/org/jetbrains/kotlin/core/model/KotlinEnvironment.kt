@@ -236,32 +236,32 @@ class KotlinScriptEnvironment private constructor(
     @Volatile var isScriptDefinitionsInitialized = !loadScriptDefinitions
             private set
     
-    @Volatile private var isInitializingScriptDefinitions = false
+    @Volatile var isInitializingScriptDefinitions = false
+    @Volatile var classpathUpdateJob: Job? = null
     
     @Synchronized
     fun initializeScriptDefinitions(postTask: (List<KotlinScriptDefinition>, List<String>) -> Unit) {
-        if (isScriptDefinitionsInitialized || isInitializingScriptDefinitions) return
         isInitializingScriptDefinitions = true
         
-        try {
-            val definitions = arrayListOf<KotlinScriptDefinition>()
-            val classpath = arrayListOf<String>()
-            runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
-                val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
-                definitions.addAll(definitionsAndClasspath.first)
-                classpath.addAll(definitionsAndClasspath.second)
+        classpathUpdateJob?.cancel()
+        
+        val definitions = arrayListOf<KotlinScriptDefinition>()
+        val classpath = arrayListOf<String>()
+        classpathUpdateJob = runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
+            val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
+            definitions.addAll(definitionsAndClasspath.first)
+            classpath.addAll(definitionsAndClasspath.second)
 
-                monitor.done()
-                
-                Status.OK_STATUS
-            }, { _ ->
-                isScriptDefinitionsInitialized = true
-                isInitializingScriptDefinitions = false
-                postTask(definitions, classpath)
-            })
-        } finally {
+            monitor.done()
+            
+            if (monitor.isCanceled) Status.CANCEL_STATUS else Status.OK_STATUS
+        }, { event ->
             isInitializingScriptDefinitions = false
-        }
+            if (event.result.isOK) {
+            	postTask(definitions, classpath)
+            }
+        })
+        
     }
     
     private fun configureClasspath() {

@@ -38,6 +38,7 @@ public class Activator extends AbstractUIPlugin {
     private static Activator plugin;
     
     private final IResourceChangeListener resourceChangeListener = new ResourceChangeListener();
+    private final IResourceChangeListener scriptClasspathUpdater = new ScriptClasspathUpdater();
     private final IElementChangedListener kotlinClassPathChangedListener = new KotlinClassPathListener();
     private final IElementChangedListener kotlinJavaDeclarationsListener = new KotlinJavaDeclarationsListener();
     
@@ -52,6 +53,7 @@ public class Activator extends AbstractUIPlugin {
         ResourcesPlugin.getWorkspace().addResourceChangeListener(
                 resourceChangeListener, 
                 IResourceChangeEvent.POST_CHANGE | IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE);
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(scriptClasspathUpdater, IResourceChangeEvent.POST_CHANGE);
         JavaCore.addElementChangedListener(kotlinClassPathChangedListener);
         JavaCore.addElementChangedListener(kotlinJavaDeclarationsListener);
     }
@@ -59,6 +61,7 @@ public class Activator extends AbstractUIPlugin {
     @Override
     public void stop(BundleContext context) throws Exception {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceChangeListener);
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(scriptClasspathUpdater);
         JavaCore.removeElementChangedListener(kotlinClassPathChangedListener);
         JavaCore.removeElementChangedListener(kotlinJavaDeclarationsListener);
         

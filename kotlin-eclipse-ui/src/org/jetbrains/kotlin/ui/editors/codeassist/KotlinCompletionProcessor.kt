@@ -50,7 +50,10 @@ import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
+import org.jetbrains.kotlin.core.model.runJob
 import java.util.Comparator
+import org.eclipse.core.runtime.jobs.Job
+import org.eclipse.core.runtime.Status
 
 class KotlinCompletionProcessor(
         private val editor: KotlinEditor,
@@ -95,7 +98,7 @@ class KotlinCompletionProcessor(
         val psiElement = KotlinCompletionUtils.getPsiElement(editor, identifierStart)
         val simpleNameExpression = PsiTreeUtil.getParentOfType(psiElement, KtSimpleNameExpression::class.java)
         
-        return arrayListOf<ICompletionProposal>().apply {
+        val proposals = arrayListOf<ICompletionProposal>().apply {
             if (simpleNameExpression != null) {
                 addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, simpleNameExpression), identifierPart))
 
@@ -108,7 +111,11 @@ class KotlinCompletionProcessor(
                 addAll(generateKeywordProposals(identifierPart, psiElement))
                 addAll(generateTemplateProposals(psiElement.containingFile, viewer, offset, identifierPart))
             }
+            
+            Status.OK_STATUS
         }
+        
+        return proposals
     }
     
     private fun generateNonImportedCompletionProposals(
@@ -119,10 +126,10 @@ class KotlinCompletionProcessor(
         val ktFile = editor.parsedFile ?: return emptyList()
         
         return lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject).map { 
-            val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.modifiers, false)
-            val image = JavaPlugin.getImageDescriptorRegistry().get(imageDescriptor)
+//            val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.modifiers, false)
+//            val image = JavaPlugin.getImageDescriptorRegistry().get(imageDescriptor)
             
-            KotlinImportCompletionProposal(it, image, file, identifierPart)
+            KotlinImportCompletionProposal(it, null, file, identifierPart)
         }
     }
     
@@ -140,7 +147,7 @@ class KotlinCompletionProcessor(
     private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>, part: String): List<KotlinCompletionProposal> {
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
-            val image = KotlinImageProvider.getImage(descriptor)!!
+//            val image = KotlinImageProvider.getImage(descriptor)!!
             val presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
             val containmentPresentableString = if (descriptor is ClassDescriptor) {
                 val fqName = DescriptorUtils.getFqName(descriptor)
@@ -151,7 +158,7 @@ class KotlinCompletionProcessor(
             
             val proposal = KotlinCompletionProposal(
                                 completion,
-                                image,
+                                null,
                                 presentableString,
                                 containmentPresentableString,
                                 null,
