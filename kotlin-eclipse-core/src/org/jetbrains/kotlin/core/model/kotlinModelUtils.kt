@@ -83,7 +83,7 @@ fun runJob(
         jobFamily: Any? = null,
         action: (IProgressMonitor) -> IStatus,
         postTask: (IJobChangeEvent) -> Unit
-) {
+): Job {
     val job = object : Job(name) {
         override fun run(monitor: IProgressMonitor): IStatus {
             return action(monitor)
@@ -103,4 +103,6 @@ fun runJob(
     })
     
     job.schedule()
+    
+    return job
 }

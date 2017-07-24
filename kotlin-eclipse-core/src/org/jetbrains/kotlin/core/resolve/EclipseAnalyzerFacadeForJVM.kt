@@ -183,7 +183,7 @@ public object EclipseAnalyzerFacadeForJVM {
             environment: KotlinScriptEnvironment,
             scriptFile: KtFile): AnalysisResultWithProvider {
         
-        if (!environment.isScriptDefinitionsInitialized) {
+        if (environment.isInitializingScriptDefinitions) {
             // We can't start resolve when script definitions are not initialized
             return AnalysisResultWithProvider.EMPTY
         }

@@ -145,11 +145,10 @@ public object AnnotationManager {
 
 object KotlinLineAnnotationsReconciler : KotlinReconcilingListener {
     override fun reconcile(file: IFile, editor: KotlinEditor) {
-        val jetFile = if (editor.isScript) editor.parsedFile else KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get())
+        val isScript = editor.isScript
+        val jetFile = if (isScript) editor.parsedFile else KotlinPsiManager.getKotlinFileIfExist(file, editor.document.get())
         
-        if (jetFile == null) {
-            return
-        }
+        if (jetFile == null) return
         
         val diagnostics = KotlinAnalyzer.analyzeFile(jetFile).analysisResult.bindingContext.diagnostics
         val annotations = DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics)
