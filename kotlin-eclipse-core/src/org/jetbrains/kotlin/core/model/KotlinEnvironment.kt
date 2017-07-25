@@ -81,6 +81,7 @@ import org.jetbrains.kotlin.extensions.AnnotationBasedExtension
 import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -113,8 +114,9 @@ fun getEclipseResource(ideaProject: Project): IResource? {
 class KotlinScriptEnvironment private constructor(
         val eclipseFile: IFile,
         val loadScriptDefinitions: Boolean,
-        scriptDefinitions: List<KotlinScriptDefinition>,
-        providersClasspath: List<String>,
+        val scriptDefinitions: List<KotlinScriptDefinition>,
+        val providersClasspath: List<String>,
+        var externalDependencies: KotlinScriptExternalDependencies? = null,
         disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
@@ -192,12 +194,12 @@ class KotlinScriptEnvironment private constructor(
         private val KOTLIN_SCRIPT_RUNTIME_PATH = KotlinClasspathContainer.LIB_SCRIPT_RUNTIME_NAME.buildLibPath()
         
         private val cachedEnvironment = CachedEnvironment<IFile, KotlinScriptEnvironment>()
-
+        
         @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment {
             checkIsScript(file)
             
             return cachedEnvironment.getOrCreateEnvironment(file) {
-                KotlinScriptEnvironment(it, true, listOf(), listOf(), Disposer.newDisposable())
+                KotlinScriptEnvironment(it, true, listOf(), listOf(), null, Disposer.newDisposable())
             }
         }
 
@@ -207,14 +209,18 @@ class KotlinScriptEnvironment private constructor(
             cachedEnvironment.removeEnvironment(file)
         }
         
-        fun replaceEnvironment(file: IFile, scriptDefinitions: List<KotlinScriptDefinition>, providersClasspath: List<String>): KotlinScriptEnvironment {
+        fun replaceEnvironment(
+                file: IFile,
+                scriptDefinitions: List<KotlinScriptDefinition>,
+                providersClasspath: List<String>,
+                previousExternalDependencies: KotlinScriptExternalDependencies?): KotlinScriptEnvironment {
             checkIsScript(file)
-            val environment = cachedEnvironment.replaceEnvironment(file) {
-            	KotlinScriptEnvironment(it, false, scriptDefinitions, providersClasspath, Disposer.newDisposable())
+        	val environment = cachedEnvironment.replaceEnvironment(file) {
+                KotlinScriptEnvironment(file, false, scriptDefinitions, providersClasspath, previousExternalDependencies, Disposer.newDisposable())
             }
-            KotlinPsiManager.removeFile(file)
-            
-            return environment
+        	KotlinPsiManager.removeFile(file)
+        	
+        	return environment
         }
         
         @JvmStatic fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
@@ -237,29 +243,26 @@ class KotlinScriptEnvironment private constructor(
             private set
     
     @Volatile var isInitializingScriptDefinitions = false
-    @Volatile var classpathUpdateJob: Job? = null
     
     @Synchronized
     fun initializeScriptDefinitions(postTask: (List<KotlinScriptDefinition>, List<String>) -> Unit) {
-        isInitializingScriptDefinitions = true
+        if (isInitializingScriptDefinitions) return
         
-        classpathUpdateJob?.cancel()
+        isInitializingScriptDefinitions = true
         
         val definitions = arrayListOf<KotlinScriptDefinition>()
         val classpath = arrayListOf<String>()
-        classpathUpdateJob = runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
+        runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
             val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
             definitions.addAll(definitionsAndClasspath.first)
             classpath.addAll(definitionsAndClasspath.second)
 
             monitor.done()
             
-            if (monitor.isCanceled) Status.CANCEL_STATUS else Status.OK_STATUS
-        }, { event ->
+            Status.OK_STATUS
+        }, {
             isInitializingScriptDefinitions = false
-            if (event.result.isOK) {
-            	postTask(definitions, classpath)
-            }
+        	postTask(definitions, classpath)
         })
         
     }
@@ -280,7 +283,9 @@ class KotlinScriptEnvironment private constructor(
         if (definition == null) return
         
         val ioFile = eclipseFile.location.toFile()
-        val dependencies = definition.getDependenciesFor(ioFile, project, null)
+        val dependencies = if (externalDependencies != null)
+            externalDependencies
+        else definition.getDependenciesFor(ioFile, project, null).also { externalDependencies = it }
         if (dependencies != null) {
             for (dep in dependencies.classpath) {
                 addToClasspath(dep)

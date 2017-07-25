@@ -10,6 +10,13 @@ import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
 import org.eclipse.ui.IEditorPart
+import org.jetbrains.kotlin.core.model.runJob
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.Job
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
+import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
+import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
+import org.eclipse.core.runtime.IStatus
 
 class ScriptClasspathUpdater : IResourceChangeListener {
     override public fun resourceChanged(event: IResourceChangeEvent) {
@@ -31,14 +38,29 @@ class ScriptClasspathUpdater : IResourceChangeListener {
 private fun tryUpdateScriptClasspath(file: IFile) {
     val environment = getEnvironment(file)
     if (environment !is KotlinScriptEnvironment) return
+    if (environment.isInitializingScriptDefinitions) return
     
-    environment.initializeScriptDefinitions { scriptDefinitions, classpath ->
-        if (file.isAccessible) {
-            KotlinScriptEnvironment.replaceEnvironment(file, scriptDefinitions, classpath)
-            findEditor(file)?.reconcile()
+    val ioFile = file.location.toFile()
+    val scriptDefinition = KotlinScriptDefinitionProvider.getInstance(environment.project).findScriptDefinition(ioFile) ?: return
+    
+    val previousDependencies = environment.externalDependencies
+    runJob("Check script dependencies", Job.DECORATE, null, {
+        val newDependencies = scriptDefinition.getDependenciesFor(ioFile, environment.project, previousDependencies)
+        StatusWithDependencies(Status.OK_STATUS, newDependencies)
+    }) { event ->
+        val editor = findEditor(file)
+        val statusWithDependencies = event.result
+        val newDependencies = (statusWithDependencies as? StatusWithDependencies)?.dependencies
+        if (file.isAccessible && editor != null && newDependencies != previousDependencies) {
+        	editor.reconcile {
+        		KotlinScriptEnvironment.replaceEnvironment(file, environment.scriptDefinitions, environment.providersClasspath, newDependencies)
+        		KotlinAnalysisFileCache.resetCache()
+            }
         }
     }
 }
+
+private data class StatusWithDependencies(val status: IStatus, val dependencies: KotlinScriptExternalDependencies?): IStatus by status
 
 private fun findEditor(scriptFile: IFile): KotlinScriptEditor? {
     for (window in PlatformUI.getWorkbench().getWorkbenchWindows()) {
