@@ -32,12 +32,4 @@
             id="org.jetbrains.kotlin.core.KOTLIN_CONTAINER">
       </classpathContainerInitializer>
    </extension>
-   <extension
-         point="org.jetbrains.kotlin.core.scriptTemplateProviderEx">
-      <provider
-            class="org.jetbrains.test.scriptProvider.MyGradleProvider"
-            id="MyGradleProvider"
-            name="MyGrProvider">
-      </provider>
-   </extension>
 </plugin>
