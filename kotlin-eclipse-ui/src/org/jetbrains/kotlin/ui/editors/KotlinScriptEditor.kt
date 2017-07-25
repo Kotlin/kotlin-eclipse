@@ -51,7 +51,7 @@ class KotlinScriptEditor : KotlinCommonEditor() {
 
         environment.initializeScriptDefinitions { scriptDefinitions, classpath ->
             if (file.isAccessible && isOpen()) {
-                KotlinScriptEnvironment.replaceEnvironment(file, scriptDefinitions, classpath)
+                KotlinScriptEnvironment.replaceEnvironment(file, scriptDefinitions, classpath, null)
                 reconcile()
             }
         }
@@ -75,8 +75,8 @@ class KotlinScriptEditor : KotlinCommonEditor() {
         }
     }
     
-    internal fun reconcile() {
-        kotlinReconcilingStrategy.reconcile(null)
+    internal fun reconcile(runBeforeReconciliation: () -> Unit = {}) {
+        kotlinReconcilingStrategy.reconcile(runBeforeReconciliation)
     }
 }
 

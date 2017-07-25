@@ -65,12 +65,13 @@ class KotlinScriptDependenciesClassFinder(
 //            val vfs = ccp.classpathEntryToVfs()
 //            KotlinLogger.logWarning("For $ioFile vfs: ${vfs}")
 //        }
-        
-        val classpath =  KotlinScriptExternalImportsProvider.getInstance(myProject)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile())).mapNotNull {
-            it.classpathEntryToVfs()
-        }
 
-		return classpath
+        return emptyList()        
+//        val classpath =  KotlinScriptExternalImportsProvider.getInstance(myProject)!!.getCombinedClasspathFor(listOf(eclipseFile.fullPath.toFile())).mapNotNull {
+//            it.classpathEntryToVfs()
+//        }
+//
+//		return classpath
     }
     
     private fun fromClassLoader(definition: KotlinScriptDefinition): List<File> {
