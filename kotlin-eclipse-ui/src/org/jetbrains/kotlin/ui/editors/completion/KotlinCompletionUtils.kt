@@ -43,6 +43,7 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 
 public object KotlinCompletionUtils {
     private val KOTLIN_DUMMY_IDENTIFIER = "KotlinRulezzz"
@@ -57,8 +58,12 @@ public object KotlinCompletionUtils {
             SearchPattern.camelCaseMatch(prefix, completion)
     }
     
-    public fun getReferenceVariants(simpleNameExpression: KtSimpleNameExpression, nameFilter: (Name) -> Boolean, file: IFile): 
-            Collection<DeclarationDescriptor> {
+    public fun getReferenceVariants(
+            simpleNameExpression: KtSimpleNameExpression,
+            nameFilter: (Name) -> Boolean,
+            file: IFile,
+            identifierPart: String?
+    ): Collection<DeclarationDescriptor> {
         val (analysisResult, container) = KotlinAnalyzer.analyzeFile(simpleNameExpression.getContainingKtFile())
         if (container == null) return emptyList()
         
@@ -82,12 +87,15 @@ public object KotlinCompletionUtils {
             }
         }
         
+        val collectAll = (identifierPart == null || identifierPart.length > 2) && !KotlinScriptEnvironment.isScript(file)
+        val kind = if (collectAll) DescriptorKindFilter.ALL else DescriptorKindFilter.CALLABLES
+        
         return ReferenceVariantsHelper(
                 analysisResult.bindingContext,
                 KotlinResolutionFacade(file, container, analysisResult.moduleDescriptor),
                 analysisResult.moduleDescriptor,
                 visibilityFilter).getReferenceVariants(
-                simpleNameExpression, DescriptorKindFilter.ALL, nameFilter)
+                simpleNameExpression, kind, nameFilter)
     }
     
     public fun getPsiElement(editor: KotlinEditor, identOffset: Int): PsiElement? {

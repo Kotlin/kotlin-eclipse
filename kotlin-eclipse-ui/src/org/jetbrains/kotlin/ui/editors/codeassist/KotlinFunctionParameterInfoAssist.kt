@@ -52,7 +52,7 @@ public object KotlinFunctionParameterInfoAssist {
         val referencedName = expression.getReferencedName()
 
         val nameFilter: (Name) -> Boolean = { name -> name.asString() == referencedName }
-        val variants = KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, editor.eclipseFile!!)
+        val variants = KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, editor.eclipseFile!!, null)
         
         return variants
                 .flatMap { 

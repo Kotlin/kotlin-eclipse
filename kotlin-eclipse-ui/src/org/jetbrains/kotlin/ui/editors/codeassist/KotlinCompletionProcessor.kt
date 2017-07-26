@@ -60,7 +60,7 @@ class KotlinCompletionProcessor(
         private val assistant: ContentAssistant? = null,
         private val needSorting: Boolean = false) : IContentAssistProcessor, ICompletionListener {
     companion object {
-        private val VALID_PROPOSALS_CHARS = charArrayOf('.')
+        private val VALID_PROPOSALS_CHARS = charArrayOf()
         private val VALID_INFO_CHARS = charArrayOf('(', ',')
     }
     
@@ -141,13 +141,13 @@ class KotlinCompletionProcessor(
         
         val nameFilter: (Name) -> Boolean = { name -> KotlinCompletionUtils.applicableNameFor(identifierPart, name) }
         
-        return KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, file)
+        return KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, file, identifierPart)
     }
     
     private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>, part: String): List<KotlinCompletionProposal> {
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
-//            val image = KotlinImageProvider.getImage(descriptor)!!
+            val image = KotlinImageProvider.getImage(descriptor)
             val presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
             val containmentPresentableString = if (descriptor is ClassDescriptor) {
                 val fqName = DescriptorUtils.getFqName(descriptor)
@@ -158,7 +158,7 @@ class KotlinCompletionProcessor(
             
             val proposal = KotlinCompletionProposal(
                                 completion,
-                                null,
+                                image,
                                 presentableString,
                                 containmentPresentableString,
                                 null,
