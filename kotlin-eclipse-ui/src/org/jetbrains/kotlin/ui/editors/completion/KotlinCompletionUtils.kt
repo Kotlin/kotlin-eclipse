@@ -87,7 +87,7 @@ public object KotlinCompletionUtils {
             }
         }
         
-        val collectAll = (identifierPart == null || identifierPart.length > 2) && !KotlinScriptEnvironment.isScript(file)
+        val collectAll = (identifierPart == null || identifierPart.length > 2) || !KotlinScriptEnvironment.isScript(file)
         val kind = if (collectAll) DescriptorKindFilter.ALL else DescriptorKindFilter.CALLABLES
         
         return ReferenceVariantsHelper(
