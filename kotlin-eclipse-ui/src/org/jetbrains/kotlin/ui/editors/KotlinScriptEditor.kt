@@ -54,8 +54,9 @@ class KotlinScriptEditor : KotlinCommonEditor() {
 
         environment.initializeScriptDefinitions { scriptDefinitions, classpath ->
             if (file.isAccessible && isOpen()) {
-                KotlinScriptEnvironment.replaceEnvironment(file, scriptDefinitions, classpath, null)
-                reconcile()
+                reconcile {
+                	KotlinScriptEnvironment.replaceEnvironment(file, scriptDefinitions, classpath, null)
+                }
             }
         }
     }
