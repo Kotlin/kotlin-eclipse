@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.eclipse.core.runtime.IStatus
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 class ScriptClasspathUpdater : IResourceChangeListener {
     override public fun resourceChanged(event: IResourceChangeEvent) {
@@ -46,16 +47,21 @@ private fun tryUpdateScriptClasspath(file: IFile) {
     val previousDependencies = environment.externalDependencies
     runJob("Check script dependencies", Job.DECORATE, null, {
         val newDependencies = scriptDefinition.getDependenciesFor(ioFile, environment.project, previousDependencies)
+        KotlinLogger.logInfo("New dependencies: ${newDependencies?.classpath?.joinToString("\n") { it.absolutePath }}")
         StatusWithDependencies(Status.OK_STATUS, newDependencies)
     }) { event ->
         val editor = findEditor(file)
         val statusWithDependencies = event.result
         val newDependencies = (statusWithDependencies as? StatusWithDependencies)?.dependencies
         if (file.isAccessible && editor != null && newDependencies != previousDependencies) {
+            KotlinLogger.logInfo("Set new dependencies!!")
         	editor.reconcile {
         		KotlinScriptEnvironment.replaceEnvironment(file, environment.scriptDefinitions, environment.providersClasspath, newDependencies)
         		KotlinAnalysisFileCache.resetCache()
             }
+        }
+        else {
+            KotlinLogger.logInfo("Don't set new dependencies: accessible (${file.isAccessible}), editor (${editor})")
         }
     }
 }
