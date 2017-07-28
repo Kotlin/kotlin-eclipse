@@ -126,10 +126,10 @@ class KotlinCompletionProcessor(
         val ktFile = editor.parsedFile ?: return emptyList()
         
         return lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject).map { 
-//            val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.modifiers, false)
-//            val image = JavaPlugin.getImageDescriptorRegistry().get(imageDescriptor)
+            val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.modifiers, false)
+            val image = JavaPlugin.getImageDescriptorRegistry().get(imageDescriptor)
             
-            KotlinImportCompletionProposal(it, null, file, identifierPart)
+            KotlinImportCompletionProposal(it, image, file, identifierPart)
         }
     }
     
