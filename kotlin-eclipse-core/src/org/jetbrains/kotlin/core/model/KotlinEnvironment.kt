@@ -244,27 +244,53 @@ class KotlinScriptEnvironment private constructor(
     
     @Volatile var isInitializingScriptDefinitions = false
     
+//    @Synchronized
+//    fun initializeScriptDefinitions(postTask: (List<KotlinScriptDefinition>, List<String>) -> Unit) {
+//        if (isInitializingScriptDefinitions) return
+//        
+//        isInitializingScriptDefinitions = true
+//        
+//        val definitions = arrayListOf<KotlinScriptDefinition>()
+//        val classpath = arrayListOf<String>()
+//        runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
+//            val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
+//            definitions.addAll(definitionsAndClasspath.first)
+//            classpath.addAll(definitionsAndClasspath.second)
+//
+//            monitor.done()
+//            
+//            Status.OK_STATUS
+//        }, {
+//            isInitializingScriptDefinitions = false
+//        	postTask(definitions, classpath)
+//        })
+//        
+//    }
+    
     @Synchronized
     fun initializeScriptDefinitions(postTask: (List<KotlinScriptDefinition>, List<String>) -> Unit) {
-        if (isInitializingScriptDefinitions) return
-        
+        if (isScriptDefinitionsInitialized || isInitializingScriptDefinitions) return
         isInitializingScriptDefinitions = true
         
-        val definitions = arrayListOf<KotlinScriptDefinition>()
-        val classpath = arrayListOf<String>()
-        runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
-            val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
-            definitions.addAll(definitionsAndClasspath.first)
-            classpath.addAll(definitionsAndClasspath.second)
+        try {
+            val definitions = arrayListOf<KotlinScriptDefinition>()
+            val classpath = arrayListOf<String>()
+            runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
+                val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
+                definitions.addAll(definitionsAndClasspath.first)
+                classpath.addAll(definitionsAndClasspath.second)
 
-            monitor.done()
-            
-            Status.OK_STATUS
-        }, {
+                monitor.done()
+                
+                Status.OK_STATUS
+            }, { _ ->
+                isScriptDefinitionsInitialized = true
+                isInitializingScriptDefinitions = false
+                postTask(definitions, classpath)
+            })
+        } finally {
             isInitializingScriptDefinitions = false
-        	postTask(definitions, classpath)
-        })
-        
+        }
     }
     
     private fun configureClasspath() {
