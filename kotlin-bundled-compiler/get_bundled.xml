@@ -1,5 +1,5 @@
 <project default="get_bundled">
-    <property name="compiler.tag" value="for_eclipse" />
+    <property name="compiler.tag" value="1.1.4-3" />
     <property name="bootstrap_branch" value=""/>
     <property name="idea-version" value="162.1812.17"/>
     
@@ -7,9 +7,9 @@
     
     <property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
     
-    <property name="kotlin-idea-compatible-version" value="IJ2016.3-1" />
-    <property name="kotlin-version" value="1.1.1-release" />
-    <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_111_CompilerAndPlugin_NoTests/${compiler.query}" />
+    <property name="kotlin-idea-compatible-version" value="IJ2016.3-3" />
+    <property name="kotlin-version" value="1.1.4-release" />
+    <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_114_CompilerAndPlugin_NoTests/${compiler.query}" />
     
     <property name="idea-sdk-url" value="https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea" />
     
@@ -142,6 +142,7 @@
                     <include name="com/intellij/application/options/**/*.class" />
                     <include name="com/intellij/openapi/options/**/*.class" />
                 	<include name="com/intellij/configurationStore/*.class" />
+                	<include name="com/intellij/openapi/progress/*.class" />
                 </patternset>
             </unzip>
             
