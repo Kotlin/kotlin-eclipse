@@ -47,6 +47,7 @@ private fun tryUpdateScriptClasspath(file: IFile) {
     val previousDependencies = environment.externalDependencies
     runJob("Check script dependencies", Job.DECORATE, null, {
         val newDependencies = scriptDefinition.getDependenciesFor(ioFile, environment.project, previousDependencies)
+        KotlinLogger.logInfo("Check for script definition: ${scriptDefinition} ${scriptDefinition.name}")
         KotlinLogger.logInfo("New dependencies: ${newDependencies?.classpath?.joinToString("\n") { it.absolutePath }}")
         StatusWithDependencies(Status.OK_STATUS, newDependencies)
     }) { event ->
