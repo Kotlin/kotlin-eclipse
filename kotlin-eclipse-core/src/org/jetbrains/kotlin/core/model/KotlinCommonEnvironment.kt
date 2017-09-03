@@ -80,7 +80,6 @@ import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
-<<<<<<< HEAD
 import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
 import org.jetbrains.kotlin.script.ScriptDependenciesProvider
 import com.intellij.lang.MetaLanguage

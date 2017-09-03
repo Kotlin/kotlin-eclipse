@@ -18,6 +18,9 @@ import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.eclipse.core.runtime.IStatus
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.script.ScriptDependenciesProvider
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import kotlin.script.experimental.dependencies.ScriptDependencies
 
 class ScriptClasspathUpdater : IResourceChangeListener {
     override public fun resourceChanged(event: IResourceChangeEvent) {
@@ -39,34 +42,33 @@ class ScriptClasspathUpdater : IResourceChangeListener {
 private fun tryUpdateScriptClasspath(file: IFile) {
     val environment = getEnvironment(file)
     if (environment !is KotlinScriptEnvironment) return
-    if (environment.loadScriptDefinitions) return
+    if (environment.loadScriptDefinitions || environment.isInitializingScriptDefinitions) return
     
-    val ioFile = file.location.toFile()
-    val scriptDefinition = KotlinScriptDefinitionProvider.getInstance(environment.project).findScriptDefinition(ioFile) ?: return
+    val dependenciesProvider = ScriptDependenciesProvider.getInstance(environment.project)
     
-    val previousDependencies = environment.externalDependencies
     runJob("Check script dependencies", Job.DECORATE, null, {
-        val newDependencies = scriptDefinition.getDependenciesFor(ioFile, environment.project, previousDependencies)
-        KotlinLogger.logInfo("New dependencies: ${newDependencies?.classpath?.joinToString("\n") { it.absolutePath }}")
+    	val newDependencies = dependenciesProvider.getScriptDependencies(KotlinPsiManager.getParsedFile(file))
+//        KotlinLogger.logInfo("Check for script definition: ${dependenciesProvider}")
+//        KotlinLogger.logInfo("New dependencies: ${newDependencies?.classpath?.joinToString("\n") { it.absolutePath }}")
         StatusWithDependencies(Status.OK_STATUS, newDependencies)
     }) { event ->
         val editor = findEditor(file)
         val statusWithDependencies = event.result
         val newDependencies = (statusWithDependencies as? StatusWithDependencies)?.dependencies
-        if (file.isAccessible && editor != null && newDependencies != previousDependencies) {
-            KotlinLogger.logInfo("Set new dependencies!!")
+        if (file.isAccessible && editor != null) {
+//            KotlinLogger.logInfo("Set new dependencies!!")
         	editor.reconcile {
         		KotlinScriptEnvironment.replaceEnvironment(file, environment.scriptDefinitions, environment.providersClasspath, newDependencies)
         		KotlinAnalysisFileCache.resetCache()
             }
         }
         else {
-            KotlinLogger.logInfo("Don't set new dependencies: accessible (${file.isAccessible}), editor (${editor})")
+//            KotlinLogger.logInfo("Don't set new dependencies: accessible (${file.isAccessible}), editor (${editor})")
         }
     }
 }
 
-private data class StatusWithDependencies(val status: IStatus, val dependencies: KotlinScriptExternalDependencies?): IStatus by status
+private data class StatusWithDependencies(val status: IStatus, val dependencies: ScriptDependencies?): IStatus by status
 
 private fun findEditor(scriptFile: IFile): KotlinScriptEditor? {
     for (window in PlatformUI.getWorkbench().getWorkbenchWindows()) {

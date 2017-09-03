@@ -84,6 +84,16 @@ class KotlinScriptEditor : KotlinCommonEditor() {
     }
 }
 
+fun getScriptDependencies(editor: KotlinScriptEditor): ScriptDependencies? {
+    val eclipseFile = editor.eclipseFile ?: return null
+    
+    val project = getEnvironment(eclipseFile).project
+    val definition = ScriptDependenciesProvider.getInstance(project)
+    
+    val ktFile = editor.parsedFile ?: return null
+    return definition.getScriptDependencies(ktFile)
+}
+
 fun KotlinCommonEditor.isOpen(): Boolean {
     for (window in PlatformUI.getWorkbench().getWorkbenchWindows()) {
         for (page in window.getPages()) {
