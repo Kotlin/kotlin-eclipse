@@ -27,6 +27,8 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
+import org.jetbrains.kotlin.script.ScriptDependenciesProvider
+import kotlin.script.experimental.dependencies.ScriptDependencies
 
 class KotlinScriptEditor : KotlinCommonEditor() {
     override val parsedFile: KtFile?
@@ -62,12 +64,10 @@ class KotlinScriptEditor : KotlinCommonEditor() {
     }
 }
 
-fun getScriptDependencies(editor: KotlinScriptEditor): KotlinScriptExternalDependencies? {
+fun getScriptDependencies(editor: KotlinScriptEditor): ScriptDependencies? {
     val eclipseFile = editor.eclipseFile ?: return null
     val file = eclipseFile.location.toFile()
     
     val project = getEnvironment(eclipseFile).project
-    val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(file) ?: return null
-    
-    return definition.getDependenciesFor(file, project, null)
+    return ScriptDependenciesProvider.getInstance(project).getScriptDependencies(editor.parsedFile!!)
 }

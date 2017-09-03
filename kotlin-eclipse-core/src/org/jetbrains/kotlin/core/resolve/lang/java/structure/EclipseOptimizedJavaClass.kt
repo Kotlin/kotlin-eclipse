@@ -16,7 +16,6 @@ import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
 
 class EclipseOptimizedJavaClass(val eclipseClass: IType) : JavaClass {
-    
     override val name: Name
         get() = SpecialNames.safeIdentifier(eclipseClass.getElementName())
     
@@ -29,8 +28,12 @@ class EclipseOptimizedJavaClass(val eclipseClass: IType) : JavaClass {
     override val fqName: FqName?
         get() = throw UnsupportedOperationException()
     
-    override val innerClasses: Collection<JavaClass>
+    override val innerClassNames: Collection<Name>
         get() = throw UnsupportedOperationException()
+    
+    override fun findInnerClass(name: Name): JavaClass? {
+        throw UnsupportedOperationException()
+    }
     
     override val isAnnotationType: Boolean
         get() = throw UnsupportedOperationException()

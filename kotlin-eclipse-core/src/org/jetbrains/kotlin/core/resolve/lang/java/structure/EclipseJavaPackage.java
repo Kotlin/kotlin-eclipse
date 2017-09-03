@@ -28,8 +28,10 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
+import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.load.java.structure.JavaElement;
 import org.jetbrains.kotlin.load.java.structure.JavaPackage;
@@ -126,5 +128,22 @@ public class EclipseJavaPackage implements JavaElement, JavaPackage {
     // TODO: Add correct resolve binding for all class files with $
     private boolean isOuterClass(IClassFile classFile) {
         return !classFile.getElementName().contains("$");
+    }
+
+    @Override
+    @Nullable
+    public JavaAnnotation findAnnotation(@NotNull FqName arg0) {
+        return null;
+    }
+
+    @Override
+    @NotNull
+    public Collection<JavaAnnotation> getAnnotations() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isDeprecatedInJavaDoc() {
+        return false;
     }
 }

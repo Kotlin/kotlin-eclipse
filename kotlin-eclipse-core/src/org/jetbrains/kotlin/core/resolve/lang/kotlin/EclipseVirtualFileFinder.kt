@@ -28,21 +28,20 @@ import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClassifier
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 import org.jetbrains.kotlin.load.java.structure.JavaClass
-import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinder
-import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass
-import org.jetbrains.kotlin.load.kotlin.VirtualFileKotlinClassFinder
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.serialization.deserialization.MetadataPackageFragment
 import java.io.InputStream
 import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndex
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinder
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 
 class EclipseVirtualFileFinder(
         private val javaProject: IJavaProject,
-        private val scope: GlobalSearchScope) : VirtualFileKotlinClassFinder() {
+        private val scope: GlobalSearchScope) : VirtualFileFinder() {
     
     val index: JvmDependenciesIndex
         get() = KotlinEnvironment.getEnvironment(javaProject.getProject()).index
@@ -135,8 +134,8 @@ class EclipseVirtualFileFinder(
     }
 }
 
-class EclipseVirtualFileFinderFactory(private val project: IJavaProject) : JvmVirtualFileFinderFactory {
-    override fun create(scope: GlobalSearchScope): JvmVirtualFileFinder = EclipseVirtualFileFinder(project, scope)
+class EclipseVirtualFileFinderFactory(private val project: IJavaProject) : VirtualFileFinderFactory {
+    override fun create(scope: GlobalSearchScope): VirtualFileFinder = EclipseVirtualFileFinder(project, scope)
 }
 
 fun <T: Any> T.check(predicate: (T) -> Boolean): T? = if (predicate(this)) this else null

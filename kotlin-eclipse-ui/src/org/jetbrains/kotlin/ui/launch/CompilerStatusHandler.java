@@ -29,7 +29,6 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputElement;
@@ -73,7 +72,7 @@ public class CompilerStatusHandler implements IStatusHandler {
             
             message.append("\t");
             message.append(dataElement.getMessageSeverity().toString() + ": " + dataElement.getMessage());
-            if (!dataElement.getMessageLocation().equals(CompilerMessageLocation.NO_LOCATION)) {
+            if (dataElement.getMessageLocation() != null) {
                 message.append(" (" + dataElement.getMessageLocation().getLine() + ", " + dataElement.getMessageLocation().getColumn() + ")");
             }
             

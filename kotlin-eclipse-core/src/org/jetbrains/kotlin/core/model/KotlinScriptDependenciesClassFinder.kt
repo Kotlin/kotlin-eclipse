@@ -46,11 +46,7 @@ class KotlinScriptDependenciesClassFinder(
     }
     
     override fun calcClassRoots(): List<VirtualFile> {
-        val ioFile = eclipseFile.getLocation().toFile()
-        val definition = KotlinScriptDefinitionProvider.getInstance(myProject).findScriptDefinition(ioFile) ?: return emptyList()
-
-        val dependencies = definition.getDependenciesFor(ioFile, myProject, null) ?: return emptyList()
-        return dependencies.classpath.mapNotNull { it.classpathEntryToVfs() }
+        return emptyList()
     }
 
     private fun File.classpathEntryToVfs(): VirtualFile? {

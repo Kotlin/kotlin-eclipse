@@ -21,7 +21,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiModifierListOwner
 
 public class KotlinNullableNotNullManager : NullableNotNullManager() {
-//    For now we get unresolved psi elements and as a result annotations qualified names are short 
+    override fun getPredefinedNotNulls(): List<String> {
+        return emptyList()
+    }
+
+    //    For now we get unresolved psi elements and as a result annotations qualified names are short 
     init {
         setNotNulls("NotNull")
         setNullables("Nullable")

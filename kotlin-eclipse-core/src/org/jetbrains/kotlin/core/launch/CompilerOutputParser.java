@@ -58,7 +58,7 @@ public class CompilerOutputParser {
         }
         catch (Throwable e) {
             String message = stringBuilder.toString();
-            messageCollector.report(CompilerMessageSeverity.ERROR, message, CompilerMessageLocation.NO_LOCATION);
+            messageCollector.report(CompilerMessageSeverity.ERROR, message, null);
         }
         finally {
             try {
@@ -113,7 +113,7 @@ public class CompilerOutputParser {
             if (tags.size() == 1) {
                 String message = new String(ch, start, length);
                 if (!message.trim().isEmpty()) {
-                    messageCollector.report(CompilerMessageSeverity.ERROR, "Unhandled compiler output: " + message, CompilerMessageLocation.NO_LOCATION);
+                    messageCollector.report(CompilerMessageSeverity.ERROR, "Unhandled compiler output: " + message, null);
                 }
             }
             else {
@@ -129,7 +129,7 @@ public class CompilerOutputParser {
             String qNameLowerCase = qName.toLowerCase();
             CompilerMessageSeverity category = CATEGORIES.get(qNameLowerCase);
             if (category == null) {
-                messageCollector.report(CompilerMessageSeverity.ERROR, "Unknown compiler message tag: " + qName, CompilerMessageLocation.NO_LOCATION);
+                messageCollector.report(CompilerMessageSeverity.ERROR, "Unknown compiler message tag: " + qName, null);
                 category = CompilerMessageSeverity.INFO;
             }
             String text = message.toString();

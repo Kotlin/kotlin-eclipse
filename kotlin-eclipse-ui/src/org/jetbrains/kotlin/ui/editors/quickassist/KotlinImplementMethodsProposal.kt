@@ -55,7 +55,7 @@ public class KotlinImplementMethodsProposal(
         private val functionBody: String = DEFAULT_EXCEPTION_CALL,
         private val propertyBody: String = DEFAULT_PROPERTY_BODY) : KotlinQuickAssistProposal(editor) {
     private val OVERRIDE_RENDERER = DescriptorRenderer.withOptions {
-        renderDefaultValues = false
+        defaultParameterValueRenderer = null
         modifiers = setOf(DescriptorRendererModifier.OVERRIDE)
         withDefinedIn = false
         classifierNamePolicy = ClassifierNamePolicy.SHORT

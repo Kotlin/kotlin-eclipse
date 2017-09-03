@@ -44,8 +44,6 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzer
 import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
 import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver
-import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
-import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
 import org.jetbrains.kotlin.resolve.jvm.extensions.PackageFragmentProviderExtension
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
@@ -55,6 +53,10 @@ import java.util.ArrayList
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
 import org.jetbrains.kotlin.config.LanguageFeature
+import org.jetbrains.kotlin.storage.StorageManager
+import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
+import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
+import org.jetbrains.kotlin.config.JvmTarget
 
 public data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider)
 
@@ -87,8 +89,7 @@ public object EclipseAnalyzerFacadeForJVM {
 
         val languageVersionSettings = LanguageVersionSettingsImpl(
                 LanguageVersionSettingsImpl.DEFAULT.languageVersion,
-                LanguageVersionSettingsImpl.DEFAULT.apiVersion,
-                listOf(LanguageFeature.WarnOnCoroutines))
+                LanguageVersionSettingsImpl.DEFAULT.apiVersion)
         val optionalBuiltInsModule = JvmBuiltIns(storageManager).apply { initialize(module, true) }.builtInsModule
         
         val dependencyModule = run {
@@ -105,6 +106,7 @@ public object EclipseAnalyzerFacadeForJVM {
                 dependencyScope,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
+                JvmTarget.DEFAULT,
                 languageVersionSettings,
                 moduleClassResolver,
                 environment.javaProject)
@@ -128,10 +130,11 @@ public object EclipseAnalyzerFacadeForJVM {
                 sourceScope,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
+                JvmTarget.DEFAULT,
                 languageVersionSettings,
                 moduleClassResolver,
                 environment.javaProject).apply {
-            initJvmBuiltInsForTopDownAnalysis(module, languageVersionSettings)
+            initJvmBuiltInsForTopDownAnalysis()
         }
         
         moduleClassResolver.sourceCodeResolver = container.get<JavaDescriptorResolver>()
@@ -178,7 +181,7 @@ public object EclipseAnalyzerFacadeForJVM {
                 trace,
                 environment.configuration,
                 { KotlinPackagePartProvider(environment) },
-                { storageManager, files -> FileBasedDeclarationProviderFactory(storageManager, files) }
+                { storageManager: StorageManager, files: Collection<KtFile> -> FileBasedDeclarationProviderFactory(storageManager, files) }
         )
         
         try {

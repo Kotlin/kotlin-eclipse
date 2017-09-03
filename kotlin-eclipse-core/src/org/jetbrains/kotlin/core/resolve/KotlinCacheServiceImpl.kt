@@ -50,6 +50,10 @@ public class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheServi
 class KotlinSimpleResolutionFacade(
         override val project: Project,
         private val elements: List<KtElement>) : ResolutionFacade {
+    override fun <T : Any> tryGetFrontendService(element: PsiElement, serviceClass: Class<T>): T? {
+        return null
+    }
+
     override fun resolveToDescriptor(declaration: KtDeclaration, bodyResolveMode: BodyResolveMode): DeclarationDescriptor {
         throw UnsupportedOperationException()
     }

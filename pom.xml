@@ -28,7 +28,7 @@
 
 		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/46/dev/update</ajdt-eclipse-repo.url>
 
-		<kotlin.version>1.1.1</kotlin.version>
+		<kotlin.version>1.1.4-3</kotlin.version>
 
 		<aspectj.version>1.8.7</aspectj.version>
 		<aspectj.plugin.version>1.8</aspectj.plugin.version>
