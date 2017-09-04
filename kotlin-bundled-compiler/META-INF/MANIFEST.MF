@@ -220,6 +220,7 @@ Export-Package:
  org.jetbrains.kotlin.cli.common.messages,
  org.jetbrains.kotlin.cli.common.modules,
  org.jetbrains.kotlin.cli.common.output.outputUtils,
+ org.jetbrains.kotlin.cli.common.script,
  org.jetbrains.kotlin.cli.js,
  org.jetbrains.kotlin.cli.jvm,
  org.jetbrains.kotlin.cli.jvm.compiler,
