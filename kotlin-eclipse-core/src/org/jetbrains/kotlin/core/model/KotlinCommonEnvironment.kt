@@ -83,6 +83,11 @@ import kotlin.reflect.KClass
 import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
 import org.jetbrains.kotlin.script.ScriptDependenciesProvider
 import com.intellij.lang.MetaLanguage
+import org.jetbrains.kotlin.config.JVMConfigurationKeys
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.StandardFileSystems
+import com.intellij.util.io.URLUtil
+import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -148,6 +153,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
+            
+            registerService(JavaModuleResolver::class.java, EclipseKotlinJavaModuleResolver())
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
