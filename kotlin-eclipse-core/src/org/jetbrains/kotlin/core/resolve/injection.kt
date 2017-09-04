@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.container.registerSingleton
 import org.jetbrains.kotlin.container.useInstance
-import org.jetbrains.kotlin.context.LazyResolveToken
 import org.jetbrains.kotlin.context.ModuleContext
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver
@@ -41,7 +40,6 @@ import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
 import org.jetbrains.kotlin.load.java.lazy.ModuleClassResolver
 import org.jetbrains.kotlin.load.java.sam.SamConversionResolverImpl
 import org.jetbrains.kotlin.load.kotlin.DeserializationComponentsForJava
-import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.platform.JvmBuiltIns
 import org.jetbrains.kotlin.resolve.BindingTrace
 import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
@@ -55,6 +53,8 @@ import org.jetbrains.kotlin.resolve.lazy.FileScopeProviderImpl
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
+import org.jetbrains.kotlin.config.JvmTarget
 
 fun StorageComponentContainer.configureJavaTopDownAnalysis(
         moduleContentScope: GlobalSearchScope,
@@ -70,7 +70,7 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
     useImpl<JavaDescriptorResolver>()
     useImpl<DeserializationComponentsForJava>()
 
-    useInstance(JvmVirtualFileFinderFactory.SERVICE.getInstance(project).create(moduleContentScope))
+    useInstance(VirtualFileFinderFactory.SERVICE.getInstance(project).create(moduleContentScope))
     
     useImpl<FileScopeProviderImpl>()
 
@@ -97,12 +97,12 @@ public fun createContainerForLazyResolveWithJava(
         targetEnvironment: TargetEnvironment,
         lookupTracker: LookupTracker,
         packagePartProvider: PackagePartProvider,
+        jvmTarget: JvmTarget,
         languageVersionSettings: LanguageVersionSettings,
         javaProject: IJavaProject,
-        useBuiltInsProvider: Boolean,
-        useLazyResolve: Boolean
+        useBuiltInsProvider: Boolean
 ): StorageComponentContainer = createContainer("LazyResolveWithJava", JvmPlatform) {
-    configureModule(moduleContext, JvmPlatform, bindingTrace)
+    configureModule(moduleContext, JvmPlatform, jvmTarget, bindingTrace)
     configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, lookupTracker, languageVersionSettings)
 
     useInstance(packagePartProvider)
@@ -116,10 +116,6 @@ public fun createContainerForLazyResolveWithJava(
     }
 
     targetEnvironment.configure(this)
-
-    if (useLazyResolve) {
-        useImpl<LazyResolveToken>()
-    }
 }.apply {
     get<EclipseJavaClassFinder>().initialize(bindingTrace, get<KotlinCodeAnalyzer>())
 }
@@ -131,13 +127,14 @@ fun createContainerForTopDownAnalyzerForJvm(
         moduleContentScope: GlobalSearchScope,
         lookupTracker: LookupTracker,
         packagePartProvider: PackagePartProvider,
+        jvmTarget: JvmTarget,
         languageVersionSettings: LanguageVersionSettings,
         moduleClassResolver: ModuleClassResolver,
         javaProject: IJavaProject
 ): ComponentProvider = createContainerForLazyResolveWithJava(
         moduleContext, bindingTrace, declarationProviderFactory, moduleContentScope, moduleClassResolver,
-        CompilerEnvironment, lookupTracker, packagePartProvider, languageVersionSettings, javaProject,
-        useBuiltInsProvider = true, useLazyResolve = false
+        CompilerEnvironment, lookupTracker, packagePartProvider, jvmTarget, languageVersionSettings, javaProject,
+        useBuiltInsProvider = true
 )
 
 // Copy functions from Dsl.kt as they were shrinked by proguard

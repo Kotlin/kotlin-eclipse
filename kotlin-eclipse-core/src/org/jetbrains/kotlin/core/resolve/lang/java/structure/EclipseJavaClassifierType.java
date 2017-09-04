@@ -58,7 +58,7 @@ public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> imp
 
     @Override
     @NotNull
-    public String getCanonicalText() {
-        return getBinding().getName(); // TODO: make this canonical name consistent with idea's
+    public String getClassifierQualifiedName() {
+        return getBinding().getName();
     }
 }

@@ -23,6 +23,9 @@ import org.jetbrains.kotlin.load.kotlin.ModuleMapping
 import org.jetbrains.kotlin.load.kotlin.PackageParts
 import org.jetbrains.kotlin.utils.SmartList
 import java.io.EOFException
+import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
+import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
     private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping)
@@ -35,6 +38,8 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
     }
     
     private val loadedModules: MutableList<ModuleMappingInfo> = SmartList()
+    
+    private val deserializationConfiguration = CompilerDeserializationConfiguration(LanguageVersionSettingsImpl.DEFAULT)
 
     override fun findPackageParts(packageFqName: String): List<String> {
         val rootToPackageParts = getPackageParts(packageFqName)
@@ -90,7 +95,7 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
             val moduleFiles = metaInf.children.filter { it.name.endsWith(ModuleMapping.MAPPING_FILE_EXT) }
             for (moduleFile in moduleFiles) {
                 val mapping = try {
-                    ModuleMapping.create(moduleFile.contentsToByteArray(), moduleFile.toString())
+                    ModuleMapping.create(moduleFile.contentsToByteArray(), moduleFile.toString(), deserializationConfiguration)
                 }
                 catch (e: EOFException) {
                     throw RuntimeException("Error on reading package parts for '$packageFqName' package in '$moduleFile', " +

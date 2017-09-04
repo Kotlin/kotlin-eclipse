@@ -48,7 +48,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
 import org.jetbrains.kotlin.psi.KtPrimaryConstructor
 
 public object KotlinJavaManager {
@@ -115,7 +114,7 @@ public fun KtElement.toLightElements(): List<IJavaElement> {
     }
     
     return when (this) {
-        is KtClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject).singletonOrEmptyList()
+        is KtClassOrObject -> KotlinJavaManager.findEclipseType(this, javaProject)?.let(::listOf) ?: emptyList()
         is KtNamedFunction,
         is KtSecondaryConstructor,
         is KtPrimaryConstructor,
@@ -127,7 +126,7 @@ public fun KtElement.toLightElements(): List<IJavaElement> {
 
 public fun SourceElement.toJavaElements(): List<IJavaElement> {
     return when (this) {
-        is EclipseJavaSourceElement -> obtainJavaElement(this.getElementBinding()).singletonOrEmptyList()
+        is EclipseJavaSourceElement -> obtainJavaElement(this.getElementBinding())?.let(::listOf) ?: emptyList()
         is KotlinSourceElement -> this.psi.toLightElements()
         else -> emptyList<IJavaElement>()
     }

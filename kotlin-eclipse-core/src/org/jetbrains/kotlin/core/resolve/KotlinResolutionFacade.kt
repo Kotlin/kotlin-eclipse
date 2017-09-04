@@ -35,6 +35,10 @@ public class KotlinResolutionFacade(
         val eclipseFile: IFile, 
         val componentProvider: ComponentProvider,
         override val moduleDescriptor: ModuleDescriptor) : ResolutionFacade {
+    override fun <T : Any> tryGetFrontendService(element: PsiElement, serviceClass: Class<T>): T? {
+        throw UnsupportedOperationException()
+    }
+
     override fun resolveToDescriptor(declaration: KtDeclaration, bodyResolveMode: BodyResolveMode): DeclarationDescriptor {
         throw UnsupportedOperationException()
     }

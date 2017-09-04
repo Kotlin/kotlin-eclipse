@@ -30,10 +30,4 @@ public class EclipseJavaPropertyInitializerEvaluator implements JavaPropertyInit
         // TODO Auto-generated method stub
         return null;
     }
-
-    @Override
-    public boolean isNotNullCompileTimeConstant(@NotNull JavaField field) {
-        // TODO Auto-generated method stub
-        return false;
-    }
 }

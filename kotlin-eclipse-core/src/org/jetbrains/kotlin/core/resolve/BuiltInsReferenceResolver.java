@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
-import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
 import org.jetbrains.kotlin.context.ContextKt;
 import org.jetbrains.kotlin.context.MutableModuleContext;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
@@ -37,6 +36,7 @@ import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.ClassDescriptor;
 import org.jetbrains.kotlin.descriptors.ConstructorDescriptor;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
+import org.jetbrains.kotlin.descriptors.FindClassInModuleKt;
 import org.jetbrains.kotlin.descriptors.MemberDescriptor;
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor;
 import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor;
@@ -46,14 +46,10 @@ import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
-import org.jetbrains.kotlin.resolve.BindingTraceContext;
-import org.jetbrains.kotlin.resolve.TargetPlatform;
 import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
-import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
 import org.jetbrains.kotlin.resolve.scopes.MemberScope;
-import org.jetbrains.kotlin.serialization.deserialization.FindClassInModuleKt;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
@@ -106,15 +102,7 @@ public class BuiltInsReferenceResolver {
                 null);
         newModuleContext.setDependencies(newModuleContext.getModule());
         
-        FileBasedDeclarationProviderFactory declarationFactory = new FileBasedDeclarationProviderFactory(
-                newModuleContext.getStorageManager(), jetBuiltInsFiles);
-        
-        ResolveSession resolveSession = InjectionKt.createLazyResolveSession(
-                newModuleContext, 
-                declarationFactory,
-                new BindingTraceContext(), 
-                TargetPlatform.Default.INSTANCE, 
-                LanguageVersionSettingsImpl.DEFAULT);
+        ResolveSession resolveSession = InjectionKt.createLazyResolveSession(newModuleContext, jetBuiltInsFiles);
         
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
         

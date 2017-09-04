@@ -22,6 +22,12 @@ import org.jetbrains.kotlin.load.java.structure.JavaField
 import org.jetbrains.kotlin.load.java.structure.JavaType
 
 public class EclipseJavaField(private val javaField: IVariableBinding) : EclipseJavaMember<IVariableBinding>(javaField), JavaField {
+    override val hasConstantNotNullInitializer: Boolean
+        get() = false
+    
+    override val initializerValue: Any?
+        get() = null
+
     override val isEnumEntry: Boolean = binding.isEnumConstant()
     
     override val type: JavaType

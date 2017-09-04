@@ -37,7 +37,6 @@ import org.eclipse.jdt.internal.core.JavaProject
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
-import org.jetbrains.kotlin.cli.jvm.compiler.JvmCliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
@@ -47,7 +46,6 @@ import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.buildLibPath
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
 import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.load.kotlin.JvmVirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
@@ -59,6 +57,13 @@ import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFactory
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
+import org.jetbrains.kotlin.cli.jvm.compiler.CliVirtualFileFinderFactory
+import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
+import com.intellij.ide.highlighter.JavaFileType
+import org.jetbrains.kotlin.config.JVMConfigurationKeys
+import org.jetbrains.kotlin.script.ScriptDependenciesProvider
+import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -92,10 +97,10 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         KotlinCommonEnvironment(disposalbe) {
     init {
         loadAndCreateDefinitionsByTemplateProviders(eclipseFile)
-                .filter { it.isScript(File(eclipseFile.name)) }
+                .filter { it.isScript(eclipseFile.name) }
                 .ifEmpty { listOf(StandardScriptDefinition) }
                 .forEach {
-                    KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(it)
+                    KotlinScriptDefinitionProvider.getInstance(project)?.addScriptDefinition(it)
                 }
         
         configureClasspath()
@@ -104,7 +109,10 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         
         val index = JvmDependenciesIndexImpl(getRoots().toList())
         
-        project.registerService(JvmVirtualFileFinderFactory::class.java, JvmCliVirtualFileFinderFactory(index))
+        val (roots, singleJavaFileRoots) =
+                getRoots().partition { (file) -> file.isDirectory || file.extension != "java" }
+        
+        project.registerService(VirtualFileFinderFactory::class.java, CliVirtualFileFinderFactory(index))
         
         val area = Extensions.getArea(project)
         with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
@@ -113,7 +121,10 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
         }
         
         val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
-        (fileManager as KotlinCliJavaFileManagerImpl).initIndex(index)
+        (fileManager as KotlinCliJavaFileManagerImpl).initialize(
+                index,
+                SingleJavaFileRootsIndex(singleJavaFileRoots),
+                configuration.getBoolean(JVMConfigurationKeys.USE_FAST_CLASS_FILES_READING))
     }
     
     companion object {
@@ -159,7 +170,7 @@ class KotlinScriptEnvironment private constructor(val eclipseFile: IFile, dispos
     
     private fun addToCPFromScriptTemplateClassLoader() {
         val ioFile = eclipseFile.getLocation().toFile()
-        val definition = KotlinScriptDefinitionProvider.getInstance(project).findScriptDefinition(ioFile) ?: return
+        val definition = KotlinScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name) ?: return
 
         if (definition is KotlinScriptDefinition) {
             val classLoader = definition.template.java.classLoader
@@ -218,13 +229,13 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
         }
         
-        KotlinScriptDefinitionProvider.getInstance(project).addScriptDefinition(StandardScriptDefinition)
+        KotlinScriptDefinitionProvider.getInstance(project)?.addScriptDefinition(StandardScriptDefinition)
         
         cachedEnvironment.putEnvironment(eclipseProject, this)
     }
     
     private fun registerProjectDependenServices(javaProject: IJavaProject) {
-        project.registerService(JvmVirtualFileFinderFactory::class.java, EclipseVirtualFileFinderFactory(javaProject))
+        project.registerService(VirtualFileFinderFactory::class.java, EclipseVirtualFileFinderFactory(javaProject))
         project.registerService(KotlinLightClassManager::class.java, KotlinLightClassManager(javaProject.project))
     }
     

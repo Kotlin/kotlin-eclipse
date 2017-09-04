@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.formatter.formatRange
+import org.jetbrains.kotlin.types.isError
 
 class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     override fun isApplicable(psiElement: PsiElement): Boolean {

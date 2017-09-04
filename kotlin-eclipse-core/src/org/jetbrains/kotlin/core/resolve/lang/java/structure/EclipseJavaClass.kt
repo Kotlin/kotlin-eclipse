@@ -47,8 +47,12 @@ public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier
     override val typeParameters: List<JavaTypeParameter>
         get() = typeParameters(binding.getTypeParameters())
     
-    override val innerClasses: Collection<JavaClass>
-        get() = binding.declaredTypes.map(::EclipseJavaClass)
+    override val innerClassNames: Collection<Name>
+        get() = binding.declaredTypes.mapNotNull { it.name?.takeIf(Name::isValidIdentifier)?.let(Name::identifier) }
+    
+    override fun findInnerClass(name: Name): JavaClass? {
+        return binding.declaredTypes.find { it.name == name.asString() }?.let(::EclipseJavaClass)
+    }
     
     override val fqName: FqName? = binding.getQualifiedName()?.let { FqName(it) }
     

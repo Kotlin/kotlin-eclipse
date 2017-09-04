@@ -77,10 +77,11 @@ import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
 import org.jetbrains.kotlin.resolve.diagnostics.SuppressStringProvider
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
-import org.jetbrains.kotlin.script.KotlinScriptExternalImportsProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
+import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
+import org.jetbrains.kotlin.script.ScriptDependenciesProvider
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -122,10 +123,10 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             val scriptDefinitionProvider = KotlinScriptDefinitionProvider()
             registerService(KotlinScriptDefinitionProvider::class.java, scriptDefinitionProvider)
             registerService(
-                    KotlinScriptExternalImportsProvider::class.java,
-                    KotlinScriptExternalImportsProvider(project, scriptDefinitionProvider))
+                    CliScriptDependenciesProvider::class.java,
+                    CliScriptDependenciesProvider(project, scriptDefinitionProvider))
             
-            registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl())
+            registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(true))
 
             // For j2k converter
             registerService(NullableNotNullManager::class.java, KotlinNullableNotNullManager())
@@ -146,12 +147,18 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
+            
+            val kotlinScriptDefinitionProvider = KotlinScriptDefinitionProvider()
+            registerService(KotlinScriptDefinitionProvider::class.java, kotlinScriptDefinitionProvider)
+            registerService(
+                    ScriptDependenciesProvider::class.java,
+                    CliScriptDependenciesProvider(project, kotlinScriptDefinitionProvider))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
         
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
-        for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES) {
+        for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES.files) {
             registerApplicationExtensionPointsAndExtensionsFrom(config)
         }
     }

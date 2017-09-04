@@ -11,8 +11,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.openapi.util.TextRange
 import com.intellij.util.ThrowableRunnable
 import com.intellij.openapi.util.Computable
+import com.intellij.psi.codeStyle.ChangedRangesInfo
 
 public class DummyCodeStyleManager : CodeStyleManager() {
+    override fun reformatTextWithContext(arg0: PsiFile, arg1: ChangedRangesInfo) {
+        throw UnsupportedOperationException()
+    }
+
     override fun reformatNewlyAddedElement(block: ASTNode, addedElement: ASTNode) {
         throw UnsupportedOperationException()
     }
