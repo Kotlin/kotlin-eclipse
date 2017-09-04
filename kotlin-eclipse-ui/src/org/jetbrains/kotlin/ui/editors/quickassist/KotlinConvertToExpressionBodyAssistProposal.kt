@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings
 import org.jetbrains.kotlin.ui.formatter.formatCode
+import org.jetbrains.kotlin.types.isError
 
 public class KotlinConvertToExpressionBodyAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     override fun isApplicable(psiElement: PsiElement): Boolean {

@@ -75,7 +75,6 @@ import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecificat
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinAndJavaSearchable
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScoped
 import org.jetbrains.kotlin.psi.KtConstructor
-import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
 import org.eclipse.search2.internal.ui.text2.DefaultTextSearchQueryProvider
 import org.eclipse.search.ui.text.TextSearchQueryProvider.TextSearchInput
 

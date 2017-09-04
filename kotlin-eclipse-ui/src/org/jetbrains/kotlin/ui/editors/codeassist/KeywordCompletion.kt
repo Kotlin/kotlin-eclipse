@@ -20,7 +20,6 @@ import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.CLASS_ONLY
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.ENUM_CLASS
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.ENUM_ENTRY
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.FUNCTION
-import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.INNER_CLASS
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.INTERFACE
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.MEMBER_FUNCTION
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget.MEMBER_PROPERTY
