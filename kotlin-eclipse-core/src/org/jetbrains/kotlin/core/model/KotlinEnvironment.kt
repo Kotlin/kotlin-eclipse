@@ -188,10 +188,10 @@ class KotlinScriptEnvironment private constructor(
                 providersClasspath: List<String>,
                 previousExternalDependencies: KotlinScriptExternalDependencies?): KotlinScriptEnvironment {
             checkIsScript(file)
+            KotlinPsiManager.removeFile(file)
         	val environment = cachedEnvironment.replaceEnvironment(file) {
                 KotlinScriptEnvironment(file, false, scriptDefinitions, providersClasspath, previousExternalDependencies, Disposer.newDisposable())
             }
-        	KotlinPsiManager.removeFile(file)
         	
         	return environment
         }
@@ -249,6 +249,7 @@ class KotlinScriptEnvironment private constructor(
         val classpath = arrayListOf<String>()
         runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
             val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
+            KotlinLogger.logInfo("Found definitions: ${definitionsAndClasspath.first.joinToString()}")
             definitions.addAll(definitionsAndClasspath.first)
             classpath.addAll(definitionsAndClasspath.second)
 
