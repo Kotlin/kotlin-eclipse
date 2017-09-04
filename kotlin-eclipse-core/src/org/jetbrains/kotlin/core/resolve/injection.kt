@@ -55,6 +55,8 @@ import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.config.JvmTarget
+import org.jetbrains.kotlin.resolve.AnnotationResolverImpl
+import org.jetbrains.kotlin.config.AnalysisFlag
 
 fun StorageComponentContainer.configureJavaTopDownAnalysis(
         moduleContentScope: GlobalSearchScope,
@@ -72,19 +74,13 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
 
     useInstance(VirtualFileFinderFactory.SERVICE.getInstance(project).create(moduleContentScope))
     
-    useImpl<FileScopeProviderImpl>()
-
-    useImpl<EclipseJavaClassFinder>()
+    useImpl<EclipseJavaPropertyInitializerEvaluator>()
+    useImpl<AnnotationResolverImpl>()
     useImpl<SignaturePropagatorImpl>()
-    useImpl<EclipseTraceBasedJavaResolverCache>()
     useImpl<TraceBasedErrorReporter>()
     useImpl<EclipseExternalAnnotationResolver>()
-    useImpl<EclipseJavaPropertyInitializerEvaluator>()
-    useImpl<SamConversionResolverImpl>()
-    useImpl<EclipseJavaSourceElementFactory>()
     useInstance(InternalFlexibleTypeTransformer)
 
-    useInstance(languageFeatureSettings)
     useImpl<CompilerDeserializationConfiguration>()
 }
 
@@ -104,12 +100,18 @@ public fun createContainerForLazyResolveWithJava(
 ): StorageComponentContainer = createContainer("LazyResolveWithJava", JvmPlatform) {
     configureModule(moduleContext, JvmPlatform, jvmTarget, bindingTrace)
     configureJavaTopDownAnalysis(moduleContentScope, moduleContext.project, lookupTracker, languageVersionSettings)
+    
+    useImpl<EclipseJavaClassFinder>()
+    useImpl<EclipseTraceBasedJavaResolverCache>()
+    useImpl<EclipseJavaSourceElementFactory>()
 
     useInstance(packagePartProvider)
     useInstance(moduleClassResolver)
     useInstance(declarationProviderFactory)
     useInstance(javaProject)
-
+    
+    useInstance(languageVersionSettings)
+    
     if (useBuiltInsProvider) {
         useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)
         useImpl<JvmBuiltInsPackageFragmentProvider>()
