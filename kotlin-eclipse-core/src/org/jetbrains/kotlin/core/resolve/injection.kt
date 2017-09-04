@@ -57,6 +57,7 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.resolve.AnnotationResolverImpl
 import org.jetbrains.kotlin.config.AnalysisFlag
+import org.jetbrains.kotlin.load.java.AnnotationTypeQualifierResolver
 
 fun StorageComponentContainer.configureJavaTopDownAnalysis(
         moduleContentScope: GlobalSearchScope,
@@ -111,6 +112,8 @@ public fun createContainerForLazyResolveWithJava(
     useInstance(javaProject)
     
     useInstance(languageVersionSettings)
+    
+    useInstance(AnnotationTypeQualifierResolver.Empty)
     
     if (useBuiltInsProvider) {
         useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)

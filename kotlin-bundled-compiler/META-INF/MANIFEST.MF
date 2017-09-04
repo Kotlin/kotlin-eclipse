@@ -277,6 +277,7 @@ Export-Package:
  org.jetbrains.kotlin.load.java.sources,
  org.jetbrains.kotlin.load.java.structure,
  org.jetbrains.kotlin.load.java.structure.impl,
+ org.jetbrains.kotlin.load.java.typeEnhancement,
  org.jetbrains.kotlin.load.kotlin,
  org.jetbrains.kotlin.load.kotlin.header,
  org.jetbrains.kotlin.load.kotlin.incremental,
