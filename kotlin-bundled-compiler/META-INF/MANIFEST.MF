@@ -318,6 +318,7 @@ Export-Package:
  org.jetbrains.kotlin.resolve.jvm.extensions,
  org.jetbrains.kotlin.resolve.jvm.jvmSignature,
  org.jetbrains.kotlin.resolve.jvm.kotlinSignature,
+ org.jetbrains.kotlin.resolve.jvm.modules,
  org.jetbrains.kotlin.resolve.jvm.platform,
  org.jetbrains.kotlin.resolve.lazy,
  org.jetbrains.kotlin.resolve.lazy.data,
