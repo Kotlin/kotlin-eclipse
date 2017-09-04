@@ -124,7 +124,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             val scriptDefinitionProvider = KotlinScriptDefinitionProvider()
             registerService(KotlinScriptDefinitionProvider::class.java, scriptDefinitionProvider)
             registerService(
-                    CliScriptDependenciesProvider::class.java,
+                    ScriptDependenciesProvider::class.java,
                     CliScriptDependenciesProvider(project, scriptDefinitionProvider))
             
             registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(true))
@@ -148,12 +148,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
             registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
-            
-            val kotlinScriptDefinitionProvider = KotlinScriptDefinitionProvider()
-            registerService(KotlinScriptDefinitionProvider::class.java, kotlinScriptDefinitionProvider)
-            registerService(
-                    ScriptDependenciesProvider::class.java,
-                    CliScriptDependenciesProvider(project, kotlinScriptDefinitionProvider))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
