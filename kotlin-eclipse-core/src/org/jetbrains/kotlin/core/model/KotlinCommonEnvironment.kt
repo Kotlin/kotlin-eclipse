@@ -82,6 +82,7 @@ import java.util.LinkedHashSet
 import kotlin.reflect.KClass
 import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
 import org.jetbrains.kotlin.script.ScriptDependenciesProvider
+import com.intellij.lang.MetaLanguage
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -249,6 +250,8 @@ private fun registerAppExtensionPoints() {
     // For j2k converter
     registerExtensionPointInRoot(PsiAugmentProvider.EP_NAME, PsiAugmentProvider::class)
     registerExtensionPointInRoot(JavaMainMethodProvider.EP_NAME, JavaMainMethodProvider::class)
+    
+    CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), MetaLanguage.EP_NAME, MetaLanguage::class.java)
 }
 
 private fun <T : Any> registerExtensionPoint(
