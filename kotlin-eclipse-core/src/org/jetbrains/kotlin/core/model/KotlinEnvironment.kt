@@ -245,25 +245,21 @@ class KotlinScriptEnvironment private constructor(
         if (isScriptDefinitionsInitialized || isInitializingScriptDefinitions) return
         isInitializingScriptDefinitions = true
         
-        try {
-            val definitions = arrayListOf<KotlinScriptDefinition>()
-            val classpath = arrayListOf<String>()
-            runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
-                val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
-                definitions.addAll(definitionsAndClasspath.first)
-                classpath.addAll(definitionsAndClasspath.second)
+        val definitions = arrayListOf<KotlinScriptDefinition>()
+        val classpath = arrayListOf<String>()
+        runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
+            val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
+            definitions.addAll(definitionsAndClasspath.first)
+            classpath.addAll(definitionsAndClasspath.second)
 
-                monitor.done()
-                
-                Status.OK_STATUS
-            }, { _ ->
-                isScriptDefinitionsInitialized = true
-                isInitializingScriptDefinitions = false
-                postTask(definitions, classpath)
-            })
-        } finally {
+            monitor.done()
+            
+            Status.OK_STATUS
+        }, { _ ->
+            isScriptDefinitionsInitialized = true
             isInitializingScriptDefinitions = false
-        }
+            postTask(definitions, classpath)
+        })
     }
     
     private fun configureClasspath() {
