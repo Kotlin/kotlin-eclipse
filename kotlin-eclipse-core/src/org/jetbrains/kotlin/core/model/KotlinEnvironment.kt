@@ -85,6 +85,7 @@ import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.container.useInstance
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
+import kotlin.script.experimental.dependencies.ScriptDependencies
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -119,7 +120,7 @@ class KotlinScriptEnvironment private constructor(
         val loadScriptDefinitions: Boolean,
         val scriptDefinitions: List<KotlinScriptDefinition>,
         val providersClasspath: List<String>,
-        var externalDependencies: KotlinScriptExternalDependencies? = null,
+        var externalDependencies: ScriptDependencies? = null,
         disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
@@ -140,7 +141,7 @@ class KotlinScriptEnvironment private constructor(
         
         val ioFile = eclipseFile.location.toFile()
         val definition = KotlinScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
-        addToCPFromExternalDependencies(definition)
+        addToCPFromExternalDependencies(ScriptDependenciesProvider.getInstance(project))
         
         val annotations = definition?.annotationsForSamWithReceivers
         if (annotations != null) {
@@ -198,7 +199,7 @@ class KotlinScriptEnvironment private constructor(
                 file: IFile,
                 scriptDefinitions: List<KotlinScriptDefinition>,
                 providersClasspath: List<String>,
-                previousExternalDependencies: KotlinScriptExternalDependencies?): KotlinScriptEnvironment {
+                previousExternalDependencies: ScriptDependencies?): KotlinScriptEnvironment {
             checkIsScript(file)
             KotlinPsiManager.removeFile(file)
         	val environment = cachedEnvironment.replaceEnvironment(file) {
@@ -264,14 +265,15 @@ class KotlinScriptEnvironment private constructor(
         }
     }
     
-    private fun addToCPFromExternalDependencies(definition: KotlinScriptDefinition?) {
-        if (definition == null) return
+    private fun addToCPFromExternalDependencies(dependenciesProvider: ScriptDependenciesProvider?) {
+        if (dependenciesProvider == null) return
         
-        val ioFile = eclipseFile.location.toFile()
         val dependencies = if (externalDependencies != null)
             externalDependencies
         else  {
-        	definition.getDependenciesFor(ioFile, project, null).also { externalDependencies = it }
+            val scriptDependencies = dependenciesProvider.getScriptDependencies(KotlinPsiManager.getParsedFile(eclipseFile))
+            externalDependencies = scriptDependencies
+            scriptDependencies
         }
         if (dependencies != null) {
             for (dep in dependencies.classpath) {
@@ -282,7 +284,7 @@ class KotlinScriptEnvironment private constructor(
     
     private fun addToCPFromScriptTemplateClassLoader() {
         val ioFile = eclipseFile.getLocation().toFile()
-        val definition = KotlinScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name) ?: return
+        val definition = KotlinScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
 
         if (definition is KotlinScriptDefinition) {
             val classLoader = definition.template.java.classLoader
