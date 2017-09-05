@@ -174,7 +174,6 @@ class KotlinScriptEnvironment private constructor(
         val finderFactory = CliVirtualFileFinderFactory(index)
         project.registerService(MetadataFinderFactory::class.java, finderFactory)
         project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
-        project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
     }
     
     companion object {
@@ -396,7 +395,9 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
     }
     
     private fun registerProjectDependenServices(javaProject: IJavaProject) {
-        project.registerService(VirtualFileFinderFactory::class.java, EclipseVirtualFileFinderFactory(javaProject))
+        val finderFactory = EclipseVirtualFileFinderFactory(javaProject)
+        project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
+        project.registerService(MetadataFinderFactory::class.java, finderFactory)
         project.registerService(KotlinLightClassManager::class.java, KotlinLightClassManager(javaProject.project))
     }
     
