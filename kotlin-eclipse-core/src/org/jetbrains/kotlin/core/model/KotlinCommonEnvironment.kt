@@ -90,6 +90,8 @@ import com.intellij.util.io.URLUtil
 import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
 import com.intellij.psi.impl.PsiElementFinderImpl
+import org.jetbrains.kotlin.script.ScriptHelper
+import org.jetbrains.kotlin.script.ScriptHelperImpl
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -102,6 +104,8 @@ private fun setIdeaIoUseFallback() {
         }
     }
 }
+
+private val SCRIPT_HELPER_EP = ExtensionPointName.create<ScriptHelper>("org.jetbrains.kotlin.scriptHelper")
 
 abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val javaApplicationEnvironment: JavaCoreApplicationEnvironment
@@ -167,9 +171,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
         
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
-        for (config in EnvironmentConfigFiles.JVM_CONFIG_FILES.files) {
-            registerApplicationExtensionPointsAndExtensionsFrom(config)
-        }
+        registerApplicationExtensionPointsAndExtensionsFrom()
     }
     
     fun getRoots(): Set<JavaRoot> = roots
@@ -233,7 +235,7 @@ private fun registerProjectExtensionPoints(area: ExtensionsArea) {
     registerExtensionPoint(area, PsiElementFinder.EP_NAME, PsiElementFinder::class)
 }
 
-private fun registerApplicationExtensionPointsAndExtensionsFrom(configFilePath: String) {
+private fun registerApplicationExtensionPointsAndExtensionsFrom() {
     registerExtensionPointInRoot(DiagnosticSuppressor.EP_NAME, DiagnosticSuppressor::class)
     registerExtensionPointInRoot(DefaultErrorMessages.Extension.EP_NAME, DefaultErrorMessages.Extension::class)
     registerExtensionPointInRoot(SuppressStringProvider.EP_NAME, SuppressStringProvider::class)
@@ -242,11 +244,12 @@ private fun registerApplicationExtensionPointsAndExtensionsFrom(configFilePath: 
 
     registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
     registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)
-
+    
     with(Extensions.getRootArea()) {
         getExtensionPoint(DefaultErrorMessages.Extension.EP_NAME).registerExtension(DefaultErrorMessagesJvm())
         getExtensionPoint(CodeStyleSettingsProvider.EXTENSION_POINT_NAME).registerExtension(KotlinSettingsProvider())
         getExtensionPoint(LanguageCodeStyleSettingsProvider.EP_NAME).registerExtension(KotlinLanguageCodeStyleSettingsProvider())
+        getExtensionPoint(SCRIPT_HELPER_EP).registerExtension(ScriptHelperImpl())
     }
 }
 
@@ -258,6 +261,8 @@ private fun registerAppExtensionPoints() {
     // For j2k converter
     registerExtensionPointInRoot(PsiAugmentProvider.EP_NAME, PsiAugmentProvider::class)
     registerExtensionPointInRoot(JavaMainMethodProvider.EP_NAME, JavaMainMethodProvider::class)
+    
+    registerExtensionPointInRoot(SCRIPT_HELPER_EP, ScriptHelper::class)
     
     CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), MetaLanguage.EP_NAME, MetaLanguage::class.java)
 }
