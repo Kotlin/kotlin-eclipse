@@ -133,7 +133,7 @@ class KotlinScriptEnvironment private constructor(
                     KotlinScriptDefinitionProvider.getInstance(project)?.addScriptDefinition(it)
                 }
         
-        addToCPFromScriptTemplateClassLoader(providersClasspath)
+    	addToCPFromScriptTemplateClassLoader(providersClasspath)
         
         configureClasspath()
         
@@ -141,7 +141,9 @@ class KotlinScriptEnvironment private constructor(
         
         val ioFile = eclipseFile.location.toFile()
         val definition = KotlinScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
-        addToCPFromExternalDependencies(ScriptDependenciesProvider.getInstance(project))
+        if (!loadScriptDefinitions) {
+        	addToCPFromExternalDependencies(ScriptDependenciesProvider.getInstance(project))
+        }
         
         val annotations = definition?.annotationsForSamWithReceivers
         if (annotations != null) {

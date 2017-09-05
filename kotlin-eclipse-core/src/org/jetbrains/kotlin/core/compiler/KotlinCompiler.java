@@ -28,6 +28,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector;
@@ -106,7 +107,7 @@ public class KotlinCompiler {
                     
                     @Override
                     public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message,
-                            @NotNull CompilerMessageLocation messageLocation) {
+                            @Nullable CompilerMessageLocation messageLocation) {
                         hasErrors = hasErrors || messageSeverity.isError();
                         severities.add(messageSeverity);
                         compilerOutput.add(messageSeverity, message, messageLocation);
