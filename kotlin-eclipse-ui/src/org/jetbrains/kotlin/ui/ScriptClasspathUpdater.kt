@@ -40,6 +40,8 @@ class ScriptClasspathUpdater : IResourceChangeListener {
 }
 
 private fun tryUpdateScriptClasspath(file: IFile) {
+    if (findEditor(file) == null) return
+    
     val environment = getEnvironment(file)
     if (environment !is KotlinScriptEnvironment) return
     if (environment.loadScriptDefinitions || environment.isInitializingScriptDefinitions) return
