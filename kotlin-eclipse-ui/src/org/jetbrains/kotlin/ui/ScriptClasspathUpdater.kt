@@ -50,22 +50,22 @@ private fun tryUpdateScriptClasspath(file: IFile) {
     
     runJob("Check script dependencies", Job.DECORATE, null, {
     	val newDependencies = dependenciesProvider.getScriptDependencies(KotlinPsiManager.getParsedFile(file))
-        KotlinLogger.logInfo("Check for script definition: ${dependenciesProvider}")
-        KotlinLogger.logInfo("New dependencies: ${newDependencies?.classpath?.joinToString("\n") { it.absolutePath }}")
+//        KotlinLogger.logInfo("Check for script definition: ${dependenciesProvider}")
+//        KotlinLogger.logInfo("New dependencies: ${newDependencies?.classpath?.joinToString("\n") { it.absolutePath }}")
         StatusWithDependencies(Status.OK_STATUS, newDependencies)
     }) { event ->
         val editor = findEditor(file)
         val statusWithDependencies = event.result
         val newDependencies = (statusWithDependencies as? StatusWithDependencies)?.dependencies
         if (file.isAccessible && editor != null) {
-            KotlinLogger.logInfo("Set new dependencies!!")
+//            KotlinLogger.logInfo("Set new dependencies!!")
         	editor.reconcile {
         		KotlinScriptEnvironment.replaceEnvironment(file, environment.scriptDefinitions, environment.providersClasspath, newDependencies)
         		KotlinAnalysisFileCache.resetCache()
             }
         }
         else {
-            KotlinLogger.logInfo("Don't set new dependencies: accessible (${file.isAccessible}), editor (${editor})")
+//            KotlinLogger.logInfo("Don't set new dependencies: accessible (${file.isAccessible}), editor (${editor})")
         }
     }
 }
