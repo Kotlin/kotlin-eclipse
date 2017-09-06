@@ -202,10 +202,10 @@ class KotlinScriptEnvironment private constructor(
                 providersClasspath: List<String>,
                 previousExternalDependencies: ScriptDependencies?): KotlinScriptEnvironment {
             checkIsScript(file)
-            KotlinPsiManager.removeFile(file)
         	val environment = cachedEnvironment.replaceEnvironment(file) {
                 KotlinScriptEnvironment(file, false, scriptDefinitions, providersClasspath, previousExternalDependencies, Disposer.newDisposable())
             }
+            KotlinPsiManager.removeFile(file)
         	
         	return environment
         }
