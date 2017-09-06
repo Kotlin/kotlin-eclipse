@@ -57,7 +57,7 @@ private fun tryUpdateScriptClasspath(file: IFile) {
         val editor = findEditor(file)
         val statusWithDependencies = event.result
         val newDependencies = (statusWithDependencies as? StatusWithDependencies)?.dependencies
-        if (file.isAccessible && editor != null) {
+        if (file.isAccessible && editor != null && environment.externalDependencies != newDependencies) {
 //            KotlinLogger.logInfo("Set new dependencies!!")
         	editor.reconcile {
         		KotlinScriptEnvironment.replaceEnvironment(file, environment.scriptDefinitions, environment.providersClasspath, newDependencies)
