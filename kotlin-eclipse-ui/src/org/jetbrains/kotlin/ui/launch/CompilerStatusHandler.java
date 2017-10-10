@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputElement;
@@ -64,7 +65,9 @@ public class CompilerStatusHandler implements IStatusHandler {
     }
     
     private void printCompilerOutputList(List<CompilerOutputElement> outputList, MessageConsole msgConsole) {
-        printlnToConsole(outputList.get(0).getMessageLocation().getPath(), CONSOLE_BLACK, msgConsole);
+        
+        CompilerMessageLocation location = outputList.get(0).getMessageLocation();
+        printlnToConsole(location != null ? location.getPath() : "No Location", CONSOLE_BLACK, msgConsole);
         
         for (CompilerOutputElement dataElement : outputList) {
             RGB color = getColorByMessageSeverity(dataElement.getMessageSeverity());
@@ -106,8 +109,10 @@ public class CompilerStatusHandler implements IStatusHandler {
     
     private Map<String, List<CompilerOutputElement>> groupOutputByPath(List<CompilerOutputElement> outputData) {
         Map<String, List<CompilerOutputElement>> res = new HashMap<String, List<CompilerOutputElement>>();
+        String emptyPath = "";
         for (CompilerOutputElement dataElement : outputData) {
-            String path = dataElement.getMessageLocation().getPath();
+            CompilerMessageLocation location = dataElement.getMessageLocation();
+            String path = location != null ? location.getPath() : emptyPath;
             if (!res.containsKey(path)) {
                 res.put(path, new ArrayList<CompilerOutputElement>());
             }
