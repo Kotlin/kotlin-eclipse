@@ -36,7 +36,7 @@ public class EclipseJavaClassifierType extends EclipseJavaType<ITypeBinding> imp
     @Override
     @Nullable
     public JavaClassifier getClassifier() {
-        return EclipseJavaClassifier.create(getBinding().getTypeDeclaration());
+        return EclipseJavaClassifier.Companion.create(getBinding().getTypeDeclaration());
     }
     
     @Override

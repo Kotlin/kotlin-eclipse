@@ -20,8 +20,8 @@ public class KotlinMavenProjectConfigurator extends AbstractSourcesGenerationPro
 		      IProgressMonitor monitor)
 			throws CoreException {
 		if (hasKotlinMavenPlugin(request.getMavenProject())) {
-			classpath.addEntry(KotlinClasspathContainer.CONTAINER_ENTRY);
-			addNature(request.getProject(), KotlinNature.KOTLIN_NATURE, monitor);
+			classpath.addEntry(KotlinClasspathContainer.Companion.getCONTAINER_ENTRY());
+			addNature(request.getProject(), KotlinNature.Companion.getKOTLIN_NATURE(), monitor);
 		}
 	}
 

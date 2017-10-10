@@ -97,11 +97,11 @@ public class TextEditorTest {
     }
     
     public void runOpenDeclarationAction() {
-        ((KotlinEditor) editor).getJavaEditor().getAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT).run();
+        ((KotlinEditor) editor).getJavaEditor().getAction(KotlinOpenDeclarationAction.Companion.getOPEN_EDITOR_TEXT()).run();
     }
     
     public void runFormatAction() {
-        ((KotlinEditor) editor).getJavaEditor().getAction(KotlinFormatAction.FORMAT_ACTION_TEXT).run();
+        ((KotlinEditor) editor).getJavaEditor().getAction(KotlinFormatAction.Companion.getFORMAT_ACTION_TEXT()).run();
     }
     
     public void runSelectEnclosingAction() {

@@ -194,7 +194,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE
                     .analyzeFilesWithJavaIntegration(
-                            KotlinEnvironment.getEnvironment(getTestProject().getJavaProject().getProject()), jetFiles)
+                            KotlinEnvironment.Companion.getEnvironment(getTestProject().getJavaProject().getProject()), jetFiles)
                     .getAnalysisResult();
             
             moduleBindings.put(testModule, analysisResult.getBindingContext());

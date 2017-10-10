@@ -45,7 +45,7 @@ public class EclipseJavaAnnotation extends EclipseJavaElement<IAnnotationBinding
     public Collection<JavaAnnotationArgument> getArguments() {
         List<JavaAnnotationArgument> arguments = new ArrayList<>();
         for (IMemberValuePairBinding memberValuePair : getBinding().getDeclaredMemberValuePairs()) {
-            arguments.add(EclipseJavaAnnotationArgument.create(
+            arguments.add(EclipseJavaAnnotationArgument.Companion.create(
                     memberValuePair.getValue(), 
                     Name.identifier(memberValuePair.getName()), 
                     javaProject));

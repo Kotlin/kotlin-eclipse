@@ -30,13 +30,13 @@ public class KotlinElementHyperlinkDetector extends AbstractHyperlinkDetector {
     
     @Override
     public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
-        ITextEditor textEditor = (ITextEditor) getAdapter(ITextEditor.class);
+        ITextEditor textEditor = getAdapter(ITextEditor.class);
         if (region == null || !(textEditor instanceof KotlinEditor)) {
             return null;
         }
         KotlinEditor editor = (KotlinEditor) textEditor;
         
-        IAction openAction = textEditor.getAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT);
+        IAction openAction = textEditor.getAction(KotlinOpenDeclarationAction.Companion.getOPEN_EDITOR_TEXT());
         if (!(openAction instanceof KotlinOpenDeclarationAction)) {
             return null;
         }

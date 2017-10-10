@@ -121,7 +121,7 @@ public class KotlinProjectTestCase {
     }
     
     protected void waitForEditorInitialization(TextEditorTest testEditor) throws OperationCanceledException, InterruptedException {
-        String family = KotlinScriptEnvironment.constructFamilyForInitialization(testEditor.getEditingFile());
+        String family = KotlinScriptEnvironment.Companion.constructFamilyForInitialization(testEditor.getEditingFile());
         Job.getJobManager().join(family, null);
     }
 }

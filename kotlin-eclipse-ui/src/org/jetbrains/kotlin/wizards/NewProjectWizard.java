@@ -41,7 +41,7 @@ public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
             return false;
         }
         
-        KotlinNature.addNature(op.getResult());
+        KotlinNature.Companion.addNature(op.getResult());
         
         selectAndRevealResource(op.getResult());
 

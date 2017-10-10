@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.core.resolve.lang.java;
 import java.util.Arrays;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.eclipse.core.resources.IFolder;
@@ -54,7 +53,7 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClass;
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPackage;
-import org.jetbrains.kotlin.load.java.JavaClassFinder;
+import org.jetbrains.kotlin.load.java.AbstractJavaClassFinder;
 import org.jetbrains.kotlin.load.java.structure.JavaClass;
 import org.jetbrains.kotlin.load.java.structure.JavaPackage;
 import org.jetbrains.kotlin.name.ClassId;
@@ -65,7 +64,7 @@ import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer;
 
 import com.intellij.mock.MockProject;
 
-public class EclipseJavaClassFinder implements JavaClassFinder {
+public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
 
     private IJavaProject javaProject = null;
     
@@ -74,13 +73,13 @@ public class EclipseJavaClassFinder implements JavaClassFinder {
         javaProject = project;
     }
     
-    @PostConstruct
+    @Override
     public void initialize(@NotNull BindingTrace trace, @NotNull KotlinCodeAnalyzer codeAnalyzer) {
         if (javaProject == null) {
             return;
         }
         
-        MockProject ideaProject = KotlinEnvironment.getEnvironment(javaProject.getProject()).getProject();
+        MockProject ideaProject = KotlinEnvironment.Companion.getEnvironment(javaProject.getProject()).getProject();
         CodeAnalyzerInitializer.Companion.getInstance(ideaProject).initialize(trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer);
     }
     

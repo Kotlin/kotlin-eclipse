@@ -114,7 +114,7 @@ public class KotlinOpenEditor {
         IWorkbenchPage page = win.getActivePage();
         
         try {
-            IEditorPart reusedEditor = page.openEditor(editorInput, KotlinClassFileEditor.EDITOR_ID, activate);
+            IEditorPart reusedEditor = page.openEditor(editorInput, KotlinClassFileEditor.Companion.getEDITOR_ID(), activate);
             if (reusedEditor != null) {
                 // the input is compared by a source path, but corresponding
                 // classes may be different

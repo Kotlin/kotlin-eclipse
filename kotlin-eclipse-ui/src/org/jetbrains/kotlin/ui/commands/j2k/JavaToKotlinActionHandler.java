@@ -118,8 +118,8 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
 
     private void configureProjectsWithKotlin(@NotNull Set<IProject> projects) {
         for (IProject project : projects) {
-            KotlinNature.addNature(project);
-            KotlinRuntimeConfigurator.suggestForProject(project);
+            KotlinNature.Companion.addNature(project);
+            KotlinRuntimeConfigurator.Companion.suggestForProject(project);
         }
     }
     
@@ -205,7 +205,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     private ConvertedKotlinData getConvertedFileData(@NotNull CompilationUnit compilationUnit, @NotNull Shell shell) throws ExecutionException {
         String contents = StringUtil.convertLineSeparators(new String(compilationUnit.getContents()));
         IProject eclipseProject = compilationUnit.getJavaProject().getProject();
-        Project ideaProject = KotlinEnvironment.getEnvironment(eclipseProject).getProject();
+        Project ideaProject = KotlinEnvironment.Companion.getEnvironment(eclipseProject).getProject();
         
         String translatedCode = JavaToKotlinTranslator.INSTANCE.prettify(
                 JavaToKotlinTranslatorKt.translateToKotlin(contents, ideaProject));
@@ -245,7 +245,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     }
     
     private KtFile getJetFile(@NotNull String sourceCode, @NotNull IProject eclipseProject) {
-        Project ideaProject = KotlinEnvironment.getEnvironment(eclipseProject).getProject();
+        Project ideaProject = KotlinEnvironment.Companion.getEnvironment(eclipseProject).getProject();
         return new KtPsiFactory(ideaProject).createFile(sourceCode);
     }
 }
