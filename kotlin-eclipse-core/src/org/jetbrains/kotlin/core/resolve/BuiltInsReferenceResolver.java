@@ -81,7 +81,7 @@ public class BuiltInsReferenceResolver {
     
     @NotNull
     public static BuiltInsReferenceResolver getInstance(@NotNull IProject eclipseProject) {
-        Project ideaProject = KotlinEnvironment.getEnvironment(eclipseProject).getProject();
+        Project ideaProject = KotlinEnvironment.Companion.getEnvironment(eclipseProject).getProject();
         return ServiceManager.getService(ideaProject, BuiltInsReferenceResolver.class);
     }
 

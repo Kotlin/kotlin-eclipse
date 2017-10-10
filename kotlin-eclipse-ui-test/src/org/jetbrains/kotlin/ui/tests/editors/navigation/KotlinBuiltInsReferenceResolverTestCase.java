@@ -21,7 +21,7 @@ public class KotlinBuiltInsReferenceResolverTestCase extends KotlinSourcesNaviga
     @Override
     public KtFile getParsedFile(KotlinEditor editor) {
         IJavaProject javaProject = getTestProject().getJavaProject();
-        KotlinEnvironment environment = KotlinEnvironment.getEnvironment(javaProject.getProject());
+        KotlinEnvironment environment = KotlinEnvironment.Companion.getEnvironment(javaProject.getProject());
         Project ideaProject = environment.getProject();
         KtFile jetFile = new KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(editor.getJavaEditor().getViewer().getTextWidget().getText()));
         return jetFile;

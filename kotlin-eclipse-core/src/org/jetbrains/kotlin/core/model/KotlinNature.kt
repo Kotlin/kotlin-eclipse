@@ -36,7 +36,7 @@ import org.eclipse.core.resources.ResourcesPlugin
 
 public class KotlinNature: IProjectNature {
     companion object {
-        @JvmField val KOTLIN_NATURE: String = "org.jetbrains.kotlin.core.kotlinNature"
+        val KOTLIN_NATURE: String = "org.jetbrains.kotlin.core.kotlinNature"
         @JvmField val KOTLIN_BUILDER: String = "org.jetbrains.kotlin.ui.kotlinBuilder"
         
         @JvmStatic

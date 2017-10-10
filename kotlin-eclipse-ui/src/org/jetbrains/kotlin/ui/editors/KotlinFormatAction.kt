@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.ui.formatter.formatRange
 
 class KotlinFormatAction(private val editor: KotlinEditor) : SelectionDispatchAction(editor.javaEditor.site) {
     companion object {
-        @JvmField val FORMAT_ACTION_TEXT: String = "Format"
+        val FORMAT_ACTION_TEXT: String = "Format"
     }
     
     init {

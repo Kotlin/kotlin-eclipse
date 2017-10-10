@@ -63,8 +63,6 @@ private fun tryUpdateScriptClasspath(file: IFile) {
         		KotlinScriptEnvironment.replaceEnvironment(file, environment.scriptDefinitions, environment.providersClasspath, newDependencies)
         		KotlinAnalysisFileCache.resetCache()
             }
-            
-            editor.reconcile()
         }
         else {
 //            KotlinLogger.logInfo("Don't set new dependencies: accessible (${file.isAccessible}), editor (${editor})")

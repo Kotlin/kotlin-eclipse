@@ -124,8 +124,8 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         
         IProject project = root.getJavaProject().getProject();
         
-        KotlinNature.addNature(project);
-        KotlinRuntimeConfigurator.suggestForProject(project);
+        KotlinNature.Companion.addNature(project);
+        KotlinRuntimeConfigurator.Companion.suggestForProject(project);
         
         return operation.getResult();
     }

@@ -158,7 +158,7 @@ public class KotlinTemplateFormatter {
     
     public void format(TemplateBuffer buffer, String lineDelimiter, IProject eclipseProject) { 
         VariableOffsetsTracker offsetsTracker = new VariableOffsetsTracker(buffer.getString(), buffer.getVariables());
-        Project ideaProject = KotlinEnvironment.getEnvironment(eclipseProject).getProject();
+        Project ideaProject = KotlinEnvironment.Companion.getEnvironment(eclipseProject).getProject();
         KtFile parsedFile = new KtPsiFactory(ideaProject).createFile(offsetsTracker.getMarkedString());
         
         assert parsedFile != null;

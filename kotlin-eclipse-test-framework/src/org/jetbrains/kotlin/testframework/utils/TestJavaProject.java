@@ -117,7 +117,7 @@ public class TestJavaProject {
         description.setNatureIds(new String[] { JavaCore.NATURE_ID });
         project.setDescription(description, null);
 
-        KotlinNature.addNature(project);
+        KotlinNature.Companion.addNature(project);
     }
 
     private IFile createFile(IContainer folder, String name, InputStream content) {
@@ -206,7 +206,7 @@ public class TestJavaProject {
     }
 
     public KotlinEnvironment getKotlinEnvironment() {
-        return KotlinEnvironment.getEnvironment(javaProject.getProject());
+        return KotlinEnvironment.Companion.getEnvironment(javaProject.getProject());
     }
 
     public IJavaProject getJavaProject() {

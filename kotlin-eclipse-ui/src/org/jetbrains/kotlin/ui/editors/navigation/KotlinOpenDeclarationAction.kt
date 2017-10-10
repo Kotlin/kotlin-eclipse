@@ -31,7 +31,7 @@ import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 
 class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchAction(editor.javaEditor.site) {
     companion object {
-        const val OPEN_EDITOR_TEXT = "OpenEditor"
+        val OPEN_EDITOR_TEXT = "OpenEditor"
     }
     
     init {
