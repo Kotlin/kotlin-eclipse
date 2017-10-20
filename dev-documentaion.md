@@ -4,10 +4,10 @@
 
 Kotlin plugin consists of several plugins, here is a short description for each of them:
 
-- `kotlin-bundled-compiler`: This plugin is used as a dependency for each other plugin, it exports main jars to work with Kotlin (`kotlin-compiler.jar`, `kotlin-ide-common.jar`...).
-Kotlin compiler will be used as a bundled compiler in built plugin and as a library during development.
+- `kotlin-bundled-compiler`: This plugin is used as a dependency for all other plugins, it exports main jars to work with Kotlin (`kotlin-compiler.jar`, `kotlin-ide-common.jar`...).
+Kotlin compiler will be used as the bundled compiler in the built plugin and as a library during development.
 
-    Also, `kotlin-bundled-compiler` plugin contains several helper classes for IDE-features (such as formatter) that are coming from Intellij IDEA.
+    Also, `kotlin-bundled-compiler` plugin contains several helper classes for IDE-features (such as formatter) that are coming from IntelliJ IDEA.
 
 - `kotlin-eclipse-aspects`: This plugin provides several aspects to weave into Eclipse and JDT internals.
 
@@ -24,32 +24,32 @@ Kotlin compiler will be used as a bundled compiler in built plugin and as a libr
 #### Interoperability with JDT
 
 Existing Java code can be called from Kotlin in a natural way, and Kotlin code can be used from Java.
-Java code in Eclipse should understand Kotlin. Such features as navigation, refactorings, find usages, and others should work together with Kotlin and Java.
+Java code in Eclipse should understand Kotlin. Features such as navigation, refactorings, find usages, and others should work together with Kotlin and Java.
 
 ##### Light classes
 
-Note that Kotlin does not have presentation compiler as Java or Scala, instead of this, 
-Kotlin plugin generates so called "light class files": translated Kotlin source code to the bytecode declarations without bodies.
+Note that Kotlin does not have a presentation compiler, like Java or Scala. Instead of this, the
+Kotlin plugin generates so called "light class files": Kotlin source code translated to bytecode declarations without bodies.
 Each project with Kotlin in Eclipse depends on `KOTLIN_CONTAINER` (see [`KotlinClasspathContainer`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/KotlinClasspathContainer.kt)) 
-which contains `kotlin-stdlib.jar`, `kotlin-reflect.jar` and folder with light classfiles (`kotlin_bin`).
-Light classes are stored only in virtual memory and managed by special file system (see [`KotlinFileSystem`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/filesystem/KotlinFileSystem.java)
+which contains `kotlin-stdlib.jar`, `kotlin-reflect.jar` and a folder with light classfiles (`kotlin_bin`).
+Light classes are stored only in virtual memory and are managed by a special file system (see [`KotlinFileSystem`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/filesystem/KotlinFileSystem.java)
 , [`KotlinFileStore`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/filesystem/KotlinFileStore.kt)), 
-so they don't add any value on runtime.
+so they do not affect the runtime.
   
 Let us describe what is happening on each file save.
-On each file save Eclipse triggers Kotlin builder, then method [`KotlinLightClassGeneration.updateLightClasses()`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/asJava/KotlinLightClassGeneration.kt) 
+On each file save Eclipse triggers Kotlin builder, then the method [`KotlinLightClassGeneration.updateLightClasses()`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/asJava/KotlinLightClassGeneration.kt) 
 is called which takes affected files and computes names of class files that can be created from the affected source files. 
-If we don't found light class in our cache, we create new empty class file  in our file system. If file exists, we touch that file. 
+If we don't find a light class in our cache, we create a new empty class file in our file system. If file exists, we touch that file. 
 After this, Eclipse determines that some class files on the classpath were added or changed which triggers reindex for those files 
 by calling method [`KotlinFileStore.openInputStream`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/filesystem/KotlinFileStore.kt#L46). 
-This method generates bytecode for the light class by calling Kotlin compiler in special mode ([`KotlinLightClassGeneration.buildLightClasses`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/asJava/KotlinLightClassGeneration.kt#L43)).
-Basically, now Java can see Kotlin sources as special binary dependency.
+This method generates bytecode for the light class by calling the Kotlin compiler in special mode ([`KotlinLightClassGeneration.buildLightClasses`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/asJava/KotlinLightClassGeneration.kt#L43)).
+Basically, this allows Java to see Kotlin sources as special binary dependency.
 
 ##### Light classes to Kotlin source code
 
 Existence of light classes allows to call Kotlin code from Java in Eclipse, but to navigate from Java to Kotlin source code we have to map light classes to the source code.
-Otherwise we'll navigate to the binary code. Unfortunately, Eclipse JDT does not provide extension point to handle such case and to do so, we use aspects to weave
-into Java navigation mechanism. We provide simple aspect ([`KotlinOpenEditorAspect.aj`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-aspects/src/org/jetbrains/kotlin/aspects/navigation/KotlinOpenEditorAspect.aj)), 
+Otherwise we would navigate to the binary code. Unfortunately, Eclipse JDT does not provide any extension point to handle such case, and to do so, we use aspects to weave
+into Java navigation mechanism. We provide a simple aspect ([`KotlinOpenEditorAspect.aj`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-aspects/src/org/jetbrains/kotlin/aspects/navigation/KotlinOpenEditorAspect.aj)), 
 which weaves into `org.eclipse.jdt.internal.ui.javaeditor.EditorUtility.openInEditor` method and checks input element. 
 If this element belongs to our special file system, then we are trying to find corresponding source element in Kotlin and navigate to it.
 
@@ -64,20 +64,20 @@ extends Java editor (`CompilationUnitEditor`) and provides own editor actions (s
 #### Organize imports action example
 
 As an example of editor action let's consider how organize imports works. Organize imports action is registered in [`createActions`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/editors/KotlinCommonEditor.kt#L145) 
-method with the corresponding action ID. As we reuse Java editor, we don't have to set up shortcuts, they will be the same as for Java editor.
+method with the corresponding action ID. As we reuse the Java editor, we don't have to set up shortcuts, they will be the same as for Java editor.
 The main method for this action is [`KotlinOrganizeImportsAction.run`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/editors/organizeImports/KotlinOrganizeImportsAction.kt#L59). 
 
 First of all, it collects missing imports, adds them to the existing imports and then runs [`KotlinOrganizeImportsAction.optimizeImports`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/editors/organizeImports/KotlinOrganizeImportsAction.kt#L86).
-This method removes duplicates and unused imports, reorganize imports and replace some explicit imports with the start import. Important part here is that we
-reuse code to optimize imports from Kotlin plugin for the Intellij IDEA. The original method that is called from the Eclipse plugin is [`buildOptimizedImports`](https://github.com/JetBrains/kotlin/blob/master/idea/ide-common/src/org/jetbrains/kotlin/idea/util/OptimizedImportsBuilder.kt#L87), 
-which is used in the plugin for IDEA.
+This method removes duplicates and unused imports, reorganizes imports and replaces some explicit imports with the star import. The important part here is that we
+reuse the code to optimize imports from the Kotlin plugin for IntelliJ IDEA. The original method that is called from the Eclipse plugin is [`buildOptimizedImports`](https://github.com/JetBrains/kotlin/blob/master/idea/ide-common/src/org/jetbrains/kotlin/idea/util/OptimizedImportsBuilder.kt#L87), 
+which is also used in the plugin for IDEA.
 
 #### Code reuse from the IDEA plugin
 
 Eclipse plugin depends on `kotlin-ide-common.jar` artifact, which provides common functionality for IDEA and Eclipse plugin. 
 Basically, this is a module ([`ide-common`](https://github.com/JetBrains/kotlin/tree/master/idea/ide-common)) in Kotlin project with minimum dependencies, 
-so it can be used in Eclipse or Netbeans plugin. This module provides several utils that are used across the Eclipse plugin. 
-For example, such feature as completion in the Eclipse plugin is mostly reuse parts of completion from the IDEA plugin 
+so it can be used in Eclipse or Netbeans plugin. This module provides several features that are used across the Eclipse plugin. 
+For example, completion in the Eclipse plugin mostly reuses parts of completion from the IDEA plugin 
 ([`KotlinCompletionUtils.getReferenceVariants`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/editors/completion/KotlinCompletionUtils.kt#L84) 
 uses [`ReferenceVarianceHelper`](https://github.com/JetBrains/kotlin/blob/master/idea/ide-common/src/org/jetbrains/kotlin/idea/codeInsight/ReferenceVariantsHelper.kt)).
 Generally, it's a preferable way to implement features in the Eclipse plugin, i.e. to reuse parts from the IDEA plugin. Unfortunately, there is no
@@ -90,8 +90,8 @@ Kotlin compiler in [`KotlinCompiler.compileKotlinFiles`](https://github.com/JetB
  
 #### Kotlin Builder
 
-Kotlin plugin uses concept of Eclipse builder to track changes and compile Kotlin files if needed. For a usual change in project, 
-Kotlin builder only updates light classes. Then, if project is building to launch the application ([`KotlinBuilder.isBuildingForLaunch`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/builder/KotlinBuilder.kt#L180)), 
+Kotlin plugin uses the Eclipse builder concept to track changes and compile Kotlin files if needed. For a usual change in project, 
+Kotlin builder only updates light classes. Then, if project is being built to launch the application ([`KotlinBuilder.isBuildingForLaunch`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/builder/KotlinBuilder.kt#L180)), 
 Kotlin builder compiles Kotlin files (in [`KotlinBuilder.build`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/builder/KotlinBuilder.kt#L63)). 
 Therefore, Kotlin builder should always precede Java builder.
 
@@ -116,7 +116,7 @@ Important note: if classpath was changed, corresponding Kotlin environment shoul
 
 #### Kotlin parsing
 
-There are PSI and Kt elements that are basically represent concrete syntax tree of Kotlin program. To get parsed version of some source file
+There are PSI and Kt elements that are basically represent concrete syntax tree of Kotlin program. (The term "PSI" is used in IntelliJ IDEA to refer to the syntax tree, and stands for "Program Structure Interface".) To get the parsed version of a source file
 [`KotlinPsiManager`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/builder/KotlinPsiManager.kt) 
 should be used. Note that it caches last version of `KtFile`, so to get actual `KtFile`, source code of file can be
 explicitly passed to the [`getKotlinFileIfExist`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-core/src/org/jetbrains/kotlin/core/builder/KotlinPsiManager.kt#L368) 
@@ -135,16 +135,16 @@ it gets PSI file and then calls `findElementAt` to get concrete element at speci
 
 Once we get active PSI element, we pass it to our quick assists and check for theirs applicability. 
 [`KotlinRemoveExplicitTypeAssistProposal.isApplicable`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/editors/quickassist/KotlinRemoveExplicitTypeAssistProposal.kt#L35)
-checks that active PSI element is actually property, function or loop parameter with the type reference. 
+checks that active PSI element is actually a property, function or loop parameter with a type reference. 
 In method [`KotlinRemoveExplicitTypeAssistProposal.apply`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/editors/quickassist/KotlinRemoveExplicitTypeAssistProposal.kt#L62) 
-quick assist executes and removes corresponding type reference.
+quick assist is executed and removes corresponding type reference.
 
-This and other quick assists and actions are dramatically use knowledge of CST for Kotlin. In order to make it easier, there is an action
+This and other quick assists and actions rely completely on the knowledge of CST for Kotlin. In order to make it easier, there is an action
 "View Psi Structure for Current File" in the context menu for Kotlin file, which can be used to examine structure of the Kotlin CST.
 
 #### Kotlin analyzer
 
-Many features in IDE requires more deep knowledge of the Kotlin program. For example, [`KotlinLineAnnotationsReconciler`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/editors/annotations/AnnotationManager.kt#L146)
+Many features in IDE requires more deep knowledge of the Kotlin compiler implementation. For example, [`KotlinLineAnnotationsReconciler`](https://github.com/JetBrains/kotlin-eclipse/blob/master/kotlin-eclipse-ui/src/org/jetbrains/kotlin/ui/editors/annotations/AnnotationManager.kt#L146)
 is used  to show diagnostics from the compiler. It uses concept of `ReconcilingStrategy` and runs after each change in active file,
 when analysis results for the file will be ready and cached. The main line there is `KotlinAnalyzer.analyzeFile(file)...`, which returns
 analysis results and can be used to get diagnostics from the compiler.
