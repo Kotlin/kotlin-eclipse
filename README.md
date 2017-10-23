@@ -77,4 +77,4 @@ Nightly build:
 
 ### Kotlin Eclipse Plugin Developer Documentation
 
-See basic developer documentation [here](https://github.com/JetBrains/kotlin-eclipse/blob/master/docs/dev-documentaion.md)
+See basic developer documentation [here](https://github.com/JetBrains/kotlin-eclipse/blob/master/docs/dev-documentation.md)
