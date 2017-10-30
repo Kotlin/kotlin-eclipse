@@ -141,7 +141,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(true))
 
             // For j2k converter
-            registerService(NullableNotNullManager::class.java, KotlinNullableNotNullManager())
+            registerService(NullableNotNullManager::class.java, KotlinNullableNotNullManager(project))
 
             registerService(CoreJavaFileManager::class.java,
                     ServiceManager.getService(project, JavaFileManager::class.java) as CoreJavaFileManager)

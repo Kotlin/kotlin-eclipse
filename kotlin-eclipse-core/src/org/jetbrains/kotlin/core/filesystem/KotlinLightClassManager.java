@@ -31,7 +31,6 @@ import org.jetbrains.kotlin.core.model.KotlinJavaManager;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.fileClasses.FileClasses;
 import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider;
-import org.jetbrains.kotlin.load.kotlin.PackagePartClassUtils;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.psi.KtClassOrObject;
 import org.jetbrains.kotlin.psi.KtFile;
@@ -183,7 +182,7 @@ public class KotlinLightClassManager {
             }
         }
         
-        if (PackagePartClassUtils.fileHasTopLevelCallables(ktFile)) {
+        if (ktFile.hasTopLevelCallables()) {
             String newFacadeInternalName = FileClasses.getFileClassInternalName(
                     NoResolveFileClassesProvider.INSTANCE, ktFile);
             lightClasses.add(computePathByInternalName(newFacadeInternalName));

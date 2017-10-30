@@ -66,6 +66,8 @@ import org.jetbrains.kotlin.psi.psiUtil.siblings
 import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.resolve.ModifierCheckerCore
 import java.util.ArrayList
+import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.KtNodeTypes
 
 open class KeywordLookupObject
 
@@ -79,7 +81,8 @@ object KeywordCompletion {
             COMPANION_KEYWORD to OBJECT_KEYWORD,
             ENUM_KEYWORD to CLASS_KEYWORD,
             ANNOTATION_KEYWORD to CLASS_KEYWORD,
-            SEALED_KEYWORD to CLASS_KEYWORD
+            SEALED_KEYWORD to CLASS_KEYWORD,
+			LATEINIT_KEYWORD to VAR_KEYWORD
     )
 
     private val KEYWORD_CONSTRUCTS = mapOf<KtKeywordToken, String>(
@@ -91,7 +94,8 @@ object KeywordCompletion {
             FINALLY_KEYWORD to "fun foo() { try {\n}\nfinally{\ncaret\n}",
             DO_KEYWORD to "fun foo() { do {\ncaret\n}",
             INIT_KEYWORD to "class C { init {\ncaret\n}",
-            CONSTRUCTOR_KEYWORD to "class C { constructor(caret)"
+            CONSTRUCTOR_KEYWORD to "class C { constructor(caret)",
+			COMPANION_KEYWORD to "class C { companion object {\ncaret\n}"
     )
 
     private val NO_SPACE_AFTER = listOf(THIS_KEYWORD,
@@ -116,6 +120,7 @@ object KeywordCompletion {
             var keyword = keywordToken.value
 
             val nextKeyword = COMPOUND_KEYWORDS[keywordToken]
+			var applicableAsCompound = false
             if (nextKeyword != null) {
                 fun PsiElement.isSpace() = this is PsiWhiteSpace && '\n' !in getText()
 
@@ -123,9 +128,10 @@ object KeywordCompletion {
                 if (next != null && next.startsWith("$")) {
                     next = next.substring(1)
                 }
-                if (next != nextKeyword.value) {
+                if (next != nextKeyword.value)
                     keyword += " " + nextKeyword.value
-                }
+                else
+                    applicableAsCompound = true
             }
 
             if (keywordToken == DYNAMIC_KEYWORD && isJvmModule) continue // not supported for JVM
@@ -136,7 +142,7 @@ object KeywordCompletion {
             if (!parserFilter(keywordToken)) continue
 
             val constructText = KEYWORD_CONSTRUCTS[keywordToken]
-            if (constructText != null) {
+            if (constructText != null && !applicableAsCompound) {
                 val element = keyword
                 consumer(element)
             } else {
@@ -182,18 +188,40 @@ object KeywordCompletion {
                 is KtBlockExpression -> {
                     var prefixText = "fun foo() { "
                     if (prevParent is KtExpression) {
-                        // check that we are right after a try-expression without finally-block
+                        // check that we are right after a try-expression without finally-block or after if-expression without else
                         val prevLeaf = prevParent.prevLeaf { it !is PsiWhiteSpace && it !is PsiComment && it !is PsiErrorElement }
-                        if (prevLeaf?.node?.elementType == KtTokens.RBRACE) {
-                            val blockParent = (prevLeaf?.parent as? KtBlockExpression)?.parent
-                            when (blockParent) {
-                                is KtTryExpression -> prefixText += "try {}\n"
-                                is KtCatchClause -> prefixText += "try {} catch (e: E) {}\n"
+                        if (prevLeaf != null) {
+                            val isAfterThen = prevLeaf.goUpWhileIsLastChild().any { it.node.elementType == KtNodeTypes.THEN }
+
+                            var isAfterTry = false
+                            var isAfterCatch = false
+                            if (prevLeaf.node.elementType == KtTokens.RBRACE) {
+                                val blockParent = (prevLeaf.parent as? KtBlockExpression)?.parent
+                                when (blockParent) {
+                                    is KtTryExpression -> isAfterTry = true
+                                    is KtCatchClause -> { isAfterTry = true; isAfterCatch = true }
+                                }
+                            }
+
+                            if (isAfterThen) {
+                                if (isAfterTry) {
+                                    prefixText += "if (a)\n"
+                                }
+                                else {
+                                    prefixText += "if (a) {}\n"
+                                }
+                            }
+                            if (isAfterTry) {
+                                prefixText += "try {}\n"
+                            }
+                            if (isAfterCatch) {
+                                prefixText += "catch (e: E) {}\n"
                             }
                         }
 
                         return buildFilterWithContext(prefixText, prevParent, position)
-                    } else {
+                    }
+                    else {
                         val lastExpression = prevParent
                                 .siblings(forward = false, withItself = false)
                                 .firstIsInstanceOrNull<KtExpression>()
@@ -210,38 +238,51 @@ object KeywordCompletion {
                 is KtDeclarationWithInitializer -> {
                     val initializer = parent.initializer
                     if (prevParent == initializer) {
-                        return buildFilterWithContext("val v = ", initializer!!, position)
+                        return buildFilterWithContext("val v = ", initializer, position)
                     }
                 }
 
                 is KtParameter -> {
                     val default = parent.defaultValue
                     if (prevParent == default) {
-                        return buildFilterWithContext("val v = ", default!!, position)
+                        return buildFilterWithContext("val v = ", default, position)
                     }
                 }
-            }
 
-            if (parent is KtDeclaration) {
-                val scope = parent.parent
-                when (scope) {
-                    is KtClassOrObject -> {
-                        if (parent is KtPrimaryConstructor) {
-                            return buildFilterWithReducedContext("class X ", parent, position)
-                        } else {
-                            return buildFilterWithReducedContext("class X { ", parent, position)
+                is KtDeclaration -> {
+                    val scope = parent.parent
+                    when (scope) {
+                        is KtClassOrObject -> {
+                            return if (parent is KtPrimaryConstructor) {
+                                buildFilterWithReducedContext("class X ", parent, position)
+                            }
+                            else {
+                                buildFilterWithReducedContext("class X { ", parent, position)
+                            }
                         }
-                    }
 
-                    is KtFile -> return buildFilterWithReducedContext("", parent, position)
+                        is KtFile -> return buildFilterWithReducedContext("", parent, position)
+                    }
                 }
             }
+
 
             prevParent = parent
             parent = parent.parent
         }
 
         return buildFilterWithReducedContext("", null, position)
+    }
+
+    private fun PsiElement.goUpWhileIsLastChild(): Sequence<PsiElement> {
+        return generateSequence(this) {
+            if (it is PsiFile)
+                null
+            else if (it != it.parent.lastChild)
+                null
+            else
+                it.parent
+        }
     }
 
     private fun buildFilterWithContext(prefixText: String,
