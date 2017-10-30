@@ -4,7 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/kotlin-runtime.jar" sourcepath="lib/kotlin-runtime-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-ide-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-converter.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-formatter.jar"/>
@@ -13,5 +12,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/openapi-formatter.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/util-formatter.jar"/>
 	<classpathentry kind="lib" path="lib/kotlin-script-runtime.jar"/>
+	<classpathentry kind="lib" path="lib/kotlin-stdlib.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
