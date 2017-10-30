@@ -68,7 +68,7 @@ import com.intellij.util.io.URLUtil;
 import kotlin.collections.CollectionsKt;
 
 public class BuiltInsReferenceResolver {
-    private static final String RUNTIME_SRC_DIR = "jar:file:"+ ProjectUtils.buildLibPath("kotlin-runtime-sources")+ "!/kotlin";
+    private static final String RUNTIME_SRC_DIR = "jar:file:"+ ProjectUtils.buildLibPath("kotlin-stdlib-sources")+ "!/kotlin";
 
     private volatile ModuleDescriptor moduleDescriptor;
     private volatile PackageFragmentDescriptor builtinsPackageFragment = null;

@@ -207,11 +207,11 @@
     	<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
     	           <patternset>
     	               <include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-runtime.jar" />
+    	               <include name="Kotlin/kotlinc/lib/kotlin-stdlib.jar" />
     	               <include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
     	               <include name="Kotlin/kotlinc/lib/kotlin-script-runtime.jar" />
     	               <include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-runtime-sources.jar" />
+    	               <include name="Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar" />
     	           </patternset>
     	           <mapper type="flatten"/>
     	       </unzip>

@@ -8,7 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
  lib/kotlin-converter.jar,
  lib/kotlin-compiler.jar,
- lib/kotlin-runtime.jar,
+ lib/kotlin-stdlib.jar,
  lib/kotlin-script-runtime.jar,
  lib/kotlin-ide-common.jar,
  lib/kotlin-reflect.jar,
