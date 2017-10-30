@@ -113,7 +113,7 @@ public fun createContainerForLazyResolveWithJava(
     
     useInstance(languageVersionSettings)
     
-    useInstance(AnnotationTypeQualifierResolver.Empty)
+    useInstance(languageVersionSettings.getFlag(AnalysisFlag.jsr305))
     
     if (useBuiltInsProvider) {
         useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)

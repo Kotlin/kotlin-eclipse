@@ -84,7 +84,7 @@ fun placeImports(typeNames: List<TypeNameMatch>, file: IFile, document: IDocumen
 
 fun replaceImports(newImports: List<String>, file: IFile, document: IDocument) {
     val ktFile = KotlinPsiManager.getParsedFile(file)
-    val importDirectives = ktFile.getImportDirectives()
+    val importDirectives = ktFile.importDirectives
     if (importDirectives.isEmpty()) {
         placeStrImports(newImports, file, document)
         return
@@ -95,7 +95,7 @@ fun replaceImports(newImports: List<String>, file: IFile, document: IDocument) {
     val startOffset = importDirectives.first().getTextDocumentOffset(document)
     val lastImportDirectiveOffset = importDirectives.last().getEndLfOffset(document)
     val endOffset = if (newImports.isEmpty()) {
-            val next = ktFile.getImportList()!!.getNextSibling()
+            val next = ktFile.importList!!.getNextSibling()
             if (next is PsiWhiteSpace) next.getEndLfOffset(document) else lastImportDirectiveOffset
         }
         else {
@@ -183,6 +183,6 @@ private fun computeBreakLineBeforeImport(element:PsiElement):Int {
 
 private fun findNodeToNewImport(file: IFile): PsiElement? {
     val jetFile = KotlinPsiManager.getParsedFile(file)
-    val jetImportDirective = jetFile.getImportDirectives()
-    return if (jetImportDirective.isNotEmpty()) jetImportDirective.last() else jetFile.getPackageDirective()
+    val jetImportDirective = jetFile.importDirectives
+    return if (jetImportDirective.isNotEmpty()) jetImportDirective.last() else jetFile.packageDirective
 }

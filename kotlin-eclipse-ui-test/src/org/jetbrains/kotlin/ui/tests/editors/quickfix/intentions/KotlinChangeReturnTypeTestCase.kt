@@ -21,6 +21,7 @@ import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
 import org.junit.Before
 
+@Suppress("UPPER_BOUND_VIOLATED")
 abstract class KotlinChangeReturnTypeTestCase : AbstractKotlinQuickAssistTestCase<KotlinChangeReturnTypeProposal>() {
     @Before
     override fun configure() {
@@ -32,6 +33,7 @@ abstract class KotlinChangeReturnTypeTestCase : AbstractKotlinQuickAssistTestCas
     }
     
     protected fun doTest(testPath: String) {
+		@Suppress("TYPE_MISMATCH", "MISSING_DEPENDENCY_CLASS")
         doTestFor(testPath) { KotlinChangeReturnTypeProposal(it) }
     }
 }

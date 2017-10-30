@@ -19,8 +19,9 @@ package org.jetbrains.kotlin.core.model
 import com.intellij.codeInsight.NullableNotNullManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiModifierListOwner
+import com.intellij.openapi.project.Project
 
-public class KotlinNullableNotNullManager : NullableNotNullManager() {
+public class KotlinNullableNotNullManager(project: Project) : NullableNotNullManager(project) {
     override fun getPredefinedNotNulls(): List<String> {
         return emptyList()
     }

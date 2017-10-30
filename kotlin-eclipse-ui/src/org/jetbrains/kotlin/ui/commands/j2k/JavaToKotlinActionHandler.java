@@ -45,7 +45,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinNature;
-import org.jetbrains.kotlin.j2k.JavaToKotlinTranslator;
 import org.jetbrains.kotlin.j2k.JavaToKotlinTranslatorKt;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtPsiFactory;
@@ -58,10 +57,9 @@ import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurator;
 import org.jetbrains.kotlin.wizards.FileCreationOp;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-
-import kotlin.Pair;
 
 public class JavaToKotlinActionHandler extends AbstractHandler {
     
@@ -207,7 +205,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
         IProject eclipseProject = compilationUnit.getJavaProject().getProject();
         Project ideaProject = KotlinEnvironment.Companion.getEnvironment(eclipseProject).getProject();
         
-        String translatedCode = JavaToKotlinTranslator.INSTANCE.prettify(
+        String translatedCode = ConverterUtilsKt.prettify(
                 JavaToKotlinTranslatorKt.translateToKotlin(contents, ideaProject));
         KtFile jetFile = getJetFile(translatedCode, eclipseProject);
         

@@ -29,8 +29,6 @@ import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor;
 import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditorInput;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
-import kotlin.collections.CollectionsKt;
-
 // Seeks Kotlin editor by IJavaElement
 public class KotlinOpenEditor {
     @Nullable
@@ -39,7 +37,7 @@ public class KotlinOpenEditor {
         
         IFile kotlinFile;
         if (sourceFiles.size() == 1) {
-            kotlinFile = KotlinPsiManager.getEclipseFile(CollectionsKt.first(sourceFiles));
+            kotlinFile = KotlinPsiManager.getEclipseFile(sourceFiles.get(0));
         } else {
             kotlinFile = KotlinOpenEditorUtilsKt.chooseSourceFile(sourceFiles);
         }

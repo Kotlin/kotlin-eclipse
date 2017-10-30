@@ -34,7 +34,7 @@ fun lookupNonImportedTypes(
         return emptyList()
     }
     
-    val importsSet = ktFile.getImportDirectives()
+    val importsSet = ktFile.importDirectives
             .mapNotNull { it.getImportedFqName()?.asString() }
             .toSet()
     
