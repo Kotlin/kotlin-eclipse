@@ -104,6 +104,29 @@
       </wizard>
    </extension>
    <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="org.jetbrains.kotlin.ui.debug.KotlinFileEditor.BreakpointRulerActions"
+            targetID="org.jetbrains.kotlin.ui.editors.KotlinFileEditor">
+         <action
+               actionID="RulerDoubleClick"
+               class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+               id="org.jetbrains.kotlin.ui.debug.actions.ManageBreakpointRulerAction"
+               label="Toggle &amp;Breakpoint">
+         </action>
+      </editorContribution>
+      <editorContribution
+            id="org.jetbrains.kotlin.ui.debug.KotlinClassFileEditor.BreakpointRulerActions"
+            targetID="org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor">
+         <action
+               actionID="RulerDoubleClick"
+               class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+               id="org.jetbrains.kotlin.ui.debug.actions.ManageBreakpointRulerAction"
+               label="Toggle &amp;Breakpoint">
+         </action>
+      </editorContribution>
+   </extension>
+   <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
             targetID="org.eclipse.jdt.ui.JavaPerspective">
