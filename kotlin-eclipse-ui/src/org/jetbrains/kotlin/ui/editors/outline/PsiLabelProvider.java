@@ -22,14 +22,22 @@ import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
+import org.jetbrains.kotlin.descriptors.CallableDescriptor;
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.psi.KtClass;
 import org.jetbrains.kotlin.psi.KtClassInitializer;
+import org.jetbrains.kotlin.psi.KtDeclaration;
 import org.jetbrains.kotlin.psi.KtElement;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtFunction;
 import org.jetbrains.kotlin.psi.KtPackageDirective;
 import org.jetbrains.kotlin.psi.KtParameter;
 import org.jetbrains.kotlin.psi.KtProperty;
 import org.jetbrains.kotlin.psi.KtTypeReference;
+import org.jetbrains.kotlin.renderer.DescriptorRenderer;
+import org.jetbrains.kotlin.resolve.BindingContext;
+import org.jetbrains.kotlin.types.KotlinType;
 
 public class PsiLabelProvider extends LabelProvider {
     
@@ -84,6 +92,8 @@ public class PsiLabelProvider extends LabelProvider {
                     text += ":";
                     text += " ";
                     text += ref.getText();
+                } else {
+                    text += computeReturnType(property);
                 }
             } else if (declaration instanceof KtFunction) {
                 KtFunction function = (KtFunction) declaration;
@@ -114,10 +124,27 @@ public class PsiLabelProvider extends LabelProvider {
                     text += ":";
                     text += " ";
                     text += typeReference.getText();
+                } else {
+                    text += computeReturnType(function);
                 }
             }
         }
         
         return text;
+    }
+    
+    private String computeReturnType(KtDeclaration ktDeclaration) {
+        KtFile ktFile = ktDeclaration.getContainingKtFile();
+        BindingContext bindingContext = KotlinAnalysisFileCache.INSTANCE.getAnalysisResult(ktFile).getAnalysisResult().getBindingContext();
+        DeclarationDescriptor declarationDescriptor = bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, ktDeclaration);
+        if (declarationDescriptor instanceof CallableDescriptor) {
+            CallableDescriptor callableDescriptor = (CallableDescriptor) declarationDescriptor;
+            KotlinType returnType = callableDescriptor.getReturnType();
+            if (returnType != null) {
+                return " : " + DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.renderType(returnType);
+            }
+        }
+        
+        return "";
     }
 }
