@@ -21,7 +21,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses( { 
-    KotlinParsingMarkersTest.class
+    KotlinParsingMarkersTest.class, MarkerAttributesTest.class
 } )
 public class AllTests {
     
