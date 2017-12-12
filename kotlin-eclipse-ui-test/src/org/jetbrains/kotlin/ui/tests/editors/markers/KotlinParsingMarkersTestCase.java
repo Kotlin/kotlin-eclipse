@@ -41,6 +41,18 @@ public abstract class KotlinParsingMarkersTestCase extends KotlinEditorWithAfter
     
     @Override
     protected void performTest(String fileText, String expected) {
+
+        try{
+            IMarker[] markers = generateAndGetProblemMarkers(fileText);
+            String actual = insertTagsForErrors(EditorUtil.getSourceCode(getTestEditor().getEditor()), markers);
+            
+            Assert.assertEquals(expected, actual);
+        } catch (CoreException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+    }
+
+    protected IMarker[] generateAndGetProblemMarkers(String fileText) throws CoreException {
         IFile file = getTestEditor().getEditingFile();
         
         Character typedCharacter = TypingUtils.typedCharacter(fileText);
@@ -53,14 +65,7 @@ public abstract class KotlinParsingMarkersTestCase extends KotlinEditorWithAfter
             AnnotationManager.INSTANCE.addProblemMarker(annotation, file);
         }
         
-        try {
-            IMarker[] markers = getTestEditor().getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
-            String actual = insertTagsForErrors(EditorUtil.getSourceCode(getTestEditor().getEditor()), markers);
-            
-            Assert.assertEquals(expected, actual);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
-        }
+        return getTestEditor().getEditingFile().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);   
     }
     
     private static String insertTagsForErrors(String fileText, IMarker[] markers) throws CoreException {

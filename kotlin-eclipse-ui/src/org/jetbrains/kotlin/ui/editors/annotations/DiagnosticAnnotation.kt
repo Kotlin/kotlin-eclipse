@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.ICompilationUnit
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 
 class DiagnosticAnnotation(
+		val line: Int,
         val offset: Int,
         val length: Int,
         val annotationType: String, 
