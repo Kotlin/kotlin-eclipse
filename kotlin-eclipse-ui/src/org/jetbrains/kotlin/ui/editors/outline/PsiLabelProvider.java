@@ -22,14 +22,19 @@ import org.eclipse.jdt.ui.ISharedImages;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
+import org.jetbrains.kotlin.descriptors.CallableDescriptor;
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.psi.KtClass;
 import org.jetbrains.kotlin.psi.KtClassInitializer;
 import org.jetbrains.kotlin.psi.KtElement;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtFunction;
 import org.jetbrains.kotlin.psi.KtPackageDirective;
 import org.jetbrains.kotlin.psi.KtParameter;
 import org.jetbrains.kotlin.psi.KtProperty;
 import org.jetbrains.kotlin.psi.KtTypeReference;
+import org.jetbrains.kotlin.resolve.BindingContext;
 
 public class PsiLabelProvider extends LabelProvider {
     
@@ -84,6 +89,16 @@ public class PsiLabelProvider extends LabelProvider {
                     text += ":";
                     text += " ";
                     text += ref.getText();
+                } else {
+                    KtFile ktFile = property.getContainingKtFile();
+                    BindingContext bindingContext = KotlinAnalysisFileCache.INSTANCE.getAnalysisResult(ktFile).getAnalysisResult().getBindingContext();
+                    DeclarationDescriptor declarationDescriptor = bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, property);
+                    if(declarationDescriptor instanceof CallableDescriptor) {
+                        text += " ";
+                        text += ":";
+                        text += " ";
+                        text += ((CallableDescriptor) declarationDescriptor).getReturnType();
+                    }
                 }
             } else if (declaration instanceof KtFunction) {
                 KtFunction function = (KtFunction) declaration;
