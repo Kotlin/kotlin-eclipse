@@ -82,8 +82,8 @@ public object AnnotationManager {
             setAttribute(IMarker.SEVERITY, annotation.markerSeverity)
             setAttribute(IMarker.CHAR_START, annotation.offset)
             setAttribute(IMarker.CHAR_END, annotation.endOffset)
-			setAttribute(IMarker.LOCATION, "line " + (annotation.line + 1))
-			setAttribute(IMarker.LINE_NUMBER, annotation.line + 1)
+			setAttribute(IMarker.LOCATION, "line ${annotation.line}")
+			setAttribute(IMarker.LINE_NUMBER, annotation.line)
             setAttribute(MARKED_TEXT, annotation.markedText)
             
             val diagnostic = annotation.diagnostic

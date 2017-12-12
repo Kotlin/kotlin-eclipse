@@ -81,12 +81,8 @@ public class DiagnosticAnnotationUtil {
                 annotations.put(curFile, new ArrayList<DiagnosticAnnotation>());
             }
             
-            try {
-                DiagnosticAnnotation annotation = createKotlinAnnotation(diagnostic, curFile);
-                annotations.get(curFile).add(annotation);
-            } catch (BadLocationException e) {
-                KotlinLogger.logAndThrow(e);
-            }
+            DiagnosticAnnotation annotation = createKotlinAnnotation(diagnostic, curFile);
+            annotations.get(curFile).add(annotation);
         }
         
         return annotations;
@@ -146,14 +142,21 @@ public class DiagnosticAnnotationUtil {
     }
     
     @NotNull
-    private DiagnosticAnnotation createKotlinAnnotation(@NotNull Diagnostic diagnostic, @NotNull IFile file) throws BadLocationException {
+    private DiagnosticAnnotation createKotlinAnnotation(@NotNull Diagnostic diagnostic, @NotNull IFile file) {
         TextRange range = diagnostic.getTextRanges().get(0);
         
         IDocument document = EditorUtil.getDocument(file);
         int offset = LineEndUtil.convertLfToDocumentOffset(diagnostic.getPsiFile().getText(), 
                 range.getStartOffset(), document);
         
-        return new DiagnosticAnnotation(document.getLineOfOffset(offset),
+        int lineOfOffset = 0;
+        try {
+            lineOfOffset = document.getLineOfOffset(offset);
+        } catch (BadLocationException e) {
+            KotlinLogger.logAndThrow(e);
+        }
+        
+        return new DiagnosticAnnotation(lineOfOffset,
                 offset,
                 range.getLength(),
                 getAnnotationType(diagnostic.getSeverity()), 
