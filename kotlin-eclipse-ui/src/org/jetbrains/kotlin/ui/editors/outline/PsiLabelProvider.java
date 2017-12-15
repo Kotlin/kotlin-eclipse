@@ -113,8 +113,6 @@ public class PsiLabelProvider extends LabelProvider {
                     KtTypeReference typeReference = parameter.getTypeReference();
                     if (typeReference != null) {
                         text += typeReference.getText();
-                    } else {
-                        text += computeReturnType(function);
                     }
                     text += ", ";
                 }
@@ -126,6 +124,8 @@ public class PsiLabelProvider extends LabelProvider {
                     text += ":";
                     text += " ";
                     text += typeReference.getText();
+                } else {
+                    text += computeReturnType(function);
                 }
             }
         }
@@ -137,10 +137,10 @@ public class PsiLabelProvider extends LabelProvider {
         KtFile ktFile = ktDeclaration.getContainingKtFile();
         BindingContext bindingContext = KotlinAnalysisFileCache.INSTANCE.getAnalysisResult(ktFile).getAnalysisResult().getBindingContext();
         DeclarationDescriptor declarationDescriptor = bindingContext.get(BindingContext.DECLARATION_TO_DESCRIPTOR, ktDeclaration);
-        if(declarationDescriptor instanceof CallableDescriptor) {
+        if (declarationDescriptor instanceof CallableDescriptor) {
             CallableDescriptor callableDescriptor = (CallableDescriptor) declarationDescriptor;
             KotlinType returnType = callableDescriptor.getReturnType();
-            if(returnType != null) {
+            if (returnType != null) {
                 return " : " + DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.renderType(returnType);
             }
         }
