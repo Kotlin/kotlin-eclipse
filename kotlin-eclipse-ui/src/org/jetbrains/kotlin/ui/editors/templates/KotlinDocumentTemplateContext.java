@@ -42,12 +42,16 @@ public class KotlinDocumentTemplateContext extends DocumentTemplateContext {
         KotlinTemplateFormatter templateFormatter = new KotlinTemplateFormatter();
         
         IFile file = editor.getEclipseFile();
-
+        
         assert file != null : "Failed to retrieve IFile from editor " + editor;
 
         String lineDelimiter = TextUtilities.getDefaultLineDelimiter(getDocument());
         templateFormatter.format(templateBuffer, lineDelimiter, file.getProject());
         
         return templateBuffer;
+    }
+    
+    public KotlinEditor getKotlinEditor() {
+        return editor;
     }
 }

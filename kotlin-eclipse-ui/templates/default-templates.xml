@@ -1,8 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <templates>
-
-<template name="main" description="An entry point for Kotlin program" id="org.jetbrains.kotlin.ui.editors.templates.main" 
-	context="kotlin-top-level-declarations" enabled="true" autoinsert="true">fun main(args: Array&lt;String&gt;) {
-	${cursor}
-}</template>
-
+    <template autoinsert="true" context="kotlin-top-level-declarations" deleted="false" description="Kotlin Class" enabled="true" id="org.jetbrains.kotlin.ui.editors.templates.class" name="class">class ${file} () {
+       ${cursor}
+    }</template>
+    <template autoinsert="true" context="kotlin-top-level-declarations" deleted="false" description="Kotlin Object" enabled="true" id="org.jetbrains.kotlin.ui.editors.templates.object" name="object">object ${file} () {
+       ${cursor}
+    }</template>
+    <template autoinsert="true" context="kotlin-top-level-declarations" deleted="false" description="Kotlin function" enabled="true" id="org.jetbrains.kotlin.ui.editors.templates.fun" name="fun">fun ${fun-name} () : ${return-type} {
+        ${cursor}
+    }</template>
+    <template autoinsert="true" context="kotlin-top-level-declarations" deleted="false" description="An entry point for Kotlin program" enabled="true" id="org.jetbrains.kotlin.ui.editors.templates.main" name="main">fun main(args: Array&lt;String&gt;) {
+        ${cursor}
+    }</template>
+    <template autoinsert="true" context="kotlin-top-level-declarations" deleted="false" description="Creates a val" enabled="true" id="org.jetbrains.kotlin.ui.editors.templates.val" name="val">val ${name} = ${type}(${});</template>
+    <template autoinsert="true" context="kotlin-top-level-declarations" deleted="false" description="Creates a var" enabled="true" id="org.jetbrains.kotlin.ui.editors.templates.var" name="var">var ${name} = ${type}(${});</template>
 </templates>
+

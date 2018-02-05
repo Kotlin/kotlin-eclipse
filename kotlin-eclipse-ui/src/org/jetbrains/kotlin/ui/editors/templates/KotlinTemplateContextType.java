@@ -17,7 +17,11 @@
 package org.jetbrains.kotlin.ui.editors.templates;
 
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
+import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateContextType;
+import org.eclipse.jface.text.templates.TemplateVariableResolver;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 public class KotlinTemplateContextType extends TemplateContextType {
     
@@ -32,5 +36,29 @@ public class KotlinTemplateContextType extends TemplateContextType {
         addResolver(new GlobalTemplateVariables.Year());
         addResolver(new GlobalTemplateVariables.Time());
         addResolver(new GlobalTemplateVariables.User());
+        addResolver(new File());
+    }
+
+    protected static class File extends TemplateVariableResolver {
+        public File() {
+            super("file", "Name of the source file");  //$NON-NLS-1$
+        }
+        @Override
+        protected String resolve(TemplateContext context) {
+            KotlinEditor editor = ((KotlinDocumentTemplateContext) context).getKotlinEditor();
+
+            KtFile parsedFile = editor.getParsedFile();
+            if(parsedFile != null) {
+                String fileName = parsedFile.getName();
+                int fileExtensionIndex = fileName.lastIndexOf(".");
+                return fileName.substring(0, fileExtensionIndex);
+            }
+             
+            return null;
+        }
+        @Override
+        protected boolean isUnambiguous(TemplateContext context) {
+            return resolve(context) != null;
+        }
     }
 }
