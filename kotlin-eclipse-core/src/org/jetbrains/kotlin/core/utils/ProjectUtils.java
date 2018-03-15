@@ -380,7 +380,7 @@ public class ProjectUtils {
     private static String getKtHome() {
         try {
             Bundle compilerBundle = Platform.getBundle("org.jetbrains.kotlin.bundled-compiler");
-            return FileLocator.toFileURL(compilerBundle.getEntry("/")).getFile();
+            return FileLocator.toFileURL(compilerBundle.getEntry("/user-bundle/")).getFile();
         } catch (IOException e) {
             KotlinLogger.logAndThrow(e);
         }
