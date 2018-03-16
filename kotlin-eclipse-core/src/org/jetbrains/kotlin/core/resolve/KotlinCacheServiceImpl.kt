@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.resolve.diagnostics.KotlinSuppressCache
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
+import org.jetbrains.kotlin.analyzer.ModuleInfo
 
 public class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheService {
     override fun getResolutionFacadeByFile(file: PsiFile, platform: TargetPlatform): ResolutionFacade {
@@ -45,6 +46,8 @@ public class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheServi
     override fun getResolutionFacade(elements: List<KtElement>): ResolutionFacade {
         return KotlinSimpleResolutionFacade(ideaProject, elements)
     }
+	override fun getResolutionFacadeByModuleInfo(moduleInfo: ModuleInfo, platform: TargetPlatform): ResolutionFacade? =
+		null
 }
 
 class KotlinSimpleResolutionFacade(

@@ -1,15 +1,15 @@
 <project default="get_bundled">
-    <property name="compiler.tag" value="1.1.51" />
+    <property name="compiler.tag" value="1.2.30" />
     <property name="bootstrap_branch" value=""/>
     <property name="idea-version" value="162.1812.17"/>
     
-    <property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
+    <property name="compiler.query" value="1334344:id" />
     
     <property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
     
     <property name="kotlin-idea-compatible-version" value="IJ2017.3-1" />
-    <property name="kotlin-version" value="1.1.51" />
-    <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_1150_CompilerAndPlugin_NoTests/${compiler.query}" />
+    <property name="kotlin-version" value="1.2.30" />
+    <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_1230_CompilerAllPlugins/${compiler.query}" />
     
     <property name="idea-sdk-url" value="https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea" />
     
@@ -238,9 +238,8 @@
         </unzip>
         
         <!-- Also retrivive sources -->
-        <get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 
+        <get src="${teamcity-kotlin-url}/maven/org/jetbrains/kotlin/kotlin-compiler/1.2.30/kotlin-compiler-1.2.30-sources.jar" 
                     dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
-        
         <!-- Get idea sources -->
         <get src="${idea-sdk-url}/ideaIC/${idea-version}/ideaIC-${idea-version}-sources.jar" dest="${download.dir}/idea-sdk-sources.jar" usetimestamp="true" />
         

@@ -27,7 +27,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.name.FqName
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
+import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
 
 fun equalsJvmSignature(KtElement: KtElement, javaMember: IMember): Boolean {
     val jetSignatures = KtElement.getUserData(LightClassBuilderFactory.JVM_SIGNATURE)
@@ -60,7 +60,7 @@ fun getDeclaringTypeFqName(KtElement: KtElement): FqName? {
 fun getTypeFqName(element: PsiElement): FqName? {
     return when (element) {
         is KtClassOrObject -> element.getFqName()
-        is KtFile -> NoResolveFileClassesProvider.getFileClassInfo(element).fileClassFqName
+        is KtFile -> JvmFileClassUtil.getFileClassInfoNoResolve(element).fileClassFqName
         else -> null
     }
 }

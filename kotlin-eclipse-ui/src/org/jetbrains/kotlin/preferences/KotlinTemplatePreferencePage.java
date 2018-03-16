@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager;
 public class KotlinTemplatePreferencePage extends TemplatePreferencePage {
     
     public KotlinTemplatePreferencePage() {
-        setPreferenceStore(Activator.getDefault().getPreferenceStore());
+        setPreferenceStore(Activator.Companion.getDefault().getPreferenceStore());
         setTemplateStore(KotlinTemplateManager.INSTANCE.getTemplateStore());
         
         setContextTypeRegistry(KotlinTemplateManager.INSTANCE.getContextTypeRegistry());

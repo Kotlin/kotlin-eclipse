@@ -27,7 +27,7 @@ public class ProjectScopedPreferenceUtils {
     
     @NotNull
     private static IEclipsePreferences getPreferences(@NotNull final IProject project) {
-        return new ProjectScope(project).getNode(Activator.PLUGIN_ID);        
+        return new ProjectScope(project).getNode(Activator.Companion.getPLUGIN_ID());        
     }
     
     public static boolean getBooleanPreference(@NotNull final IProject project, @NotNull final String key, final boolean defaultValue) {
