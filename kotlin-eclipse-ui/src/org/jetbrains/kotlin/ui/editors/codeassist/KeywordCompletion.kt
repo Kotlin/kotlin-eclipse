@@ -68,6 +68,7 @@ import org.jetbrains.kotlin.resolve.ModifierCheckerCore
 import java.util.ArrayList
 import com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.KtNodeTypes
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 
 open class KeywordLookupObject
 
@@ -374,13 +375,7 @@ object KeywordCompletion {
                         else -> return true
                     }
 
-                    val modifierParents = ModifierCheckerCore.possibleParentTargetMap[keywordTokenType]
-                    if (modifierParents != null && parentTarget !in modifierParents) return false
-
-                    val deprecatedParents = ModifierCheckerCore.deprecatedParentTargetMap[keywordTokenType]
-                    if (deprecatedParents != null && parentTarget in deprecatedParents) return false
-
-                    return true
+                    return ModifierCheckerCore.isPossibleParentTarget(keywordTokenType, parentTarget, LanguageVersionSettingsImpl.DEFAULT)
                 }
             }
         }

@@ -599,4 +599,9 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     public void testVariance() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/Variance.kt");
     }
+
+    @Test
+    public void testFeaturesOfKotlin_1_2() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/featuresOf_1_2.kt");
+    }
 }

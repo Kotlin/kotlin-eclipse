@@ -49,7 +49,7 @@ public class KotlinTemplateManager {
     
     public TemplateStore getTemplateStore() {
         if (templateStore == null) {
-            templateStore = new ContributionTemplateStore(getContextTypeRegistry(), Activator.getDefault().getPreferenceStore(), TEMPLATES_KEY);
+            templateStore = new ContributionTemplateStore(getContextTypeRegistry(), Activator.Companion.getDefault().getPreferenceStore(), TEMPLATES_KEY);
             try {
                 templateStore.load();
             } catch (IOException e) {

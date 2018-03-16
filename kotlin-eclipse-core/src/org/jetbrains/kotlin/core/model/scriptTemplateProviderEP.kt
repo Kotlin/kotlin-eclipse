@@ -6,8 +6,8 @@ import org.eclipse.core.runtime.SubMonitor
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionFromAnnotatedTemplate
-import org.jetbrains.kotlin.script.ScriptTemplatesProvider
-import org.jetbrains.kotlin.script.makeScriptDefsFromTemplatesProviders
+//import org.jetbrains.kotlin.script.ScriptTemplatesProvider
+//import org.jetbrains.kotlin.script.makeScriptDefsFromTemplatesProviders
 import java.io.File
 import java.net.URLClassLoader
 
@@ -18,19 +18,19 @@ fun loadAndCreateDefinitionsByTemplateProviders(
         eclipseFile: IFile,
         monitor: IProgressMonitor
 ): Pair<List<KotlinScriptDefinition>, List<String>> {
-    val scriptTemplateProviders = loadExecutableEP<ScriptTemplatesProvider>(SCRIPT_TEMPLATE_PROVIDER_EP_ID).mapNotNull { it.createProvider() }
-    val definitionsFromProviders = makeScriptDefsFromTemplatesProviders(scriptTemplateProviders) { provider, e ->
-        KotlinLogger.logError(
-                "Extension (scriptTemplateProvider) with template ${provider.templateClassNames.joinToString()} " +
-                "could not be initialized", e)
-    }
+    //val scriptTemplateProviders = loadExecutableEP<ScriptTemplatesProvider>(SCRIPT_TEMPLATE_PROVIDER_EP_ID).mapNotNull { it.createProvider() }
+    //val definitionsFromProviders = makeScriptDefsFromTemplatesProviders(scriptTemplateProviders) { provider, e ->
+    //    KotlinLogger.logError(
+    //            "Extension (scriptTemplateProvider) with template ${provider.templateClassNames.joinToString()} " +
+    //            "could not be initialized", e)
+    //}
     
     val scriptTemplateProvidersEx = loadExecutableEP<ScriptTemplateProviderEx>(SCRIPT_TEMPLATE_PROVIDER_EP_EX_ID).mapNotNull { it.createProvider() }
     val definitionsFromProvidersEx = makeScriptDefsFromEclipseTemplatesProviders(eclipseFile, scriptTemplateProvidersEx, monitor)
     val onlyProvidersEx = definitionsFromProvidersEx.map { it.first }
     val providersClasspath = definitionsFromProvidersEx.flatMap { it.second }
         
-    return Pair(definitionsFromProviders + onlyProvidersEx, providersClasspath)
+    return Pair(/*definitionsFromProviders + */onlyProvidersEx, providersClasspath)
 }
 
 interface ScriptTemplateProviderEx {
@@ -62,7 +62,7 @@ fun makeScriptDefsFromEclipseTemplatesProviders(
                     )
                     
                     val cl = loader.loadClass(provider.templateClassName)
-                    Pair(KotlinScriptDefinitionFromAnnotatedTemplate(cl.kotlin, null, null, provider.getEnvironment(eclipseFile)), templateClasspath)
+                    Pair(KotlinScriptDefinitionFromAnnotatedTemplate(cl.kotlin, provider.getEnvironment(eclipseFile), templateClasspath.map{File(it)}.toList()), templateClasspath)
                 } catch (ex: Exception) {
                     KotlinLogger.logError(
                             "Extension (EclipseScriptTemplateProvider) ${provider::class.java.name} with templates ${provider.templateClassName} " +

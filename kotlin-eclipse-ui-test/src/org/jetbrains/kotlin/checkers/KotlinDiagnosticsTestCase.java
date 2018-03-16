@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.asJava.DuplicateJvmSignatureUtilKt;
+import org.jetbrains.kotlin.checkers.CheckerTestUtil.AbstractTestDiagnostic;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.ActualDiagnostic;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.TextDiagnostic;
 import org.jetbrains.kotlin.checkers.KotlinDiagnosticsTestCase.TestFile;
@@ -505,7 +506,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     		        implementingModulesBinding,
                     		        jetFile, 
                     		        markDynamicCalls, 
-                    		        dynamicCallDescriptors), 
+                    		        dynamicCallDescriptors, false), 
                     		jvmSignatureDiagnostics),
                     new Condition<ActualDiagnostic>() {
                         @Override
@@ -514,7 +515,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                         }
                     });
             
-            Map<ActualDiagnostic, CheckerTestUtil.TextDiagnostic> diagnosticToExpectedDiagnostic = CheckerTestUtil.diagnosticsDiff(
+            Map<AbstractTestDiagnostic, TextDiagnostic> diagnosticToExpectedDiagnostic = CheckerTestUtil.diagnosticsDiff(
                     diagnosedRanges, diagnostics, new CheckerTestUtil.DiagnosticDiffCallbacks() {
                 @Override
                 public void missingDiagnostic(TextDiagnostic diagnostic, int expectedStart, int expectedEnd) {
@@ -548,7 +549,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     String text = file.getText();
                     return declareCheckType ? StringUtil.trimEnd(text, CHECK_TYPE_DECLARATIONS) : text;
                 }
-            }));
+            }, null, skipJvmSignatureDiagnostics));
             
             stripExtras(actualText);
             
@@ -565,7 +566,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 jvmSignatureDiagnostics.addAll(CollectionsKt.map(diagnostics.forElement(declaration), new Function1<Diagnostic, ActualDiagnostic>() {
                     @Override
                     public ActualDiagnostic invoke(Diagnostic arg0) {
-                        return new ActualDiagnostic(arg0, null);
+                        return new ActualDiagnostic(arg0, null, true);
                     }
                 }));
                   

@@ -26,6 +26,7 @@ import java.io.EOFException
 import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.name.ClassId
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
     private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping)
@@ -40,6 +41,8 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
     private val loadedModules: MutableList<ModuleMappingInfo> = SmartList()
     
     private val deserializationConfiguration = CompilerDeserializationConfiguration(LanguageVersionSettingsImpl.DEFAULT)
+
+	override fun getAnnotationsOnBinaryModule(moduleName: String): List<ClassId> = emptyList()
 
     override fun findPackageParts(packageFqName: String): List<String> {
         val rootToPackageParts = getPackageParts(packageFqName)
