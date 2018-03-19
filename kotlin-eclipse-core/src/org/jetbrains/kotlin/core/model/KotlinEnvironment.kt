@@ -52,6 +52,7 @@ import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import org.jetbrains.kotlin.script.ScriptDefinitionProvider
 import org.jetbrains.kotlin.script.StandardScriptDefinition
+import org.jetbrains.kotlin.cli.common.script.CliScriptDefinitionProvider
 import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
 import java.net.URL
@@ -126,13 +127,16 @@ class KotlinScriptEnvironment private constructor(
     init {
         StorageComponentContainerContributor.registerExtensionPoint(project)
         
-        scriptDefinitions
+        val scriptsForProvider = scriptDefinitions
                 .filter { it.isScript(eclipseFile.name) }
                 .ifEmpty { listOf(StandardScriptDefinition) }
-                .forEach {
-                    //ScriptDefinitionProvider.getInstance(project)?.addScriptDefinition(it)
-                }
         
+        val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project) as? CliScriptDefinitionProvider
+        if (scriptDefinitionProvider != null) {
+            scriptDefinitionProvider.setScriptDefinitions(scriptsForProvider)
+        }
+
+
     	addToCPFromScriptTemplateClassLoader(providersClasspath)
         
         configureClasspath()
@@ -390,7 +394,10 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
         }
         
-        //ScriptDefinitionProvider.getInstance(project)?.addScriptDefinition(StandardScriptDefinition)
+        val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project) as? CliScriptDefinitionProvider
+        if (scriptDefinitionProvider != null) {
+            scriptDefinitionProvider.setScriptDefinitions(listOf(StandardScriptDefinition))
+        }
         
         cachedEnvironment.putEnvironment(eclipseProject, this)
     }
