@@ -45,6 +45,8 @@ Export-Package:
  com.intellij.lang.java,
  com.intellij.lang.java.lexer,
  com.intellij.lang.java.parser,
+ com.intellij.lang.jvm,
+ com.intellij.lang.jvm.facade,
  com.intellij.lexer,
  com.intellij.mock,
  com.intellij.navigation,

@@ -76,6 +76,7 @@ import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
 import org.jetbrains.kotlin.script.ScriptDefinitionProvider
+import org.jetbrains.kotlin.cli.common.script.CliScriptDefinitionProvider
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
@@ -133,7 +134,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         project = projectEnvironment.getProject()
         
         with(project) {
-            val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project)
+            val scriptDefinitionProvider = CliScriptDefinitionProvider()
             registerService(ScriptDefinitionProvider::class.java, scriptDefinitionProvider)
             registerService(
                     ScriptDependenciesProvider::class.java,
