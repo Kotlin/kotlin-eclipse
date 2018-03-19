@@ -93,6 +93,8 @@ import com.intellij.psi.impl.PsiElementFinderImpl
 import org.jetbrains.kotlin.script.ScriptHelper
 import org.jetbrains.kotlin.script.ScriptHelperImpl
 import com.intellij.lang.jvm.facade.JvmElementProvider
+import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
+import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -147,7 +149,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
 
             registerService(CoreJavaFileManager::class.java,
                     ServiceManager.getService(project, JavaFileManager::class.java) as CoreJavaFileManager)
-
+			
+			registerService(ModuleAnnotationsResolver::class.java, CliModuleAnnotationsResolver())
             registerService(CodeStyleManager::class.java, DummyCodeStyleManager())
             registerService(BuiltInsReferenceResolver::class.java, BuiltInsReferenceResolver(project))
             registerService(KotlinSourceIndex::class.java, KotlinSourceIndex())

@@ -244,6 +244,7 @@ Export-Package:
  org.jetbrains.kotlin.config,
  org.jetbrains.kotlin.container,
  org.jetbrains.kotlin.context,
+ org.jetbrains.kotlin.contracts,
  org.jetbrains.kotlin.descriptors,
  org.jetbrains.kotlin.descriptors.annotations,
  org.jetbrains.kotlin.descriptors.impl,

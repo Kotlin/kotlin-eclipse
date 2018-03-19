@@ -58,6 +58,8 @@ import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.resolve.AnnotationResolverImpl
 import org.jetbrains.kotlin.config.AnalysisFlag
 import org.jetbrains.kotlin.load.java.AnnotationTypeQualifierResolver
+import org.jetbrains.kotlin.load.java.JavaClassesTracker
+import org.jetbrains.kotlin.contracts.ContractDeserializerImpl
 
 fun StorageComponentContainer.configureJavaTopDownAnalysis(
         moduleContentScope: GlobalSearchScope,
@@ -120,7 +122,11 @@ public fun createContainerForLazyResolveWithJava(
         useImpl<JvmBuiltInsPackageFragmentProvider>()
     }
 
+	useInstance(JavaClassesTracker.Default)
+	
     targetEnvironment.configure(this)
+	
+	useImpl<ContractDeserializerImpl>()
 }.apply {
     get<EclipseJavaClassFinder>().initialize(bindingTrace, get<KotlinCodeAnalyzer>())
 }
