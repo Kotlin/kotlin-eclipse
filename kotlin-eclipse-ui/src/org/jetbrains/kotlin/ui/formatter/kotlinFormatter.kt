@@ -32,13 +32,7 @@ import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.editor.Document as IdeaDocument
 
 @Volatile
-var settings: CodeStyleSettings = object : CodeStyleSettings(true) {
-	override fun getCommonSettings(lang: Language): CommonCodeStyleSettings =
-			when (lang) {
-				KotlinLanguage.INSTANCE -> KotlinCommonCodeStyleSettings()
-				else -> CommonCodeStyleSettings(lang)
-			}
-}
+var settings: CodeStyleSettings = CodeStyleSettings(true)
 
 fun formatCode(source: String, fileName: String, psiFactory: KtPsiFactory, lineSeparator: String): String {
 	return KotlinFormatter(source, fileName, psiFactory, lineSeparator).formatCode()
