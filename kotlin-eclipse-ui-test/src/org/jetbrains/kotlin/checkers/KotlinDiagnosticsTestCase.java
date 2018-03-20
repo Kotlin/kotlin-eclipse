@@ -33,8 +33,6 @@ import org.jetbrains.kotlin.asJava.DuplicateJvmSignatureUtilKt;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.AbstractTestDiagnostic;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.ActualDiagnostic;
 import org.jetbrains.kotlin.checkers.CheckerTestUtil.TextDiagnostic;
-import org.jetbrains.kotlin.checkers.KotlinDiagnosticsTestCase.TestFile;
-import org.jetbrains.kotlin.checkers.KotlinDiagnosticsTestCase.TestModule;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.core.tests.diagnostics.AdditionalConditions;
@@ -60,7 +58,6 @@ import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
-import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.junit.Assert;
 import org.junit.Before;
 
@@ -87,7 +84,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     
     public static final Pattern DIAGNOSTICS_PATTERN = Pattern.compile("([\\+\\-!])(\\w+)\\s*");
     public static final String DIAGNOSTICS_DIRECTIVE = "DIAGNOSTICS";
-    @SuppressWarnings("unchecked")
     public static final Set<DiagnosticFactory<?>> DIAGNOSTICS_TO_INCLUDE_ANYWAY =
         new HashSet<>(Arrays.asList(
                 Errors.UNRESOLVED_REFERENCE,
@@ -237,7 +233,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         checkResolvedCallsInDiagnostics(bindingContext);
     }
     
-    @SuppressWarnings({"unchecked"})
     private static void checkResolvedCallsInDiagnostics(BindingContext bindingContext) {
         Set<DiagnosticFactory1<PsiElement, Collection<? extends ResolvedCall<?>>>> diagnosticsStoringResolvedCalls1 = new HashSet<>(
                 Arrays.asList(OVERLOAD_RESOLUTION_AMBIGUITY, NONE_APPLICABLE, CANNOT_COMPLETE_RESOLVE, UNRESOLVED_REFERENCE_WRONG_RECEIVER,
@@ -549,7 +544,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     String text = file.getText();
                     return declareCheckType ? StringUtil.trimEnd(text, CHECK_TYPE_DECLARATIONS) : text;
                 }
-            }, null, skipJvmSignatureDiagnostics));
+            }, Collections.emptyList(), skipJvmSignatureDiagnostics));
             
             stripExtras(actualText);
             
