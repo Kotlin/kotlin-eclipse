@@ -90,7 +90,6 @@ public class EditorUtil {
         return null;
     }
     
-    @SuppressWarnings("unchecked")
     @Nullable
     public static KtElement getJetElement(@NotNull KotlinEditor editor, int offset) {
         PsiElement psiElement = getPsiElement(editor, offset);

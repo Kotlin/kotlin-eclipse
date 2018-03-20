@@ -29,10 +29,7 @@ abstract class KotlinQuickAssist(val editor: KotlinEditor) {
     
     abstract fun isApplicable(psiElement: PsiElement): Boolean
     
-    fun isApplicable(): Boolean {
-        val element = getActiveElement()
-        return if (element != null) isApplicable(element) else false
-    }
+    fun isApplicable(): Boolean = getActiveElement()?.let(::isApplicable) ?: false
     
     protected fun getActiveElement(): PsiElement? {
         val file = editor.eclipseFile
