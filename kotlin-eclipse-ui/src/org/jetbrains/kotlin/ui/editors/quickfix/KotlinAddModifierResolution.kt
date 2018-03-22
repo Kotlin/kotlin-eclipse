@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.ui.editors.quickassist.insertAfter
 import org.jetbrains.kotlin.ui.editors.quickassist.insertBefore
 import org.jetbrains.kotlin.ui.editors.quickassist.remove
 import org.jetbrains.kotlin.ui.editors.quickassist.replace
+import com.intellij.psi.tree.IElementType
 
 fun DiagnosticFactory<*>.createAddModifierFix(modifier: KtModifierKeywordToken): KotlinDiagnosticQuickFix =
     createAddModifierFix(modifier, KtModifierListOwner::class.java)
@@ -190,17 +191,19 @@ private fun addModifier(modifierList: KtModifierList, modifier: KtModifierKeywor
 
     val newModifier = KtPsiFactory(modifierList).createModifier(modifier)
     val modifiersToReplace = MODIFIERS_TO_REPLACE[modifier] ?: setOf()
-    
+
     generateSequence(modifierList.firstChild) { it.nextSibling }
             .plus(newModifier)
             .filterNot { it is PsiWhiteSpace }
-            .filterNot { it.node.elementType in modifiersToReplace }
-            .sortedBy { MODIFIERS_ORDER[it.node.elementType] ?: -1 }
-            .map { if (it is KtAnnotation) "${it.text}\n" else "${it.text} " }
+            .filterNot { it.type in modifiersToReplace }
+            .sortedBy { MODIFIERS_ORDER[it.type] ?: -1 }
+            .map { if (it is KtAnnotationEntry) "${it.text}\n" else "${it.text} " }
             .joinToString(separator = "")
             .dropLast(1)
             .also { replace(modifierList, it, elementDocument) }
 }
+
+private val PsiElement.type: IElementType get() = node.elementType
 
 private val MODIFIERS_TO_REPLACE = mapOf(
         OVERRIDE_KEYWORD to setOf(OPEN_KEYWORD),
