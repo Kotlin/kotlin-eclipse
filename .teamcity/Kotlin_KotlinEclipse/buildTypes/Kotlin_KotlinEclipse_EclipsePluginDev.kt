@@ -40,4 +40,6 @@ object Kotlin_KotlinEclipse_EclipsePluginDev : BuildType({
         vcs {
         }
     }
+
+    artifactRules = "+:**/.log"
 })
