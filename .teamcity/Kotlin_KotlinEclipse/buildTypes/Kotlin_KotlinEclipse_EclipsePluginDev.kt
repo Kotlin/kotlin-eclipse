@@ -31,6 +31,7 @@ object Kotlin_KotlinEclipse_EclipsePluginDev : BuildType({
                 path = "%teamcity.tool.maven.3.5.2%"
             }
             jdkHome = "%env.JDK_18_x64%"
+            runnerArgs = "-e"
             param("org.jfrog.artifactory.selectedDeployableServer.defaultModuleVersionConfiguration", "GLOBAL")
         }
     }
