@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinImplementMethodsTest extends KotlinImplementMethodsTestCase {
@@ -53,6 +54,7 @@ public class KotlinImplementMethodsTest extends KotlinImplementMethodsTestCase {
 		doTest("common_testData/ide/codeInsight/overrideImplement/overrideExtensionProperty.kt");
 	}
 	
+	@Ignore
 	@Test
 	public void testOverrideMutableExtensionProperty() {
 		doTest("common_testData/ide/codeInsight/overrideImplement/overrideMutableExtensionProperty.kt");
@@ -73,6 +75,7 @@ public class KotlinImplementMethodsTest extends KotlinImplementMethodsTestCase {
 		doTest("common_testData/ide/codeInsight/overrideImplement/traitNullableFunction.kt");
 	}
 	
+	@Ignore
 	@Test
     public void testImplementMethodInScript() {
         doTest("testData/intentions/implementMethods/implementMethodInScript.kts");

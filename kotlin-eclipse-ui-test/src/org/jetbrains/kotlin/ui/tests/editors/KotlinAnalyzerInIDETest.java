@@ -16,10 +16,13 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
-	@Test
+	
+    @Ignore
+    @Test
     public void unresolvedPackageType() {
         doAutoTest();
     }
@@ -29,6 +32,7 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void checkAnalyzerFoundError() {
         doAutoTest();
@@ -39,6 +43,7 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void javaFromKotlin() {
         doAutoTest();
@@ -59,6 +64,7 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void kotlinWithErrorsFromJava() {
         doAutoTest();
@@ -74,11 +80,13 @@ public class KotlinAnalyzerInIDETest extends KotlinAnalyzerInIDETestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void packageLevelFunctionsFromJava() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void packageLevelPropertiesFromJava() {
         doAutoTest();

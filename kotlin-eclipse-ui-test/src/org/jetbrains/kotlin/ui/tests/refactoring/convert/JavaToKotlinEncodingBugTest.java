@@ -34,8 +34,10 @@ import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
 import org.jetbrains.kotlin.ui.commands.j2k.JavaToKotlinActionHandler;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class JavaToKotlinEncodingBugTest extends KotlinProjectTestCase {
 
     private static final String CHARSET_UTF8 = "UTF-8";

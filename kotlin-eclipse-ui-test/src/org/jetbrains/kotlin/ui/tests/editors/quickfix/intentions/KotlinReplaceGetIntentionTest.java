@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
+import org.junit.Ignore;
 import org.junit.Test;
             
 public class KotlinReplaceGetIntentionTest extends KotlinReplaceGetIntentionTestCase {
@@ -102,6 +103,7 @@ public class KotlinReplaceGetIntentionTest extends KotlinReplaceGetIntentionTest
         doTest(PATH_PREFIX + "/unnamedAndNamed.kt");
     }
 	
+	@Ignore("Script support will be fixed in future releases")
 	@Test
     public void testReplaceGetInScript() throws Exception {
         doTest("testData/intentions/replaceGetOrSet/replaceGetInScript.kts");

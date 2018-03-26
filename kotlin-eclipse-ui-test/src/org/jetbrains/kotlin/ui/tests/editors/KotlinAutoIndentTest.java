@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAutoIndentTest extends KotlinAutoIndentTestCase {
@@ -33,11 +34,13 @@ public class KotlinAutoIndentTest extends KotlinAutoIndentTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void AssignmentAfterEq() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void BinaryWithTypeExpressions() {
         doAutoTest();
@@ -83,51 +86,61 @@ public class KotlinAutoIndentTest extends KotlinAutoIndentTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InBinaryExpressionInMiddle() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InBinaryExpressionsBeforeCloseParenthesis() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InBinaryExpressionUnfinished() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InDelegationListAfterColon() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InDelegationListAfterComma() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InDelegationListNotEmpty() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InEnumAfterSemicolon() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InEnumInitializerListAfterComma() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InEnumInitializerListNotEmpty() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InExpressionsParenthesesBeforeOperand() {
         doAutoTest();
@@ -158,6 +171,7 @@ public class KotlinAutoIndentTest extends KotlinAutoIndentTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void IsExpressionAfterIs() {
         doAutoTest();
@@ -188,6 +202,7 @@ public class KotlinAutoIndentTest extends KotlinAutoIndentTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void SettingAlignMultilineParametersInCalls() {
         doAutoTest();
