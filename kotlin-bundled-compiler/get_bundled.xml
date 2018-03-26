@@ -1,5 +1,5 @@
 <project default="get_bundled">
-    <property name="compiler.tag" value="1.2.30" />
+    <property name="compiler.tag" value="1.2.31" />
     <property name="bootstrap_branch" value=""/>
     <property name="idea-version" value="162.1812.17"/>
     
