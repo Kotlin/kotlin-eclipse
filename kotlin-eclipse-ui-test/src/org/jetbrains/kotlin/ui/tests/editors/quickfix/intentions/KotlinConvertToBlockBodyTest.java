@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinConvertToBlockBodyTest extends
@@ -14,7 +15,8 @@ public class KotlinConvertToBlockBodyTest extends
 		doTest("common_testData/ide/intentions/convertToBlockBody/annotatedExpr.kt");
 	}
 	
-   @Test
+    @Ignore
+    @Test
     public void testImplicitlyNonUnitFun() {
         doTest("testData/intentions/convertToBlockBody/implicitlyNonUnitFun.kt");
     }

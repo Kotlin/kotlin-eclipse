@@ -17,6 +17,7 @@ public class KotlinRenameTest extends KotlinRenameTestCase {
         doTest("testData/refactoring/rename/automaticRenamer/simple.test");
     }
     
+    @Ignore
     @Test
     public void testRenameJavaClass() {
         doTest("testData/refactoring/rename/renameJavaClass/renameJavaClass.test");
