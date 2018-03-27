@@ -26,7 +26,6 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.jetbrains.kotlin.ui.editors.annotations.KotlinLineAnnotationsReconciler
 import org.jetbrains.kotlin.script.ScriptDependenciesProvider

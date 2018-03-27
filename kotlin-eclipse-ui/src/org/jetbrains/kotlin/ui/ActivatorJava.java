@@ -30,19 +30,19 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class ActivatorJava extends AbstractUIPlugin {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jetbrains.kotlin.ui"; //$NON-NLS-1$
     
     // The shared instance
-    private static Activator plugin;
+    private static ActivatorJava plugin;
     
     private final IResourceChangeListener resourceChangeListener = new ResourceChangeListener();
     private final IResourceChangeListener scriptClasspathUpdater = new ScriptClasspathUpdater();
     private final IElementChangedListener kotlinClassPathChangedListener = new KotlinClassPathListener();
     private final IElementChangedListener kotlinJavaDeclarationsListener = new KotlinJavaDeclarationsListener();
     
-    public Activator() {
+    public ActivatorJava() {
     }
     
     @Override
@@ -72,7 +72,7 @@ public class Activator extends AbstractUIPlugin {
     /**
      * Returns the shared instance
      */
-    public static Activator getDefault() {
+    public static ActivatorJava getDefault() {
         return plugin;
     }
 }

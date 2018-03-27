@@ -49,8 +49,8 @@ class KotlinBlock(
             override fun getSuperChildAttributes(newChildIndex: Int): ChildAttributes = super@KotlinBlock.getChildAttributes(newChildIndex)
     
             override fun getSubBlocks(): List<Block> = subBlocks
-    
-            override fun createBlock(node: ASTNode, alignmentStrategy: CommonAlignmentStrategy, indent: Indent?, wrap: Wrap?, settings: CodeStyleSettings, spacingBuilder: KotlinSpacingBuilder): Block {
+
+            override fun createBlock(node: ASTNode, alignmentStrategy: CommonAlignmentStrategy, indent: Indent?, wrap: Wrap?, settings: CodeStyleSettings, spacingBuilder: KotlinSpacingBuilder, overrideChildren: Sequence<ASTNode>?): ASTBlock {
                 return KotlinBlock(
                         node,
                         alignmentStrategy,

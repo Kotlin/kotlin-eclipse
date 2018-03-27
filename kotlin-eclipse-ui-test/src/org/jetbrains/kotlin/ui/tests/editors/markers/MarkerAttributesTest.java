@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class MarkerAttributesTest extends KotlinParsingMarkersTestCase {
@@ -44,6 +45,7 @@ public class MarkerAttributesTest extends KotlinParsingMarkersTestCase {
         }
     }
     
+    @Ignore
     @Test
     public void missingClosingBraceErrorTest() {
         doAutoTest();

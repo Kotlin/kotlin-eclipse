@@ -16,90 +16,94 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
+import org.junit.Ignore;
 import org.junit.Test;
-
+            
 public class KotlinReplaceGetIntentionTest extends KotlinReplaceGetIntentionTestCase {
-	
+    
+    private static final String PATH_PREFIX = "common_testData/ide/inspectionsLocal/conventionNameCalls/replaceGetOrSet";
+    
 	@Test
 	public void testAcceptableVararg() {
-		doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/acceptableVararg.kt");
+		doTest(PATH_PREFIX + "/acceptableVararg.kt");
 	}
 
 	@Test
     public void testArgumentAndFunction() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/argumentAndFunction.kt");
+        doTest(PATH_PREFIX + "/argumentAndFunction.kt");
     }
     
 	@Test
     public void testDuplicateArguments() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/duplicateArguments.kt");
+        doTest(PATH_PREFIX + "/duplicateArguments.kt");
     }
     
 	@Test
     public void testExtensionFunction() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/extensionFunction.kt");
+        doTest(PATH_PREFIX + "/extensionFunction.kt");
     }
     
 	@Test
     public void testFunctionalArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/functionalArgument.kt");
+        doTest(PATH_PREFIX + "/functionalArgument.kt");
     }
     
 	@Test
     public void testInvalidArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/invalidArgument.kt");
+        doTest(PATH_PREFIX + "/invalidArgument.kt");
     }
     
 	@Test
     public void testMissingDefaultArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/missingDefaultArgument.kt");
+        doTest(PATH_PREFIX + "/missingDefaultArgument.kt");
     }
     
 	@Test
     public void testMultiArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/multiArgument.kt");
+        doTest(PATH_PREFIX + "/multiArgument.kt");
     }
     
 	@Test
     public void testNoArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/noArgument.kt");
+        doTest(PATH_PREFIX + "/noArgument.kt");
     }
 	
 	@Test
     public void testQualifier() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/qualifier.kt");
+        doTest(PATH_PREFIX + "/qualifier.kt");
     }
     
 	@Test
     public void testSanityCheck() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/sanityCheck.kt");
+        doTest(PATH_PREFIX + "/sanityCheck.kt");
     }
     
 	@Test
     public void testSingleArgument() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/singleArgument.kt");
+        doTest(PATH_PREFIX + "/singleArgument.kt");
     }
     
 	@Test
     public void testSuper() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/super.kt");
+        doTest(PATH_PREFIX + "/super.kt");
     }
 	
 	@Test
     public void testTopLevelFun() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/topLevelFun.kt");
+        doTest(PATH_PREFIX + "/topLevelFun.kt");
     }
     
 	@Test
     public void testUnacceptableVararg() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/unacceptableVararg.kt");
+        doTest(PATH_PREFIX + "/unacceptableVararg.kt");
     }
     
 	@Test
     public void testUnnamedAndNamed() throws Exception {
-        doTest("common_testData/ide/intentions/conventionNameCalls/replaceGetOrSet/unnamedAndNamed.kt");
+        doTest(PATH_PREFIX + "/unnamedAndNamed.kt");
     }
 	
+	@Ignore("Script support will be fixed in future releases")
 	@Test
     public void testReplaceGetInScript() throws Exception {
         doTest("testData/intentions/replaceGetOrSet/replaceGetInScript.kts");

@@ -15,6 +15,7 @@ public class KotlinCommonOptimizeImportsTest extends KotlinOrganizeImportsTestCa
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void ClassMemberImported() {
         doAutoTest();
@@ -31,16 +32,19 @@ public class KotlinCommonOptimizeImportsTest extends KotlinOrganizeImportsTestCa
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void DefaultObjectReference() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void Enums() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void InvokeFunction() {
         doAutoTest();

@@ -50,8 +50,9 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import org.jetbrains.kotlin.script.KotlinScriptDefinition
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
+import org.jetbrains.kotlin.script.ScriptDefinitionProvider
 import org.jetbrains.kotlin.script.StandardScriptDefinition
+import org.jetbrains.kotlin.cli.common.script.CliScriptDefinitionProvider
 import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
 import java.net.URL
@@ -126,13 +127,16 @@ class KotlinScriptEnvironment private constructor(
     init {
         StorageComponentContainerContributor.registerExtensionPoint(project)
         
-        scriptDefinitions
+        val scriptsForProvider = scriptDefinitions
                 .filter { it.isScript(eclipseFile.name) }
                 .ifEmpty { listOf(StandardScriptDefinition) }
-                .forEach {
-                    KotlinScriptDefinitionProvider.getInstance(project)?.addScriptDefinition(it)
-                }
         
+        val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project) as? CliScriptDefinitionProvider
+        if (scriptDefinitionProvider != null) {
+            scriptDefinitionProvider.setScriptDefinitions(scriptsForProvider)
+        }
+
+
     	addToCPFromScriptTemplateClassLoader(providersClasspath)
         
         configureClasspath()
@@ -140,7 +144,7 @@ class KotlinScriptEnvironment private constructor(
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
         
         val ioFile = eclipseFile.location.toFile()
-        val definition = KotlinScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
+        val definition = ScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
         if (!loadScriptDefinitions) {
         	addToCPFromExternalDependencies(ScriptDependenciesProvider.getInstance(project))
         }
@@ -168,6 +172,7 @@ class KotlinScriptEnvironment private constructor(
         val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
         (fileManager as KotlinCliJavaFileManagerImpl).initialize(
                 index,
+				emptyList(),
                 SingleJavaFileRootsIndex(singleJavaFileRoots),
                 configuration.getBoolean(JVMConfigurationKeys.USE_FAST_CLASS_FILES_READING))
         
@@ -285,7 +290,7 @@ class KotlinScriptEnvironment private constructor(
     
     private fun addToCPFromScriptTemplateClassLoader() {
         val ioFile = eclipseFile.getLocation().toFile()
-        val definition = KotlinScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
+        val definition = ScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
 
         if (definition is KotlinScriptDefinition) {
             val classLoader = definition.template.java.classLoader
@@ -389,7 +394,10 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
         }
         
-        KotlinScriptDefinitionProvider.getInstance(project)?.addScriptDefinition(StandardScriptDefinition)
+        val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project) as? CliScriptDefinitionProvider
+        if (scriptDefinitionProvider != null) {
+            scriptDefinitionProvider.setScriptDefinitions(listOf(StandardScriptDefinition))
+        }
         
         cachedEnvironment.putEnvironment(eclipseProject, this)
     }

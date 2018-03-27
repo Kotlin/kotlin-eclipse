@@ -1,15 +1,15 @@
 <project default="get_bundled">
-    <property name="compiler.tag" value="1.1.51" />
+    <property name="compiler.tag" value="1.2.31" />
     <property name="bootstrap_branch" value=""/>
     <property name="idea-version" value="162.1812.17"/>
     
-    <property name="compiler.query" value="${compiler.tag}.tcbuildtag" />
+    <property name="compiler.query" value="1334344:id" />
     
     <property name="teamcity-base" value="https://teamcity.jetbrains.com"/>
     
     <property name="kotlin-idea-compatible-version" value="IJ2017.3-1" />
-    <property name="kotlin-version" value="1.1.51" />
-    <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_1150_CompilerAndPlugin_NoTests/${compiler.query}" />
+    <property name="kotlin-version" value="1.2.30" />
+    <property name="teamcity-kotlin-url" value = "${teamcity-base}/guestAuth/repository/download/Kotlin_1230_CompilerAllPlugins/${compiler.query}" />
     
     <property name="idea-sdk-url" value="https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea" />
     
@@ -141,8 +141,8 @@
                     <include name="com/intellij/formatting/**/*.class" />
                     <include name="com/intellij/application/options/**/*.class" />
                     <include name="com/intellij/openapi/options/**/*.class" />
-                	<include name="com/intellij/configurationStore/*.class" />
-                	<include name="com/intellij/openapi/progress/*.class" />
+                    <include name="com/intellij/configurationStore/*.class" />
+                    <include name="com/intellij/openapi/progress/*.class" />
                 </patternset>
             </unzip>
             
@@ -195,7 +195,7 @@
                     <attribute name="Implementation-Version" value="1.0"/>
                 </manifest>
             </jar>
-            
+
             <delete dir="${download.dir}/${openapi-formatter}"/>
             <delete file="${target.dir}/openapi.jar"/>
             <delete dir="${download.dir}/${util-formatter}"/>
@@ -204,22 +204,22 @@
             <delete file="${target.dir}/idea.jar"/>
         </sequential>
 
-    	<unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
-    	           <patternset>
-    	               <include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-stdlib.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-script-runtime.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
-    	               <include name="Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar" />
-    	           </patternset>
-    	           <mapper type="flatten"/>
-    	       </unzip>
-    	       
-    	       <get 
-    	           src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
-    	           dest="${target.dir}/kotlin-ide-common.jar"
-    	           usetimestamp="true" />
+        <unzip src="${download.dir}/${compiler-artifact-file}" dest="${target.dir}">
+                   <patternset>
+                       <include name="Kotlin/kotlinc/lib/kotlin-compiler.jar" />
+                       <include name="Kotlin/kotlinc/lib/kotlin-stdlib.jar" />
+                       <include name="Kotlin/kotlinc/lib/kotlin-reflect.jar" />
+                       <include name="Kotlin/kotlinc/lib/kotlin-script-runtime.jar" />
+                       <include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
+                       <include name="Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar" />
+                   </patternset>
+                   <mapper type="flatten"/>
+               </unzip>
+
+               <get
+                   src="${teamcity-kotlin-url}/internal/kotlin-ide-common.jar${branch}"
+                   dest="${target.dir}/kotlin-ide-common.jar"
+                   usetimestamp="true" />
         
         <get 
             src="${teamcity-kotlin-url}/internal/kotlin-formatter.jar${branch}"
@@ -238,9 +238,8 @@
         </unzip>
         
         <!-- Also retrivive sources -->
-        <get src="${teamcity-kotlin-url}/kotlin-compiler-sources.jar${branch}" 
+        <get src="${teamcity-kotlin-url}/maven/org/jetbrains/kotlin/kotlin-compiler/1.2.30/kotlin-compiler-1.2.30-sources.jar" 
                     dest="${download.dir}/${compiler-sources-file}" usetimestamp="true" />
-        
         <!-- Get idea sources -->
         <get src="${idea-sdk-url}/ideaIC/${idea-version}/ideaIC-${idea-version}-sources.jar" dest="${download.dir}/idea-sdk-sources.jar" usetimestamp="true" />
         
@@ -251,7 +250,33 @@
         </zip>
     </target>
     
-    <target name="get_bundled" depends="download_bundled, download_test_data,
+    <target name="download_user_bundle">
+        <delete dir = "user-bundle" />
+        <mkdir dir="user-bundle/lib"/>
+
+        <get
+            src="http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-compiler/1.2.30/kotlin-compiler-1.2.30.jar" 
+            dest="user-bundle/lib/kotlin-compiler.jar"
+            usetimestamp="true" />
+        <get
+            src="http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.2.30/kotlin-stdlib-1.2.30.jar" 
+            dest="user-bundle/lib/kotlin-stdlib.jar"
+            usetimestamp="true" />
+        <get
+            src="http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.2.30/kotlin-stdlib-1.2.30-sources.jar" 
+            dest="user-bundle/lib/kotlin-stdlib-sources.jar"
+            usetimestamp="true" />
+        <get
+            src="http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.2.30/kotlin-reflect-1.2.30.jar" 
+            dest="user-bundle/lib/kotlin-reflect.jar"
+            usetimestamp="true" />
+        <get
+            src="http://central.maven.org/maven2/org/jetbrains/kotlin/kotlin-script-runtime/1.2.30/kotlin-script-runtime-1.2.30.jar" 
+            dest="user-bundle/lib/kotlin-script-runtime.jar"
+            usetimestamp="true" />
+    </target>
+
+    <target name="get_bundled" depends="download_bundled, download_user_bundle, download_test_data,
         download_test_framework_dependencies, refresh_eclipse">
     </target>
 </project>

@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.search;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -179,11 +180,13 @@ public class KotlinFindReferencesTest extends KotlinFindReferencesTestCase {
         doTest("common_testData/ide/findUsages/kotlin/findParameterUsages/kotlinFunctionParameterUsages.0.kt");
     }
     
+    @Ignore
     @Test
     public void testJavaClassObjectPropertyUsages() {
         doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/javaClassObjectPropertyUsages.0.kt");
     }
     
+    @Ignore
     @Test
     public void testKotlinClassObjectPropertyUsage() {
         doTest("common_testData/ide/findUsages/kotlin/findPropertyUsages/kotlinClassObjectPropertyUsage.0.kt");

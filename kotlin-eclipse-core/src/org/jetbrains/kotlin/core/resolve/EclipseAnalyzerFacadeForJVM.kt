@@ -62,7 +62,6 @@ import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
 import org.jetbrains.kotlin.core.model.SamWithReceiverResolverExtension
 import org.jetbrains.kotlin.script.KotlinScriptDefinition
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
     companion object {
@@ -153,7 +152,7 @@ public object EclipseAnalyzerFacadeForJVM {
         additionalProviders.add(container.get<JavaDescriptorResolver>().packageFragmentProvider)
         
         PackageFragmentProviderExtension.getInstances(project).mapNotNullTo(additionalProviders) { extension ->
-            extension.getPackageFragmentProvider(project, module, storageManager, trace, null)
+            extension.getPackageFragmentProvider(project, module, storageManager, trace, null, LookupTracker.DO_NOTHING)
         }
         
         module.setDependencies(ModuleDependenciesImpl(

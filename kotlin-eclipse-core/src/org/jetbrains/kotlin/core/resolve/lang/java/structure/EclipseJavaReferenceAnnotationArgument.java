@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.load.java.structure.JavaEnumValueAnnotationArgument;
 import org.jetbrains.kotlin.load.java.structure.JavaField;
 import org.jetbrains.kotlin.name.Name;
+import org.jetbrains.kotlin.name.ClassId;
 
 public class EclipseJavaReferenceAnnotationArgument extends EclipseJavaAnnotationArgument<IVariableBinding>
         implements JavaEnumValueAnnotationArgument {
@@ -29,7 +30,6 @@ public class EclipseJavaReferenceAnnotationArgument extends EclipseJavaAnnotatio
         super(javaElement);
     }
 
-    @Override
     @Nullable
     public JavaField resolve() {
         return new EclipseJavaField(getBinding());
@@ -39,5 +39,11 @@ public class EclipseJavaReferenceAnnotationArgument extends EclipseJavaAnnotatio
     @Nullable
     public Name getEntryName() {
         return Name.identifier(getBinding().getName());
+    }
+
+    @Override
+    @Nullable
+    public ClassId getEnumClassId() {
+        return null;
     }
 }
