@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.fileClasses.getFileClassInternalName
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtScript
+import org.jetbrains.kotlin.lexer.KtTokens
 
 object KotlinLightClassGeneration {
     fun updateLightClasses(project: IProject, affectedFiles: Set<IFile>) {
@@ -66,6 +67,11 @@ object KotlinLightClassGeneration {
                     }
                     
                     override fun shouldGenerateScript(script: KtScript): Boolean = false
+
+                    override fun shouldGenerateClassMembers(processingClassOrObject: KtClassOrObject): Boolean {
+						return shouldGenerateClass(processingClassOrObject) ||
+								processingClassOrObject.hasModifier(KtTokens.COMPANION_KEYWORD)
+					}
 			}).build()
         
         KotlinCodegenFacade.compileCorrectFiles(state) { exception, fileUrl -> Unit }
