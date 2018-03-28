@@ -37,7 +37,6 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
 
-
 object KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
     override public fun toggleLineBreakpoints(part: IWorkbenchPart, selection: ISelection) {
         val editor = getEditor(part)
