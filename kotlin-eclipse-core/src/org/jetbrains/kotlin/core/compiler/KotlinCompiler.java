@@ -32,8 +32,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector;
+import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser;
+import org.jetbrains.kotlin.core.launch.KotlinCLICompiler;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
@@ -61,7 +63,7 @@ public class KotlinCompiler {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(outputStream);
         
-        UserBundleLoader.INSTANCE.invokeCompiler(out, arguments);
+        KotlinCLICompiler.doMain(new K2JVMCompiler(), out, arguments);
         
         BufferedReader reader = new BufferedReader(new StringReader(outputStream.toString()));
         return parseCompilerOutput(reader);
@@ -123,7 +125,7 @@ public class KotlinCompiler {
                     }
                 },
                 reader);
-
+        
         boolean result = true;
         for (CompilerMessageSeverity severity : severities) {
             if (severity.equals(CompilerMessageSeverity.ERROR) || severity.equals(CompilerMessageSeverity.EXCEPTION)) {
