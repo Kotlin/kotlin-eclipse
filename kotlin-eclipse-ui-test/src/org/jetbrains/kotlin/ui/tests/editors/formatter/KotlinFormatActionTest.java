@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
@@ -114,6 +115,7 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void blockCommentBeforeDeclaration() {
         doAutoTest();

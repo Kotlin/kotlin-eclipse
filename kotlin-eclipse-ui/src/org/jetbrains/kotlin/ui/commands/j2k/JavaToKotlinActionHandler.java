@@ -196,7 +196,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
             return new Pair<IStatus, List<IFile>>(Status.OK_STATUS, convertedFiles);
         } catch (ExecutionException e) {
             KotlinLogger.logError(e.getMessage(), null);
-            return new Pair<IStatus, List<IFile>>(new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()), Collections.<IFile>emptyList());
+            return new Pair<IStatus, List<IFile>>(new Status(IStatus.ERROR, Activator.Companion.getPLUGIN_ID(), e.getMessage()), Collections.<IFile>emptyList());
         }
     }
     

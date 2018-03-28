@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.editors.completion.handlers;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinCompletionHandlerInsertTest extends KotlinCompletionHandlerInsertTestCase {
@@ -28,6 +29,7 @@ public class KotlinCompletionHandlerInsertTest extends KotlinCompletionHandlerIn
 		doAutoTest();
 	}
 	
+	@Ignore
 	@Test
  	public void insertFunctionWithBothParentheses() {
  		doAutoTest();
@@ -53,6 +55,7 @@ public class KotlinCompletionHandlerInsertTest extends KotlinCompletionHandlerIn
 		doAutoTest();
 	}
 	
+	@Ignore
 	@Test
 	public void singleBrackets() {
 		doAutoTest();
@@ -138,11 +141,13 @@ public class KotlinCompletionHandlerInsertTest extends KotlinCompletionHandlerIn
 		doAutoTest();
 	}
 	
+	@Ignore
 	@Test
     public void completeNonImported() {
         doAutoTest();
     }
 	
+	@Ignore
 	@Test
     public void nonImportedByCamelCase() {
         doAutoTest();

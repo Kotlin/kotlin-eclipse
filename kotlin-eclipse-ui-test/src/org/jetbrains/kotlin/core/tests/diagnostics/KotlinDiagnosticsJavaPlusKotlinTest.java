@@ -27,6 +27,7 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
         doTest("common_testData/compiler/diagnostics/tests/j+k/annotationWithArgumentsMissingDependencies.kt");
     }
     
+    @Ignore
     @Test
     public void testArrayOfStarParametrized() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/j+k/arrayOfStarParametrized.kt");
@@ -57,6 +58,7 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
         doTest("common_testData/compiler/diagnostics/tests/j+k/fieldOverridesField.kt");
     }
     
+    @Ignore
     @Test
     public void testFieldOverridesFieldOfDifferentType() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/j+k/fieldOverridesFieldOfDifferentType.kt");
@@ -67,6 +69,7 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
         doTest("common_testData/compiler/diagnostics/tests/j+k/finalCollectionSize.kt");
     }
     
+    @Ignore
     @Test
     public void testGenericConstructorWithMultipleBounds() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/j+k/genericConstructorWithMultipleBounds.kt");
@@ -204,6 +207,7 @@ public class KotlinDiagnosticsJavaPlusKotlinTest extends KotlinDiagnosticsTestCa
         doTest("common_testData/compiler/diagnostics/tests/j+k/overrideWithSamAndTypeParameter.kt");
     }
     
+    @Ignore
     @Test
     public void testPackagePrivateClassStaticMember() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/j+k/packagePrivateClassStaticMember.kt");

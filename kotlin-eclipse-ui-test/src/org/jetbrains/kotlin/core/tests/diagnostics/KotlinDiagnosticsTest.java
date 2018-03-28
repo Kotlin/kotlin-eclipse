@@ -1,6 +1,7 @@
 package org.jetbrains.kotlin.core.tests.diagnostics;
 
 import org.jetbrains.kotlin.checkers.KotlinDiagnosticsTestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
@@ -45,6 +46,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/AssignToArrayElement.kt");
     }
     
+    @Ignore
     @Test
     public void testAutoCreatedIt() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/AutoCreatedIt.kt");
@@ -55,16 +57,19 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/BacktickNames.kt");
     }
     
+    @Ignore
     @Test
     public void testBasic() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/Basic.kt");
     }
     
+    @Ignore
     @Test
     public void testBinaryCallsOnNullableValues() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/BinaryCallsOnNullableValues.kt");
     }
     
+    @Ignore
     @Test
     public void testBounds() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/Bounds.kt");
@@ -95,6 +100,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/CharacterLiterals.kt");
     }
     
+    @Ignore
     @Test
     public void testcheckType() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/checkType.kt");
@@ -130,6 +136,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/DefaultValueForParameterInFunctionType.kt");
     }
     
+    @Ignore
     @Test
     public void testDefaultValuesTypechecking() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/DefaultValuesTypechecking.kt");
@@ -145,6 +152,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/DeprecatedGetSetPropertyDelegateConvention.kt");
     }
     
+    @Ignore
     @Test
     public void testDeprecatedUnaryOperatorConventions() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/DeprecatedUnaryOperatorConventions.kt");
@@ -170,6 +178,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/Dollar.kt");
     }
     
+    @Ignore
     @Test
     public void testEnumEntryAsType() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/EnumEntryAsType.kt");
@@ -205,6 +214,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/FunctionParameterWithoutType.kt");
     }
     
+    @Ignore
     @Test
     public void testFunctionReturnTypes() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/FunctionReturnTypes.kt");
@@ -255,6 +265,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/InfixModifierApplicability.kt");
     }
     
+    @Ignore
     @Test
     public void testInvokeAndRecursiveResolve() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/InvokeAndRecursiveResolve.kt");
@@ -265,6 +276,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/IsExpressions.kt");
     }
     
+    @Ignore
     @Test
     public void testkt310() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/kt310.kt");
@@ -275,11 +287,13 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/kt53.kt");
     }
     
+    @Ignore
     @Test
     public void testLateInit() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/LateInit.kt");
     }
     
+    @Ignore
     @Test
     public void testLateInitSetter() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/LateInitSetter.kt");
@@ -380,6 +394,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/PackageInTypePosition.kt");
     }
     
+    @Ignore
     @Test
     public void testPackageQualified() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/PackageQualified.kt");
@@ -425,11 +440,13 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/PropertyInitializers.kt");
     }
     
+    @Ignore
     @Test
     public void testQualifiedExpressions() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/QualifiedExpressions.kt");
     }
     
+    @Ignore
     @Test
     public void testRecursiveGetter() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/properties/inferenceFromGetters/RecursiveGetter.kt");
@@ -440,6 +457,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/RecursiveResolve.kt");
     }
     
+    @Ignore
     @Test
     public void testRecursiveTypeInference() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/RecursiveTypeInference.kt");
@@ -470,6 +488,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/SafeCallNonNullReceiver.kt");
     }
     
+    @Ignore
     @Test
     public void testSafeCallNonNullReceiverReturnNull() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/SafeCallNonNullReceiverReturnNull.kt");
@@ -530,6 +549,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/SyntaxErrorInTestHighlightingEof.kt");
     }
     
+    @Ignore
     @Test
     public void testTraitOverrideObjectMethods() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/TraitOverrideObjectMethods.kt");
@@ -595,8 +615,15 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
         doTest("common_testData/compiler/diagnostics/tests/VarargTypes.kt");
     }
     
+    @Ignore
     @Test
     public void testVariance() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/Variance.kt");
+    }
+
+    @Ignore
+    @Test
+    public void testFeaturesOfKotlin_1_2() throws Exception {
+        doTest("common_testData/compiler/diagnostics/tests/featuresOf_1_2.kt");
     }
 }

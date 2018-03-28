@@ -26,11 +26,12 @@ import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
-import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
+import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
 import org.jetbrains.kotlin.fileClasses.getFileClassInternalName
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtScript
+import org.jetbrains.kotlin.lexer.KtTokens
 
 object KotlinLightClassGeneration {
     fun updateLightClasses(project: IProject, affectedFiles: Set<IFile>) {
@@ -45,14 +46,14 @@ object KotlinLightClassGeneration {
             eclipseProject: IProject, 
             jetFiles: List<KtFile>,
             requestedClassName: String): GenerationState {
-        val state = GenerationState(
+        val state = GenerationState.Builder(
                 KotlinEnvironment.getEnvironment(eclipseProject).project,
                 LightClassBuilderFactory(),
                 analysisResult.moduleDescriptor,
                 analysisResult.bindingContext,
                 jetFiles,
-                CompilerConfiguration.EMPTY,
-                generateDeclaredClassFilter = object : GenerationState.GenerateClassFilter() {
+                CompilerConfiguration.EMPTY)
+        	.generateDeclaredClassFilter(object : GenerationState.GenerateClassFilter() {
                     override fun shouldAnnotateClass(processingClassOrObject: KtClassOrObject): Boolean = true
                     
                     override fun shouldGenerateClass(processingClassOrObject: KtClassOrObject): Boolean {
@@ -61,12 +62,17 @@ object KotlinLightClassGeneration {
                     }
                     
                     override fun shouldGeneratePackagePart(jetFile: KtFile): Boolean {
-                        val internalName = NoResolveFileClassesProvider.getFileClassInternalName(jetFile)
+                        val internalName = JvmFileClassUtil.getFileClassInternalName(jetFile)
                         return checkByInternalName(internalName, requestedClassName)
                     }
                     
                     override fun shouldGenerateScript(script: KtScript): Boolean = false
-                })
+
+                    override fun shouldGenerateClassMembers(processingClassOrObject: KtClassOrObject): Boolean {
+						return shouldGenerateClass(processingClassOrObject) ||
+								processingClassOrObject.hasModifier(KtTokens.COMPANION_KEYWORD)
+					}
+			}).build()
         
         KotlinCodegenFacade.compileCorrectFiles(state) { exception, fileUrl -> Unit }
         

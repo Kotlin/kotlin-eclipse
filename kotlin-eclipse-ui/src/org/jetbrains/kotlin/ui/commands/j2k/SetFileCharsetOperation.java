@@ -1,6 +1,6 @@
 package org.jetbrains.kotlin.ui.commands.j2k;
 
-import static org.jetbrains.kotlin.ui.Activator.PLUGIN_ID;
+import static org.jetbrains.kotlin.ui.Activator.Companion;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.AbstractOperation;
@@ -64,7 +64,7 @@ public class SetFileCharsetOperation extends AbstractOperation {
             applied = !applied;
             return Status.OK_STATUS;
         } catch (CoreException e) {
-            return new Status(IStatus.ERROR, PLUGIN_ID, "Unable to change file charset.", e);
+            return new Status(IStatus.ERROR, Companion.getPLUGIN_ID(), "Unable to change file charset.", e);
         }
     }
 
