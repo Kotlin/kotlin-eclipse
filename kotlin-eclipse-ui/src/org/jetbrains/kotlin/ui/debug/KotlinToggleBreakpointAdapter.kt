@@ -35,7 +35,8 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiUtil
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
+import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
+
 
 object KotlinToggleBreakpointAdapter : IToggleBreakpointsTarget {
     override public fun toggleLineBreakpoints(part: IWorkbenchPart, selection: ISelection) {
@@ -90,5 +91,5 @@ fun findTopmostType(offset: Int, jetFile: KtFile): FqName? {
         if (fqName != null) return fqName
     }
     
-    return NoResolveFileClassesProvider.getFileClassInfo(jetFile).fileClassFqName
+    return JvmFileClassUtil.getFileClassInfoNoResolve(jetFile).fileClassFqName
 }

@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
@@ -33,21 +34,25 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void BinaryExpressionAlignmentSpread() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void BinaryExpressions() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void BinaryExpressionsBoolean() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void BinaryExpressionsWithoutAlignment() {
         doAutoTest();
@@ -58,6 +63,7 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void CatchFinallyOnNewLine() {
         doAutoTest();
@@ -88,16 +94,19 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void ConsecutiveCalls() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void ConsecutiveSafeCallsIndent() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void DelegationList() {
         doAutoTest();
@@ -118,11 +127,13 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void ElseOnNewLine() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void Elvis() {
         doAutoTest();
@@ -153,6 +164,7 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void EmptyLineBetweenEnumEntries() {
         doAutoTest();
@@ -178,11 +190,13 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void FormatFirstColumnComments() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void FormatFirstColumnCommentsBeforeDeclaration() {
         doAutoTest();
@@ -203,6 +217,7 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void FunctionCallParametersAlign() {
         doAutoTest();
@@ -223,6 +238,7 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void FunctionLiteralsInChainCalls() {
         doAutoTest();
@@ -348,6 +364,7 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void RightBracketOnNewLine() {
         doAutoTest();
@@ -398,11 +415,13 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void SpacesAroundOperations() {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void SpacesAroundUnaryOperations() {
         doAutoTest();
@@ -463,6 +482,7 @@ public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
         doAutoTest();
     }
     
+    @Ignore
     @Test
     public void WhileOnNewLine() {
         doAutoTest();

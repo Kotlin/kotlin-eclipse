@@ -37,8 +37,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.jetbrains.kotlin.fileClasses.getFileClassFqName
-import org.jetbrains.kotlin.fileClasses.NoResolveFileClassesProvider
+import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtFile
@@ -61,7 +60,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         
         fun getFileClassName(mainFile: IFile): FqName {
             val ktFile = KotlinPsiManager.getParsedFile(mainFile)
-            return NoResolveFileClassesProvider.getFileClassFqName(ktFile)
+            return JvmFileClassUtil.getFileClassInfoNoResolve(ktFile).fileClassFqName
         }
         
         private fun getLaunchConfigurationType(): ILaunchConfigurationType {

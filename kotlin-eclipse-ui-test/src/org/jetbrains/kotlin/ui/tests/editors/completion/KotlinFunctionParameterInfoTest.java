@@ -25,6 +25,7 @@ public class KotlinFunctionParameterInfoTest extends KotlinFunctionParameterInfo
         doTest("common_testData/ide/parameterInfo/functionCall/InheritedWithCurrentFunctions.kt");
     }
 
+    @Ignore
     @Test
     public void testNoAnnotations() throws Exception {
         doTest("common_testData/ide/parameterInfo/functionCall/NoAnnotations.kt");

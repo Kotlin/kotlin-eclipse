@@ -1,9 +1,11 @@
 package org.jetbrains.kotlin.ui.tests.editors.completion;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase {
     
+    @Ignore
     @Test
     public void testAfterClasses() {
         doTest("common_testData/ide/completion/keywords/AfterClasses.kt");
@@ -14,6 +16,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/AfterDot.kt");
     }
     
+    @Ignore
     @Test
     public void testAfterFuns() {
         doTest("common_testData/ide/completion/keywords/AfterFuns.kt");
@@ -54,6 +57,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/ContinueWithLabel.kt");
     }
     
+    @Ignore
     @Test
     public void testInAnnotationClassScope() {
         doTest("common_testData/ide/completion/keywords/InAnnotationClassScope.kt");
@@ -69,6 +73,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/InChar.kt");
     }
     
+    @Ignore
     @Test
     public void testInClassBeforeFun() {
         doTest("common_testData/ide/completion/keywords/InClassBeforeFun.kt");
@@ -84,6 +89,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/InClassProperty.kt");
     }
     
+    @Ignore
     @Test
     public void testInClassScope() {
         doTest("common_testData/ide/completion/keywords/InClassScope.kt");
@@ -99,6 +105,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/InEnumScope1.kt");
     }
     
+    @Ignore
     @Test
     public void testInEnumScope2() {
         doTest("common_testData/ide/completion/keywords/InEnumScope2.kt");
@@ -129,6 +136,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/InGetterExpressionBody.kt");
     }
     
+    @Ignore
     @Test
     public void testInInterfaceScope() {
         doTest("common_testData/ide/completion/keywords/InInterfaceScope.kt");
@@ -149,11 +157,13 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/InNotFinishedGenericWithFunAfter.kt");
     }
     
+    @Ignore
     @Test
     public void testInObjectScope() {
         doTest("common_testData/ide/completion/keywords/InObjectScope.kt");
     }
     
+    @Ignore
     @Test
     public void testInPrimaryConstructorParametersList() {
         doTest("common_testData/ide/completion/keywords/InPrimaryConstructorParametersList.kt");
@@ -179,6 +189,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/InTopFunParametersList.kt");
     }
     
+    @Ignore
     @Test
     public void testInTopScopeAfterPackage() {
         doTest("common_testData/ide/completion/keywords/InTopScopeAfterPackage.kt");
@@ -334,6 +345,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
         doTest("common_testData/ide/completion/keywords/ThisPrefixMatching.kt");
     }
     
+    @Ignore
     @Test
     public void testTopScope() {
         doTest("common_testData/ide/completion/keywords/TopScope.kt");

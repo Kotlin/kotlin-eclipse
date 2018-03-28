@@ -14,8 +14,6 @@ import org.jetbrains.kotlin.core.model.runJob
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.runtime.jobs.Job
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionProvider
-import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
 import org.eclipse.core.runtime.IStatus
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.script.ScriptDependenciesProvider
