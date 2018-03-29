@@ -75,6 +75,7 @@ import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
 import org.jetbrains.kotlin.ui.editors.getScriptDependencies
 import org.jetbrains.kotlin.ui.formatter.createKtFile
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
+import org.jetbrains.kotlin.serialization.deserialization.getName
 
 private val KOTLIN_SOURCE_PATH = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_SRC_NAME))
 private val RUNTIME_SOURCE_MAPPER = KOTLIN_SOURCE_PATH.createSourceMapperWithRoot()
