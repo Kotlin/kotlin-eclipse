@@ -561,7 +561,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 jvmSignatureDiagnostics.addAll(CollectionsKt.map(diagnostics.forElement(declaration), new Function1<Diagnostic, ActualDiagnostic>() {
                     @Override
                     public ActualDiagnostic invoke(Diagnostic arg0) {
-                        return new ActualDiagnostic(arg0, null, true);
+                        return new ActualDiagnostic(arg0, null, false);
                     }
                 }));
                   

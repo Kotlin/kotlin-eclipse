@@ -69,7 +69,7 @@ object KotlinLightClassGeneration {
                     override fun shouldGenerateScript(script: KtScript): Boolean = false
 
                     override fun shouldGenerateClassMembers(processingClassOrObject: KtClassOrObject): Boolean {
-						return shouldGenerateClass(processingClassOrObject) ||
+						return super.shouldGenerateClassMembers(processingClassOrObject) ||
 								processingClassOrObject.hasModifier(KtTokens.COMPANION_KEYWORD)
 					}
 			}).build()

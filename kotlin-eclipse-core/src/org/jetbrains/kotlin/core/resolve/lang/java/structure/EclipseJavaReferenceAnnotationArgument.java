@@ -20,8 +20,9 @@ import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.load.java.structure.JavaEnumValueAnnotationArgument;
 import org.jetbrains.kotlin.load.java.structure.JavaField;
-import org.jetbrains.kotlin.name.Name;
 import org.jetbrains.kotlin.name.ClassId;
+import org.jetbrains.kotlin.name.FqName;
+import org.jetbrains.kotlin.name.Name;
 
 public class EclipseJavaReferenceAnnotationArgument extends EclipseJavaAnnotationArgument<IVariableBinding>
         implements JavaEnumValueAnnotationArgument {
@@ -44,6 +45,7 @@ public class EclipseJavaReferenceAnnotationArgument extends EclipseJavaAnnotatio
     @Override
     @Nullable
     public ClassId getEnumClassId() {
-        return null;
+        String className = getBinding().getType().getQualifiedName();
+        return ClassId.topLevel(new FqName(className));
     }
 }
