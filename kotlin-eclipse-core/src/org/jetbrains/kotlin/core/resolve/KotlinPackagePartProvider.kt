@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.name.ClassId
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
-    private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping)
+    private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping, val name: String)
     
     private val notLoadedRoots by lazy(LazyThreadSafetyMode.NONE) {
             environment.getRoots()
@@ -42,7 +42,10 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
     
     private val deserializationConfiguration = CompilerDeserializationConfiguration(LanguageVersionSettingsImpl.DEFAULT)
 
-	override fun getAnnotationsOnBinaryModule(moduleName: String): List<ClassId> = emptyList()
+    override fun getAnnotationsOnBinaryModule(moduleName: String): List<ClassId> =
+            loadedModules.mapNotNull { (_, mapping, name) ->
+                mapping.moduleData.annotations.takeIf { name == moduleName }
+            }.flatten()
 
     override fun findPackageParts(packageFqName: String): List<String> {
         val rootToPackageParts = getPackageParts(packageFqName)
@@ -50,7 +53,7 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
 
         val result = linkedSetOf<String>()
         val visitedMultifileFacades = linkedSetOf<String>()
-        for ((virtualFile, packageParts) in rootToPackageParts) {
+        for ((_, packageParts) in rootToPackageParts) {
             for (name in packageParts.parts) {
                 val facadeName = packageParts.getMultifileFacadeName(name)
                 if (facadeName == null || facadeName !in visitedMultifileFacades) {
@@ -96,7 +99,7 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
         for (root in relevantRoots) {
             val metaInf = root.findChild("META-INF") ?: continue
             val moduleFiles = metaInf.children.filter { it.name.endsWith(ModuleMapping.MAPPING_FILE_EXT) }
-            for (moduleFile in moduleFiles) {
+            for (moduleFile: VirtualFile in moduleFiles) {
                 val mapping = try {
                     ModuleMapping.create(moduleFile.contentsToByteArray(), moduleFile.toString(), deserializationConfiguration)
                 }
@@ -104,7 +107,7 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
                     throw RuntimeException("Error on reading package parts for '$packageFqName' package in '$moduleFile', " +
                                            "roots: $notLoadedRoots", e)
                 }
-                loadedModules.add(ModuleMappingInfo(root, mapping))
+                loadedModules.add(ModuleMappingInfo(root, mapping, moduleFile.nameWithoutExtension))
             }
         }
     }
