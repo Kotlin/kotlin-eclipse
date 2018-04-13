@@ -332,11 +332,17 @@
                   commandId="org.jetbrains.kotlin.ui.commands.deconfiguration"
                   label="Remove Kotlin Nature"
                   style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
             </command>
             <command
                   commandId="org.jetbrains.kotlin.ui.commands.configuration"
                   label="Add Kotlin Nature"
                   style="push">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
             </command>
          </menu>
       </menuContribution>
@@ -882,5 +888,19 @@
             </visibleWhen>
          </menu>
       </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            class="org.jetbrains.kotlin.preferences.properties.KotlinPropertyPage"
+            icon="icons/kotlin.png"
+            id="org.jetbrains.kotlin.ui.project-properties"
+            name="Kotlin Settings">
+         <enabledWhen>
+            <reference
+                  definitionId="org.jetbrains.kotlin.core.hasNature">
+            </reference>
+         </enabledWhen>
+      </page>
    </extension>
 </plugin>

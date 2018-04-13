@@ -23,7 +23,6 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.IType
 import org.eclipse.jdt.core.JavaModelException
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem
-import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
@@ -49,6 +48,7 @@ import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.psi.KtPrimaryConstructor
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 public object KotlinJavaManager {
     @JvmField

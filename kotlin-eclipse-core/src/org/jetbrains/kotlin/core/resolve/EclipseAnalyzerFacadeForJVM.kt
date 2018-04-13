@@ -63,6 +63,8 @@ import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
 import org.jetbrains.kotlin.core.model.SamWithReceiverResolverExtension
 import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
+import org.jetbrains.kotlin.core.preferences.KotlinProperties
+import org.eclipse.core.resources.ProjectScope
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
     companion object {
@@ -86,6 +88,8 @@ public object EclipseAnalyzerFacadeForJVM {
         }
         
         val project = environment.project
+        
+		val jvmTarget = KotlinProperties(ProjectScope(environment.eclipseProject)).jvmTarget ?: JvmTarget.DEFAULT
         
         val moduleContext = createModuleContext(project, environment.configuration, true)
         val storageManager = moduleContext.storageManager
@@ -116,7 +120,7 @@ public object EclipseAnalyzerFacadeForJVM {
                 dependencyScope,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
-                JvmTarget.DEFAULT,
+                jvmTarget,
                 languageVersionSettings,
                 moduleClassResolver,
                 environment.javaProject)
@@ -130,9 +134,7 @@ public object EclipseAnalyzerFacadeForJVM {
             )))
             dependenciesContext.module
         }
-        
-        
-        
+		
         val container = createContainerForTopDownAnalyzerForJvm(
                 moduleContext,
                 trace,
@@ -140,7 +142,7 @@ public object EclipseAnalyzerFacadeForJVM {
                 sourceScope,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
-                JvmTarget.DEFAULT,
+                jvmTarget,
                 languageVersionSettings,
                 moduleClassResolver,
                 environment.javaProject).apply {
