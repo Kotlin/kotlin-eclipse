@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -33,10 +34,12 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector;
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler;
+import org.jetbrains.kotlin.config.JvmTarget;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser;
 import org.jetbrains.kotlin.core.launch.KotlinCLICompiler;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.preferences.KotlinProperties;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class KotlinCompiler {
@@ -70,11 +73,19 @@ public class KotlinCompiler {
     }
     
     private String[] configureCompilerArguments(@NotNull IJavaProject javaProject, @NotNull String outputDir) throws CoreException {
+        KotlinProperties kotlinProperties = new KotlinProperties(new ProjectScope(javaProject.getProject()));
+        
         List<String> command = new ArrayList<String>();
         command.add("-kotlin-home");
         command.add(ProjectUtils.KT_HOME);
         command.add("-no-jdk");
         command.add("-no-stdlib"); // Because we add runtime into the classpath
+        
+        JvmTarget jvmTarget = kotlinProperties.getJvmTarget();
+        if (jvmTarget != null) {
+            command.add("-jvm-target");
+            command.add(jvmTarget.getDescription());
+        }
         
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");

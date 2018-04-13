@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IProjectDescription
 import org.eclipse.core.resources.IProjectNature
 import org.eclipse.core.runtime.CoreException
-import org.jetbrains.kotlin.core.log.KotlinLogger
 import kotlin.properties.Delegates
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.eclipse.core.resources.IResourceDelta
