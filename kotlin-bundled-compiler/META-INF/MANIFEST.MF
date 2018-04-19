@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Bundled Kotlin Compiler
 Bundle-SymbolicName: org.jetbrains.kotlin.bundled-compiler;singleton:=true
-Bundle-Version: 0.8.3.qualifier
+Bundle-Version: 0.8.4.qualifier
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
@@ -338,7 +338,6 @@ Export-Package:
  org.jetbrains.kotlin.serialization.builtins,
  org.jetbrains.kotlin.serialization.deserialization,
  org.jetbrains.kotlin.serialization.deserialization.descriptors,
- org.jetbrains.kotlin.serialization.jvm,
  org.jetbrains.kotlin.storage,
  org.jetbrains.kotlin.synthetic,
  org.jetbrains.kotlin.types,
