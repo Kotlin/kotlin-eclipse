@@ -62,6 +62,7 @@ import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
 import org.jetbrains.kotlin.core.model.SamWithReceiverResolverExtension
 import org.jetbrains.kotlin.script.KotlinScriptDefinition
+import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
     companion object {
@@ -91,7 +92,7 @@ public object EclipseAnalyzerFacadeForJVM {
         val module = moduleContext.module
         
         val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
-        val trace = CliLightClassGenerationSupport.CliBindingTrace()
+        val trace = CliBindingTrace()
         
         val sourceScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(project, filesToAnalyze)
         val moduleClassResolver = SourceOrBinaryModuleClassResolver(sourceScope)
@@ -155,10 +156,10 @@ public object EclipseAnalyzerFacadeForJVM {
             extension.getPackageFragmentProvider(project, module, storageManager, trace, null, LookupTracker.DO_NOTHING)
         }
         
-        module.setDependencies(ModuleDependenciesImpl(
+        module.setDependencies(
                 listOfNotNull(module, dependencyModule, optionalBuiltInsModule),
                 setOf(dependencyModule)
-        ))
+        )
         module.initialize(CompositePackageFragmentProvider(
                 listOf(container.get<KotlinCodeAnalyzer>().packageFragmentProvider) +
                 additionalProviders
@@ -187,7 +188,7 @@ public object EclipseAnalyzerFacadeForJVM {
             return AnalysisResultWithProvider.EMPTY
         }
         
-        val trace = CliLightClassGenerationSupport.CliBindingTrace()
+        val trace = CliBindingTrace()
         
         val container = TopDownAnalyzerFacadeForJVM.createContainer(
                 environment.project,

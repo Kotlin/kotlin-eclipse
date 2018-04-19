@@ -45,6 +45,8 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1;
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2;
 import org.jetbrains.kotlin.diagnostics.DiagnosticUtils;
 import org.jetbrains.kotlin.diagnostics.Errors;
+import org.jetbrains.kotlin.diagnostics.PsiDiagnosticUtils;
+import org.jetbrains.kotlin.diagnostics.PsiDiagnosticUtils.LineAndColumn;
 import org.jetbrains.kotlin.diagnostics.Severity;
 import org.jetbrains.kotlin.psi.Call;
 import org.jetbrains.kotlin.psi.KtDeclaration;
@@ -223,7 +225,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             KtElement element = entry.getKey().getCallElement();
             ResolvedCall<?> resolvedCall = entry.getValue();
 
-            DiagnosticUtils.LineAndColumn lineAndColumn =
+            LineAndColumn lineAndColumn =
                     DiagnosticUtils.getLineAndColumnInPsiFile(element.getContainingFile(), element.getTextRange());
 
             TestCase.assertTrue("Resolved call for '" + element.getText() + "'" + lineAndColumn + " is not completed",
@@ -336,7 +338,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         }
 
         PsiElement element = diagnostic.getPsiElement();
-        DiagnosticUtils.LineAndColumn lineAndColumn =
+        LineAndColumn lineAndColumn =
                 DiagnosticUtils.getLineAndColumnInPsiFile(element.getContainingFile(), element.getTextRange());
 
         TestCase.assertTrue("Resolved calls stored in " + diagnostic.getFactory().getName() + "\n" +
@@ -514,14 +516,14 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     diagnosedRanges, diagnostics, new CheckerTestUtil.DiagnosticDiffCallbacks() {
                 @Override
                 public void missingDiagnostic(TextDiagnostic diagnostic, int expectedStart, int expectedEnd) {
-                    String message = "Missing " + diagnostic.getDescription() + DiagnosticUtils.atLocation(jetFile, new TextRange(expectedStart, expectedEnd));
+                    String message = "Missing " + diagnostic.getDescription() + PsiDiagnosticUtils.atLocation(jetFile, new TextRange(expectedStart, expectedEnd));
                     System.err.println(message);
                     ok[0] = false;
                 }
 
                 @Override
                 public void unexpectedDiagnostic(TextDiagnostic diagnostic, int actualStart, int actualEnd) {
-                    String message = "Unexpected " + diagnostic.getDescription() + DiagnosticUtils.atLocation(jetFile, new TextRange(actualStart, actualEnd));
+                    String message = "Unexpected " + diagnostic.getDescription() + PsiDiagnosticUtils.atLocation(jetFile, new TextRange(actualStart, actualEnd));
                     System.err.println(message);
                     ok[0] = false;
                 }
@@ -531,7 +533,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 						TextDiagnostic expectedDiagnostic,
 						TextDiagnostic actualDiagnostic, int start, int end) {
 					String message = "Parameters of diagnostic not equal at position "
-                                     + DiagnosticUtils.atLocation(jetFile, new TextRange(start, end))
+                                     + PsiDiagnosticUtils.atLocation(jetFile, new TextRange(start, end))
                                      + ". Expected: " + expectedDiagnostic.asString() + ", actual: " + actualDiagnostic.asString();
 		            System.err.println(message);
 		            ok[0] = false;
@@ -561,7 +563,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 jvmSignatureDiagnostics.addAll(CollectionsKt.map(diagnostics.forElement(declaration), new Function1<Diagnostic, ActualDiagnostic>() {
                     @Override
                     public ActualDiagnostic invoke(Diagnostic arg0) {
-                        return new ActualDiagnostic(arg0, null, true);
+                        return new ActualDiagnostic(arg0, null, false);
                     }
                 }));
                   

@@ -8,11 +8,15 @@
 		<relativePath>../pom.xml</relativePath>
 		<groupId>kotlin.eclipse</groupId>
 		<artifactId>kotlin.eclipse.plugin</artifactId>
-		<version>0.8.3-SNAPSHOT</version>
+		<version>0.8.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>org.jetbrains.kotlin.ui.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
+	
+	<properties>
+	   <os-jvm-flags/>
+	</properties>
 	
 	<build>
 		<plugins>
@@ -21,7 +25,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<useUIHarness>true</useUIHarness>
-					<argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
+					<argLine>-Xmx1024m -XX:MaxPermSize=256m ${os-jvm-flags}</argLine>
 					<dependencies>
 						<dependency>
 							<type>eclipse-feature</type>
@@ -63,4 +67,16 @@
             </plugin>
 		</plugins>
 	</build>
+	
+	<profiles>
+	   <profile>
+	       <id>macosx-jvm-flags</id>
+	       <activation>
+	           <os><family>mac</family></os>
+	       </activation>
+	       <properties>
+	           <os-jvm-flags>-XstartOnFirstThread</os-jvm-flags>
+	       </properties>
+	   </profile>
+	</profiles>
 </project>

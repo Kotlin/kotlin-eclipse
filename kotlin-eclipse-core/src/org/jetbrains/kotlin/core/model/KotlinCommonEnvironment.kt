@@ -95,6 +95,8 @@ import org.jetbrains.kotlin.script.ScriptHelperImpl
 import com.intellij.lang.jvm.facade.JvmElementProvider
 import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
 import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
+import org.jetbrains.kotlin.cli.jvm.compiler.CliTraceHolder
+import org.jetbrains.kotlin.cli.jvm.compiler.CliKotlinAsJavaSupport
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -160,15 +162,19 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(ExternalAnnotationsManager::class.java, MockExternalAnnotationsManager())
             registerService(InferredAnnotationsManager::class.java, MockInferredAnnotationsManager())
             
-            val cliLightClassGenerationSupport = CliLightClassGenerationSupport(project)
-            registerService(LightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
-            registerService(CliLightClassGenerationSupport::class.java, cliLightClassGenerationSupport)
-            registerService(CodeAnalyzerInitializer::class.java, cliLightClassGenerationSupport)
+            val traceHolder = CliTraceHolder().also {
+                registerService(CodeAnalyzerInitializer::class.java, it)
+            }
+            
+            CliLightClassGenerationSupport(traceHolder).also {
+                registerService(LightClassGenerationSupport::class.java, it)
+                registerService(CliLightClassGenerationSupport::class.java, it)
+            }
             
             registerService(JavaModuleResolver::class.java, EclipseKotlinJavaModuleResolver())
             
 			val area = Extensions.getArea(this)
-			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, cliLightClassGenerationSupport))
+			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, CliKotlinAsJavaSupport(project, traceHolder)))
             area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(
                     PsiElementFinderImpl(this, ServiceManager.getService(this, JavaFileManager::class.java)))
         }
