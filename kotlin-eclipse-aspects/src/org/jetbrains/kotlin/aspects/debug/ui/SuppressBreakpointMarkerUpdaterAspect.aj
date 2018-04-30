@@ -8,7 +8,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.jetbrains.kotlin.ui.builder.AspectsUtils;
 
-
 public aspect SuppressBreakpointMarkerUpdaterAspect {
 
 	pointcut updateMarker(BreakpointMarkerUpdater markerUpdater, IMarker marker, IDocument document, Position position): 
