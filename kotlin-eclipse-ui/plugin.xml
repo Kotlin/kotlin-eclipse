@@ -893,9 +893,8 @@
          point="org.eclipse.ui.propertyPages">
       <page
             class="org.jetbrains.kotlin.preferences.properties.KotlinPropertyPage"
-            icon="icons/kotlin.png"
             id="org.jetbrains.kotlin.ui.project-properties"
-            name="Kotlin Settings">
+            name="Kotlin Compiler">
          <enabledWhen>
             <reference
                   definitionId="org.jetbrains.kotlin.core.hasNature">

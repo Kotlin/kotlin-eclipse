@@ -212,6 +212,9 @@
     	               <include name="Kotlin/kotlinc/lib/kotlin-script-runtime.jar" />
     	               <include name="Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar" />
     	               <include name="Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar" />
+    	               <include name="Kotlin/kotlinc/lib/allopen-compiler-plugin.jar"/>
+                       <include name="Kotlin/kotlinc/lib/noarg-compiler-plugin.jar"/>
+                       <include name="Kotlin/kotlinc/lib/sam-with-receiver-compiler-plugin.jar"/>
     	           </patternset>
     	           <mapper type="flatten"/>
     	       </unzip>

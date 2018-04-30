@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2000-2014 JetBrains s.r.o.
- *  
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- *  
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- *   
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,7 +61,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.CommonClassNames;
 
 public class EclipseJavaElementUtil {
-    
+
     @NotNull
     static Visibility getVisibility(@NotNull IBinding member) {
         int flags = member.getModifiers();
@@ -72,27 +72,27 @@ public class EclipseJavaElementUtil {
         } else if (Modifier.isProtected(flags)) {
             return Flags.isStatic(flags) ? JavaVisibilities.PROTECTED_STATIC_VISIBILITY : JavaVisibilities.PROTECTED_AND_PACKAGE;
         }
-        
+
         return JavaVisibilities.PACKAGE_VISIBILITY;
     }
-    
+
     private static List<ITypeBinding> getSuperTypes(@NotNull ITypeBinding typeBinding) {
         List<ITypeBinding> superTypes = new ArrayList<>();
         for (ITypeBinding superInterface : typeBinding.getInterfaces()) {
             superTypes.add(superInterface);
         }
-        
+
         ITypeBinding superClass = typeBinding.getSuperclass();
         if (superClass != null) {
             superTypes.add(superClass);
         }
-        
+
         return superTypes;
     }
-    
+
     static ITypeBinding[] getSuperTypesWithObject(@NotNull ITypeBinding typeBinding) {
         List<ITypeBinding> allSuperTypes = new ArrayList<>();
-        
+
         boolean javaLangObjectInSuperTypes = false;
         for (ITypeBinding superType : getSuperTypes(typeBinding)) {
             if (superType.getQualifiedName().equals(CommonClassNames.JAVA_LANG_OBJECT)) {
@@ -100,14 +100,14 @@ public class EclipseJavaElementUtil {
             }
             allSuperTypes.add(superType);
         }
-        
+
         if (!javaLangObjectInSuperTypes && !typeBinding.getQualifiedName().equals(CommonClassNames.JAVA_LANG_OBJECT)) {
             allSuperTypes.add(getJavaLangObjectBinding(typeBinding.getJavaElement().getJavaProject()));
         }
-        
+
         return allSuperTypes.toArray(new ITypeBinding[allSuperTypes.size()]);
     }
-    
+
     @NotNull
     private static ITypeBinding getJavaLangObjectBinding(@NotNull IJavaProject javaProject) {
         try {
@@ -118,26 +118,26 @@ public class EclipseJavaElementUtil {
             throw new IllegalStateException(e);
         }
     }
-    
+
     @NotNull
     static List<JavaValueParameter> getValueParameters(@NotNull IMethodBinding method) {
         List<JavaValueParameter> parameters = new ArrayList<JavaValueParameter>();
         ITypeBinding[] parameterTypes = method.getParameterTypes();
-        
+
         String[] parameterNames = getParameterNames(method);
         int parameterTypesCount = parameterTypes.length;
         for (int i = 0; i < parameterTypesCount; ++i) {
             boolean isLastParameter = i == parameterTypesCount - 1;
             parameters.add(new EclipseJavaValueParameter(
-                    parameterTypes[i], 
+                    parameterTypes[i],
                     method.getParameterAnnotations(i),
-                    parameterNames[i], 
+                    parameterNames[i],
                     isLastParameter ? method.isVarargs() : false));
         }
-        
+
         return parameters;
     }
-    
+
     @NotNull
     private static String[] getParameterNames(@NotNull IMethodBinding methodBinding) {
         try {
@@ -152,15 +152,15 @@ public class EclipseJavaElementUtil {
                     parameterNames[i] = "arg" + i;
                 }
             }
-            
+
             return parameterNames;
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
+
         throw new RuntimeException();
     }
-    
+
     public static JavaAnnotation findAnnotation(@NotNull IAnnotationBinding[] annotationBindings, @NotNull FqName fqName) {
         for (IAnnotationBinding annotation : annotationBindings) {
             String annotationFQName = annotation.getAnnotationType().getQualifiedName();
@@ -168,10 +168,10 @@ public class EclipseJavaElementUtil {
                 return new EclipseJavaAnnotation(annotation);
             }
         }
-        
+
         return null;
     }
-    
+
     @Nullable
     public static ClassId computeClassId(@NotNull ITypeBinding classBinding) {
         ITypeBinding container = classBinding.getDeclaringClass();
@@ -179,20 +179,20 @@ public class EclipseJavaElementUtil {
             ClassId parentClassId = computeClassId(container);
             return parentClassId == null ? null : parentClassId.createNestedClassId(Name.identifier(classBinding.getName()));
         }
-        
+
         String fqName = classBinding.getQualifiedName();
         return fqName == null ? null : ClassId.topLevel(new FqName(fqName));
     }
-    
+
     public static boolean isKotlinLightClass(@NotNull IJavaElement element) {
         IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(element.getPath());
         if (resource == null) {
             return false;
         }
-        
+
         return isFromKotlinBinFolder(resource);
     }
-    
+
     public static boolean isFromKotlinBinFolder(@NotNull IResource resource) {
         IContainer parent = resource.getParent();
         while (parent != null) {
@@ -201,17 +201,17 @@ public class EclipseJavaElementUtil {
             }
             parent = parent.getParent();
         }
-        
+
         return false;
     }
-    
+
     public static boolean isKotlinBinaryElement(@NotNull IJavaElement element) {
         IClassFile classFile;
         if (element instanceof IClassFile) {
             classFile = (IClassFile) element;
         } else if (element instanceof BinaryType) {
             classFile = ((BinaryType) element).getClassFile();
-        } else  {
+        } else {
             return false;
         }
         return isKotlinClassFile(classFile);
@@ -224,7 +224,7 @@ public class EclipseJavaElementUtil {
         }
         VirtualFile virtualFile = jarFileOrDirectoryToVirtualFile(classFilePath.toFile());
         if (virtualFile == null) return false;
-        
+
         String relativePath = classFile.getType().getFullyQualifiedName().replace('.', '/') + ".class";
         VirtualFile archiveRelativeFile = virtualFile.findFileByRelativePath(relativePath);
         if (archiveRelativeFile == null) {
@@ -236,7 +236,7 @@ public class EclipseJavaElementUtil {
         }
         return true;
     }
-    
+
     @Nullable
     private static VirtualFile jarFileOrDirectoryToVirtualFile(@NotNull File file) {
         if (ApplicationManager.getApplication() == null) return null;
@@ -244,12 +244,10 @@ public class EclipseJavaElementUtil {
             if (file.isDirectory()) {
                 return VirtualFileManager.getInstance()
                         .findFileByUrl("file://" + FileUtil.toSystemIndependentName(file.getAbsolutePath()));
-            }
-            else {
+            } else {
                 return VirtualFileManager.getInstance().findFileByUrl("jar://" + FileUtil.toSystemIndependentName(file.getAbsolutePath()) + "!/");
             }
-        }
-        else {
+        } else {
             throw new IllegalStateException("Path " + file + " does not exist.");
         }
     }
