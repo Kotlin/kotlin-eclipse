@@ -102,6 +102,9 @@ public class KotlinCompiler {
     private String[] configureCompilerArguments(@NotNull IJavaProject javaProject, @NotNull String outputDir,
             @NotNull List<File> sourceDirs) throws CoreException {
         KotlinProperties kotlinProperties = new KotlinProperties(new ProjectScope(javaProject.getProject()));
+        if (!kotlinProperties.getGlobalsOverridden()) {
+            kotlinProperties = new KotlinProperties();
+        }
 
         List<String> command = new ArrayList<>();
         command.add("-kotlin-home");
@@ -141,8 +144,9 @@ public class KotlinCompiler {
  
     private Collection<String> configurePlugin(CompilerPlugin plugin) {
         List<String> result = new ArrayList<>();
-        if (plugin.getActive() && plugin.getJarPath() != null) {
-            String replacedPath = plugin.getJarPath().replace("$KOTLIN_HOME", ProjectUtils.KT_HOME);
+        String jarPath = plugin.getJarPath();
+        if (plugin.getActive() && jarPath != null) {
+            String replacedPath = jarPath.replace("$KOTLIN_HOME", ProjectUtils.KT_HOME);
             result.add("-Xplugin=" + replacedPath);
 
             for (String arg : plugin.getArgs()) {

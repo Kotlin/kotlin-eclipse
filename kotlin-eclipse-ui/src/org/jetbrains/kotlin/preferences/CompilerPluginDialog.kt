@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.preferences.properties
+package org.jetbrains.kotlin.preferences
 
 import org.eclipse.jface.dialogs.IDialogConstants
 import org.eclipse.jface.dialogs.MessageDialog
@@ -15,35 +15,33 @@ import org.jetbrains.kotlin.swt.builders.*
 
 class CompilerPluginDialog(
         shell: Shell,
-        val allPlugins: PreferencesCollection<CompilerPlugin>,
-        val plugin: CompilerPlugin?
+        private val allPlugins: PreferencesCollection<CompilerPlugin>,
+        private val plugin: CompilerPlugin?
 ) : TrayDialog(shell) {
-    private lateinit var keyField: View<Text>
+    private var keyField = plugin?.key.orEmpty()
 
-    private lateinit var pathField: View<Text>
+    private var pathField = plugin?.jarPath.orEmpty()
     
-    private lateinit var argsField: View<Text>
+    private var argsField = plugin?.args?.joinToString(separator = "\n").orEmpty()
     
     private val newKey: String
-        get() = keyField.text.trim()
+        get() = keyField.trim()
 
-    private val argsText
-        get() = plugin?.args?.joinToString(separator = "\n").orEmpty()
 
     override fun createDialogArea(parent: Composite): Control =
             parent.asView.gridContainer(cols = 2) {
                 (control.layout as GridLayout).marginTop = 10
                 label("Plugin name:")
-                keyField = textField(plugin?.key.orEmpty(), style = SWT.BORDER) {
+                textField(::keyField, style = SWT.BORDER) {
                     layout(horizontalGrab = true)
                 }
                 label("Path to jar:")
-                pathField = textField(plugin?.jarPath.orEmpty(), style = SWT.BORDER) {
+                textField(::pathField, style = SWT.BORDER) {
                     layout(horizontalGrab = true)
                 }
                 group("Plugin options:") {
                     layout(horizontalSpan = 2, horizontalGrab = true, verticalGrab = true)
-                    argsField = textField(argsText, style = SWT.BORDER or SWT.MULTI or SWT.V_SCROLL) {
+                    textField(::argsField, style = SWT.BORDER or SWT.MULTI or SWT.V_SCROLL) {
                         layout(suggestedHeight = 200, suggestedWidth = 400)
                     }
                 }
@@ -59,24 +57,26 @@ class CompilerPluginDialog(
     override fun buttonPressed(buttonId: Int) {
         val successful = try {
             when {
-                buttonId != IDialogConstants.OK_ID -> {
-                    true
-                }
-                keyField.text.isBlank() -> throw ValidationException("Plugin name cannot be blank")
+                buttonId != IDialogConstants.OK_ID -> true
+
+                keyField.isBlank() -> throw ValidationException("Plugin name cannot be blank")
+
                 plugin != null && newKey == plugin.key -> {
                     with(plugin) {
-                        jarPath = pathField.text.trim()
+                        jarPath = pathField.trim()
                         args = processArgs()
                     }
                     true
                 }
+
                 newKey in allPlugins && !allPlugins[newKey].removed -> throw ValidationException("Plugin with chosen name already exists")
+
                 else -> {
                     plugin?.apply {
                         removed = true
                     }
                     with(allPlugins[newKey]) {
-                        jarPath = pathField.text.trim()
+                        jarPath = pathField.trim()
                         active = plugin?.active ?: true
                         args = processArgs()
                         removed = false
@@ -96,7 +96,7 @@ class CompilerPluginDialog(
     }
     
     private fun processArgs() : List<String> {
-        val processedArgs = argsField.text.lineSequence()
+        val processedArgs = argsField.lineSequence()
                 .map(String::trim)
                 .filterNot(String::isEmpty)
                 .toList()
