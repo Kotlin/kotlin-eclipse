@@ -92,12 +92,12 @@ val View<Button>.selected: Boolean
     get() = control.selection
 
 inline fun View<Composite>.textField(
-        delegate: KMutableProperty0<String>,
+        delegate: KMutableProperty0<String?>,
         style: Int = SWT.NONE,
         operations: View<Text>.() -> Unit = {}
 ) =
         Text(control, style).apply {
-            text = delegate.get()
+            text = delegate.get() ?: ""
             addModifyListener { _ ->
                 delegate.set(text)
             }

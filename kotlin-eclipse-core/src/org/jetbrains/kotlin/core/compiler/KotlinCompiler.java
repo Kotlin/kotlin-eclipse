@@ -45,6 +45,7 @@ import org.jetbrains.kotlin.core.preferences.KotlinProperties;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 import kotlin.Pair;
+import kotlin.text.StringsKt;
 
 public class KotlinCompiler {
     public final static KotlinCompiler INSTANCE = new KotlinCompiler();
@@ -127,6 +128,13 @@ public class KotlinCompiler {
 
         for (File file : ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject)) {
             classPath.append(file.getAbsolutePath()).append(pathSeparator);
+        }
+        
+        String additionalFlags = kotlinProperties.getCompilerFlags();
+        if (additionalFlags != null && !StringsKt.isBlank(additionalFlags)) {
+            for (String flag : additionalFlags.split("\\s+")) {
+                command.add(flag);
+            }
         }
 
         command.add("-classpath");
