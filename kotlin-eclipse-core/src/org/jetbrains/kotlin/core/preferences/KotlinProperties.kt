@@ -13,6 +13,8 @@ class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferen
     var jvmTarget by EnumPreference<JvmTarget>()
 
     val compilerPlugins by ChildCollection(::CompilerPlugin)
+    
+    var compilerFlags by StringPreference()
 }
 
 class CompilerPlugin(scope: IScopeContext, path: String) : Preferences(scope, path) {

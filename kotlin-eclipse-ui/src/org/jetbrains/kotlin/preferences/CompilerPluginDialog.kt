@@ -18,14 +18,14 @@ class CompilerPluginDialog(
         private val allPlugins: PreferencesCollection<CompilerPlugin>,
         private val plugin: CompilerPlugin?
 ) : TrayDialog(shell) {
-    private var keyField = plugin?.key.orEmpty()
+    private var keyField = plugin?.key
 
-    private var pathField = plugin?.jarPath.orEmpty()
+    private var pathField = plugin?.jarPath
     
-    private var argsField = plugin?.args?.joinToString(separator = "\n").orEmpty()
+    private var argsField = plugin?.args?.joinToString(separator = "\n")
     
     private val newKey: String
-        get() = keyField.trim()
+        get() = keyField?.trim() ?: ""
 
 
     override fun createDialogArea(parent: Composite): Control =
@@ -59,11 +59,11 @@ class CompilerPluginDialog(
             when {
                 buttonId != IDialogConstants.OK_ID -> true
 
-                keyField.isBlank() -> throw ValidationException("Plugin name cannot be blank")
+                keyField.isNullOrBlank() -> throw ValidationException("Plugin name cannot be blank")
 
                 plugin != null && newKey == plugin.key -> {
                     with(plugin) {
-                        jarPath = pathField.trim()
+                        jarPath = pathField?.trim()
                         args = processArgs()
                     }
                     true
@@ -76,7 +76,7 @@ class CompilerPluginDialog(
                         removed = true
                     }
                     with(allPlugins[newKey]) {
-                        jarPath = pathField.trim()
+                        jarPath = pathField?.trim()
                         active = plugin?.active ?: true
                         args = processArgs()
                         removed = false
@@ -96,7 +96,8 @@ class CompilerPluginDialog(
     }
     
     private fun processArgs() : List<String> {
-        val processedArgs = argsField.lineSequence()
+        val processedArgs = argsField.orEmpty()
+                .lineSequence()
                 .map(String::trim)
                 .filterNot(String::isEmpty)
                 .toList()

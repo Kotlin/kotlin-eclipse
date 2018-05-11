@@ -27,7 +27,7 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
         editButton.enabled = editable
         removeButton.enabled = editable
     }
-
+    
     private lateinit var editButton: View<Button>
 
     private lateinit var removeButton: View<Button>
@@ -69,6 +69,10 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
                             list.refresh()
                         }
                     }
+                }
+                group("Additional compiler flags") {
+                    layout(horizontalSpan = 2, verticalGrab = true)
+                    textField(kotlinProperties::compilerFlags, style = SWT.MULTI) { layout(horizontalGrab = true, verticalGrab = true) }
                 }
             }.apply(operations)
 
