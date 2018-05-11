@@ -20,12 +20,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.builtins.JvmBuiltInsPackageFragmentProvider
-import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.container.ComponentProvider
-import org.jetbrains.kotlin.container.ValueDescriptor
 import org.jetbrains.kotlin.context.ContextForNewModule
 import org.jetbrains.kotlin.context.MutableModuleContext
 import org.jetbrains.kotlin.context.ProjectContext
@@ -36,7 +34,6 @@ import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
 import org.jetbrains.kotlin.descriptors.impl.CompositePackageFragmentProvider
-import org.jetbrains.kotlin.descriptors.impl.ModuleDependenciesImpl
 import org.jetbrains.kotlin.frontend.java.di.initJvmBuiltInsForTopDownAnalysis
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.name.Name
@@ -50,18 +47,13 @@ import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import org.jetbrains.kotlin.util.KotlinFrontEndException
-import java.lang.reflect.Type
 import java.util.ArrayList
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
-import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
 import org.jetbrains.kotlin.config.JvmTarget
-import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
-import org.jetbrains.kotlin.core.model.SamWithReceiverResolverExtension
-import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
 import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.eclipse.core.resources.ProjectScope
@@ -88,8 +80,11 @@ public object EclipseAnalyzerFacadeForJVM {
         }
         
         val project = environment.project
+        val kotlinProperties = KotlinProperties(ProjectScope(environment.eclipseProject))
+                .takeIf { it.globalsOverridden }
+                ?: KotlinProperties()
         
-		val jvmTarget = KotlinProperties(ProjectScope(environment.eclipseProject)).jvmTarget ?: JvmTarget.DEFAULT
+		val jvmTarget = kotlinProperties.jvmTarget ?: JvmTarget.DEFAULT
         
         val moduleContext = createModuleContext(project, environment.configuration, true)
         val storageManager = moduleContext.storageManager

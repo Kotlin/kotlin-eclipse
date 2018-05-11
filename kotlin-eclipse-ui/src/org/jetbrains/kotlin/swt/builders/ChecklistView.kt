@@ -1,14 +1,13 @@
 package org.jetbrains.kotlin.swt.builders
 
 import org.eclipse.swt.SWT
+import org.eclipse.swt.events.SelectionAdapter
+import org.eclipse.swt.events.SelectionEvent
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Table
 import org.eclipse.swt.widgets.TableItem
 import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.KProperty1
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.eclipse.swt.events.SelectionAdapter
-import org.eclipse.swt.events.SelectionEvent
+import kotlin.reflect.KMutableProperty0
 
 class ChecklistView<T>(control: Table, val model: () -> Iterable<T>) : View<Table>(control) {
     var nameProvider: (T) -> String = { it.toString() }
@@ -37,10 +36,11 @@ class ChecklistView<T>(control: Table, val model: () -> Iterable<T>) : View<Tabl
 
 inline fun <reified T> View<Composite>.checkList(
         noinline model: () -> Iterable<T>,
+        selectionDelegate: KMutableProperty0<T?>? = null,
         style: Int = SWT.NONE,
         operations: ChecklistView<T>.() -> Unit = {}
 ) =
-        ChecklistView<T>(Table(control, style or SWT.CHECK or SWT.SINGLE), model).apply {
+        ChecklistView(Table(control, style or SWT.CHECK or SWT.SINGLE), model).apply {
             operations()
             refresh()
             control.addSelectionListener(object : SelectionAdapter() {
@@ -49,6 +49,7 @@ inline fun <reified T> View<Composite>.checkList(
                         checkDelegate?.set(this.data as T, checked)
                     } else {
                         setSelection(this.data as T)
+                        selectionDelegate?.also { it.set(this.data as T) }
                     }
                 }
             })

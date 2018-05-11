@@ -19,8 +19,10 @@ package org.jetbrains.kotlin.core;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache;
 import org.jetbrains.kotlin.core.model.KotlinRefreshProjectListener;
+import org.jetbrains.kotlin.core.preferences.KotlinProperties;
 import org.osgi.framework.BundleContext;
 
 public class Activator extends Plugin {
@@ -45,6 +47,9 @@ public class Activator extends Plugin {
 		        IResourceChangeEvent.PRE_CLOSE | IResourceChangeEvent.PRE_DELETE | IResourceChangeEvent.PRE_BUILD);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(KotlinRefreshProjectListener.INSTANCE,
 		        IResourceChangeEvent.PRE_REFRESH);
+		
+		// Creating property object in default scope assures that values from 'preferences.ini' were loaded.
+		new KotlinProperties(DefaultScope.INSTANCE);
 	}
 
 	@Override

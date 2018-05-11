@@ -218,7 +218,7 @@
       </page>
       <page
             category="kotlin-eclipse-ui.preferences"
-            class="org.jetbrains.kotlin.preferences.CompilerPreferencePage"
+            class="org.jetbrains.kotlin.preferences.GlobalCompilerPropertyPage"
             id="kotlin-eclipse-ui.preferences.compiler"
             name="Compiler">
       </page>
@@ -892,7 +892,7 @@
    <extension
          point="org.eclipse.ui.propertyPages">
       <page
-            class="org.jetbrains.kotlin.preferences.properties.KotlinPropertyPage"
+            class="org.jetbrains.kotlin.preferences.properties.ProjectCompilerPropertyPage"
             id="org.jetbrains.kotlin.ui.project-properties"
             name="Kotlin Compiler">
          <enabledWhen>

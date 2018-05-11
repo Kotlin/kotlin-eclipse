@@ -1,86 +1,101 @@
 package org.jetbrains.kotlin.core.preferences
 
-import org.eclipse.core.runtime.preferences.IScopeContext
-import org.osgi.service.prefs.Preferences as InternalPreferences
+import org.eclipse.core.internal.preferences.PreferencesService
+import org.eclipse.core.resources.ProjectScope
+import org.eclipse.core.runtime.preferences.ConfigurationScope
 import org.eclipse.core.runtime.preferences.DefaultScope
-import kotlin.reflect.KProperty
+import org.eclipse.core.runtime.preferences.IScopeContext
+import org.eclipse.core.runtime.preferences.InstanceScope
+import org.jetbrains.kotlin.core.log.KotlinLogger
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
+import org.osgi.service.prefs.Preferences as Store
+import org.jetbrains.kotlin.core.Activator
 
-abstract class Preferences protected constructor(protected val internal: InternalPreferences) {
-    constructor(node: String, scope: IScopeContext = DefaultScope.INSTANCE) : this(scope.getNode(node))
+private val SCOPES = listOf(InstanceScope.INSTANCE, ConfigurationScope.INSTANCE, DefaultScope.INSTANCE)
 
-    fun flush() = internal.flush()
+abstract class PreferencesBase(scope: IScopeContext, path: String) {
+    protected val readStores = SCOPES.takeLastWhile { scope::class != it::class }
+            .filter { PreferencesService.getDefault().rootNode.node(it.name).nodeExists(path) }
+            .let { listOf(scope) + it }
+            .map { it.getNode(path) }
+            .asSequence()
 
-    fun remove() = internal.removeNode()
+    protected val writeStore: Store = readStores.first()
+}
 
-    val key: String = internal.name()
+abstract class Preferences(private val scope: IScopeContext, private val path: String) : PreferencesBase(scope, path) {
+    fun flush() = writeStore.flush()
 
-    protected class StringPreference : ReadWriteProperty<Preferences, String?> {
-        override operator fun getValue(thisRef: Preferences, property: KProperty<*>): String? =
-                thisRef.internal.get(property.name, null)
+    fun remove() = writeStore.removeNode()
 
-        override operator fun setValue(thisRef: Preferences, property: KProperty<*>, value: String?) {
-            with(thisRef.internal) {
-                if (value is String) put(property.name, value)
+    val key: String = writeStore.name()
+
+    private fun getValue(key: String): String? =
+            readStores.map { it.get(key, null) }
+                    .firstOrNull { it != null }
+
+
+    private interface Preference<T> : ReadWriteProperty<Preferences, T> {
+        fun reader(text: String?): T
+        fun writer(value: T): String?
+
+        override operator fun getValue(thisRef: Preferences, property: KProperty<*>): T =
+                thisRef.getValue(property.name).let(::reader)
+
+        override operator fun setValue(thisRef: Preferences, property: KProperty<*>, value: T) {
+            val text = writer(value)
+            with(thisRef.writeStore) {
+                if (text != null) put(property.name, text)
                 else remove(property.name)
             }
         }
     }
 
-    protected class BooleanPreference : ReadWriteProperty<Preferences, Boolean> {
-        override operator fun getValue(thisRef: Preferences, property: KProperty<*>): Boolean =
-                thisRef.internal.getBoolean(property.name, false)
-
-        override operator fun setValue(thisRef: Preferences, property: KProperty<*>, value: Boolean) {
-            thisRef.internal.putBoolean(property.name, value)
-        }
+    protected class StringPreference : Preference<String?> {
+        override fun reader(text: String?) = text
+        override fun writer(value: String?) = value
     }
 
-    protected class ListPreference(val separator: String = "|") : ReadWriteProperty<Preferences, List<String>> {
-        override fun getValue(thisRef: Preferences, property: KProperty<*>): List<String> =
-                thisRef.internal.get(property.name, "").split(separator).filter(String::isNotEmpty)
-
-        override fun setValue(thisRef: Preferences, property: KProperty<*>, value: List<String>) {
-            value.joinToString(separator).also { thisRef.internal.put(property.name, it) }
-        }
-
+    protected class BooleanPreference : Preference<Boolean> {
+        override fun reader(text: String?) = text?.toBoolean() ?: false
+        override fun writer(value: Boolean) = value.toString()
     }
 
-    protected inline fun <reified T : Enum<T>> EnumPreference() =
-            object : ReadWriteProperty<Preferences, T?> {
-                override operator fun getValue(thisRef: Preferences, property: KProperty<*>): T? =
-                        thisRef.internal.get(property.name, null)?.let { enumValueOf<T>(it) }
+    protected class ListPreference(val separator: String = "|") : Preference<List<String>> {
+        override fun reader(text: String?) = text?.split(separator)?.filter(String::isNotEmpty) ?: listOf()
+        override fun writer(value: List<String>) = value.joinToString(separator)
+    }
 
-                override operator fun setValue(thisRef: Preferences, property: KProperty<*>, value: T?) =
-                        with(thisRef.internal) {
-                            if (value is Enum<*>) put(property.name, value.name)
-                            else remove(property.name)
-                        }
+    protected inline fun <reified T : Enum<T>> EnumPreference(): ReadWriteProperty<Preferences, T?> =
+            object : Preference<T?> {
+                override fun reader(text: String?) = text?.let { enumValueOf<T>(it) }
+                override fun writer(value: T?) = value?.name
             }
 
-    protected class Child<out T : Preferences>(val factory: (InternalPreferences) -> T) {
+    protected class Child<out T : Preferences>(val factory: (IScopeContext, String) -> T) {
         operator fun provideDelegate(thisRef: Preferences, property: KProperty<*>) =
                 object : ReadOnlyProperty<Preferences, T> {
-                    val instance: T by lazy { thisRef.internal.node(property.name).let(factory) }
+                    val instance: T by lazy { factory(thisRef.scope, "${thisRef.path}/${property.name}") }
 
                     override fun getValue(thisRef: Preferences, property: KProperty<*>): T = instance
                 }
     }
 
-    protected class ChildCollection<T : Preferences>(val factory: (InternalPreferences) -> T) {
+    protected class ChildCollection<T: Preferences>(val factory: (IScopeContext, String) -> T) {
         operator fun provideDelegate(thisRef: Preferences, property: KProperty<*>) =
                 object : ReadOnlyProperty<Preferences, PreferencesCollection<T>> {
-                    val instance: PreferencesCollection<T> by lazy { PreferencesCollection(thisRef.internal.node(property.name), factory) }
+                    val instance by lazy { PreferencesCollection(thisRef.scope, "${thisRef.path}/${property.name}", factory) }
 
                     override fun getValue(thisRef: Preferences, property: KProperty<*>): PreferencesCollection<T> = instance
                 }
     }
 
     fun inspect(): String {
-        val childInspection = internal.inspect().let { "${internal.name()}\n$it" }
+        val childInspection = writeStore.inspect().let { "${writeStore.name()}\n$it" }
 
-        return generateSequence(internal) { it.parent() }
+        return generateSequence(writeStore) { it.parent() }
                 .drop(1)
                 .map { it.name() }
                 .fold(childInspection) { acc, it ->
@@ -88,30 +103,38 @@ abstract class Preferences protected constructor(protected val internal: Interna
                 }
     }
 
-    private fun InternalPreferences.inspect(): String {
+    private fun Store.inspect(): String {
         val children = (childrenNames().asSequence().map { it to this.node(it) } + keys().asSequence().map { it to this.get(it, null) }).toList()
         return children.mapIndexed { idx, (name, obj) ->
             val prefix = if (idx == children.lastIndex) " ┗━ " else " ┣━ "
 
             when (obj) {
                 is String -> "$prefix $name = $obj"
-                is InternalPreferences -> "$prefix $name" + obj.inspect().lines().joinToString(separator = "") { "\n ┃  $it" }
+                is Store -> "$prefix $name" + obj.inspect().lines().joinToString(separator = "") { "\n ┃  $it" }
                 else -> "$prefix $name?"
             }
         }.joinToString(separator = "\n")
     }
 }
 
-class PreferencesCollection<T>(private val internal: InternalPreferences, private val elementFactory: (InternalPreferences) -> T) {
+class PreferencesCollection<T>(
+        private val scope: IScopeContext,
+        private val path: String,
+        private val elementFactory: (IScopeContext, String) -> T
+) : PreferencesBase(scope, path) {
+
     var cache = mutableMapOf<String, T>()
 
     val entries: List<T>
-        get() = internal.childrenNames().toList().map(::get)
+        get() = readStores
+                .flatMap { it.childrenNames().asSequence() }
+                .distinct()
+                .map { get(it) }
+                .toList()
 
-    operator fun contains(key: String) = internal.nodeExists(key)
+    operator fun contains(key: String) = readStores.any { it.nodeExists(key) }
 
     operator fun get(key: String): T = cache[key]
-            ?: internal.node(key)
-                    .let(elementFactory)
+            ?: elementFactory(scope, "$path/$key")
                     .also { cache[key] = it }
 }

@@ -24,6 +24,11 @@ inline fun View<Composite>.label(
             operations()
         }
 
+inline fun View<Composite>.separator(style: Int = SWT.NONE, operations: View<Label>.() -> Unit = {}) =
+        Label(control, SWT.HORIZONTAL or SWT.SEPARATOR or style).asView
+                .apply(operations)
+                .applyDefaultLayoutIfNeeded()
+
 inline fun <reified T : Enum<T>> View<Composite>.enumPreference(
         delegate: KMutableProperty0<T?>,
         nameProvider: (T) -> String = { it.toString() },
@@ -57,6 +62,24 @@ inline fun View<Composite>.button(label: String = "", style: Int = SWT.NONE, ope
         }.asView.apply(operations)
                 .applyDefaultLayoutIfNeeded()
 
+inline fun View<Composite>.checkbox(
+        delegate: KMutableProperty0<Boolean>,
+        label: String = "",
+        style: Int = SWT.NONE,
+        operations: View<Button>.() -> Unit = {}
+) =
+        Button(control, SWT.CHECK or style).apply {
+            text = label
+            selection = delegate.get()
+            addSelectionListener(object : SelectionAdapter() {
+                override fun widgetSelected(e: SelectionEvent) {
+                    delegate.set(selection)
+                }
+            })
+        }.asView.apply(operations)
+                .applyDefaultLayoutIfNeeded()
+
+
 fun View<Button>.onClick(callback: () -> Unit) {
     control.addSelectionListener(object : SelectionAdapter() {
         override fun widgetSelected(e: SelectionEvent?) {
@@ -65,9 +88,19 @@ fun View<Button>.onClick(callback: () -> Unit) {
     })
 }
 
-inline fun View<Composite>.textField(defaultValue: String = "", style: Int = SWT.NONE, operations: View<Text>.() -> Unit = {}) =
+val View<Button>.selected: Boolean
+    get() = control.selection
+
+inline fun View<Composite>.textField(
+        delegate: KMutableProperty0<String>,
+        style: Int = SWT.NONE,
+        operations: View<Text>.() -> Unit = {}
+) =
         Text(control, style).apply {
-            text = defaultValue
+            text = delegate.get()
+            addModifyListener { _ ->
+                delegate.set(text)
+            }
         }.asView.apply(operations)
                 .applyDefaultLayoutIfNeeded()
 
@@ -90,6 +123,21 @@ inline fun View<Composite>.group(title: String? = null, cols: Int = 1, style: In
             layout = GridLayout(cols, false)
         }.asView.apply(operations)
                 .applyDefaultLayoutIfNeeded()
+
+var Control.recursiveEnabled: Boolean
+    get() = enabled
+    set(value) {
+        enabled = value
+        if (this is Composite) {
+            this.children.forEach { it.recursiveEnabled = value }
+        }
+    }
+
+var View<Control>.enabled: Boolean
+    get() = control.enabled
+    set(value) {
+        control.recursiveEnabled = value
+    }
 
 fun View<Control>.layout(
         horizontalSpan: Int = 1,
