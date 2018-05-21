@@ -53,7 +53,7 @@ public class KotlinResolutionFacade(
         throw UnsupportedOperationException()
     }
     
-    override fun analyzeFullyAndGetResult(elements: Collection<KtElement>): AnalysisResult {
+    override fun analyzeWithAllCompilerChecks(elements: Collection<KtElement>): AnalysisResult {
         throw UnsupportedOperationException()
     }
     

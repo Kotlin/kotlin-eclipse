@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.container.registerSingleton
 import org.jetbrains.kotlin.container.useInstance
 import org.jetbrains.kotlin.context.ModuleContext
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
-import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseExternalAnnotationResolver
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator
@@ -81,7 +80,6 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
     useImpl<AnnotationResolverImpl>()
     useImpl<SignaturePropagatorImpl>()
     useImpl<TraceBasedErrorReporter>()
-    useImpl<EclipseExternalAnnotationResolver>()
     useInstance(InternalFlexibleTypeTransformer)
 
     useImpl<CompilerDeserializationConfiguration>()
