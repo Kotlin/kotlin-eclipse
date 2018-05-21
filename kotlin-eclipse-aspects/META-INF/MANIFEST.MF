@@ -12,7 +12,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.pde.launching,
  org.eclipse.jdt.core,
  org.eclipse.ltk.core.refactoring,
- org.jetbrains.kotlin.ui
+ org.jetbrains.kotlin.ui,
+ org.eclipse.debug.core,
+ org.eclipse.jdt.debug
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
@@ -33,8 +35,10 @@ Import-Package: org.eclipse.core.resources,
  org.eclipse.ui.ide
 Eclipse-SupplementBundle: 
  org.eclipse.jdt.debug.ui,
+ org.eclipse.jdt.debug,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.ui,
+ org.eclipse.jdt.internal.debug.core,
  org.eclipse.debug.core,
  org.eclipse.pde.launching,
  org.eclipse.jdt.core
