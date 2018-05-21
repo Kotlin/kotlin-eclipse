@@ -19,14 +19,15 @@ package org.jetbrains.kotlin.core.resolve
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.descriptors.PackagePartProvider
-import org.jetbrains.kotlin.load.kotlin.ModuleMapping
-import org.jetbrains.kotlin.load.kotlin.PackageParts
+import org.jetbrains.kotlin.metadata.jvm.deserialization.ModuleMapping
+import org.jetbrains.kotlin.metadata.jvm.deserialization.PackageParts
 import org.jetbrains.kotlin.utils.SmartList
 import java.io.EOFException
 import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.name.ClassId
+import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmMetadataVersion
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
     private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping, val name: String)
@@ -45,7 +46,9 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
     override fun getAnnotationsOnBinaryModule(moduleName: String): List<ClassId> =
             loadedModules.mapNotNull { (_, mapping, name) ->
                 mapping.moduleData.annotations.takeIf { name == moduleName }
-            }.flatten()
+            }
+                    .flatten()
+                    .map { ClassId.fromString(it) }
 
     override fun findPackageParts(packageFqName: String): List<String> {
         val rootToPackageParts = getPackageParts(packageFqName)
@@ -101,7 +104,13 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
             val moduleFiles = metaInf.children.filter { it.name.endsWith(ModuleMapping.MAPPING_FILE_EXT) }
             for (moduleFile: VirtualFile in moduleFiles) {
                 val mapping = try {
-                    ModuleMapping.create(moduleFile.contentsToByteArray(), moduleFile.toString(), deserializationConfiguration)
+                    ModuleMapping.loadModuleMapping(
+                            moduleFile.contentsToByteArray(),
+                            moduleFile.toString(),
+                            { JvmMetadataVersion(*it).isCompatible() },
+                            deserializationConfiguration.skipMetadataVersionCheck,
+                            deserializationConfiguration.isJvmPackageNameSupported
+                    )
                 }
                 catch (e: EOFException) {
                     throw RuntimeException("Error on reading package parts for '$packageFqName' package in '$moduleFile', " +
