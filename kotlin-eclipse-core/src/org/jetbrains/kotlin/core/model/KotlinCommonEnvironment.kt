@@ -99,6 +99,12 @@ import org.jetbrains.kotlin.cli.jvm.compiler.CliTraceHolder
 import org.jetbrains.kotlin.cli.jvm.compiler.CliKotlinAsJavaSupport
 import org.jetbrains.kotlin.extensions.DeclarationAttributeAltererExtension
 import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
+import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
+import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
+import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesDynamicCompoundIndex
+import org.jetbrains.kotlin.asJava.KotlinAsJavaSupport
+import com.intellij.psi.JavaModuleSystem
+import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -179,8 +185,15 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             
 			val area = Extensions.getArea(this)
 			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, CliKotlinAsJavaSupport(project, traceHolder)))
+			val javaFileManager = ServiceManager.getService(this, JavaFileManager::class.java)
+			(javaFileManager as KotlinCliJavaFileManagerImpl).initialize(JvmDependenciesDynamicCompoundIndex(), arrayListOf(), SingleJavaFileRootsIndex(arrayListOf()), false)
             area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(
-                    PsiElementFinderImpl(this, ServiceManager.getService(this, JavaFileManager::class.java)))
+                    PsiElementFinderImpl(this, javaFileManager))
+
+            val kotlinAsJavaSupport = CliKotlinAsJavaSupport(this, traceHolder)
+            registerService(KotlinAsJavaSupport::class.java, kotlinAsJavaSupport)
+            area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, kotlinAsJavaSupport))
+            registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(this))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
@@ -259,6 +272,7 @@ private fun registerApplicationExtensionPointsAndExtensionsFrom() {
 
     registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
     registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)
+    registerExtensionPointInRoot(JavaModuleSystem.EP_NAME, JavaModuleSystem::class)
     
     with(Extensions.getRootArea()) {
         getExtensionPoint(EP_ERROR_MSGS).registerExtension(DefaultErrorMessagesJvm())
