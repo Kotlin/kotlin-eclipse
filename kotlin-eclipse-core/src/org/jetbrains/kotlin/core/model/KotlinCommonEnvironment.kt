@@ -27,6 +27,8 @@ import com.intellij.core.JavaCoreApplicationEnvironment
 import com.intellij.core.JavaCoreProjectEnvironment
 import com.intellij.formatting.KotlinLanguageCodeStyleSettingsProvider
 import com.intellij.formatting.KotlinSettingsProvider
+import com.intellij.lang.MetaLanguage
+import com.intellij.lang.jvm.facade.JvmElementProvider
 import com.intellij.mock.MockProject
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.ServiceManager
@@ -36,6 +38,7 @@ import com.intellij.openapi.extensions.ExtensionsArea
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.JavaModuleSystem
 import com.intellij.psi.PsiElementFinder
 import com.intellij.psi.PsiManager
 import com.intellij.psi.augment.PsiAugmentProvider
@@ -43,20 +46,29 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.codeStyle.CodeStyleSettingsProvider
 import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider
 import com.intellij.psi.compiled.ClassFileDecompilers
+import com.intellij.psi.impl.PsiElementFinderImpl
 import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
 import com.intellij.psi.impl.file.impl.JavaFileManager
 import org.eclipse.core.runtime.IPath
 import org.jetbrains.kotlin.annotation.AnnotationCollectorExtension
+import org.jetbrains.kotlin.asJava.KotlinAsJavaSupport
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
+import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
+import org.jetbrains.kotlin.cli.common.script.CliScriptDefinitionProvider
+import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
+import org.jetbrains.kotlin.cli.jvm.compiler.CliKotlinAsJavaSupport
 import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
-import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
+import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
+import org.jetbrains.kotlin.cli.jvm.compiler.CliTraceHolder
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
 import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
 import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
+import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesDynamicCompoundIndex
+import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
 import org.jetbrains.kotlin.codegen.extensions.ClassBuilderInterceptorExtension
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
@@ -67,44 +79,26 @@ import org.jetbrains.kotlin.core.resolve.KotlinCacheServiceImpl
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import org.jetbrains.kotlin.core.utils.KotlinImportInserterHelper
 import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
+import org.jetbrains.kotlin.extensions.DeclarationAttributeAltererExtension
+import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
+import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
+import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
+import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
 import org.jetbrains.kotlin.script.ScriptDefinitionProvider
-import org.jetbrains.kotlin.cli.common.script.CliScriptDefinitionProvider
+import org.jetbrains.kotlin.script.ScriptDependenciesProvider
+import org.jetbrains.kotlin.script.ScriptHelper
+import org.jetbrains.kotlin.script.ScriptHelperImpl
 import java.io.File
 import java.util.LinkedHashSet
 import kotlin.reflect.KClass
-import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
-import org.jetbrains.kotlin.script.ScriptDependenciesProvider
-import com.intellij.lang.MetaLanguage
-import org.jetbrains.kotlin.config.JVMConfigurationKeys
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.StandardFileSystems
-import com.intellij.util.io.URLUtil
-import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
-import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
-import com.intellij.psi.impl.PsiElementFinderImpl
-import org.jetbrains.kotlin.script.ScriptHelper
-import org.jetbrains.kotlin.script.ScriptHelperImpl
-import com.intellij.lang.jvm.facade.JvmElementProvider
-import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
-import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
-import org.jetbrains.kotlin.cli.jvm.compiler.CliTraceHolder
-import org.jetbrains.kotlin.cli.jvm.compiler.CliKotlinAsJavaSupport
-import org.jetbrains.kotlin.extensions.DeclarationAttributeAltererExtension
-import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
-import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
-import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
-import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesDynamicCompoundIndex
-import org.jetbrains.kotlin.asJava.KotlinAsJavaSupport
-import com.intellij.psi.JavaModuleSystem
-import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -182,18 +176,17 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             }
             
             registerService(JavaModuleResolver::class.java, EclipseKotlinJavaModuleResolver())
-            
+
 			val area = Extensions.getArea(this)
 			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, CliKotlinAsJavaSupport(project, traceHolder)))
 			val javaFileManager = ServiceManager.getService(this, JavaFileManager::class.java)
-			(javaFileManager as KotlinCliJavaFileManagerImpl).initialize(JvmDependenciesDynamicCompoundIndex(), arrayListOf(), SingleJavaFileRootsIndex(arrayListOf()), false)
-            area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(
-                    PsiElementFinderImpl(this, javaFileManager))
-
-            val kotlinAsJavaSupport = CliKotlinAsJavaSupport(this, traceHolder)
-            registerService(KotlinAsJavaSupport::class.java, kotlinAsJavaSupport)
-            area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, kotlinAsJavaSupport))
-            registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(this))
+			(javaFileManager as KotlinCliJavaFileManagerImpl)
+					.initialize(JvmDependenciesDynamicCompoundIndex(), arrayListOf(), SingleJavaFileRootsIndex(arrayListOf()), false)
+			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(PsiElementFinderImpl(this, javaFileManager))
+			val kotlinAsJavaSupport = CliKotlinAsJavaSupport(this, traceHolder)
+			registerService(KotlinAsJavaSupport::class.java, kotlinAsJavaSupport)
+			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, kotlinAsJavaSupport))
+			registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(this))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
