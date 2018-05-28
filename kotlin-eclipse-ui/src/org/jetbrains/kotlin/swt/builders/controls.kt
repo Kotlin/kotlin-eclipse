@@ -8,8 +8,6 @@ import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.*
 import kotlin.reflect.KMutableProperty0
 
-const val DEFAULT = "Default"
-
 open class View<out T : Control>(val control: T)
 
 val <T : Control> T.asView: View<T>
@@ -38,16 +36,13 @@ inline fun <reified T : Enum<T>> View<Composite>.enumPreference(
         Combo(control, style or SWT.READ_ONLY).apply {
             val valuesMapping = enumValues<T>()
                     .associateByTo(LinkedHashMap<String, T?>(), nameProvider)
-                    .apply { put(DEFAULT, null) }
             valuesMapping.keys.forEach { add(it) }
 
-            val selected = delegate.get()
+            delegate.get()
                     ?.let(nameProvider)
                     ?.let(valuesMapping.keys::indexOf)
-                    ?: (valuesMapping.size - 1)
-            select(selected)
-
-
+                    ?.also { select(it) }
+ 
             addSelectionListener(object : SelectionAdapter() {
                 override fun widgetSelected(event: SelectionEvent) {
                     delegate.set(valuesMapping[(event.widget as Combo).text])

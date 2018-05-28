@@ -91,30 +91,6 @@ abstract class Preferences(private val scope: IScopeContext, private val path: S
                     override fun getValue(thisRef: Preferences, property: KProperty<*>): PreferencesCollection<T> = instance
                 }
     }
-
-    fun inspect(): String {
-        val childInspection = writeStore.inspect().let { "${writeStore.name()}\n$it" }
-
-        return generateSequence(writeStore) { it.parent() }
-                .drop(1)
-                .map { it.name() }
-                .fold(childInspection) { acc, it ->
-                    acc.lines().joinToString(prefix = "$it\n ┗━ ", separator = "\n   ")
-                }
-    }
-
-    private fun Store.inspect(): String {
-        val children = (childrenNames().asSequence().map { it to this.node(it) } + keys().asSequence().map { it to this.get(it, null) }).toList()
-        return children.mapIndexed { idx, (name, obj) ->
-            val prefix = if (idx == children.lastIndex) " ┗━ " else " ┣━ "
-
-            when (obj) {
-                is String -> "$prefix $name = $obj"
-                is Store -> "$prefix $name" + obj.inspect().lines().joinToString(separator = "") { "\n ┃  $it" }
-                else -> "$prefix $name?"
-            }
-        }.joinToString(separator = "\n")
-    }
 }
 
 class PreferencesCollection<T>(
