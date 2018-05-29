@@ -42,8 +42,9 @@ class CompilerPluginDialog(
                 group("Plugin options:") {
                     layout(horizontalSpan = 2, horizontalGrab = true, verticalGrab = true)
                     textField(::argsField, style = SWT.BORDER or SWT.MULTI or SWT.V_SCROLL) {
-                        layout(suggestedHeight = 200, suggestedWidth = 400)
+                        layout(suggestedHeight = 200, suggestedWidth = 450)
                     }
+                    label("Note: plugin options should match the <plugin id>:<key>=<value> pattern")
                 }
             }.control
 

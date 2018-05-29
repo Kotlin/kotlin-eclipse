@@ -61,6 +61,7 @@ import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFac
 import org.jetbrains.kotlin.cli.jvm.compiler.CliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
 import com.intellij.ide.highlighter.JavaFileType
+import org.eclipse.core.resources.ProjectScope
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.script.ScriptDependenciesProvider
 import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
@@ -85,6 +86,7 @@ import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.container.useInstance
+import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import kotlin.script.experimental.dependencies.ScriptDependencies
 
@@ -383,6 +385,11 @@ class SamWithReceiverResolverExtension(
 class KotlinEnvironment private constructor(val eclipseProject: IProject, disposable: Disposable) :
         KotlinCommonEnvironment(disposable) {
     val javaProject = JavaCore.create(eclipseProject)
+
+    private val _compilerProperties: KotlinProperties = KotlinProperties(ProjectScope(eclipseProject))
+
+    val compilerProperties: KotlinProperties
+        get() = _compilerProperties.takeIf { it.globalsOverridden } ?: KotlinProperties.workspaceInstance
     
     val index by lazy { JvmDependenciesIndexImpl(getRoots().toList()) }
     

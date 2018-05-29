@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +39,7 @@ import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputElement;
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser;
 import org.jetbrains.kotlin.core.launch.KotlinCLICompiler;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin;
 import org.jetbrains.kotlin.core.preferences.KotlinProperties;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
@@ -102,10 +102,8 @@ public class KotlinCompiler {
 
     private String[] configureCompilerArguments(@NotNull IJavaProject javaProject, @NotNull String outputDir,
             @NotNull List<File> sourceDirs) throws CoreException {
-        KotlinProperties kotlinProperties = new KotlinProperties(new ProjectScope(javaProject.getProject()));
-        if (!kotlinProperties.getGlobalsOverridden()) {
-            kotlinProperties = new KotlinProperties();
-        }
+        KotlinProperties kotlinProperties =
+                KotlinEnvironment.getEnvironment(javaProject.getProject()).getCompilerProperties();
 
         List<String> command = new ArrayList<>();
         command.add("-kotlin-home");
