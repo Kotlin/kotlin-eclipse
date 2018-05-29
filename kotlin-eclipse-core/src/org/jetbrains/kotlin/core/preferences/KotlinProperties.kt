@@ -15,6 +15,10 @@ class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferen
     val compilerPlugins by ChildCollection(::CompilerPlugin)
     
     var compilerFlags by StringPreference()
+
+    companion object {
+        val workspaceInstance = KotlinProperties()
+    }
 }
 
 class CompilerPlugin(scope: IScopeContext, path: String) : Preferences(scope, path) {

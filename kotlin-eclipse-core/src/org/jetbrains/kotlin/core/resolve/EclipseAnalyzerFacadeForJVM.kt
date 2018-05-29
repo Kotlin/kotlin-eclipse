@@ -55,8 +55,6 @@ import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
 import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
-import org.jetbrains.kotlin.core.preferences.KotlinProperties
-import org.eclipse.core.resources.ProjectScope
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
     companion object {
@@ -80,11 +78,8 @@ public object EclipseAnalyzerFacadeForJVM {
         }
         
         val project = environment.project
-        val kotlinProperties = KotlinProperties(ProjectScope(environment.eclipseProject))
-                .takeIf { it.globalsOverridden }
-                ?: KotlinProperties()
-        
-		val jvmTarget = kotlinProperties.jvmTarget ?: JvmTarget.DEFAULT
+
+        val jvmTarget = environment.compilerProperties.jvmTarget ?: JvmTarget.DEFAULT
         
         val moduleContext = createModuleContext(project, environment.configuration, true)
         val storageManager = moduleContext.storageManager
