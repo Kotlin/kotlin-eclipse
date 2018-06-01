@@ -48,18 +48,30 @@ class CachedEnvironment<T, E : KotlinCommonEnvironment> {
 
     fun removeEnvironment(resource: T) {
         synchronized(environmentLock) {
-            if (environmentCache.containsKey(resource)) {
-                val environment = environmentCache[resource]!!
+            removeEnvironmentInternal(resource)
+        }
+    }
 
-                ideaProjectToEclipseResource.remove(environment.project)
-                environmentCache.remove(resource)
-
-                Disposer.dispose(environment.javaApplicationEnvironment.getParentDisposable())
-                ZipHandler.clearFileAccessorCache()
+    fun removeAllEnvironments() {
+        synchronized(environmentLock) {
+            environmentCache.keys.toList().forEach {
+                removeEnvironmentInternal(it)
             }
         }
     }
-    
+
+    private fun removeEnvironmentInternal(resource: T) {
+        if (environmentCache.containsKey(resource)) {
+            val environment = environmentCache[resource]!!
+
+            ideaProjectToEclipseResource.remove(environment.project)
+            environmentCache.remove(resource)
+
+            Disposer.dispose(environment.javaApplicationEnvironment.parentDisposable)
+            ZipHandler.clearFileAccessorCache()
+        }
+    }
+
     fun replaceEnvironment(resource: T, createEnvironment: (T) -> E): E {
         return synchronized(environmentLock) {
             removeEnvironment(resource)
