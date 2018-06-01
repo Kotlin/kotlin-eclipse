@@ -35,6 +35,7 @@ class ProjectCompilerPropertyPage : KotlinCompilerPropertyPage(), IWorkbenchProp
             }.control
         
     override fun rebuildTask(monitor: IProgressMonitor?) {
+        KotlinEnvironment.removeEnvironment(project)
         project.build(IncrementalProjectBuilder.FULL_BUILD, monitor)
     }
 }

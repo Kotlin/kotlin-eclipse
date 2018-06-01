@@ -241,6 +241,7 @@ Export-Package:
  org.jetbrains.kotlin.codegen.signature,
  org.jetbrains.kotlin.codegen.state,
  org.jetbrains.kotlin.codegen.when,
+ org.jetbrains.kotlin.compiler.plugin,
  org.jetbrains.kotlin.config,
  org.jetbrains.kotlin.container,
  org.jetbrains.kotlin.context,
