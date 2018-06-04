@@ -123,8 +123,6 @@ class KotlinScriptEnvironment private constructor(
         disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
-        StorageComponentContainerContributor.registerExtensionPoint(project)
-
         val scriptsForProvider = scriptDefinitions
                 .filter { it.isScript(eclipseFile.name) }
                 .ifEmpty { listOf(StandardScriptDefinition) }
