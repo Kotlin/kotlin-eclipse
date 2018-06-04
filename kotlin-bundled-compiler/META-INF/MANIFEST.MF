@@ -314,6 +314,7 @@ Export-Package:
  org.jetbrains.kotlin.resolve.calls.smartcasts,
  org.jetbrains.kotlin.resolve.calls.tasks,
  org.jetbrains.kotlin.resolve.calls.util,
+ org.jetbrains.kotlin.resolve.checkers,
  org.jetbrains.kotlin.resolve.constants,
  org.jetbrains.kotlin.resolve.constants.evaluate,
  org.jetbrains.kotlin.resolve.descriptorUtil,
