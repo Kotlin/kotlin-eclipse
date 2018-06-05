@@ -137,8 +137,6 @@ class KotlinScriptEnvironment private constructor(
 
         configureClasspath()
 
-        project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
-
         val ioFile = eclipseFile.location.toFile()
         val definition = ScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
         if (!loadScriptDefinitions) {
