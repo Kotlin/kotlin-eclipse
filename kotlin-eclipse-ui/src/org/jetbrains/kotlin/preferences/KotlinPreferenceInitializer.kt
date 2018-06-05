@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer
 import org.jetbrains.kotlin.ui.Activator
 import org.jetbrains.kotlin.ui.KotlinPluginUpdater
 import java.util.Random
+import org.jetbrains.kotlin.core.preferences.CompilerPlugin
+import org.eclipse.jface.preference.IPreferenceStore
 
 class KotlinPreferenceInitializer : AbstractPreferenceInitializer() {
     override fun initializeDefaultPreferences() {

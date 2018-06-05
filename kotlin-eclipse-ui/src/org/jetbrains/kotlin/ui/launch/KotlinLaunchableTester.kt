@@ -48,11 +48,11 @@ class KotlinLaunchableTester : PropertyTester() {
         val ktFile = KotlinPsiManager.getKotlinParsedFile(file)
         if (ktFile == null) return false
         
-        return checkFileHashMain(ktFile)
+        return checkFileHasMain(ktFile)
     }
 }
 
-fun checkFileHashMain(ktFile: KtFile): Boolean {
+fun checkFileHasMain(ktFile: KtFile): Boolean {
     return getEntryPoint(ktFile) != null
 }
 

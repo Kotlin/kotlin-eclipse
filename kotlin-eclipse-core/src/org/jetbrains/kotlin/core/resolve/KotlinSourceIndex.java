@@ -25,7 +25,7 @@ import com.intellij.openapi.project.Project;
 
 public class KotlinSourceIndex {
     
-    private final Map<IPackageFragmentRoot, LibrarySourcesIndex> packageIndexes = new WeakHashMap<>();
+    private final Map<IPackageFragmentRoot, LibrarySourcesIndex> packageIndexes = new WeakHashMap< >();
     
     public static KotlinSourceIndex getInstance(IJavaProject javaProject) {
         Project ideaProject = KotlinEnvironment.Companion.getEnvironment(javaProject.getProject()).getProject();

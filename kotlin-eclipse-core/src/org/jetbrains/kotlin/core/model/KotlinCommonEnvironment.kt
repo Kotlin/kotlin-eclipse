@@ -97,6 +97,8 @@ import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
 import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
 import org.jetbrains.kotlin.cli.jvm.compiler.CliTraceHolder
 import org.jetbrains.kotlin.cli.jvm.compiler.CliKotlinAsJavaSupport
+import org.jetbrains.kotlin.extensions.DeclarationAttributeAltererExtension
+import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -136,6 +138,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         }
         
         project = projectEnvironment.getProject()
+        DeclarationAttributeAltererExtension.registerExtensionPoint(project)
+        StorageComponentContainerContributor.registerExtensionPoint(project)
         
         with(project) {
             val scriptDefinitionProvider = CliScriptDefinitionProvider()
