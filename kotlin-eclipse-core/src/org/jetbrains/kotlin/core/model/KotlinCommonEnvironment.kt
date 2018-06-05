@@ -178,7 +178,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(JavaModuleResolver::class.java, EclipseKotlinJavaModuleResolver())
 
 			val area = Extensions.getArea(this)
-			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, CliKotlinAsJavaSupport(project, traceHolder)))
 			val javaFileManager = ServiceManager.getService(this, JavaFileManager::class.java)
 			(javaFileManager as KotlinCliJavaFileManagerImpl)
 					.initialize(JvmDependenciesDynamicCompoundIndex(), arrayListOf(), SingleJavaFileRootsIndex(arrayListOf()), false)
@@ -186,7 +185,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
 			val kotlinAsJavaSupport = CliKotlinAsJavaSupport(this, traceHolder)
 			registerService(KotlinAsJavaSupport::class.java, kotlinAsJavaSupport)
 			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, kotlinAsJavaSupport))
-			registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(this))
+            registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(this))
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
