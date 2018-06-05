@@ -22,9 +22,10 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -33,99 +34,163 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector;
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler;
+import org.jetbrains.kotlin.config.JvmTarget;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
+import org.jetbrains.kotlin.core.launch.CompilerOutputElement;
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser;
 import org.jetbrains.kotlin.core.launch.KotlinCLICompiler;
-import org.jetbrains.kotlin.core.log.KotlinLogger;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.preferences.CompilerPlugin;
+import org.jetbrains.kotlin.core.preferences.KotlinProperties;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
+
+import kotlin.Pair;
+import kotlin.text.StringsKt;
 
 public class KotlinCompiler {
     public final static KotlinCompiler INSTANCE = new KotlinCompiler();
-    
+
     private KotlinCompiler() {
     }
-    
+
     @NotNull
-    public KotlinCompilerResult compileKotlinFiles(@NotNull IJavaProject javaProject) 
-            throws CoreException {
-        IFolder outputFolder = ProjectUtils.getOutputFolder(javaProject);
-        if (outputFolder == null) {
-            KotlinLogger.logError("There is no output folder for project: " + javaProject, null);
-            return KotlinCompilerResult.EMPTY;
-        }
-        
-        String[] arguments = configureCompilerArguments(javaProject, outputFolder.getLocation().toOSString());
-        
-        return execKotlinCompiler(arguments);
+    public KotlinCompilerResult compileKotlinFiles(@NotNull IJavaProject javaProject) throws CoreException {
+        KotlinCompilerResult result = ProjectUtils.getSrcOutDirectories(javaProject)
+            .stream()
+            .collect(Collectors.groupingBy(Pair::component2))
+            .entrySet()
+            .stream()
+            .map(outSrcOut -> {
+                File out = outSrcOut.getKey();
+                List<File> srcs = outSrcOut.getValue()
+                    .stream()
+                    .map(pair -> pair.component1())
+                    .collect(Collectors.toList());
+                return new Pair<File, List<File>>(out, srcs);
+            })
+            .map(outSrcs -> {
+                File out = outSrcs.component1();
+                List<File> srcs = outSrcs.component2();
+                try {
+                    String[] arguments = configureCompilerArguments(javaProject, out.getAbsolutePath(), srcs);
+                    return execKotlinCompiler(arguments);
+                } catch (CoreException ce) {
+                    throw new RuntimeException(ce);
+                }
+            })
+            .reduce(new KotlinCompilerResult(true, new CompilerOutputData()), (leftResult, rightResult) -> {
+                CompilerOutputData mergedData = new CompilerOutputData();
+                List<CompilerOutputElement> mergedList = leftResult.compilerOutput.getList();
+                mergedList.addAll(rightResult.compilerOutput.getList());
+                mergedList.forEach(outElement -> {
+                    mergedData.add(outElement.getMessageSeverity(), outElement.getMessage(), outElement.getMessageLocation());
+                });
+                return new KotlinCompilerResult(leftResult.result && rightResult.result, mergedData);
+            });
+        return result;
     }
-    
+
     public KotlinCompilerResult execKotlinCompiler(@NotNull String[] arguments) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(outputStream);
-        
+
         KotlinCLICompiler.doMain(new K2JVMCompiler(), out, arguments);
-        
+
         BufferedReader reader = new BufferedReader(new StringReader(outputStream.toString()));
         return parseCompilerOutput(reader);
     }
-    
-    private String[] configureCompilerArguments(@NotNull IJavaProject javaProject, @NotNull String outputDir) throws CoreException {
-        List<String> command = new ArrayList<String>();
+
+    private String[] configureCompilerArguments(@NotNull IJavaProject javaProject, @NotNull String outputDir,
+            @NotNull List<File> sourceDirs) throws CoreException {
+        KotlinProperties kotlinProperties =
+                KotlinEnvironment.getEnvironment(javaProject.getProject()).getCompilerProperties();
+
+        List<String> command = new ArrayList<>();
         command.add("-kotlin-home");
         command.add(ProjectUtils.KT_HOME);
         command.add("-no-jdk");
         command.add("-no-stdlib"); // Because we add runtime into the classpath
-        
+
+        JvmTarget jvmTarget = kotlinProperties.getJvmTarget();
+        if (jvmTarget != null) {
+            command.add("-jvm-target");
+            command.add(jvmTarget.getDescription());
+        }
+
+        for (CompilerPlugin plugin : kotlinProperties.getCompilerPlugins().getEntries()) {
+            command.addAll(configurePlugin(plugin));
+        }
+
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
-        
+
         for (File file : ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject)) {
             classPath.append(file.getAbsolutePath()).append(pathSeparator);
         }
         
+        String additionalFlags = kotlinProperties.getCompilerFlags();
+        if (additionalFlags != null && !StringsKt.isBlank(additionalFlags)) {
+            for (String flag : additionalFlags.split("\\s+")) {
+                command.add(flag);
+            }
+        }
+
         command.add("-classpath");
         command.add(classPath.toString());
-        
+
         command.add("-d");
         command.add(outputDir);
-        
-        for (File srcDirectory : ProjectUtils.getSrcDirectories(javaProject)) {
+
+        for (File srcDirectory : sourceDirs) {
             command.add(srcDirectory.getAbsolutePath());
         }
-        
-        return command.toArray(new String[command.size()]);
-    }
 
+        return command.toArray(new String[0]);
+    }
+ 
+    private Collection<String> configurePlugin(CompilerPlugin plugin) {
+        List<String> result = new ArrayList<>();
+        String jarPath = plugin.getJarPath();
+        if (plugin.getActive() && jarPath != null) {
+            String replacedPath = jarPath.replace("$KOTLIN_HOME", ProjectUtils.KT_HOME);
+            result.add("-Xplugin=" + replacedPath);
+
+            for (String arg : plugin.getArgs()) {
+                result.add("-P");
+                result.add("plugin:" + arg);
+            }
+        }
+        return result;
+    }
+    
     @NotNull
     private KotlinCompilerResult parseCompilerOutput(Reader reader) {
-        final CompilerOutputData compilerOutput = new CompilerOutputData(); 
-        
+        final CompilerOutputData compilerOutput = new CompilerOutputData();
+
         final List<CompilerMessageSeverity> severities = new ArrayList<CompilerMessageSeverity>();
-        CompilerOutputParser.parseCompilerMessagesFromReader(
-                new MessageCollector() {
-                    private boolean hasErrors = false;
-                    
-                    @Override
-                    public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message,
-                            @Nullable CompilerMessageLocation messageLocation) {
-                        hasErrors = hasErrors || messageSeverity.isError();
-                        severities.add(messageSeverity);
-                        compilerOutput.add(messageSeverity, message, messageLocation);
-                    }
+        CompilerOutputParser.parseCompilerMessagesFromReader(new MessageCollector() {
+            private boolean hasErrors = false;
 
-                    @Override
-                    public boolean hasErrors() {
-                        return hasErrors;
-                    }
+            @Override
+            public void report(@NotNull CompilerMessageSeverity messageSeverity, @NotNull String message,
+                    @Nullable CompilerMessageLocation messageLocation) {
+                hasErrors = hasErrors || messageSeverity.isError();
+                severities.add(messageSeverity);
+                compilerOutput.add(messageSeverity, message, messageLocation);
+            }
 
-                    @Override
-                    public void clear() {
-                        hasErrors = false;
-                        
-                    }
-                },
-                reader);
-        
+            @Override
+            public boolean hasErrors() {
+                return hasErrors;
+            }
+
+            @Override
+            public void clear() {
+                hasErrors = false;
+
+            }
+        }, reader);
+
         boolean result = true;
         for (CompilerMessageSeverity severity : severities) {
             if (severity.equals(CompilerMessageSeverity.ERROR) || severity.equals(CompilerMessageSeverity.EXCEPTION)) {
@@ -133,25 +198,25 @@ public class KotlinCompiler {
                 break;
             }
         }
-        
+
         return new KotlinCompilerResult(result, compilerOutput);
     }
-    
+
     public static class KotlinCompilerResult {
         public static KotlinCompilerResult EMPTY = new KotlinCompilerResult(false, new CompilerOutputData());
-        
+
         private final boolean result;
         private final CompilerOutputData compilerOutput;
-        
+
         private KotlinCompilerResult(boolean result, @NotNull CompilerOutputData compilerOutput) {
             this.result = result;
             this.compilerOutput = compilerOutput;
         }
-        
+
         public boolean compiledCorrectly() {
             return result;
         }
-        
+
         @NotNull
         public CompilerOutputData getCompilerOutput() {
             return compilerOutput;

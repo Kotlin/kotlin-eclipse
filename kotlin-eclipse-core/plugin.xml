@@ -32,4 +32,17 @@
             id="org.jetbrains.kotlin.core.KOTLIN_CONTAINER">
       </classpathContainerInitializer>
    </extension>
+   <extension
+         point="org.eclipse.core.expressions.definitions">
+      <definition
+            id="org.jetbrains.kotlin.core.hasNature">
+         <adapt
+               type="org.eclipse.core.resources.IProject">
+            <test
+                  property="org.eclipse.core.resources.projectNature"
+                  value="org.jetbrains.kotlin.core.kotlinNature">
+            </test>
+         </adapt>
+      </definition>
+   </extension>
 </plugin>

@@ -28,64 +28,62 @@ import com.intellij.psi.impl.file.impl.JavaFileManager
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResource
-import org.eclipse.core.runtime.Path
+import org.eclipse.core.resources.ProjectScope
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jdt.core.IClasspathContainer
 import org.eclipse.jdt.core.IClasspathEntry
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.core.JavaProject
-import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
+import org.eclipse.osgi.internal.loader.EquinoxClassLoader
 import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
-import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
+import org.jetbrains.kotlin.cli.common.script.CliScriptDefinitionProvider
+import org.jetbrains.kotlin.cli.jvm.compiler.CliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
+import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
+import org.jetbrains.kotlin.compiler.plugin.CliOptionValue
+import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
+import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
+import org.jetbrains.kotlin.compiler.plugin.parsePluginOption
+import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.config.JVMConfigurationKeys
+import org.jetbrains.kotlin.container.ComponentProvider
+import org.jetbrains.kotlin.container.StorageComponentContainer
+import org.jetbrains.kotlin.container.useInstance
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
+import org.jetbrains.kotlin.core.buildLibPath
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
-import org.jetbrains.kotlin.core.buildLibPath
-import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinder
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.preferences.CompilerPlugin
+import org.jetbrains.kotlin.core.preferences.KotlinProperties
+import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFactory
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.descriptors.ClassDescriptor
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.extensions.AnnotationBasedExtension
+import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
+import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
+import org.jetbrains.kotlin.load.kotlin.MetadataFinderFactory
+import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
-import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
+import org.jetbrains.kotlin.psi.KtModifierListOwner
+import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import org.jetbrains.kotlin.script.ScriptDefinitionProvider
+import org.jetbrains.kotlin.script.ScriptDependenciesProvider
 import org.jetbrains.kotlin.script.StandardScriptDefinition
-import org.jetbrains.kotlin.cli.common.script.CliScriptDefinitionProvider
 import org.jetbrains.kotlin.utils.ifEmpty
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
-import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFactory
-import org.jetbrains.kotlin.cli.jvm.compiler.CliVirtualFileFinderFactory
-import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
-import com.intellij.ide.highlighter.JavaFileType
-import org.jetbrains.kotlin.config.JVMConfigurationKeys
-import org.jetbrains.kotlin.script.ScriptDependenciesProvider
-import org.jetbrains.kotlin.cli.common.script.CliScriptDependenciesProvider
-import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.core.runtime.Status
-import org.eclipse.core.runtime.jobs.IJobChangeEvent
-import org.jetbrains.kotlin.load.kotlin.MetadataFinderFactory
-import org.eclipse.core.runtime.NullProgressMonitor
-import org.eclipse.osgi.internal.loader.EquinoxClassLoader
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
-import org.jetbrains.kotlin.container.ComponentProvider
-import org.jetbrains.kotlin.analyzer.ModuleInfo
-import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
-import org.jetbrains.kotlin.extensions.AnnotationBasedExtension
-import org.jetbrains.kotlin.psi.KtModifierListOwner
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
-import org.jetbrains.kotlin.container.StorageComponentContainer
-import org.jetbrains.kotlin.resolve.TargetPlatform
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
-import org.jetbrains.kotlin.container.useInstance
-import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
+import java.util.*
 import kotlin.script.experimental.dependencies.ScriptDependencies
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
@@ -112,7 +110,7 @@ fun getEclipseResource(ideaProject: Project): IResource? {
     if (project != null) {
         return project
     }
-    
+
     return KotlinScriptEnvironment.getEclipseFile(ideaProject)
 }
 
@@ -125,122 +123,125 @@ class KotlinScriptEnvironment private constructor(
         disposalbe: Disposable) :
         KotlinCommonEnvironment(disposalbe) {
     init {
-        StorageComponentContainerContributor.registerExtensionPoint(project)
-        
         val scriptsForProvider = scriptDefinitions
                 .filter { it.isScript(eclipseFile.name) }
                 .ifEmpty { listOf(StandardScriptDefinition) }
-        
+
         val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project) as? CliScriptDefinitionProvider
         if (scriptDefinitionProvider != null) {
             scriptDefinitionProvider.setScriptDefinitions(scriptsForProvider)
         }
 
 
-    	addToCPFromScriptTemplateClassLoader(providersClasspath)
-        
+        addToCPFromScriptTemplateClassLoader(providersClasspath)
+
         configureClasspath()
-        
+
         project.registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(project))
-        
+
         val ioFile = eclipseFile.location.toFile()
         val definition = ScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
         if (!loadScriptDefinitions) {
-        	addToCPFromExternalDependencies(ScriptDependenciesProvider.getInstance(project))
+            addToCPFromExternalDependencies(ScriptDependenciesProvider.getInstance(project))
         }
-        
+
         val annotations = definition?.annotationsForSamWithReceivers
         if (annotations != null) {
             StorageComponentContainerContributor.registerExtension(project, CliSamWithReceiverComponentContributor(annotations))
         }
-        
+
         val index = JvmDependenciesIndexImpl(getRoots().toList())
-        
+
         val area = Extensions.getArea(project)
         with(area.getExtensionPoint(PsiElementFinder.EP_NAME)) {
             registerExtension(PsiElementFinderImpl(project, ServiceManager.getService(project, JavaFileManager::class.java)))
             registerExtension(KotlinScriptDependenciesClassFinder(project, eclipseFile))
         }
-        
+
         index.indexedRoots.forEach {
             projectEnvironment.addSourcesToClasspath(it.file)
         }
-        
+
         val (_, singleJavaFileRoots) =
                 getRoots().partition { (file) -> file.isDirectory || file.extension != "java" }
-        
+
         val fileManager = ServiceManager.getService(project, CoreJavaFileManager::class.java)
         (fileManager as KotlinCliJavaFileManagerImpl).initialize(
                 index,
-				emptyList(),
+                emptyList(),
                 SingleJavaFileRootsIndex(singleJavaFileRoots),
                 configuration.getBoolean(JVMConfigurationKeys.USE_FAST_CLASS_FILES_READING))
-        
+
         val finderFactory = CliVirtualFileFinderFactory(index)
         project.registerService(MetadataFinderFactory::class.java, finderFactory)
         project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
     }
-    
+
     companion object {
         private val KOTLIN_RUNTIME_PATH = KotlinClasspathContainer.LIB_RUNTIME_NAME.buildLibPath()
         private val KOTLIN_SCRIPT_RUNTIME_PATH = KotlinClasspathContainer.LIB_SCRIPT_RUNTIME_NAME.buildLibPath()
-        
+
         private val cachedEnvironment = CachedEnvironment<IFile, KotlinScriptEnvironment>()
-        
-        @JvmStatic fun getEnvironment(file: IFile): KotlinScriptEnvironment {
+
+        @JvmStatic
+        fun getEnvironment(file: IFile): KotlinScriptEnvironment {
             checkIsScript(file)
-            
+
             return cachedEnvironment.getOrCreateEnvironment(file) {
                 KotlinScriptEnvironment(it, true, listOf(), listOf(), null, Disposer.newDisposable())
             }
         }
 
-        @JvmStatic fun removeKotlinEnvironment(file: IFile) {
+        @JvmStatic
+        fun removeKotlinEnvironment(file: IFile) {
             checkIsScript(file)
-            
+
             cachedEnvironment.removeEnvironment(file)
         }
-        
+
         fun replaceEnvironment(
                 file: IFile,
                 scriptDefinitions: List<KotlinScriptDefinition>,
                 providersClasspath: List<String>,
                 previousExternalDependencies: ScriptDependencies?): KotlinScriptEnvironment {
             checkIsScript(file)
-        	val environment = cachedEnvironment.replaceEnvironment(file) {
+            val environment = cachedEnvironment.replaceEnvironment(file) {
                 KotlinScriptEnvironment(file, false, scriptDefinitions, providersClasspath, previousExternalDependencies, Disposer.newDisposable())
             }
             KotlinPsiManager.removeFile(file)
-        	
-        	return environment
+
+            return environment
         }
-        
-        @JvmStatic fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
-        
+
+        @JvmStatic
+        fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
+
         fun isScript(file: IFile): Boolean {
             return file.fileExtension == KotlinParserDefinition.STD_SCRIPT_SUFFIX // TODO: use ScriptDefinitionProvider
         }
-        
+
         @JvmStatic
         fun constructFamilyForInitialization(file: IFile): String = file.fullPath.toPortableString() + "scriptDef"
-        
+
         private fun checkIsScript(file: IFile) {
             if (!isScript(file)) {
                 throw IllegalArgumentException("KotlinScriptEnvironment can work only with scripts, not ${file.name}")
             }
         }
     }
-    
-    @Volatile var isScriptDefinitionsInitialized = !loadScriptDefinitions
-            private set
-    
-    @Volatile var isInitializingScriptDefinitions = false
-    
+
+    @Volatile
+    var isScriptDefinitionsInitialized = !loadScriptDefinitions
+        private set
+
+    @Volatile
+    var isInitializingScriptDefinitions = false
+
     @Synchronized
     fun initializeScriptDefinitions(postTask: (List<KotlinScriptDefinition>, List<String>) -> Unit) {
         if (isScriptDefinitionsInitialized || isInitializingScriptDefinitions) return
         isInitializingScriptDefinitions = true
-        
+
         val definitions = arrayListOf<KotlinScriptDefinition>()
         val classpath = arrayListOf<String>()
         runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
@@ -250,7 +251,7 @@ class KotlinScriptEnvironment private constructor(
             classpath.addAll(definitionsAndClasspath.second)
 
             monitor.done()
-            
+
             Status.OK_STATUS
         }, { _ ->
             isScriptDefinitionsInitialized = true
@@ -258,25 +259,25 @@ class KotlinScriptEnvironment private constructor(
             postTask(definitions, classpath)
         })
     }
-    
+
     private fun configureClasspath() {
         addToClasspath(KOTLIN_RUNTIME_PATH.toFile())
         addToClasspath(KOTLIN_SCRIPT_RUNTIME_PATH.toFile())
         addJREToClasspath()
     }
-    
+
     private fun addToCPFromScriptTemplateClassLoader(cp: List<String>) {
         for (entry in cp) {
             addToClasspath(File(entry), JavaRoot.RootType.BINARY)
         }
     }
-    
+
     private fun addToCPFromExternalDependencies(dependenciesProvider: ScriptDependenciesProvider?) {
         if (dependenciesProvider == null) return
-        
+
         val dependencies = if (externalDependencies != null)
             externalDependencies
-        else  {
+        else {
             val scriptDependencies = dependenciesProvider.getScriptDependencies(KotlinPsiManager.getParsedFile(eclipseFile))
             externalDependencies = scriptDependencies
             scriptDependencies
@@ -287,7 +288,7 @@ class KotlinScriptEnvironment private constructor(
             }
         }
     }
-    
+
     private fun addToCPFromScriptTemplateClassLoader() {
         val ioFile = eclipseFile.getLocation().toFile()
         val definition = ScriptDefinitionProvider.getInstance(project)?.findScriptDefinition(ioFile.name)
@@ -299,7 +300,7 @@ class KotlinScriptEnvironment private constructor(
             }
         }
     }
-    
+
     private fun addJREToClasspath() {
         val project = eclipseFile.project
         if (JavaProject.hasJavaNature(project)) {
@@ -311,12 +312,12 @@ class KotlinScriptEnvironment private constructor(
                         return@mapNotNull container
                     }
                 }
-                
+
                 null
             }
-            .flatMap { it.getClasspathEntries().toList() }
-            .flatMap { ProjectUtils.getFileByEntry(it, javaProject) }
-            .forEach { addToClasspath(it) }
+                    .flatMap { it.getClasspathEntries().toList() }
+                    .flatMap { ProjectUtils.getFileByEntry(it, javaProject) }
+                    .forEach { addToClasspath(it) }
         }
     }
 }
@@ -332,7 +333,7 @@ private fun URL.toFile() =
 
 private fun classpathFromClassloader(classLoader: ClassLoader): List<File> {
     return when (classLoader) {
-        is URLClassLoader ->  {
+        is URLClassLoader -> {
             classLoader.urLs
                     ?.mapNotNull { it.toFile() }
                     ?: emptyList()
@@ -349,7 +350,7 @@ private fun classpathFromClassloader(classLoader: ClassLoader): List<File> {
     }
 }
 
-class CliSamWithReceiverComponentContributor(val annotations: List<String>): StorageComponentContainerContributor {
+class CliSamWithReceiverComponentContributor(val annotations: List<String>) : StorageComponentContainerContributor {
     override fun registerModuleComponents(container: StorageComponentContainer, platform: TargetPlatform, moduleDescriptor: ModuleDescriptor) {
         if (platform != JvmPlatform) return
 
@@ -383,35 +384,75 @@ class SamWithReceiverResolverExtension(
 class KotlinEnvironment private constructor(val eclipseProject: IProject, disposable: Disposable) :
         KotlinCommonEnvironment(disposable) {
     val javaProject = JavaCore.create(eclipseProject)
-    
+
+    private val _compilerProperties: KotlinProperties = KotlinProperties(ProjectScope(eclipseProject))
+
+    val compilerProperties: KotlinProperties
+        get() = _compilerProperties.takeIf { it.globalsOverridden } ?: KotlinProperties.workspaceInstance
+
     val index by lazy { JvmDependenciesIndexImpl(getRoots().toList()) }
-    
+
     init {
         registerProjectDependenServices(javaProject)
         configureClasspath(javaProject)
-        
+
         with(project) {
             registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
         }
-        
+
         val scriptDefinitionProvider = ScriptDefinitionProvider.getInstance(project) as? CliScriptDefinitionProvider
         if (scriptDefinitionProvider != null) {
             scriptDefinitionProvider.setScriptDefinitions(listOf(StandardScriptDefinition))
         }
-        
+
+        registerCompilerPlugins()
+
         cachedEnvironment.putEnvironment(eclipseProject, this)
     }
-    
+
     private fun registerProjectDependenServices(javaProject: IJavaProject) {
         val finderFactory = EclipseVirtualFileFinderFactory(javaProject)
         project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
         project.registerService(MetadataFinderFactory::class.java, finderFactory)
         project.registerService(KotlinLightClassManager::class.java, KotlinLightClassManager(javaProject.project))
     }
-    
+
+    private fun registerCompilerPlugins() {
+        compilerProperties.compilerPlugins.entries
+                .filter { it.active }
+                .forEach { registerCompilerPlugin(it) }
+    }
+
+    private fun registerCompilerPlugin(it: CompilerPlugin) {
+        val jarLoader = it.jarPath
+                ?.replace("\$KOTLIN_HOME", ProjectUtils.KT_HOME)
+                ?.let { URL("file://$it") }
+                ?.let { URLClassLoader(arrayOf(it), this::class.java.classLoader) }
+
+        val cliProcessor = jarLoader?.loadService<CommandLineProcessor>()
+        val registrar = jarLoader?.loadService<ComponentRegistrar>()
+
+        if (cliProcessor != null && registrar != null) {
+            with(cliProcessor) {
+                val configuration = CompilerConfiguration().apply { applyOptionsFrom(parseOptions(it.args), pluginOptions) }
+                registrar.registerProjectComponents(project, configuration)
+            }
+        }
+    }
+
+    private inline fun <reified T : Any> ClassLoader.loadService(): T? =
+            ServiceLoader.load(T::class.java, this)
+                    .singleOrNull { it::class.java.classLoader == this }
+
+    private fun parseOptions(args: List<String>): Map<String, List<String>> =
+            args.asSequence()
+                    .map { parsePluginOption("plugin:$it") }
+                    .filterNotNull()
+                    .groupBy(CliOptionValue::optionName, CliOptionValue::value)
+
     private fun configureClasspath(javaProject: IJavaProject) {
         if (!javaProject.exists()) return
-        
+
         for (file in ProjectUtils.collectClasspathWithDependenciesForBuild(javaProject)) {
             addToClasspath(file)
         }
@@ -419,8 +460,8 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
     companion object {
         private val cachedEnvironment = CachedEnvironment<IProject, KotlinEnvironment>()
-        private val environmentCreation = {
-            eclipseProject: IProject -> KotlinEnvironment(eclipseProject, Disposer.newDisposable())
+        private val environmentCreation = { eclipseProject: IProject ->
+            KotlinEnvironment(eclipseProject, Disposer.newDisposable())
         }
 
         @JvmStatic
@@ -428,13 +469,23 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             return cachedEnvironment.getOrCreateEnvironment(eclipseProject, environmentCreation)
         }
 
-        @JvmStatic fun removeEnvironment(eclipseProject: IProject) {
+        @JvmStatic
+        fun removeEnvironment(eclipseProject: IProject) {
             cachedEnvironment.removeEnvironment(eclipseProject)
             KotlinPsiManager.invalidateCachedProjectSourceFiles()
             KotlinAnalysisFileCache.resetCache()
             KotlinAnalysisProjectCache.resetCache(eclipseProject)
         }
 
-        @JvmStatic fun getJavaProject(project: Project): IProject? = cachedEnvironment.getEclipseResource(project)
+        @JvmStatic
+        fun removeAllEnvironments() {
+            cachedEnvironment.removeAllEnvironments()
+            KotlinPsiManager.invalidateCachedProjectSourceFiles()
+            KotlinAnalysisFileCache.resetCache()
+            KotlinAnalysisProjectCache.resetAllCaches()
+        }
+
+        @JvmStatic
+        fun getJavaProject(project: Project): IProject? = cachedEnvironment.getEclipseResource(project)
     }
 }

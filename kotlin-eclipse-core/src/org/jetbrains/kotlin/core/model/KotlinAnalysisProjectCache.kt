@@ -37,6 +37,12 @@ public object KotlinAnalysisProjectCache : IResourceChangeListener {
         }
     }
 
+    public fun resetAllCaches() {
+        cachedAnalysisResults.keys.toList().forEach {
+            resetCache(it)
+        }
+    }
+
     public fun getAnalysisResult(javaProject: IJavaProject): AnalysisResult {
         val project = javaProject.getProject()
         return synchronized(project) {

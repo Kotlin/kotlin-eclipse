@@ -19,16 +19,19 @@ package org.jetbrains.kotlin.core.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -48,6 +51,7 @@ import org.jetbrains.kotlin.core.model.KotlinNature;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.osgi.framework.Bundle;
 
+import kotlin.Pair;
 import kotlin.collections.ArraysKt;
 import kotlin.jvm.functions.Function1;
 
@@ -272,6 +276,32 @@ public class ProjectUtils {
                 return entry.getEntryKind() == IClasspathEntry.CPE_SOURCE;
             }
         });
+    }
+
+    @NotNull
+    public static List<Pair<File, File>> getSrcOutDirectories(@NotNull IJavaProject javaProject) throws JavaModelException {
+        IPath projectOutput = javaProject.getOutputLocation();
+        List<Pair<File, File>> srcOut = Arrays.asList(javaProject.getResolvedClasspath(true))
+          .stream()
+          .filter(cpe -> {
+              return cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE;
+          })
+          .filter(cpe -> {
+              IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+              IResource member = root.findMember(cpe.getPath());
+              return member != null && member.exists();
+          })
+          .map(cpe -> {
+              IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+              IPath outputFolder = cpe.getOutputLocation() == null ? projectOutput : cpe.getOutputLocation();
+              if (outputFolder == null || root.findMember(outputFolder) == null || !root.findMember(outputFolder).exists()) {
+                  KotlinLogger.logError("There is no output folder for sources: " + cpe.getPath().toOSString(), null);
+              }
+              return new Pair<>(root.findMember(cpe.getPath()).getLocation().toFile(), root.findMember(outputFolder).getLocation().toFile());
+          })
+          .filter(pair -> pair.component2() != null)
+          .collect(Collectors.toList());
+        return srcOut;
     }
     
     public static void addToClasspath(@NotNull IJavaProject javaProject, @NotNull IClasspathEntry newEntry)
