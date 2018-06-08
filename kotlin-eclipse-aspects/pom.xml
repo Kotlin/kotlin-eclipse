@@ -35,9 +35,9 @@
 						<phase>process-sources</phase>
 						<id>compile</id>
 						<configuration>
-							<source>1.7</source>
-							<target>1.7</target>
-							<complianceLevel>1.7</complianceLevel>
+							<source>1.8</source>
+							<target>1.8</target>
+							<complianceLevel>1.8</complianceLevel>
 							<aspectDirectory>src</aspectDirectory>
 							<Xlint>ignore</Xlint>
 							<deprecation>true</deprecation>
