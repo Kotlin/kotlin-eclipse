@@ -44,17 +44,21 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.psi.KtDeclaration
+import org.jetbrains.kotlin.core.KOTLIN_CLASSPATH_PROVIDER_ID
+
 
 class KotlinLaunchShortcut : ILaunchShortcut {
     companion object {
         fun createConfiguration(entryPoint: KtDeclaration, project: IProject): ILaunchConfiguration? {
             val classFqName = getStartClassFqName(entryPoint)
             if (classFqName == null) return null
-            
-            val configWC = getLaunchConfigurationType().newInstance(null, "Config - " + entryPoint.getContainingKtFile().getName())
-            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, classFqName.asString())
-            configWC.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.getName())
-            
+
+            val configWC = getLaunchConfigurationType().newInstance(null, "Config - " + entryPoint.getContainingKtFile().getName()).apply {
+                setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, classFqName.asString())
+                setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.getName())
+                setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH_PROVIDER, KOTLIN_CLASSPATH_PROVIDER_ID)
+            }
+
             return configWC.doSave()
         }
         
@@ -99,9 +103,9 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     }
     
     private fun launchWithMainClass(entryPoint: KtDeclaration, project: IProject, mode: String) {
-        val configuration = findLaunchConfiguration(getLaunchConfigurationType(), entryPoint, project) ?: 
-                createConfiguration(entryPoint, project)
-        
+        val configuration = findLaunchConfiguration(getLaunchConfigurationType(), entryPoint, project)
+                ?: createConfiguration(entryPoint, project)
+
         if (configuration != null) {
             DebugUITools.launch(configuration, mode)
         }
