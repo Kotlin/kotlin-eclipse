@@ -45,4 +45,11 @@
          </adapt>
       </definition>
    </extension>
+   <extension
+         point="org.eclipse.jdt.launching.classpathProviders">
+      <classpathProvider
+            class="org.jetbrains.kotlin.core.KotlinClasspathProvider"
+            id="org.jetbrains.kotlin.core.kotlinClasspathProvider">
+      </classpathProvider>
+   </extension>
 </plugin>
