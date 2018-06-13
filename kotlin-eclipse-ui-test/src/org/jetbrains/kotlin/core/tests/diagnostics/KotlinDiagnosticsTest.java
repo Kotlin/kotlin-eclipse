@@ -206,7 +206,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     
     @Test
     public void testFunctionCalleeExpressions() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/FunctionCalleeExpressions.kt");
+        doTest("testData/diagnostics/FunctionCalleeExpressions.kt");
     }
     
     @Test
