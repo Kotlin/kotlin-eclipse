@@ -74,9 +74,4 @@ public class KotlinSpecifyTypeTest extends KotlinSpecifyTypeTestCase {
     public void testUnitType() {
         doTest("common_testData/ide/intentions/specifyTypeExplicitly/unitType.kt");
     }
-    
-    @Test
-    public void testUnknownType() {
-        doTest("common_testData/ide/intentions/specifyTypeExplicitly/unknownType.kt");
-    }
 }
