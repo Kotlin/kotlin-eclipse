@@ -8,7 +8,7 @@ Welcome to Kotlin for Eclipse project! Some handy links:
  * [Kotlin Site](http://kotlinlang.org/)
  * [Getting Started Guide](http://kotlinlang.org/docs/tutorials/getting-started-eclipse.html)
  * [Kotlin on Eclipse Marketplace](https://marketplace.eclipse.org/content/kotlin-plugin-eclipse)
- * Issue Tracker: [File New Issue](https://youtrack.jetbrains.com/newIssue?project=KT&clearDraft=true&c=Subsystems+Eclipse+Plugin), [All Open Issues](https://youtrack.jetbrains.com/search/Kotlin%20Eclipse-19206?q=%23Unresolved)
+ * Issue Tracker: [File New Issue](https://youtrack.jetbrains.com/newIssue?project=KE&clearDraft=true), [All Open Issues](https://youtrack.jetbrains.com/issues/KE?q=%23Unresolved)
  * [Kotlin Blog](http://blog.jetbrains.com/kotlin/)
  * [Forum](https://discuss.kotlinlang.org/)
  * [TeamCity CI build](https://teamcity.jetbrains.com/viewType.html?buildTypeId=Kotlin_EclipsePlugin)
