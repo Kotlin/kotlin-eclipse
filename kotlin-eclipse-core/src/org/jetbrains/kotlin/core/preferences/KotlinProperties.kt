@@ -17,7 +17,14 @@ class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferen
     var compilerFlags by StringPreference()
 
     companion object {
-        val workspaceInstance = KotlinProperties()
+        // Property object in instance scope (workspace) must be created after one in global scope (see: init())
+        val workspaceInstance by lazy { KotlinProperties() }
+
+        @JvmStatic
+        fun init() {
+            // Creating property object in default scope assures that values from 'preferences.ini' are loaded
+            KotlinProperties(DefaultScope.INSTANCE)
+        }
     }
 }
 

@@ -48,8 +48,7 @@ public class Activator extends Plugin {
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(KotlinRefreshProjectListener.INSTANCE,
 		        IResourceChangeEvent.PRE_REFRESH);
 		
-		// Creating property object in default scope assures that values from 'preferences.ini' were loaded.
-		new KotlinProperties(DefaultScope.INSTANCE);
+		KotlinProperties.init();
 	}
 
 	@Override
