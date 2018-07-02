@@ -15,7 +15,7 @@ class ProjectCompilerPropertyPage : KotlinCompilerPropertyPage(), IWorkbenchProp
     // project must be lazy initialized, because getElement() called during construction of page object returns null
     val project: IProject by lazy { element.getAdapter(IProject::class.java) }
 
-    override val kotlinProperties by lazy { KotlinEnvironment.getEnvironment(project).compilerProperties }
+    override val kotlinProperties by lazy { KotlinEnvironment.getEnvironment(project).projectCompilerProperties }
 
     private var overrideFlag by LazyObservable({ kotlinProperties.globalsOverridden }) { _, _, value ->
         kotlinProperties.globalsOverridden = value
