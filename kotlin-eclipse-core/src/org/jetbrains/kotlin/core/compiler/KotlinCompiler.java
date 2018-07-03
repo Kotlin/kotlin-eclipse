@@ -117,6 +117,12 @@ public class KotlinCompiler {
             command.add(jvmTarget.getDescription());
         }
 
+        command.add("-language-version");
+        command.add(kotlinProperties.getLanguageVersion().getVersionString());
+
+        command.add("-api-version");
+        command.add(kotlinProperties.getApiVersion().getVersionString());
+
         for (CompilerPlugin plugin : kotlinProperties.getCompilerPlugins().getEntries()) {
             command.addAll(configurePlugin(plugin));
         }

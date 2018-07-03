@@ -42,10 +42,34 @@ inline fun <reified T : Enum<T>> View<Composite>.enumPreference(
                     ?.let(nameProvider)
                     ?.let(valuesMapping.keys::indexOf)
                     ?.also { select(it) }
- 
+
             addSelectionListener(object : SelectionAdapter() {
                 override fun widgetSelected(event: SelectionEvent) {
                     delegate.set(valuesMapping[(event.widget as Combo).text])
+                }
+            })
+        }.asView.apply(operations)
+                .applyDefaultLayoutIfNeeded()
+
+inline fun <T> View<Composite>.singleOptionPreference(
+        delegate: KMutableProperty0<T>,
+        allowedValues: List<T>,
+        nameProvider: (T) -> String = { it.toString() },
+        style: Int = SWT.NONE,
+        operations: View<Combo>.() -> Unit = {}
+) =
+        Combo(control, style or SWT.READ_ONLY).apply {
+            val valuesMapping = allowedValues.associateByTo(LinkedHashMap(), nameProvider)
+            valuesMapping.keys.forEach { this.add(it) }
+
+            delegate.get()
+                    .let(nameProvider)
+                    .let(valuesMapping.keys::indexOf)
+                    .also { select(it) }
+
+            addSelectionListener(object : SelectionAdapter() {
+                override fun widgetSelected(event: SelectionEvent) {
+                    delegate.set(valuesMapping[(event.widget as Combo).text]!!)
                 }
             })
         }.asView.apply(operations)
