@@ -25,7 +25,6 @@ import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import java.util.ArrayList
-import kotlin.jvm.JvmStatic
 
 val runtimeContainerId: IPath = Path("org.jetbrains.kotlin.core.KOTLIN_CONTAINER")
 
@@ -51,20 +50,17 @@ public class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspat
         val kotlinBinFolderEntry = newExportedLibraryEntry(getPathToLightClassesFolder(javaProject))
         entries.add(kotlinBinFolderEntry)
         
-        val project = javaProject.getProject()
-        if (!ProjectUtils.isMavenProject(project) && !ProjectUtils.isGradleProject(project)) {
-            val kotlinRuntimeEntry = JavaCore.newLibraryEntry(
-                    LIB_RUNTIME_NAME.buildLibPath(),
-                    LIB_RUNTIME_SRC_NAME.buildLibPath(),
-                    null,
-                    true)
-            val kotlinReflectEntry = newExportedLibraryEntry(LIB_REFLECT_NAME.buildLibPath())
-            val kotlinScriptRuntime = newExportedLibraryEntry(LIB_SCRIPT_RUNTIME_NAME.buildLibPath())
+        val kotlinRuntimeEntry = JavaCore.newLibraryEntry(
+                LIB_RUNTIME_NAME.buildLibPath(),
+                LIB_RUNTIME_SRC_NAME.buildLibPath(),
+                null,
+                true)
+        val kotlinReflectEntry = newExportedLibraryEntry(LIB_REFLECT_NAME.buildLibPath())
+        val kotlinScriptRuntime = newExportedLibraryEntry(LIB_SCRIPT_RUNTIME_NAME.buildLibPath())
             
-            entries.add(kotlinRuntimeEntry)
-            entries.add(kotlinReflectEntry)
-            entries.add(kotlinScriptRuntime)
-        }
+        entries.add(kotlinRuntimeEntry)
+        entries.add(kotlinReflectEntry)
+        entries.add(kotlinScriptRuntime)
         
         return entries.toTypedArray()
     }
