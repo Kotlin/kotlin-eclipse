@@ -383,10 +383,10 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
         KotlinCommonEnvironment(disposable) {
     val javaProject = JavaCore.create(eclipseProject)
 
-    private val _compilerProperties: KotlinProperties = KotlinProperties(ProjectScope(eclipseProject))
+    val projectCompilerProperties: KotlinProperties = KotlinProperties(ProjectScope(eclipseProject))
 
     val compilerProperties: KotlinProperties
-        get() = _compilerProperties.takeIf { it.globalsOverridden } ?: KotlinProperties.workspaceInstance
+        get() = projectCompilerProperties.takeIf { it.globalsOverridden } ?: KotlinProperties.workspaceInstance
 
     val index by lazy { JvmDependenciesIndexImpl(getRoots().toList()) }
 
