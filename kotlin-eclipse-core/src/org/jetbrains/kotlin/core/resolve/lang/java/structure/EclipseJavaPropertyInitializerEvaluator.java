@@ -22,12 +22,23 @@ import org.jetbrains.kotlin.descriptors.PropertyDescriptor;
 import org.jetbrains.kotlin.load.java.components.JavaPropertyInitializerEvaluator;
 import org.jetbrains.kotlin.load.java.structure.JavaField;
 import org.jetbrains.kotlin.resolve.constants.ConstantValue;
+import org.jetbrains.kotlin.resolve.constants.ConstantValueFactory;
 
 public class EclipseJavaPropertyInitializerEvaluator implements JavaPropertyInitializerEvaluator {
     @Override
     @Nullable
     public ConstantValue<?> getInitializerConstant(@NotNull JavaField field, @NotNull PropertyDescriptor descriptor) {
-        // TODO Auto-generated method stub
-        return null;
+        Object evaluated = field.getInitializerValue();
+        if (evaluated == null)
+            return null;
+        // Note: evaluated expression may be of class that does not match field type in
+        // some cases
+        // tested for Int, left other checks just in case
+        if (evaluated instanceof Byte || evaluated instanceof Short || evaluated instanceof Integer
+                || evaluated instanceof Long)
+            return ConstantValueFactory.INSTANCE.createIntegerConstantValue(((Number) evaluated).longValue(),
+                    descriptor.getType());
+        else
+            return ConstantValueFactory.INSTANCE.createConstantValue(evaluated);
     }
 }
