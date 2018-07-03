@@ -25,8 +25,7 @@ public class EclipseJavaField(private val javaField: IVariableBinding) : Eclipse
     override val hasConstantNotNullInitializer: Boolean
         get() = false
     
-    override val initializerValue: Any?
-        get() = null
+    override val initializerValue: Any? = binding.constantValue
 
     override val isEnumEntry: Boolean = binding.isEnumConstant()
     
