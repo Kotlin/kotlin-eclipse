@@ -1,17 +1,14 @@
 package org.jetbrains.kotlin.core.preferences
 
 import org.eclipse.core.internal.preferences.PreferencesService
-import org.eclipse.core.resources.ProjectScope
 import org.eclipse.core.runtime.preferences.ConfigurationScope
 import org.eclipse.core.runtime.preferences.DefaultScope
 import org.eclipse.core.runtime.preferences.IScopeContext
 import org.eclipse.core.runtime.preferences.InstanceScope
-import org.jetbrains.kotlin.core.log.KotlinLogger
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import org.osgi.service.prefs.Preferences as Store
-import org.jetbrains.kotlin.core.Activator
 
 private val SCOPES = listOf(InstanceScope.INSTANCE, ConfigurationScope.INSTANCE, DefaultScope.INSTANCE)
 
@@ -37,7 +34,7 @@ abstract class Preferences(private val scope: IScopeContext, private val path: S
                     .firstOrNull { it != null }
 
 
-    private interface Preference<T> : ReadWriteProperty<Preferences, T> {
+    protected interface Preference<T> : ReadWriteProperty<Preferences, T> {
         fun reader(text: String?): T
         fun writer(value: T): String?
 

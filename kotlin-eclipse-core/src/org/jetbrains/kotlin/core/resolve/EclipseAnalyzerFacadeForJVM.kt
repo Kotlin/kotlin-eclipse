@@ -92,8 +92,9 @@ public object EclipseAnalyzerFacadeForJVM {
         val moduleClassResolver = SourceOrBinaryModuleClassResolver(sourceScope)
 
         val languageVersionSettings = LanguageVersionSettingsImpl(
-                LanguageVersionSettingsImpl.DEFAULT.languageVersion,
-                LanguageVersionSettingsImpl.DEFAULT.apiVersion)
+                environment.compilerProperties.languageVersion,
+                environment.compilerProperties.apiVersion)
+
         val optionalBuiltInsModule = JvmBuiltIns(storageManager).apply { initialize(module, true) }.builtInsModule
         
         val dependencyModule = run {
