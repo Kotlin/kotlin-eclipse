@@ -11,8 +11,9 @@ import org.jetbrains.kotlin.config.LanguageVersion
 
 class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferences(scope, Activator.PLUGIN_ID) {
     var globalsOverridden by BooleanPreference()
-    
-    var jvmTarget by EnumPreference<JvmTarget>()
+
+    // Note: default value is defined in preferences.ini
+    var jvmTarget by EnumPreference<JvmTarget>(JvmTarget.DEFAULT)
 
     var languageVersion by object : Preference<LanguageVersion> {
         override fun reader(text: String?) = text

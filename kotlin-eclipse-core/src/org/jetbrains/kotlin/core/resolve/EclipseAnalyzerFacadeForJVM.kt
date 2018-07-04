@@ -79,7 +79,7 @@ public object EclipseAnalyzerFacadeForJVM {
         
         val project = environment.project
 
-        val jvmTarget = environment.compilerProperties.jvmTarget ?: JvmTarget.DEFAULT
+        val jvmTarget = environment.compilerProperties.jvmTarget
         
         val moduleContext = createModuleContext(project, environment.configuration, true)
         val storageManager = moduleContext.storageManager

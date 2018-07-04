@@ -60,7 +60,9 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
     protected fun View<Composite>.createOptionsControls(operations: View<Composite>.() -> Unit = {}) =
             gridContainer(cols = 2) {
                 label("JVM target version: ")
-                enumPreference(kotlinProperties::jvmTarget, nameProvider = JvmTarget::description) {
+                singleOptionPreference(kotlinProperties::jvmTarget,
+                        allowedValues = enumValues<JvmTarget>().asList(),
+                        nameProvider = JvmTarget::description) {
                     layout(horizontalGrab = true)
                 }
                 label("Language version: ")

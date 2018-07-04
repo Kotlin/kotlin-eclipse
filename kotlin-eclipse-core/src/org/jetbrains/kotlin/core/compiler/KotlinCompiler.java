@@ -111,11 +111,8 @@ public class KotlinCompiler {
         command.add("-no-jdk");
         command.add("-no-stdlib"); // Because we add runtime into the classpath
 
-        JvmTarget jvmTarget = kotlinProperties.getJvmTarget();
-        if (jvmTarget != null) {
-            command.add("-jvm-target");
-            command.add(jvmTarget.getDescription());
-        }
+        command.add("-jvm-target");
+        command.add(kotlinProperties.getJvmTarget().getDescription());
 
         command.add("-language-version");
         command.add(kotlinProperties.getLanguageVersion().getVersionString());
