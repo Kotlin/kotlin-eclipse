@@ -6,7 +6,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses( {
 	KotlinDiagnosticsJavaPlusKotlinTest.class,
-	KotlinDiagnosticsTest.class
+	KotlinDiagnosticsTest.class,
+	JavaAnnotationArgumentsInKotlinTest.class
 } )
 public class AllDiagnosticsTests {
 
