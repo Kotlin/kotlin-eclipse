@@ -134,6 +134,12 @@ var View<Control>.enabled: Boolean
         control.recursiveEnabled = value
     }
 
+var View<Button>.label: String
+    get() = control.text
+    set(value) {
+        control.text = value
+    }
+
 fun View<Control>.layout(
         horizontalSpan: Int = 1,
         verticalSpan: Int = 1,

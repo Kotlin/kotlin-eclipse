@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.core.preferences.CompilerPlugin
 import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.swt.builders.*
 import org.jetbrains.kotlin.utils.LazyObservable
+import kotlin.properties.Delegates
 
 abstract class KotlinCompilerPropertyPage : PropertyPage() {
     protected abstract val kotlinProperties: KotlinProperties
@@ -42,10 +43,14 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
 
     private lateinit var apiVersionErrorLabel: Label
 
-    private var selectedPlugin by LazyObservable<CompilerPlugin?>({ null }) { _, _, value ->
-        val editable = value != null
-        editButton.enabled = editable
-        removeButton.enabled = editable
+    private var selectedPlugin by Delegates.observable<CompilerPlugin?>(null) { _, _, value ->
+        val source = value?.source
+
+        editButton.enabled = source != null
+        removeButton.enabled = source != null && source != CompilerPluginSource.Inherited
+        removeButton.label =
+                if (source == CompilerPluginSource.InheritedOverridden) "Restore"
+                else "Remove"
     }
 
     private lateinit var editButton: View<Button>
@@ -86,11 +91,11 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
                         }
                 group("Compiler plugins:", cols = 2) {
                     layout(horizontalSpan = 2, verticalGrab = true)
-                    val list = checkList(kotlinProperties.compilerPlugins::entries,
+                    val list = checkList({ kotlinProperties.compilerPlugins.entries.sortedBy { it.key } },
                             selectionDelegate = ::selectedPlugin,
                             style = SWT.BORDER) {
                         layout(horizontalGrab = true, verticalGrab = true, verticalSpan = 4)
-                        nameProvider = { it.key }
+                        nameProvider = { it.description }
                         checkDelegate = CompilerPlugin::active
                     }
                     button("Add") {
@@ -151,5 +156,28 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
         }
     }
 
+    private val CompilerPlugin.source: CompilerPluginSource
+        get() = when {
+            this.keysInParentScopes.isEmpty() ->
+                CompilerPluginSource.Own
+            (this.keysInOwnScope - CompilerPlugin::active.name).isEmpty() ->
+                CompilerPluginSource.Inherited
+            else ->
+                CompilerPluginSource.InheritedOverridden
+        }
+
+    private val CompilerPlugin.description: String
+        get() =
+            this.key + when (this.source) {
+                CompilerPluginSource.Own -> ""
+                CompilerPluginSource.Inherited -> " (inherited)"
+                CompilerPluginSource.InheritedOverridden -> " (inherited, overridden)"
+            }
+
+    private enum class CompilerPluginSource {
+        Own,
+        Inherited,
+        InheritedOverridden
+    }
 }
 
