@@ -42,9 +42,6 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
 
     private lateinit var apiVersionErrorLabel: Label
 
-    private val pluginEntries: Iterable<CompilerPlugin>
-        get() = kotlinProperties.compilerPlugins.entries.filterNot(CompilerPlugin::removed)
-
     private var selectedPlugin by LazyObservable<CompilerPlugin?>({ null }) { _, _, value ->
         val editable = value != null
         editButton.enabled = editable
@@ -89,7 +86,9 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
                         }
                 group("Compiler plugins:", cols = 2) {
                     layout(horizontalSpan = 2, verticalGrab = true)
-                    val list = checkList(::pluginEntries, selectionDelegate = ::selectedPlugin, style = SWT.BORDER) {
+                    val list = checkList(kotlinProperties.compilerPlugins::entries,
+                            selectionDelegate = ::selectedPlugin,
+                            style = SWT.BORDER) {
                         layout(horizontalGrab = true, verticalGrab = true, verticalSpan = 4)
                         nameProvider = { it.key }
                         checkDelegate = CompilerPlugin::active
@@ -110,9 +109,7 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
                     removeButton = button("Remove") {
                         enabled = false
                         onClick {
-                            selectedPlugin?.apply {
-                                removed = true
-                            }
+                            selectedPlugin?.delete()
                             list.refresh()
                         }
                     }
@@ -124,12 +121,14 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
             }.apply(operations)
 
     final override fun performOk(): Boolean {
-        kotlinProperties.compilerPlugins.entries
-                .filter(CompilerPlugin::removed)
-                .forEach(CompilerPlugin::remove)
-        kotlinProperties.flush()
+        kotlinProperties.saveChanges()
         RebuildJob().schedule()
         return super.performOk()
+    }
+
+    override fun performCancel(): Boolean {
+        kotlinProperties.cancelChanges()
+        return super.performCancel()
     }
 
     private fun checkApiVersionCorrectness() {
