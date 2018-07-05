@@ -9,7 +9,7 @@ import org.eclipse.swt.widgets.TableItem
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KMutableProperty0
 
-class ChecklistView<T>(control: Table, val model: () -> Iterable<T>) : View<Table>(control) {
+class ChecklistView<T>(override val control: Table, val model: () -> Iterable<T>) : View<Table> {
     var nameProvider: (T) -> String = { it.toString() }
 
     var checkDelegate: KMutableProperty1<T, Boolean>? = null
