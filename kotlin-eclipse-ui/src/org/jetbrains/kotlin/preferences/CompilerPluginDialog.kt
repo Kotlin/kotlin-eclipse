@@ -70,17 +70,14 @@ class CompilerPluginDialog(
                     true
                 }
 
-                newKey in allPlugins && !allPlugins[newKey].removed -> throw ValidationException("Plugin with chosen name already exists")
+                newKey in allPlugins -> throw ValidationException("Plugin with chosen name already exists")
 
                 else -> {
-                    plugin?.apply {
-                        removed = true
-                    }
+                    plugin?.delete()
                     with(allPlugins[newKey]) {
                         jarPath = pathField?.trim()
                         active = plugin?.active ?: true
                         args = processArgs()
-                        removed = false
                     }
                     true
                 }

@@ -1,38 +1,163 @@
 package org.jetbrains.kotlin.core.preferences
 
-import org.eclipse.core.internal.preferences.PreferencesService
 import org.eclipse.core.runtime.preferences.ConfigurationScope
 import org.eclipse.core.runtime.preferences.DefaultScope
 import org.eclipse.core.runtime.preferences.IScopeContext
 import org.eclipse.core.runtime.preferences.InstanceScope
+import org.jetbrains.kotlin.utils.addToStdlib.firstNotNullResult
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
-import org.osgi.service.prefs.Preferences as Store
+import org.osgi.service.prefs.Preferences as OsgiPreferences
 
 private val SCOPES = listOf(InstanceScope.INSTANCE, ConfigurationScope.INSTANCE, DefaultScope.INSTANCE)
 
-abstract class PreferencesBase(scope: IScopeContext, path: String) {
-    protected val readStores = SCOPES.takeLastWhile { scope::class != it::class }
-            .filter { PreferencesService.getDefault().rootNode.node(it.name).nodeExists(path) }
-            .let { listOf(scope) + it }
-            .map { it.getNode(path) }
-            .asSequence()
+/**
+ * Wrapper of a preference node ([OsgiPreferences]).
+ * Allows querying a non-existent node without creating it.
+ */
+internal open class ReadableStore(protected val scope: IScopeContext, protected val path: String) {
+    protected var node: OsgiPreferences? =
+            if (scope.getNode("").nodeExists(path)) scope.getNode(path)
+            else null
 
-    protected val writeStore: Store = readStores.first()
+    protected val guaranteedNode: OsgiPreferences
+        get() = node ?: scope.getNode(path).also { node = it }
+
+    val exists: Boolean
+        get() = node != null
+
+    val keysOfValues: Set<String>
+        get() = node?.keys()?.toSet() ?: emptySet()
+
+    val keysOfChildren: Set<String>
+        get() = node?.childrenNames()?.toSet() ?: emptySet()
+
+    fun getValue(key: String): String? = node?.get(key, null)
+}
+
+/**
+ * Extends [ReadableStore] with [setValue], [removeValue] and [deleteSelf] operations.
+ * These operations modify the node.
+ */
+internal class WritableStore(scope: IScopeContext, path: String) : ReadableStore(scope, path) {
+    fun setValue(key: String, value: String) {
+        // Create node if it doesn't exist
+        with(guaranteedNode) {
+            put(key, value)
+            flush()
+        }
+    }
+
+    fun removeValue(key: String) {
+        // Create node if it doesn't exist
+        with(guaranteedNode) {
+            remove(key)
+            flush()
+        }
+    }
+
+    fun deleteSelf() {
+        // Create and then delete node
+        with(guaranteedNode) {
+            val parent = parent()
+            removeNode()
+            parent.flush()
+        }
+        node = null
+    }
+}
+
+abstract class PreferencesBase(scope: IScopeContext, path: String) {
+    internal val mainStore = WritableStore(scope, path)
+    internal val inheritedStores = SCOPES.takeLastWhile { scope::class != it::class }
+            .map { ReadableStore(it, path) }
+
+    abstract fun loadDefaults() // Does not save changes
+
+    abstract fun saveChanges()
+    abstract fun cancelChanges()
 }
 
 abstract class Preferences(private val scope: IScopeContext, private val path: String) : PreferencesBase(scope, path) {
-    fun flush() = writeStore.flush()
 
-    fun remove() = writeStore.removeNode()
+    val key: String = path.takeLastWhile { it != '/' }
 
-    val key: String = writeStore.name()
+    private val childPreferences: MutableList<PreferencesBase> = mutableListOf()
 
-    private fun getValue(key: String): String? =
-            readStores.map { it.get(key, null) }
-                    .firstOrNull { it != null }
+    // Unsaved changes
+    private var markedForDeletion: Boolean = !mainStore.exists
+    private val modifiedValues: MutableMap<String, String> = hashMapOf()
+    private val removedValues: MutableSet<String> = hashSetOf()
 
+    val existsInOwnScope: Boolean
+        get() = !markedForDeletion
+
+    val keysInOwnScope: Set<String>
+        get() = mainStore.keysOfValues + modifiedValues.keys - removedValues
+
+    val keysInParentScopes: Set<String>
+        get() = inheritedStores.flatMap { it.keysOfValues }.toSet()
+
+    val keys: Set<String>
+        get() = keysInOwnScope + keysInParentScopes
+
+    // Does not save changes
+    fun getValue(key: String): String? =
+            when (key) {
+                in modifiedValues -> modifiedValues[key]
+                in removedValues -> null
+                else -> mainStore.getValue(key)
+            } ?: inheritedStores.firstNotNullResult { it.getValue(key) }
+
+    // Does not save changes
+    fun setValue(key: String, value: String) {
+        removedValues -= key
+        modifiedValues[key] = value
+        markedForDeletion = false
+    }
+
+    // Does not save changes
+    fun removeValue(key: String) {
+        modifiedValues -= key
+        removedValues += key
+        markedForDeletion = false
+    }
+
+    // Does not save changes
+    override fun loadDefaults() {
+        modifiedValues.clear()
+        removedValues.clear()
+
+        removedValues += mainStore.keysOfValues
+        markedForDeletion = false
+        childPreferences.forEach { it.loadDefaults() }
+    }
+
+    // Does not save changes
+    fun delete() {
+        loadDefaults()
+        markedForDeletion = true
+    }
+
+    override fun saveChanges() {
+        if (markedForDeletion) {
+            mainStore.deleteSelf()
+        } else {
+            modifiedValues.forEach { key, value -> mainStore.setValue(key, value) }
+            removedValues.forEach { key -> mainStore.removeValue(key) }
+            childPreferences.forEach { it.saveChanges() }
+        }
+        modifiedValues.clear()
+        removedValues.clear()
+    }
+
+    override fun cancelChanges() {
+        modifiedValues.clear()
+        removedValues.clear()
+        markedForDeletion = !mainStore.exists
+        childPreferences.forEach { it.cancelChanges() }
+    }
 
     protected interface Preference<T> : ReadWriteProperty<Preferences, T> {
         fun reader(text: String?): T
@@ -41,13 +166,11 @@ abstract class Preferences(private val scope: IScopeContext, private val path: S
         override operator fun getValue(thisRef: Preferences, property: KProperty<*>): T =
                 thisRef.getValue(property.name).let(::reader)
 
-        override operator fun setValue(thisRef: Preferences, property: KProperty<*>, value: T) {
-            val text = writer(value)
-            with(thisRef.writeStore) {
-                if (text != null) put(property.name, text)
-                else remove(property.name)
-            }
-        }
+        override operator fun setValue(thisRef: Preferences, property: KProperty<*>, value: T) =
+                writer(value).let {
+                    if (it != null) thisRef.setValue(property.name, it)
+                    else thisRef.removeValue(property.name)
+                }
     }
 
     protected class StringPreference : Preference<String?> {
@@ -71,43 +194,57 @@ abstract class Preferences(private val scope: IScopeContext, private val path: S
                 override fun writer(value: T) = value.name
             }
 
-    protected class Child<out T : Preferences>(val factory: (IScopeContext, String) -> T) {
-        operator fun provideDelegate(thisRef: Preferences, property: KProperty<*>) =
-                object : ReadOnlyProperty<Preferences, T> {
-                    val instance: T by lazy { factory(thisRef.scope, "${thisRef.path}/${property.name}") }
-
-                    override fun getValue(thisRef: Preferences, property: KProperty<*>): T = instance
-                }
-    }
-
-    protected class ChildCollection<T: Preferences>(val factory: (IScopeContext, String) -> T) {
+    protected class ChildCollection<T : Preferences>(val factory: (IScopeContext, String) -> T) {
         operator fun provideDelegate(thisRef: Preferences, property: KProperty<*>) =
                 object : ReadOnlyProperty<Preferences, PreferencesCollection<T>> {
-                    val instance by lazy { PreferencesCollection(thisRef.scope, "${thisRef.path}/${property.name}", factory) }
+                    val instance by lazy {
+                        PreferencesCollection(thisRef.scope, "${thisRef.path}/${property.name}", factory)
+                                .also { thisRef.childPreferences.add(it) }
+                    }
 
                     override fun getValue(thisRef: Preferences, property: KProperty<*>): PreferencesCollection<T> = instance
                 }
     }
 }
 
-class PreferencesCollection<T>(
+class PreferencesCollection<T : Preferences>(
         private val scope: IScopeContext,
         private val path: String,
         private val elementFactory: (IScopeContext, String) -> T
 ) : PreferencesBase(scope, path) {
 
-    var cache = mutableMapOf<String, T>()
+    private val cache = mutableMapOf<String, T>()
 
     val entries: List<T>
-        get() = readStores
-                .flatMap { it.childrenNames().asSequence() }
-                .distinct()
-                .map { get(it) }
-                .toList()
+        get() = keys.map { get(it) }
 
-    operator fun contains(key: String) = readStores.any { it.nodeExists(key) }
+    private val keysInOwnScope: Set<String>
+        get() = mainStore.keysOfChildren + cache.keys - cache.filterValues { !it.existsInOwnScope }.keys
 
-    operator fun get(key: String): T = cache[key]
-            ?: elementFactory(scope, "$path/$key")
-                    .also { cache[key] = it }
+    private val keysInParentScopes: Set<String>
+        get() = inheritedStores.flatMap { it.keysOfChildren }.toSet()
+
+    private val keys: Set<String>
+        get() = keysInOwnScope + keysInParentScopes
+
+    private fun makeCache(key: String): T = cache.getOrPut(key) { elementFactory(scope, "$path/$key") }
+
+    operator fun contains(key: String): Boolean = key in keys
+
+    operator fun get(key: String): T = makeCache(key)
+
+    // Does not save changes
+    override fun loadDefaults() {
+        cache.clear()
+        entries.forEach { it.delete() }
+    }
+
+    override fun saveChanges() {
+        cache.values.forEach { it.saveChanges() }
+    }
+
+    override fun cancelChanges() {
+        cache.clear()
+    }
+
 }
