@@ -78,7 +78,7 @@ public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuick
     
     private fun addTypeAnnotation(editor: KotlinEditor, document: IDocument, element: PsiElement, type: KotlinType): Int {
         val offset = getEndOffset(element, editor)
-        val text = ": ${IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.renderType(type)}"
+        val text = ": ${IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_NO_ANNOTATIONS.renderType(type)}"
         document.replace(getEndOffset(element, editor), 0, text)
         
         return offset + text.length
