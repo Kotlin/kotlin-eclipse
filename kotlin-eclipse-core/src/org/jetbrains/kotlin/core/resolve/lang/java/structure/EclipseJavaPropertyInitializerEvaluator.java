@@ -37,7 +37,8 @@ public class EclipseJavaPropertyInitializerEvaluator implements JavaPropertyInit
         if (evaluated instanceof Byte || evaluated instanceof Short || evaluated instanceof Integer
                 || evaluated instanceof Long)
             return ConstantValueFactory.INSTANCE.createIntegerConstantValue(((Number) evaluated).longValue(),
-                    descriptor.getType());
+                    descriptor.getType(),
+                    false);
         else
             return ConstantValueFactory.INSTANCE.createConstantValue(evaluated);
     }
