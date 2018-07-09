@@ -79,7 +79,7 @@ public object EclipseAnalyzerFacadeForJVM {
         
         val project = environment.project
 
-        val jvmTarget = environment.compilerProperties.jvmTarget ?: JvmTarget.DEFAULT
+        val jvmTarget = environment.compilerProperties.jvmTarget
         
         val moduleContext = createModuleContext(project, environment.configuration, true)
         val storageManager = moduleContext.storageManager
@@ -92,8 +92,9 @@ public object EclipseAnalyzerFacadeForJVM {
         val moduleClassResolver = SourceOrBinaryModuleClassResolver(sourceScope)
 
         val languageVersionSettings = LanguageVersionSettingsImpl(
-                LanguageVersionSettingsImpl.DEFAULT.languageVersion,
-                LanguageVersionSettingsImpl.DEFAULT.apiVersion)
+                environment.compilerProperties.languageVersion,
+                environment.compilerProperties.apiVersion)
+
         val optionalBuiltInsModule = JvmBuiltIns(storageManager).apply { initialize(module, true) }.builtInsModule
         
         val dependencyModule = run {
