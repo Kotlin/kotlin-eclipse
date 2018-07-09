@@ -27,25 +27,25 @@ inline fun View<Composite>.separator(style: Int = SWT.NONE, operations: View<Lab
                 .apply(operations)
                 .applyDefaultLayoutIfNeeded()
 
-inline fun <reified T : Enum<T>> View<Composite>.enumPreference(
-        delegate: KMutableProperty0<T?>,
+inline fun <T> View<Composite>.singleOptionPreference(
+        delegate: KMutableProperty0<T>,
+        allowedValues: List<T>,
         nameProvider: (T) -> String = { it.toString() },
         style: Int = SWT.NONE,
         operations: View<Combo>.() -> Unit = {}
 ) =
         Combo(control, style or SWT.READ_ONLY).apply {
-            val valuesMapping = enumValues<T>()
-                    .associateByTo(LinkedHashMap<String, T?>(), nameProvider)
-            valuesMapping.keys.forEach { add(it) }
+            val valuesMapping = allowedValues.associateByTo(LinkedHashMap(), nameProvider)
+            valuesMapping.keys.forEach { this.add(it) }
 
             delegate.get()
-                    ?.let(nameProvider)
-                    ?.let(valuesMapping.keys::indexOf)
-                    ?.also { select(it) }
- 
+                    .let(nameProvider)
+                    .let(valuesMapping.keys::indexOf)
+                    .also { select(it) }
+
             addSelectionListener(object : SelectionAdapter() {
                 override fun widgetSelected(event: SelectionEvent) {
-                    delegate.set(valuesMapping[(event.widget as Combo).text])
+                    delegate.set(valuesMapping[(event.widget as Combo).text]!!)
                 }
             })
         }.asView.apply(operations)
