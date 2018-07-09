@@ -4,9 +4,9 @@ import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IncrementalProjectBuilder
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Control
 import org.eclipse.ui.IWorkbenchPropertyPage
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
-import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.preferences.KotlinCompilerPropertyPage
 import org.jetbrains.kotlin.swt.builders.*
 import org.jetbrains.kotlin.utils.LazyObservable
@@ -24,7 +24,7 @@ class ProjectCompilerPropertyPage : KotlinCompilerPropertyPage(), IWorkbenchProp
 
     private lateinit var optionsControls: View<Composite>
 
-    override fun createContents(parent: Composite) =
+    override fun createUI(parent: Composite): Control =
             parent.asView.gridContainer {
                 checkbox(::overrideFlag,"Enable project specific settings")
                 separator()
