@@ -7,10 +7,8 @@ import org.eclipse.core.runtime.Status
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jface.resource.FontDescriptor
 import org.eclipse.swt.SWT
-import org.eclipse.swt.widgets.Button
-import org.eclipse.swt.widgets.Composite
-import org.eclipse.swt.widgets.Display
-import org.eclipse.swt.widgets.Label
+import org.eclipse.swt.layout.GridLayout
+import org.eclipse.swt.widgets.*
 import org.eclipse.ui.dialogs.PropertyPage
 import org.jetbrains.kotlin.config.ApiVersion
 import org.jetbrains.kotlin.config.JvmTarget
@@ -24,6 +22,8 @@ import kotlin.properties.Delegates
 
 abstract class KotlinCompilerPropertyPage : PropertyPage() {
     protected abstract val kotlinProperties: KotlinProperties
+
+    private lateinit var rootView: Composite
 
     private var languageVersionProxy: LanguageVersion by LazyObservable(
             initialValueProvider = { kotlinProperties.languageVersion },
@@ -58,6 +58,8 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
     private lateinit var removeButton: View<Button>
 
     protected abstract fun rebuildTask(monitor: IProgressMonitor?)
+
+    protected abstract fun createUI(parent: Composite): Control
 
     protected fun View<Composite>.createOptionsControls(operations: View<Composite>.() -> Unit = {}) =
             gridContainer(cols = 2) {
@@ -125,15 +127,41 @@ abstract class KotlinCompilerPropertyPage : PropertyPage() {
                 }
             }.apply(operations)
 
+    final override fun createContents(parent: Composite): Control {
+        rootView = Composite(parent, SWT.NONE).apply {
+            layout = GridLayout().apply {
+                marginWidth = 0
+                marginHeight = 0
+            }
+        }
+
+        createUI(rootView).asView
+                .layout(horizontalGrab = true, verticalGrab = true)
+
+        return rootView
+    }
+
     final override fun performOk(): Boolean {
         kotlinProperties.saveChanges()
         RebuildJob().schedule()
         return super.performOk()
     }
 
-    override fun performCancel(): Boolean {
+    final override fun performCancel(): Boolean {
         kotlinProperties.cancelChanges()
         return super.performCancel()
+    }
+
+    final override fun performDefaults() {
+        kotlinProperties.loadDefaults()
+
+        // Recreate view
+        rootView.children.forEach { it.dispose() }
+        createUI(rootView).asView
+                .layout(horizontalGrab = true, verticalGrab = true)
+        rootView.layout()
+
+        super.performDefaults()
     }
 
     private fun checkApiVersionCorrectness() {
