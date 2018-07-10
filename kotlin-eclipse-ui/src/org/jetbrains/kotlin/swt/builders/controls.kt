@@ -8,10 +8,14 @@ import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.*
 import kotlin.reflect.KMutableProperty0
 
-open class View<out T : Control>(val control: T)
+interface View<out T : Control> {
+    val control: T
+}
 
 val <T : Control> T.asView: View<T>
-    get() = View(this)
+    get() = object : View<T> {
+        override val control: T = this@asView
+    }
 
 inline fun View<Composite>.label(
         text: String = "",
