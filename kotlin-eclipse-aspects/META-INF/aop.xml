@@ -14,5 +14,6 @@
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRemoveDeclarationUpdateAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinRenameFromJavaAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinJavaDescriptorAspect"/>
+        <aspect name="org.jetbrains.kotlin.aspects.ui.PackageExplorerLabelProviderAspect"/>
     </aspects>
 </aspectj>
