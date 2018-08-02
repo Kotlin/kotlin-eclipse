@@ -51,7 +51,6 @@ import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
 import com.intellij.psi.impl.file.impl.JavaFileManager
 import org.eclipse.core.runtime.IPath
-import org.jetbrains.kotlin.annotation.AnnotationCollectorExtension
 import org.jetbrains.kotlin.asJava.KotlinAsJavaSupport
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
@@ -189,9 +188,11 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         }
         
         configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
-        
+
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
         registerApplicationExtensionPointsAndExtensionsFrom()
+
+        ClassBuilderInterceptorExtension.registerExtensionPoint(project)
     }
     
     fun getRoots(): Set<JavaRoot> = roots
@@ -260,8 +261,6 @@ private fun registerApplicationExtensionPointsAndExtensionsFrom() {
     registerExtensionPointInRoot(DiagnosticSuppressor.EP_NAME, DiagnosticSuppressor::class)
     registerExtensionPointInRoot(EP_ERROR_MSGS, DefaultErrorMessages.Extension::class)
     
-    registerExtensionPointInRoot(ClassBuilderInterceptorExtension.extensionPointName, AnnotationCollectorExtension::class)
-
     registerExtensionPointInRoot(CodeStyleSettingsProvider.EXTENSION_POINT_NAME, KotlinSettingsProvider::class)
     registerExtensionPointInRoot(LanguageCodeStyleSettingsProvider.EP_NAME, KotlinLanguageCodeStyleSettingsProvider::class)
     registerExtensionPointInRoot(JavaModuleSystem.EP_NAME, JavaModuleSystem::class)

@@ -34,7 +34,6 @@ import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation;
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity;
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector;
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler;
-import org.jetbrains.kotlin.config.JvmTarget;
 import org.jetbrains.kotlin.core.launch.CompilerOutputData;
 import org.jetbrains.kotlin.core.launch.CompilerOutputElement;
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser;
