@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.name.ClassId
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmMetadataVersion
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
     private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping, val name: String)
@@ -107,7 +106,6 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
                     ModuleMapping.loadModuleMapping(
                             moduleFile.contentsToByteArray(),
                             moduleFile.toString(),
-                            { JvmMetadataVersion(*it).isCompatible() },
                             deserializationConfiguration.skipMetadataVersionCheck,
                             deserializationConfiguration.isJvmPackageNameSupported
                     )

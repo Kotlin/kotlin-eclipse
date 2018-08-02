@@ -33,7 +33,7 @@ class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistPr
     
     override fun apply(document: IDocument, psiElement: PsiElement) {
         val oldTypeRef = function.getTypeReference()
-        val renderedType = IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.renderType(type)
+        val renderedType = IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_NO_ANNOTATIONS.renderType(type)
         if (oldTypeRef != null) {
             replace(oldTypeRef, renderedType)
         } else {
@@ -46,7 +46,7 @@ class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistPr
     
     override fun getDisplayString(): String {
         val functionName = function.getName()
-        val renderedType = IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_IN_TYPES.renderType(type)
+        val renderedType = IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_NO_ANNOTATIONS.renderType(type)
         return if (functionName != null) {
             "Change '$functionName' function return type to '$renderedType'"
         } else {
