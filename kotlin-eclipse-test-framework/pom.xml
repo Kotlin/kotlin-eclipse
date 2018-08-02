@@ -8,7 +8,7 @@
 		<relativePath>../pom.xml</relativePath>
 		<groupId>kotlin.eclipse</groupId>
 		<artifactId>kotlin.eclipse.plugin</artifactId>
-		<version>0.8.5-SNAPSHOT</version>
+		<version>0.8.6-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>org.jetbrains.kotlin.testframework</artifactId>
