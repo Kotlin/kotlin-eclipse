@@ -109,6 +109,8 @@ task downloadKotlinCompilerPluginAndExtractSelectedJars {
                         'Kotlin/kotlinc/lib/kotlin-reflect.jar',
                         'Kotlin/kotlinc/lib/kotlin-script-runtime.jar',
                         'Kotlin/kotlinc/lib/kotlin-scripting-compiler.jar',
+                        'Kotlin/kotlinc/lib/kotlin-scripting-common.jar',
+                        'Kotlin/kotlinc/lib/kotlin-scripting-jvm.jar',
                         'Kotlin/kotlinc/lib/kotlin-scripting-impl.jar',
                         'Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar',
                         'Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar',

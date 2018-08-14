@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
-import org.jetbrains.kotlin.core.model.KotlinScriptDependenciesClassFinder
 
 interface KotlinReconcilingListener {
     fun reconcile(file: IFile, editor: KotlinEditor)
@@ -82,7 +81,5 @@ class KotlinReconcilingStrategy(val editor: KotlinEditor) : IReconcilingStrategy
     private fun resetCache(file: IFile) {
         KotlinAnalysisProjectCache.resetCache(file.project)
         KotlinAnalysisFileCache.resetCache()
-        
-        KotlinScriptDependenciesClassFinder.resetScriptExternalDependencies(file)
     }
 }

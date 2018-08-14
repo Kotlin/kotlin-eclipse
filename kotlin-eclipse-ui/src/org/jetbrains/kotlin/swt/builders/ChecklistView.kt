@@ -30,7 +30,7 @@ class ChecklistView<T>(override val control: Table, val model: () -> Iterable<T>
                     text = nameProvider(it)
                     data = it
                 }
-            }
+            } 
     }
 }
 

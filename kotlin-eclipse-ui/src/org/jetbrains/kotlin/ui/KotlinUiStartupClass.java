@@ -7,6 +7,8 @@ public class KotlinUiStartupClass implements IStartup {
     @Override
     public void earlyStartup() {
         // activating Kotlin UI plugin on workbench startup
+
+        new RemoveRemnantProjectsJob().schedule(3 * 1000);
     }
     
 }

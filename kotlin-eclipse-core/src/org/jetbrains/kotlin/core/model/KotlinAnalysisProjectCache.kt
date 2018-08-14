@@ -28,44 +28,45 @@ import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import java.util.concurrent.ConcurrentHashMap
 
-public object KotlinAnalysisProjectCache : IResourceChangeListener {
+object KotlinAnalysisProjectCache : IResourceChangeListener {
     private val cachedAnalysisResults = ConcurrentHashMap<IProject, AnalysisResult>()
 
-    public fun resetCache(project: IProject) {
+    fun resetCache(project: IProject) {
         synchronized(project) {
             cachedAnalysisResults.remove(project)
         }
     }
 
-    public fun resetAllCaches() {
+    fun resetAllCaches() {
         cachedAnalysisResults.keys.toList().forEach {
             resetCache(it)
         }
     }
 
-    public fun getAnalysisResult(javaProject: IJavaProject): AnalysisResult {
-        val project = javaProject.getProject()
+    fun getAnalysisResult(javaProject: IJavaProject): AnalysisResult {
+        val project = javaProject.project
         return synchronized(project) {
             val analysisResult = cachedAnalysisResults.get(project) ?: run {
-                EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+                EclipseAnalyzerFacadeForJVM.analyzeSources(
                         KotlinEnvironment.getEnvironment(project),
-                        ProjectUtils.getSourceFiles(javaProject.getProject())).analysisResult
+                        ProjectUtils.getSourceFiles(javaProject.project)).analysisResult
             }
 
             cachedAnalysisResults.putIfAbsent(project, analysisResult) ?: analysisResult
         }
     }
 
-    public @Synchronized fun getAnalysisResultIfCached(project: IProject): AnalysisResult? {
+    @Synchronized
+    public fun getAnalysisResultIfCached(project: IProject): AnalysisResult? {
         return cachedAnalysisResults.get(project)
     }
 
     override fun resourceChanged(event: IResourceChangeEvent) {
-        when (event.getType()) {
+        when (event.type) {
             IResourceChangeEvent.PRE_DELETE,
             IResourceChangeEvent.PRE_CLOSE,
-            IResourceChangeEvent.PRE_BUILD -> event.getDelta()?.accept { delta ->
-                val resource = delta.getResource()
+            IResourceChangeEvent.PRE_BUILD -> event.delta?.accept { delta ->
+                val resource = delta.resource
                 if (resource is IFile) {
                     val javaProject = JavaCore.create(resource.getProject())
                     if (KotlinPsiManager.isKotlinSourceFile(resource, javaProject)) {

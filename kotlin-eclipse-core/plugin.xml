@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="org.jetbrains.kotlin.core.scriptTemplateProvider" name="Kotlin Script Template Provider" schema="schema/org.jetbrains.kotlin.core.scriptTemplateProvider.exsd"/>
-   <extension-point id="org.jetbrains.kotlin.core.scriptTemplateProviderEx" name="Kotlin Script Template Provider" schema="schema/org.jetbrains.kotlin.core.scriptTemplateProviderEx.exsd"/>
    <extension-point id="org.jetbrains.kotlin.core.predefinedKotlinCodeStyle" name="Predefined Kotlin Code Style" schema="schema/org.jetbrains.kotlin.core.predefinedKotlinCodeStyle.exsd"/>
+   <extension-point id="org.jetbrains.kotlin.core.scriptTemplateContribution" name="Kotlin Script Teplate Contribution" schema="schema/org.jetbrains.kotlin.core.scriptTemplateContribution.exsd"/>
    <extension
          id="org.jetbrains.kotlin.core.kotlinNature"
          name="KotlinNature"
@@ -23,6 +22,15 @@
             scheme="org.jetbrains.kotlin.core.filesystem">
          <run
                class="org.jetbrains.kotlin.core.filesystem.KotlinFileSystem">
+         </run>
+      </filesystem>
+   </extension>
+   <extension
+         point="org.eclipse.core.filesystem.filesystems">
+      <filesystem
+            scheme="org.jetbrains.kotlin.script">
+         <run
+               class="org.jetbrains.kotlin.core.filesystem.KotlinScriptFileSystem">
          </run>
       </filesystem>
    </extension>
@@ -63,5 +71,11 @@
             class="org.jetbrains.kotlin.idea.formatter.KotlinStyleGuideCodeStyle"
             nameInBuildsystem="official">
       </codeStyle>
+   </extension>
+   <extension
+         point="org.jetbrains.kotlin.core.scriptTemplateContribution">
+      <template
+            class="org.jetbrains.kotlin.core.script.template.ProjectScriptTemplateContribution">
+      </template>
    </extension>
 </plugin>

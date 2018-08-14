@@ -1,75 +1,6 @@
 package org.jetbrains.kotlin.checkers;
 
 
-import static org.jetbrains.kotlin.diagnostics.Errors.ASSIGN_OPERATOR_AMBIGUITY;
-import static org.jetbrains.kotlin.diagnostics.Errors.CANNOT_COMPLETE_RESOLVE;
-import static org.jetbrains.kotlin.diagnostics.Errors.COMPONENT_FUNCTION_AMBIGUITY;
-import static org.jetbrains.kotlin.diagnostics.Errors.DELEGATE_SPECIAL_FUNCTION_AMBIGUITY;
-import static org.jetbrains.kotlin.diagnostics.Errors.DELEGATE_SPECIAL_FUNCTION_NONE_APPLICABLE;
-import static org.jetbrains.kotlin.diagnostics.Errors.ITERATOR_AMBIGUITY;
-import static org.jetbrains.kotlin.diagnostics.Errors.NONE_APPLICABLE;
-import static org.jetbrains.kotlin.diagnostics.Errors.OVERLOAD_RESOLUTION_AMBIGUITY;
-import static org.jetbrains.kotlin.diagnostics.Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.analyzer.AnalysisResult;
-import org.jetbrains.kotlin.asJava.DuplicateJvmSignatureUtilKt;
-import org.jetbrains.kotlin.checkers.utils.CheckerTestUtil;
-import org.jetbrains.kotlin.checkers.diagnostics.AbstractTestDiagnostic;
-import org.jetbrains.kotlin.checkers.diagnostics.ActualDiagnostic;
-import org.jetbrains.kotlin.checkers.diagnostics.TextDiagnostic;
-import org.jetbrains.kotlin.checkers.diagnostics.factories.SyntaxErrorDiagnosticFactory;
-import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory0;
-import org.jetbrains.kotlin.config.ApiVersion;
-import org.jetbrains.kotlin.config.LanguageVersion;
-import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
-import org.jetbrains.kotlin.core.model.KotlinEnvironment;
-import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
-import org.jetbrains.kotlin.core.tests.diagnostics.AdditionalConditions;
-import org.jetbrains.kotlin.core.tests.diagnostics.JetLightFixture;
-import org.jetbrains.kotlin.core.tests.diagnostics.JetTestUtils;
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
-import org.jetbrains.kotlin.diagnostics.Diagnostic;
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory;
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory1;
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2;
-import org.jetbrains.kotlin.diagnostics.DiagnosticUtils;
-import org.jetbrains.kotlin.diagnostics.Errors;
-import org.jetbrains.kotlin.diagnostics.PsiDiagnosticUtils;
-import org.jetbrains.kotlin.diagnostics.PsiDiagnosticUtils.LineAndColumn;
-import org.jetbrains.kotlin.diagnostics.Severity;
-import org.jetbrains.kotlin.psi.Call;
-import org.jetbrains.kotlin.psi.KtDeclaration;
-import org.jetbrains.kotlin.psi.KtElement;
-import org.jetbrains.kotlin.psi.KtExpression;
-import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.resolve.AnalyzingUtils;
-import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.resolve.MultiTargetPlatform;
-import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
-import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
-import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
-import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
-import org.junit.Assert;
-import org.junit.Before;
-
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
@@ -83,11 +14,50 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-
 import junit.framework.TestCase;
 import kotlin.Pair;
 import kotlin.collections.CollectionsKt;
 import kotlin.jvm.functions.Function1;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.analyzer.AnalysisResult;
+import org.jetbrains.kotlin.asJava.DuplicateJvmSignatureUtilKt;
+import org.jetbrains.kotlin.checkers.diagnostics.AbstractTestDiagnostic;
+import org.jetbrains.kotlin.checkers.diagnostics.ActualDiagnostic;
+import org.jetbrains.kotlin.checkers.diagnostics.TextDiagnostic;
+import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory0;
+import org.jetbrains.kotlin.checkers.diagnostics.factories.SyntaxErrorDiagnosticFactory;
+import org.jetbrains.kotlin.checkers.utils.CheckerTestUtil;
+import org.jetbrains.kotlin.config.ApiVersion;
+import org.jetbrains.kotlin.config.LanguageVersion;
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
+import org.jetbrains.kotlin.core.tests.diagnostics.AdditionalConditions;
+import org.jetbrains.kotlin.core.tests.diagnostics.JetLightFixture;
+import org.jetbrains.kotlin.core.tests.diagnostics.JetTestUtils;
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
+import org.jetbrains.kotlin.diagnostics.*;
+import org.jetbrains.kotlin.diagnostics.PsiDiagnosticUtils.LineAndColumn;
+import org.jetbrains.kotlin.psi.*;
+import org.jetbrains.kotlin.resolve.AnalyzingUtils;
+import org.jetbrains.kotlin.resolve.BindingContext;
+import org.jetbrains.kotlin.resolve.MultiTargetPlatform;
+import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
+import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
+import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
+import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static org.jetbrains.kotlin.diagnostics.Errors.*;
 
 public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     
@@ -199,7 +169,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             allKtFiles.addAll(jetFiles);
             
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE
-                    .analyzeFilesWithJavaIntegration(
+                    .analyzeSources(
                             KotlinEnvironment.Companion.getEnvironment(getTestProject().getJavaProject().getProject()), jetFiles)
                     .getAnalysisResult();
             
