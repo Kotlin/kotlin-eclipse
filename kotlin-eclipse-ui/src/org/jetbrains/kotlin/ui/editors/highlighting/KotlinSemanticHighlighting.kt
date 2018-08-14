@@ -50,7 +50,7 @@ import org.jetbrains.kotlin.ui.editors.highlighting.HighlightPosition.StyleAttri
 
 private val SMART_CAST_ANNOTATION_TYPE = "org.jetbrains.kotlin.ui.annotation.smartCast"
 
-public class KotlinSemanticHighlighter(
+class KotlinSemanticHighlighter(
         val preferenceStore: IPreferenceStore, 
         val colorManager: IColorManager,
         val presentationReconciler: KotlinPresentationReconciler,
@@ -64,10 +64,10 @@ public class KotlinSemanticHighlighter(
             KotlinLogger.logWarning("There is no position category for editor")
             return
         }
-        
-        val region = textPresentation.getExtent()
-        val regionStart = region.getOffset()
-        val regionEnd = regionStart + region.getLength()
+
+        val region = textPresentation.extent
+        val regionStart = region.offset
+        val regionEnd = regionStart + region.length
         
         editor.document.getPositions(category)
             .filter { regionStart <= it.getOffset() && it.getOffset() + it.getLength() <= regionEnd }
@@ -113,7 +113,7 @@ public class KotlinSemanticHighlighter(
     }
     
     override fun propertyChange(event: PropertyChangeEvent) {
-        if (event.getProperty().startsWith(PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX)) {
+        if (event.property.startsWith(PreferenceConstants.EDITOR_SEMANTIC_HIGHLIGHTING_PREFIX)) {
             editor.eclipseFile?.let { reconcile(it, editor) }
         }
     }
@@ -132,9 +132,9 @@ public class KotlinSemanticHighlighter(
             releaseDocument(oldInput)
         }
     }
-    
-    fun install() {
-        val viewer = editor.javaEditor.getViewer()
+
+    fun install(callback: () -> Unit = {}) {
+        val viewer = editor.javaEditor.viewer
         val file = editor.eclipseFile
         if (file != null && viewer is JavaSourceViewer) {
             manageDocument(editor.document)
@@ -143,10 +143,12 @@ public class KotlinSemanticHighlighter(
             
             viewer.addTextInputListener(this)
             viewer.prependTextPresentationListener(this)
-            
-            runJob("Install semantic highlighting", Job.DECORATE) {
+
+            runJob("Install semantic highlighting", Job.DECORATE, null, {
                 reconcile(file, editor)
                 Status.OK_STATUS
+            }) {
+                callback()
             }
         } else {
             KotlinLogger.logWarning("Cannot install Kotlin Semantic highlighter for viewer $viewer")
@@ -154,7 +156,7 @@ public class KotlinSemanticHighlighter(
     }
     
     fun uninstall() {
-        val viewer = editor.javaEditor.getViewer()
+        val viewer = editor.javaEditor.viewer
         if (viewer is JavaSourceViewer) {
             viewer.removeTextPresentationListener(this)
             viewer.removeTextInputListener(this)
@@ -186,14 +188,14 @@ public class KotlinSemanticHighlighter(
     }
     
     private fun invalidateTextPresentation() {
-        val shell = editor.javaEditor.getSite()?.getShell()
-        if (shell == null || shell.isDisposed()) return
-        
-        val display = shell.getDisplay()
-        if (display == null || display.isDisposed()) return
+        val shell = editor.javaEditor.site?.shell
+        if (shell == null || shell.isDisposed) return
+
+        val display = shell.display
+        if (display == null || display.isDisposed) return
         
         display.asyncExec {
-            editor.javaEditor.getViewer()?.invalidateTextPresentation()
+            editor.javaEditor.viewer?.invalidateTextPresentation()
         }
     }
     

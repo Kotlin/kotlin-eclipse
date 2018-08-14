@@ -55,6 +55,6 @@ object KotlinAnalyzer {
 
     private fun analyzeFiles(kotlinEnvironment: KotlinEnvironment,
                              filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
-        return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(kotlinEnvironment, filesToAnalyze)
+        return EclipseAnalyzerFacadeForJVM.analyzeSources(kotlinEnvironment, filesToAnalyze)
     }
 }

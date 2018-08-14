@@ -923,4 +923,13 @@
            </enabledWhen>
        </page>
    </extension>
+   <extension
+         point="org.eclipse.jdt.ui.javaElementFilters">
+      <filter
+            class="org.jetbrains.kotlin.ui.ScriptEnvironmentsFilter"
+            enabled="true"
+            id="org.jetbrains.kotlin.ui.scriptEnvironmentsFilter"
+            name="Kotlin script environments">
+      </filter>
+   </extension>
 </plugin>

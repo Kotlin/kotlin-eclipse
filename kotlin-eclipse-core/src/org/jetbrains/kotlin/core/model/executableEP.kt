@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.CoreException
 import org.eclipse.core.runtime.IConfigurationElement
 import org.eclipse.core.runtime.Platform
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 fun <T> loadExecutableEP(extensionPointId: String, isCaching: Boolean = false): List<ExecutableExtensionPointDescriptor<T>> {
@@ -58,6 +59,8 @@ class ExecutableExtensionPointDescriptor<T>(
             null
         }
     }
+
+    fun providedClass(): KClass<out Any>? = configurationElement.getAttribute(CLASS)?.let { Class.forName(it).kotlin }
 }
 
 object EPAttribute {

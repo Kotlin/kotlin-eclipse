@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinExternalEditorInput
+import org.jetbrains.kotlin.ui.editors.occurrences.KotlinMarkOccurrences
 
 open class KotlinFileEditor : KotlinCommonEditor() {
     override val isScript: Boolean
@@ -40,7 +41,8 @@ open class KotlinFileEditor : KotlinCommonEditor() {
     
     override val document: IDocument
         get() = getDocumentProvider().getDocument(getEditorInput())
-    
+    private val kotlinMarkOccurrences by lazy { KotlinMarkOccurrences(this) }
+
     private fun computeJetFile(): KtFile? {
         val file = eclipseFile
         if (file != null && file.exists()) {
@@ -54,6 +56,14 @@ open class KotlinFileEditor : KotlinCommonEditor() {
         val environment = KotlinEnvironment.getEnvironment(javaProject!!.project)
         val ideaProject = environment.project
         return KtPsiFactory(ideaProject).createFile(StringUtil.convertLineSeparators(document.get(), "\n"))
+    }
+
+    override fun installOccurrencesFinder(forceUpdate: Boolean) {
+        editorSite.page.addPostSelectionListener(kotlinMarkOccurrences)
+    }
+
+    override fun uninstallOccurrencesFinder() {
+        editorSite.page.removePostSelectionListener(kotlinMarkOccurrences)
     }
 }
 
