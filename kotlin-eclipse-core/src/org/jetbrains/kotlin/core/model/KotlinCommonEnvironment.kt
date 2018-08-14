@@ -86,25 +86,25 @@ import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer
 import org.jetbrains.kotlin.resolve.ModuleAnnotationsResolver
 import org.jetbrains.kotlin.resolve.diagnostics.DiagnosticSuppressor
+import org.jetbrains.kotlin.resolve.extensions.SyntheticResolveExtension
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
 import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
 import org.jetbrains.kotlin.script.ScriptDefinitionProvider
 import org.jetbrains.kotlin.script.ScriptDependenciesProvider
 import java.io.File
-import java.util.LinkedHashSet
+import java.util.*
 import kotlin.reflect.KClass
-import org.jetbrains.kotlin.scripting.legacy.CliScriptDependenciesProvider
-import org.jetbrains.kotlin.scripting.legacy.CliScriptDefinitionProvider
+import org.jetbrains.kotlin.scripting.shared.extensions.ScriptingResolveExtension
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
         val properties = System.getProperties()
 
-        properties.setProperty("idea.io.use.nio2", java.lang.Boolean.TRUE.toString());
+        properties.setProperty("idea.io.use.nio2", java.lang.Boolean.TRUE.toString())
 
         if (!(SystemInfo.isJavaVersionAtLeast("1.7") && !"1.7.0-ea".equals(SystemInfo.JAVA_VERSION))) {
-            properties.setProperty("idea.io.use.fallback", java.lang.Boolean.TRUE.toString());
+            properties.setProperty("idea.io.use.fallback", java.lang.Boolean.TRUE.toString())
         }
     }
 }
@@ -125,8 +125,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         
         projectEnvironment = object : JavaCoreProjectEnvironment(disposable, javaApplicationEnvironment) {
             override fun preregisterServices() {
-                registerProjectExtensionPoints(Extensions.getArea(getProject()))
-                CoreApplicationEnvironment.registerExtensionPoint(Extensions.getArea(getProject()), JvmElementProvider.EP_NAME, JvmElementProvider::class.java)
+                registerProjectExtensionPoints(Extensions.getArea(project))
+                CoreApplicationEnvironment.registerExtensionPoint(Extensions.getArea(project), JvmElementProvider.EP_NAME, JvmElementProvider::class.java)
             }
             
             override fun createCoreFileManager() = KotlinCliJavaFileManagerImpl(PsiManager.getInstance(project))
@@ -137,12 +137,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         StorageComponentContainerContributor.registerExtensionPoint(project)
         
         with(project) {
-            val scriptDefinitionProvider = CliScriptDefinitionProvider()
+            val scriptDefinitionProvider = EclipseScriptDefinitionProvider()
             registerService(ScriptDefinitionProvider::class.java, scriptDefinitionProvider)
-            registerService(
-                    ScriptDependenciesProvider::class.java,
-                    CliScriptDependenciesProvider(project))
-            
             registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(true))
 
             // For j2k converter
@@ -180,10 +176,11 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
 			val kotlinAsJavaSupport = CliKotlinAsJavaSupport(this, traceHolder)
 			registerService(KotlinAsJavaSupport::class.java, kotlinAsJavaSupport)
 			area.getExtensionPoint(PsiElementFinder.EP_NAME).registerExtension(JavaElementFinder(this, kotlinAsJavaSupport))
+            area.getExtensionPoint(SyntheticResolveExtension.extensionPointName).registerExtension(ScriptingResolveExtension())
             registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(this))
         }
-        
-        configuration.put(CommonConfigurationKeys.MODULE_NAME, project.getName())
+
+        configuration.put(CommonConfigurationKeys.MODULE_NAME, project.name)
 
         ExpressionCodegenExtension.Companion.registerExtensionPoint(project)
         registerApplicationExtensionPointsAndExtensionsFrom()
@@ -192,37 +189,23 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
     }
     
     fun getRoots(): Set<JavaRoot> = roots
-    
-    private fun createJavaCoreApplicationEnvironment(disposable: Disposable): JavaCoreApplicationEnvironment {
-        Extensions.cleanRootArea(disposable)
-        registerAppExtensionPoints()
-
-        return JavaCoreApplicationEnvironment(disposable).apply {
-            registerFileType(PlainTextFileType.INSTANCE, "xml")
-            registerFileType(KotlinFileType.INSTANCE, "kt")
-            registerFileType(KotlinFileType.INSTANCE, KotlinParserDefinition.STD_SCRIPT_SUFFIX)
-            registerParserDefinition(KotlinParserDefinition())
-            
-            getApplication().registerService(KotlinBinaryClassCache::class.java, KotlinBinaryClassCache())
-        }
-    }
 
     fun getVirtualFile(location: IPath): VirtualFile? {
-        return javaApplicationEnvironment.getLocalFileSystem().findFileByIoFile(location.toFile())
+        return javaApplicationEnvironment.localFileSystem.findFileByIoFile(location.toFile())
     }
 
     fun getVirtualFileInJar(pathToJar: IPath, relativePath: String): VirtualFile? {
-        return javaApplicationEnvironment.getJarFileSystem().findFileByPath("$pathToJar!/$relativePath")
+        return javaApplicationEnvironment.jarFileSystem.findFileByPath("$pathToJar!/$relativePath")
     }
 
     fun isJarFile(pathToJar: IPath): Boolean {
-        val jarFile = javaApplicationEnvironment.getJarFileSystem().findFileByPath("$pathToJar!/")
-        return jarFile != null && jarFile.isValid()
+        val jarFile = javaApplicationEnvironment.jarFileSystem.findFileByPath("$pathToJar!/")
+        return jarFile != null && jarFile.isValid
     }
 
     protected fun addToClasspath(path: File, rootType: JavaRoot.RootType? = null) {
-        if (path.isFile()) {
-            val jarFile = javaApplicationEnvironment.getJarFileSystem().findFileByPath("$path!/")
+        if (path.isFile) {
+            val jarFile = javaApplicationEnvironment.jarFileSystem.findFileByPath("$path!/")
             if (jarFile == null) {
                 KotlinLogger.logWarning("Can't find jar: $path")
                 return
@@ -233,7 +216,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             val type = rootType ?: JavaRoot.RootType.BINARY
             roots.add(JavaRoot(jarFile, type))
         } else {
-            val root = javaApplicationEnvironment.getLocalFileSystem().findFileByPath(path.getAbsolutePath())
+            val root = javaApplicationEnvironment.localFileSystem.findFileByPath(path.absolutePath)
             if (root == null) {
                 KotlinLogger.logWarning("Can't find jar: $path")
                 return
@@ -247,9 +230,24 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
     }
 }
 
+private fun createJavaCoreApplicationEnvironment(disposable: Disposable): JavaCoreApplicationEnvironment {
+    Extensions.cleanRootArea(disposable)
+    registerAppExtensionPoints()
+
+    return JavaCoreApplicationEnvironment(disposable).apply {
+        registerFileType(PlainTextFileType.INSTANCE, "xml")
+        registerFileType(KotlinFileType.INSTANCE, "kt")
+        registerFileType(KotlinFileType.INSTANCE, KotlinParserDefinition.STD_SCRIPT_SUFFIX)
+        registerParserDefinition(KotlinParserDefinition())
+
+        application.registerService(KotlinBinaryClassCache::class.java, KotlinBinaryClassCache())
+        application.registerService(ScriptDefinitionProvider::class.java, EclipseScriptDefinitionProvider())
+    }
+}
 private fun registerProjectExtensionPoints(area: ExtensionsArea) {
     registerExtensionPoint(area, PsiTreeChangePreprocessor.EP_NAME, PsiTreeChangePreprocessor::class)
     registerExtensionPoint(area, PsiElementFinder.EP_NAME, PsiElementFinder::class)
+    registerExtensionPoint(area, SyntheticResolveExtension.extensionPointName, SyntheticResolveExtension::class)
 }
 
 private fun registerApplicationExtensionPointsAndExtensionsFrom() {
@@ -276,7 +274,7 @@ private fun registerAppExtensionPoints() {
     // For j2k converter
     registerExtensionPointInRoot(PsiAugmentProvider.EP_NAME, PsiAugmentProvider::class)
     registerExtensionPointInRoot(JavaMainMethodProvider.EP_NAME, JavaMainMethodProvider::class)
-    
+
     CoreApplicationEnvironment.registerExtensionPoint(Extensions.getRootArea(), MetaLanguage.EP_NAME, MetaLanguage::class.java)
 }
 

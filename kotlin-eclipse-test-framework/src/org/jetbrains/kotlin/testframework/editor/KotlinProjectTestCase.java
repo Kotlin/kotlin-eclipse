@@ -5,11 +5,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
-import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase.Separator;
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.TestJavaProject;
@@ -118,9 +116,8 @@ public class KotlinProjectTestCase {
     protected TestJavaProject getTestProject() {
         return testJavaProject;
     }
-    
-    protected void waitForEditorInitialization(TextEditorTest testEditor) throws OperationCanceledException, InterruptedException {
-        String family = KotlinScriptEnvironment.Companion.constructFamilyForInitialization(testEditor.getEditingFile());
-        Job.getJobManager().join(family, null);
+
+    protected void waitForEditorInitialization(TextEditorTest testEditor) {
+        // TODO
     }
 }

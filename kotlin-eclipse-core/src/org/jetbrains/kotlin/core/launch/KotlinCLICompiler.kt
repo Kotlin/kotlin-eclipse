@@ -11,8 +11,7 @@ import org.jetbrains.kotlin.core.model.KOTLIN_COMPILER_PATH
 object KotlinCLICompiler {
 	private val obligatoryCompilerFlags
         get() = arrayOf(
-            "-Xintellij-plugin-root=" + KOTLIN_COMPILER_PATH,
-		    "-Xdisable-default-scripting-plugin"
+            "-Xintellij-plugin-root=" + KOTLIN_COMPILER_PATH
 		)
 	
 	@JvmStatic

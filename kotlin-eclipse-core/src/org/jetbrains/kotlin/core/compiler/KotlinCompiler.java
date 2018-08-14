@@ -23,6 +23,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,7 @@ import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 import kotlin.Pair;
 import kotlin.text.StringsKt;
+import org.jetbrains.kotlin.utils.PathUtil;
 
 public class KotlinCompiler {
     public final static KotlinCompiler INSTANCE = new KotlinCompiler();
@@ -128,6 +130,7 @@ public class KotlinCompiler {
         for (CompilerPlugin plugin : kotlinProperties.getCompilerPlugins().getEntries()) {
             command.addAll(configurePlugin(plugin));
         }
+        command.add(configureScriptingPlugin());
 
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
@@ -169,6 +172,10 @@ public class KotlinCompiler {
             }
         }
         return result;
+    }
+
+    private String configureScriptingPlugin() {
+        return "-Xplugin=" + ProjectUtils.buildLibPath(PathUtil.KOTLIN_SCRIPTING_COMPILER_PLUGIN_NAME);
     }
 
     @NotNull

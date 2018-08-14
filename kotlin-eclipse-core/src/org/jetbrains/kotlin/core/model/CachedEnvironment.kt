@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.core.model
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.impl.ZipHandler
-import java.util.HashMap
 import java.util.concurrent.ConcurrentHashMap
 
 class CachedEnvironment<T, E : KotlinCommonEnvironment> {
@@ -28,60 +27,42 @@ class CachedEnvironment<T, E : KotlinCommonEnvironment> {
     private val environmentCache = ConcurrentHashMap<T, E>()
     private val ideaProjectToEclipseResource = ConcurrentHashMap<Project, T>()
 
-    fun putEnvironment(resource: T, environment: E) {
-        synchronized(environmentLock) {
-            environmentCache.put(resource, environment)
-            ideaProjectToEclipseResource.put(environment.project, resource)
+    fun putEnvironment(resource: T, environment: E): Unit = synchronized(environmentLock) {
+        environmentCache[resource] = environment
+        ideaProjectToEclipseResource[environment.project] = resource
+    }
+
+    fun getOrCreateEnvironment(resource: T, createEnvironment: (T) -> E): E = synchronized(environmentLock) {
+        environmentCache.getOrPut(resource) {
+            createEnvironment(resource).also { ideaProjectToEclipseResource[it.project] = resource }
         }
     }
 
-    fun getOrCreateEnvironment(resource: T, createEnvironment: (T) -> E): E {
-        return synchronized(environmentLock) {
-            environmentCache.getOrPut(resource) {
-                val newEnvironment = createEnvironment(resource)
-                ideaProjectToEclipseResource.put(newEnvironment.project, resource)
-
-                newEnvironment
-            }
-        }
-    }
-
-    fun removeEnvironment(resource: T) {
-        synchronized(environmentLock) {
+    fun removeEnvironment(resource: T) = synchronized(environmentLock) {
             removeEnvironmentInternal(resource)
         }
-    }
 
-    fun removeAllEnvironments() {
-        synchronized(environmentLock) {
-            environmentCache.keys.toList().forEach {
-                removeEnvironmentInternal(it)
-            }
+    fun removeAllEnvironments() = synchronized(environmentLock) {
+        environmentCache.keys.toList().forEach {
+            removeEnvironmentInternal(it)
         }
     }
 
     private fun removeEnvironmentInternal(resource: T) {
-        if (environmentCache.containsKey(resource)) {
-            val environment = environmentCache[resource]!!
+        environmentCache.remove(resource)?.also {
+            ideaProjectToEclipseResource.remove(it.project)
 
-            ideaProjectToEclipseResource.remove(environment.project)
-            environmentCache.remove(resource)
-
-            Disposer.dispose(environment.javaApplicationEnvironment.parentDisposable)
+            Disposer.dispose(it.javaApplicationEnvironment.parentDisposable)
             ZipHandler.clearFileAccessorCache()
         }
     }
 
-    fun replaceEnvironment(resource: T, createEnvironment: (T) -> E): E {
-        return synchronized(environmentLock) {
-            removeEnvironment(resource)
-            getOrCreateEnvironment(resource, createEnvironment)
-        }
+    fun replaceEnvironment(resource: T, createEnvironment: (T) -> E): E = synchronized(environmentLock) {
+        removeEnvironment(resource)
+        getOrCreateEnvironment(resource, createEnvironment)
     }
 
-    fun getEclipseResource(ideaProject: Project): T? {
-        return synchronized(environmentLock) {
-            ideaProjectToEclipseResource.get(ideaProject)
-        }
+    fun getEclipseResource(ideaProject: Project): T? = synchronized(environmentLock) {
+        ideaProjectToEclipseResource[ideaProject]
     }
 }

@@ -1,2 +1,3 @@
 eclipse.preferences.version=1
 encoding//src/org/jetbrains/kotlin/core/launch/KotlinCLICompiler.kt=UTF-8
+encoding//src/org/jetbrains/kotlin/core/script/ScriptTemplateContribution.kt=UTF-8
