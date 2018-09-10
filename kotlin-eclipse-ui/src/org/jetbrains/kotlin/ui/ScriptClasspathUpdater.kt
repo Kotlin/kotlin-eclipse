@@ -46,7 +46,7 @@ private fun tryUpdateScriptClasspath(file: IFile) {
     
     val dependenciesProvider = ScriptDependenciesProvider.getInstance(environment.project)
     
-    runJob("Check script dependencies", Job.DECORATE, null, {
+    runJob("Check script dependencies", Job.DECORATE, 0,null, {
     	val newDependencies = dependenciesProvider.getScriptDependencies(KotlinPsiManager.getParsedFile(file))
 //        KotlinLogger.logInfo("Check for script definition: ${dependenciesProvider}")
 //        KotlinLogger.logInfo("New dependencies: ${newDependencies?.classpath?.joinToString("\n") { it.absolutePath }}")

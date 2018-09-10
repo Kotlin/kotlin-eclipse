@@ -73,9 +73,9 @@ fun isConfigurationMissing(project: IProject): Boolean {
     }
 }
 
-fun runJob(name: String, priority: Int = Job.LONG, delay: Long = 0, action: (IProgressMonitor) -> IStatus) {
+fun runJob(name: String, priority: Int = Job.LONG, delay: Long = 0, action: (IProgressMonitor) -> IStatus) =
     runJob(name, priority, delay, null, action, {})
-}
+
 
 fun runJob(
         name: String,
