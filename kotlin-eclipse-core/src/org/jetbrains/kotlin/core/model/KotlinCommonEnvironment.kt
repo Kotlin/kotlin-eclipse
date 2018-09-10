@@ -145,7 +145,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(ScriptDefinitionProvider::class.java, scriptDefinitionProvider)
             registerService(
                     ScriptDependenciesProvider::class.java,
-                    CliScriptDependenciesProvider(project, scriptDefinitionProvider))
+                    CliScriptDependenciesProvider(project))
             
             registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(true))
 

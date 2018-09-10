@@ -21,7 +21,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.IType
 import org.eclipse.jdt.internal.compiler.util.Util.isClassFileName
-import org.jetbrains.kotlin.builtins.BuiltInSerializerProtocol
+import org.jetbrains.kotlin.serialization.deserialization.builtins.BuiltInSerializerProtocol
 import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder

@@ -17,16 +17,16 @@
 package org.jetbrains.kotlin.core.resolve
 
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
-import org.jetbrains.kotlin.descriptors.PackagePartProvider
+import org.jetbrains.kotlin.load.kotlin.PackagePartProvider
 import org.jetbrains.kotlin.metadata.jvm.deserialization.ModuleMapping
 import org.jetbrains.kotlin.metadata.jvm.deserialization.PackageParts
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
 import org.jetbrains.kotlin.utils.SmartList
 import java.io.EOFException
-import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
-import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
-import org.jetbrains.kotlin.name.ClassId
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
     private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping, val name: String)
@@ -67,7 +67,7 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
         return result.toList()
     }
 
-    override fun findMetadataPackageParts(packageFqName: String): List<String> =
+    fun findMetadataPackageParts(packageFqName: String): List<String> =
             getPackageParts(packageFqName).values.flatMap(PackageParts::metadataParts).distinct()
 
     @Synchronized
@@ -108,7 +108,9 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
                             moduleFile.toString(),
                             deserializationConfiguration.skipMetadataVersionCheck,
                             deserializationConfiguration.isJvmPackageNameSupported
-                    )
+                    ) {
+                        KotlinLogger.logWarning("Incompatible version for '$moduleFile': $it")
+                    }
                 }
                 catch (e: EOFException) {
                     throw RuntimeException("Error on reading package parts for '$packageFqName' package in '$moduleFile', " +

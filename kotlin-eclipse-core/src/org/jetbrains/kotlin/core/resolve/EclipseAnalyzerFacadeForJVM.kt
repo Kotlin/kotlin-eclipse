@@ -19,7 +19,11 @@ package org.jetbrains.kotlin.core.resolve
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.kotlin.analyzer.AnalysisResult
-import org.jetbrains.kotlin.builtins.JvmBuiltInsPackageFragmentProvider
+import org.jetbrains.kotlin.builtins.jvm.JvmBuiltIns
+import org.jetbrains.kotlin.builtins.jvm.JvmBuiltInsPackageFragmentProvider
+import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
+import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
+import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
@@ -37,7 +41,6 @@ import org.jetbrains.kotlin.descriptors.impl.CompositePackageFragmentProvider
 import org.jetbrains.kotlin.frontend.java.di.initJvmBuiltInsForTopDownAnalysis
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.platform.JvmBuiltIns
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzer
 import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
@@ -46,15 +49,11 @@ import org.jetbrains.kotlin.resolve.jvm.extensions.PackageFragmentProviderExtens
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
+import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.util.KotlinFrontEndException
 import java.util.ArrayList
 import java.util.LinkedHashSet
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
-import org.jetbrains.kotlin.storage.StorageManager
-import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
-import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
-import org.jetbrains.kotlin.config.JvmTarget
-import org.jetbrains.kotlin.cli.jvm.compiler.CliBindingTrace
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
     companion object {
