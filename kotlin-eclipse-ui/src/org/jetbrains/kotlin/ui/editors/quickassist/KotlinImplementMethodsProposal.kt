@@ -258,5 +258,5 @@ public class KotlinImplementMethodsProposal(
     }
 
 
-    fun DeclarationDescriptor.escapedName() = DescriptorRenderer.COMPACT.renderName(getName())
+    fun DeclarationDescriptor.escapedName() = DescriptorRenderer.COMPACT.renderName(name, false)
 }

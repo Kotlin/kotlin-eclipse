@@ -16,33 +16,42 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.utils
 
-import org.jetbrains.kotlin.idea.util.ImportInsertHelper
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.idea.util.ImportDescriptorResult
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.resolve.ImportPath
-import java.util.Comparator
-import org.jetbrains.kotlin.idea.imports.ImportPathComparator
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.config.ApiVersion
 import org.jetbrains.kotlin.config.LanguageFeature.DefaultImportOfPackageKotlinComparisons
+import org.jetbrains.kotlin.config.LanguageVersion
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.idea.imports.ImportPathComparator
+import org.jetbrains.kotlin.idea.util.ImportDescriptorResult
+import org.jetbrains.kotlin.idea.util.ImportInsertHelper
+import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.resolve.ImportPath
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import java.util.Comparator
 
 class KotlinImportInserterHelper : ImportInsertHelper() {
     override val importSortComparator: Comparator<ImportPath> = ImportPathComparator
-    
+
     override fun importDescriptor(file: KtFile, descriptor: DeclarationDescriptor, forceAllUnderImport: Boolean): ImportDescriptorResult {
         throw UnsupportedOperationException()
     }
-    
+
     override fun isImportedWithDefault(importPath: ImportPath, contextFile: KtFile): Boolean {
-        val defaultImports = JvmPlatform.getDefaultImports(LanguageVersionSettingsImpl.DEFAULT.supportsFeature(DefaultImportOfPackageKotlinComparisons))
+        val defaultImports = JvmPlatform.getDefaultImports(
+            if (LanguageVersionSettingsImpl.DEFAULT.supportsFeature(DefaultImportOfPackageKotlinComparisons)) LanguageVersionSettingsImpl.DEFAULT
+            else LanguageVersionSettingsImpl(LanguageVersion.KOTLIN_1_0, ApiVersion.KOTLIN_1_0),
+            true
+        )
         return importPath.isImported(defaultImports)
     }
-    
+
     override fun mayImportOnShortenReferences(descriptor: DeclarationDescriptor): Boolean {
         return false
     }
+
+    override fun isImportedWithLowPriorityDefaultImport(importPath: ImportPath, contextFile: KtFile): Boolean =
+        isImportedWithDefault(importPath, contextFile)
 }
 
 
