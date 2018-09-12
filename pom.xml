@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>kotlin.eclipse</groupId>
 	<artifactId>kotlin.eclipse.plugin</artifactId>
-	<version>0.8.6-SNAPSHOT</version>
+	<version>0.8.7-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -28,7 +28,7 @@
 
 		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/46/dev/update</ajdt-eclipse-repo.url>
 
-		<kotlin.version>1.2.60</kotlin.version>
+		<kotlin.version>1.2.70-eap-40</kotlin.version>
 
 		<aspectj.version>1.8.7</aspectj.version>
 		<aspectj.plugin.version>1.8</aspectj.plugin.version>
