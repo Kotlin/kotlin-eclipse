@@ -35,7 +35,7 @@ fun lookupNonImportedTypes(
     }
     
     val importsSet = ktFile.importDirectives
-            .mapNotNull { it.getImportedFqName()?.asString() }
+            .mapNotNull { it.importedFqName?.asString() }
             .toSet()
     
     val originPackage = ktFile.packageFqName.asString()

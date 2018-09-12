@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-ui
 Bundle-SymbolicName: org.jetbrains.kotlin.ui;singleton:=true
-Bundle-Version: 0.8.6.qualifier
+Bundle-Version: 0.8.7.qualifier
 Bundle-Activator: org.jetbrains.kotlin.ui.Activator
 Bundle-Vendor: JetBrains
 Require-Bundle: org.eclipse.ui,
@@ -40,6 +40,7 @@ Import-Package: org.eclipse.core.expressions,
  org.eclipse.jdt.internal.compiler.env,
  org.eclipse.jdt.internal.core,
  org.eclipse.jdt.internal.ui.javaeditor,
+ org.eclipse.jdt.internal.ui.packageview,
  org.eclipse.jdt.internal.ui.refactoring.nls,
  org.eclipse.jdt.internal.ui.viewsupport,
  org.eclipse.jdt.junit.launcher,
@@ -55,7 +56,8 @@ Import-Package: org.eclipse.core.expressions,
  org.eclipse.ui.texteditor.link,
  org.eclipse.ui.texteditor.templates,
  org.eclipse.ui.views.contentoutline,
- org.eclipse.ui.wizards.newresource
+ org.eclipse.ui.wizards.newresource,
+ org.eclipse.swt.graphics
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,
