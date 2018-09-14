@@ -16,35 +16,29 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.launch
 
-import java.util.ArrayList
 import org.eclipse.core.resources.IContainer
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResource
-import org.eclipse.core.runtime.CoreException
-import org.eclipse.core.runtime.IAdaptable
 import org.eclipse.debug.core.DebugPlugin
 import org.eclipse.debug.core.ILaunchConfiguration
 import org.eclipse.debug.core.ILaunchConfigurationType
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy
 import org.eclipse.debug.ui.DebugUITools
 import org.eclipse.debug.ui.ILaunchShortcut
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants
 import org.eclipse.jface.viewers.ISelection
-import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.ui.IEditorPart
+import org.jetbrains.kotlin.core.KOTLIN_CLASSPATH_PROVIDER_ID
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.psi.KtDeclaration
-import org.jetbrains.kotlin.core.KOTLIN_CLASSPATH_PROVIDER_ID
+import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
+import java.util.*
 
 
 class KotlinLaunchShortcut : ILaunchShortcut {
@@ -53,9 +47,9 @@ class KotlinLaunchShortcut : ILaunchShortcut {
             val classFqName = getStartClassFqName(entryPoint)
             if (classFqName == null) return null
 
-            val configWC = getLaunchConfigurationType().newInstance(null, "Config - " + entryPoint.getContainingKtFile().getName()).apply {
+            val configWC = getLaunchConfigurationType().newInstance(null, "Config - " + entryPoint.containingKtFile.name).apply {
                 setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, classFqName.asString())
-                setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.getName())
+                setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.name)
                 setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH_PROVIDER, KOTLIN_CLASSPATH_PROVIDER_ID)
             }
 
@@ -68,7 +62,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         }
         
         private fun getLaunchConfigurationType(): ILaunchConfigurationType {
-            return DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION)
+            return DebugPlugin.getDefault().launchManager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION)
         }
     }
     
@@ -76,10 +70,11 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         val mainFile = findFileToLaunch(selection) ?: return
         
         val ktFile = KotlinPsiManager.getParsedFile(mainFile)
-        
-        val entryPoint = getEntryPoint(ktFile)
+
+        val entryPoint = getEntryPoint(ktFile, languageVersionFor(mainFile))
+
         if (entryPoint != null) {
-            launchWithMainClass(entryPoint, mainFile.getProject(), mode)
+            launchWithMainClass(entryPoint, mainFile.project, mode)
         }
     }
     
@@ -94,8 +89,8 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         
         val parsedFile = editor.parsedFile
         if (parsedFile == null) return
-        
-        val entryPoint = getEntryPoint(parsedFile)
+
+        val entryPoint = getEntryPoint(parsedFile, languageVersionFor(file))
         if (entryPoint != null) {
             launchWithMainClass(entryPoint, file.project, mode)
             return
@@ -115,7 +110,7 @@ class KotlinLaunchShortcut : ILaunchShortcut {
             configurationType: ILaunchConfigurationType, 
             entryPoint: KtDeclaration,
             project: IProject): ILaunchConfiguration? {
-        val configs = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurations(configurationType)
+        val configs = DebugPlugin.getDefault().launchManager.getLaunchConfigurations(configurationType)
         val mainClassName = getStartClassFqName(entryPoint)?.asString()
         if (mainClassName == null) return null
         
@@ -130,10 +125,10 @@ class KotlinLaunchShortcut : ILaunchShortcut {
     }
     
     private fun addFiles(files: ArrayList<IFile>, resource: IResource) {
-        when (resource.getType()) {
+        when (resource.type) {
             IResource.FILE -> {
                 val file = resource as IFile
-                if (resource.getFileExtension() == KotlinFileType.INSTANCE.getDefaultExtension()) {
+                if (resource.getFileExtension() == KotlinFileType.INSTANCE.defaultExtension) {
                     files.add(file)
                 }
             }
@@ -147,3 +142,6 @@ class KotlinLaunchShortcut : ILaunchShortcut {
         }
     }
 }
+
+private fun languageVersionFor(file: IFile) =
+        KotlinEnvironment.getEnvironment(file.project).compilerProperties.languageVersionSettings
