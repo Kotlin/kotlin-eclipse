@@ -26,7 +26,6 @@ import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver
 import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
-import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.context.ContextForNewModule
 import org.jetbrains.kotlin.context.MutableModuleContext
@@ -34,6 +33,7 @@ import org.jetbrains.kotlin.context.ProjectContext
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
+import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
@@ -51,8 +51,7 @@ import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.util.KotlinFrontEndException
-import java.util.ArrayList
-import java.util.LinkedHashSet
+import java.util.*
 import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
@@ -61,8 +60,8 @@ data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val co
     }
 }
 
-public object EclipseAnalyzerFacadeForJVM {
-    public fun analyzeFilesWithJavaIntegration(
+object EclipseAnalyzerFacadeForJVM {
+    fun analyzeFilesWithJavaIntegration(
             environment: KotlinEnvironment,
             filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
         val filesSet = filesToAnalyze.toSet()
@@ -90,9 +89,7 @@ public object EclipseAnalyzerFacadeForJVM {
         val sourceScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(project, filesToAnalyze)
         val moduleClassResolver = SourceOrBinaryModuleClassResolver(sourceScope)
 
-        val languageVersionSettings = LanguageVersionSettingsImpl(
-                environment.compilerProperties.languageVersion,
-                environment.compilerProperties.apiVersion)
+        val languageVersionSettings = environment.compilerProperties.languageVersionSettings
 
         val optionalBuiltInsModule = JvmBuiltIns(storageManager).apply { initialize(module, true) }.builtInsModule
         
@@ -167,11 +164,11 @@ public object EclipseAnalyzerFacadeForJVM {
         }
         
         return AnalysisResultWithProvider(
-                AnalysisResult.success(trace.getBindingContext(), module),
+                AnalysisResult.success(trace.bindingContext, module),
                 container)
     }
-    
-    public fun analyzeScript(
+
+    fun analyzeScript(
             environment: KotlinScriptEnvironment,
             scriptFile: KtFile): AnalysisResultWithProvider {
         
@@ -201,11 +198,11 @@ public object EclipseAnalyzerFacadeForJVM {
         }
         
         return AnalysisResultWithProvider(
-                AnalysisResult.success(trace.getBindingContext(), container.get<ModuleDescriptor>()),
+                AnalysisResult.success(trace.bindingContext, container.get<ModuleDescriptor>()),
                 container)
     }
-    
-    private fun getPath(jetFile: KtFile): String? = jetFile.getVirtualFile()?.getPath()
+
+    private fun getPath(jetFile: KtFile): String? = jetFile.virtualFile?.path
     
     private fun createModuleContext(
             project: Project,
