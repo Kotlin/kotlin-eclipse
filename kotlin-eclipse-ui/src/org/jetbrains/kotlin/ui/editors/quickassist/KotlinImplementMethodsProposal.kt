@@ -23,6 +23,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.core.formatting.codeStyle
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
@@ -113,7 +114,8 @@ public class KotlinImplementMethodsProposal(
                 document,
                 EclipseDocumentRange(insertOffset, insertOffset + generatedText.length),
                 psiFactory,
-                file.name)
+                file.name,
+                file.project.codeStyle)
     }
 
     private fun removeWhitespaceAfterLBrace(body: KtClassBody, document: IDocument, editor: KotlinEditor) {

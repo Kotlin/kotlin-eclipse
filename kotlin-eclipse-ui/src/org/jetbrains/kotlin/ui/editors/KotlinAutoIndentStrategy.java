@@ -16,14 +16,13 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors;
 
+import com.intellij.formatting.FormatterImpl;
+import com.intellij.formatting.Indent;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.DocumentCommand;
-import org.eclipse.jface.text.IAutoEditStrategy;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.TextUtilities;
+import org.eclipse.jface.text.*;
+import org.jetbrains.kotlin.core.formatting.KotlinCodeStyleManager;
+import org.jetbrains.kotlin.core.formatting.KotlinCodeStyleManagerKt;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
@@ -33,10 +32,6 @@ import org.jetbrains.kotlin.psi.KtPsiFactory;
 import org.jetbrains.kotlin.ui.formatter.KotlinBlock;
 import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 import org.jetbrains.kotlin.ui.formatter.KotlinSpacingBuilderUtilImpl;
-
-import com.intellij.formatting.FormatterImpl;
-import com.intellij.formatting.Indent;
-import com.intellij.psi.codeStyle.CodeStyleSettings;
 
 public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
     
@@ -56,7 +51,7 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         if (command.doit == false) {
             return;
         }
-        
+
         if (command.length == 0 && command.text != null && isNewLine(document, command.text)) {
             autoEditAfterNewLine(document, command);
         } else if (CLOSING_BRACE_STRING.equals(command.text)) {
@@ -117,8 +112,9 @@ public class KotlinAutoIndentStrategy implements IAutoEditStrategy {
         KtFile ktFile = KotlinFormatterKt.createKtFile(tempDocument.get(), psiFactory, eclipseFile.getName());
         
         int line = tempDocument.getLineOfOffset(offset);
-        
-        CodeStyleSettings settings = KotlinFormatterKt.getSettings();
+
+
+        CodeStyleSettings settings = KotlinCodeStyleManagerKt.getCodeStyle(eclipseFile.getProject());
         KotlinBlock rootBlock = new KotlinBlock(ktFile.getNode(), 
                 KotlinFormatterKt.getNULL_ALIGNMENT_STRATEGY(), 
                 Indent.getNoneIndent(), 
