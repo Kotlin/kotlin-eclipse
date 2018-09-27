@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.preferences
+package org.jetbrains.kotlin.preferences.compiler
 
 import org.eclipse.jface.dialogs.IDialogConstants
 import org.eclipse.jface.dialogs.MessageDialog
@@ -8,7 +8,6 @@ import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Control
 import org.eclipse.swt.widgets.Shell
-import org.eclipse.swt.widgets.Text
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin
 import org.jetbrains.kotlin.core.preferences.PreferencesCollection
 import org.jetbrains.kotlin.swt.builders.*

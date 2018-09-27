@@ -16,4 +16,8 @@ class KotlinCodeStyleProperties(scope: IScopeContext = InstanceScope.INSTANCE)
     var globalsOverridden by BooleanPreference()
 
     var codeStyleId by StringPreference()
+
+    companion object {
+        val workspaceInstance by lazy { KotlinCodeStyleProperties() }
+    }
 }

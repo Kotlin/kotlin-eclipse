@@ -11,7 +11,7 @@ import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin
 import org.jetbrains.kotlin.core.preferences.KotlinProperties
-import org.jetbrains.kotlin.preferences.CompilerPluginDialog
+import org.jetbrains.kotlin.preferences.compiler.CompilerPluginDialog
 import org.jetbrains.kotlin.swt.builders.*
 import org.jetbrains.kotlin.utils.LazyObservable
 import kotlin.properties.Delegates
