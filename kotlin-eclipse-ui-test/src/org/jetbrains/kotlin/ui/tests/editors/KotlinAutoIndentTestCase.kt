@@ -7,8 +7,8 @@ import org.eclipse.ui.editors.text.EditorsUI
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
 import org.jetbrains.kotlin.ui.tests.editors.formatter.KotlinFormatActionTestCase
-import org.jetbrains.kotlin.ui.formatter.settings
 import com.intellij.psi.codeStyle.CodeStyleSettings
+import org.jetbrains.kotlin.testframework.utils.CodeStyleConfigurator
 import org.junit.After
 
 abstract class KotlinAutoIndentTestCase : KotlinEditorWithAfterFileTestCase() {
@@ -19,11 +19,11 @@ abstract class KotlinAutoIndentTestCase : KotlinEditorWithAfterFileTestCase() {
     
     @After
     fun setDefaultSettings() {
-        settings = CodeStyleSettings()
+        CodeStyleConfigurator.deconfigure(testProject.project)
     }
     
     override fun performTest(fileText: String, expectedFileText: String) {
-        KotlinFormatActionTestCase.configureSettings(fileText)
+        CodeStyleConfigurator.configure(testProject.project, fileText)
         
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, true)
         EditorsUI.getPreferenceStore().setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH, 4)

@@ -24,8 +24,8 @@ object KotlinCodeStyleManager {
         get() = (predefinedStyles.keys + stylesCache.keys).sorted()
 
     // Can be used in the future to provide user defined code styles
-    fun getOrCreate(id: String, settingsApplier: (CodeStyleSettings) -> Unit): CodeStyleSettings =
-            stylesCache.getOrPut(id) { CodeStyleSettings().also { settingsApplier(it) } }
+    fun getOrCreate(id: String, settingsApplier: CodeStyleSettings.() -> Unit): CodeStyleSettings =
+            stylesCache.getOrPut(id) { CodeStyleSettings().also { it.settingsApplier() } }
 
     fun get(id: String): CodeStyleSettings? = stylesCache[id] ?: createStyleFromPredef(id)
 
