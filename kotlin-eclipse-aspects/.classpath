@@ -3,6 +3,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/kotlin-eclipse-ui"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/kotlin-bundled-compiler"/>
+	<classpathentry kind="con" path="org.jetbrains.kotlin.core.KOTLIN_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
