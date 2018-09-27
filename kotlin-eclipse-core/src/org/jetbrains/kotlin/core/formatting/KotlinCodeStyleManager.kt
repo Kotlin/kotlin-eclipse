@@ -3,12 +3,10 @@ package org.jetbrains.kotlin.core.formatting
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.ProjectScope
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.preferences.KotlinCodeStyleProperties
 import org.jetbrains.kotlin.idea.formatter.KotlinObsoleteCodeStyle
 import org.jetbrains.kotlin.idea.formatter.KotlinPredefinedCodeStyle
 import org.jetbrains.kotlin.idea.formatter.KotlinStyleGuideCodeStyle
-import org.jetbrains.kotlin.psi.KtFile
 import java.util.concurrent.ConcurrentHashMap
 
 object KotlinCodeStyleManager {
@@ -29,7 +27,7 @@ object KotlinCodeStyleManager {
 
     fun get(id: String): CodeStyleSettings? = stylesCache[id] ?: createStyleFromPredef(id)
 
-    // Uses the same logic as ConcurrentHashMap.getOrPut() but due to possible nullability cannot be expressed by it.
+    // Uses the same logic as ConcurrentHashMap.getOrPut() but due to possible nullability cannot be expressed by that method.
     private fun createStyleFromPredef(id: String): CodeStyleSettings? = predefinedStyles[id]
             ?.let { CodeStyleSettings().also(it::apply) }
             ?.let { stylesCache.putIfAbsent(id, it) ?: it }
@@ -37,10 +35,18 @@ object KotlinCodeStyleManager {
     fun invalidate(id: String) {
         stylesCache -= id
     }
+
+    fun getStyleLabel(id: String?) =
+            id?.let { predefinedStyles[it]?.name ?: it } ?: "unknown"
 }
 
-val IProject.codeStyle: CodeStyleSettings
+private val IProject.codeStyleSettings
     get() = KotlinCodeStyleProperties(ProjectScope(this))
+            .takeIf { it.globalsOverridden }
+            ?: KotlinCodeStyleProperties.workspaceInstance
+
+val IProject.codeStyle: CodeStyleSettings
+    get() = codeStyleSettings
             .codeStyleId
             ?.let { KotlinCodeStyleManager.get(it) }
             ?: CodeStyleSettings()
