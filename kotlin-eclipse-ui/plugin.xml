@@ -212,21 +212,15 @@
       </page>
       <page
             category="kotlin-eclipse-ui.preferences"
-            class="org.jetbrains.kotlin.preferences.EditorPreferencePage"
-            id="kotlin-eclipse-ui.preferences.editor"
-            name="Editor">
+            class="org.jetbrains.kotlin.preferences.style.WorkspaceCodeStylePropertyPage"
+            id="kotlin-eclipse-ui.preferences.style"
+            name="Code style">
       </page>
       <page
             category="kotlin-eclipse-ui.preferences"
-            class="org.jetbrains.kotlin.preferences.WorkspaceCompilerPropertyPage"
+            class="org.jetbrains.kotlin.preferences.compiler.WorkspaceCompilerPropertyPage"
             id="kotlin-eclipse-ui.preferences.compiler"
             name="Compiler">
-      </page>
-      <page
-            category="kotlin-eclipse-ui.preferences"
-            class="org.jetbrains.kotlin.preferences.KotlinTemplatePreferencePage"
-            id="org.jetbrains.kotlin.ui.preferences.templates"
-            name="Template">
       </page>
    </extension>
    <extension
@@ -896,7 +890,7 @@
    <extension
          point="org.eclipse.ui.propertyPages">
       <page
-            class="org.jetbrains.kotlin.preferences.ProjectCompilerPropertyPage"
+            class="org.jetbrains.kotlin.preferences.compiler.ProjectCompilerPropertyPage"
             id="org.jetbrains.kotlin.ui.project-properties"
             name="Kotlin Compiler">
          <enabledWhen>
@@ -905,5 +899,15 @@
             </reference>
          </enabledWhen>
       </page>
+       <page
+               class="org.jetbrains.kotlin.preferences.style.ProjectCodeStylePropertyPage"
+               id="org.jetbrains.kotlin.ui.project-properties-codestyle"
+               name="Kotlin Code Style">
+           <enabledWhen>
+               <reference
+                       definitionId="org.jetbrains.kotlin.core.hasNature">
+               </reference>
+           </enabledWhen>
+       </page>
    </extension>
 </plugin>
