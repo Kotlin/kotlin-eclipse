@@ -20,6 +20,7 @@ import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction
 import org.eclipse.jface.text.ITextSelection
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.formatting.codeStyle
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.ui.formatter.EclipseDocumentRange
 import org.jetbrains.kotlin.ui.formatter.createPsiFactory
@@ -42,7 +43,7 @@ class KotlinFormatAction(private val editor: KotlinEditor) : SelectionDispatchAc
             return
         }
         
-        formatRange(editor.document, getRange(selection), createPsiFactory(file), file.name)
+        formatRange(editor.document, getRange(selection), createPsiFactory(file), file.name, file.project.codeStyle)
         
         KotlinPsiManager.commitFile(file, editor.document)
     }

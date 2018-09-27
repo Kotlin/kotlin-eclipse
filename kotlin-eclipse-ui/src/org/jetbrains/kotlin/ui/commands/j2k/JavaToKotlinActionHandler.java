@@ -42,6 +42,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.undo.CreateFileOperation;
 import org.eclipse.ui.ide.undo.DeleteResourcesOperation;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.core.formatting.KotlinCodeStyleManagerKt;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinNature;
@@ -213,7 +214,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
                 jetFile.getNode().getText(),
                 jetFile.getName(),
                 KtPsiFactoryKt.KtPsiFactory(jetFile),
-                getDefaultLineDelimiter(compilationUnit));
+                KotlinCodeStyleManagerKt.getCodeStyle(eclipseProject));
         
         String fileName = FileUtil.getNameWithoutExtension(compilationUnit.getElementName());
         IFile file = FileCreationOp.makeFile((IPackageFragment) compilationUnit.getParent(), compilationUnit.getPackageFragmentRoot(), fileName);

@@ -24,6 +24,7 @@ import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.core.formatting.codeStyle
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -87,7 +88,7 @@ public class KotlinConvertToExpressionBodyAssistProposal(editor: KotlinEditor) :
 
         val lineDelimiter = TextUtilities.getDefaultLineDelimiter(editor.javaEditor.getViewer().getDocument())
         val file = editor.eclipseFile ?: return
-        val valueText = formatCode(newBody.node.text, file.name, psiFactory, lineDelimiter)
+        val valueText = formatCode(newBody.node.text, file.name, psiFactory, file.project.codeStyle)
 
         replace(body, "$eqToken $valueText")
     }
