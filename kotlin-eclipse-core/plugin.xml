@@ -3,6 +3,7 @@
 <plugin>
    <extension-point id="org.jetbrains.kotlin.core.scriptTemplateProvider" name="Kotlin Script Template Provider" schema="schema/org.jetbrains.kotlin.core.scriptTemplateProvider.exsd"/>
    <extension-point id="org.jetbrains.kotlin.core.scriptTemplateProviderEx" name="Kotlin Script Template Provider" schema="schema/org.jetbrains.kotlin.core.scriptTemplateProviderEx.exsd"/>
+   <extension-point id="org.jetbrains.kotlin.core.predefinedKotlinCodeStyle" name="Predefined Kotlin Code Style" schema="schema/org.jetbrains.kotlin.core.predefinedKotlinCodeStyle.exsd"/>
    <extension
          id="org.jetbrains.kotlin.core.kotlinNature"
          name="KotlinNature"
@@ -51,5 +52,14 @@
             class="org.jetbrains.kotlin.core.KotlinClasspathProvider"
             id="org.jetbrains.kotlin.core.kotlinClasspathProvider">
       </classpathProvider>
+   </extension>
+   <extension
+         point="org.jetbrains.kotlin.core.predefinedKotlinCodeStyle">
+      <codeStyle
+            class="org.jetbrains.kotlin.idea.formatter.KotlinObsoleteCodeStyle">
+      </codeStyle>
+      <codeStyle
+            class="org.jetbrains.kotlin.idea.formatter.KotlinStyleGuideCodeStyle">
+      </codeStyle>
    </extension>
 </plugin>

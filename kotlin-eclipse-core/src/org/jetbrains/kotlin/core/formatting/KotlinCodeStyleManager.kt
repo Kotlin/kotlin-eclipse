@@ -1,19 +1,23 @@
 package org.jetbrains.kotlin.core.formatting
 
 import com.intellij.psi.codeStyle.CodeStyleSettings
+import org.eclipse.core.internal.registry.ExtensionRegistry
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.ProjectScope
+import org.jetbrains.kotlin.core.model.loadExecutableEP
 import org.jetbrains.kotlin.core.preferences.KotlinCodeStyleProperties
 import org.jetbrains.kotlin.idea.formatter.KotlinObsoleteCodeStyle
 import org.jetbrains.kotlin.idea.formatter.KotlinPredefinedCodeStyle
 import org.jetbrains.kotlin.idea.formatter.KotlinStyleGuideCodeStyle
 import java.util.concurrent.ConcurrentHashMap
 
+private const val CODESTYLE_EXTENSION_POINT = "org.jetbrains.kotlin.core.predefinedKotlinCodeStyle"
+
 object KotlinCodeStyleManager {
     private val stylesCache = ConcurrentHashMap<String, CodeStyleSettings>()
 
     private val predefinedStyles: Map<String, KotlinPredefinedCodeStyle> by lazy {
-        listOf(KotlinStyleGuideCodeStyle.INSTANCE, KotlinObsoleteCodeStyle.INSTANCE)
+        loadPredefinedCodeStyles()
                 .map { it.codeStyleId to it }
                 .toMap()
     }
@@ -50,3 +54,7 @@ val IProject.codeStyle: CodeStyleSettings
             .codeStyleId
             ?.let { KotlinCodeStyleManager.get(it) }
             ?: CodeStyleSettings()
+
+private fun loadPredefinedCodeStyles() =
+        loadExecutableEP<KotlinPredefinedCodeStyle>(CODESTYLE_EXTENSION_POINT)
+                .mapNotNull { it.createProvider() }
