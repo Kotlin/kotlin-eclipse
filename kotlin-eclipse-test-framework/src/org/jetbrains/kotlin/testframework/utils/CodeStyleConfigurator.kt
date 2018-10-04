@@ -4,6 +4,7 @@ import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.ProjectScope
 import org.jetbrains.kotlin.core.formatting.KotlinCodeStyleManager
 import org.jetbrains.kotlin.core.preferences.KotlinCodeStyleProperties
+import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
 import java.util.*
 import kotlin.reflect.KFunction
@@ -21,16 +22,24 @@ object CodeStyleConfigurator {
 
         KotlinCodeStyleManager.getOrCreate(generatedId) {
             val kotlinSettings = getCustomSettings(KotlinCodeStyleSettings::class.java)
+            val commonSettings = getCommonSettings(KotlinLanguage.INSTANCE)
+
+            fun setDynamic(prop: String, value: Any) {
+                kotlinSettings.setDynamic(prop, value) or commonSettings.setDynamic(prop, value)
+            }
 
             InTextDirectivesUtils.findListWithPrefixes(fileText, "SET_TRUE:")
-                    .forEach { kotlinSettings[it] = true }
+                    .forEach { setDynamic(it, true) }
 
             InTextDirectivesUtils.findListWithPrefixes(fileText, "SET_FALSE:")
-                    .forEach { kotlinSettings[it] = false }
+                    .forEach { setDynamic(it, false) }
 
             InTextDirectivesUtils.findListWithPrefixes(fileText, "SET_INT:")
                     .map { it.split("=", limit = 2) }
-                    .forEach { (prop, value) -> kotlinSettings[prop] = value.toInt() }
+                    .forEach { (prop, value) -> setDynamic(prop, value.trim().toInt()) }
+
+            InTextDirectivesUtils.findStringWithPrefixes(fileText, "RIGHT_MARGIN: ")
+                    ?.also { commonSettings.RIGHT_MARGIN = it.trim().toInt() }
         }
     }
 
@@ -42,13 +51,17 @@ object CodeStyleConfigurator {
         }
     }
 
-    private operator fun Any.set(name: String, value: Any) {
-        this::class.members.single { it.name in setOf(name) }.let {
-            when (it) {
-                is KMutableProperty -> it.setter.call(this, value)
-                is KFunction -> it.call(this, value)
-                else -> throw AssertionError("Field or method with name $name does not exist")
-            }
-        }
-    }
+    private fun Any.setDynamic(name: String, value: Any): Boolean =
+            this::class.members.singleOrNull { it.name in setOf(name) }
+                    ?.let {
+                        when (it) {
+                            is KMutableProperty -> it.setter
+                            is KFunction -> it
+                            else -> null
+                        }
+                    }
+                    ?.call(this, value)
+                    ?.let { true }
+                    ?: false
+
 }
