@@ -1,0 +1,363 @@
+ext {
+    compilerTag = '1.2.60'
+    bootstrapBranch = ''
+
+    ideaVersion = '162.1812.17'
+
+    kotlinIdeaCompatibleVersion = 'IJ2017.3-1'
+    kotlinVersion = '1.2.60'
+
+    teamcityBaseUrl = 'https://teamcity.jetbrains.com'
+    compilerUrlId = '1545702:id'
+    teamcityKotlinUrl = "$teamcityBaseUrl/guestAuth/repository/download/Kotlin_1260_CompilerAllPlugins/$compilerUrlId"
+
+    ideaSdkUrl = 'https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea'
+
+    testDataDir      = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_testData") //TODO later refactor to the proper project dir
+    testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")             //TODO later refactor to the proper project dir
+
+    openApiFormatterName = 'openapi-formatter'
+    utilFormatterName    = 'util-formatter'
+    ideaFormatterName    = 'idea-formatter'
+
+    downloadDirName = 'downloads'
+    libDir          = project.findProperty('teamcity.build.workingDir') ? file("${teamcity.build.workingDir}/lib")
+                                                                        : file('lib')
+    downloadDir     = file("$libDir/$downloadDirName")
+
+    branchUrlQuery = bootstrapBranch.trim() ? "?branch=$bootstrapBranch"
+                                            : ''
+}
+
+wrapper {
+    gradleVersion = '4.10.2'
+}
+
+
+configurations {
+    testFrameworkDependencies
+}
+
+dependencies {
+    testFrameworkDependencies 'com.google.code.gson:gson:2.3.1'
+}
+
+repositories {
+    mavenCentral() //TODO do we have proxy repository for Maven Central ?
+}
+
+
+task clean {
+    doLast {
+        cleanDir testDataDir
+        cleanDir testModuleLibDir
+
+        cleanDirExceptSubDirName libDir, downloadDirName
+    }
+}
+
+task downloadTestData {
+    ext {
+        locallyDownloadedTestDataFile = file("$testDataDir/kotlin-test-data.zip")
+    }
+
+    doLast {
+        downloadFileFromUrlInto "$teamcityKotlinUrl/internal/kotlin-test-data.zip${branchUrlQuery}",
+                                locallyDownloadedTestDataFile
+
+        copy {
+            from zipTree(locallyDownloadedTestDataFile)
+
+            into testDataDir
+        }
+
+        locallyDownloadedTestDataFile.delete()
+    }
+}
+
+task downloadTestFrameworkDependencies(type: Copy) {
+    from configurations.testFrameworkDependencies
+
+    into testModuleLibDir
+}
+
+task downloadKotlinCompilerPluginAndExtractSelectedJars {
+    ext {
+        locallyDownloadedCompilerFile = file("$downloadDir/kotlin-compiler.zip")
+    }
+
+    doLast {
+        downloadFileFromUrlInto "$teamcityKotlinUrl/kotlin-plugin-$kotlinVersion-release-${kotlinIdeaCompatibleVersion}.zip",
+                                locallyDownloadedCompilerFile
+
+        copy {
+            from zipTree(locallyDownloadedCompilerFile)
+
+            includes = ['Kotlin/lib/j2k.jar',
+                        'Kotlin/kotlinc/lib/kotlin-compiler.jar',
+                        'Kotlin/kotlinc/lib/kotlin-stdlib.jar',
+                        'Kotlin/kotlinc/lib/kotlin-reflect.jar',
+                        'Kotlin/kotlinc/lib/kotlin-script-runtime.jar',
+                        'Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar',
+                        'Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar',
+                        'Kotlin/kotlinc/lib/allopen-compiler-plugin.jar',
+                        'Kotlin/kotlinc/lib/noarg-compiler-plugin.jar',
+                        'Kotlin/kotlinc/lib/sam-with-receiver-compiler-plugin.jar']
+
+            includeEmptyDirs = false
+
+            into libDir
+
+            rename 'j2k.jar', 'kotlin-converter.jar'
+
+            // flatten + rename
+            eachFile { FileCopyDetails fileDetails ->
+                fileDetails.setRelativePath new RelativePath(true, fileDetails.name)
+            }
+        }
+    }
+}
+
+task downloadKotlinTCArtifacts {
+    doLast {
+        downloadFileFromUrlInto "$teamcityKotlinUrl/internal/kotlin-ide-common.jar${branchUrlQuery}",
+                                file("$libDir/kotlin-ide-common.jar")
+
+        downloadFileFromUrlInto "$teamcityKotlinUrl/internal/kotlin-formatter.jar${branchUrlQuery}",
+                                file("$libDir/kotlin-formatter.jar")
+
+    }
+}
+
+task downloadIntellijCoreAndExtractSelectedJars {
+    ext {
+        locallyDownloadedIntellijCoreFile = file("$downloadDir/intellij-core.zip")
+    }
+
+    doLast {
+        downloadFileFromUrlInto "$ideaSdkUrl/intellij-core/$ideaVersion/intellij-core-${ideaVersion}.zip",
+                                locallyDownloadedIntellijCoreFile
+
+        copy {
+            from zipTree(locallyDownloadedIntellijCoreFile)
+
+            includes = ['intellij-core.jar']
+
+            includeEmptyDirs = false
+
+            into libDir
+        }
+    }
+}
+
+task downloadIdeaDistributionZipAndExtractSelectedJars {
+    ext {
+        locallyDownloadedIdeaZipFile = file("$downloadDir/ideaIC.zip")
+
+        openApiJarFileName = 'openapi.jar'
+        utilJarFileName    = 'util.jar'
+        ideaJarFileName    = 'idea.jar'
+
+        downloadedOpenApiJarFile = file("$libDir/$openApiJarFileName")
+        downloadedUtilJarFile    = file("$libDir/$utilJarFileName")
+        downloadedIdeaJarFile    = file("$libDir/$ideaJarFileName")
+    }
+
+    doLast {
+        downloadFileFromUrlInto "$ideaSdkUrl/ideaIC/$ideaVersion/ideaIC-${ideaVersion}.zip",
+                                locallyDownloadedIdeaZipFile
+
+        copy {
+            from zipTree(locallyDownloadedIdeaZipFile)
+
+            includes = ["lib/$openApiJarFileName", "lib/$utilJarFileName", "lib/$ideaJarFileName"]
+
+            includeEmptyDirs = false
+
+            into libDir
+
+            // flatten the files
+            eachFile { FileCopyDetails fileDetails ->
+                fileDetails.setRelativePath new RelativePath(true, fileDetails.name)
+            }
+        }
+    }
+}
+
+task extractSelectedFilesFromOpenApiJar(type: Copy, dependsOn: downloadIdeaDistributionZipAndExtractSelectedJars) {
+    ext {
+        extractDir = file("$downloadDir/$openApiFormatterName")
+    }
+
+    from zipTree(downloadIdeaDistributionZipAndExtractSelectedJars.downloadedOpenApiJarFile)
+
+    includes = ['com/intellij/psi/codeStyle/**/*.class',
+                'com/intellij/formatting/**/*.class',
+                'com/intellij/application/options/**/*.class',
+                'com/intellij/openapi/options/**/*.class',
+                'com/intellij/configurationStore/*.class',
+                'com/intellij/openapi/progress/*.class']
+
+    into extractDir
+
+    doLast {
+        downloadIdeaDistributionZipAndExtractSelectedJars.downloadedOpenApiJarFile.delete()
+    }
+}
+
+task createOpenApiFormatterJar(type: Jar, dependsOn: extractSelectedFilesFromOpenApiJar) {
+    from extractSelectedFilesFromOpenApiJar.extractDir
+
+    destinationDir = libDir
+
+    archiveName = "${openApiFormatterName}.jar"
+
+    manifest {
+        attributes 'Built-By':               'JetBrains',
+                   'Implementation-Vendor':  'JetBrains',
+                   'Implementation-Version': '1.0',
+                   'Implementation-Title':   openApiFormatterName
+    }
+
+    doLast {
+        extractSelectedFilesFromOpenApiJar.extractDir.deleteDir()
+    }
+}
+
+task extractSelectedFilesFromUtilJar(type: Copy, dependsOn: downloadIdeaDistributionZipAndExtractSelectedJars) {
+    ext {
+        extractDir = file("$downloadDir/$utilFormatterName")
+    }
+
+    from zipTree(downloadIdeaDistributionZipAndExtractSelectedJars.downloadedUtilJarFile)
+
+    includes = ['com/intellij/openapi/util/**/*.class',
+                'com/intellij/util/containers/**/*.class']
+
+    into extractDir
+
+    doLast {
+        downloadIdeaDistributionZipAndExtractSelectedJars.downloadedUtilJarFile.delete()
+    }
+}
+
+task createUtilFormatterJar(type: Jar, dependsOn: extractSelectedFilesFromUtilJar) {
+    from extractSelectedFilesFromUtilJar.extractDir
+
+    destinationDir = libDir
+
+    archiveName = "${utilFormatterName}.jar"
+
+    manifest {
+        attributes 'Built-By':               'JetBrains',
+                   'Implementation-Vendor':  'JetBrains',
+                   'Implementation-Version': '1.0',
+                   'Implementation-Title':   utilFormatterName
+    }
+
+    doLast {
+        extractSelectedFilesFromUtilJar.extractDir.deleteDir()
+    }
+}
+
+task extractSelectedFilesFromIdeaJar(type: Copy, dependsOn: downloadIdeaDistributionZipAndExtractSelectedJars) {
+    ext {
+        extractDir = file("$downloadDir/$ideaFormatterName")
+    }
+
+    from zipTree(downloadIdeaDistributionZipAndExtractSelectedJars.downloadedIdeaJarFile)
+
+    includes = ['com/intellij/formatting/**/*.class',
+                'com/intellij/psi/formatter/**/*.class']
+
+    into extractDir
+
+    doLast {
+        downloadIdeaDistributionZipAndExtractSelectedJars.downloadedIdeaJarFile.delete()
+    }
+}
+
+task createIdeaFormatterJar(type: Jar, dependsOn: extractSelectedFilesFromIdeaJar) {
+    from extractSelectedFilesFromIdeaJar.extractDir
+
+    destinationDir = libDir
+
+    archiveName = "${ideaFormatterName}.jar"
+
+    manifest {
+        attributes 'Built-By':               'JetBrains',
+                   'Implementation-Vendor':  'JetBrains',
+                   'Implementation-Version': '1.0',
+                   'Implementation-Title':   ideaFormatterName
+    }
+
+    doLast {
+        extractSelectedFilesFromIdeaJar.extractDir.deleteDir()
+    }
+}
+
+task downloadIdeaAndKotlinCompilerSources {
+    ext {
+        locallyDownloadedKotlinCompilerSourcesFile = file("$downloadDir/kotlin-compiler-sources.jar")
+        locallyDownloadedIdeaSourcesFile           = file("$downloadDir/idea-sdk-sources.jar")
+    }
+
+    doLast {
+        downloadFileFromUrlInto "$teamcityKotlinUrl/maven/org/jetbrains/kotlin/kotlin-compiler/$kotlinVersion/kotlin-compiler-$kotlinVersion-sources.jar",
+                                locallyDownloadedKotlinCompilerSourcesFile
+
+        downloadFileFromUrlInto "$ideaSdkUrl/ideaIC/$ideaVersion/ideaIC-$ideaVersion-sources.jar",
+                                locallyDownloadedIdeaSourcesFile
+    }
+}
+
+task repackageIdeaAndKotlinCompilerSources(type: Zip, dependsOn: downloadIdeaAndKotlinCompilerSources) {
+    from zipTree(downloadIdeaAndKotlinCompilerSources.locallyDownloadedKotlinCompilerSourcesFile)
+    from zipTree(downloadIdeaAndKotlinCompilerSources.locallyDownloadedIdeaSourcesFile)
+
+    destinationDir = libDir
+
+    archiveName = 'kotlin-compiler-sources.jar'
+}
+
+task downloadBundled(dependsOn: [downloadKotlinCompilerPluginAndExtractSelectedJars,
+                                 downloadIntellijCoreAndExtractSelectedJars,
+                                 downloadKotlinTCArtifacts,
+                                 createOpenApiFormatterJar,
+                                 createUtilFormatterJar,
+                                 createIdeaFormatterJar,
+                                 repackageIdeaAndKotlinCompilerSources]) {
+}
+
+task getBundled(dependsOn: [downloadTestData, downloadTestFrameworkDependencies, downloadBundled])
+
+
+void cleanDir(File dir) {
+    dir.deleteDir()
+    dir.mkdirs()
+}
+
+void cleanDirExceptSubDirName(File dir, String retainSubDirName) {
+    if (dir.exists()) {
+        dir.eachFile { File file ->
+            if (file.isFile())
+                file.delete()
+            else if (file.isDirectory()) {
+                if (file.name != retainSubDirName)
+                    file.deleteDir()
+            }
+        }
+    }
+
+    dir.mkdirs()
+
+    file("$dir/$retainSubDirName").mkdirs()
+}
+
+void downloadFileFromUrlInto(String fileURL, File destinationFile) {
+    destinationFile.parentFile.mkdirs()
+
+    ant.get(src:          fileURL,
+            dest:         destinationFile,
+            usetimestamp: true)
+}
