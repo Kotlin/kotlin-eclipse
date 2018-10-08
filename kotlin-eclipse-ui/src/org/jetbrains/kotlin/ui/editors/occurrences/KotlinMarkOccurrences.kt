@@ -17,7 +17,7 @@
 package org.jetbrains.kotlin.ui.editors.occurrences
 
 import org.eclipse.core.resources.IFile
-import org.eclipse.core.runtime.NullProgressMonitor
+import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jdt.core.search.IJavaSearchConstants
@@ -29,82 +29,102 @@ import org.eclipse.search.ui.text.Match
 import org.eclipse.ui.ISelectionListener
 import org.eclipse.ui.IWorkbenchPart
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.refactorings.rename.getLengthOfIdentifier
 import org.jetbrains.kotlin.ui.search.KotlinElementMatch
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant
 import org.jetbrains.kotlin.ui.search.getContainingClassOrObjectForConstructor
+import java.util.concurrent.atomic.AtomicReference
 
 public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISelectionListener {
     companion object {
         private val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
     }
-    
+
+    private val currentJob = AtomicReference<Job?>(null)
+
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
         if (!kotlinEditor.isActive()) return
-        
-        runJob("Update occurrence annotations", Job.DECORATE) { 
-            if (part is KotlinCommonEditor && selection is ITextSelection) {
+
+        if (part is KotlinCommonEditor && selection is ITextSelection) {
+            currentJob.updateAndGet {
+                it?.cancel()
+                runOccurencesJob(part, selection)
+            }
+        }
+    }
+
+    private fun runOccurencesJob(part: KotlinCommonEditor, selection: ITextSelection) =
+            runJob("Update occurrence annotations", Job.DECORATE, 300) { monitor ->
+
                 val file = part.eclipseFile
-                if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
-                
+                if (file == null || !file.exists()) {
+                    return@runJob Status.CANCEL_STATUS
+                }
+
                 val document = part.getDocumentSafely()
                 if (document == null) return@runJob Status.CANCEL_STATUS
-                
+
                 KotlinPsiManager.getKotlinFileIfExist(file, document.get())
-                
+
+                if (monitor.isCanceled) {
+                    return@runJob Status.CANCEL_STATUS
+                }
+
                 val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
                 if (ktElement == null) {
                     return@runJob Status.CANCEL_STATUS
                 }
-                
-                val occurrences = findOccurrences(part, ktElement, file)
+
+                val occurrences = findOccurrences(part, ktElement, file, monitor)
+
+                if (monitor.isCanceled) {
+                    return@runJob Status.CANCEL_STATUS
+                }
+
                 updateOccurrences(part, occurrences)
+
+                Status.OK_STATUS
             }
-            
-            Status.OK_STATUS
-        }
-    }
-    
+
     private fun updateOccurrences(editor: KotlinEditor, occurrences: List<Position>) {
         val annotationMap = occurrences.associateBy { Annotation(ANNOTATION_TYPE, false, null) }
         AnnotationManager.updateAnnotations(editor, annotationMap, ANNOTATION_TYPE)
     }
-    
-    private fun findOccurrences(editor: KotlinCommonEditor, jetElement: KtElement, file: IFile): List<Position> {
+
+    private fun findOccurrences(editor: KotlinCommonEditor, jetElement: KtElement, file: IFile, monitor: IProgressMonitor?): List<Position> {
         val sourceElements = jetElement.resolveToSourceDeclaration()
         if (sourceElements.isEmpty()) return emptyList()
-        
+
         val searchingElements = getSearchingElements(sourceElements)
-        
-        val querySpecification = KotlinScopedQuerySpecification(searchingElements, listOf(file), 
+
+        val querySpecification = KotlinScopedQuerySpecification(searchingElements, listOf(file),
                 IJavaSearchConstants.ALL_OCCURRENCES, "Searching in ${file.getName()}")
-        
+
         val occurrences = arrayListOf<Match>()
-        KotlinQueryParticipant().search({ occurrences.add(it) }, querySpecification, NullProgressMonitor())
-        
-        return occurrences.map { 
+        KotlinQueryParticipant().search({ occurrences.add(it) }, querySpecification, monitor)
+
+        return occurrences.map {
             if (it !is KotlinElementMatch) return@map null
-            
+
             val element = it.jetElement
             val length = getLengthOfIdentifier(element)
             if (length == null) return@map null
-            
+
             val document = editor.getDocumentSafely() ?: return@map null
             Position(element.getTextDocumentOffset(document), length)
         }.filterNotNull()
     }
-    
+
     private fun getSearchingElements(sourceElements: List<SourceElement>): List<SourceElement> {
         val classOrObjects = getContainingClassOrObjectForConstructor(sourceElements)
         return if (classOrObjects.isNotEmpty()) classOrObjects else sourceElements

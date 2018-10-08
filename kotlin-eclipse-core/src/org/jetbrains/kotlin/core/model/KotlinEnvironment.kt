@@ -29,7 +29,9 @@ import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResource
 import org.eclipse.core.resources.ProjectScope
+import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.IJobChangeEvent
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jdt.core.IClasspathContainer
 import org.eclipse.jdt.core.IClasspathEntry
@@ -242,7 +244,7 @@ class KotlinScriptEnvironment private constructor(
 
         val definitions = arrayListOf<KotlinScriptDefinition>()
         val classpath = arrayListOf<String>()
-        runJob("Initialize Script Definitions", Job.DECORATE, constructFamilyForInitialization(eclipseFile), { monitor ->
+        runJob("Initialize Script Definitions", Job.DECORATE, 0, constructFamilyForInitialization(eclipseFile), { monitor ->
             val definitionsAndClasspath = loadAndCreateDefinitionsByTemplateProviders(eclipseFile, monitor)
             KotlinLogger.logInfo("Found definitions: ${definitionsAndClasspath.first.joinToString()}")
             definitions.addAll(definitionsAndClasspath.first)
@@ -251,7 +253,7 @@ class KotlinScriptEnvironment private constructor(
             monitor.done()
 
             Status.OK_STATUS
-        }, { _ ->
+        }, {
             isScriptDefinitionsInitialized = true
             isInitializingScriptDefinitions = false
             postTask(definitions, classpath)
