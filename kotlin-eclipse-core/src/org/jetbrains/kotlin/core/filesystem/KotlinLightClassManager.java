@@ -228,31 +228,27 @@ public class KotlinLightClassManager {
     }
     
     private void cleanOutdatedLightClasses(IProject project) {
-        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), new Function1<IResource, Boolean>() {
-            
-            @Override
-            public Boolean invoke(IResource resource) {
-                if (resource instanceof IFile) {
-                    IFile eclipseFile = (IFile) resource;
-                    LightClassFile lightClass = new LightClassFile(eclipseFile);
-                    Set<IFile> sources = sourceFiles.get(lightClass.asFile());
-                    
-                    boolean dropLightClass = sources != null ? sources.isEmpty() : true;
-                    if (dropLightClass) {
-                        removeLightClass(lightClass.asFile());
-                    }
-                    
-                    return dropLightClass;
-                } else if (resource instanceof IFolder) {
-                    try {
-                        return ((IFolder) resource).members().length == 0;
-                    } catch (CoreException e) {
-                        KotlinLogger.logAndThrow(e);
-                    }
+        ProjectUtils.cleanFolder(KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(project), resource -> {
+            if (resource instanceof IFile) {
+                IFile eclipseFile = (IFile) resource;
+                LightClassFile lightClass = new LightClassFile(eclipseFile);
+                Set<IFile> sources = sourceFiles.get(lightClass.asFile());
+
+                boolean dropLightClass = sources == null || sources.isEmpty();
+                if (dropLightClass) {
+                    removeLightClass(lightClass.asFile());
                 }
-                
-                return false;
+
+                return dropLightClass;
+            } else if (resource instanceof IFolder) {
+                try {
+                    return ((IFolder) resource).members().length == 0;
+                } catch (CoreException e) {
+                    KotlinLogger.logAndThrow(e);
+                }
             }
+
+            return false;
         });
     }
     
