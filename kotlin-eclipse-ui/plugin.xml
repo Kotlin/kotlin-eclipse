@@ -238,7 +238,8 @@
             icon="icons/kotlin-file.gif"
             symbolicFontName="org.eclipse.jdt.ui.editors.textfont"
             id="org.jetbrains.kotlin.ui.editors.KotlinFileEditor"
-            name="Kotlin Editor">
+            name="Kotlin Editor"
+            symbolicFontName="org.eclipse.jdt.ui.editors.textfont">
       </editor>
       <editor
             class="org.jetbrains.kotlin.ui.editors.KotlinScriptEditor"
@@ -248,7 +249,8 @@
             icon="icons/kotlin-file.gif"
             symbolicFontName="org.eclipse.jdt.ui.editors.textfont"
             id="org.jetbrains.kotlin.ui.editors.KotlinScriptEditor"
-            name="Kotlin Script Editor">
+            name="Kotlin Script Editor"
+            symbolicFontName="org.eclipse.jdt.ui.editors.textfont">
       </editor>
       <editor
             class="org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
@@ -258,7 +260,8 @@
             icon="icons/kotlin-file.gif"
             symbolicFontName="org.eclipse.jdt.ui.editors.textfont"
             id="org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
-            name="Kotlin External Editor">
+            name="Kotlin External Editor"
+            symbolicFontName="org.eclipse.jdt.ui.editors.textfont">
       </editor>
    </extension>
    <extension
@@ -269,7 +272,8 @@
             icon="icons/kotlin-file.gif"
             symbolicFontName="org.eclipse.jdt.ui.editors.textfont"
             id="org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor"
-            name="Kotlin Class File Editor">
+            name="Kotlin Class File Editor"
+            symbolicFontName="org.eclipse.jdt.ui.editors.textfont">
       </editor>
    </extension>
    <extension
