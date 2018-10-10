@@ -19,6 +19,5 @@ dependencies {
 
     compile 'org.slf4j:slf4j-api:1.7.12'
 
-    //testCompile 'org.codehaus.groovy:groovy-all:2.4.15'
     testCompile 'org.spockframework:spock-core:1.2-groovy-2.4'
 }
