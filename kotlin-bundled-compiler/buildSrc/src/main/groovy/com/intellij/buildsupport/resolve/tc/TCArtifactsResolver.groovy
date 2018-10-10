@@ -26,7 +26,7 @@ class TCArtifactsResolver {
     final String kotlinIdeaCompatibleVersionMinor
 
 
-    final TCArtifact KOTLIN_PLUGIN_ZIP           = new TCArtifact('',                                           "kotlin-plugin-*-release-${kotlinIdeaCompatibleVersionMinor}*.zip")
+    final TCArtifact KOTLIN_PLUGIN_ZIP           = new TCArtifact('',                                           "kotlin-plugin-*-IJ${kotlinIdeaCompatibleVersionMinor}*.zip")
     final TCArtifact KOTLIN_FORMATTER_JAR        = new TCArtifact('internal',                                   'kotlin-formatter.jar')
     final TCArtifact KOTLIN_IDE_COMMON_JAR       = new TCArtifact('internal',                                   'kotlin-ide-common.jar')
     final TCArtifact KOTLIN_TEST_DATA_ZIP        = new TCArtifact('internal',                                   'kotlin-test-data.zip')
@@ -44,7 +44,11 @@ class TCArtifactsResolver {
         if (resolvedArtifactMap == null)
             resolvedArtifactMap = resolveArtifacts()
 
-        resolvedArtifactMap.get(tcArtifact).download(outputFile)
+        BuildArtifact resolvedTCArtifact = resolvedArtifactMap.get(tcArtifact)
+
+        println "Downloading artifact: $resolvedTCArtifact.fullName"
+
+        resolvedTCArtifact.download(outputFile)
     }
 
 
