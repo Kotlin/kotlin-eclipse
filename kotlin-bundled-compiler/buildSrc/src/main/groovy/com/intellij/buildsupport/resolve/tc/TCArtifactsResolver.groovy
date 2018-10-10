@@ -14,12 +14,11 @@ import org.jetbrains.teamcity.rest.TeamCityInstanceFactory
 
 @TupleConstructor(excludes = ['KOTLIN_COMPILER_SOURCES_JAR', 'KOTLIN_FORMATTER_JAR', 'KOTLIN_IDE_COMMON_JAR', 'KOTLIN_PLUGIN_ZIP', 'KOTLIN_TEST_DATA_ZIP'])
 @CompileStatic
-class TCArtifactsResolver {
+class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specific functionality
     final String teamcityBaseUrl
 
     final boolean lastSuccessfulBuild
 
-    final String kotlinCompilerTcBuildTypeId
     final String kotlinCompilerTcBuildId
 
     final String kotlinCompilerVersion
@@ -73,7 +72,7 @@ class TCArtifactsResolver {
     private Map<TCArtifact, BuildArtifact> resolveFromLastSuccessfulBuild() {
         BuildLocator builds = TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
                                                      .builds()
-                                                     .fromConfiguration(new BuildConfigurationId(kotlinCompilerTcBuildTypeId))
+                                                     .fromConfiguration(new BuildConfigurationId(tcBuildTypeId()))
 
         if (!kotlinCompilerVersion.trim().isEmpty())
             builds.withBranch(kotlinCompilerVersion.trim())
@@ -82,6 +81,13 @@ class TCArtifactsResolver {
             println "Resolving TC buildsupport: $tcBuild"
             return resolveRequiredArtifacts(tcBuild)
         }
+    }
+
+    private String tcBuildTypeId() {
+        String kotlinCompilerVersionInBuildId = kotlinCompilerVersion.replace('.', '') // '1.3.0'  => '130'
+                                                                     .replace('-', '') // '1.3-M2' => '13M2'
+
+        return "Kotlin_${kotlinCompilerVersionInBuildId}_CompilerAllPlugins"
     }
 
     private Map<TCArtifact, BuildArtifact> resolveRequiredArtifacts(Build tcBuild) {

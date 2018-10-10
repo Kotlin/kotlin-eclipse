@@ -14,14 +14,6 @@ ext {
     ideaVersion                      = project.findProperty('ideaVersion')                      ?: '162.1812.17'
     kotlinIdeaCompatibleVersionMinor = project.findProperty('kotlinIdeaCompatibleVersionMinor') ?: '2017.3'
 
-
-    // helper properties
-    kotlinCompilerVersionInBuildId = kotlinCompilerVersion.replace('.', '') // '1.3.0'  => '130'
-                                                          .replace('-', '') // '1.3-M2' => '13M2'
-
-    kotlinCompilerTcBuildTypeId = "Kotlin_${kotlinCompilerVersionInBuildId}_CompilerAllPlugins"
-
-
     //directories
     testDataDir      = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_testData") //TODO later refactor to the proper project dir
     testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")             //TODO later refactor to the proper project dir
@@ -33,7 +25,6 @@ ext {
 
     tcArtifactsResolver = new TCArtifactsResolver(teamcityBaseUrl,
                                                   project.hasProperty('lastSuccessfulBuild'),
-                                                  kotlinCompilerTcBuildTypeId,
                                                   kotlinCompilerTcBuildId,
                                                   kotlinCompilerVersion,
                                                   kotlinIdeaCompatibleVersionMinor)
