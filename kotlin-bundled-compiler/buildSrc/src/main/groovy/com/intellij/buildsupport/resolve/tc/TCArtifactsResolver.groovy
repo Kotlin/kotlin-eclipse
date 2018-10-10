@@ -58,7 +58,8 @@ class TCArtifactsResolver {
     }
 
     private Map<TCArtifact, BuildArtifact> resolveFromBuildId() {
-        Build tcBuild = allBuilds().withBuildId(new BuildId(kotlinCompilerTcBuildId)).latest()
+        Build tcBuild = TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
+                                               .build(new BuildId(kotlinCompilerTcBuildId))
 
         println "Resolving TC buildsupport: $tcBuild"
 
@@ -66,7 +67,9 @@ class TCArtifactsResolver {
     }
 
     private Map<TCArtifact, BuildArtifact> resolveFromLastSuccessfulBuild() {
-        BuildLocator builds = allBuilds().fromConfiguration(new BuildConfigurationId(kotlinCompilerTcBuildTypeId))
+        BuildLocator builds = TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
+                                                     .builds()
+                                                     .fromConfiguration(new BuildConfigurationId(kotlinCompilerTcBuildTypeId))
 
         if (!kotlinCompilerVersion.trim().isEmpty())
             builds.withBranch(kotlinCompilerVersion.trim())
@@ -75,11 +78,6 @@ class TCArtifactsResolver {
             println "Resolving TC buildsupport: $tcBuild"
             return resolveRequiredArtifacts(tcBuild)
         }
-    }
-
-    private BuildLocator allBuilds() {
-        return TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
-                                      .builds()
     }
 
     private Map<TCArtifact, BuildArtifact> resolveRequiredArtifacts(Build tcBuild) {
