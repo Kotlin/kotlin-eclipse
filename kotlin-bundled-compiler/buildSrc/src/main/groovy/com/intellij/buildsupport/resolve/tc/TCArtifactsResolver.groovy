@@ -2,6 +2,7 @@ package com.intellij.buildsupport.resolve.tc
 
 
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 import groovy.transform.TupleConstructor
 
 import org.jetbrains.teamcity.rest.Build
@@ -9,7 +10,9 @@ import org.jetbrains.teamcity.rest.BuildArtifact
 import org.jetbrains.teamcity.rest.BuildConfigurationId
 import org.jetbrains.teamcity.rest.BuildId
 import org.jetbrains.teamcity.rest.BuildLocator
+import org.jetbrains.teamcity.rest.TeamCityConversationException
 import org.jetbrains.teamcity.rest.TeamCityInstanceFactory
+import org.jetbrains.teamcity.rest.TeamCityQueryException
 
 
 @TupleConstructor(excludes = ['KOTLIN_COMPILER_SOURCES_JAR', 'KOTLIN_FORMATTER_JAR', 'KOTLIN_IDE_COMMON_JAR', 'KOTLIN_PLUGIN_ZIP', 'KOTLIN_TEST_DATA_ZIP'])
@@ -38,10 +41,17 @@ class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specif
                                                    KOTLIN_FORMATTER_JAR,
                                                    KOTLIN_COMPILER_SOURCES_JAR]
 
+    private Map<TCArtifact, BuildArtifact> resolvedArtifactMap = null
+
+    // for testing purposes only
+    @PackageScope
+    Date untilDate = null
 
     void downloadTo(TCArtifact tcArtifact, File outputFile) {
-        if (resolvedArtifactMap == null)
-            resolvedArtifactMap = resolveArtifacts()
+        if (resolvedArtifactMap == null) {
+            resolvedArtifactMap = lastSuccessfulBuild ? resolveFromLastSuccessfulBuild()
+                                                      : resolveFromBuildId()
+        }
 
         BuildArtifact resolvedTCArtifact = resolvedArtifactMap.get(tcArtifact)
 
@@ -50,21 +60,11 @@ class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specif
         resolvedTCArtifact.download(outputFile)
     }
 
-
-    private Map<TCArtifact, BuildArtifact> resolvedArtifactMap = null
-
-    private Map<TCArtifact, BuildArtifact> resolveArtifacts() {
-        if (lastSuccessfulBuild)
-            return resolveFromLastSuccessfulBuild()
-        else
-            return resolveFromBuildId()
-    }
-
     private Map<TCArtifact, BuildArtifact> resolveFromBuildId() {
         Build tcBuild = TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
                                                .build(new BuildId(kotlinCompilerTcBuildId))
 
-        println "Resolving TC buildsupport: $tcBuild"
+        println "Resolving TC build: $tcBuild"
 
         return resolveRequiredArtifacts(tcBuild)
     }
@@ -77,9 +77,17 @@ class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specif
         if (!kotlinCompilerVersion.trim().isEmpty())
             builds.withBranch(kotlinCompilerVersion.trim())
 
+        if (untilDate != null)
+            builds.untilDate(untilDate)
+
         for (Build tcBuild in iterable(builds.all())) {
-            println "Resolving TC buildsupport: $tcBuild"
-            return resolveRequiredArtifacts(tcBuild)
+            println "Resolving TC build: $tcBuild"
+
+            Map <TCArtifact, BuildArtifact> resolvedArtifacts = resolveRequiredArtifacts(tcBuild)
+            if (resolvedArtifacts.isEmpty())
+                continue
+            else
+                return resolvedArtifacts
         }
     }
 
@@ -93,12 +101,21 @@ class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specif
     private Map<TCArtifact, BuildArtifact> resolveRequiredArtifacts(Build tcBuild) {
         Map<TCArtifact, BuildArtifact> resolvedArtifactMap = [:] as HashMap
 
-        REQUIRED_ARTIFACTS.each { TCArtifact requiredTcArtifact ->
-            BuildArtifact resolvedTcArtifact = tcBuild.findArtifact(requiredTcArtifact.fileNameRegex,
-                                                                    requiredTcArtifact.fileParentPathRegex,
-                                                                 true) // recursive search
+        for (TCArtifact requiredTcArtifact in REQUIRED_ARTIFACTS) {
+            try {
+                BuildArtifact resolvedTcArtifact = tcBuild.findArtifact(requiredTcArtifact.fileNameRegex,
+                                                                        requiredTcArtifact.fileParentPathRegex,
+                                                                        true) // recursive search
 
-            resolvedArtifactMap.put requiredTcArtifact, resolvedTcArtifact
+                resolvedArtifactMap.put requiredTcArtifact, resolvedTcArtifact
+            }
+            // in the case the latest build does not contain any artifacts, we continue searching the previous build
+            catch (TeamCityConversationException e) {
+                return Collections.EMPTY_MAP
+            }
+            catch (TeamCityQueryException e) {
+                return Collections.EMPTY_MAP
+            }
         }
 
         return resolvedArtifactMap

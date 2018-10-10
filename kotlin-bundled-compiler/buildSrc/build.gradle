@@ -21,3 +21,5 @@ dependencies {
 
     testCompile 'org.spockframework:spock-core:1.2-groovy-2.4'
 }
+
+test.enabled = false // otherwise integration tests will run always before the actual build
