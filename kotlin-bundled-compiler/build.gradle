@@ -12,7 +12,7 @@ ext {
     kotlinCompilerVersion   = project.findProperty('kotlinCompilerVersion')   ?: '1.2.60'
 
     ideaVersion                      = project.findProperty('ideaVersion')                      ?: '162.1812.17'
-    kotlinIdeaCompatibleVersionMinor = project.findProperty('kotlinIdeaCompatibleVersionMinor') ?: 'IJ2017.3'
+    kotlinIdeaCompatibleVersionMinor = project.findProperty('kotlinIdeaCompatibleVersionMinor') ?: '2017.3'
 
 
     // helper properties
