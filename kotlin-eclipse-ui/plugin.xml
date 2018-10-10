@@ -236,6 +236,7 @@
             contributorClass="org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditorActionContributor"
             extensions="kt"
             icon="icons/kotlin-file.gif"
+            symbolicFontName="org.eclipse.jdt.ui.editors.textfont"
             id="org.jetbrains.kotlin.ui.editors.KotlinFileEditor"
             name="Kotlin Editor">
       </editor>
@@ -245,6 +246,7 @@
             default="false"
             extensions="kts"
             icon="icons/kotlin-file.gif"
+            symbolicFontName="org.eclipse.jdt.ui.editors.textfont"
             id="org.jetbrains.kotlin.ui.editors.KotlinScriptEditor"
             name="Kotlin Script Editor">
       </editor>
@@ -254,6 +256,7 @@
             default="false"
             extensions="kt"
             icon="icons/kotlin-file.gif"
+            symbolicFontName="org.eclipse.jdt.ui.editors.textfont"
             id="org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor"
             name="Kotlin External Editor">
       </editor>
@@ -264,6 +267,7 @@
             class="org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor"
             extensions="class"
             icon="icons/kotlin-file.gif"
+            symbolicFontName="org.eclipse.jdt.ui.editors.textfont"
             id="org.jetbrains.kotlin.ui.editors.KotlinClassFileEditor"
             name="Kotlin Class File Editor">
       </editor>
