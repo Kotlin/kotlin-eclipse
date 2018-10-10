@@ -1,0 +1,21 @@
+apply plugin: 'groovy'
+
+
+repositories {
+    jcenter()
+}
+
+
+dependencies {
+    compile files('/Users/imac/Desktop/VirtusLab/repos/teamcity-rest-client/teamcity-rest-client-api/build/libs/teamcity-rest-client-api.jar',
+                  '/Users/imac/Desktop/VirtusLab/repos/teamcity-rest-client/teamcity-rest-client-impl/build/libs/teamcity-rest-client-impl.jar')
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib:1.2.30"
+
+    compile "commons-codec:commons-codec:1.10"
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.squareup.okhttp3:okhttp:3.0.0'
+    compile 'com.jakewharton.retrofit:retrofit1-okhttp3-client:1.0.2'
+
+    compile 'org.slf4j:slf4j-api:1.7.12'
+}
