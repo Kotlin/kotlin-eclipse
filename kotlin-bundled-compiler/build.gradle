@@ -1,5 +1,5 @@
 import com.intellij.buildsupport.utils.FileUtils
-import com.intellij.buildsupport.resolve.tc.TCArtifactsResolver
+import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 
 ext {
     // constants
@@ -23,11 +23,11 @@ ext {
                                                                                : file('lib')
     downloadDir     = file("$libDir/$downloadDirName")
 
-    tcArtifactsResolver = new TCArtifactsResolver(teamcityBaseUrl,
-                                                  project.hasProperty('lastSuccessfulBuild'),
-                                                  kotlinCompilerTcBuildId,
-                                                  kotlinCompilerVersion,
-                                                  kotlinIdeaCompatibleVersionMinor)
+    tcArtifactsResolver = new KotlinCompilerTCArtifactsResolver(teamcityBaseUrl,
+                                                                project.hasProperty('lastSuccessfulBuild'),
+                                                                kotlinCompilerTcBuildId,
+                                                                kotlinCompilerVersion,
+                                                                kotlinIdeaCompatibleVersionMinor)
 }
 
 wrapper {
