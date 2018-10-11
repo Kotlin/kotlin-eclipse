@@ -2,6 +2,7 @@ package com.intellij.buildsupport.tc
 
 
 import com.intellij.buildsupport.resolve.tc.TCArtifactsResolver
+import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -80,11 +81,11 @@ class KotlinCompilerTCArtifactsResolverSpecification extends Specification {
 
     private static TCArtifactsResolver tcArtifactResolverWithBuildId(String tcBuildId,
                                                                      String kotlinIdeaCompatibleVersionMinor) {
-        return new TCArtifactsResolver(TC_BASE_URL,
-                                      false,     // not searching for last successful build
-                                       tcBuildId,
-                                       '', // Kotlin compiler version determined automatically
-                                       kotlinIdeaCompatibleVersionMinor)
+        return new KotlinCompilerTCArtifactsResolver(TC_BASE_URL,
+                                                     false,     // not searching for last successful build
+                                                     tcBuildId,
+                                                     '', // Kotlin compiler version determined automatically
+                                                     kotlinIdeaCompatibleVersionMinor)
     }
 
     private static TCArtifactsResolver tcArtifactResolverWithLatestBuildAndKotlinCompilerVersion(String kotlinCompilerVersion,
@@ -97,11 +98,11 @@ class KotlinCompilerTCArtifactsResolverSpecification extends Specification {
     private static TCArtifactsResolver tcArtifactResolverWithLatestBuildAndKotlinCompilerVersion(String kotlinCompilerVersion,
                                                                                                  String kotlinIdeaCompatibleVersionMinor,
                                                                                                  String untilDate) {
-        TCArtifactsResolver tcArtifactsResolver =  new TCArtifactsResolver(TC_BASE_URL,
-                                                                           true,  // searching for last successful build
-                                                                           '', // buildId not used
-                                                                           kotlinCompilerVersion,
-                                                                           kotlinIdeaCompatibleVersionMinor)
+        TCArtifactsResolver tcArtifactsResolver =  new KotlinCompilerTCArtifactsResolver(TC_BASE_URL,
+                                                                                         true,  // searching for last successful build
+                                                                                         '', // buildId not used
+                                                                                         kotlinCompilerVersion,
+                                                                                         kotlinIdeaCompatibleVersionMinor)
 
         if (untilDate != null)
             tcArtifactsResolver.untilDate = new SimpleDateFormat("yyyy-MM-dd").parse(untilDate)

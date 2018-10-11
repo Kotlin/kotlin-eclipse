@@ -2,7 +2,6 @@ package com.intellij.buildsupport.resolve.tc
 
 
 import groovy.transform.CompileStatic
-import groovy.transform.PackageScope
 import groovy.transform.TupleConstructor
 
 import org.jetbrains.teamcity.rest.Build
@@ -15,39 +14,34 @@ import org.jetbrains.teamcity.rest.TeamCityInstanceFactory
 import org.jetbrains.teamcity.rest.TeamCityQueryException
 
 
-@TupleConstructor(excludes = ['KOTLIN_COMPILER_SOURCES_JAR', 'KOTLIN_FORMATTER_JAR', 'KOTLIN_IDE_COMMON_JAR', 'KOTLIN_PLUGIN_ZIP', 'KOTLIN_TEST_DATA_ZIP'])
+@TupleConstructor(includeFields = true, excludes = ['resolvedArtifactMap', 'untilDate'])
 @CompileStatic
-class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specific functionality
-    final String teamcityBaseUrl
+abstract class TCArtifactsResolver {
+    // FIELDS =========================================================================================================
+    protected final String teamcityBaseUrl
 
-    final boolean lastSuccessfulBuild
+    protected final boolean lastSuccessfulBuild
 
-    final String kotlinCompilerTcBuildId
+    protected final String tcBuildId
 
-    final String kotlinCompilerVersion
-    final String kotlinIdeaCompatibleVersionMinor
-
-
-    final TCArtifact KOTLIN_PLUGIN_ZIP           = new TCArtifact('',                                           "kotlin-plugin-*-IJ${kotlinIdeaCompatibleVersionMinor}*.zip")
-    final TCArtifact KOTLIN_FORMATTER_JAR        = new TCArtifact('internal',                                   'kotlin-formatter.jar')
-    final TCArtifact KOTLIN_IDE_COMMON_JAR       = new TCArtifact('internal',                                   'kotlin-ide-common.jar')
-    final TCArtifact KOTLIN_TEST_DATA_ZIP        = new TCArtifact('internal',                                   'kotlin-test-data.zip')
-    final TCArtifact KOTLIN_COMPILER_SOURCES_JAR = new TCArtifact('maven/org/jetbrains/kotlin/kotlin-compiler', 'kotlin-compiler-*-sources.jar')
+    protected final String tcBuildBranch
 
 
-    private List<TCArtifact> REQUIRED_ARTIFACTS = [KOTLIN_TEST_DATA_ZIP,
-                                                   KOTLIN_PLUGIN_ZIP,
-                                                   KOTLIN_IDE_COMMON_JAR,
-                                                   KOTLIN_FORMATTER_JAR,
-                                                   KOTLIN_COMPILER_SOURCES_JAR]
+    // for testing purposes only
+    protected Date untilDate = null
+
 
     private Map<TCArtifact, BuildArtifact> resolvedArtifactMap = null
 
-    // for testing purposes only
-    @PackageScope
-    Date untilDate = null
 
-    void downloadTo(TCArtifact tcArtifact, File outputFile) {
+    // ABSTRACT METHODS TO IMPLEMENT ==================================================================================
+    abstract List<TCArtifact> getRequiredArtifacts()
+
+    abstract String tcBuildTypeId()
+
+
+    // PUBLIC API =====================================================================================================
+    final void downloadTo(TCArtifact tcArtifact, File outputFile) {
         if (resolvedArtifactMap == null) {
             resolvedArtifactMap = lastSuccessfulBuild ? resolveFromLastSuccessfulBuild()
                                                       : resolveFromBuildId()
@@ -60,9 +54,10 @@ class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specif
         resolvedTCArtifact.download(outputFile)
     }
 
+    // PRIVATE API ====================================================================================================
     private Map<TCArtifact, BuildArtifact> resolveFromBuildId() {
         Build tcBuild = TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
-                                               .build(new BuildId(kotlinCompilerTcBuildId))
+                                               .build(new BuildId(tcBuildId))
 
         println "Resolving TC build: $tcBuild"
 
@@ -74,8 +69,8 @@ class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specif
                                                      .builds()
                                                      .fromConfiguration(new BuildConfigurationId(tcBuildTypeId()))
 
-        if (!kotlinCompilerVersion.trim().isEmpty())
-            builds.withBranch(kotlinCompilerVersion.trim())
+        if (!tcBuildBranch.trim().isEmpty())
+            builds.withBranch(tcBuildBranch.trim())
 
         if (untilDate != null)
             builds.untilDate(untilDate)
@@ -91,17 +86,10 @@ class TCArtifactsResolver {//TODO move to child class all Kotlin compiler specif
         }
     }
 
-    private String tcBuildTypeId() {
-        String kotlinCompilerVersionInBuildId = kotlinCompilerVersion.replace('.', '') // '1.3.0'  => '130'
-                                                                     .replace('-', '') // '1.3-M2' => '13M2'
-
-        return "Kotlin_${kotlinCompilerVersionInBuildId}_CompilerAllPlugins"
-    }
-
     private Map<TCArtifact, BuildArtifact> resolveRequiredArtifacts(Build tcBuild) {
         Map<TCArtifact, BuildArtifact> resolvedArtifactMap = [:] as HashMap
 
-        for (TCArtifact requiredTcArtifact in REQUIRED_ARTIFACTS) {
+        for (TCArtifact requiredTcArtifact in getRequiredArtifacts()) {
             try {
                 BuildArtifact resolvedTcArtifact = tcBuild.findArtifact(requiredTcArtifact.fileNameRegex,
                                                                         requiredTcArtifact.fileParentPathRegex,
