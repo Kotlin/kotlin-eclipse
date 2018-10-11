@@ -1,18 +1,26 @@
-package com.intellij.buildsupport.tc
+package com.intellij.buildsupport.tc.kotlin
 
 
 import com.intellij.buildsupport.resolve.tc.TCArtifactsResolver
 import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 
+import java.text.SimpleDateFormat
+
+import org.junit.Rule
+import org.junit.contrib.java.lang.system.SystemOutRule
+
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.text.SimpleDateFormat
+import static org.apache.commons.lang3.StringUtils.countMatches
 
 
 class KotlinCompilerTCArtifactsResolverSpecification extends Specification {
 
     private static final String TC_BASE_URL = 'https://teamcity.jetbrains.com'
+
+    @Rule
+    public final SystemOutRule systemOut = new SystemOutRule().enableLog()
 
 
     @Unroll
@@ -70,12 +78,14 @@ class KotlinCompilerTCArtifactsResolverSpecification extends Specification {
 
             assert temporaryFile.exists()
 
+            assert countMatches(systemOut.log, 'Resolving TC build') == expectednumberOfSearchedTcBuilds
+
         where:
-            untilDate    | kotlinCompilerVersion | kotlinIdeaCompatibleVersionMinor
-            '2018-08-16' | '1.2.60'              | '2017.3' // 3  builds with 0 artifacts
-            '2018-09-10' | '1.2.70'              | '2017.3' // 4  builds with 0 artifacts
-            '2018-08-24' | '1.3-M2'              | '2017.3' // 3  builds with 0 artifacts
-            '2018-10-03' | '1.3.0'               | '2017.3' // 10 builds with 0 artifacts
+            untilDate    | kotlinCompilerVersion | kotlinIdeaCompatibleVersionMinor || expectednumberOfSearchedTcBuilds
+            '2018-08-16' | '1.2.60'              | '2017.3'                         || 4
+            '2018-09-10' | '1.2.70'              | '2017.3'                         || 5
+            '2018-08-24' | '1.3-M2'              | '2017.3'                         || 4
+            '2018-10-03' | '1.3.0'               | '2017.3'                         || 11
     }
 
 
