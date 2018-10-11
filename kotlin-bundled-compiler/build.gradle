@@ -1,5 +1,7 @@
-import com.intellij.buildsupport.utils.FileUtils
 import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
+import com.intellij.buildsupport.resolve.http.idea.IntellijIdeaArtifactsResolver
+import com.intellij.buildsupport.utils.FileUtils
+
 
 ext {
     // constants
@@ -28,6 +30,8 @@ ext {
                                                                 kotlinCompilerTcBuildId,
                                                                 kotlinCompilerVersion,
                                                                 kotlinIdeaCompatibleVersionMinor)
+
+    ideaArtifactsResolver = new IntellijIdeaArtifactsResolver(ideaSdkUrl, ideaVersion)
 }
 
 wrapper {
@@ -131,8 +135,7 @@ task downloadIntellijCoreAndExtractSelectedJars {
     }
 
     doLast {
-        downloadFileFromUrlInto "$ideaSdkUrl/intellij-core/$ideaVersion/intellij-core-${ideaVersion}.zip",
-                                locallyDownloadedIntellijCoreFile
+        ideaArtifactsResolver.downloadTo ideaArtifactsResolver.INTELLIJ_CORE_ZIP, locallyDownloadedIntellijCoreFile
 
         copy {
             from zipTree(locallyDownloadedIntellijCoreFile)
@@ -160,8 +163,7 @@ task downloadIdeaDistributionZipAndExtractSelectedJars {
     }
 
     doLast {
-        downloadFileFromUrlInto "$ideaSdkUrl/ideaIC/$ideaVersion/ideaIC-${ideaVersion}.zip",
-                                locallyDownloadedIdeaZipFile
+        ideaArtifactsResolver.downloadTo ideaArtifactsResolver.IDEA_IC_ZIP, locallyDownloadedIdeaZipFile
 
         copy {
             from zipTree(locallyDownloadedIdeaZipFile)
@@ -301,8 +303,7 @@ task downloadIdeaAndKotlinCompilerSources {
     doLast {
         tcArtifactsResolver.downloadTo tcArtifactsResolver.KOTLIN_COMPILER_SOURCES_JAR, locallyDownloadedKotlinCompilerSourcesFile
 
-        downloadFileFromUrlInto "$ideaSdkUrl/ideaIC/$ideaVersion/ideaIC-$ideaVersion-sources.jar",
-                                locallyDownloadedIdeaSourcesFile
+        ideaArtifactsResolver.downloadTo ideaArtifactsResolver.IDEA_IC_SOURCES_JAR, locallyDownloadedIdeaSourcesFile
     }
 }
 
@@ -325,11 +326,3 @@ task downloadBundled(dependsOn: [downloadKotlinCompilerPluginAndExtractSelectedJ
 }
 
 task getBundled(dependsOn: [downloadTestData, downloadTestFrameworkDependencies, downloadBundled])
-
-void downloadFileFromUrlInto(String fileURL, File destinationFile) {
-    destinationFile.parentFile.mkdirs()
-
-    ant.get(src:          fileURL,
-            dest:         destinationFile,
-            usetimestamp: true)
-}

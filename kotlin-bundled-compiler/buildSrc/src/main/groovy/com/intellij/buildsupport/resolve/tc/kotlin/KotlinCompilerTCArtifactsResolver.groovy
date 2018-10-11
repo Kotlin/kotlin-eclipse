@@ -3,6 +3,7 @@ package com.intellij.buildsupport.resolve.tc.kotlin
 
 import com.intellij.buildsupport.resolve.tc.TCArtifact
 import com.intellij.buildsupport.resolve.tc.TCArtifactsResolver
+
 import groovy.transform.CompileStatic
 
 

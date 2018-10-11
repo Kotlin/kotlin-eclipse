@@ -17,6 +17,7 @@ import org.jetbrains.teamcity.rest.TeamCityQueryException
 @TupleConstructor(includeFields = true, excludes = ['resolvedArtifactMap', 'untilDate'])
 @CompileStatic
 abstract class TCArtifactsResolver {
+
     // FIELDS =========================================================================================================
     protected final String teamcityBaseUrl
 
