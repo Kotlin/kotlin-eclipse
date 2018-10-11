@@ -20,7 +20,7 @@ ext {
 
     downloadDirName = 'downloads'
     libDir          = project.findProperty('teamcity.buildsupport.workingDir') ? file("${teamcity.build.workingDir}/lib")
-                                                                        : file('lib')
+                                                                               : file('lib')
     downloadDir     = file("$libDir/$downloadDirName")
 
     tcArtifactsResolver = new TCArtifactsResolver(teamcityBaseUrl,
@@ -44,7 +44,7 @@ dependencies {
 }
 
 repositories {
-    mavenCentral() //TODO do we have proxy repository for Maven Central ?
+    mavenCentral()
 }
 
 
