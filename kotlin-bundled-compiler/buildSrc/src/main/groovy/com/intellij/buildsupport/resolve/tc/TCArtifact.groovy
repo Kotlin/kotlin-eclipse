@@ -11,6 +11,7 @@ import groovy.transform.TupleConstructor
 @ToString
 class TCArtifact {
 
-    final String fileParentPathRegex
-    final String fileNameRegex
+    // relative to TeamCity base URL
+    final String fileParentPathRegex // might contain '*' pattern
+    final String fileNameRegex       // might contain '*' pattern
 }
