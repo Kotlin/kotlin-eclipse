@@ -24,11 +24,10 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.core.utils.buildLibPath
 import java.util.*
 
 val runtimeContainerId: IPath = Path("org.jetbrains.kotlin.core.KOTLIN_CONTAINER")
-
-fun newExportedLibraryEntry(path: IPath): IClasspathEntry = JavaCore.newLibraryEntry(path, null, null, true)
 
 class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspathContainer {
     companion object {
@@ -48,7 +47,8 @@ class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspathContai
     override fun getClasspathEntries(): Array<IClasspathEntry> {
         val entries = ArrayList<IClasspathEntry>()
                 
-        val kotlinBinFolderEntry = newExportedLibraryEntry(getPathToLightClassesFolder(javaProject))
+        val kotlinBinFolderEntry =
+            ProjectUtils.newExportedLibraryEntry(getPathToLightClassesFolder(javaProject))
         entries.add(kotlinBinFolderEntry)
 
         val project = javaProject.project
@@ -58,9 +58,12 @@ class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspathContai
                     LIB_RUNTIME_SRC_NAME.buildLibPath(),
                     null,
                     true)
-            val kotlinReflectEntry = newExportedLibraryEntry(LIB_REFLECT_NAME.buildLibPath())
-            val kotlinScriptRuntime = newExportedLibraryEntry(LIB_SCRIPT_RUNTIME_NAME.buildLibPath())
-            val annotations13 = newExportedLibraryEntry(LIB_ANNOTATIONS_1_3.buildLibPath())
+            val kotlinReflectEntry =
+                ProjectUtils.newExportedLibraryEntry(LIB_REFLECT_NAME.buildLibPath())
+            val kotlinScriptRuntime =
+                ProjectUtils.newExportedLibraryEntry(LIB_SCRIPT_RUNTIME_NAME.buildLibPath())
+            val annotations13 =
+                ProjectUtils.newExportedLibraryEntry(LIB_ANNOTATIONS_1_3.buildLibPath())
             
             entries.add(kotlinRuntimeEntry)
             entries.add(kotlinReflectEntry)
@@ -78,4 +81,3 @@ class KotlinClasspathContainer(val javaProject: IJavaProject) : IClasspathContai
     override fun getPath(): IPath = runtimeContainerId
 }
 
-fun String.buildLibPath(): Path = Path(ProjectUtils.buildLibPath(this))

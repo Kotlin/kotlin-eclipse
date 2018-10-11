@@ -17,10 +17,7 @@
 package org.jetbrains.kotlin.core.utils
 
 import org.eclipse.core.resources.*
-import org.eclipse.core.runtime.CoreException
-import org.eclipse.core.runtime.FileLocator
-import org.eclipse.core.runtime.IPath
-import org.eclipse.core.runtime.Platform
+import org.eclipse.core.runtime.*
 import org.eclipse.jdt.core.IClasspathEntry
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
@@ -246,14 +243,8 @@ object ProjectUtils {
     }
 
     @Throws(JavaModelException::class)
-    fun addToClasspath(javaProject: IJavaProject, newEntry: IClasspathEntry) {
-        val oldEntries = javaProject.rawClasspath
-
-        val newEntries = arrayOfNulls<IClasspathEntry>(oldEntries.size + 1)
-        System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.size)
-        newEntries[oldEntries.size] = newEntry
-
-        javaProject.setRawClasspath(newEntries, null)
+    fun addToClasspath(javaProject: IJavaProject, vararg newEntries: IClasspathEntry) {
+        javaProject.setRawClasspath(javaProject.rawClasspath + newEntries, null)
     }
 
 	@JvmStatic
@@ -328,4 +319,11 @@ object ProjectUtils {
             project.isAccessible && KotlinNature.hasKotlinNature(project)
 
     private fun buildLibName(libName: String): String = "$LIB_FOLDER/$libName.$LIB_EXTENSION"
+
+    fun newExportedLibraryEntry(path: IPath): IClasspathEntry =
+        JavaCore.newLibraryEntry(path, null, null, true)
+
 }
+
+fun String.buildLibPath(): Path =
+    Path(ProjectUtils.buildLibPath(this))
