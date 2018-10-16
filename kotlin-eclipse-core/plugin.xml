@@ -56,10 +56,12 @@
    <extension
          point="org.jetbrains.kotlin.core.predefinedKotlinCodeStyle">
       <codeStyle
-            class="org.jetbrains.kotlin.idea.formatter.KotlinObsoleteCodeStyle">
+            class="org.jetbrains.kotlin.idea.formatter.KotlinObsoleteCodeStyle"
+            nameInBuildsystem="obsolete">
       </codeStyle>
       <codeStyle
-            class="org.jetbrains.kotlin.idea.formatter.KotlinStyleGuideCodeStyle">
+            class="org.jetbrains.kotlin.idea.formatter.KotlinStyleGuideCodeStyle"
+            nameInBuildsystem="official">
       </codeStyle>
    </extension>
 </plugin>
