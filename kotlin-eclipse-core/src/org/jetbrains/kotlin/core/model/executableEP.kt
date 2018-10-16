@@ -20,26 +20,47 @@ import org.eclipse.core.runtime.CoreException
 import org.eclipse.core.runtime.IConfigurationElement
 import org.eclipse.core.runtime.Platform
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import kotlin.reflect.KProperty
 
-fun <T> loadExecutableEP(extensionPointId: String): List<ExecutableExtensionPointDescriptor<T>> {
+fun <T> loadExecutableEP(extensionPointId: String, isCaching: Boolean = false): List<ExecutableExtensionPointDescriptor<T>> {
     return Platform
             .getExtensionRegistry()
             .getConfigurationElementsFor(extensionPointId)
-            .map { ExecutableExtensionPointDescriptor<T>(it) }
+            .map { ExecutableExtensionPointDescriptor<T>(it, isCaching) }
 }
 
-class ExecutableExtensionPointDescriptor<T>(val configurationElement: IConfigurationElement) {
+class ExecutableExtensionPointDescriptor<T>(
+    private val configurationElement: IConfigurationElement,
+    private val isCaching: Boolean = false
+) {
     companion object {
         private const val CLASS = "class"
     }
 
+    private var cachedProvider: T? = null
+
+    val attributes: Map<String, String> = configurationElement.run {
+        attributeNames
+            .map { it to getAttribute(it) }
+            .toMap()
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun createProvider(): T? {
-        try {
-            return configurationElement.createExecutableExtension(CLASS) as T?
+        return cachedProvider ?: try {
+            val provider = (configurationElement.createExecutableExtension(CLASS) as T?)
+            if (isCaching) {
+                cachedProvider = provider
+            }
+            provider
         } catch(e: CoreException) {
             KotlinLogger.logError(e)
-            return null
+            null
         }
     }
+}
+
+object EPAttribute {
+    operator fun getValue(thisRef: ExecutableExtensionPointDescriptor<*>, property: KProperty<*>): String? =
+            thisRef.attributes[property.name]
 }
