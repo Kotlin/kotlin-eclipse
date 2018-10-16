@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.maven.configuration
 
 import org.apache.maven.model.Plugin
 import org.apache.maven.project.MavenProject
+import org.codehaus.plexus.util.xml.Xpp3Dom
 import org.eclipse.core.resources.ProjectScope
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.m2e.core.project.configurator.AbstractProjectConfigurator
@@ -56,9 +57,14 @@ class KotlinMavenProjectConfigurator : AbstractSourcesGenerationProjectConfigura
             compilerProperties.jvmTarget = JvmTarget.fromString(it) ?: JvmTarget.DEFAULT
         }
 
+        getCompilerFlags(plugin.configuration)?.also {
+            compilerProperties.compilerFlags = it
+            configurationChanged = true
+        }
+
         configureProperty(propertyPath = "kotlin.code.style", isChangingConfiguration = false) { alias ->
             KotlinCodeStyleManager.buildsystemAliases[alias]?.let {
-                with (KotlinCodeStyleProperties(ProjectScope(request.project))) {
+                with(KotlinCodeStyleProperties(ProjectScope(request.project))) {
                     codeStyleId = it
                     globalsOverridden = true
                     saveChanges()
@@ -81,6 +87,15 @@ class KotlinMavenProjectConfigurator : AbstractSourcesGenerationProjectConfigura
             AbstractProjectConfigurator.addNature(request.project, KotlinNature.KOTLIN_NATURE, monitor)
         }
     }
+
+    private fun getCompilerFlags(configuration: Any): String? =
+        (configuration as? Xpp3Dom)
+            ?.getChild("args")
+            ?.children
+            ?.filter { it.name == "arg" }
+            ?.map { it.value }
+            ?.takeIf { it.isNotEmpty() }
+            ?.joinToString(separator = " ")
 
     private fun hasKotlinMavenPlugin(mavenProject: MavenProject): Boolean =
         mavenProject.buildPlugins.any { checkCoordinates(it, GROUP_ID, MAVEN_PLUGIN_ID) }
