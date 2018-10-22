@@ -109,7 +109,8 @@ task downloadKotlinCompilerPluginAndExtractSelectedJars {
                         'Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar',
                         'Kotlin/kotlinc/lib/allopen-compiler-plugin.jar',
                         'Kotlin/kotlinc/lib/noarg-compiler-plugin.jar',
-                        'Kotlin/kotlinc/lib/sam-with-receiver-compiler-plugin.jar']
+                        'Kotlin/kotlinc/lib/sam-with-receiver-compiler-plugin.jar',
+                        'Kotlin/kotlinc/lib/annotations-13.0.jar' ]
 
             includeEmptyDirs = false
 
