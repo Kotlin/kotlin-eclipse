@@ -72,11 +72,7 @@ public class KotlinJUnitLaunchTestCase extends KotlinProjectTestCase {
 	}
 	
 	private void addJUnitToClasspath() {
-		try {
-			IClasspathEntry jUnit4ClasspathEntry = BuildPathSupport.getJUnit4ClasspathEntry();
-			ProjectUtils.addContainerEntryToClasspath(getTestProject().getJavaProject(), jUnit4ClasspathEntry);
-		} catch (JavaModelException e) {
-			throw new RuntimeException(e);
-		}
+		IClasspathEntry jUnit4ClasspathEntry = BuildPathSupport.getJUnit4ClasspathEntry();
+        ProjectUtils.addContainerEntryToClasspath(getTestProject().getJavaProject(), jUnit4ClasspathEntry);
 	}
 }

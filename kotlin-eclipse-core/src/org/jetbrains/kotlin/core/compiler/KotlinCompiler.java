@@ -105,7 +105,7 @@ public class KotlinCompiler {
 
         List<String> command = new ArrayList<>();
         command.add("-kotlin-home");
-        command.add(ProjectUtils.getKT_HOME());
+        command.add(ProjectUtils.getKtHome());
         command.add("-no-jdk");
         command.add("-no-stdlib"); // Because we add runtime into the classpath
 
@@ -153,7 +153,7 @@ public class KotlinCompiler {
         List<String> result = new ArrayList<>();
         String jarPath = plugin.getJarPath();
         if (plugin.getActive() && jarPath != null) {
-            String replacedPath = jarPath.replace("$KOTLIN_HOME", ProjectUtils.getKT_HOME());
+            String replacedPath = jarPath.replace("$KOTLIN_HOME", ProjectUtils.getKtHome());
             result.add("-Xplugin=" + replacedPath);
 
             for (String arg : plugin.getArgs()) {

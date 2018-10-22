@@ -422,7 +422,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
     private fun registerCompilerPlugin(it: CompilerPlugin) {
         val jarLoader = it.jarPath
-                ?.replace("\$KOTLIN_HOME", ProjectUtils.KT_HOME)
+                ?.replace("\$KOTLIN_HOME", ProjectUtils.ktHome)
                 ?.let { URL("file://$it") }
                 ?.let { URLClassLoader(arrayOf(it), this::class.java.classLoader) }
 
