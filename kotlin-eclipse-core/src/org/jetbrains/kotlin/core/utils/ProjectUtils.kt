@@ -28,7 +28,6 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.jetbrains.kotlin.psi.KtFile
 import java.io.File
-import java.io.IOException
 import java.util.*
 
 object ProjectUtils {
@@ -39,37 +38,22 @@ object ProjectUtils {
     private const val MAVEN_NATURE_ID = "org.eclipse.m2e.core.maven2Nature"
     private const val GRADLE_NATURE_ID = "org.eclipse.buildship.core.gradleprojectnature"
 
-    @JvmStatic
-    val KT_HOME = ktHome
-
     val accessibleKotlinProjects: List<IProject>
         get() = ResourcesPlugin.getWorkspace().root.projects.filter { project -> isAccessibleKotlinProject(project) }
 
-    private val ktHome: String
-        get() = try {
-            val compilerBundle = Platform.getBundle("org.jetbrains.kotlin.bundled-compiler")
-            FileLocator.toFileURL(compilerBundle.getEntry("/")).file
-        } catch (e: IOException) {
-            KotlinLogger.logAndThrow(e)
-        }
-
-    fun getJavaProjectFromCollection(files: Collection<IFile>): IJavaProject? {
-        var javaProject: IJavaProject? = null
-        for (file in files) {
-            javaProject = JavaCore.create(file.project)
-            break
-        }
-
-        return javaProject
+    @JvmStatic
+    val ktHome: String by lazy {
+        val compilerBundle = Platform.getBundle("org.jetbrains.kotlin.bundled-compiler")
+        FileLocator.toFileURL(compilerBundle.getEntry("/")).file
     }
 
-    fun getPackageByFile(file: IFile): String? {
-        val jetFile = KotlinPsiManager.getParsedFile(file)
+    fun getJavaProjectFromCollection(files: Collection<IFile>): IJavaProject? =
+        files.firstOrNull()
+            ?.let { JavaCore.create(it.project) }
 
-        return jetFile.packageFqName.asString()
-    }
+    fun getPackageByFile(file: IFile): String? = KotlinPsiManager.getParsedFile(file).packageFqName.asString()
 
-	@JvmStatic
+    @JvmStatic
     @JvmOverloads
     fun cleanFolder(container: IContainer?, predicate: (IResource) -> Boolean = { true }) {
         try {
@@ -94,68 +78,37 @@ object ProjectUtils {
 
     }
 
-	@JvmStatic
-    fun getOutputFolder(javaProject: IJavaProject): IFolder? = try {
-        ResourcesPlugin.getWorkspace().root.findMember(javaProject.outputLocation) as IFolder
-    } catch (e: JavaModelException) {
-        KotlinLogger.logAndThrow(e)
-    }
+    @JvmStatic
+    fun getOutputFolder(javaProject: IJavaProject): IFolder? =
+        ResourcesPlugin.getWorkspace().root.findMember(javaProject.outputLocation) as? IFolder
 
+    fun getSourceFiles(project: IProject): List<KtFile> =
+        KotlinPsiManager.getFilesByProject(project)
+            .map { KotlinPsiManager.getParsedFile(it) }
 
-    fun getSourceFiles(project: IProject): List<KtFile> {
-        val jetFiles = ArrayList<KtFile>()
-        for (file in KotlinPsiManager.getFilesByProject(project)) {
-            val jetFile = KotlinPsiManager.getParsedFile(file)
-            jetFiles.add(jetFile)
-        }
+    fun getSourceFilesWithDependencies(javaProject: IJavaProject): List<KtFile> =
+        (getDependencyProjects(javaProject) + javaProject.project)
+            .flatMap { getSourceFiles(it) }
 
-        return jetFiles
-    }
+    fun getDependencyProjects(javaProject: IJavaProject): List<IProject> =
+            javaProject.getResolvedClasspath(true)
+                .filter { it.entryKind == IClasspathEntry.CPE_PROJECT }
+                .map { ResourcesPlugin.getWorkspace().root.getProject(it.path.toPortableString()) }
+                .filter { it.isAccessible }
+                .flatMap { listOf(it) + getDependencyProjects(JavaCore.create(it)) }
 
-    fun getSourceFilesWithDependencies(javaProject: IJavaProject): List<KtFile> = try {
-        val jetFiles = ArrayList<KtFile>()
-        for (project in getDependencyProjects(javaProject)) {
-            jetFiles.addAll(getSourceFiles(project))
-        }
-        jetFiles.addAll(getSourceFiles(javaProject.project))
-
-        jetFiles
-    } catch (e: JavaModelException) {
-        KotlinLogger.logAndThrow(e)
-    }
-
-
-    @Throws(JavaModelException::class)
-    fun getDependencyProjects(javaProject: IJavaProject): List<IProject> {
-        val projects = ArrayList<IProject>()
-        for (classPathEntry in javaProject.getResolvedClasspath(true)) {
-            if (classPathEntry.entryKind == IClasspathEntry.CPE_PROJECT) {
-                val path = classPathEntry.path
-                val project = ResourcesPlugin.getWorkspace().root.getProject(path.toString())
-                if (project.isAccessible) {
-                    projects.add(project)
-                    getDependencyProjects(JavaCore.create(project))
-                }
-            }
-        }
-
-        return projects
-    }
-
-    @Throws(JavaModelException::class)
     fun collectClasspathWithDependenciesForBuild(javaProject: IJavaProject): List<File> {
         return expandClasspath(javaProject, true, false) { true }
     }
 
     @JvmStatic
-    @Throws(JavaModelException::class)
-    fun collectClasspathWithDependenciesForLaunch(javaProject: IJavaProject): List<File> {
-        return expandClasspath(javaProject, true, true) { entry -> entry.entryKind == IClasspathEntry.CPE_LIBRARY }
-    }
+    fun collectClasspathWithDependenciesForLaunch(javaProject: IJavaProject): List<File> =
+        expandClasspath(javaProject, true, true) { entry -> entry.entryKind == IClasspathEntry.CPE_LIBRARY }
 
-    @Throws(JavaModelException::class)
-    fun expandClasspath(javaProject: IJavaProject, includeDependencies: Boolean,
-                        includeBinFolders: Boolean, entryPredicate: Function1<IClasspathEntry, Boolean>): List<File> {
+    fun expandClasspath(
+        javaProject: IJavaProject, includeDependencies: Boolean,
+        includeBinFolders: Boolean, entryPredicate: Function1<IClasspathEntry, Boolean>
+    ): List<File> {
         val orderedFiles = LinkedHashSet<File>()
 
         for (classpathEntry in javaProject.getResolvedClasspath(true)) {
@@ -168,22 +121,23 @@ object ProjectUtils {
             }
         }
 
-        return ArrayList(orderedFiles)
+        return orderedFiles.toList()
     }
 
     fun getFileByEntry(entry: IClasspathEntry, javaProject: IJavaProject): List<File> =
-            javaProject.findPackageFragmentRoots(entry)
-                    .takeIf { it.isNotEmpty() }
-                    ?.map { it.resource?.location?.toFile() ?: it.path.toFile() }
-                    ?: entry.path.toFile()
-                            .takeIf { it.exists() }
-                            ?.let { listOf(it) }
-                    ?: emptyList()
+        javaProject.findPackageFragmentRoots(entry)
+            .takeIf { it.isNotEmpty() }
+            ?.map { it.resource?.location?.toFile() ?: it.path.toFile() }
+            ?: entry.path.toFile()
+                .takeIf { it.exists() }
+                ?.let { listOf(it) }
+            ?: emptyList()
 
 
-    @Throws(JavaModelException::class)
-    private fun expandDependentProjectClasspath(projectEntry: IClasspathEntry,
-                                                includeBinFolders: Boolean, entryPredicate: Function1<IClasspathEntry, Boolean>): List<File> {
+    private fun expandDependentProjectClasspath(
+        projectEntry: IClasspathEntry,
+        includeBinFolders: Boolean, entryPredicate: Function1<IClasspathEntry, Boolean>
+    ): List<File> {
         val projectPath = projectEntry.path
         val dependentProject = ResourcesPlugin.getWorkspace().root.getProject(projectPath.toString())
         val javaProject = JavaCore.create(dependentProject)
@@ -211,44 +165,43 @@ object ProjectUtils {
             }
         }
 
-
-        return ArrayList(orderedFiles)
-    }
-
-	@JvmStatic
-    @Throws(JavaModelException::class)
-    fun getSrcDirectories(javaProject: IJavaProject): List<File> {
-        return expandClasspath(javaProject, false, false) { entry -> entry.entryKind == IClasspathEntry.CPE_SOURCE }
+        return orderedFiles.toList()
     }
 
     @JvmStatic
-    @Throws(JavaModelException::class)
+    fun getSrcDirectories(javaProject: IJavaProject): List<File> =
+        expandClasspath(javaProject, false, false) { entry ->
+            entry.entryKind == IClasspathEntry.CPE_SOURCE
+        }
+
+    @JvmStatic
     fun getSrcOutDirectories(javaProject: IJavaProject): List<Pair<File, File>> {
         val projectOutput = javaProject.outputLocation
         val root = ResourcesPlugin.getWorkspace().root
 
         return javaProject.getResolvedClasspath(true)
-                .filter { it.entryKind == IClasspathEntry.CPE_SOURCE }
-                .filter { root.findMember(it.path)?.takeIf(IResource::exists) != null }
-                .mapNotNull { cpe ->
-                    (cpe.outputLocation ?: projectOutput)
-                            ?.let { root.findMember(it) }
-                            ?.takeIf { it.exists() }
-                            ?.let { root.findMember(cpe.path).location.toFile() to it.location.toFile() }
-                            .also {
-                                if (it == null)
-                                    KotlinLogger.logError("There is no output folder for sources: ${cpe.path.toOSString()}", null)
-                            }
-                }
+            .filter { it.entryKind == IClasspathEntry.CPE_SOURCE }
+            .filter { root.findMember(it.path)?.takeIf(IResource::exists) != null }
+            .mapNotNull { cpe ->
+                (cpe.outputLocation ?: projectOutput)
+                    ?.let { root.findMember(it) }
+                    ?.takeIf { it.exists() }
+                    ?.let { root.findMember(cpe.path).location.toFile() to it.location.toFile() }
+                    .also {
+                        if (it == null)
+                            KotlinLogger.logError(
+                                "There is no output folder for sources: ${cpe.path.toOSString()}",
+                                null
+                            )
+                    }
+            }
     }
 
-    @Throws(JavaModelException::class)
     fun addToClasspath(javaProject: IJavaProject, vararg newEntries: IClasspathEntry) {
         javaProject.setRawClasspath(javaProject.rawClasspath + newEntries, null)
     }
 
-	@JvmStatic
-    @Throws(JavaModelException::class)
+    @JvmStatic
     fun addContainerEntryToClasspath(javaProject: IJavaProject, newEntry: IClasspathEntry) {
         if (!classpathContainsContainerEntry(javaProject.rawClasspath, newEntry)) {
             addToClasspath(javaProject, newEntry)
@@ -259,25 +212,26 @@ object ProjectUtils {
         return entry.path == otherEntry.path
     }
 
-    private fun classpathContainsContainerEntry(entries: Array<IClasspathEntry>,
-                                                entry: IClasspathEntry): Boolean {
+    private fun classpathContainsContainerEntry(
+        entries: Array<IClasspathEntry>,
+        entry: IClasspathEntry
+    ): Boolean {
         return entries.any { classpathEntry -> equalsEntriesPaths(classpathEntry, entry) }
     }
 
-    @Throws(CoreException::class)
     fun hasKotlinRuntime(project: IProject): Boolean {
-        return classpathContainsContainerEntry(JavaCore.create(project).rawClasspath,
-                KotlinClasspathContainer.CONTAINER_ENTRY)
+        return classpathContainsContainerEntry(
+            JavaCore.create(project).rawClasspath,
+            KotlinClasspathContainer.CONTAINER_ENTRY
+        )
     }
 
-	@JvmStatic
-    @Throws(CoreException::class)
+    @JvmStatic
     fun addKotlinRuntime(project: IProject) {
         addKotlinRuntime(JavaCore.create(project))
     }
 
-	@JvmStatic
-    @Throws(CoreException::class)
+    @JvmStatic
     fun addKotlinRuntime(javaProject: IJavaProject) {
         addContainerEntryToClasspath(javaProject, KotlinClasspathContainer.CONTAINER_ENTRY)
     }
@@ -299,24 +253,18 @@ object ProjectUtils {
 
     }
 
-    fun isMavenProject(project: IProject): Boolean = try {
-            project.hasNature(MAVEN_NATURE_ID)
-        } catch (e: CoreException) {
-            KotlinLogger.logAndThrow(e)
-        }
+    fun isMavenProject(project: IProject): Boolean = project.hasNature(MAVEN_NATURE_ID)
 
-    fun isGradleProject(project: IProject): Boolean = try {
-            project.hasNature(GRADLE_NATURE_ID)
-        } catch (e: CoreException) {
-            KotlinLogger.logAndThrow(e)
-        }
+
+    fun isGradleProject(project: IProject): Boolean = project.hasNature(GRADLE_NATURE_ID)
+
 
 
     @JvmStatic
-    fun buildLibPath(libName: String): String = KT_HOME + buildLibName(libName)
+    fun buildLibPath(libName: String): String = ktHome + buildLibName(libName)
 
     fun isAccessibleKotlinProject(project: IProject): Boolean =
-            project.isAccessible && KotlinNature.hasKotlinNature(project)
+        project.isAccessible && KotlinNature.hasKotlinNature(project)
 
     private fun buildLibName(libName: String): String = "$LIB_FOLDER/$libName.$LIB_EXTENSION"
 

@@ -99,7 +99,7 @@ class KotlinScriptLaunchConfigurationDelegate : AbstractJavaLaunchConfigurationD
     private fun buildCompilerArguments(scriptFile: IFile, programArguments: Array<String>): List<String> {
         return arrayListOf<String>().apply {
             add("-kotlin-home")
-            add(ProjectUtils.KT_HOME)
+            add(ProjectUtils.ktHome)
             
             add("-script")
             add(scriptFile.getLocation().toOSString())
