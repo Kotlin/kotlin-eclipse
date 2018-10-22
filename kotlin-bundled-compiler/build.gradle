@@ -12,6 +12,7 @@ ext {
     // properties that might/should be modifiable
     kotlinCompilerTcBuildId = project.findProperty('kotlinCompilerTcBuildId') ?: '1626094'
     kotlinCompilerVersion   = project.findProperty('kotlinCompilerVersion')   ?: '1.2.70'
+    kotlinxVersion          = project.findProperty('kolinxVersion')           ?: '1.0.0-RC1'
 
     ideaVersion                      = project.findProperty('ideaVersion')                      ?: '162.1812.17'
     kotlinIdeaCompatibleVersionMinor = project.findProperty('kotlinIdeaCompatibleVersionMinor') ?: '2017.3'
@@ -41,10 +42,13 @@ wrapper {
 
 configurations {
     testFrameworkDependencies
+    kotlinxLibraries
 }
 
 dependencies {
     testFrameworkDependencies 'com.google.code.gson:gson:2.3.1'
+    kotlinxLibraries("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion") { transitive = false }
+    kotlinxLibraries("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxVersion") { transitive = false }
 }
 
 repositories {
@@ -294,6 +298,14 @@ task createIdeaFormatterJar(type: Jar, dependsOn: extractSelectedFilesFromIdeaJa
     }
 }
 
+task downloadKotlinxLibraries(type: Copy) {
+    from configurations.kotlinxLibraries
+
+    into libDir
+
+    rename 'kotlinx-coroutines-(\\w+)-(.*)', 'kotlinx-coroutines-$1.jar'
+}
+
 task downloadIdeaAndKotlinCompilerSources {
     ext {
         locallyDownloadedKotlinCompilerSourcesFile = file("$downloadDir/kotlin-compiler-sources.jar")
@@ -322,6 +334,7 @@ task downloadBundled(dependsOn: [downloadKotlinCompilerPluginAndExtractSelectedJ
                                  createOpenApiFormatterJar,
                                  createUtilFormatterJar,
                                  createIdeaFormatterJar,
+                                 downloadKotlinxLibraries,
                                  repackageIdeaAndKotlinCompilerSources]) {
 }
 
