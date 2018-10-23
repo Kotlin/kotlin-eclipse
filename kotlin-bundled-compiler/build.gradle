@@ -10,8 +10,9 @@ ext {
 
 
     // properties that might/should be modifiable
-    kotlinCompilerTcBuildId = project.findProperty('kotlinCompilerTcBuildId') ?: '1626094'
-    kotlinCompilerVersion   = project.findProperty('kotlinCompilerVersion')   ?: '1.2.70'
+    kotlinCompilerTcBuildId = project.findProperty('kotlinCompilerTcBuildId') ?: '1696012'
+    kotlinCompilerVersion   = project.findProperty('kotlinCompilerVersion')   ?: '1.3.0'
+    kotlinxVersion          = project.findProperty('kolinxVersion')           ?: '1.0.0-RC1'
 
     ideaVersion                      = project.findProperty('ideaVersion')                      ?: '162.1812.17'
     kotlinIdeaCompatibleVersionMinor = project.findProperty('kotlinIdeaCompatibleVersionMinor') ?: '2017.3'
@@ -41,10 +42,13 @@ wrapper {
 
 configurations {
     testFrameworkDependencies
+    kotlinxLibraries
 }
 
 dependencies {
     testFrameworkDependencies 'com.google.code.gson:gson:2.3.1'
+    kotlinxLibraries("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxVersion") { transitive = false }
+    kotlinxLibraries("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinxVersion") { transitive = false }
 }
 
 repositories {
@@ -105,7 +109,8 @@ task downloadKotlinCompilerPluginAndExtractSelectedJars {
                         'Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar',
                         'Kotlin/kotlinc/lib/allopen-compiler-plugin.jar',
                         'Kotlin/kotlinc/lib/noarg-compiler-plugin.jar',
-                        'Kotlin/kotlinc/lib/sam-with-receiver-compiler-plugin.jar']
+                        'Kotlin/kotlinc/lib/sam-with-receiver-compiler-plugin.jar',
+                        'Kotlin/kotlinc/lib/annotations-13.0.jar' ]
 
             includeEmptyDirs = false
 
@@ -294,6 +299,14 @@ task createIdeaFormatterJar(type: Jar, dependsOn: extractSelectedFilesFromIdeaJa
     }
 }
 
+task downloadKotlinxLibraries(type: Copy) {
+    from configurations.kotlinxLibraries
+
+    into libDir
+
+    rename 'kotlinx-coroutines-(\\w+)-(.*)', 'kotlinx-coroutines-$1.jar'
+}
+
 task downloadIdeaAndKotlinCompilerSources {
     ext {
         locallyDownloadedKotlinCompilerSourcesFile = file("$downloadDir/kotlin-compiler-sources.jar")
@@ -322,6 +335,7 @@ task downloadBundled(dependsOn: [downloadKotlinCompilerPluginAndExtractSelectedJ
                                  createOpenApiFormatterJar,
                                  createUtilFormatterJar,
                                  createIdeaFormatterJar,
+                                 downloadKotlinxLibraries,
                                  repackageIdeaAndKotlinCompilerSources]) {
 }
 

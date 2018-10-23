@@ -16,14 +16,11 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.model
 
-import org.eclipse.core.resources.ICommand
 import org.eclipse.core.resources.IProject
-import org.eclipse.core.resources.IProjectDescription
 import org.eclipse.core.resources.IProjectNature
-import org.eclipse.core.runtime.CoreException
+import org.eclipse.core.resources.ProjectScope
 import kotlin.properties.Delegates
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.eclipse.core.resources.IResourceDelta
 import java.util.LinkedList
 import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.core.runtime.IProgressMonitor
@@ -32,8 +29,9 @@ import org.eclipse.jdt.core.JavaCore
 import java.util.Collections
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.resources.ResourcesPlugin
+import org.jetbrains.kotlin.core.preferences.KotlinCodeStyleProperties
 
-public class KotlinNature: IProjectNature {
+class KotlinNature: IProjectNature {
     companion object {
         val KOTLIN_NATURE: String = "org.jetbrains.kotlin.core.kotlinNature"
         @JvmField val KOTLIN_BUILDER: String = "org.jetbrains.kotlin.ui.kotlinBuilder"
@@ -47,64 +45,70 @@ public class KotlinNature: IProjectNature {
         fun hasKotlinBuilder(project: IProject) : Boolean {
             if (!project.isAccessible) return false
             
-            return project.getDescription().getBuildSpec().any { 
-                KOTLIN_BUILDER == it.getBuilderName()
+            return project.description.buildSpec.any {
+                KOTLIN_BUILDER == it.builderName
             }
         }
         
         @JvmStatic
         fun addNature(project:IProject) {
             if (!hasKotlinNature(project)) {
-                val description = project.getDescription()
-                
-                val newNatureIds = description.getNatureIds().toMutableList()
-                newNatureIds.add(KotlinNature.KOTLIN_NATURE)
-                
-                description.setNatureIds(newNatureIds.toTypedArray())
+                val description = project.description
+                description.natureIds += KOTLIN_NATURE
                 project.setDescription(description, null)
             }
         }
     }
-    
-    public var eclipseProject: IProject by Delegates.notNull()
-    
-    override public fun configure() {
+
+    var eclipseProject: IProject by Delegates.notNull()
+
+    override fun configure() {
         addKotlinBuilder(eclipseProject)
+        setPreferredCodeStyle(eclipseProject)
     }
-    
-    override public fun deconfigure() {
+
+    override fun deconfigure() {
         removeKotlinBuilder(eclipseProject)
         KotlinPsiManager.removeProjectFromManager(eclipseProject)
         KotlinAnalysisFileCache.resetCache()
         KotlinAnalysisProjectCache.resetCache(eclipseProject)
     }
-    
-    override public fun setProject(project: IProject) {
+
+    override fun setProject(project: IProject) {
         eclipseProject = project
     }
-    
-    override public fun getProject(): IProject = eclipseProject
+
+    override fun getProject(): IProject = eclipseProject
     
     private fun addKotlinBuilder(project: IProject) {
         if (!hasKotlinBuilder(project)) {
-            val description = project.getDescription()
+            val description = project.description
             
-            val kotlinBuilderCommand = description.newCommand().apply { setBuilderName(KOTLIN_BUILDER) }
+            val kotlinBuilderCommand = description.newCommand().apply { builderName = KOTLIN_BUILDER }
             
-            val newBuildCommands = description.getBuildSpec().toCollection(LinkedList())
+            val newBuildCommands = description.buildSpec.toCollection(LinkedList())
             newBuildCommands.addFirst(kotlinBuilderCommand)
-            
-            description.setBuildSpec(newBuildCommands.toTypedArray())
+
+            description.buildSpec = newBuildCommands.toTypedArray()
             project.setDescription(description, null)
         }
+    }
+
+    private fun setPreferredCodeStyle(eclipseProject: IProject) {
+        KotlinCodeStyleProperties(ProjectScope(eclipseProject)).apply {
+            codeStyleId = "KOTLIN_OFFICIAL"
+            globalsOverridden = true
+            saveChanges()
+        }
+
     }
     
     private fun removeKotlinBuilder(project: IProject) {
 		if (hasKotlinBuilder(project)) {
-			val description = project.getDescription()
-			val newBuildCommands = description.getBuildSpec().filter { it.getBuilderName() != KotlinNature.KOTLIN_BUILDER }
-			
-			description.setBuildSpec(newBuildCommands.toTypedArray())
+			val description = project.description
+			val newBuildCommands = description.buildSpec.filter { it.builderName != KotlinNature.KOTLIN_BUILDER }
+
+            description.buildSpec = newBuildCommands.toTypedArray()
 			project.setDescription(description, null)
 		}
 	}
@@ -114,23 +118,23 @@ public class KotlinNature: IProjectNature {
 fun setKotlinBuilderBeforeJavaBuilder(project: IProject) {
     val job = object : Job("Swap Kotlin builder with Java Builder") {
         override fun run(monitor: IProgressMonitor?): IStatus? {
-            val description = project.getDescription()
+            val description = project.description
                 
-            val builders = description.getBuildSpec().toCollection(LinkedList())
-            val kotlinBuilderIndex = builders.indexOfFirst { it.getBuilderName() == KotlinNature.KOTLIN_BUILDER }
-            val javaBuilderIndex = builders.indexOfFirst { it.getBuilderName() == JavaCore.BUILDER_ID }
+            val builders = description.buildSpec.toCollection(LinkedList())
+            val kotlinBuilderIndex = builders.indexOfFirst { it.builderName == KotlinNature.KOTLIN_BUILDER }
+            val javaBuilderIndex = builders.indexOfFirst { it.builderName == JavaCore.BUILDER_ID }
             
             if (kotlinBuilderIndex >= 0 && javaBuilderIndex >= 0 && javaBuilderIndex < kotlinBuilderIndex) {
                 Collections.swap(builders, kotlinBuilderIndex, javaBuilderIndex)
-                
-                description.setBuildSpec(builders.toTypedArray())
+
+                description.buildSpec = builders.toTypedArray()
                 project.setDescription(description, monitor)
             }
             
             return Status.OK_STATUS
         }
     }
-    
-    job.setRule(ResourcesPlugin.getWorkspace().getRoot())
+
+    job.rule = ResourcesPlugin.getWorkspace().root
     job.schedule()
 }

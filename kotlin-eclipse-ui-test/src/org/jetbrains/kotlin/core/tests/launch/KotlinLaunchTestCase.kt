@@ -23,6 +23,7 @@ import org.eclipse.debug.core.ILaunchListener
 import org.eclipse.debug.internal.ui.DebugUIPlugin
 import org.eclipse.debug.internal.ui.IInternalDebugUIConstants
 import org.eclipse.jface.dialogs.MessageDialogWithToggle
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorTestCase
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
 import org.jetbrains.kotlin.ui.launch.KotlinLaunchShortcut
@@ -32,26 +33,26 @@ import org.junit.Assert
 import org.junit.Before
 
 abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
-    val compileWithErrorPreference = DebugUIPlugin.getDefault().getPreferenceStore()
+    val compileWithErrorPreference = DebugUIPlugin.getDefault().preferenceStore
             .getString(IInternalDebugUIConstants.PREF_CONTINUE_WITH_COMPILE_ERROR)
     
     @Before
     fun before() {
-        DebugUIPlugin.getDefault().getPreferenceStore().setValue(
+        DebugUIPlugin.getDefault().preferenceStore.setValue(
                 IInternalDebugUIConstants.PREF_CONTINUE_WITH_COMPILE_ERROR, MessageDialogWithToggle.ALWAYS)
     }
     
     @After
     fun after() {
-        DebugUIPlugin.getDefault().getPreferenceStore().setValue(
+        DebugUIPlugin.getDefault().preferenceStore.setValue(
                 IInternalDebugUIConstants.PREF_CONTINUE_WITH_COMPILE_ERROR, compileWithErrorPreference)
     }
     
     fun doTest(input: String, projectName: String, packageName: String, additionalSrcFolderName: String?) {
         testEditor = configureEditor("Test.kt", input, projectName, packageName)
-        testEditor.getTestJavaProject().addKotlinRuntime()
+        testEditor.testJavaProject.addKotlinRuntime()
         if (additionalSrcFolderName != null) {
-            testEditor.getTestJavaProject().createSourceFolder(additionalSrcFolderName)
+            testEditor.testJavaProject.createSourceFolder(additionalSrcFolderName)
         }
         
         KotlinTestUtils.joinBuildThread()
@@ -76,13 +77,13 @@ abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
             override fun launchAdded(launch: ILaunch) {
             }
         }
-        
-        DebugPlugin.getDefault().getLaunchManager().addLaunchListener(launchListener)
+
+        DebugPlugin.getDefault().launchManager.addLaunchListener(launchListener)
         
         var launch: ILaunch? = null
         try {
-            val entryPoint = getEntryPoint(getEditor().parsedFile!!)
-            val launchConfiguration = KotlinLaunchShortcut.createConfiguration(entryPoint!!, testEditor.getEclipseProject())
+            val entryPoint = getEntryPoint(editor.parsedFile!!, LanguageVersionSettingsImpl.DEFAULT)
+            val launchConfiguration = KotlinLaunchShortcut.createConfiguration(entryPoint!!, testEditor.eclipseProject)
             launch = DebugUIPlugin.buildAndLaunch(launchConfiguration, "run", NullProgressMonitor())
             
             synchronized (launch) {
@@ -95,7 +96,7 @@ abstract class KotlinLaunchTestCase : KotlinEditorTestCase() {
             if (!launch.isTerminated) stdout.append("Launch not terminated")
         } finally {
             launch?.terminate()
-            DebugPlugin.getDefault().getLaunchManager().removeLaunchListener(launchListener)
+            DebugPlugin.getDefault().launchManager.removeLaunchListener(launchListener)
         }
         
         return stdout.toString()

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-core
 Bundle-SymbolicName: org.jetbrains.kotlin.core;singleton:=true
-Bundle-Version: 0.8.7.qualifier
+Bundle-Version: 0.8.8.qualifier
 Bundle-Activator: org.jetbrains.kotlin.core.Activator
 Bundle-Vendor: JetBrains
 Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
@@ -32,6 +32,7 @@ Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.compiler,
  org.jetbrains.kotlin.core.debug,
  org.jetbrains.kotlin.core.filesystem,
+ org.jetbrains.kotlin.core.formatting,
  org.jetbrains.kotlin.core.launch,
  org.jetbrains.kotlin.core.log,
  org.jetbrains.kotlin.core.model,

@@ -16,51 +16,43 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.launch
 
+import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.core.expressions.PropertyTester
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.runtime.IAdaptable
-import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.core.JavaCore
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
-import org.jetbrains.kotlin.idea.MainFunctionDetector
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.resolve.BindingContext
-import java.util.ArrayList
-import org.jetbrains.kotlin.psi.KtDeclaration
-import org.jetbrains.kotlin.psi.KtClass
-import org.jetbrains.kotlin.psi.KtObjectDeclaration
-import org.eclipse.jdt.internal.core.JavaProject
-import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtDeclarationContainer
-import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
+import org.jetbrains.kotlin.idea.MainFunctionDetector
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.psi.*
 
 class KotlinLaunchableTester : PropertyTester() {
     override fun test(receiver: Any?, property: String?, args: Array<Any>?, expectedValue: Any?): Boolean {
         if (receiver !is IAdaptable) return false
-        
-        val file = receiver.getAdapter(IFile::class.java)
-        if (file == null) return false
-        
-        val ktFile = KotlinPsiManager.getKotlinParsedFile(file)
-        if (ktFile == null) return false
-        
-        return checkFileHasMain(ktFile)
+
+        val file = receiver.getAdapter(IFile::class.java) ?: return false
+
+        val ktFile = KotlinPsiManager.getKotlinParsedFile(file) ?: return false
+
+        return checkFileHasMain(
+                ktFile,
+                KotlinEnvironment.getEnvironment(file.project).compilerProperties.languageVersionSettings)
     }
 }
 
-fun checkFileHasMain(ktFile: KtFile): Boolean {
-    return getEntryPoint(ktFile) != null
+fun checkFileHasMain(ktFile: KtFile, languageVersion: LanguageVersionSettings): Boolean {
+    return getEntryPoint(ktFile, languageVersion) != null
 }
 
 fun getStartClassFqName(mainFunctionDeclaration: KtDeclaration): FqName? {
     val container = mainFunctionDeclaration.declarationContainer()
     return when (container) {
         is KtFile -> JvmFileClassUtil.getFileClassInfoNoResolve(container).facadeClassFqName
-        
+
         is KtClassOrObject -> {
             if (container is KtObjectDeclaration && container.isCompanion()) {
                 val containerClass = PsiTreeUtil.getParentOfType(container, KtClass::class.java)
@@ -69,32 +61,32 @@ fun getStartClassFqName(mainFunctionDeclaration: KtDeclaration): FqName? {
                 container.fqName
             }
         }
-        
+
         else -> null
     }
 }
 
-fun getEntryPoint(ktFile: KtFile): KtDeclaration? {
+fun getEntryPoint(ktFile: KtFile, languageVersion: LanguageVersionSettings): KtDeclaration? {
     val bindingContext = KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
-    val mainFunctionDetector = MainFunctionDetector(bindingContext)
-    
-    val topLevelDeclarations = ktFile.getDeclarations()
+    val mainFunctionDetector = MainFunctionDetector(bindingContext, languageVersion)
+
+    val topLevelDeclarations = ktFile.declarations
     for (declaration in topLevelDeclarations) {
         val mainFunction = when (declaration) {
             is KtNamedFunction -> if (mainFunctionDetector.isMain(declaration)) declaration else null
-            
+
             is KtClass -> {
-                mainFunctionDetector.findMainFunction(declaration.getCompanionObjects().flatMap { it.declarations })
+                mainFunctionDetector.findMainFunction(declaration.companionObjects.flatMap { it.declarations })
             }
-            
+
             is KtObjectDeclaration -> mainFunctionDetector.findMainFunction(declaration.declarations)
-            
+
             else -> null
         }
-        
+
         if (mainFunction != null) return mainFunction
     }
-    
+
     return null
 }
 

@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.preferences
+package org.jetbrains.kotlin.preferences.compiler
 
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.core.runtime.IProgressMonitor

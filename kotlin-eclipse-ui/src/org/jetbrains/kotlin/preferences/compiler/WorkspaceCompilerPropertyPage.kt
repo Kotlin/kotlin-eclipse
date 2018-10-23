@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.preferences
+package org.jetbrains.kotlin.preferences.compiler
 
 import org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD
 import org.eclipse.core.resources.ResourcesPlugin
@@ -8,6 +8,7 @@ import org.eclipse.ui.IWorkbench
 import org.eclipse.ui.IWorkbenchPreferencePage
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.KotlinProperties
+import org.jetbrains.kotlin.preferences.BasePropertyPage
 import org.jetbrains.kotlin.preferences.views.compilerPropertiesView
 import org.jetbrains.kotlin.swt.builders.asView
 

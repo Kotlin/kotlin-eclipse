@@ -118,7 +118,7 @@ class KotlinOpenEditorFromConsole : IPatternMatchListenerDelegate {
     
     private fun findType(fqName: String): IType? {
         val typeFqName = fqName.substringBeforeLast(".")
-        return ProjectUtils.getAccessibleKotlinProjects().asSequence()
+        return ProjectUtils.accessibleKotlinProjects.asSequence()
                 .map { JavaCore.create(it) }
                 .mapNotNull { it.findType(typeFqName) }
                 .firstOrNull()

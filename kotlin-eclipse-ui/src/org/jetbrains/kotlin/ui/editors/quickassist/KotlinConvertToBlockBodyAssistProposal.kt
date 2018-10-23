@@ -22,6 +22,7 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.core.formatting.codeStyle
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.psi.KtBlockExpression
@@ -96,7 +97,8 @@ class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuick
                 editor.document,
                 TextRange(anchorStartOffset, anchorStartOffset + newBodyText.length),
                 factory,
-                file.name)
+                file.name,
+                file.project.codeStyle)
     }
 
     private fun specifyType(declaration: KtDeclarationWithBody, factory: KtPsiFactory, context: BindingContext) {

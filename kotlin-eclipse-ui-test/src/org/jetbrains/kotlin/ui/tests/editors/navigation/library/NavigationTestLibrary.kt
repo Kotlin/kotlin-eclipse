@@ -126,7 +126,7 @@ private class NavigationTestLibrary {
         val out = PrintStream(outputStream);
         
         val exitCode = KotlinCLICompiler.doMain(K2JVMCompiler(), out, 
-                arrayOf("-d", targetPath, "-kotlin-home", ProjectUtils.KT_HOME, srcPath.getAbsolutePath()))
+                arrayOf("-d", targetPath, "-kotlin-home", ProjectUtils.ktHome, srcPath.getAbsolutePath()))
         Assert.assertTrue(
                 "Could not compile test library, exitCode = $exitCode\n ${outputStream.toString()}", 
                 exitCode == ExitCode.OK)
