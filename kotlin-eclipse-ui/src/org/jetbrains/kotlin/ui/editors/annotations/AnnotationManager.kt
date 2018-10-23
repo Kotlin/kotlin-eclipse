@@ -49,8 +49,8 @@ import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 public object AnnotationManager {
     val MARKER_TYPE = "org.jetbrains.kotlin.ui.marker"
     
-    @JvmField val ANNOTATION_ERROR_TYPE = "org.jetbrains.kotlin.ui.annotation.error"
-    @JvmField val ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning"
+    const val ANNOTATION_ERROR_TYPE = "org.jetbrains.kotlin.ui.annotation.error"
+    const val ANNOTATION_WARNING_TYPE = "org.jetbrains.kotlin.ui.annotation.warning"
     val MARKED_TEXT = "markedText"
     @JvmField val IS_UNRESOLVED_REFERENCE = "isUnresolvedReference"
     @JvmField val MARKER_PROBLEM_TYPE = IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER

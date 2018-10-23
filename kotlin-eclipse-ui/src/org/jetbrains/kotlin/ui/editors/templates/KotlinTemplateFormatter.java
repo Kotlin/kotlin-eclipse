@@ -27,6 +27,7 @@ import java.util.TreeMap;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
+import org.jetbrains.kotlin.core.formatting.KotlinCodeStyleManagerKt;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.psi.KtPsiFactory;
@@ -160,12 +161,10 @@ public class KotlinTemplateFormatter {
         VariableOffsetsTracker offsetsTracker = new VariableOffsetsTracker(buffer.getString(), buffer.getVariables());
         Project ideaProject = KotlinEnvironment.Companion.getEnvironment(eclipseProject).getProject();
         KtFile parsedFile = new KtPsiFactory(ideaProject).createFile(offsetsTracker.getMarkedString());
-        
-        assert parsedFile != null;
-        
+
         KtPsiFactory psiFactory = KtPsiFactoryKt.KtPsiFactory(parsedFile);
         String formatted = KotlinFormatterKt.formatCode(parsedFile.getNode().getText(), parsedFile.getName(), 
-                psiFactory, lineDelimiter);
+                psiFactory, KotlinCodeStyleManagerKt.getCodeStyle(eclipseProject));
         
         offsetsTracker.unmark(formatted);
         

@@ -54,7 +54,7 @@ import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.container.useInstance
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
-import org.jetbrains.kotlin.core.buildLibPath
+import org.jetbrains.kotlin.core.utils.buildLibPath
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
@@ -73,7 +73,6 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.resolve.TargetPlatform
-import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.script.KotlinScriptDefinition
 import org.jetbrains.kotlin.script.ScriptDefinitionProvider
@@ -423,7 +422,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
     private fun registerCompilerPlugin(it: CompilerPlugin) {
         val jarLoader = it.jarPath
-                ?.replace("\$KOTLIN_HOME", ProjectUtils.KT_HOME)
+                ?.replace("\$KOTLIN_HOME", ProjectUtils.ktHome)
                 ?.let { URL("file://$it") }
                 ?.let { URLClassLoader(arrayOf(it), this::class.java.classLoader) }
 

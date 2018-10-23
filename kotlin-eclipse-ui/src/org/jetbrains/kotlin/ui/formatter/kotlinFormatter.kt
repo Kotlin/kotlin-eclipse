@@ -1,19 +1,11 @@
 package org.jetbrains.kotlin.ui.formatter
 
-import com.intellij.formatting.Block
-import com.intellij.formatting.DependantSpacingImpl
-import com.intellij.formatting.DependentSpacingRule
-import com.intellij.formatting.FormatTextRanges
-import com.intellij.formatting.FormatterImpl
-import com.intellij.formatting.Indent
-import com.intellij.formatting.Spacing
+import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
-import com.intellij.lang.Language
 import com.intellij.openapi.editor.impl.DocumentImpl
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.codeStyle.CodeStyleSettings
-import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings.IndentOptions
 import com.intellij.psi.formatter.FormatterUtil
 import com.intellij.util.text.CharArrayUtil
@@ -23,32 +15,48 @@ import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.idea.KotlinLanguage
-import org.jetbrains.kotlin.idea.formatter.KotlinCommonCodeStyleSettings
 import org.jetbrains.kotlin.idea.formatter.KotlinSpacingBuilderUtil
 import org.jetbrains.kotlin.idea.formatter.createSpacingBuilder
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtPsiFactory
 import com.intellij.openapi.editor.Document as IdeaDocument
 
-@Volatile
-var settings: CodeStyleSettings = CodeStyleSettings(true)
+fun formatCode(
+		source: String,
+        fileName: String,
+        psiFactory: KtPsiFactory,
+        settings: CodeStyleSettings
+) = KotlinFormatter(source, fileName, psiFactory, settings).formatCode()
 
-fun formatCode(source: String, fileName: String, psiFactory: KtPsiFactory, lineSeparator: String): String {
-	return KotlinFormatter(source, fileName, psiFactory, lineSeparator).formatCode()
-}
 
-fun reformatAll(containingFile: KtFile, rootBlock: Block, settings: CodeStyleSettings, document: IDocument) {
+fun reformatAll(
+        containingFile: KtFile,
+        rootBlock: Block,
+        settings: CodeStyleSettings,
+        document: IDocument
+) {
 	formatRange(containingFile, rootBlock, settings, document, containingFile.textRange)
 }
 
-fun formatRange(document: IDocument, range: EclipseDocumentRange, psiFactory: KtPsiFactory, fileName: String) {
-	formatRange(document, range.toPsiRange(document), psiFactory, fileName)
+fun formatRange(
+        document: IDocument,
+        range: EclipseDocumentRange,
+        psiFactory: KtPsiFactory,
+        fileName: String,
+        settings: CodeStyleSettings
+) {
+	formatRange(document, range.toPsiRange(document), psiFactory, fileName, settings)
 }
 
-fun formatRange(document: IDocument, range: TextRange, psiFactory: KtPsiFactory, fileName: String) {
+fun formatRange(
+        document: IDocument,
+        range: TextRange,
+        psiFactory: KtPsiFactory,
+        fileName: String,
+        settings: CodeStyleSettings
+) {
 	val ktFile = createKtFile(document.get(), psiFactory, fileName)
-	val rootBlock = KotlinBlock(ktFile.getNode(),
+	val rootBlock = KotlinBlock(ktFile.node,
 			NULL_ALIGNMENT_STRATEGY,
 			Indent.getNoneIndent(),
 			null,
@@ -63,7 +71,8 @@ private fun formatRange(
 		rootBlock: Block,
 		settings: CodeStyleSettings,
 		document: IDocument,
-		range: TextRange) {
+		range: TextRange
+) {
 	val formattingModel = buildModel(containingFile, rootBlock, settings, document, false)
 
 	val ranges = FormatTextRanges(range, true)
@@ -109,7 +118,7 @@ private fun buildModel(
 	initializaSettings(settings.indentOptions!!)
 	val formattingDocumentModel =
 			EclipseFormattingModel(
-					DocumentImpl(containingFile.getViewProvider().getContents(), true),
+					DocumentImpl(containingFile.viewProvider.contents, true),
 					containingFile,
 					settings,
 					forLineIndentation)
@@ -121,28 +130,32 @@ private fun buildModel(
 private fun getSignificantRange(file: KtFile, offset: Int): TextRange {
 	val elementAtOffset = file.findElementAt(offset)
 	if (elementAtOffset == null) {
-		val significantRangeStart = CharArrayUtil.shiftBackward(file.getText(), offset - 1, "\r\t ");
-		return TextRange(Math.max(significantRangeStart, 0), offset);
+		val significantRangeStart = CharArrayUtil.shiftBackward(file.text, offset - 1, "\r\t ")
+		return TextRange(Math.max(significantRangeStart, 0), offset)
 	}
 
-	return elementAtOffset.getTextRange()
+	return elementAtOffset.textRange
 }
 
 
-private class KotlinFormatter(source: String, fileName: String, psiFactory: KtPsiFactory, val lineSeparator: String) {
-
+private class KotlinFormatter(
+        source: String,
+        fileName: String,
+        psiFactory: KtPsiFactory,
+        val settings: CodeStyleSettings
+) {
 	val ktFile = createKtFile(source, psiFactory, fileName)
 
-	val sourceDocument = Document(source)
+    val sourceDocument = Document(source)
 
-	fun formatCode(): String {
-		FormatterImpl()
-		val rootBlock = KotlinBlock(ktFile.getNode(),
-				NULL_ALIGNMENT_STRATEGY,
-				Indent.getNoneIndent(),
-				null,
-				settings,
-				createSpacingBuilder(settings, KotlinSpacingBuilderUtilImpl))
+    fun formatCode(): String {
+        FormatterImpl()
+        val rootBlock = KotlinBlock(ktFile.node,
+                NULL_ALIGNMENT_STRATEGY,
+                Indent.getNoneIndent(),
+                null,
+                settings,
+                createSpacingBuilder(settings, KotlinSpacingBuilderUtilImpl))
 
 		reformatAll(ktFile, rootBlock, settings, sourceDocument)
 

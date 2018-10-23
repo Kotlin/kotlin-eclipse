@@ -1,13 +1,11 @@
 package org.jetbrains.kotlin.core.preferences
 
-import org.jetbrains.kotlin.core.Activator
-import org.jetbrains.kotlin.config.JvmTarget
-import org.eclipse.core.runtime.preferences.IScopeContext
 import org.eclipse.core.runtime.preferences.DefaultScope
-import org.osgi.service.prefs.Preferences as InternalPreferences
+import org.eclipse.core.runtime.preferences.IScopeContext
 import org.eclipse.core.runtime.preferences.InstanceScope
-import org.jetbrains.kotlin.config.ApiVersion
-import org.jetbrains.kotlin.config.LanguageVersion
+import org.jetbrains.kotlin.config.*
+import org.jetbrains.kotlin.core.Activator
+import org.osgi.service.prefs.Preferences as InternalPreferences
 
 class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferences(scope, Activator.PLUGIN_ID) {
     var globalsOverridden by BooleanPreference()
@@ -57,3 +55,6 @@ class CompilerPlugin(scope: IScopeContext, path: String) : Preferences(scope, pa
     
     var active by BooleanPreference()
 }
+
+val KotlinProperties.languageVersionSettings: LanguageVersionSettings
+    get() = LanguageVersionSettingsImpl(languageVersion, apiVersion)
