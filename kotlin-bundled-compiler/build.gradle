@@ -10,8 +10,8 @@ ext {
 
 
     // properties that might/should be modifiable
-    kotlinCompilerTcBuildId = project.findProperty('kotlinCompilerTcBuildId') ?: '1626094'
-    kotlinCompilerVersion   = project.findProperty('kotlinCompilerVersion')   ?: '1.2.70'
+    kotlinCompilerTcBuildId = project.findProperty('kotlinCompilerTcBuildId') ?: '1696012'
+    kotlinCompilerVersion   = project.findProperty('kotlinCompilerVersion')   ?: '1.3.0'
     kotlinxVersion          = project.findProperty('kolinxVersion')           ?: '1.0.0-RC1'
 
     ideaVersion                      = project.findProperty('ideaVersion')                      ?: '162.1812.17'
