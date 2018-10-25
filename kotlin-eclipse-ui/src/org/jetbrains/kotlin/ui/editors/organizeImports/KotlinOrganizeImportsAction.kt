@@ -17,30 +17,44 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.organizeImports
 
-import org.eclipse.jdt.core.search.TypeNameMatch
+import com.intellij.psi.PsiElement
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.eclipse.jdt.internal.ui.actions.ActionMessages
 import org.eclipse.jdt.internal.ui.dialogs.MultiElementListSelectionDialog
 import org.eclipse.jdt.internal.ui.util.TypeNameMatchLabelProvider
+import org.eclipse.jdt.ui.JavaUI
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction
+import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.window.Window
+import org.eclipse.swt.graphics.Image
+import org.eclipse.ui.ISharedImages
 import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.formatting.codeStyle
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.preferences.languageVersionSettings
+import org.jetbrains.kotlin.core.utils.isImported
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.eclipse.ui.utils.getModuleDescriptor
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
 import org.jetbrains.kotlin.idea.formatter.kotlinCustomSettings
 import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.ImportPath
+import org.jetbrains.kotlin.resolve.TargetPlatform
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableCallables
 import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableTypes
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.ui.editors.quickfix.replaceImports
-import java.util.*
+import org.jetbrains.kotlin.utils.keysToMap
 
 class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -55,21 +69,30 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
 
     companion object {
         const val ACTION_ID = "OrganizeImports"
+        val FIXABLE_DIAGNOSTICS = setOf(Errors.UNRESOLVED_REFERENCE, Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER)
     }
 
     override fun run() {
         val bindingContext = getBindingContext(editor) ?: return
         val ktFile = editor.parsedFile ?: return
         val file = editor.eclipseFile ?: return
+        val environment = KotlinEnvironment.getEnvironment(file.project)
 
-        val typeNamesToImport = bindingContext.diagnostics
-                .filter { it.factory == Errors.UNRESOLVED_REFERENCE && it.psiFile == ktFile }
-                .map { it.psiElement.text }
-                .distinct()
+        val languageVersionSettings = environment.compilerProperties.languageVersionSettings
+        val candidatesFilter = createDefaultImportPredicate(JvmPlatform, languageVersionSettings)
 
-        val (uniqueImports, ambiguousImports) = findTypesToImport(typeNamesToImport)
+        val referencesToImport = bindingContext.diagnostics
+            .filter { it.factory in FIXABLE_DIAGNOSTICS && it.psiFile == ktFile }
+            .map { it.psiElement }
+            .distinctBy { it.text }
 
-        val allRequiredImports = ArrayList(uniqueImports)
+        val (uniqueImports, ambiguousImports) = findImportCandidates(
+            referencesToImport,
+            getModuleDescriptor(ktFile),
+            candidatesFilter
+        )
+
+        val allRequiredImports = uniqueImports.toMutableList()
         if (ambiguousImports.isNotEmpty()) {
             val chosenImports = chooseImports(ambiguousImports) ?: return
 
@@ -95,15 +118,13 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
     }
 
     // null signalizes about cancelling operation
-    private fun chooseImports(ambiguousImports: List<List<TypeNameMatch>>): List<TypeNameMatch>? {
-        val labelProvider = TypeNameMatchLabelProvider(TypeNameMatchLabelProvider.SHOW_FULLYQUALIFIED)
-
-        val dialog = MultiElementListSelectionDialog(shell, labelProvider)
+    private fun chooseImports(ambiguousImports: List<List<ImportCandidate>>): List<ImportCandidate>? {
+        val dialog = MultiElementListSelectionDialog(shell, ImportCandidatesLabelProvider)
         dialog.setTitle(ActionMessages.OrganizeImportsAction_selectiondialog_title)
         dialog.setMessage(ActionMessages.OrganizeImportsAction_selectiondialog_message)
 
-        val arrayImports = Array<Array<TypeNameMatch>>(ambiguousImports.size) { i ->
-            Array<TypeNameMatch>(ambiguousImports[i].size) { j ->
+        val arrayImports = Array(ambiguousImports.size) { i ->
+            Array(ambiguousImports[i].size) { j ->
                 ambiguousImports[i][j]
             }
         }
@@ -111,40 +132,77 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
         dialog.setElements(arrayImports)
 
         return if (dialog.open() == Window.OK) {
-            dialog.result.mapNotNull { (it as Array<*>).firstOrNull() as? TypeNameMatch }
+            dialog.result.mapNotNull { (it as Array<*>).firstOrNull() as? ImportCandidate }
         } else {
             null
         }
     }
 
-    private fun findTypesToImport(typeNames: List<String>): UniqueAndAmbiguousImports {
-        val uniqueImports = arrayListOf<TypeNameMatch>()
-        val ambiguousImports = arrayListOf<List<TypeNameMatch>>()
-        loop@ for (typeName in typeNames) {
-            val typesToImport = findApplicableTypes(typeName)
-            when (typesToImport.size) {
-                0 -> continue@loop
-                1 -> uniqueImports.add(typesToImport.first())
-                else -> ambiguousImports.add(typesToImport)
-            }
-        }
+    private fun findImportCandidates(
+        references: List<PsiElement>,
+        module: ModuleDescriptor,
+        candidatesFilter: (ImportCandidate) -> Boolean
+    ): UniqueAndAmbiguousImports {
+        val typesToImport: Map<PsiElement, List<TypeCandidate>> = references.keysToMap { findApplicableTypes(it.text) }
+        val functionsToImport: Map<PsiElement, List<FunctionCandidate>> = findApplicableCallables(references, module)
 
-        return UniqueAndAmbiguousImports(uniqueImports, ambiguousImports)
+        // Import candidates grouped by their ambiguity:
+        // 0 - no candidates found, 1 - exactly one candidate, 2 - multiple candidates
+        val groupedCandidates: Map<Int, List<List<ImportCandidate>>> =
+            (typesToImport.keys + functionsToImport.keys).asSequence()
+                .map { typesToImport[it].orEmpty() + functionsToImport[it].orEmpty() }
+                .map { it.filter(candidatesFilter) }
+                .map { it.distinctBy(ImportCandidate::fullyQualifiedName) }
+                .groupBy { it.size.coerceAtMost(2) }
+
+        return UniqueAndAmbiguousImports(
+            groupedCandidates[1].orEmpty().map { it.single() },
+            groupedCandidates[2].orEmpty()
+        )
     }
 
-    private data class UniqueAndAmbiguousImports(
-            val uniqueImports: List<TypeNameMatch>,
-            val ambiguousImports: List<List<TypeNameMatch>>)
+    private fun createDefaultImportPredicate(
+        platform: TargetPlatform,
+        languageVersionSettings: LanguageVersionSettings
+    ): (ImportCandidate) -> Boolean {
+        val defaultImports = platform.getDefaultImports(languageVersionSettings, true)
+        return { candidate ->
+            candidate.fullyQualifiedName
+                ?.let { ImportPath.fromString(it) }
+                ?.isImported(defaultImports)
+                ?.not()
+                ?: false
+        }
+    }
 }
 
-fun prepareOptimizedImports(file: KtFile,
-                            descriptorsToImport: Collection<DeclarationDescriptor>,
-                            settings: KotlinCodeStyleSettings): List<ImportPath>? =
-        OptimizedImportsBuilder(
-                file,
-                OptimizedImportsBuilder.InputData(descriptorsToImport.toSet(), emptyList()),
-                OptimizedImportsBuilder.Options(
-                        settings.NAME_COUNT_TO_USE_STAR_IMPORT,
-                        settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS
-                ) { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS }
-        ).buildOptimizedImports()
+fun prepareOptimizedImports(
+    file: KtFile,
+    descriptorsToImport: Collection<DeclarationDescriptor>,
+    settings: KotlinCodeStyleSettings
+): List<ImportPath>? =
+    OptimizedImportsBuilder(
+        file,
+        OptimizedImportsBuilder.InputData(descriptorsToImport.toSet(), emptyList()),
+        OptimizedImportsBuilder.Options(
+            settings.NAME_COUNT_TO_USE_STAR_IMPORT,
+            settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS
+        ) { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS }
+    ).buildOptimizedImports()
+
+object ImportCandidatesLabelProvider : LabelProvider() {
+    private val typeLabelProvider = TypeNameMatchLabelProvider(TypeNameMatchLabelProvider.SHOW_FULLYQUALIFIED)
+
+    override fun getImage(element: Any?): Image? = when (element) {
+        is TypeCandidate -> typeLabelProvider.getImage(element.match)
+        is FunctionCandidate -> JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT)
+        else -> null
+    }
+
+    override fun getText(element: Any?): String? = when (element) {
+        is TypeCandidate -> typeLabelProvider.getText(element.match)
+        is FunctionCandidate -> element.fullyQualifiedName
+        else -> element.toString()
+            .also { KotlinLogger.logWarning("Unknown type of import candidate: $element") }
+    }
+}
