@@ -16,7 +16,7 @@ Welcome to Kotlin for Eclipse project! Some handy links:
 
 ### Installation
 
-To give it a try you will need a clean installation of Eclipse Mars. The Kotlin plugin is available from the Eclipse Marketplace. The easiest way to install the Kotlin plugin is to **drag-and-drop this button into a running Eclipse window**:
+To give it a try you will need a clean installation of Eclipse Neon or newer. The Kotlin plugin is available from the Eclipse Marketplace. The easiest way to install the Kotlin plugin is to **drag-and-drop this button into a running Eclipse window**:
 
 <a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2257536" class="drag" title="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse"><img src="https://marketplace.eclipse.org/sites/all/themes/solstice/public/images/components/drag-drop/installbutton.png" alt="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse" /></a>
 
@@ -26,12 +26,12 @@ Alternatively, you can use *Help -> Eclipse Marketplace…* menu, or the followi
 
 ### Building and Development
 
-*Eclipse IDE for Eclipse Committers* is the recommended way to build and develop the `kotlin-eclipse` project. Eclipse [Neon 4.6](https://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/neonr) is used so far.
+*Eclipse IDE for Eclipse Committers* is the recommended way to build and develop the `kotlin-eclipse` project. Eclipse [Oxygen 4.7](https://www.eclipse.org/downloads/packages/eclipse-ide-eclipse-committers/oxygenr) is used so far.
 
 In order to start development in Eclipse:
- - Install the [AspectJ Eclipse plug-in for Eclipse 4.6](http://www.eclipse.org/ajdt/downloads/index.php). To install AJDT 2.2.4 use the following update site:
+ - Install the [AspectJ Eclipse plug-in for Eclipse 4.7](http://www.eclipse.org/ajdt/downloads/index.php). To install AJDT 2.2.4 use the following update site:
 
-		http://download.eclipse.org/tools/ajdt/46/dev/update
+		http://download.eclipse.org/tools/ajdt/47/dev/update
 
  - Since Kotlin plugin contains code written in Kotlin itself, you will also need a Kotlin plugin to build the project in Eclipse. To install the Kotlin Eclipse plugin use the following update site:
 
@@ -45,18 +45,20 @@ In order to start development in Eclipse:
  
         File -> Import -> Existing Projects into Workspace
 
- - Run the launch configuration to download the Kotlin compiler. It will be used as a bundled compiler in built plugin and as a library during development.
+ - Using the command line, run gradle build to download the Kotlin compiler. It will be used as a bundled compiler in built plugin and as a library during development.
  
-        kotlin-bundled-compiler/Get Bundled Kotlin.launch -> Run As -> Get Bundled Kotlin
+       cd {repository}/kotlin-bundled-compiler
+       ./gradlew clean getBundled
+    or in Windows environment:
+  
+       cd {repository}\kotlin-bundled-compiler
+       gradlew.bat clean getBundled
 
  - Run another instance of Eclipse with the Kotlin plugin inside 
  
         kotlin-eclipse-ui -> Run As -> Eclipse Weaving enabled Eclipse Application
 
 Building from the command line is also available (Note that Maven **3.0.5** is required):
-
-    cd {repository}/kotlin-bundled-compiler
-    ant -f get_bundled.xml  
 
     cd {repository}
     mvn install
