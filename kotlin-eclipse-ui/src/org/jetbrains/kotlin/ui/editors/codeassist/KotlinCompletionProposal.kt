@@ -36,6 +36,7 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.resolve.calls.util.getValueParametersCountFromFunctionType
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
+import org.jetbrains.kotlin.ui.editors.organizeImports.TypeCandidate
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
@@ -150,7 +151,7 @@ class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image?,
     
     override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
         super.apply(viewer, trigger, stateMask, offset)
-        importShift = placeImports(listOf(typeName), file, viewer.document)
+        importShift = placeImports(listOf(TypeCandidate(typeName)), file, viewer.document)
     }
     
     override fun getSelection(document: IDocument): Point? {
