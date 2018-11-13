@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.jetbrains.kotlin.feature_0.8.8.qualifier.jar" id="org.jetbrains.kotlin.feature" version="0.8.8.qualifier">
+   <feature url="features/org.jetbrains.kotlin.feature_0.8.9.qualifier.jar" id="org.jetbrains.kotlin.feature" version="0.8.9.qualifier">
       <category name="org.jetbrains.kotlin.category"/>
    </feature>
    <category-def name="org.jetbrains.kotlin.category" label="Kotlin Development Tools"/>
