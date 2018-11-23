@@ -36,7 +36,7 @@ import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.resolve.calls.util.getValueParametersCountFromFunctionType
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
-import org.jetbrains.kotlin.ui.editors.organizeImports.TypeCandidate
+import org.jetbrains.kotlin.core.imports.TypeCandidate
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,

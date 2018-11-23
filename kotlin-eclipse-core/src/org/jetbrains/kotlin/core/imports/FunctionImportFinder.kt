@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.ui.editors.organizeImports
+package org.jetbrains.kotlin.core.imports
 
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.impl.DeclarationDescriptorVisitorEmptyBodies
