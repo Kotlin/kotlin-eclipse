@@ -17,7 +17,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.organizeImports
 
-import com.intellij.psi.PsiElement
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.eclipse.jdt.internal.ui.actions.ActionMessages
 import org.eclipse.jdt.internal.ui.dialogs.MultiElementListSelectionDialog
@@ -30,31 +29,31 @@ import org.eclipse.jface.window.Window
 import org.eclipse.swt.graphics.Image
 import org.eclipse.ui.ISharedImages
 import org.eclipse.ui.PlatformUI
-import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.formatting.codeStyle
+import org.jetbrains.kotlin.core.imports.*
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.languageVersionSettings
-import org.jetbrains.kotlin.core.utils.isImported
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.eclipse.ui.utils.getModuleDescriptor
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
 import org.jetbrains.kotlin.idea.formatter.kotlinCustomSettings
 import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.ImportPath
-import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import org.jetbrains.kotlin.types.expressions.KotlinTypeInfo
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
-import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableCallables
-import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableTypes
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.ui.editors.quickfix.replaceImports
-import org.jetbrains.kotlin.utils.keysToMap
+import org.jetbrains.kotlin.util.slicedMap.WritableSlice
+import org.jetbrains.kotlin.core.imports.FIXABLE_DIAGNOSTICS
+
 
 class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -69,7 +68,6 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
 
     companion object {
         const val ACTION_ID = "OrganizeImports"
-        val FIXABLE_DIAGNOSTICS = setOf(Errors.UNRESOLVED_REFERENCE, Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER)
     }
 
     override fun run() {
@@ -79,7 +77,7 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
         val environment = KotlinEnvironment.getEnvironment(file.project)
 
         val languageVersionSettings = environment.compilerProperties.languageVersionSettings
-        val candidatesFilter = createDefaultImportPredicate(JvmPlatform, languageVersionSettings)
+        val candidatesFilter = DefaultImportPredicate(JvmPlatform, languageVersionSettings)
 
         val referencesToImport = bindingContext.diagnostics
             .filter { it.factory in FIXABLE_DIAGNOSTICS && it.psiFile == ktFile }
@@ -135,43 +133,6 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
             dialog.result.mapNotNull { (it as Array<*>).firstOrNull() as? ImportCandidate }
         } else {
             null
-        }
-    }
-
-    private fun findImportCandidates(
-        references: List<PsiElement>,
-        module: ModuleDescriptor,
-        candidatesFilter: (ImportCandidate) -> Boolean
-    ): UniqueAndAmbiguousImports {
-        val typesToImport: Map<PsiElement, List<TypeCandidate>> = references.keysToMap { findApplicableTypes(it.text) }
-        val functionsToImport: Map<PsiElement, List<FunctionCandidate>> = findApplicableCallables(references, module)
-
-        // Import candidates grouped by their ambiguity:
-        // 0 - no candidates found, 1 - exactly one candidate, 2 - multiple candidates
-        val groupedCandidates: Map<Int, List<List<ImportCandidate>>> =
-            (typesToImport.keys + functionsToImport.keys).asSequence()
-                .map { typesToImport[it].orEmpty() + functionsToImport[it].orEmpty() }
-                .map { it.filter(candidatesFilter) }
-                .map { it.distinctBy(ImportCandidate::fullyQualifiedName) }
-                .groupBy { it.size.coerceAtMost(2) }
-
-        return UniqueAndAmbiguousImports(
-            groupedCandidates[1].orEmpty().map { it.single() },
-            groupedCandidates[2].orEmpty()
-        )
-    }
-
-    private fun createDefaultImportPredicate(
-        platform: TargetPlatform,
-        languageVersionSettings: LanguageVersionSettings
-    ): (ImportCandidate) -> Boolean {
-        val defaultImports = platform.getDefaultImports(languageVersionSettings, true)
-        return { candidate ->
-            candidate.fullyQualifiedName
-                ?.let { ImportPath.fromString(it) }
-                ?.isImported(defaultImports)
-                ?.not()
-                ?: false
         }
     }
 }

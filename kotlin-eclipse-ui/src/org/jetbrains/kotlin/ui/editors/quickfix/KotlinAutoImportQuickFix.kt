@@ -19,9 +19,6 @@ package org.jetbrains.kotlin.ui.editors.quickfix
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import org.eclipse.core.resources.IFile
-import org.eclipse.jdt.core.Flags
-import org.eclipse.jdt.core.IMethod
-import org.eclipse.jdt.core.search.*
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
 import org.eclipse.jdt.ui.ISharedImages
 import org.eclipse.jdt.ui.JavaUI
@@ -29,128 +26,43 @@ import org.eclipse.jface.text.IDocument
 import org.eclipse.jface.text.TextUtilities
 import org.eclipse.swt.graphics.Image
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.core.imports.DefaultImportPredicate
+import org.jetbrains.kotlin.core.imports.ImportCandidate
+import org.jetbrains.kotlin.core.imports.findImportCandidatesForReference
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
+import org.jetbrains.kotlin.eclipse.ui.utils.getModuleDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.jetbrains.kotlin.load.java.JvmAbi
-import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.types.expressions.OperatorConventions
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtImportList
+import org.jetbrains.kotlin.psi.KtPackageDirective
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.editors.organizeImports.FunctionCandidate
-import org.jetbrains.kotlin.ui.editors.organizeImports.FunctionImportFinder
-import org.jetbrains.kotlin.ui.editors.organizeImports.ImportCandidate
-import org.jetbrains.kotlin.ui.editors.organizeImports.TypeCandidate
-import org.jetbrains.kotlin.utils.keysToMap
+import org.jetbrains.kotlin.core.imports.FIXABLE_DIAGNOSTICS
 
 object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
-        val typeName = diagnostic.psiElement.text
-        return findApplicableTypes(typeName).map { KotlinAutoImportResolution(it.match) }
+        val ktFile = diagnostic.psiElement.containingFile as? KtFile ?: return emptyList()
+        val moduleDescriptor = getModuleDescriptor(ktFile)
+
+        val environment = KotlinPsiManager.getJavaProject(ktFile)
+            ?.let { KotlinEnvironment.getEnvironment(it.project) }
+            ?: return emptyList()
+        val languageVersionSettings = environment.compilerProperties.languageVersionSettings
+
+        val defaultImportsPredicate = DefaultImportPredicate(JvmPlatform, languageVersionSettings)
+        return findImportCandidatesForReference(diagnostic.psiElement, moduleDescriptor, defaultImportsPredicate)
+            .map { KotlinAutoImportResolution(it) }
     }
 
     override fun canFix(diagnostic: Diagnostic): Boolean {
-        return diagnostic.factory == Errors.UNRESOLVED_REFERENCE
+        return diagnostic.factory in FIXABLE_DIAGNOSTICS
     }
-}
-
-fun findApplicableTypes(typeName: String): List<TypeCandidate> {
-    val scope = SearchEngine.createWorkspaceScope()
-
-    val foundTypes = arrayListOf<TypeNameMatch>()
-    val collector = object : TypeNameMatchRequestor() {
-        override fun acceptTypeNameMatch(match: TypeNameMatch) {
-            if (Flags.isPublic(match.modifiers)) {
-                foundTypes.add(match)
-            }
-        }
-    }
-
-    val searchEngine = SearchEngine()
-    searchEngine.searchAllTypeNames(
-        null,
-        SearchPattern.R_EXACT_MATCH,
-        typeName.toCharArray(),
-        SearchPattern.R_EXACT_MATCH or SearchPattern.R_CASE_SENSITIVE,
-        IJavaSearchConstants.TYPE,
-        scope,
-        collector,
-        IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,
-        null
-    )
-
-    return foundTypes.map(::TypeCandidate)
-}
-
-fun findApplicableCallables(
-    elements: List<PsiElement>,
-    module: ModuleDescriptor
-): Map<PsiElement, List<FunctionCandidate>> {
-    return elements.keysToMap(::searchCallableByName)
-        .mapValues { (_, v) -> module.accept(FunctionImportFinder(), v).map(::FunctionCandidate) }
-}
-
-private fun searchCallableByName(element: PsiElement): List<String> {
-    val result = mutableListOf<String>()
-
-    val conventionOperatorName = tryFindConventionOperatorName(element)
-
-    if (conventionOperatorName != null) {
-        queryForCallables(conventionOperatorName) {
-            result += "${it.declaringType.fullyQualifiedName}.$conventionOperatorName"
-        }
-    } else {
-        queryForCallables(element.text) {
-            result += "${it.declaringType.fullyQualifiedName}.${it.elementName}"
-        }
-
-        if (element is KtNameReferenceExpression) {
-            // We have to look for properties even if reference expression is first element in call expression,
-            // because `something()` can mean `getSomething().invoke()`.
-            queryForCallables(JvmAbi.getterName(element.text)) {
-                result += "${it.declaringType.fullyQualifiedName}.${element.text}"
-            }
-        }
-    }
-
-    return result.also { println("${element.text} -> $it") }
-}
-
-private fun tryFindConventionOperatorName(element: PsiElement): String? {
-    val isBinary = element.parent is KtBinaryExpression
-    val isUnary = element.parent is KtPrefixExpression
-
-    if (!isBinary && !isUnary) return null
-
-    return (element as? KtOperationReferenceExpression)
-        ?.operationSignTokenType
-        ?.let { OperatorConventions.getNameForOperationSymbol(it, isUnary, isBinary) }
-        ?.asString()
-}
-
-private fun queryForCallables(name: String, collector: (IMethod) -> Unit) {
-    val pattern = SearchPattern.createPattern(
-        name,
-        IJavaSearchConstants.METHOD,
-        IJavaSearchConstants.DECLARATIONS,
-        SearchPattern.R_EXACT_MATCH
-    )
-
-    val requester = object : SearchRequestor() {
-        override fun acceptSearchMatch(match: SearchMatch?) {
-            (match?.element as? IMethod)?.also(collector)
-        }
-    }
-
-    SearchEngine().search(
-        pattern,
-        arrayOf(SearchEngine.getDefaultSearchParticipant()),
-        SearchEngine.createWorkspaceScope(),
-        requester,
-        null
-    )
 }
 
 fun placeImports(chosenCandidates: List<ImportCandidate>, file: IFile, document: IDocument): Int {
@@ -201,16 +113,16 @@ private fun placeStrImports(importsDirectives: List<String>, file: IFile, docume
 
 private fun buildImportsStr(importsDirectives: List<String>, document: IDocument): String {
     val lineDelimiter = TextUtilities.getDefaultLineDelimiter(document)
-    return importsDirectives.map { "import ${it}" }.joinToString(lineDelimiter)
+    return importsDirectives.joinToString(lineDelimiter) { "import $it" }
 }
 
-class KotlinAutoImportResolution(private val type: TypeNameMatch) : KotlinMarkerResolution {
+class KotlinAutoImportResolution(private val candidate: ImportCandidate) : KotlinMarkerResolution {
     override fun apply(file: IFile) {
         val editor = EditorUtility.openInEditor(file, true) as KotlinEditor
-        placeImports(listOf(TypeCandidate(type)), file, editor.document)
+        placeImports(listOf(candidate), file, editor.document)
     }
 
-    override fun getLabel(): String? = "Import '${type.simpleTypeName}' (${type.packageName})"
+    override fun getLabel(): String? = "Import '${candidate.simpleName}' (${candidate.packageName})"
 
     override fun getImage(): Image? = JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJS_IMPDECL)
 }
