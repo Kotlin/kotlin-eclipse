@@ -88,7 +88,7 @@ class KotlinMavenProjectConfigurator : AbstractSourcesGenerationProjectConfigura
         }
     }
 
-    private fun getCompilerFlags(configuration: Any): String? =
+    private fun getCompilerFlags(configuration: Any?): String? =
         (configuration as? Xpp3Dom)
             ?.getChild("args")
             ?.children
