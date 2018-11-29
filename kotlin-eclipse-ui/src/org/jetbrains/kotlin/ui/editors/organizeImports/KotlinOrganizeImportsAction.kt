@@ -35,10 +35,11 @@ import org.jetbrains.kotlin.core.imports.*
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.languageVersionSettings
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
-import org.jetbrains.kotlin.eclipse.ui.utils.getModuleDescriptor
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
 import org.jetbrains.kotlin.idea.formatter.kotlinCustomSettings
 import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
@@ -74,6 +75,8 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
         val bindingContext = getBindingContext(editor) ?: return
         val ktFile = editor.parsedFile ?: return
         val file = editor.eclipseFile ?: return
+        val (result, container) = KotlinAnalyzer.analyzeFile(ktFile)
+        val resolutionFacade = container?.let { KotlinResolutionFacade(file, it, result.moduleDescriptor) } ?: return
         val environment = KotlinEnvironment.getEnvironment(file.project)
 
         val languageVersionSettings = environment.compilerProperties.languageVersionSettings
@@ -86,7 +89,8 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
 
         val (uniqueImports, ambiguousImports) = findImportCandidates(
             referencesToImport,
-            getModuleDescriptor(ktFile),
+            bindingContext,
+            resolutionFacade,
             candidatesFilter
         )
 

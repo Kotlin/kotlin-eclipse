@@ -31,13 +31,11 @@ import org.jetbrains.kotlin.core.imports.ImportCandidate
 import org.jetbrains.kotlin.core.imports.findImportCandidatesForReference
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.languageVersionSettings
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.Errors
-import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
-import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
-import org.jetbrains.kotlin.eclipse.ui.utils.getModuleDescriptor
-import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.eclipse.ui.utils.*
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtImportList
 import org.jetbrains.kotlin.psi.KtPackageDirective
@@ -48,7 +46,11 @@ import org.jetbrains.kotlin.core.imports.FIXABLE_DIAGNOSTICS
 object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
         val ktFile = diagnostic.psiElement.containingFile as? KtFile ?: return emptyList()
-        val moduleDescriptor = getModuleDescriptor(ktFile)
+        val file = KotlinPsiManager.getEclipseFile(ktFile) ?: return emptyList()
+        val bindingContext = getBindingContext(ktFile) ?: return emptyList()
+        val (result, container) = KotlinAnalyzer.analyzeFile(ktFile)
+        val resolutionFacade = container?.let { KotlinResolutionFacade(file, it, result.moduleDescriptor) }
+            ?: return emptyList()
 
         val environment = KotlinPsiManager.getJavaProject(ktFile)
             ?.let { KotlinEnvironment.getEnvironment(it.project) }
@@ -56,8 +58,12 @@ object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
         val languageVersionSettings = environment.compilerProperties.languageVersionSettings
 
         val defaultImportsPredicate = DefaultImportPredicate(JvmPlatform, languageVersionSettings)
-        return findImportCandidatesForReference(diagnostic.psiElement, moduleDescriptor, defaultImportsPredicate)
-            .map { KotlinAutoImportResolution(it) }
+        return findImportCandidatesForReference(
+            diagnostic.psiElement,
+            bindingContext,
+            resolutionFacade,
+            defaultImportsPredicate
+        ).map { KotlinAutoImportResolution(it) }
     }
 
     override fun canFix(diagnostic: Diagnostic): Boolean {
