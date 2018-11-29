@@ -2,12 +2,12 @@ package org.jetbrains.kotlin.core.imports
 
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.impl.DeclarationDescriptorVisitorEmptyBodies
-import org.jetbrains.kotlin.idea.imports.canBeReferencedViaImport
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 
-class FunctionImportFinder : DeclarationDescriptorVisitorEmptyBodies<List<CallableDescriptor>, List<String>>() {
-
+class FunctionImportFinder(
+    val filter: (CallableDescriptor) -> Boolean
+) : DeclarationDescriptorVisitorEmptyBodies<List<CallableDescriptor>, List<String>>() {
     override fun visitModuleDeclaration(
         descriptor: ModuleDescriptor,
         data: List<String>
@@ -42,7 +42,7 @@ class FunctionImportFinder : DeclarationDescriptorVisitorEmptyBodies<List<Callab
     }
 
     private fun visitMember(descriptor: CallableDescriptor): List<CallableDescriptor> =
-        if (descriptor.canBeReferencedViaImport()) listOf(descriptor) else emptyList()
+        if (filter(descriptor)) listOf(descriptor) else emptyList()
 
 
     override fun visitDeclarationDescriptor(
