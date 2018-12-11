@@ -74,4 +74,99 @@ public class KotlinAutoImportTest extends KotlinAutoImportTestCase {
 	public void oneStandardVectorAutoImport() {
 		doAutoTest();
 	}
+	
+	@Test
+	public void packageLevelFunctionImport() {
+	    doAutoTest();
+	}  
+	
+    @Test
+    public void packageLevelValImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void packageLevelInvokableValImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void packageLevelFunctionValImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void extensionFunctionImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void extensionValImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void functionExtensionValImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void invokableExtensionValImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void extensionOperatorImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void unaryExtensionOperatorImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void extensionInfixFunctionImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void functionReferenceImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void propertyReferenceImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void extensionFunctionReferenceImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void extensionValReferenceImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void classNestedInClassImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void classNestedInObjectImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void extensionMethodInLambdaWithReceiverImport() {
+        doAutoTest();
+    }
+    
+    @Test
+    public void extensionMethodInLambdaWithReceiverAmbigousImport() {
+        doAutoTest();
+    }
 }

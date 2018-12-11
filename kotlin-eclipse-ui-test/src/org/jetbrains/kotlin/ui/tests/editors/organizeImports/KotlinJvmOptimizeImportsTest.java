@@ -94,7 +94,6 @@ public class KotlinJvmOptimizeImportsTest extends KotlinOrganizeImportsTestCase 
         doAutoTest();
     }
     
-    @Ignore("Enable this test when autoimport for functions will be ready")
     @Test
     public void UnusedImports() {
         doAutoTest();

@@ -32,7 +32,6 @@ public class KotlinCommonOptimizeImportsTest extends KotlinOrganizeImportsTestCa
         doAutoTest();
     }
     
-    @Ignore
     @Test
     public void DefaultObjectReference() {
         doAutoTest();
