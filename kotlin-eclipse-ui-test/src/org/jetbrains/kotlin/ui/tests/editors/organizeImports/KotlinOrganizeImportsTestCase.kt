@@ -24,9 +24,15 @@ import org.jetbrains.kotlin.ui.editors.organizeImports.KotlinOrganizeImportsActi
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
 
 abstract class KotlinOrganizeImportsTestCase : KotlinEditorWithAfterFileTestCase() {
+	open val includeStdLib: Boolean = true
+	
     @Before
     fun before() {
-        configureProject();
+		if (includeStdLib) {
+		    configureProjectWithStdLib()
+		} else {
+			configureProject()
+		}
     }
     
     override fun performTest(fileText: String, expectedFileText: String) {
@@ -34,6 +40,6 @@ abstract class KotlinOrganizeImportsTestCase : KotlinEditorWithAfterFileTestCase
         
         editor.getAction(KotlinOrganizeImportsAction.ACTION_ID).run()
         
-        EditorTestUtils.assertByEditor(editor, expectedFileText);
+        EditorTestUtils.assertByEditor(editor, expectedFileText)
     }
 }

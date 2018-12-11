@@ -4,6 +4,11 @@ import org.junit.Test;
 
 public class KotlinOrganizeImportsTest extends KotlinOrganizeImportsTestCase {
     @Override
+    public boolean getIncludeStdLib() {
+        return false;
+    }
+
+    @Override
     protected String getTestDataRelativePath() {
         return "organizeImports";
     }
