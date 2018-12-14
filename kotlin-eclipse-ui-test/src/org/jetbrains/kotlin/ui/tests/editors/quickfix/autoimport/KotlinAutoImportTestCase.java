@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
@@ -39,7 +40,18 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
         configureProjectWithStdLib();
     }
     
+    @Override
+    protected boolean loadFilesBeforeOpeningEditor() {
+        return true;
+    }
+    
     private List<KotlinMarkerResolution> createProposals() {
+        // TODO: find better solution than this
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ignored) {}
+        KotlinAnalysisFileCache.INSTANCE.resetCache();
+
         return KotlinQuickFixTestCaseKt.getProposals(getTestEditor());
     }
     

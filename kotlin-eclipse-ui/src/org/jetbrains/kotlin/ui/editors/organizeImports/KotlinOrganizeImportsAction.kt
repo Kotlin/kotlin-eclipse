@@ -17,30 +17,44 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.organizeImports
 
-import org.eclipse.jdt.core.search.TypeNameMatch
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds
 import org.eclipse.jdt.internal.ui.actions.ActionMessages
 import org.eclipse.jdt.internal.ui.dialogs.MultiElementListSelectionDialog
 import org.eclipse.jdt.internal.ui.util.TypeNameMatchLabelProvider
+import org.eclipse.jdt.ui.JavaUI
 import org.eclipse.jdt.ui.actions.IJavaEditorActionDefinitionIds
 import org.eclipse.jdt.ui.actions.SelectionDispatchAction
+import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.window.Window
+import org.eclipse.swt.graphics.Image
+import org.eclipse.ui.ISharedImages
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.formatting.codeStyle
+import org.jetbrains.kotlin.core.imports.*
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.preferences.languageVersionSettings
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
 import org.jetbrains.kotlin.idea.formatter.kotlinCustomSettings
 import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.ImportPath
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import org.jetbrains.kotlin.types.expressions.KotlinTypeInfo
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
-import org.jetbrains.kotlin.ui.editors.quickfix.findApplicableTypes
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.ui.editors.quickfix.replaceImports
-import java.util.*
+import org.jetbrains.kotlin.util.slicedMap.WritableSlice
+import org.jetbrains.kotlin.core.imports.FIXABLE_DIAGNOSTICS
+
 
 class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.site) {
     init {
@@ -61,15 +75,26 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
         val bindingContext = getBindingContext(editor) ?: return
         val ktFile = editor.parsedFile ?: return
         val file = editor.eclipseFile ?: return
+        val (result, container) = KotlinAnalyzer.analyzeFile(ktFile)
+        val resolutionFacade = container?.let { KotlinResolutionFacade(file, it, result.moduleDescriptor) } ?: return
+        val environment = KotlinEnvironment.getEnvironment(file.project)
 
-        val typeNamesToImport = bindingContext.diagnostics
-                .filter { it.factory == Errors.UNRESOLVED_REFERENCE && it.psiFile == ktFile }
-                .map { it.psiElement.text }
-                .distinct()
+        val languageVersionSettings = environment.compilerProperties.languageVersionSettings
+        val candidatesFilter = DefaultImportPredicate(JvmPlatform, languageVersionSettings)
 
-        val (uniqueImports, ambiguousImports) = findTypesToImport(typeNamesToImport)
+        val referencesToImport = bindingContext.diagnostics
+            .filter { it.factory in FIXABLE_DIAGNOSTICS && it.psiFile == ktFile }
+            .map { it.psiElement }
+            .distinctBy { it.text }
 
-        val allRequiredImports = ArrayList(uniqueImports)
+        val (uniqueImports, ambiguousImports) = findImportCandidates(
+            referencesToImport,
+            bindingContext,
+            resolutionFacade,
+            candidatesFilter
+        )
+
+        val allRequiredImports = uniqueImports.toMutableList()
         if (ambiguousImports.isNotEmpty()) {
             val chosenImports = chooseImports(ambiguousImports) ?: return
 
@@ -95,15 +120,13 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
     }
 
     // null signalizes about cancelling operation
-    private fun chooseImports(ambiguousImports: List<List<TypeNameMatch>>): List<TypeNameMatch>? {
-        val labelProvider = TypeNameMatchLabelProvider(TypeNameMatchLabelProvider.SHOW_FULLYQUALIFIED)
-
-        val dialog = MultiElementListSelectionDialog(shell, labelProvider)
+    private fun chooseImports(ambiguousImports: List<List<ImportCandidate>>): List<ImportCandidate>? {
+        val dialog = MultiElementListSelectionDialog(shell, ImportCandidatesLabelProvider)
         dialog.setTitle(ActionMessages.OrganizeImportsAction_selectiondialog_title)
         dialog.setMessage(ActionMessages.OrganizeImportsAction_selectiondialog_message)
 
-        val arrayImports = Array<Array<TypeNameMatch>>(ambiguousImports.size) { i ->
-            Array<TypeNameMatch>(ambiguousImports[i].size) { j ->
+        val arrayImports = Array(ambiguousImports.size) { i ->
+            Array(ambiguousImports[i].size) { j ->
                 ambiguousImports[i][j]
             }
         }
@@ -111,40 +134,40 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
         dialog.setElements(arrayImports)
 
         return if (dialog.open() == Window.OK) {
-            dialog.result.mapNotNull { (it as Array<*>).firstOrNull() as? TypeNameMatch }
+            dialog.result.mapNotNull { (it as Array<*>).firstOrNull() as? ImportCandidate }
         } else {
             null
         }
     }
-
-    private fun findTypesToImport(typeNames: List<String>): UniqueAndAmbiguousImports {
-        val uniqueImports = arrayListOf<TypeNameMatch>()
-        val ambiguousImports = arrayListOf<List<TypeNameMatch>>()
-        loop@ for (typeName in typeNames) {
-            val typesToImport = findApplicableTypes(typeName)
-            when (typesToImport.size) {
-                0 -> continue@loop
-                1 -> uniqueImports.add(typesToImport.first())
-                else -> ambiguousImports.add(typesToImport)
-            }
-        }
-
-        return UniqueAndAmbiguousImports(uniqueImports, ambiguousImports)
-    }
-
-    private data class UniqueAndAmbiguousImports(
-            val uniqueImports: List<TypeNameMatch>,
-            val ambiguousImports: List<List<TypeNameMatch>>)
 }
 
-fun prepareOptimizedImports(file: KtFile,
-                            descriptorsToImport: Collection<DeclarationDescriptor>,
-                            settings: KotlinCodeStyleSettings): List<ImportPath>? =
-        OptimizedImportsBuilder(
-                file,
-                OptimizedImportsBuilder.InputData(descriptorsToImport.toSet(), emptyList()),
-                OptimizedImportsBuilder.Options(
-                        settings.NAME_COUNT_TO_USE_STAR_IMPORT,
-                        settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS
-                ) { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS }
-        ).buildOptimizedImports()
+fun prepareOptimizedImports(
+    file: KtFile,
+    descriptorsToImport: Collection<DeclarationDescriptor>,
+    settings: KotlinCodeStyleSettings
+): List<ImportPath>? =
+    OptimizedImportsBuilder(
+        file,
+        OptimizedImportsBuilder.InputData(descriptorsToImport.toSet(), emptyList()),
+        OptimizedImportsBuilder.Options(
+            settings.NAME_COUNT_TO_USE_STAR_IMPORT,
+            settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS
+        ) { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS }
+    ).buildOptimizedImports()
+
+object ImportCandidatesLabelProvider : LabelProvider() {
+    private val typeLabelProvider = TypeNameMatchLabelProvider(TypeNameMatchLabelProvider.SHOW_FULLYQUALIFIED)
+
+    override fun getImage(element: Any?): Image? = when (element) {
+        is TypeCandidate -> typeLabelProvider.getImage(element.match)
+        is FunctionCandidate -> JavaUI.getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT)
+        else -> null
+    }
+
+    override fun getText(element: Any?): String? = when (element) {
+        is TypeCandidate -> typeLabelProvider.getText(element.match)
+        is FunctionCandidate -> element.fullyQualifiedName
+        else -> element.toString()
+            .also { KotlinLogger.logWarning("Unknown type of import candidate: $element") }
+    }
+}
