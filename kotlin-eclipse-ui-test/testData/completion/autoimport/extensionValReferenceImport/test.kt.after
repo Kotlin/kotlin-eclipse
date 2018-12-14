@@ -1,0 +1,7 @@
+import dependencies.foo
+
+fun main() {
+    String::foo
+}
+
+// NUMBER: 1

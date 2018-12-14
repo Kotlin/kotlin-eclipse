@@ -1,0 +1,7 @@
+import dependencies.unaryMinus
+
+fun main() {
+	- ""
+}
+
+// NUMBER: 1

@@ -18,22 +18,20 @@
 package org.jetbrains.kotlin.eclipse.ui.utils
 
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
-import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
-fun getBindingContext(kotlinEditor: KotlinEditor): BindingContext? {
-    val ktFile = kotlinEditor.parsedFile
-    return if (ktFile != null) getBindingContext(ktFile) else null
-}
+fun getBindingContext(kotlinEditor: KotlinEditor): BindingContext? =
+    kotlinEditor.parsedFile?.let { getBindingContext(it) }
 
-fun getBindingContext(ktElement: KtElement): BindingContext? {
-    return getBindingContext(ktElement.getContainingKtFile())
-}
+fun getBindingContext(ktElement: KtElement): BindingContext? =
+    getBindingContext(ktElement.containingKtFile)
 
-fun getBindingContext(ktFile: KtFile): BindingContext? {
-    return KotlinAnalyzer.analyzeFile(ktFile).analysisResult.bindingContext
-}
+fun getBindingContext(ktFile: KtFile): BindingContext? =
+    KotlinAnalyzer.analyzeFile(ktFile).analysisResult.bindingContext
+
+fun getModuleDescriptor(ktFile: KtFile): ModuleDescriptor =
+    KotlinAnalyzer.analyzeFile(ktFile).analysisResult.moduleDescriptor

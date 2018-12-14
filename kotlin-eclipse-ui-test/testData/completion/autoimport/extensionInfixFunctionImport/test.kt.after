@@ -1,0 +1,7 @@
+import dependencies.foo
+
+fun main() {
+    6 foo "bar"
+}
+
+// NUMBER: 1

@@ -1,0 +1,11 @@
+import dependencies1.foo
+
+fun main() {
+    with("") {
+        foo(27)
+    }
+}
+
+// NUMBER: 2
+// EXIST: Import 'foo' (dependencies1)
+// EXIST: Import 'foo' (dependencies2)
