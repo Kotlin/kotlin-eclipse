@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.buildship.core.projectconfigurators">
+      <configurator
+            class="org.jetbrains.kotlin.gradle.configurator.KotlinProjectConfigurator"
+            id="kotlin-eclipse-gradle.configurator"
+            runsAfter="org.eclipse.buildship.configurators.base">
+      </configurator>
+   </extension>
+   <extension
+         point="org.eclipse.buildship.core.invocationcustomizers">
+      <customizer
+            class="org.jetbrains.kotlin.gradle.initialization.ModelInjector">
+      </customizer>
+   </extension>
+
+</plugin>
