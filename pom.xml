@@ -17,6 +17,8 @@
 		<module>kotlin-weaving-feature</module>
 		<module>kotlin-eclipse-p2updatesite</module>
 		<module>kotlin-eclipse-maven</module>
+		<module>kotlin-eclipse-gradle-model</module>
+		<module>kotlin-eclipse-gradle</module>
 	</modules>
 
 	<properties>
@@ -27,6 +29,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/46/dev/update</ajdt-eclipse-repo.url>
+		
+		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
 		<kotlin.version>1.3.0</kotlin.version>
 
@@ -47,6 +51,11 @@
 			<url>${ajdt-eclipse-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
+		<repository>
+            <id>buildship</id>
+            <url>${buildship-repo.url}</url>
+            <layout>p2</layout>
+        </repository>
         <repository>
             <id>sonatype.oss.snapshots</id>
             <name>Sonatype OSS Snapshot Repository</name>
