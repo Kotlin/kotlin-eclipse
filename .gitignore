@@ -3,11 +3,13 @@
 .idea
 .metadata
 .recommenders
+.gradletasknamecache
 
 bin
 build
 common_testData
 kotlin-eclipse-ui-test/lib
+kotlin-eclipse-gradle-model/lib
 target
 
 *.iml
