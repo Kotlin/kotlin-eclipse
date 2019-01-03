@@ -295,7 +295,7 @@ class KotlinLightType(val originElement: IType) :
 
     override fun getType(name: String?): IType? = originElement.getType(name)
 
-    override fun getClassFile(): IClassFile? = originElement.getClassFile()
+    override fun getClassFile() = originElement.getClassFile()
 
     override fun getTypeParameterSignatures(): Array<out String>? = originElement.getTypeParameterSignatures()
 
