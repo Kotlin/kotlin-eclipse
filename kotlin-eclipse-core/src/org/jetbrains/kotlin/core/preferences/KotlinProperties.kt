@@ -38,34 +38,6 @@ class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferen
 
     var compilerFlags by StringPreference()
 
-    val analyzerCompilerFlags: Map<AnalysisFlag<*>, Any?>
-        get() = compilerFlags?.split("\\s+".toRegex())?.mapNotNull { flagString ->
-            flagString.split("=", limit = 2).takeIf { pair ->
-                pair.size == 2
-            }?.let { pair ->
-                CompilerFlagsMapping.analysisFlagsMapping[pair[0]]?.invoke(pair[1])
-            }
-        }?.toMap<AnalysisFlag<*>, Any?>() ?: emptyMap()
-
-    internal object CompilerFlagsMapping {
-        private fun createJvmDefaultModeFlag(value: String) =
-                AnalysisFlag.jvmDefaultMode to
-                        JvmDefaultMode.fromStringOrNull(value)
-
-        private fun createJsr305Flag(value: String) =
-                AnalysisFlag.jsr305 to
-                        when (ReportLevel.findByDescription(value)) {
-                            ReportLevel.IGNORE -> Jsr305State.DISABLED
-                            ReportLevel.STRICT -> Jsr305State.STRICT
-                            else -> Jsr305State.DEFAULT
-                        }
-
-        val analysisFlagsMapping = mapOf(
-                ("-Xjvm-default" to ::createJvmDefaultModeFlag),
-                ("-Xjsr305" to ::createJsr305Flag)
-        )
-    }
-
     companion object {
         // Property object in instance scope (workspace) must be created after init()
         val workspaceInstance by lazy { KotlinProperties() }
@@ -85,6 +57,3 @@ class CompilerPlugin(scope: IScopeContext, path: String) : Preferences(scope, pa
 
     var active by BooleanPreference()
 }
-
-val KotlinProperties.languageVersionSettings: LanguageVersionSettings
-    get() = LanguageVersionSettingsImpl(languageVersion, apiVersion, analyzerCompilerFlags)
