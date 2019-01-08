@@ -18,13 +18,17 @@ interface GradleProjectForEclipse : Serializable {
 
     val jvmTarget: String?
         get() = null
+    
+    val compilerPlugins: List<CompilerPluginConfig>
+    	get() = emptyList()
 }
 
 data class GradleProjectForEclipseImpl(
     override val codestyle: String?,
     override val apiVersion: String?,
     override val languageVersion: String?,
-    override val jvmTarget: String?
+    override val jvmTarget: String?,
+    override val compilerPlugins: List<CompilerPluginConfig>
 ) : GradleProjectForEclipse {
     override val isKotlinProject: Boolean = true
 }

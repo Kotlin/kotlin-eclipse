@@ -6,6 +6,10 @@ import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.jetbrains.kotlin.gradle.model.GradleProjectForEclipse
 import org.jetbrains.kotlin.gradle.model.GradleProjectForEclipseImpl
 import org.jetbrains.kotlin.gradle.model.NoKotlinProject
+import org.jetbrains.kotlin.gradle.model.CompilerPluginConfig
+import org.jetbrains.kotlin.gradle.model.AllOpen
+import org.jetbrains.kotlin.gradle.model.NoArg
+import org.jetbrains.kotlin.gradle.model.SAMWithReceiver
 
 initscript {
     dependencies {
@@ -30,19 +34,48 @@ class GradleProjectForEclipseInstaller @Inject constructor(val registry: Tooling
 }
 
 class GradleProjectForEclipseBuilder() : ToolingModelBuilder {
-    override fun canBuild(modelName: String) = modelName == GradleProjectForEclipse::class.qualifiedName
+    override fun canBuild(modelName: String) = (modelName == GradleProjectForEclipse::class.qualifiedName).also {println("can build: $it ($modelName)")}
 
     override fun buildAll(modelName: String, project: Project): Any {
-        val task = project.tasks["compileKotlin"] 
-        
+        val task = project.tasks.findByName("compileKotlin")
+
         return task?.dynamicCall("kotlinOptions")?.run {
             GradleProjectForEclipseImpl(
                 project.findProperty("kotlin.code.style") as? String,
                 property("apiVersion"),
                 property("languageVersion"),
-                property("jvmTarget")
+                property("jvmTarget"),
+                collectPlugins(project)
             )
         } ?: return NoKotlinProject
+    }
+
+    private fun collectPlugins(project: Project): List<CompilerPluginConfig> {
+        val result = arrayListOf<CompilerPluginConfig>()
+
+        project.extensions.findByName("allOpen")?.let {
+            AllOpen(
+                it.dynamicCall("myAnnotations") as List<String>,
+                it.dynamicCall("myPresets") as List<String>
+            )
+        }?.also { result += it }
+
+        project.extensions.findByName("noArg")?.let {
+            NoArg(
+                it.dynamicCall("myAnnotations") as List<String>,
+                it.dynamicCall("myPresets") as List<String>,
+                it.dynamicCall("invokeInitializers") as Boolean
+            )
+        }?.also { result += it }
+
+        project.extensions.findByName("samWithReceiver")?.let {
+            SAMWithReceiver(
+                it.dynamicCall("myAnnotations") as List<String>,
+                it.dynamicCall("myPresets") as List<String>
+            )
+        }?.also { result += it }
+        
+        return result
     }
     
     // We need this method, because there is no way for us to get here classes that are added to classpath alongside
