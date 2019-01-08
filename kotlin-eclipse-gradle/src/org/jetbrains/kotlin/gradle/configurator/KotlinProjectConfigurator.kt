@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.core.preferences.KotlinCodeStyleProperties
 import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.gradle.model.GradleProjectForEclipse
+import org.jetbrains.kotlin.core.log.KotlinLogger
 
 class KotlinProjectConfigurator : ProjectConfigurator {
 
@@ -27,7 +28,7 @@ class KotlinProjectConfigurator : ProjectConfigurator {
     }
 
     override fun configure(context: ProjectContext, monitor: IProgressMonitor) {
-        if (!model.isKotlinProject) return
+        if (!::model.isInitialized || !model.isKotlinProject) return
 
         val project = context.project
 
@@ -37,6 +38,7 @@ class KotlinProjectConfigurator : ProjectConfigurator {
         }
 
         val compilerProperties = KotlinEnvironment.getEnvironment(project).projectCompilerProperties
+        compilerProperties.loadDefaults()
         var configurationChanged = false
 
         fun String?.configure(action: KotlinProperties.(String) -> Unit) {
@@ -54,6 +56,14 @@ class KotlinProjectConfigurator : ProjectConfigurator {
             apiVersion = ApiVersion.parse(it) ?: ApiVersion.createByLanguageVersion(languageVersion)
         }
 
+        configurationChanged = configurationChanged || model.compilerPlugins.any()
+        model.compilerPlugins.forEach {
+            compilerProperties.compilerPlugins[it.pluginName].apply {
+                active = true
+                args += it.options
+            }
+        }
+
         if (configurationChanged) {
             compilerProperties.globalsOverridden = true
             compilerProperties.saveChanges()
@@ -61,7 +71,7 @@ class KotlinProjectConfigurator : ProjectConfigurator {
 
         model.codestyle
             ?.let { KotlinCodeStyleManager.buildsystemAliases[it] }
-            ?.let {
+            ?.also {
                 with(KotlinCodeStyleProperties(ProjectScope(project))) {
                     codeStyleId = it
                     globalsOverridden = true

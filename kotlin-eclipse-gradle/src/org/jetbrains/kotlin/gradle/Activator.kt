@@ -16,7 +16,6 @@ class Activator: BundleActivator {
         const val PLUGIN_ID = "org.jetbrains.kotlin.gradle"
         
         var context: BundleContext? = null
-        		get
             private set
     }
 }
