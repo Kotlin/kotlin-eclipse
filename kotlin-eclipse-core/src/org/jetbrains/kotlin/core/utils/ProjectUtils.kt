@@ -18,10 +18,8 @@ package org.jetbrains.kotlin.core.utils
 
 import org.eclipse.core.resources.*
 import org.eclipse.core.runtime.*
-import org.eclipse.jdt.core.IClasspathEntry
-import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.core.JavaModelException
+import org.eclipse.jdt.core.*
+import org.eclipse.jdt.launching.JavaRuntime
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
@@ -102,10 +100,17 @@ object ProjectUtils {
     }
 
     @JvmStatic
-    fun collectClasspathWithDependenciesForLaunch(javaProject: IJavaProject): List<File> =
-        expandClasspath(javaProject, true, true) { entry -> entry.entryKind == IClasspathEntry.CPE_LIBRARY }
+    fun collectClasspathWithDependenciesForLaunch(javaProject: IJavaProject, includeJRE: Boolean): List<File> {
+        val jreEntries = getJREClasspathElements(javaProject)
+        return expandClasspath(javaProject, true, true) {
+                entry -> entry.entryKind == IClasspathEntry.CPE_LIBRARY && (includeJRE || jreEntries.none { it.path == entry.path })
+        }
+    }
 
-    fun expandClasspath(
+    private fun getJREClasspathElements(javaProject: IJavaProject): List<IClasspathEntry> =
+        JavaRuntime.resolveRuntimeClasspathEntry(JavaRuntime.computeJREEntry(javaProject), javaProject).map { it.classpathEntry }
+
+    private fun expandClasspath(
         javaProject: IJavaProject, includeDependencies: Boolean,
         includeBinFolders: Boolean, entryPredicate: Function1<IClasspathEntry, Boolean>
     ): List<File> {

@@ -96,8 +96,8 @@ inline fun View<Composite>.textField(
         operations: View<Text>.() -> Unit = {}
 ) =
         Text(control, style).apply {
-            text = delegate.get() ?: ""
-            addModifyListener { _ ->
+            text = delegate.get().orEmpty()
+            addModifyListener {
                 delegate.set(text)
             }
         }.asView.apply(operations)
@@ -108,6 +108,12 @@ var View<Text>.text: String
     set(value) {
         control.text = value
     }
+
+fun View<Text>.update(value: String) = with(control) {
+    if (text != value) {
+        text = value
+    }
+}
 
 inline fun View<Composite>.gridContainer(cols: Int = 1, style: Int = SWT.NONE, operations: View<Composite>.() -> Unit = {}) =
         Composite(control, style).apply {
