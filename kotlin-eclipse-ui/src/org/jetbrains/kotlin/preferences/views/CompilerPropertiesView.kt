@@ -1,11 +1,11 @@
 package org.jetbrains.kotlin.preferences.views
 
+import javafx.beans.property.StringProperty
 import org.eclipse.jface.resource.FontDescriptor
 import org.eclipse.swt.SWT
-import org.eclipse.swt.widgets.Button
-import org.eclipse.swt.widgets.Composite
-import org.eclipse.swt.widgets.Display
-import org.eclipse.swt.widgets.Label
+import org.eclipse.swt.graphics.Color
+import org.eclipse.swt.layout.GridLayout
+import org.eclipse.swt.widgets.*
 import org.jetbrains.kotlin.config.ApiVersion
 import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.config.LanguageVersion
@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.preferences.compiler.CompilerPluginDialog
 import org.jetbrains.kotlin.swt.builders.*
 import org.jetbrains.kotlin.utils.LazyObservable
+import java.awt.TextField
 import kotlin.properties.Delegates
 
 fun View<Composite>.compilerPropertiesView(
@@ -54,7 +55,19 @@ class CompilerPropertiesView(
             }
     )
 
+    private var jdkHomeProxy: String? by LazyObservable(
+            initialValueProvider = { kotlinProperties.jdkHome },
+            onChange = { _, oldValue, value ->
+                if (oldValue != value) {
+                    kotlinProperties.jdkHome = value
+                    jdkHomeTextField.update(value.orEmpty())
+                }
+            }
+    )
+
     private lateinit var apiVersionErrorLabel: Label
+
+    private lateinit var jdkHomeTextField: View<Text>
 
     private var selectedPlugin by Delegates.observable<CompilerPlugin?>(null) { _, _, value ->
         val source = value?.source
@@ -89,6 +102,24 @@ class CompilerPropertiesView(
                     allowedValues = enumValues<LanguageVersion>().map { ApiVersion.createByLanguageVersion(it) },
                     nameProvider = ApiVersion::description) {
                 layout(horizontalGrab = true)
+            }
+            label("JDK Home: ")
+            gridContainer(cols = 2) {
+                with(control.layout as GridLayout) {
+                    marginWidth = 0
+                    marginHeight = 0
+                }
+                jdkHomeTextField = textField(::jdkHomeProxy, style = SWT.SINGLE or SWT.BORDER) {
+                    layout(
+                        horizontalGrab = true, verticalAlignment = SWT.CENTER
+                    )
+                }
+                button(label = "Browse") {
+                    layout(verticalAlignment = SWT.CENTER)
+                    onClick {
+                        DirectoryDialog(control.shell).open()?.let { jdkHomeProxy = it }
+                    }
+                }
             }
             label("")
             apiVersionErrorLabel = label("API version must be lower or equal to language version")

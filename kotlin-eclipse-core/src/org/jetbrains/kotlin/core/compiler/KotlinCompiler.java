@@ -106,7 +106,14 @@ public class KotlinCompiler {
         List<String> command = new ArrayList<>();
         command.add("-kotlin-home");
         command.add(ProjectUtils.getKtHome());
-        command.add("-no-jdk");
+
+        boolean jdkHomeUndefined = kotlinProperties.isJDKHomDefined();
+        if (jdkHomeUndefined) {
+            command.add("-no-jdk");
+        } else {
+            command.add("-jdk-home");
+            command.add(kotlinProperties.getJdkHome());
+        }
         command.add("-no-stdlib"); // Because we add runtime into the classpath
 
         command.add("-jvm-target");
@@ -125,10 +132,10 @@ public class KotlinCompiler {
         StringBuilder classPath = new StringBuilder();
         String pathSeparator = System.getProperty("path.separator");
 
-        for (File file : ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject)) {
+        for (File file : ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkHomeUndefined)) {
             classPath.append(file.getAbsolutePath()).append(pathSeparator);
         }
-        
+
         String additionalFlags = kotlinProperties.getCompilerFlags();
         if (additionalFlags != null && !StringsKt.isBlank(additionalFlags)) {
             for (String flag : additionalFlags.split("\\s+")) {
@@ -148,7 +155,7 @@ public class KotlinCompiler {
 
         return command.toArray(new String[0]);
     }
- 
+
     private Collection<String> configurePlugin(CompilerPlugin plugin) {
         List<String> result = new ArrayList<>();
         String jarPath = plugin.getJarPath();
@@ -163,7 +170,7 @@ public class KotlinCompiler {
         }
         return result;
     }
-    
+
     @NotNull
     private KotlinCompilerResult parseCompilerOutput(Reader reader) {
         final CompilerOutputData compilerOutput = new CompilerOutputData();

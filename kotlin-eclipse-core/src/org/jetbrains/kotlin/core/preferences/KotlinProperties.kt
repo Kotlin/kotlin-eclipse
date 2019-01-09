@@ -34,9 +34,13 @@ class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferen
         override fun writer(value: ApiVersion) = value.versionString
     }
 
+    var jdkHome by StringPreference()
+
     val compilerPlugins by ChildCollection(::CompilerPlugin)
 
     var compilerFlags by StringPreference()
+
+    fun isJDKHomDefined() = jdkHome.isNullOrBlank()
 
     companion object {
         // Property object in instance scope (workspace) must be created after init()
