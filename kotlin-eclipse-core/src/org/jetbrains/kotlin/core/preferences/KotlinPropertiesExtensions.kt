@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.config.AnalysisFlag
 import org.jetbrains.kotlin.config.JvmDefaultMode
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.config.JvmAnalysisFlags
 import org.jetbrains.kotlin.utils.ReportLevel
 import kotlin.reflect.jvm.internal.impl.utils.Jsr305State
 
@@ -11,7 +12,7 @@ private enum class CompilerFlagsMapping(val flag: String) : (String) -> Pair<Ana
     JVM_DEFAULT("-Xjvm-default") {
         override fun invoke(value: String) =
             JvmDefaultMode.fromStringOrNull(value)
-                ?.let { AnalysisFlag.jvmDefaultMode to it }
+                ?.let { JvmAnalysisFlags.jvmDefaultMode to it }
     },
     JSR_305("-Xjsr305") {
         override fun invoke(value: String) =
@@ -20,7 +21,7 @@ private enum class CompilerFlagsMapping(val flag: String) : (String) -> Pair<Ana
                 ReportLevel.WARN -> Jsr305State.DEFAULT
                 ReportLevel.STRICT -> Jsr305State.STRICT
                 else -> null
-            }?.let { AnalysisFlag.jsr305 to it }
+            }?.let { JvmAnalysisFlags.jsr305 to it }
     };
 
     companion object {

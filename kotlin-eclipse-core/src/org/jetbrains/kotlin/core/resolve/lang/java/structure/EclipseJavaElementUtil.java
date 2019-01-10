@@ -47,7 +47,7 @@ import org.jetbrains.kotlin.load.java.JavaVisibilities;
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaValueParameter;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
-import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass;
+import org.jetbrains.kotlin.load.kotlin.KotlinClassFinder;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.name.Name;
@@ -230,7 +230,7 @@ public class EclipseJavaElementUtil {
         if (archiveRelativeFile == null) {
             return false;
         }
-        KotlinJvmBinaryClass binaryClass = KotlinBinaryClassCache.Companion.getKotlinBinaryClass(archiveRelativeFile, null);
+        KotlinClassFinder.Result binaryClass = KotlinBinaryClassCache.Companion.getKotlinBinaryClassOrClassFileContent(archiveRelativeFile, null);
         if (binaryClass == null) {
             return false;
         }
