@@ -15,7 +15,7 @@ ext {
     kotlinxVersion          = project.findProperty('kolinxVersion')           ?: '1.0.1'
 
     ideaVersion                      = project.findProperty('ideaVersion')                      ?: '162.1812.17'
-    kotlinIdeaCompatibleVersionMinor = project.findProperty('kotlinIdeaCompatibleVersionMinor') ?: '2017.3'
+    kotlinIdeaCompatibleVersionMinor = project.findProperty('kotlinIdeaCompatibleVersionMinor') ?: '2018.3'
 
     //directories
     testDataDir      = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_testData") //TODO later refactor to the proper project dir

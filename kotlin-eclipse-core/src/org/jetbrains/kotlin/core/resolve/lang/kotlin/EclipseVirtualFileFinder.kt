@@ -28,16 +28,13 @@ import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaClassifier
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 import org.jetbrains.kotlin.load.java.structure.JavaClass
-import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
-import org.jetbrains.kotlin.load.kotlin.KotlinJvmBinaryClass
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.serialization.deserialization.MetadataPackageFragment
 import java.io.InputStream
 import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndex
-import org.jetbrains.kotlin.load.kotlin.VirtualFileFinder
-import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
+import org.jetbrains.kotlin.load.kotlin.*
 
 class EclipseVirtualFileFinder(
         private val javaProject: IJavaProject,
@@ -113,7 +110,7 @@ class EclipseVirtualFileFinder(
                 dir.findChild(fileName)?.check(VirtualFile::isValid)
             }?.check { it in scope }
 
-    override public fun findKotlinClass(javaClass: JavaClass): KotlinJvmBinaryClass? {
+    override public fun findKotlinClassOrContent(javaClass: JavaClass): KotlinClassFinder.Result? {
         val fqName = javaClass.fqName
         if (fqName == null) return null
 
@@ -130,7 +127,7 @@ class EclipseVirtualFileFinder(
             if (file != null) throw IllegalStateException("Virtual file not found for $javaClass")
         }
 
-        return KotlinBinaryClassCache.getKotlinBinaryClass(file!!)
+        return KotlinBinaryClassCache.getKotlinBinaryClassOrClassFileContent(file!!)
     }
 }
 

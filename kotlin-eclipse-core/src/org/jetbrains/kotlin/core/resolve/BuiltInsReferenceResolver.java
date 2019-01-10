@@ -169,7 +169,7 @@ public class BuiltInsReferenceResolver {
             throw new RuntimeException(new IOException(VfsBundle.message("url.parse.error", url.toExternalForm())));
           }
         }
-        if (SystemInfo.isWindows || SystemInfo.isOS2) {
+        if (SystemInfo.isWindows) {
           while (!path.isEmpty() && path.charAt(0) == '/') {
             path = path.substring(1, path.length());
           }
