@@ -5,6 +5,8 @@ import org.gradle.tooling.provider.model.ToolingModelBuilder
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.jetbrains.kotlin.gradle.model.GradleProjectForEclipse
 import org.jetbrains.kotlin.gradle.model.GradleProjectForEclipseImpl
+import org.jetbrains.kotlin.gradle.model.GradleMultiProjectForEclipse
+import org.jetbrains.kotlin.gradle.model.GradleMultiProjectForEclipseImpl
 import org.jetbrains.kotlin.gradle.model.NoKotlinProject
 import org.jetbrains.kotlin.gradle.model.CompilerPluginConfig
 import org.jetbrains.kotlin.gradle.model.AllOpen
@@ -27,28 +29,36 @@ allprojects {
     apply<GradleProjectForEclipseInstaller>()
 }
 
-class GradleProjectForEclipseInstaller @Inject constructor(val registry: ToolingModelBuilderRegistry) : Plugin<Project> {
+class GradleProjectForEclipseInstaller @Inject constructor(val registry: ToolingModelBuilderRegistry) :
+    Plugin<Project> {
     override fun apply(project: Project) {
         registry.register(GradleProjectForEclipseBuilder())
     }
 }
 
 class GradleProjectForEclipseBuilder() : ToolingModelBuilder {
-    override fun canBuild(modelName: String) = (modelName == GradleProjectForEclipse::class.qualifiedName)
 
-    override fun buildAll(modelName: String, project: Project): Any {
-        val task = project.tasks.findByName("compileKotlin")
+    override fun canBuild(modelName: String) = (modelName == GradleMultiProjectForEclipse::class.qualifiedName)
 
-        return task?.dynamicCall("kotlinOptions")?.run {
-            GradleProjectForEclipseImpl(
-                project.findProperty("kotlin.code.style") as? String,
-                property("apiVersion"),
-                property("languageVersion"),
-                property("jvmTarget"),
-                collectPlugins(project)
-            )
-        } ?: return NoKotlinProject
-    }
+    override fun buildAll(modelName: String, project: Project): Any =
+        GradleMultiProjectForEclipseImpl(process(project).toMap())
+
+    private fun process(project: Project): List<Pair<String, GradleProjectForEclipse>> =
+        project.childProjects.values.flatMap(::process) +
+                (project.name to buildForSubproject(project))
+
+    private fun buildForSubproject(project: Project): GradleProjectForEclipse =
+        project.tasks.findByName("compileKotlin")
+            ?.dynamicCall("kotlinOptions")
+            ?.run {
+                GradleProjectForEclipseImpl(
+                    project.findProperty("kotlin.code.style") as? String,
+                    property("apiVersion"),
+                    property("languageVersion"),
+                    property("jvmTarget"),
+                    collectPlugins(project)
+                )
+            } ?: NoKotlinProject
 
     private fun collectPlugins(project: Project): List<CompilerPluginConfig> {
         val result = arrayListOf<CompilerPluginConfig>()
@@ -74,16 +84,16 @@ class GradleProjectForEclipseBuilder() : ToolingModelBuilder {
                 it.dynamicCall("myPresets") as List<String>
             )
         }?.also { result += it }
-        
+
         return result
     }
-    
+
     // We need this method, because there is no way for us to get here classes that are added to classpath alongside
-    // the kotlin gradle plugin. Even if we add them to the classpath of this initscript, they will have different
-    // classloader.
+// the kotlin gradle plugin. Even if we add them to the classpath of this initscript, they will have different
+// classloader.
     fun Any.dynamicCall(name: String, vararg args: Any?): Any? =
         this::class.members.first { it.name == name && it.parameters.size == args.size + 1 }
-                .call(this, *args)
-    
+            .call(this, *args)
+
     fun Any.property(name: String): String? = dynamicCall(name) as? String
 }

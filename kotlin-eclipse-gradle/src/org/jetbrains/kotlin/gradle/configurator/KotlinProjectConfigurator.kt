@@ -16,21 +16,29 @@ import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.gradle.model.GradleProjectForEclipse
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.gradle.model.GradleMultiProjectForEclipse
 
 class KotlinProjectConfigurator : ProjectConfigurator {
 
-    lateinit var model: GradleProjectForEclipse
+    lateinit var multiModel: GradleMultiProjectForEclipse
 
     override fun init(context: InitializationContext, monitor: IProgressMonitor) {
         context.gradleBuild.withConnection({
-            model = it.getModel(GradleProjectForEclipse::class.java)
+            multiModel = it.getModel(GradleMultiProjectForEclipse::class.java)
         }, monitor)
     }
 
     override fun configure(context: ProjectContext, monitor: IProgressMonitor) {
-        if (!::model.isInitialized || !model.isKotlinProject) return
-
         val project = context.project
+        
+        if (!::multiModel.isInitialized) return
+        val model = multiModel[project.name]
+        if (model == null || !model.isKotlinProject) {
+            // Kotlin nature may left in .project file after editing out kotlin plugin from gradle buildfile.
+            // This leads to nasty bugs so we have to unconfigure project.
+            unconfigure(context, monitor)
+            return
+        }
 
         KotlinNature.addNature(project)
         if (!ProjectUtils.hasKotlinRuntime(project)) {
