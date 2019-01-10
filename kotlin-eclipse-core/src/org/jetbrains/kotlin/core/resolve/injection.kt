@@ -21,7 +21,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.builtins.jvm.JvmBuiltIns
 import org.jetbrains.kotlin.builtins.jvm.JvmBuiltInsPackageFragmentProvider
-import org.jetbrains.kotlin.config.AnalysisFlag
+import org.jetbrains.kotlin.config.JvmAnalysisFlags
 import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
@@ -112,7 +112,7 @@ public fun createContainerForLazyResolveWithJava(
     
     useInstance(languageVersionSettings)
     
-    useInstance(languageVersionSettings.getFlag(AnalysisFlag.jsr305))
+    useInstance(languageVersionSettings.getFlag(JvmAnalysisFlags.jsr305))
     
     if (useBuiltInsProvider) {
         useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)
