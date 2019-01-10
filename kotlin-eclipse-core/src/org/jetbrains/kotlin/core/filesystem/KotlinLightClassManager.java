@@ -16,10 +16,13 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.internal.core.util.LRUCache;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,8 +46,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-
-import kotlin.jvm.functions.Function1;
 
 public class KotlinLightClassManager {
     private static final int LIGHT_CLASSES_CACHE_SIZE = 300;
@@ -112,8 +113,7 @@ public class KotlinLightClassManager {
             if (lightClassIFile == null) continue;
             
             LightClassFile lightClassFile = new LightClassFile(lightClassIFile);
-            
-            createParentDirsFor(lightClassFile);
+
             if (!lightClassFile.exists()) {
                 toCreate.add(lightClassFile);
             }
@@ -147,6 +147,7 @@ public class KotlinLightClassManager {
 
     private void updateLightClasses(List<LightClassFile> toCreate, List<LightClassFile> toRemove) {
         for (LightClassFile lightClassFile: toCreate) {
+            createParentDirsFor(lightClassFile);
             lightClassFile.createIfNotExists();
         }
         for (LightClassFile lightClassFile: toRemove) {
