@@ -1,9 +1,7 @@
 package org.jetbrains.kotlin.preferences.views
 
-import javafx.beans.property.StringProperty
 import org.eclipse.jface.resource.FontDescriptor
 import org.eclipse.swt.SWT
-import org.eclipse.swt.graphics.Color
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.*
 import org.jetbrains.kotlin.config.ApiVersion
@@ -14,7 +12,6 @@ import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.preferences.compiler.CompilerPluginDialog
 import org.jetbrains.kotlin.swt.builders.*
 import org.jetbrains.kotlin.utils.LazyObservable
-import java.awt.TextField
 import kotlin.properties.Delegates
 
 fun View<Composite>.compilerPropertiesView(

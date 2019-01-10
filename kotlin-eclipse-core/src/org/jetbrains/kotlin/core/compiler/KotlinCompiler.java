@@ -107,7 +107,7 @@ public class KotlinCompiler {
         command.add("-kotlin-home");
         command.add(ProjectUtils.getKtHome());
 
-        boolean jdkHomeUndefined = kotlinProperties.isJDKHomDefined();
+        boolean jdkHomeUndefined = kotlinProperties.isJDKHomUndefined();
         if (jdkHomeUndefined) {
             command.add("-no-jdk");
         } else {
