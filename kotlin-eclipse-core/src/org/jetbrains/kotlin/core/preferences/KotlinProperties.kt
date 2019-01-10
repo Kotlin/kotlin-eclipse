@@ -40,7 +40,7 @@ class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferen
 
     var compilerFlags by StringPreference()
 
-    fun isJDKHomDefined() = jdkHome.isNullOrBlank()
+    fun isJDKHomUndefined() = jdkHome.isNullOrBlank()
 
     companion object {
         // Property object in instance scope (workspace) must be created after init()
