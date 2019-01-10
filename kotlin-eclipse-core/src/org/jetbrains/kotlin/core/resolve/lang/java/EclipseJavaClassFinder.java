@@ -82,7 +82,7 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
         MockProject ideaProject = KotlinEnvironment.Companion.getEnvironment(javaProject.getProject()).getProject();
         CodeAnalyzerInitializer.Companion.getInstance(ideaProject).initialize(trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer);
     }
-    
+
     @Override
     @Nullable
     public JavaPackage findPackage(@NotNull FqName fqName) {
@@ -93,7 +93,13 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
 
         return null;
     }
-    
+
+    @Override
+    @Nullable
+    public JavaClass findClass(@NotNull Request request) {
+        return findClass(request.getClassId());
+    }
+
     @Override
     @Nullable
     public JavaClass findClass(@NotNull ClassId classId) {
