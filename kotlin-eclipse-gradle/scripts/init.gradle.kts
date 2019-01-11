@@ -34,7 +34,7 @@ class GradleProjectForEclipseInstaller @Inject constructor(val registry: Tooling
 }
 
 class GradleProjectForEclipseBuilder() : ToolingModelBuilder {
-    override fun canBuild(modelName: String) = (modelName == GradleProjectForEclipse::class.qualifiedName).also {println("can build: $it ($modelName)")}
+    override fun canBuild(modelName: String) = (modelName == GradleProjectForEclipse::class.qualifiedName)
 
     override fun buildAll(modelName: String, project: Project): Any {
         val task = project.tasks.findByName("compileKotlin")
