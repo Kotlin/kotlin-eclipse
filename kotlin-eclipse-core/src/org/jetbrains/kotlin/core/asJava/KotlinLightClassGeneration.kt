@@ -19,15 +19,16 @@ package org.jetbrains.kotlin.core.asJava
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.runtime.Path
+import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
 import org.jetbrains.kotlin.codegen.state.GenerationState
 import org.jetbrains.kotlin.config.CompilerConfiguration
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
-import org.jetbrains.kotlin.fileClasses.getFileClassInternalName
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtScript
@@ -36,14 +37,16 @@ import org.jetbrains.kotlin.lexer.KtTokens
 object KotlinLightClassGeneration {
     fun updateLightClasses(project: IProject, affectedFiles: Set<IFile>) {
         if (!KotlinJavaManager.hasLinkedKotlinBinFolder(project)) return
-        
+
+        KotlinPsiManager.recreateSourcesForProject(JavaCore.create(project))
+
         KotlinLightClassManager.getInstance(project).computeLightClassesSources()
         KotlinLightClassManager.getInstance(project).updateLightClasses(affectedFiles)
     }
-    
+
     fun buildLightClasses(
-            analysisResult: AnalysisResult, 
-            eclipseProject: IProject, 
+            analysisResult: AnalysisResult,
+            eclipseProject: IProject,
             jetFiles: List<KtFile>,
             requestedClassName: String): GenerationState {
         val state = GenerationState.Builder(
@@ -55,17 +58,17 @@ object KotlinLightClassGeneration {
                 CompilerConfiguration.EMPTY)
         	.generateDeclaredClassFilter(object : GenerationState.GenerateClassFilter() {
                     override fun shouldAnnotateClass(processingClassOrObject: KtClassOrObject): Boolean = true
-                    
+
                     override fun shouldGenerateClass(processingClassOrObject: KtClassOrObject): Boolean {
                         val internalName = KotlinLightClassManager.getInternalName(processingClassOrObject)
                         return checkByInternalName(internalName, requestedClassName)
                     }
-                    
+
                     override fun shouldGeneratePackagePart(jetFile: KtFile): Boolean {
                         val internalName = JvmFileClassUtil.getFileClassInternalName(jetFile)
                         return checkByInternalName(internalName, requestedClassName)
                     }
-                    
+
                     override fun shouldGenerateScript(script: KtScript): Boolean = false
 
                     override fun shouldGenerateClassMembers(processingClassOrObject: KtClassOrObject): Boolean {
@@ -73,24 +76,24 @@ object KotlinLightClassGeneration {
 								processingClassOrObject.hasModifier(KtTokens.COMPANION_KEYWORD)
 					}
 			}).build()
-        
+
         KotlinCodegenFacade.compileCorrectFiles(state) { exception, fileUrl -> Unit }
-        
+
         return state
     }
-    
+
     private fun checkByInternalName(internalName: String?, requestedClassFileName: String): Boolean {
         if (internalName == null) return false
-        
+
         val classFileName = Path(internalName).lastSegment()
         val requestedInternalName = requestedClassFileName.dropLast(".class".length)
-        
+
         if (requestedInternalName.startsWith(classFileName)) {
             if (requestedInternalName.length == classFileName.length) return true
-            
+
             if (requestedInternalName[classFileName.length] == '$') return true
         }
-        
+
         return false
     }
 }
