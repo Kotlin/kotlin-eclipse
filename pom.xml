@@ -194,6 +194,7 @@
 						<timestampProvider>jgit</timestampProvider>
 						<jgit.ignore>
 						</jgit.ignore>
+						<jgit.dirtyWorkingTree>warning</jgit.dirtyWorkingTree>
 					</configuration>
 				</plugin>
 				<plugin>
