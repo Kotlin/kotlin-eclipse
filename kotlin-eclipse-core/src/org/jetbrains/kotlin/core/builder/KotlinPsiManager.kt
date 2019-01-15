@@ -119,14 +119,14 @@ private class ProjectSourceFiles : PsiFilesStorage {
     
     override fun isApplicable(file: IFile): Boolean = existsInProjectSources(file)
 
-    fun existsInProjectSources(file: IFile): Boolean {
+    fun existsInProjectSources(file: IFile, update: Boolean = true): Boolean {
         synchronized (mapOperationLock) {
-            val project = file.getProject() ?: return false
-            
-            updateProjectPsiSourcesIfNeeded(project)
-            
-            val files = projectFiles[project]
-            return if (files != null) files.contains(file) else false
+            return file.project?.let {
+                if (update) {
+                    updateProjectPsiSourcesIfNeeded(it)
+                }
+                projectFiles[it]?.contains(file)
+            } ?: false
         }
     }
     
@@ -153,10 +153,10 @@ private class ProjectSourceFiles : PsiFilesStorage {
             assert(KotlinNature.hasKotlinNature(file.getProject()),
                     { "Project (" + file.getProject().getName() + ") does not have Kotlin nature" })
             
-            assert(!existsInProjectSources(file), { "File(" + file.getName() + ") is already added" })
+            assert(!existsInProjectSources(file, false), { "File(" + file.getName() + ") is already added" })
             
             projectFiles
-                    .getOrPut(file.project) { hashSetOf<IFile>() }
+                    .getOrPut(file.project) { hashSetOf() }
                     .add(file)
         }
     }
@@ -194,7 +194,7 @@ private class ProjectSourceFiles : PsiFilesStorage {
             projectFiles.put(javaProject.getProject(), HashSet<IFile>())
             
             for (sourceFolder in javaProject.sourceFolders) {
-                sourceFolder.getResource().accept { resource ->
+                sourceFolder.resource.accept { resource ->
                     if (resource is IFile && isKotlinFile(resource)) {
                         addFile(resource)
                     }
@@ -239,6 +239,23 @@ private class ProjectSourceFiles : PsiFilesStorage {
                 val jetFile = KotlinPsiManager.parseText(sourceCodeWithouCR, file)!!
                 cachedKtFiles.put(file, jetFile)
             }
+        }
+    }
+
+    fun addFilesIfNotPresent(project: IJavaProject) {
+        try {
+            with(projectFiles.getOrPut(project.project) { hashSetOf() }) {
+                for (sourceFolder in project.sourceFolders) {
+                    sourceFolder.resource.accept { resource ->
+                        if (resource is IFile && isKotlinFile(resource) && !contains(resource)) {
+                            add(resource)
+                        }
+                        true
+                    }
+                }
+            }
+        } catch (e: CoreException) {
+            KotlinLogger.logError(e)
         }
     }
 }
@@ -388,5 +405,12 @@ object KotlinPsiManager {
     @JvmStatic
     fun commitFile(file: IFile, document: IDocument) {
         getKotlinFileIfExist(file, document.get())
+    }
+
+    @JvmStatic
+    fun recreateSourcesForProject(project: IJavaProject) {
+        if (projectSourceFiles.containsProject(project.project)) {
+            projectSourceFiles.addFilesIfNotPresent(project)
+        }
     }
 }
