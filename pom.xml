@@ -19,11 +19,12 @@
 		<module>kotlin-eclipse-maven</module>
 		<module>kotlin-eclipse-gradle-model</module>
 		<module>kotlin-eclipse-gradle</module>
+		<module>kotlin-eclipse-gradle-feature</module>
 	</modules>
 
 	<properties>
-		<tycho.version>0.22.0</tycho.version>
-		<tycho-extras.version>0.18.0</tycho-extras.version>
+		<tycho.version>1.3.0</tycho.version>
+		<tycho-extras.version>1.3.0</tycho-extras.version>
 
 		<eclipse-repo.url>http://download.eclipse.org/releases/oxygen</eclipse-repo.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

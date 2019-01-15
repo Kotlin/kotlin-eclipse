@@ -3,5 +3,8 @@
    <feature url="features/org.jetbrains.kotlin.feature_0.8.13.qualifier.jar" id="org.jetbrains.kotlin.feature" version="0.8.13.qualifier">
       <category name="org.jetbrains.kotlin.category"/>
    </feature>
+   <feature url="features/org.jetbrains.kotlin.feature_0.8.11.qualifier.jar" id="org.jetbrains.kotlin.gradle.feature" version="0.8.11.qualifier">
+      <category name="org.jetbrains.kotlin.category"/>
+   </feature>
    <category-def name="org.jetbrains.kotlin.category" label="Kotlin Development Tools"/>
 </site>
