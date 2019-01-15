@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jetbrains.kotlin.feature"
-      label="Kotlin"
-      version="0.8.13.qualifier"
+      id="org.jetbrains.kotlin.gradle.feature"
+      label="Kotlin-gradle"
+      version="0.8.11.qualifier"
       provider-name="JetBrains">
 
    <description url="http://kotlinlang.org/">
-      Kotlin language support for Kotlin 1.2.60
+      Integration of Kotlin language plugin and gradle
    </description>
 
    <copyright url="http://www.jetbrains.com/">
@@ -29,42 +29,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
    </license>
 
-   <includes
-         id="org.jetbrains.kotlin.policy"
-         version="0.0.0"/>
-
-   <includes
-         id="org.jetbrains.kotlin.weaving.feature"
-         version="0.0.0"
-         optional="true"/>
-
    <plugin
-         id="org.jetbrains.kotlin.bundled-compiler"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.jetbrains.kotlin.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.jetbrains.kotlin.ui"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.jetbrains.kotlin.aspects"
+         id="org.jetbrains.kotlin.gradle"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="org.jetbrains.kotlin.maven"
+         id="org.jetbrains.kotlin.gradle.model"
          download-size="0"
          install-size="0"
          version="0.0.0"
