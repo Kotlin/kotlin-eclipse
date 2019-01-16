@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.jetbrains.kotlin.core.model.KotlinNature;
+import org.jetbrains.kotlin.utils.MessageDialogContentUtils;
 
 
 public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
@@ -40,12 +41,18 @@ public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
         } catch (InterruptedException e) {
             return false;
         }
-        
-        KotlinNature.Companion.addNature(op.getResult());
-        
-        selectAndRevealResource(op.getResult());
 
-        return true;
+        ProjectCreationOp.OperationResult result = op.getResult();
+        if (result.isSuccess()) {
+            KotlinNature.Companion.addNature(result.getProject());
+            selectAndRevealResource(result.getProject());
+            return true;
+        } else {
+            MessageDialog.openError(getShell(),
+                    MessageDialogContentUtils.getErrorTitleForMessageDialog(result.getException()),
+                    MessageDialogContentUtils.getErrorDescriptionForMessageDialog(result.getException()));
+            return false;
+        }
     }
 
     @Override
