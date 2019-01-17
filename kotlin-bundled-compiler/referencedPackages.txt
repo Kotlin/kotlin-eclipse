@@ -1,0 +1,13 @@
+# List of packages that are referenced from other dependencies and should be included in plugin to avoid classpath issues
+
+com.intellij.psi.codeStyle
+com.intellij.psi.formatter
+com.intellij.openapi.options
+com.intellij.openapi.options
+com.intellij.application.options
+com.intellij.formatting
+com.intellij.formatting.engine
+com.intellij.util.containers
+gnu.trove
+com.intellij.openapi.util
+com.intellij.psi.codeStyle.arrangement
