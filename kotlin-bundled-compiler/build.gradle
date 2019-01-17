@@ -1,36 +1,39 @@
-import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
+import com.intellij.buildsupport.dependencies.PackageListFromManifest
+import com.intellij.buildsupport.dependencies.PackageListFromSimpleFile
 import com.intellij.buildsupport.resolve.http.idea.IntellijIdeaArtifactsResolver
+import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 import com.intellij.buildsupport.utils.FileUtils
-
 
 ext {
     // constants
     teamcityBaseUrl = 'https://teamcity.jetbrains.com'
-    ideaSdkUrl      = 'https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea'
+    ideaSdkUrl = 'https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea'
 
 
     // properties that might/should be modifiable
     kotlinCompilerTcBuildId = project.findProperty('kotlinCompilerTcBuildId') ?: '1799591'
-    kotlinCompilerVersion   = project.findProperty('kotlinCompilerVersion')   ?: '1.3.11'
-    kotlinxVersion          = project.findProperty('kolinxVersion')           ?: '1.0.1'
+    kotlinCompilerVersion = project.findProperty('kotlinCompilerVersion') ?: '1.3.11'
+    kotlinxVersion = project.findProperty('kolinxVersion') ?: '1.0.1'
 
-    ideaVersion                      = project.findProperty('ideaVersion')                      ?: '162.1812.17'
+    ideaVersion = project.findProperty('ideaVersion') ?: '183.5429.1'
     kotlinIdeaCompatibleVersionMinor = project.findProperty('kotlinIdeaCompatibleVersionMinor') ?: '2018.3'
 
     //directories
-    testDataDir      = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_testData") //TODO later refactor to the proper project dir
-    testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")             //TODO later refactor to the proper project dir
+    testDataDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_testData")
+    //TODO later refactor to the proper project dir
+    testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")
+    //TODO later refactor to the proper project dir
 
     downloadDirName = 'downloads'
-    libDir          = project.findProperty('teamcity.buildsupport.workingDir') ? file("${teamcity.build.workingDir}/lib")
-                                                                               : file('lib')
-    downloadDir     = file("$libDir/$downloadDirName")
+    libDir = project.findProperty('teamcity.buildsupport.workingDir') ? file("${teamcity.build.workingDir}/lib")
+            : file('lib')
+    downloadDir = file("$libDir/$downloadDirName")
 
     tcArtifactsResolver = new KotlinCompilerTCArtifactsResolver(teamcityBaseUrl,
-                                                                project.hasProperty('lastSuccessfulBuild'),
-                                                                kotlinCompilerTcBuildId,
-                                                                kotlinCompilerVersion,
-                                                                kotlinIdeaCompatibleVersionMinor)
+            project.hasProperty('lastSuccessfulBuild'),
+            kotlinCompilerTcBuildId,
+            kotlinCompilerVersion,
+            kotlinIdeaCompatibleVersionMinor)
 
     ideaArtifactsResolver = new IntellijIdeaArtifactsResolver(ideaSdkUrl, ideaVersion)
 }
@@ -110,7 +113,7 @@ task downloadKotlinCompilerPluginAndExtractSelectedJars {
                         'Kotlin/kotlinc/lib/allopen-compiler-plugin.jar',
                         'Kotlin/kotlinc/lib/noarg-compiler-plugin.jar',
                         'Kotlin/kotlinc/lib/sam-with-receiver-compiler-plugin.jar',
-                        'Kotlin/kotlinc/lib/annotations-13.0.jar' ]
+                        'Kotlin/kotlinc/lib/annotations-13.0.jar']
 
             includeEmptyDirs = false
 
@@ -158,22 +161,22 @@ task downloadIdeaDistributionZipAndExtractSelectedJars {
     ext {
         locallyDownloadedIdeaZipFile = file("$downloadDir/ideaIC.zip")
 
-        openApiJarFileName = 'openapi.jar'
-        utilJarFileName    = 'util.jar'
-        ideaJarFileName    = 'idea.jar'
+        chosenJars = ['openapi',
+                      'util',
+                      'idea',
+                      'trove4j',
+                      'platform-api',
+                      'platform-impl']
 
-        downloadedOpenApiJarFile = file("$libDir/$openApiJarFileName")
-        downloadedUtilJarFile    = file("$libDir/$utilJarFileName")
-        downloadedIdeaJarFile    = file("$libDir/$ideaJarFileName")
     }
 
     doLast {
         ideaArtifactsResolver.downloadTo ideaArtifactsResolver.IDEA_IC_ZIP, locallyDownloadedIdeaZipFile
-
+        
         copy {
             from zipTree(locallyDownloadedIdeaZipFile)
 
-            includes = ["lib/$openApiJarFileName", "lib/$utilJarFileName", "lib/$ideaJarFileName"]
+            includes = chosenJars.collect { "lib/${it}.jar" }
 
             includeEmptyDirs = false
 
@@ -187,115 +190,43 @@ task downloadIdeaDistributionZipAndExtractSelectedJars {
     }
 }
 
-task extractSelectedFilesFromOpenApiJar(type: Copy, dependsOn: downloadIdeaDistributionZipAndExtractSelectedJars) {
+task extractSelectedFilesFromIdeaJars(dependsOn: downloadIdeaDistributionZipAndExtractSelectedJars) {
     ext {
-        extractDir = file("$downloadDir/openapi-formatter")
+        packages = [/*new PackageListFromManifest('META-INF/MANIFEST.MF'),*/
+                    new PackageListFromSimpleFile('referencedPackages.txt')
+        ].collectMany { it.pathsToInclude }
+        extractDir = file("$downloadDir/dependencies")
     }
 
-    from zipTree(downloadIdeaDistributionZipAndExtractSelectedJars.downloadedOpenApiJarFile)
-
-    includes = ['com/intellij/psi/codeStyle/**/*.class',
-                'com/intellij/formatting/**/*.class',
-                'com/intellij/application/options/**/*.class',
-                'com/intellij/openapi/options/**/*.class',
-                'com/intellij/configurationStore/*.class',
-                'com/intellij/openapi/progress/*.class']
-
-    into extractDir
-
     doLast {
-        downloadIdeaDistributionZipAndExtractSelectedJars.downloadedOpenApiJarFile.delete()
+        for (library in downloadIdeaDistributionZipAndExtractSelectedJars.chosenJars) {
+            copy {
+                from zipTree("$libDir/${library}.jar")
+                includes = packages
+                includeEmptyDirs = false
+                into extractDir
+            }
+            file("$libDir/${library}.jar").delete()
+        }
     }
 }
 
-task createOpenApiFormatterJar(type: Jar, dependsOn: extractSelectedFilesFromOpenApiJar) {
-    from extractSelectedFilesFromOpenApiJar.extractDir
+task createIdeDependenciesJar(type: Jar, dependsOn: extractSelectedFilesFromIdeaJars) {
+    from extractSelectedFilesFromIdeaJars.extractDir
 
     destinationDir = libDir
 
-    archiveName = "openapi-formatter.jar"
+    archiveName = 'ide-dependencies.jar'
 
     manifest {
-        attributes 'Built-By':               'JetBrains',
-                   'Implementation-Vendor':  'JetBrains',
-                   'Implementation-Version': '1.0',
-                   'Implementation-Title':   'openapi-formatter'
+        attributes 'Built-By': 'JetBrains',
+                'Implementation-Vendor': 'JetBrains',
+                'Implementation-Version': '1.0',
+                'Implementation-Title': 'ide-dependencies'
     }
 
     doLast {
-        extractSelectedFilesFromOpenApiJar.extractDir.deleteDir()
-    }
-}
-
-task extractSelectedFilesFromUtilJar(type: Copy, dependsOn: downloadIdeaDistributionZipAndExtractSelectedJars) {
-    ext {
-        extractDir = file("$downloadDir/util-formatter")
-    }
-
-    from zipTree(downloadIdeaDistributionZipAndExtractSelectedJars.downloadedUtilJarFile)
-
-    includes = ['com/intellij/openapi/util/**/*.class',
-                'com/intellij/util/containers/**/*.class']
-
-    into extractDir
-
-    doLast {
-        downloadIdeaDistributionZipAndExtractSelectedJars.downloadedUtilJarFile.delete()
-    }
-}
-
-task createUtilFormatterJar(type: Jar, dependsOn: extractSelectedFilesFromUtilJar) {
-    from extractSelectedFilesFromUtilJar.extractDir
-
-    destinationDir = libDir
-
-    archiveName = "util-formatter.jar"
-
-    manifest {
-        attributes 'Built-By':               'JetBrains',
-                   'Implementation-Vendor':  'JetBrains',
-                   'Implementation-Version': '1.0',
-                   'Implementation-Title':   'util-formatter'
-    }
-
-    doLast {
-        extractSelectedFilesFromUtilJar.extractDir.deleteDir()
-    }
-}
-
-task extractSelectedFilesFromIdeaJar(type: Copy, dependsOn: downloadIdeaDistributionZipAndExtractSelectedJars) {
-    ext {
-        extractDir = file("$downloadDir/idea-formatter")
-    }
-
-    from zipTree(downloadIdeaDistributionZipAndExtractSelectedJars.downloadedIdeaJarFile)
-
-    includes = ['com/intellij/formatting/**/*.class',
-                'com/intellij/psi/formatter/**/*.class']
-
-    into extractDir
-
-    doLast {
-        downloadIdeaDistributionZipAndExtractSelectedJars.downloadedIdeaJarFile.delete()
-    }
-}
-
-task createIdeaFormatterJar(type: Jar, dependsOn: extractSelectedFilesFromIdeaJar) {
-    from extractSelectedFilesFromIdeaJar.extractDir
-
-    destinationDir = libDir
-
-    archiveName = "idea-formatter.jar"
-
-    manifest {
-        attributes 'Built-By':               'JetBrains',
-                   'Implementation-Vendor':  'JetBrains',
-                   'Implementation-Version': '1.0',
-                   'Implementation-Title':   'idea-formatter'
-    }
-
-    doLast {
-        extractSelectedFilesFromIdeaJar.extractDir.deleteDir()
+        extractSelectedFilesFromIdeaJars.extractDir.deleteDir()
     }
 }
 
@@ -310,7 +241,7 @@ task downloadKotlinxLibraries(type: Copy) {
 task downloadIdeaAndKotlinCompilerSources {
     ext {
         locallyDownloadedKotlinCompilerSourcesFile = file("$downloadDir/kotlin-compiler-sources.jar")
-        locallyDownloadedIdeaSourcesFile           = file("$downloadDir/idea-sdk-sources.jar")
+        locallyDownloadedIdeaSourcesFile = file("$downloadDir/idea-sdk-sources.jar")
     }
 
     doLast {
@@ -331,10 +262,8 @@ task repackageIdeaAndKotlinCompilerSources(type: Zip, dependsOn: downloadIdeaAnd
 
 task downloadBundled(dependsOn: [downloadKotlinCompilerPluginAndExtractSelectedJars,
                                  downloadIntellijCoreAndExtractSelectedJars,
+                                 createIdeDependenciesJar,
                                  downloadKotlinTCArtifacts,
-                                 createOpenApiFormatterJar,
-                                 createUtilFormatterJar,
-                                 createIdeaFormatterJar,
                                  downloadKotlinxLibraries,
                                  repackageIdeaAndKotlinCompilerSources]) {
 }
