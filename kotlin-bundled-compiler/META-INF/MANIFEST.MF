@@ -12,11 +12,9 @@ Bundle-ClassPath: .,
  lib/kotlin-script-runtime.jar,
  lib/kotlin-ide-common.jar,
  lib/kotlin-reflect.jar,
- lib/openapi-formatter.jar,
  ../kotlin-eclipse-ui-test/lib/gson-2.3.1.jar,
  lib/kotlin-formatter.jar,
- lib/util-formatter.jar,
- lib/idea-formatter.jar
+ lib/ide-dependencies.jar
 Export-Package: 
  com.intellij,
  com.intellij.codeInsight,
@@ -35,7 +33,6 @@ Export-Package:
  com.intellij.ide.highlighter,
  com.intellij.ide.plugins,
  com.intellij.ide.plugins.cl,
- com.intellij.ide.presentation,
  com.intellij.ide.util,
  com.intellij.injected.editor,
  com.intellij.lang,
