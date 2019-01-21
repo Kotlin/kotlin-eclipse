@@ -35,9 +35,11 @@ class EclipseJavaMethod(method: IMethodBinding) : EclipseJavaMember<IMethodBindi
     override val valueParameters: List<JavaValueParameter>
         get() = EclipseJavaElementUtil.getValueParameters(binding)
 
-    override val annotationParameterDefaultValue: JavaAnnotationArgument
+    override val annotationParameterDefaultValue: JavaAnnotationArgument?
         get() = with(binding) {
-            EclipseJavaAnnotationArgument.create(defaultValue, Name.identifier(name), javaElement.javaProject)
+            defaultValue?.let {
+                EclipseJavaAnnotationArgument.create(defaultValue, Name.identifier(name), javaElement.javaProject)
+            }
         }
 
     override val returnType: JavaType
