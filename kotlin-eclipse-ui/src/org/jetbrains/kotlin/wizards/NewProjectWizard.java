@@ -20,8 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.jetbrains.kotlin.core.model.KotlinNature;
-import org.jetbrains.kotlin.utils.MessageDialogContentUtils;
-
+import org.jetbrains.kotlin.utils.ThrowableExtensionsKt;
 
 public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
 
@@ -49,8 +48,8 @@ public class NewProjectWizard extends AbstractWizard<NewProjectWizardPage> {
             return true;
         } else {
             MessageDialog.openError(getShell(),
-                    MessageDialogContentUtils.getErrorTitleForMessageDialog(result.getException()),
-                    MessageDialogContentUtils.getErrorDescriptionForMessageDialog(result.getException()));
+                    ThrowableExtensionsKt.getErrorTitleForMessageDialog(result.getException()),
+                    ThrowableExtensionsKt.getErrorDescriptionForMessageDialog(result.getException()));
             return false;
         }
     }
