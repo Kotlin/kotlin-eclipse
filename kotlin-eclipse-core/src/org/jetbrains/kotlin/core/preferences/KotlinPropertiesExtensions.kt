@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.config.JvmAnalysisFlags
 import org.jetbrains.kotlin.utils.ReportLevel
-import kotlin.reflect.jvm.internal.impl.utils.Jsr305State
+import org.jetbrains.kotlin.utils.Jsr305State
 
 private enum class CompilerFlagsMapping(val flag: String) : (String) -> Pair<AnalysisFlag<*>, *>? {
     JVM_DEFAULT("-Xjvm-default") {
