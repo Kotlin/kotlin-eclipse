@@ -35,55 +35,57 @@ import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolution
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator
 
 class KotlinCorrectionProcessor(val editor: KotlinEditor) : IQuickAssistProcessor {
-    
+
     override fun getErrorMessage(): String? = null
-    
+
     override fun canFix(annotation: Annotation): Boolean {
         return annotation is MarkerAnnotation && IDE.getMarkerHelpRegistry().hasResolutions(annotation.marker)
     }
-    
+
     override fun canAssist(invocationContext: IQuickAssistInvocationContext): Boolean = true
-    
+
     override fun computeQuickAssistProposals(invocationContext: IQuickAssistInvocationContext): Array<ICompletionProposal> {
         val diagnostics = findDiagnosticsBy(invocationContext, editor)
         val quickFixResolutions = KotlinMarkerResolutionGenerator.getResolutions(diagnostics)
-        
-        return arrayListOf<ICompletionProposal>().apply { 
+
+        return arrayListOf<ICompletionProposal>().apply {
             val file = editor.eclipseFile
             if (file != null) {
-                addAll(quickFixResolutions.map { KotlinMarkerResolutionProposal(file, it) })
+                addAll(quickFixResolutions.toCompletionProposals(file))
             }
-            
+
             addAll(KotlinQuickAssistProcessor.getAssists(editor))
         }.toTypedArray()
     }
 }
 
+fun List<KotlinMarkerResolution>.toCompletionProposals(file: IFile): List<ICompletionProposal> =
+    map { KotlinMarkerResolutionProposal(file, it) }
+
 private class KotlinMarkerResolutionProposal(
         private val file: IFile,
         private val resolution: KotlinMarkerResolution) : ICompletionProposal {
     override fun getImage(): Image? = resolution.image
-    
+
     override fun getAdditionalProposalInfo(): String? = resolution.description
-    
+
     override fun apply(document: IDocument?) {
         resolution.apply(file)
     }
-    
+
     override fun getContextInformation(): IContextInformation? = null
-    
+
     override fun getDisplayString(): String? = resolution.label
-    
+
     override fun getSelection(document: IDocument?): Point? = null
 }
 
 fun findDiagnosticsBy(invocationContext: IQuickAssistInvocationContext, editor: KotlinEditor): List<Diagnostic> {
     val offset = LineEndUtil.convertCrToDocumentOffset(editor.document, invocationContext.offset)
-    val ktFile = editor.parsedFile ?: return emptyList()
-    
-    val diagnostics = getBindingContext(ktFile)?.diagnostics ?: return emptyList()
-    return diagnostics.filter { 
-       val range = it.psiElement.textRange
-       range.startOffset <= offset && offset <= range.endOffset
-    }
+    return editor.parsedFile?.let { ktFile ->
+        getBindingContext(ktFile)?.diagnostics?.filter {
+            val range = it.psiElement.textRange
+            range.startOffset <= offset && offset <= range.endOffset
+        }
+    } ?: emptyList()
 }
