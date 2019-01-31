@@ -31,6 +31,10 @@ import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 class KotlinJavadocTextHover : KotlinEditorTextHover<BrowserInformationControlInput> {
+
+    override val hoverPriority: Int
+        get() = 2
+
     companion object {
         private val DUMMY_REGION = Region(0, 0)
     }
