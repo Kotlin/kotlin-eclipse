@@ -34,7 +34,6 @@ import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.eclipse.ui.utils.*
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtImportList
@@ -42,6 +41,7 @@ import org.jetbrains.kotlin.psi.KtPackageDirective
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.core.imports.FIXABLE_DIAGNOSTICS
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 
 object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
@@ -66,9 +66,8 @@ object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
         ).map { KotlinAutoImportResolution(it) }
     }
 
-    override fun canFix(diagnostic: Diagnostic): Boolean {
-        return diagnostic.factory in FIXABLE_DIAGNOSTICS
-    }
+    override val handledErrors: Collection<DiagnosticFactory<*>>
+        get() = FIXABLE_DIAGNOSTICS
 }
 
 fun placeImports(chosenCandidates: List<ImportCandidate>, file: IFile, document: IDocument): Int {
@@ -88,7 +87,7 @@ fun replaceImports(newImports: List<String>, file: IFile, document: IDocument) {
     val startOffset = importDirectives.first().getTextDocumentOffset(document)
     val lastImportDirectiveOffset = importDirectives.last().getEndLfOffset(document)
     val endOffset = if (newImports.isEmpty()) {
-        val next = ktFile.importList!!.getNextSibling()
+        val next = ktFile.importList!!.nextSibling
         if (next is PsiWhiteSpace) next.getEndLfOffset(document) else lastImportDirectiveOffset
     } else {
         lastImportDirectiveOffset
@@ -165,7 +164,7 @@ private fun countBreakLineAfterImportList(psiElement: PsiElement): Int {
 private fun computeBreakLineBeforeImport(element: PsiElement): Int {
     if (element is KtPackageDirective) {
         return when {
-            element.isRoot() -> 0
+            element.isRoot -> 0
             else -> 2
         }
     }

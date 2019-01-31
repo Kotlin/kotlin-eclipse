@@ -16,23 +16,58 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.hover
 
-import org.eclipse.jdt.internal.ui.text.java.hover.AbstractAnnotationHover
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.internal.ui.text.java.hover.ProblemHover
 import org.eclipse.jface.text.IInformationControlCreator
-import org.eclipse.jface.text.Region
-import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
+import org.eclipse.jface.text.ITextViewer
+import org.eclipse.jface.text.Position
+import org.eclipse.jface.text.contentassist.ICompletionProposal
+import org.eclipse.jface.text.source.Annotation
+import org.eclipse.ui.texteditor.MarkerAnnotation
+import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
+import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator
+import org.jetbrains.kotlin.ui.editors.quickfix.diagnostic
+import org.jetbrains.kotlin.ui.editors.toCompletionProposals
 
 class KotlinAnnotationTextHover : KotlinEditorTextHover<Any> {
-    private val problemHover = object : AbstractAnnotationHover(true) {}
-    
-    override fun getHoverInfo(hoverData: HoverData): Any? {
-        val region = hoverData.getRegion() ?: return null
-        return problemHover.getHoverInfo2(hoverData.editor.javaEditor.viewer, region)
-    }
+    private val problemHover = KotlinProblemHover()
+
+    override fun getHoverInfo(hoverData: HoverData): Any? =
+        hoverData.getRegion()?.let { region ->
+            problemHover.getHoverInfo2(hoverData.editor.javaEditor.viewer, region)
+        }
 
     override fun isAvailable(hoverData: HoverData): Boolean = true
-    
-    override fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator? {
-        return problemHover.getHoverControlCreator()
+
+    override fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator? =
+        problemHover.hoverControlCreator
+}
+
+private class KotlinProblemHover : ProblemHover() {
+
+    override fun createAnnotationInfo(
+        annotation: Annotation,
+        position: Position,
+        textViewer: ITextViewer
+    ): AnnotationInfo =
+        ProblemInfo(annotation, position, textViewer)
+
+    class ProblemInfo(annotation: Annotation, position: Position, textViewer: ITextViewer) :
+        ProblemHover.ProblemInfo(annotation, position, textViewer) {
+
+        override fun getCompletionProposals(): Array<ICompletionProposal> = when (annotation) {
+            is MarkerAnnotation -> markerAnnotationFixes(annotation)
+            is DiagnosticAnnotation -> annotation.diagnostic?.fixes(annotation.file)
+            else -> null
+        } ?: emptyArray()
+
+        private fun markerAnnotationFixes(annotation: MarkerAnnotation): Array<ICompletionProposal>? =
+            with(annotation.marker) { diagnostic?.fixes(resource as IFile) }
+
+        private fun Diagnostic.fixes(file: IFile) =
+            KotlinMarkerResolutionGenerator.getResolutions(this).toCompletionProposals(file).toTypedArray()
     }
+
 }
