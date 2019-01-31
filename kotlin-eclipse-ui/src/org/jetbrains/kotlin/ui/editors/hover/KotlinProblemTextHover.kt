@@ -32,6 +32,10 @@ import org.jetbrains.kotlin.ui.editors.quickfix.diagnostic
 import org.jetbrains.kotlin.ui.editors.toCompletionProposals
 
 class KotlinAnnotationTextHover : KotlinEditorTextHover<Any> {
+
+    override val hoverPriority: Int
+        get() = 1
+
     private val problemHover = KotlinProblemHover()
 
     override fun getHoverInfo(hoverData: HoverData): Any? =
