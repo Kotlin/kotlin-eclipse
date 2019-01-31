@@ -19,20 +19,20 @@ package org.jetbrains.kotlin.ui.editors.annotations
 import org.eclipse.core.resources.IMarker
 import org.eclipse.jface.text.Position
 import org.eclipse.jface.text.source.Annotation
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
-import com.intellij.openapi.util.TextRange
+import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.internal.ui.javaeditor.IJavaAnnotation
 import org.eclipse.jdt.core.ICompilationUnit
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 
 class DiagnosticAnnotation(
-		val line: Int,
-        val offset: Int,
-        val length: Int,
-        val annotationType: String, 
-        val message: String, 
-        val markedText: String, 
-        val diagnostic: Diagnostic?) : Annotation(annotationType, true, message), IJavaAnnotation {
+    val line: Int,
+    val offset: Int,
+    val length: Int,
+    val annotationType: String,
+    val message: String,
+    val markedText: String,
+    val file: IFile,
+    val diagnostic: Diagnostic?) : Annotation(annotationType, true, message), IJavaAnnotation {
     override fun getMarkerType(): String? = null
     
     override fun getArguments(): Array<String>? = null
@@ -46,9 +46,9 @@ class DiagnosticAnnotation(
     override fun getId(): Int = -1
     
     override fun getOverlay(): IJavaAnnotation? = null
-    
+
     override fun isProblem(): Boolean {
-        return when(getType()) {
+        return when(type) {
             AnnotationManager.ANNOTATION_ERROR_TYPE, AnnotationManager.ANNOTATION_WARNING_TYPE -> true
             else -> false
         }
@@ -63,7 +63,7 @@ class DiagnosticAnnotation(
     override fun getCompilationUnit(): ICompilationUnit? = null
 
     
-    val markerSeverity = when (getType()) {
+    val markerSeverity = when (type) {
         AnnotationManager.ANNOTATION_ERROR_TYPE -> IMarker.SEVERITY_ERROR
         AnnotationManager.ANNOTATION_WARNING_TYPE -> IMarker.SEVERITY_WARNING
         else -> 0

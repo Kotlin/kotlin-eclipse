@@ -4,9 +4,7 @@ import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.psi.KtModifierList
 import org.jetbrains.kotlin.ui.editors.quickassist.remove
-import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import com.intellij.psi.util.PsiTreeUtil
@@ -23,9 +21,8 @@ fun DiagnosticFactory<*>.createRemoveModifierFromListOwnerFactory(
             return listOf(KotlinRemoveModifierResolution(modifierListOwner, modifier, isRedundant))
         }
         
-        override fun canFix(diagnostic: Diagnostic): Boolean {
-            return diagnostic.factory == this@createRemoveModifierFromListOwnerFactory
-        }
+        override val handledErrors: List<DiagnosticFactory<*>>
+            get() = listOf(this@createRemoveModifierFromListOwnerFactory)
     }
 }
 
@@ -40,9 +37,8 @@ fun DiagnosticFactory<*>.createRemoveModifierFactory(isRedundant: Boolean = fals
             
         }
         
-        override fun canFix(diagnostic: Diagnostic): Boolean {
-            return diagnostic.factory == this@createRemoveModifierFactory
-        }
+        override val handledErrors: List<DiagnosticFactory<*>>
+            get() = listOf(this@createRemoveModifierFactory)
     }
 }
 
