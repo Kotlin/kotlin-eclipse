@@ -45,98 +45,116 @@ import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 
 public class ProjectCreationOp implements IRunnableWithProgress {
-    
+
     private static final String SRC_FOLDER = "src";
     private static final String BIN_FOLDER = "bin";
-    
+
     private final IProjectDescription projectDescription;
     private final String projectName;
     private final Shell shell;
-    
-    private IProject result;
+
+    private OperationResult result = new OperationResult();
     private IJavaProject javaResult;
-    
+
     public ProjectCreationOp(String projectName, String projectLocation, Shell shell) {
         projectDescription = buildProjectDescription(projectName, projectLocation);
-        
+
         this.projectName = projectName;
         this.shell = shell;
     }
-    
-    public IProject getResult() {
+
+    public OperationResult getResult() {
         return result;
     }
-    
-    public IJavaProject getJavaResult() {
+
+    private IJavaProject getJavaResult() {
         if (javaResult == null) {
             try {
-                javaResult = buildJavaProject(result);
+                javaResult = buildJavaProject(result.getProject());
             } catch (CoreException e) {
                 KotlinLogger.logAndThrow(e);
             } catch (FileNotFoundException e) {
                 KotlinLogger.logAndThrow(e);
             }
         }
-        
+
         return javaResult;
     }
-    
+
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         CreateProjectOperation operation = new CreateProjectOperation(projectDescription, projectName);
         try {
             PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(operation, monitor,
                     getUIInfoAdapter(shell));
-            
-            result = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-            result.setDescription(projectDescription, new NullProgressMonitor());
+
+            result.project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+            result.project.setDescription(projectDescription, new NullProgressMonitor());
             getJavaResult();
-        } catch (ExecutionException e) {
-            KotlinLogger.logAndThrow(e);
-        } catch (CoreException e) {
-            KotlinLogger.logAndThrow(e);
+        } catch (ExecutionException | CoreException e) {
+                KotlinLogger.logError(e);
+                result.exception = e.getCause();
         }
     }
-    
+
     private static IProjectDescription buildProjectDescription(String projectName, String projectLocation) {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
-        
+
         IProjectDescription result = workspace.newProjectDescription(projectName);
         result.setComment(projectName);
         if (!workspace.getRoot().getLocation().toOSString().equals(projectLocation)) {
             result.setLocation(new Path(projectLocation));
         }
-        
+
         ICommand command = result.newCommand();
         command.setBuilderName(JavaCore.BUILDER_ID);
         result.setBuildSpec(new ICommand[] { command });
-        
+
         result.setNatureIds(new String[] { JavaCore.NATURE_ID });
-        
+
         return result;
     }
-    
+
     private static IJavaProject buildJavaProject(@NotNull IProject project) throws CoreException, FileNotFoundException {
         IJavaProject result = JavaCore.create(project);
-        
+
         IFolder binFolder = project.getFolder(BIN_FOLDER);
         if (!binFolder.exists()) {
             binFolder.create(false, true, null);
         }
         result.setOutputLocation(binFolder.getFullPath(), null);
-        
+
         IFolder srcFolder = project.getFolder(SRC_FOLDER);
         if (!srcFolder.exists()) {
             srcFolder.create(false, true, null);
         }
-        
+
         result.setRawClasspath(new IClasspathEntry[] {
                 JavaCore.newContainerEntry(new Path(JavaRuntime.JRE_CONTAINER)),
                 JavaCore.newSourceEntry(result.getPackageFragmentRoot(srcFolder).getPath())
                 }, null);
-        
+
         ProjectUtils.addKotlinRuntime(project);
-        
+
         return result;
+    }
+
+    class OperationResult {
+        private IProject project = null;
+        private Throwable exception = null;
+
+        private OperationResult() {}
+
+        public boolean isSuccess() {
+            return exception == null;
+        }
+
+        IProject getProject() {
+            return project;
+        }
+
+        Throwable getException() {
+            return exception;
+        }
     }
 }
