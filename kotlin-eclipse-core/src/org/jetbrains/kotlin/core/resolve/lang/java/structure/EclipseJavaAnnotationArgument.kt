@@ -38,9 +38,9 @@ public abstract class EclipseJavaAnnotationArgument<T : IBinding>(javaElement: T
 				is IVariableBinding -> EclipseJavaReferenceAnnotationArgument(value)
 				is Array<*> -> EclipseJavaArrayAnnotationArgument(value, name, javaProject)
 				is Class<*> -> EclipseJavaClassObjectAnnotationArgument(value, name, javaProject)
-				is String -> EclipseJavaLiteralAnnotationArgument(value, name)
-				is Boolean -> EclipseJavaLiteralAnnotationArgument(value, name)
 				is ITypeBinding -> EclipseJavaTypeAsAnnotationArgument(value, name)
+				is String, is Boolean, is Int, is Short, is Long, is Byte, is Float, is Double, is Char ->
+				    EclipseJavaLiteralAnnotationArgument(value, name)
 				else -> throw IllegalArgumentException("Wrong annotation argument: $value")
 			}
 		}

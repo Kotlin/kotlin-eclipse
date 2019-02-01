@@ -8,7 +8,7 @@
  * Pin the build and add `release` tag
  * Add release notes at [GitHub Releases](https://github.com/JetBrains/kotlin-eclipse/releases)
  * Upload artifacts to [Eclipse-Plugin package](https://bintray.com/jetbrains/kotlin/eclipse-plugin/view) at BinTray:
-   * Download and unpack artifacts.zip from the [last build with release tag](https://teamcity.jetbrains.com/repository/downloadAll/Kotlin_EclipsePlugin/release.buildtag/artifacts.zip)
+   * Download and unpack artifacts.zip from the [last build with release tag](https://teamcity.jetbrains.com/viewType.html?buildTypeId=Kotlin_EclipsePlugin&branch_Kotlin=%3Cdefault%3E&tab=buildTypeStatusDiv)
    * Unpack the file into some folder
    * Download [*pushToBintray.sh*](https://github.com/goodwinnk/bintray-publish-p2-updatesite) script that will help you in uploading files
    * Execute it (Git Bash (MinGW32) can be used on windows): 
