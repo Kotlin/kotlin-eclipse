@@ -19,23 +19,26 @@ package org.jetbrains.kotlin.ui.editors.quickfix
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.isOverridable
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtModifierListOwner
+import org.jetbrains.kotlin.psi.KtNamedDeclaration
 import org.jetbrains.kotlin.resolve.source.PsiSourceElement
 import java.util.ArrayList
 
 fun DiagnosticFactory<*>.createMakeDeclarationOpenFix() = MakeOverriddenMemberOpenFix()
 
-class MakeOverriddenMemberOpenFix() : KotlinDiagnosticQuickFix {
-    override fun canFix(diagnostic: Diagnostic): Boolean {
-        return diagnostic.factory == Errors.OVERRIDING_FINAL_MEMBER
-    }
+class MakeOverriddenMemberOpenFix : KotlinDiagnosticQuickFix {
+
+    override val handledErrors: List<DiagnosticFactory<*>>
+        get() = listOf(Errors.OVERRIDING_FINAL_MEMBER)
 
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
         val overrideFinalDiagnostic = Errors.OVERRIDING_FINAL_MEMBER.cast(diagnostic)

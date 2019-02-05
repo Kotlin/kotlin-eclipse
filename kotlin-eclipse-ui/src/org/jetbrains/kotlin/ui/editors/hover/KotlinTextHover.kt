@@ -29,19 +29,24 @@ import org.jetbrains.kotlin.core.model.loadExecutableEP
 import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
 import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.utils.addToStdlib.firstNotNullResult
 
 const val TEXT_HOVER_EP_ID = "org.jetbrains.kotlin.ui.editor.textHover"
 
 class KotlinTextHover(private val editor: KotlinEditor) : ITextHover, ITextHoverExtension, ITextHoverExtension2 {
-    val extensionsHovers = loadExecutableEP<KotlinEditorTextHover<*>>(TEXT_HOVER_EP_ID).mapNotNull { it.createProvider() }
-    
-    private var hoverData: HoverData? = null
+
+    private val extensionsHovers = loadExecutableEP<KotlinEditorTextHover<*>>(TEXT_HOVER_EP_ID)
+        .mapNotNull { it.createProvider() }
+        .sortedBy {
+            it.hoverPriority
+        }
+
     private var bestHover: KotlinEditorTextHover<*>? = null
-    
+
     override fun getHoverRegion(textViewer: ITextViewer, offset: Int): IRegion? {
-        return JavaWordFinder.findWord(textViewer.getDocument(), offset)
+        return JavaWordFinder.findWord(textViewer.document, offset)
     }
 
     override fun getHoverInfo(textViewer: ITextViewer?, hoverRegion: IRegion): String? {
@@ -52,39 +57,31 @@ class KotlinTextHover(private val editor: KotlinEditor) : ITextHover, ITextHover
         return bestHover?.getHoverControlCreator(editor)
     }
 
-    override fun getHoverInfo2(textViewer: ITextViewer?, hoverRegion: IRegion): Any? {
-        val data: HoverData = createHoverData(hoverRegion.offset) ?: return null
-
-        bestHover = null
-        var hoverInfo: Any? = null
-        
-        for (hover in extensionsHovers) {
-            if (hover.isAvailable(data)) {
-                hoverInfo = hover.getHoverInfo(data)
-                if (hoverInfo != null) {
+    override fun getHoverInfo2(textViewer: ITextViewer?, hoverRegion: IRegion): Any? =
+        createHoverData(hoverRegion.offset)?.let { data ->
+            extensionsHovers.firstNotNullResult { hover ->
+                hover.takeIf { it.isAvailable(data) }?.getHoverInfo(data)?.also {
                     bestHover = hover
-                    break
                 }
             }
-        }
-        
-        return hoverInfo
-    }
-    
+        } ?: also { bestHover = null }
+
     private fun createHoverData(offset: Int): HoverData? {
         val ktFile = editor.parsedFile ?: return null
         val psiElement = ktFile.findElementByDocumentOffset(offset, editor.document) ?: return null
         val ktElement = PsiTreeUtil.getParentOfType(psiElement, KtElement::class.java) ?: return null
-        
+
         return HoverData(ktElement, editor)
     }
 }
 
 interface KotlinEditorTextHover<out Info> {
+    val hoverPriority: Int
+
     fun getHoverInfo(hoverData: HoverData): Info?
-        
+
     fun isAvailable(hoverData: HoverData): Boolean
-    
+
     fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator?
 }
 
@@ -93,10 +90,10 @@ data class HoverData(val hoverElement: KtElement, val editor: KotlinEditor)
 fun HoverData.getRegion(): Region? {
     val (element, editor) = this
 
-    val psiTextRange = element.getTextRange()
+    val psiTextRange = element.textRange
     val document = if (editor is KotlinCommonEditor) editor.getDocumentSafely() else editor.document
-    if (document == null) return null
-    
+    document ?: return null
+
     val startOffset = element.getOffsetByDocument(document, psiTextRange.startOffset)
 
     return Region(startOffset, psiTextRange.length)
