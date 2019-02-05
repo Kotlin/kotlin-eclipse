@@ -138,6 +138,7 @@ public class DiagnosticAnnotationUtil {
                 AnnotationManager.ANNOTATION_ERROR_TYPE,
                 psiErrorElement.getErrorDescription(),
                 markedText,
+                file,
                 null);
     }
     
@@ -162,6 +163,7 @@ public class DiagnosticAnnotationUtil {
                 getAnnotationType(diagnostic.getSeverity()), 
                 DefaultErrorMessages.render(diagnostic),
                 diagnostic.getPsiElement().getText(),
+                file,
                 diagnostic);
     }
     

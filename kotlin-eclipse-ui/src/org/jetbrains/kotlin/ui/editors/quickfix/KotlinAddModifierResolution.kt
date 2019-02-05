@@ -41,9 +41,7 @@ import org.jetbrains.kotlin.psi.psiUtil.siblings
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.editors.quickassist.insertAfter
 import org.jetbrains.kotlin.ui.editors.quickassist.insertBefore
-import org.jetbrains.kotlin.ui.editors.quickassist.remove
 import org.jetbrains.kotlin.ui.editors.quickassist.replace
 import com.intellij.psi.tree.IElementType
 
@@ -57,18 +55,15 @@ fun <T : KtModifierListOwner> DiagnosticFactory<*>.createAddModifierFix(
 ): KotlinDiagnosticQuickFix {
     val thisFactory = this
     return object : KotlinDiagnosticQuickFix {
-        override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
-            val modifierListOwner = PsiTreeUtil.getNonStrictParentOfType(diagnostic.psiElement, modifierOwnerClass)
-            if (modifierListOwner == null) return emptyList()
 
-            if (modifier == KtTokens.ABSTRACT_KEYWORD && modifierListOwner is KtObjectDeclaration) return emptyList()
+        override val handledErrors = listOf(thisFactory)
 
-            return listOf(KotlinAddModifierResolution(modifierListOwner, modifier))
-        }
-
-        override fun canFix(diagnostic: Diagnostic): Boolean {
-            return diagnostic.factory == thisFactory // this@createFactory ?
-        }
+        override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> =
+            PsiTreeUtil.getNonStrictParentOfType(diagnostic.psiElement, modifierOwnerClass)?.takeUnless {
+                modifier == KtTokens.ABSTRACT_KEYWORD && it is KtObjectDeclaration
+            }?.let { modifierListOwner ->
+                listOf(KotlinAddModifierResolution(modifierListOwner, modifier))
+            } ?: emptyList()
     }
 }
 
@@ -76,7 +71,7 @@ fun DiagnosticFactory<*>.createAddOperatorModifierFix(modifier: KtModifierKeywor
     return object : KotlinDiagnosticQuickFix {
         override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
             val functionDescriptor = (diagnostic as? DiagnosticWithParameters2<*, *, *>)?.a as? FunctionDescriptor
-                    ?: return emptyList()
+                ?: return emptyList()
             val sourceElement = EclipseDescriptorUtils.descriptorToDeclaration(functionDescriptor) ?: return emptyList()
             if (sourceElement !is KotlinSourceElement) return emptyList()
 
@@ -85,27 +80,23 @@ fun DiagnosticFactory<*>.createAddOperatorModifierFix(modifier: KtModifierKeywor
             return listOf(KotlinAddModifierResolution(target, modifier))
         }
 
-        override fun canFix(diagnostic: Diagnostic): Boolean {
-            return diagnostic.factory == this@createAddOperatorModifierFix // this@createFactory ?
-        }
+        override val handledErrors: List<DiagnosticFactory<*>>
+            get() = listOf(this@createAddOperatorModifierFix)
     }
 }
 
-fun DiagnosticFactory<*>.createMakeClassOpenFix(): KotlinDiagnosticQuickFix {
-    return KotlinMakeClassOpenQuickFix(this)
-}
+fun DiagnosticFactory<*>.createMakeClassOpenFix(): KotlinDiagnosticQuickFix =
+    KotlinMakeClassOpenQuickFix(this)
 
-class KotlinMakeClassOpenQuickFix(private val diagnosticTriggger: DiagnosticFactory<*>) : KotlinDiagnosticQuickFix {
+class KotlinMakeClassOpenQuickFix(private val diagnosticTrigger: DiagnosticFactory<*>) : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
         val typeReference = diagnostic.psiElement as KtTypeReference
 
-        val ktFile = typeReference.getContainingKtFile()
+        val ktFile = typeReference.containingKtFile
 
-        val bindingContext = getBindingContext(ktFile)
-        if (bindingContext == null) return emptyList()
+        val bindingContext = getBindingContext(ktFile) ?: return emptyList()
 
-        val type = bindingContext[BindingContext.TYPE, typeReference]
-        if (type == null) return emptyList()
+        val type = bindingContext[BindingContext.TYPE, typeReference] ?: return emptyList()
 
         val classDescriptor = type.constructor.declarationDescriptor as? ClassDescriptor ?: return emptyList()
         val sourceElement = EclipseDescriptorUtils.descriptorToDeclaration(classDescriptor) ?: return emptyList()
@@ -117,14 +108,14 @@ class KotlinMakeClassOpenQuickFix(private val diagnosticTriggger: DiagnosticFact
         return listOf(KotlinAddModifierResolution(declaration, OPEN_KEYWORD))
     }
 
-    override fun canFix(diagnostic: Diagnostic): Boolean {
-        return diagnostic.factory == diagnosticTriggger
-    }
+    override val handledErrors: List<DiagnosticFactory<*>>
+        get() = listOf(diagnosticTrigger)
 }
 
 class KotlinAddModifierResolution(
-        private val element: KtModifierListOwner,
-        private val modifier: KtModifierKeywordToken) : KotlinMarkerResolution {
+    private val element: KtModifierListOwner,
+    private val modifier: KtModifierKeywordToken
+) : KotlinMarkerResolution {
 
     companion object {
         private val modalityModifiers = setOf(ABSTRACT_KEYWORD, OPEN_KEYWORD, FINAL_KEYWORD)
@@ -142,25 +133,15 @@ class KotlinAddModifierResolution(
     }
 }
 
-fun getElementName(modifierListOwner: KtModifierListOwner): String? {
-    var name: String? = null
-    if (modifierListOwner is PsiNameIdentifierOwner) {
-        val nameIdentifier = modifierListOwner.nameIdentifier
-        if (nameIdentifier != null) {
-            name = nameIdentifier.text
-        }
-    } else if (modifierListOwner is KtPropertyAccessor) {
-        name = modifierListOwner.namePlaceholder.text
-    }
-    if (name == null) {
-        name = modifierListOwner.text
-    }
-    return name
-}
+fun getElementName(modifierListOwner: KtModifierListOwner): String? = when (modifierListOwner) {
+    is PsiNameIdentifierOwner -> modifierListOwner.nameIdentifier?.text
+    is KtPropertyAccessor -> modifierListOwner.namePlaceholder.text
+    else -> null
+} ?: modifierListOwner.text
 
-// TODO: move to file with util functions 
+// TODO: move to file with util functions
 fun openEditorAndGetDocument(ktElement: KtElement): IDocument? {
-    val ktFile = ktElement.getContainingKtFile()
+    val ktFile = ktElement.containingKtFile
     return KotlinPsiManager.getEclipseFile(ktFile)?.let {
         val editor = EditorUtility.openInEditor(it, true)
         if (editor is KotlinEditor) editor.document else null
@@ -193,31 +174,34 @@ private fun addModifier(modifierList: KtModifierList, modifier: KtModifierKeywor
     val modifiersToReplace = MODIFIERS_TO_REPLACE[modifier] ?: setOf()
 
     generateSequence(modifierList.firstChild) { it.nextSibling }
-            .plus(newModifier)
-            .filterNot { it is PsiWhiteSpace }
-            .filterNot { it.type in modifiersToReplace }
-            .sortedBy { MODIFIERS_ORDER[it.type] ?: -1 }
-            .map { if (it is KtAnnotationEntry) "${it.text}\n" else "${it.text} " }
-            .joinToString(separator = "")
-            .dropLast(1)
-            .also { replace(modifierList, it, elementDocument) }
+        .plus(newModifier)
+        .filterNot { it is PsiWhiteSpace }
+        .filterNot { it.type in modifiersToReplace }
+        .sortedBy { MODIFIERS_ORDER[it.type] ?: -1 }
+        .map { if (it is KtAnnotationEntry) "${it.text}\n" else "${it.text} " }
+        .joinToString(separator = "")
+        .dropLast(1)
+        .also { replace(modifierList, it, elementDocument) }
 }
 
 private val PsiElement.type: IElementType get() = node.elementType
 
 private val MODIFIERS_TO_REPLACE = mapOf(
-        OVERRIDE_KEYWORD to setOf(OPEN_KEYWORD),
-        ABSTRACT_KEYWORD to setOf(OPEN_KEYWORD, FINAL_KEYWORD),
-        OPEN_KEYWORD to setOf(FINAL_KEYWORD, ABSTRACT_KEYWORD),
-        FINAL_KEYWORD to setOf(ABSTRACT_KEYWORD, OPEN_KEYWORD),
-        PUBLIC_KEYWORD to setOf(PROTECTED_KEYWORD, PRIVATE_KEYWORD, INTERNAL_KEYWORD),
-        PROTECTED_KEYWORD to setOf(PUBLIC_KEYWORD, PRIVATE_KEYWORD, INTERNAL_KEYWORD),
-        PRIVATE_KEYWORD to setOf(PUBLIC_KEYWORD, PROTECTED_KEYWORD, INTERNAL_KEYWORD),
-        INTERNAL_KEYWORD to setOf(PUBLIC_KEYWORD, PROTECTED_KEYWORD, PRIVATE_KEYWORD))
+    OVERRIDE_KEYWORD to setOf(OPEN_KEYWORD),
+    ABSTRACT_KEYWORD to setOf(OPEN_KEYWORD, FINAL_KEYWORD),
+    OPEN_KEYWORD to setOf(FINAL_KEYWORD, ABSTRACT_KEYWORD),
+    FINAL_KEYWORD to setOf(ABSTRACT_KEYWORD, OPEN_KEYWORD),
+    PUBLIC_KEYWORD to setOf(PROTECTED_KEYWORD, PRIVATE_KEYWORD, INTERNAL_KEYWORD),
+    PROTECTED_KEYWORD to setOf(PUBLIC_KEYWORD, PRIVATE_KEYWORD, INTERNAL_KEYWORD),
+    PRIVATE_KEYWORD to setOf(PUBLIC_KEYWORD, PROTECTED_KEYWORD, INTERNAL_KEYWORD),
+    INTERNAL_KEYWORD to setOf(PUBLIC_KEYWORD, PROTECTED_KEYWORD, PRIVATE_KEYWORD)
+)
 
-private val MODIFIERS_ORDER = listOf(PUBLIC_KEYWORD, PROTECTED_KEYWORD, PRIVATE_KEYWORD, INTERNAL_KEYWORD,
-        FINAL_KEYWORD, OPEN_KEYWORD, ABSTRACT_KEYWORD,
-        OVERRIDE_KEYWORD,
-        INNER_KEYWORD, ENUM_KEYWORD, COMPANION_KEYWORD, INFIX_KEYWORD, OPERATOR_KEYWORD)
+private val MODIFIERS_ORDER = listOf(
+    PUBLIC_KEYWORD, PROTECTED_KEYWORD, PRIVATE_KEYWORD, INTERNAL_KEYWORD,
+    FINAL_KEYWORD, OPEN_KEYWORD, ABSTRACT_KEYWORD,
+    OVERRIDE_KEYWORD,
+    INNER_KEYWORD, ENUM_KEYWORD, COMPANION_KEYWORD, INFIX_KEYWORD, OPERATOR_KEYWORD
+)
     .withIndex()
     .associate { it.value to it.index }
