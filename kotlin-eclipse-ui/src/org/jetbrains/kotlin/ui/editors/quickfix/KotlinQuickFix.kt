@@ -65,8 +65,6 @@ import org.jetbrains.kotlin.lexer.KtTokens.OPERATOR_KEYWORD
 import org.jetbrains.kotlin.lexer.KtTokens.OVERRIDE_KEYWORD
 import org.jetbrains.kotlin.psi.KtClass
 
-//val kotlinQuickFixes: List<KotlinQuickFix> = initializeQuickFixes()
-
 val kotlinQuickFixes = hashMapOf<DiagnosticFactory<*>, MutableList<KotlinQuickFix>>().apply {
     initializeQuickFixes().flatMap { quickFix -> quickFix.handledErrors.map { Pair(it, quickFix) } }
         .groupBy { it.first }

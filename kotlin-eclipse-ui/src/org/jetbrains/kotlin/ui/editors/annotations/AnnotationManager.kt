@@ -83,9 +83,9 @@ object AnnotationManager {
             }
 
             val diagnostic = annotation.diagnostic
-            val isUnresolvedReference = diagnostic?.let {
-                DiagnosticAnnotationUtil.isUnresolvedReference(it.factory)
-            } ?: false
+            val isUnresolvedReference = if (diagnostic != null) {
+                DiagnosticAnnotationUtil.isUnresolvedReference(diagnostic.factory)
+            } else false
             setAttribute(IS_UNRESOLVED_REFERENCE, isUnresolvedReference)
 
             val canBeFixed = diagnostic?.let { kotlinQuickFixes.containsKey(it.factory) } ?: false
