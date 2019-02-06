@@ -45,6 +45,14 @@ import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotationUtil
 import org.jetbrains.kotlin.ui.editors.quickfix.removeMarkers
 
 class KotlinBuilder : IncrementalProjectBuilder() {
+
+    companion object {
+        private val RESOURCE_COPY_EXCLUSION_FILTER_VALUE_PATTERN = Regex("^(?:.*,)?\\*\\.kt(?:,.*)?$")
+        private const val RESOURCE_COPY_EXCLUSION_FILTER_NAME =
+            "org.eclipse.jdt.core.builder.resourceCopyExclusionFilter"
+        private const val RESOURCE_COPY_EXCLUSION_FILTER_VALUE = "*.kt"
+    }
+
     private val fileFilters = listOf(ScriptFileFilter, FileFromOuputFolderFilter, FileFromKotlinBinFolderFilter)
 
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
@@ -105,6 +113,19 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         }
 
         return null
+    }
+
+    override fun startupOnInitialize() {
+        super.startupOnInitialize()
+        with (JavaCore.create(project)) {
+            (getOption(RESOURCE_COPY_EXCLUSION_FILTER_NAME, false) ?: "").let { value ->
+                if (!RESOURCE_COPY_EXCLUSION_FILTER_VALUE_PATTERN.matches(value))
+                    setOption(
+                        RESOURCE_COPY_EXCLUSION_FILTER_NAME,
+                        "${if (value.isNotBlank()) "$value," else ""}$RESOURCE_COPY_EXCLUSION_FILTER_VALUE"
+                    )
+            }
+        }
     }
 
     private fun isAllFilesApplicableForFilters(files: Set<IFile>, javaProject: IJavaProject): Boolean {
