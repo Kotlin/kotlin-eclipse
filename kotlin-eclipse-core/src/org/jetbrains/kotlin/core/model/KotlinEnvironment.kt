@@ -119,8 +119,8 @@ class KotlinScriptEnvironment private constructor(
         val scriptDefinitions: List<KotlinScriptDefinition>,
         val providersClasspath: List<String>,
         var externalDependencies: ScriptDependencies? = null,
-        disposalbe: Disposable) :
-        KotlinCommonEnvironment(disposalbe) {
+        disposable: Disposable) :
+        KotlinCommonEnvironment(disposable) {
     init {
         val scriptsForProvider = scriptDefinitions
                 .filter { it.isScript(eclipseFile.name) }
@@ -380,6 +380,7 @@ class SamWithReceiverResolverExtension(
 
 class KotlinEnvironment private constructor(val eclipseProject: IProject, disposable: Disposable) :
         KotlinCommonEnvironment(disposable) {
+
     val javaProject = JavaCore.create(eclipseProject)
 
     val projectCompilerProperties: KotlinProperties = KotlinProperties(ProjectScope(eclipseProject))
@@ -462,9 +463,8 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
         }
 
         @JvmStatic
-        fun getEnvironment(eclipseProject: IProject): KotlinEnvironment {
-            return cachedEnvironment.getOrCreateEnvironment(eclipseProject, environmentCreation)
-        }
+        fun getEnvironment(eclipseProject: IProject): KotlinEnvironment =
+            cachedEnvironment.getOrCreateEnvironment(eclipseProject, environmentCreation)
 
         @JvmStatic
         fun removeEnvironment(eclipseProject: IProject) {
@@ -484,5 +484,6 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
         @JvmStatic
         fun getJavaProject(project: Project): IProject? = cachedEnvironment.getEclipseResource(project)
+
     }
 }
