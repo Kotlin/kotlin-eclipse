@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="lib/kotlin-script-runtime.jar"/>
 	<classpathentry kind="lib" path="lib/kotlin-stdlib.jar"/>
 	<classpathentry kind="con" path="org.jetbrains.kotlin.core.KOTLIN_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-compiler.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

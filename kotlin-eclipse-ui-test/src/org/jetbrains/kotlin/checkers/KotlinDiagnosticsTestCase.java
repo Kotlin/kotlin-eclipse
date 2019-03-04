@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.checkers;
 
+
 import static org.jetbrains.kotlin.diagnostics.Errors.ASSIGN_OPERATOR_AMBIGUITY;
 import static org.jetbrains.kotlin.diagnostics.Errors.CANNOT_COMPLETE_RESOLVE;
 import static org.jetbrains.kotlin.diagnostics.Errors.COMPONENT_FUNCTION_AMBIGUITY;
@@ -30,9 +31,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
 import org.jetbrains.kotlin.asJava.DuplicateJvmSignatureUtilKt;
-import org.jetbrains.kotlin.checkers.CheckerTestUtil.AbstractTestDiagnostic;
-import org.jetbrains.kotlin.checkers.CheckerTestUtil.ActualDiagnostic;
-import org.jetbrains.kotlin.checkers.CheckerTestUtil.TextDiagnostic;
+import org.jetbrains.kotlin.checkers.utils.CheckerTestUtil;
+import org.jetbrains.kotlin.checkers.diagnostics.AbstractTestDiagnostic;
+import org.jetbrains.kotlin.checkers.diagnostics.ActualDiagnostic;
+import org.jetbrains.kotlin.checkers.diagnostics.TextDiagnostic;
+import org.jetbrains.kotlin.checkers.diagnostics.factories.SyntaxErrorDiagnosticFactory;
+import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory0;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.core.tests.diagnostics.AdditionalConditions;
@@ -90,10 +94,10 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         new HashSet<>(Arrays.asList(
                 Errors.UNRESOLVED_REFERENCE,
                 Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER,
-                CheckerTestUtil.SyntaxErrorDiagnosticFactory.INSTANCE,
-                CheckerTestUtil.DebugInfoDiagnosticFactory.ELEMENT_WITH_ERROR_TYPE,
-                CheckerTestUtil.DebugInfoDiagnosticFactory.MISSING_UNRESOLVED,
-                CheckerTestUtil.DebugInfoDiagnosticFactory.UNRESOLVED_WITH_TARGET
+                SyntaxErrorDiagnosticFactory.Companion.getINSTANCE(),
+                DebugInfoDiagnosticFactory0.Companion.getELEMENT_WITH_ERROR_TYPE(),
+                DebugInfoDiagnosticFactory0.Companion.getMISSING_UNRESOLVED(),
+                DebugInfoDiagnosticFactory0.Companion.getUNRESOLVED_WITH_TARGET()
         ));
     public static final String CHECK_TYPE_DIRECTIVE = "CHECK_TYPE";
     public static final String CHECK_TYPE_PACKAGE = "tests._checkType";
@@ -402,7 +406,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
     }
     
     protected class TestFile {
-        private final List<CheckerTestUtil.DiagnosedRange> diagnosedRanges = new ArrayList<>();
+        private final List<DiagnosedRange> diagnosedRanges = new ArrayList<>();
         private final String expectedText;
         private final TestModule module;
         private final String clearText;
@@ -431,7 +435,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             else {
                 this.expectedText = textWithMarkers;
                 String textWithExtras = addExtras(expectedText);
-                this.clearText = CheckerTestUtil.parseDiagnosedRanges(textWithExtras, diagnosedRanges);
+                this.clearText = CheckerTestUtil.INSTANCE.parseDiagnosedRanges(textWithExtras, diagnosedRanges, null);
                 this.jetFile = JetLightFixture.createCheckAndReturnPsiFile(null, fileName, clearText, getProject());
             }
         }
@@ -498,22 +502,27 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             List<Pair<MultiTargetPlatform, BindingContext>> implementingModulesBinding = new ArrayList<>();
             List<ActualDiagnostic> diagnostics = ContainerUtil.filter(
                     CollectionsKt.plus(
-                    		CheckerTestUtil.getDiagnosticsIncludingSyntaxErrors(
-                    		        bindingContext, 
-                    		        implementingModulesBinding,
-                    		        jetFile, 
-                    		        markDynamicCalls, 
-                    		        dynamicCallDescriptors, false), 
+                    		CheckerTestUtil.INSTANCE.getDiagnosticsIncludingSyntaxErrors(
+                    		        bindingContext,
+                                    implementingModulesBinding,
+                                    jetFile.getOriginalElement(),
+                                    markDynamicCalls,
+                                    dynamicCallDescriptors,
+                    		        false,
+                                    null,
+                                    null,
+                                    null,
+                                    null),
                     		jvmSignatureDiagnostics),
                     new Condition<ActualDiagnostic>() {
                         @Override
                         public boolean value(final ActualDiagnostic actualDiagnostic) {
-                            return whatDiagnosticsToConsider.value(actualDiagnostic.diagnostic);
+                            return whatDiagnosticsToConsider.value(actualDiagnostic.getDiagnostic());
                         }
                     });
-            
-            Map<AbstractTestDiagnostic, TextDiagnostic> diagnosticToExpectedDiagnostic = CheckerTestUtil.diagnosticsDiff(
-                    diagnosedRanges, diagnostics, new CheckerTestUtil.DiagnosticDiffCallbacks() {
+
+            Map<AbstractTestDiagnostic, TextDiagnostic> diagnosticToExpectedDiagnostic = CheckerTestUtil.INSTANCE.diagnosticsDiff(
+                    diagnosedRanges, diagnostics, new DiagnosticDiffCallbacks() {
                 @Override
                 public void missingDiagnostic(TextDiagnostic diagnostic, int expectedStart, int expectedEnd) {
                     String message = "Missing " + diagnostic.getDescription() + PsiDiagnosticUtils.atLocation(jetFile, new TextRange(expectedStart, expectedEnd));
@@ -540,14 +549,21 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 				}
             });
 
-            actualText.append(CheckerTestUtil.addDiagnosticMarkersToText(jetFile, diagnostics, diagnosticToExpectedDiagnostic, new Function<PsiFile, String>() {
-                @Override
-                public String fun(PsiFile file) {
-                    String text = file.getText();
-                    return declareCheckType ? StringUtil.trimEnd(text, CHECK_TYPE_DECLARATIONS) : text;
-                }
-            }, Collections.emptyList(), skipJvmSignatureDiagnostics));
-            
+            actualText.append(CheckerTestUtil.INSTANCE.addDiagnosticMarkersToText(
+                    jetFile.getOriginalFile(),
+                    diagnostics,
+                    diagnosticToExpectedDiagnostic,
+                    new Function<PsiFile, String>() {
+                        @Override
+                        public String fun(PsiFile file) {
+                            String text = file.getText();
+                            return declareCheckType ? StringUtil.trimEnd(text, CHECK_TYPE_DECLARATIONS) : text;
+                        }
+                    },
+                    Collections.emptyList(),
+                    skipJvmSignatureDiagnostics,
+                    true));
+
             stripExtras(actualText);
             
             return ok[0];

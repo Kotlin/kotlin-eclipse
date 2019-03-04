@@ -38,7 +38,6 @@ import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.core.JavaProject
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader
 import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
-import org.jetbrains.kotlin.cli.common.script.CliScriptDefinitionProvider
 import org.jetbrains.kotlin.cli.jvm.compiler.CliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
@@ -84,6 +83,7 @@ import java.net.URL
 import java.net.URLClassLoader
 import java.util.*
 import kotlin.script.experimental.dependencies.ScriptDependencies
+import org.jetbrains.kotlin.scripting.legacy.CliScriptDefinitionProvider
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 

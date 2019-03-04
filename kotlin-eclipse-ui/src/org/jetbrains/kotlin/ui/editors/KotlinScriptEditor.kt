@@ -90,7 +90,7 @@ fun getScriptDependencies(editor: KotlinScriptEditor): ScriptDependencies? {
     val definition = ScriptDependenciesProvider.getInstance(project)
     
     val ktFile = editor.parsedFile ?: return null
-    return definition.getScriptDependencies(ktFile)
+    return definition?.getScriptDependencies(ktFile)
 }
 
 fun KotlinCommonEditor.isOpen(): Boolean {
