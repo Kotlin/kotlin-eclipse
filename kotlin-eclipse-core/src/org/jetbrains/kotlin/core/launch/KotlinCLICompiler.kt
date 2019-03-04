@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.core.launch
 
 import java.io.PrintStream
-import org.jetbrains.annotations.NotNull
 import org.jetbrains.kotlin.cli.common.CLICompiler
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.jvm.compiler.CompileEnvironmentException
