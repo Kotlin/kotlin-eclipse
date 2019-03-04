@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtScript
 import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.psi.KtCodeFragment
 
 object KotlinLightClassGeneration {
 
@@ -62,6 +63,9 @@ object KotlinLightClassGeneration {
                 jetFiles,
                 CompilerConfiguration.EMPTY)
         	.generateDeclaredClassFilter(object : GenerationState.GenerateClassFilter() {
+
+                    override fun shouldGenerateCodeFragment(script: KtCodeFragment): Boolean = false
+
                     override fun shouldAnnotateClass(processingClassOrObject: KtClassOrObject): Boolean = true
 
                     override fun shouldGenerateClass(processingClassOrObject: KtClassOrObject): Boolean {
