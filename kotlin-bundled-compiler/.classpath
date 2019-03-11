@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/annotations-13.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ide-dependencies.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-compiler.jar" sourcepath="lib/kotlin-compiler-sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>

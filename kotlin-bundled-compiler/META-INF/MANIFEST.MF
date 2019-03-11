@@ -15,7 +15,8 @@ Bundle-ClassPath: .,
  lib/kotlin-reflect.jar,
  ../kotlin-eclipse-ui-test/lib/gson-2.3.1.jar,
  lib/kotlin-formatter.jar,
- lib/ide-dependencies.jar
+ lib/ide-dependencies.jar,
+ lib/annotations-13.0.jar
 Export-Package: 
  com.intellij,
  com.intellij.codeInsight,
@@ -215,6 +216,9 @@ Export-Package:
  org.jetbrains.kotlin.cfg.pseudocode.instructions.special,
  org.jetbrains.kotlin.cfg.pseudocodeTraverser,
  org.jetbrains.kotlin.checkers,
+ org.jetbrains.kotlin.checkers.diagnostics,
+ org.jetbrains.kotlin.checkers.diagnostics.factories,
+ org.jetbrains.kotlin.checkers.utils,
  org.jetbrains.kotlin.cli.common,
  org.jetbrains.kotlin.cli.common.arguments,
  org.jetbrains.kotlin.cli.common.messages,
