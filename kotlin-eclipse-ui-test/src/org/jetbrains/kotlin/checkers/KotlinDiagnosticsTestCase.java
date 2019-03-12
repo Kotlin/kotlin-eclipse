@@ -37,6 +37,9 @@ import org.jetbrains.kotlin.checkers.diagnostics.ActualDiagnostic;
 import org.jetbrains.kotlin.checkers.diagnostics.TextDiagnostic;
 import org.jetbrains.kotlin.checkers.diagnostics.factories.SyntaxErrorDiagnosticFactory;
 import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory0;
+import org.jetbrains.kotlin.config.ApiVersion;
+import org.jetbrains.kotlin.config.LanguageVersion;
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM;
 import org.jetbrains.kotlin.core.tests.diagnostics.AdditionalConditions;
@@ -509,7 +512,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                                     markDynamicCalls,
                                     dynamicCallDescriptors,
                     		        false,
-                                    null,
+                                    new LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE),
                                     null,
                                     null,
                                     null),
