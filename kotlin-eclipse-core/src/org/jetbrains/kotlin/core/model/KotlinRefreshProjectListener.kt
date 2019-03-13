@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 
 public object KotlinRefreshProjectListener : IResourceChangeListener {
     override fun resourceChanged(event: IResourceChangeEvent) {
-        if (event.getType() == IResourceChangeEvent.PRE_REFRESH) {
+        if (event.type == IResourceChangeEvent.PRE_REFRESH) {
             val delta = event.getDelta()
             if (delta == null) {
                 tryUpdateLightClassesFor(event.resource)
@@ -29,7 +29,7 @@ public object KotlinRefreshProjectListener : IResourceChangeListener {
     
     private fun tryUpdateLightClassesFor(resource: IResource?) {
         if (resource is IProject && KotlinNature.hasKotlinNature(resource)) {
-            KotlinLightClassGeneration.updateLightClasses(resource, emptySet())
+            KotlinLightClassGeneration.updateLightClasses(resource, emptySet(), true)
         }
     }
 }

@@ -11,14 +11,18 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.eclipse.core.internal.jobs.JobStatus;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.internal.core.util.LRUCache;
 import org.jetbrains.annotations.NotNull;
@@ -48,6 +52,8 @@ import kotlin.jvm.functions.Function1;
 
 public class KotlinLightClassManager {
     private static final int LIGHT_CLASSES_CACHE_SIZE = 300;
+
+    private static final String WORKSPACE_JOB_ID = "updateLightClassesJob";
     
     private final LRUCache cachedLightClasses = new LRUCache(LIGHT_CLASSES_CACHE_SIZE);
     
@@ -101,8 +107,10 @@ public class KotlinLightClassManager {
         sourceFiles.clear();
         sourceFiles.putAll(newSourceFilesMap);
     }
-    
-    public void updateLightClasses(@NotNull Set<IFile> affectedFiles) {
+
+    public void updateLightClasses(@NotNull Set<IFile> affectedFiles, Boolean resourceTreeBlocked) {
+        List<LightClassFile> toCreate = new ArrayList<>();
+        List<LightClassFile> toRemove = new ArrayList<>();
         for (Map.Entry<File, Set<IFile>> entry : sourceFiles.entrySet()) {
             IFile lightClassIFile = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(entry.getKey().getPath()));
             if (lightClassIFile == null) continue;
@@ -110,17 +118,42 @@ public class KotlinLightClassManager {
             LightClassFile lightClassFile = new LightClassFile(lightClassIFile);
             
             createParentDirsFor(lightClassFile);
-            lightClassFile.createIfNotExists();
+            if (!lightClassFile.exists()) {
+                toCreate.add(lightClassFile);
+            }
             
             for (IFile sourceFile : entry.getValue()) {
                 if (affectedFiles.contains(sourceFile)) {
-                    removeLightClass(lightClassFile.asFile());
-                    lightClassFile.touchFile();
+                    toRemove.add(lightClassFile);
                     break;
                 }
             }
         }
-        
+        if (resourceTreeBlocked) {
+            if (!toCreate.isEmpty() || !toRemove.isEmpty()) {
+                new WorkspaceJob(WORKSPACE_JOB_ID) {
+                    @Override
+                    public IStatus runInWorkspace(IProgressMonitor monitor) {
+                        monitor.beginTask("Light class generation started", 0);
+                        updateLightClasses(toCreate, toRemove);
+                        monitor.done();
+                        return new JobStatus(0, this, "Light classes generation finished");
+                    }
+                }.schedule();
+            }
+        } else {
+            updateLightClasses(toCreate, toRemove);
+        }
+    }
+
+    private void updateLightClasses(List<LightClassFile> toCreate, List<LightClassFile> toRemove) {
+        for (LightClassFile lightClassFile: toCreate) {
+            lightClassFile.createIfNotExists();
+        }
+        for (LightClassFile lightClassFile: toRemove) {
+            removeLightClass(lightClassFile.asFile());
+            lightClassFile.touchFile();
+        }
         cleanOutdatedLightClasses(project);
     }
     
