@@ -16,8 +16,12 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.asJava
 
+import org.eclipse.core.internal.jobs.JobStatus
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
+import org.eclipse.core.resources.WorkspaceJob
+import org.eclipse.core.runtime.IProgressMonitor
+import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
@@ -35,13 +39,14 @@ import org.jetbrains.kotlin.psi.KtScript
 import org.jetbrains.kotlin.lexer.KtTokens
 
 object KotlinLightClassGeneration {
-    fun updateLightClasses(project: IProject, affectedFiles: Set<IFile>) {
+
+    fun updateLightClasses(project: IProject, affectedFiles: Set<IFile>, resourcesTreeBlocked: Boolean = false) {
         if (!KotlinJavaManager.hasLinkedKotlinBinFolder(project)) return
 
         KotlinPsiManager.recreateSourcesForProject(JavaCore.create(project))
 
         KotlinLightClassManager.getInstance(project).computeLightClassesSources()
-        KotlinLightClassManager.getInstance(project).updateLightClasses(affectedFiles)
+        KotlinLightClassManager.getInstance(project).updateLightClasses(affectedFiles, resourcesTreeBlocked)
     }
 
     fun buildLightClasses(
@@ -77,7 +82,7 @@ object KotlinLightClassGeneration {
 					}
 			}).build()
 
-        KotlinCodegenFacade.compileCorrectFiles(state) { exception, fileUrl -> Unit }
+        KotlinCodegenFacade.compileCorrectFiles(state) { _, _ -> Unit }
 
         return state
     }
