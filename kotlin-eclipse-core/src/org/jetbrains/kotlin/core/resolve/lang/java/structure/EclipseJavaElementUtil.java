@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
@@ -34,7 +35,10 @@ import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
+import org.eclipse.jdt.internal.core.AnnotationInfo;
 import org.eclipse.jdt.internal.core.BinaryType;
+import org.eclipse.jdt.internal.core.ClassFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.filesystem.KotlinFileSystem;
@@ -234,7 +238,17 @@ public class EclipseJavaElementUtil {
         if (binaryClass == null) {
             return false;
         }
-        return true;
+        if (classFile instanceof ClassFile) {
+            try {
+                IBinaryAnnotation[] annotations = ((ClassFile) classFile).getBinaryTypeInfo().getAnnotations();
+                if (annotations != null) {
+                    for (IBinaryAnnotation info : annotations) {
+                        if (Arrays.equals(info.getTypeName(), "Lkotlin/Metadata;".toCharArray())) return true;
+                    }
+                }
+            } catch (JavaModelException ignored) { }
+        }
+        return false;
     }
 
     @Nullable
