@@ -26,7 +26,7 @@
 		<tycho.version>1.3.0</tycho.version>
 		<tycho-extras.version>1.3.0</tycho-extras.version>
 
-		<eclipse-repo.url>http://download.eclipse.org/releases/oxygen</eclipse-repo.url>
+		<eclipse-repo.url>http://download.eclipse.org/releases/2019-03</eclipse-repo.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/46/dev/update</ajdt-eclipse-repo.url>
@@ -118,17 +118,7 @@
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
-							<arch>x86</arch>
-						</environment>
-						<environment>
-							<os>linux</os>
-							<ws>gtk</ws>
 							<arch>x86_64</arch>
-						</environment>
-						<environment>
-							<os>win32</os>
-							<ws>win32</ws>
-							<arch>x86</arch>
 						</environment>
 						<environment>
 							<os>win32</os>
@@ -245,7 +235,7 @@
 						<baselineReplace>none</baselineReplace>
 						<baselineRepositories>
 							<repository>
-								<url>http://download.eclipse.org/eclipse/updates/4.7</url>
+								<url>http://download.eclipse.org/eclipse/updates/4.11</url>
 							</repository>
 						</baselineRepositories>
 					</configuration>
