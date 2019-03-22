@@ -16,7 +16,8 @@ Bundle-ClassPath: .,
  ../kotlin-eclipse-ui-test/lib/gson-2.3.1.jar,
  lib/kotlin-formatter.jar,
  lib/ide-dependencies.jar,
- lib/annotations-13.0.jar
+ lib/annotations-13.0.jar,
+ lib/kotlin-scripting-impl.jar
 Export-Package: 
  com.intellij,
  com.intellij.codeInsight,
