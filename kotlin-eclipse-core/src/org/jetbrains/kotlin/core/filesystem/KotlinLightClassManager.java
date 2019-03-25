@@ -19,11 +19,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jdt.internal.core.util.LRUCache;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -131,7 +127,7 @@ public class KotlinLightClassManager {
         }
         if (resourceTreeBlocked) {
             if (!toCreate.isEmpty() || !toRemove.isEmpty()) {
-                new WorkspaceJob(WORKSPACE_JOB_ID) {
+                WorkspaceJob job = new WorkspaceJob(WORKSPACE_JOB_ID) {
                     @Override
                     public IStatus runInWorkspace(IProgressMonitor monitor) {
                         monitor.beginTask("Light class generation started", 0);
@@ -139,7 +135,10 @@ public class KotlinLightClassManager {
                         monitor.done();
                         return new JobStatus(0, this, "Light classes generation finished");
                     }
-                }.schedule();
+                };
+                job.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().createRule(
+                        project.getFolder(KotlinJavaManager.KOTLIN_BIN_FOLDER)));
+                job.schedule();
             }
         } else {
             updateLightClasses(toCreate, toRemove);
