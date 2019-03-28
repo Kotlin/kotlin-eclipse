@@ -77,8 +77,21 @@ object ProjectUtils {
     }
 
     @JvmStatic
-    fun getOutputFolder(javaProject: IJavaProject): IFolder? =
+    fun getDefaultOutputFolder(javaProject: IJavaProject): IFolder? =
         ResourcesPlugin.getWorkspace().root.findMember(javaProject.outputLocation) as? IFolder
+
+    @JvmStatic
+    fun getAllOutputFolders(javaProject: IJavaProject): List<IFolder> =
+            javaProject.getResolvedClasspath(true)
+                .asSequence()
+                .filter { it.entryKind == IClasspathEntry.CPE_SOURCE }
+                .map { it.outputLocation }
+                .let { it + javaProject.outputLocation }
+                .filterNotNull()
+                .distinct()
+                .mapNotNull { ResourcesPlugin.getWorkspace().root.findMember(it) as? IFolder }
+                .filter { it.exists() }
+                .toList()
 
     fun getSourceFiles(project: IProject): List<KtFile> =
         KotlinPsiManager.getFilesByProject(project)
@@ -164,10 +177,9 @@ object ProjectUtils {
         }
 
         if (includeBinFolders) {
-            val outputFolder = ProjectUtils.getOutputFolder(javaProject)
-            if (outputFolder != null && outputFolder.exists()) {
-                orderedFiles.add(outputFolder.location.toFile())
-            }
+            getAllOutputFolders(javaProject)
+                .map { it.location.toFile() }
+                .toCollection(orderedFiles)
         }
 
         return orderedFiles.toList()
