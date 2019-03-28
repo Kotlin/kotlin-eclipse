@@ -23,7 +23,7 @@ interface GradleProjectForEclipse : Serializable {
     	get() = emptyList()
 }
 
-data class GradleProjectForEclipseImpl(
+data class KotlinGradleProject(
     override val codestyle: String?,
     override val apiVersion: String?,
     override val languageVersion: String?,
@@ -33,6 +33,6 @@ data class GradleProjectForEclipseImpl(
     override val isKotlinProject: Boolean = true
 }
 
-object NoKotlinProject : GradleProjectForEclipse {
+object NonKotlinProject : GradleProjectForEclipse {
     override val isKotlinProject: Boolean = false
 }

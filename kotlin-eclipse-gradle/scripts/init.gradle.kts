@@ -4,10 +4,10 @@ import org.gradle.api.Project
 import org.gradle.tooling.provider.model.ToolingModelBuilder
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.jetbrains.kotlin.gradle.model.GradleProjectForEclipse
-import org.jetbrains.kotlin.gradle.model.GradleProjectForEclipseImpl
+import org.jetbrains.kotlin.gradle.model.KotlinGradleProject
 import org.jetbrains.kotlin.gradle.model.GradleMultiProjectForEclipse
 import org.jetbrains.kotlin.gradle.model.GradleMultiProjectForEclipseImpl
-import org.jetbrains.kotlin.gradle.model.NoKotlinProject
+import org.jetbrains.kotlin.gradle.model.NonKotlinProject
 import org.jetbrains.kotlin.gradle.model.CompilerPluginConfig
 import org.jetbrains.kotlin.gradle.model.AllOpen
 import org.jetbrains.kotlin.gradle.model.NoArg
@@ -40,7 +40,7 @@ class GradleProjectForEclipseBuilder() : ToolingModelBuilder {
 
     override fun canBuild(modelName: String) = (modelName == GradleMultiProjectForEclipse::class.qualifiedName)
 
-    override fun buildAll(modelName: String, project: Project): Any =
+    override fun buildAll(modelName: String, project: Project): GradleMultiProjectForEclipse =
         GradleMultiProjectForEclipseImpl(process(project).toMap())
 
     private fun process(project: Project): List<Pair<String, GradleProjectForEclipse>> =
@@ -51,14 +51,14 @@ class GradleProjectForEclipseBuilder() : ToolingModelBuilder {
         project.tasks.findByName("compileKotlin")
             ?.dynamicCall("kotlinOptions")
             ?.run {
-                GradleProjectForEclipseImpl(
+                KotlinGradleProject(
                     project.findProperty("kotlin.code.style") as? String,
                     property("apiVersion"),
                     property("languageVersion"),
                     property("jvmTarget"),
                     collectPlugins(project)
                 )
-            } ?: NoKotlinProject
+            } ?: NonKotlinProject
 
     private fun collectPlugins(project: Project): List<CompilerPluginConfig> {
         val result = arrayListOf<CompilerPluginConfig>()
