@@ -30,6 +30,7 @@ class KotlinProjectConfigurator : ProjectConfigurator {
 
     override fun configure(context: ProjectContext, monitor: IProgressMonitor) {
         val project = context.project
+        KotlinEnvironment.removeEnvironment(project)
         
         if (!::multiModel.isInitialized) return
         val model = multiModel[project.name]
