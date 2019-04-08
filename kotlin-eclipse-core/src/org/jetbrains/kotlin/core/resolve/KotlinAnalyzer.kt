@@ -16,10 +16,13 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import org.eclipse.core.resources.IProject
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.getEnvironment
+import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.psi.KtFile
 
 object KotlinAnalyzer {
@@ -34,27 +37,25 @@ object KotlinAnalyzer {
             files.size == 1 -> analyzeFile(files.single())
             
             else -> {
-                val environment = getEnvironment(files.first().project)
-                if (environment == null) {
+                val environment = getEnvironment(files.first().project) ?:
                     throw IllegalStateException("There is no environment for project: ${files.first().project}")
-                }
-                
-                if (environment !is KotlinEnvironment) {
+
+                environment as? KotlinEnvironment ?:
                     throw IllegalStateException("Only KotlinEnvironment can be used to analyze several files")
-                }
-                
+
                 analyzeFiles(environment, files)
             }
         }
     }
-    
-    fun analyzeProject(eclipseProject: IProject): AnalysisResultWithProvider {
-        val environment = KotlinEnvironment.getEnvironment(eclipseProject)
-        return analyzeFiles(environment, emptyList())
-    }
+
+    fun analyzeProjectAsync(project: IProject) : Deferred<AnalysisResultWithProvider> =
+        KotlinCoroutinesScope.async {
+            analyzeFiles(
+                KotlinEnvironment.getEnvironment(project),
+                ProjectUtils.getSourceFiles(project))
+        }
 
     private fun analyzeFiles(kotlinEnvironment: KotlinEnvironment,
-                             filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider {
-        return EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(kotlinEnvironment, filesToAnalyze)
-    }
+                             filesToAnalyze: Collection<KtFile>): AnalysisResultWithProvider =
+        EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(kotlinEnvironment, filesToAnalyze)
 }

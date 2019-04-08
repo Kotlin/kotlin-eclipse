@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.builder
 
+import kotlinx.coroutines.runBlocking
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResourceDelta
@@ -31,6 +32,8 @@ import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
+import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache.cancelablePostAnalysis
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
@@ -97,14 +100,18 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         val ktFiles = existingAffectedFiles.map { KotlinPsiManager.getParsedFile(it) }
 
         val analysisResultWithProvider = if (ktFiles.isEmpty())
-            KotlinAnalyzer.analyzeProject(project)
+            runBlocking {
+                KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
+            }
         else
-            KotlinAnalyzer.analyzeFiles(ktFiles)
+            runBlocking {
+                KotlinAnalyzer.analyzeFiles(ktFiles)
+            }
 
         clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
         updateLineMarkers(analysisResultWithProvider.analysisResult.bindingContext.diagnostics, existingAffectedFiles)
 
-        runCancellableAnalysisFor(javaProject) { analysisResult ->
+        cancelablePostAnalysis(javaProject) { analysisResult ->
             val projectFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
             updateLineMarkers(
                 analysisResult.bindingContext.diagnostics,
@@ -145,7 +152,7 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         clearProblemAnnotationsFromOpenEditorsExcept(emptyList())
         clearMarkersFromFiles(existingFiles)
 
-        runCancellableAnalysisFor(javaProject) { analysisResult ->
+        cancelablePostAnalysis(javaProject) { analysisResult ->
             updateLineMarkers(analysisResult.bindingContext.diagnostics, existingFiles)
             KotlinLightClassGeneration.updateLightClasses(javaProject.project, kotlinFiles)
         }
@@ -160,10 +167,10 @@ class KotlinBuilder : IncrementalProjectBuilder() {
     }
 
     private fun isAllFromOutputFolder(files: Set<IFile>, javaProject: IJavaProject): Boolean {
-        val workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getFullPath()
+        val workspaceLocation = ResourcesPlugin.getWorkspace().root.fullPath
         val outputLocation = javaProject.outputLocation
         for (file in files) {
-            val filePathLocation = file.getFullPath().makeRelativeTo(workspaceLocation)
+            val filePathLocation = file.fullPath.makeRelativeTo(workspaceLocation)
             if (!outputLocation.isPrefixOf(filePathLocation)) {
                 return false
             }
@@ -175,9 +182,9 @@ class KotlinBuilder : IncrementalProjectBuilder() {
     private fun getAllAffectedFiles(resourceDelta: IResourceDelta): Set<IFile> {
         val affectedFiles = hashSetOf<IFile>()
         resourceDelta.accept { delta ->
-            if (delta.getKind() == IResourceDelta.NO_CHANGE) return@accept false
+            if (delta.kind == IResourceDelta.NO_CHANGE) return@accept false
 
-            val resource = delta.getResource()
+            val resource = delta.resource
             if (resource is IFile) {
                 affectedFiles.add(resource)
             } else {
@@ -191,8 +198,8 @@ class KotlinBuilder : IncrementalProjectBuilder() {
     }
 
     private fun isBuildingForLaunch(): Boolean {
-        val launchDelegateFQName = LaunchConfigurationDelegate::class.java.getCanonicalName()
-        return Thread.currentThread().getStackTrace().find { it.className == launchDelegateFQName } != null
+        val launchDelegateFQName = LaunchConfigurationDelegate::class.java.canonicalName
+        return Thread.currentThread().stackTrace.find { it.className == launchDelegateFQName } != null
     }
 
     private fun compileKotlinFiles(javaProject: IJavaProject) {
@@ -213,9 +220,9 @@ private fun clearMarkersFromFiles(files: List<IFile>) {
 }
 
 private fun clearProblemAnnotationsFromOpenEditorsExcept(affectedFiles: List<IFile>) {
-    for (window in PlatformUI.getWorkbench().getWorkbenchWindows()) {
-        for (page in window.getPages()) {
-            page.getEditorReferences()
+    for (window in PlatformUI.getWorkbench().workbenchWindows) {
+        for (page in window.pages) {
+            page.editorReferences
                 .map { it.getEditor(false) }
                 .filterIsInstance(KotlinFileEditor::class.java)
                 .filterNot { it.eclipseFile in affectedFiles }
@@ -246,10 +253,10 @@ object ScriptFileFilter : KotlinFileFilterForBuild {
 
 object FileFromOuputFolderFilter : KotlinFileFilterForBuild {
     override fun isApplicable(file: IFile, javaProject: IJavaProject): Boolean {
-        val workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getFullPath()
+        val workspaceLocation = ResourcesPlugin.getWorkspace().root.fullPath
         val outputLocation = javaProject.outputLocation
 
-        val filePathLocation = file.getFullPath().makeRelativeTo(workspaceLocation)
+        val filePathLocation = file.fullPath.makeRelativeTo(workspaceLocation)
         return outputLocation.isPrefixOf(filePathLocation)
     }
 }

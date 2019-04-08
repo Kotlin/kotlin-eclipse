@@ -70,7 +70,7 @@ object EclipseAnalyzerFacadeForJVM {
         }
         
         val allFiles = LinkedHashSet<KtFile>(filesSet)
-        val addedFiles = filesSet.map { getPath(it) }.filterNotNull().toSet()
+        val addedFiles = filesSet.mapNotNull { getPath(it) }.toSet()
         ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).filterNotTo(allFiles) {
             getPath(it) in addedFiles
         }

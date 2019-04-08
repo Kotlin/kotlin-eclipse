@@ -16,6 +16,9 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.model
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResourceChangeEvent
@@ -24,52 +27,54 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
-import org.jetbrains.kotlin.core.utils.ProjectUtils
-import java.util.concurrent.ConcurrentHashMap
+import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.core.resolve.KotlinCoroutinesScope
+import java.util.concurrent.*
 
-public object KotlinAnalysisProjectCache : IResourceChangeListener {
-    private val cachedAnalysisResults = ConcurrentHashMap<IProject, AnalysisResult>()
+object KotlinAnalysisProjectCache : IResourceChangeListener {
+    private val cachedAnalysisResults = ConcurrentHashMap<IProject, Deferred<AnalysisResultWithProvider>>()
 
-    public fun resetCache(project: IProject) {
+    fun resetCache(project: IProject) {
         synchronized(project) {
-            cachedAnalysisResults.remove(project)
+            cachedAnalysisResults.remove(project)?.cancel()
         }
     }
 
-    public fun resetAllCaches() {
+    fun resetAllCaches() {
         cachedAnalysisResults.keys.toList().forEach {
             resetCache(it)
         }
     }
 
-    public fun getAnalysisResult(javaProject: IJavaProject): AnalysisResult {
-        val project = javaProject.getProject()
-        return synchronized(project) {
-            val analysisResult = cachedAnalysisResults.get(project) ?: run {
-                EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                        KotlinEnvironment.getEnvironment(project),
-                        ProjectUtils.getSourceFiles(javaProject.getProject())).analysisResult
+    fun cancelablePostAnalysis(javaProject: IJavaProject, post: (AnalysisResult) -> Unit) {
+        try {
+            KotlinCoroutinesScope.async {
+                resetCache(javaProject.project)
+                post(getAnalysisResult(javaProject).analysisResult)
             }
+        } catch (e: CancellationException) {}
+    }
 
-            cachedAnalysisResults.putIfAbsent(project, analysisResult) ?: analysisResult
+    fun getAnalysisResult(javaProject: IJavaProject) : AnalysisResultWithProvider {
+        return runBlocking {
+            val project = javaProject.project
+             synchronized(this@KotlinAnalysisProjectCache) {
+                cachedAnalysisResults.getOrPut(project) { KotlinAnalyzer.analyzeProjectAsync(project) }
+            }.await()
         }
     }
 
-    public @Synchronized fun getAnalysisResultIfCached(project: IProject): AnalysisResult? {
-        return cachedAnalysisResults.get(project)
-    }
-
     override fun resourceChanged(event: IResourceChangeEvent) {
-        when (event.getType()) {
+        when (event.type) {
             IResourceChangeEvent.PRE_DELETE,
             IResourceChangeEvent.PRE_CLOSE,
-            IResourceChangeEvent.PRE_BUILD -> event.getDelta()?.accept { delta ->
-                val resource = delta.getResource()
+            IResourceChangeEvent.PRE_BUILD -> event.delta?.accept { delta ->
+                val resource = delta.resource
                 if (resource is IFile) {
                     val javaProject = JavaCore.create(resource.getProject())
                     if (KotlinPsiManager.isKotlinSourceFile(resource, javaProject)) {
-                        cachedAnalysisResults.remove(resource.getProject())
+                        resetCache(resource.getProject())
                     }
 
                     return@accept false

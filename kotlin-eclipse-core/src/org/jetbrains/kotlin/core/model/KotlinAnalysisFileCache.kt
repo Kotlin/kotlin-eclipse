@@ -16,44 +16,51 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.model
 
-import org.eclipse.jdt.core.IJavaProject
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
+import org.jetbrains.kotlin.core.resolve.KotlinCoroutinesScope
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 
-data class FileAnalysisResults(val file: KtFile, val analysisResult: AnalysisResultWithProvider)
+data class FileAnalysisResults(val file: KtFile, val analysisResult: Deferred<AnalysisResultWithProvider>)
 
-public object KotlinAnalysisFileCache {
-    private @Volatile var lastAnalysedFileCache: FileAnalysisResults? = null
+object KotlinAnalysisFileCache {
 
-    @Synchronized fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
-        return getImmediatlyFromCache(file) ?: run {
+    @Volatile
+    private var lastAnalysedFileCache: FileAnalysisResults? = null
+
+    fun getAnalysisResult(file: KtFile): AnalysisResultWithProvider {
+        return runBlocking {
+            getImmediatelyFromCache(file)?.await()
+        } ?: runBlocking {
             val environment = getEnvironment(file.project)!!
-            val analysisResult = resolve(file, environment)
-            
-            lastAnalysedFileCache = FileAnalysisResults(file, analysisResult)
-            lastAnalysedFileCache!!.analysisResult
+            val analysisResult = KotlinCoroutinesScope.async {
+                resolve(file, environment)
+            }
+            saveLastResult(file, analysisResult).analysisResult.await()
         }
     }
+
+    @Synchronized
+    private fun saveLastResult(file: KtFile, result: Deferred<AnalysisResultWithProvider>): FileAnalysisResults =
+        FileAnalysisResults(file, result).also {
+            lastAnalysedFileCache = it
+        }
     
     fun resetCache() {
         lastAnalysedFileCache = null
     }
     
-    private fun resolve(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider {
-        return when (environment) {
+    private fun resolve(file: KtFile, environment: KotlinCommonEnvironment): AnalysisResultWithProvider =
+        when (environment) {
             is KotlinScriptEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeScript(environment, file)
             is KotlinEnvironment -> EclipseAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(environment, listOf(file))
             else -> throw IllegalArgumentException("Could not analyze file with environment: $environment")
         }
-    }
     
     @Synchronized
-    private fun getImmediatlyFromCache(file: KtFile): AnalysisResultWithProvider? {
-        return if (lastAnalysedFileCache != null && lastAnalysedFileCache!!.file == file)
-            lastAnalysedFileCache!!.analysisResult
-        else
-            null
-    }
+    private fun getImmediatelyFromCache (ktFile: KtFile) : Deferred<AnalysisResultWithProvider>? =
+        lastAnalysedFileCache?.takeIf { it.file == ktFile }?.analysisResult
 }

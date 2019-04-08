@@ -30,13 +30,13 @@ import org.jetbrains.kotlin.progress.CompilationCanceledException
 import org.jetbrains.kotlin.progress.CompilationCanceledStatus
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
 
-public class KotlinAnalysisJob(private val javaProject: IJavaProject) : Job("Kotlin Analysis") {
+class KotlinAnalysisJob(private val javaProject: IJavaProject) : Job("Kotlin Analysis") {
     init {
-        setPriority(DECORATE)
-        setSystem(true)
+        priority = DECORATE
+        isSystem = true
     }
     
-    val familyIndicator = constructFamilyIndicator(javaProject)
+    private val familyIndicator = constructFamilyIndicator(javaProject)
     
     @Volatile var canceled = false
     
@@ -54,9 +54,7 @@ public class KotlinAnalysisJob(private val javaProject: IJavaProject) : Job("Kot
                 return Status.OK_STATUS
             }
             
-            val analysisResult = KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-            
-            return AnalysisResultStatus(Status.OK_STATUS, analysisResult)
+            return AnalysisResultStatus(Status.OK_STATUS, null)
         } catch (e: CompilationCanceledException) {
             return AnalysisResultStatus(Status.CANCEL_STATUS, AnalysisResult.EMPTY)
         } finally {
@@ -71,30 +69,29 @@ public class KotlinAnalysisJob(private val javaProject: IJavaProject) : Job("Kot
         canceled = true
     }
     
-    class AnalysisResultStatus(val status: IStatus, val analysisResult: AnalysisResult): IStatus by status
+    class AnalysisResultStatus(val status: IStatus, val analysisResult: AnalysisResult?): IStatus by status
 }
 
-private fun constructFamilyIndicator(javaProject: IJavaProject): String {
-    return javaProject.getProject().getName() + "_kotlinAnalysisFamily"
-}
+private fun constructFamilyIndicator(javaProject: IJavaProject): String =
+    "${javaProject.project.name}_kotlinAnalysisFamily"
 
 fun runCancellableAnalysisFor(javaProject: IJavaProject, postAnalysisTask: (AnalysisResult) -> Unit = {}) {
     val family = constructFamilyIndicator(javaProject)
     Job.getJobManager().cancel(family)
     Job.getJobManager().join(family, NullProgressMonitor()) // It should be fast enough
-    
+
     KotlinAnalysisProjectCache.resetCache(javaProject.project)
-    
+
     val analysisJob = KotlinAnalysisJob(javaProject)
-    
+
     analysisJob.addJobChangeListener(object : JobChangeAdapter() {
         override fun done(event: IJobChangeEvent) {
             val result = event.result
             if (result is KotlinAnalysisJob.AnalysisResultStatus && result.isOK) {
-                postAnalysisTask(result.analysisResult)
+                //postAnalysisTask(result.analysisResult)
             }
         }
     })
-    
+
     analysisJob.schedule()
 }
