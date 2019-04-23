@@ -50,18 +50,72 @@ import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
-import org.jetbrains.kotlin.core.model.runJob
 import java.util.Comparator
-import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.core.runtime.Status
 
-class KotlinCompletionProcessor(
-        private val editor: KotlinEditor,
-        private val assistant: ContentAssistant? = null,
-        private val needSorting: Boolean = false) : IContentAssistProcessor, ICompletionListener {
+abstract class KotlinCompletionProcessor(
+    val editor: KotlinEditor,
+    private val assistant: ContentAssistant?,
+    private val needSorting: Boolean) : IContentAssistProcessor, ICompletionListener {
+
     companion object {
         private val VALID_PROPOSALS_CHARS = charArrayOf()
         private val VALID_INFO_CHARS = charArrayOf('(', ',')
+        fun createKotlinCompletionProcessors(
+            editor: KotlinEditor,
+            assistant: ContentAssistant? = null,
+            needSorting: Boolean = false) = listOf<IContentAssistProcessor>(
+            object : KotlinCompletionProcessor(editor, assistant, needSorting) {
+                override fun computeProposals(
+                    identifierPart: String,
+                    psiElement: PsiElement?,
+                    simpleNameExpression: KtSimpleNameExpression?,
+                    viewer: ITextViewer,
+                    offset: Int
+                ): List<ICompletionProposal>? =
+                    simpleNameExpression?.let {
+                        collectCompletionProposals(
+                            generateBasicCompletionProposals(identifierPart, simpleNameExpression),
+                            identifierPart
+                        )
+                    }
+            },
+            object : KotlinCompletionProcessor(editor, assistant, needSorting) {
+                override fun computeProposals(
+                    identifierPart: String,
+                    psiElement: PsiElement?,
+                    simpleNameExpression: KtSimpleNameExpression?,
+                    viewer: ITextViewer,
+                    offset: Int
+                ): List<ICompletionProposal>? =
+                    simpleNameExpression?.takeIf { identifierPart.isNotBlank() }?.let {
+                        generateNonImportedCompletionProposals(identifierPart, simpleNameExpression, editor.javaProject!!)
+                    }
+            },
+            object : KotlinCompletionProcessor(editor, assistant, needSorting) {
+                override fun computeProposals(
+                    identifierPart: String,
+                    psiElement: PsiElement?,
+                    simpleNameExpression: KtSimpleNameExpression?,
+                    viewer: ITextViewer,
+                    offset: Int
+                ): List<ICompletionProposal>? =
+                    psiElement?.let {
+                        generateKeywordProposals(identifierPart, psiElement)
+                    }
+            },
+            object : KotlinCompletionProcessor(editor, assistant, needSorting) {
+                override fun computeProposals(
+                    identifierPart: String,
+                    psiElement: PsiElement?,
+                    simpleNameExpression: KtSimpleNameExpression?,
+                    viewer: ITextViewer,
+                    offset: Int
+                ): List<ICompletionProposal>? =
+                    psiElement?.let {
+                        generateTemplateProposals(psiElement.containingFile, viewer, offset, identifierPart)
+                    }
+            }
+        )
     }
     
     private val kotlinParameterValidator by lazy {
@@ -77,9 +131,9 @@ class KotlinCompletionProcessor(
             if (needSorting) sortProposals(it) else it
         }
         
-        return generatedProposals.toTypedArray() 
+        return generatedProposals.toTypedArray()
     }
-    
+
     private fun sortProposals(proposals: List<ICompletionProposal>): List<ICompletionProposal> {
         return proposals.sortedWith(object : Comparator<ICompletionProposal> {
             override fun compare(o1: ICompletionProposal, o2: ICompletionProposal): Int {
@@ -92,59 +146,48 @@ class KotlinCompletionProcessor(
         contentAssistant.setEmptyMessage("No Default Proposals")
         contentAssistant.setSorter(KotlinCompletionSorter)
     }
-    
+
     private fun generateCompletionProposals(viewer: ITextViewer, offset: Int): List<ICompletionProposal> {
         val (identifierPart, identifierStart) = getIdentifierInfo(viewer.document, offset)
         val psiElement = KotlinCompletionUtils.getPsiElement(editor, identifierStart)
         val simpleNameExpression = PsiTreeUtil.getParentOfType(psiElement, KtSimpleNameExpression::class.java)
-        
-        val proposals = arrayListOf<ICompletionProposal>().apply {
-            if (simpleNameExpression != null) {
-                addAll(collectCompletionProposals(generateBasicCompletionProposals(identifierPart, simpleNameExpression), identifierPart))
 
-                if (identifierPart.isNotBlank()) {
-                    addAll(generateNonImportedCompletionProposals(identifierPart, simpleNameExpression, editor.javaProject!!))
-                }
-                
-            }
-            if (psiElement != null) {
-                addAll(generateKeywordProposals(identifierPart, psiElement))
-                addAll(generateTemplateProposals(psiElement.containingFile, viewer, offset, identifierPart))
-            }
-            
-            Status.OK_STATUS
-        }
-        
-        return proposals
+        return computeProposals(identifierPart, psiElement, simpleNameExpression, viewer, offset) ?: emptyList()
     }
-    
-    private fun generateNonImportedCompletionProposals(
-            identifierPart: String, 
+
+    abstract fun computeProposals(
+        identifierPart: String,
+        psiElement: PsiElement?,
+        simpleNameExpression: KtSimpleNameExpression?,
+        viewer: ITextViewer,
+        offset: Int
+    ): List<ICompletionProposal>?
+
+    protected fun generateNonImportedCompletionProposals(
+            identifierPart: String,
             expression: KtSimpleNameExpression,
             javaProject: IJavaProject): List<KotlinCompletionProposal> {
         val file = editor.eclipseFile ?: return emptyList()
         val ktFile = editor.parsedFile ?: return emptyList()
-        
-        return lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject).map { 
+
+        return lookupNonImportedTypes(expression, identifierPart, ktFile, javaProject).map {
             val imageDescriptor = JavaElementImageProvider.getTypeImageDescriptor(false, false, it.modifiers, false)
             val image = JavaPlugin.getImageDescriptorRegistry().get(imageDescriptor)
-            
+
             KotlinImportCompletionProposal(it, image, file, identifierPart)
         }
     }
-    
-    private fun generateBasicCompletionProposals(identifierPart: String, expression: KtSimpleNameExpression): Collection<DeclarationDescriptor> {
-        val file = editor.eclipseFile
-        if (file == null) {
+
+    protected fun generateBasicCompletionProposals(identifierPart: String, expression: KtSimpleNameExpression): Collection<DeclarationDescriptor> {
+        val file = editor.eclipseFile ?:
             throw IllegalStateException("Failed to retrieve IFile from editor $editor")
-        }
         
         val nameFilter: (Name) -> Boolean = { name -> KotlinCompletionUtils.applicableNameFor(identifierPart, name) }
         
         return KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, file, identifierPart)
     }
     
-    private fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>, part: String): List<KotlinCompletionProposal> {
+    protected fun collectCompletionProposals(descriptors: Collection<DeclarationDescriptor>, part: String): List<KotlinCompletionProposal> {
         return descriptors.map { descriptor ->
             val completion = descriptor.name.identifier
             val image = KotlinImageProvider.getImage(descriptor)
@@ -169,7 +212,7 @@ class KotlinCompletionProcessor(
         }
     }
     
-    private fun generateTemplateProposals(
+    protected fun generateTemplateProposals(
             psiFile: PsiFile, viewer: ITextViewer, offset: Int, identifierPart: String): List<ICompletionProposal> {
         
         val contextTypeIds = KotlinApplicableTemplateContext.getApplicableContextTypeIds(viewer, psiFile, offset - identifierPart.length)
@@ -189,11 +232,12 @@ class KotlinCompletionProcessor(
     
     private fun createTemplateContext(region: IRegion, contextTypeID: String): TemplateContext {
         return KotlinDocumentTemplateContext(
-                KotlinTemplateManager.INSTANCE.getContextTypeRegistry().getContextType(contextTypeID),
-                editor, region.getOffset(), region.getLength())
+                KotlinTemplateManager.INSTANCE.contextTypeRegistry.getContextType(contextTypeID),
+                editor, region.offset, region.length
+        )
     }
     
-    private fun generateKeywordProposals(identifierPart: String, expression: PsiElement): List<KotlinCompletionProposal> {
+    protected fun generateKeywordProposals(identifierPart: String, expression: PsiElement): List<KotlinCompletionProposal> {
         val callTypeAndReceiver = if (expression is KtSimpleNameExpression) CallTypeAndReceiver.detect(expression) else null
         
         return arrayListOf<String>().apply {
@@ -224,25 +268,25 @@ class KotlinCompletionProcessor(
             }
         }.map { KotlinKeywordCompletionProposal(it, identifierPart) }
     }
-    
+
     override fun computeContextInformation(viewer: ITextViewer?, offset: Int): Array<IContextInformation> {
         return KotlinFunctionParameterInfoAssist.computeContextInformation(editor, offset)
     }
-    
+
     override fun getCompletionProposalAutoActivationCharacters(): CharArray = VALID_PROPOSALS_CHARS
-    
+
     override fun getContextInformationAutoActivationCharacters(): CharArray = VALID_INFO_CHARS
-    
+
     override fun getErrorMessage(): String? = ""
-    
+
     override fun getContextInformationValidator(): IContextInformationValidator = kotlinParameterValidator
-    
+
     override fun assistSessionStarted(event: ContentAssistEvent?) {
     }
-    
+
     override fun assistSessionEnded(event: ContentAssistEvent?) {
     }
-    
+
     override fun selectionChanged(proposal: ICompletionProposal?, smartToggle: Boolean) { }
 }
 
@@ -251,12 +295,10 @@ private object KotlinCompletionSorter : ICompletionProposalSorter {
         val relevance2 = p2.relevance()
         val relevance1 = p1.relevance()
         
-        return if (relevance2 > relevance1) {
-            1
-        } else if (relevance2 < relevance1) {
-            -1
-        } else {
-            p1.sortString().compareTo(p2.sortString(), ignoreCase = true)
+        return when {
+            relevance2 > relevance1 -> 1
+            relevance2 < relevance1 -> -1
+            else -> p1.sortString().compareTo(p2.sortString(), ignoreCase = true)
         }
     }
     
