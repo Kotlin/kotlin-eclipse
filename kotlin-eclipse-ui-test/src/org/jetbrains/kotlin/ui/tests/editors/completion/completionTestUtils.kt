@@ -22,10 +22,10 @@ import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProcessor
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinCompletionProposal
 
-fun getCompletionProposals(editor: KotlinEditor): Array<ICompletionProposal> {
-    val processor = KotlinCompletionProcessor(editor, null, needSorting = true)
-    return processor.computeCompletionProposals(editor.javaEditor.getViewer(), KotlinTestUtils.getCaret(editor.javaEditor))
-}
+fun getCompletionProposals(editor: KotlinEditor): Array<ICompletionProposal> =
+    KotlinCompletionProcessor.createKotlinCompletionProcessors(editor, null, needSorting = true).flatMap {
+        it.computeCompletionProposals(editor.javaEditor.viewer, KotlinTestUtils.getCaret(editor.javaEditor)).toList()
+    }.toTypedArray()
 
 fun ICompletionProposal.stringToInsert(): String {
     return if (this is KotlinCompletionProposal) replacementString else additionalProposalInfo ?: displayString
