@@ -21,7 +21,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
 import org.jetbrains.kotlin.core.resolve.EclipseAnalyzerFacadeForJVM
-import org.jetbrains.kotlin.core.resolve.KotlinCoroutinesScope
+import org.jetbrains.kotlin.core.resolve.KotlinAnalysisScope
 import org.jetbrains.kotlin.psi.KtFile
 
 data class FileAnalysisResults(val file: KtFile, val analysisResult: Deferred<AnalysisResultWithProvider>)
@@ -36,7 +36,7 @@ object KotlinAnalysisFileCache {
             getImmediatelyFromCache(file)?.await()
         } ?: runBlocking {
             val environment = getEnvironment(file.project)!!
-            val analysisResult = KotlinCoroutinesScope.async {
+            val analysisResult = KotlinAnalysisScope.async {
                 resolve(file, environment)
             }
             saveLastResult(file, analysisResult).analysisResult.await()

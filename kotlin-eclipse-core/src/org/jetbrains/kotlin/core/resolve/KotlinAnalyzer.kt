@@ -49,7 +49,7 @@ object KotlinAnalyzer {
     }
 
     fun analyzeProjectAsync(project: IProject) : Deferred<AnalysisResultWithProvider> =
-        KotlinCoroutinesScope.async {
+        KotlinAnalysisScope.async {
             analyzeFiles(
                 KotlinEnvironment.getEnvironment(project),
                 ProjectUtils.getSourceFiles(project))

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
-import org.jetbrains.kotlin.core.resolve.KotlinCoroutinesScope;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalysisScope;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
@@ -51,7 +51,7 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
     
     @Override
     protected void performTest(String fileText, String content) {
-        KotlinCoroutinesScope.INSTANCE.join();
+        KotlinAnalysisScope.INSTANCE.join();
         List<KotlinMarkerResolution> proposals = createProposals();
         assertCount(proposals, fileText);
         assertExistence(proposals, fileText);

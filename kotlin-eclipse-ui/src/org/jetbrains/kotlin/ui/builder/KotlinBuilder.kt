@@ -16,7 +16,6 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.builder
 
-import kotlinx.coroutines.runBlocking
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResourceDelta
@@ -100,13 +99,9 @@ class KotlinBuilder : IncrementalProjectBuilder() {
         val ktFiles = existingAffectedFiles.map { KotlinPsiManager.getParsedFile(it) }
 
         val analysisResultWithProvider = if (ktFiles.isEmpty())
-            runBlocking {
-                KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
-            }
+            KotlinAnalysisProjectCache.getAnalysisResult(javaProject)
         else
-            runBlocking {
-                KotlinAnalyzer.analyzeFiles(ktFiles)
-            }
+            KotlinAnalyzer.analyzeFiles(ktFiles)
 
         clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
         updateLineMarkers(analysisResultWithProvider.analysisResult.bindingContext.diagnostics, existingAffectedFiles)

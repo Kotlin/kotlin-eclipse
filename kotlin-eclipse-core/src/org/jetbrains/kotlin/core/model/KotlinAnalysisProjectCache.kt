@@ -28,8 +28,8 @@ import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
+import org.jetbrains.kotlin.core.resolve.KotlinAnalysisScope
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.jetbrains.kotlin.core.resolve.KotlinCoroutinesScope
 import java.util.concurrent.*
 
 object KotlinAnalysisProjectCache : IResourceChangeListener {
@@ -49,10 +49,8 @@ object KotlinAnalysisProjectCache : IResourceChangeListener {
 
     fun cancelablePostAnalysis(javaProject: IJavaProject, post: (AnalysisResult) -> Unit) {
         try {
-            KotlinCoroutinesScope.async {
-                resetCache(javaProject.project)
-                post(getAnalysisResult(javaProject).analysisResult)
-            }
+            resetCache(javaProject.project)
+            post(getAnalysisResult(javaProject).analysisResult)
         } catch (e: CancellationException) {}
     }
 
