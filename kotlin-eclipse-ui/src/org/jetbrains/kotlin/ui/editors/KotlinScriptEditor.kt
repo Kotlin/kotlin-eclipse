@@ -24,7 +24,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.script.ScriptDependenciesProvider
+import org.jetbrains.kotlin.scripting.definitions.ScriptDependenciesProvider
 import org.jetbrains.kotlin.ui.tryUpdateScriptClasspath
 import kotlin.script.experimental.dependencies.ScriptDependencies
 
