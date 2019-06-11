@@ -150,7 +150,9 @@ object EclipseAnalyzerFacadeForJVM {
                 LanguageVersionSettingsImpl.DEFAULT.languageVersion,
                 LanguageVersionSettingsImpl.DEFAULT.apiVersion)
 
-        val optionalBuiltInsModule = JvmBuiltIns(storageManager).apply { initialize(module, true) }.builtInsModule
+        val optionalBuiltInsModule = JvmBuiltIns(storageManager, JvmBuiltIns.Kind.FROM_CLASS_LOADER)
+            .apply { initialize(module, true) }
+            .builtInsModule
 
         val dependencyModule = run {
             val dependenciesContext = ContextForNewModule(
@@ -238,7 +240,8 @@ object EclipseAnalyzerFacadeForJVM {
         createBuiltInsFromModule: Boolean
     ): MutableModuleContext {
         val projectContext = ProjectContext(project)
-        val builtIns = JvmBuiltIns(projectContext.storageManager, !createBuiltInsFromModule)
+        val builtIns = JvmBuiltIns(projectContext.storageManager,
+            if (createBuiltInsFromModule) JvmBuiltIns.Kind.FROM_DEPENDENCIES else JvmBuiltIns.Kind.FROM_CLASS_LOADER)
         return ContextForNewModule(
                 projectContext, Name.special("<${configuration.getNotNull(CommonConfigurationKeys.MODULE_NAME)}>"), builtIns, null
         ).apply {

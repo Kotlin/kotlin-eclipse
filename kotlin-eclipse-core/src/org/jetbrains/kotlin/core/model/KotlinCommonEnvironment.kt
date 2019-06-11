@@ -56,13 +56,7 @@ import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
-import org.jetbrains.kotlin.cli.jvm.compiler.CliKotlinAsJavaSupport
-import org.jetbrains.kotlin.cli.jvm.compiler.CliLightClassGenerationSupport
-import org.jetbrains.kotlin.cli.jvm.compiler.CliModuleAnnotationsResolver
-import org.jetbrains.kotlin.cli.jvm.compiler.CliTraceHolder
-import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
-import org.jetbrains.kotlin.cli.jvm.compiler.MockExternalAnnotationsManager
-import org.jetbrains.kotlin.cli.jvm.compiler.MockInferredAnnotationsManager
+import org.jetbrains.kotlin.cli.jvm.compiler.*
 import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesDynamicCompoundIndex
 import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
@@ -90,12 +84,11 @@ import org.jetbrains.kotlin.resolve.extensions.SyntheticResolveExtension
 import org.jetbrains.kotlin.resolve.jvm.KotlinJavaPsiFacade
 import org.jetbrains.kotlin.resolve.jvm.diagnostics.DefaultErrorMessagesJvm
 import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
-import org.jetbrains.kotlin.script.ScriptDefinitionProvider
-import org.jetbrains.kotlin.script.ScriptDependenciesProvider
+import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
+import org.jetbrains.kotlin.scripting.extensions.ScriptingResolveExtension
 import java.io.File
 import java.util.*
 import kotlin.reflect.KClass
-import org.jetbrains.kotlin.scripting.shared.extensions.ScriptingResolveExtension
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -103,7 +96,7 @@ private fun setIdeaIoUseFallback() {
 
         properties.setProperty("idea.io.use.nio2", java.lang.Boolean.TRUE.toString())
 
-        if (!(SystemInfo.isJavaVersionAtLeast("1.7") && !"1.7.0-ea".equals(SystemInfo.JAVA_VERSION))) {
+        if (!(SystemInfo.isJavaVersionAtLeast(1, 7, 0) && !"1.7.0-ea".equals(SystemInfo.JAVA_VERSION))) {
             properties.setProperty("idea.io.use.fallback", java.lang.Boolean.TRUE.toString())
         }
     }
