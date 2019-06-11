@@ -103,7 +103,7 @@ task downloadKotlinCompilerPluginAndExtractSelectedJars {
         copy {
             from zipTree(locallyDownloadedCompilerFile)
 
-            includes = ['Kotlin/lib/j2k.jar',
+            includes = ['Kotlin/lib/kotlin-plugin.jar',
                         'Kotlin/kotlinc/lib/kotlin-compiler.jar',
                         'Kotlin/kotlinc/lib/kotlin-stdlib.jar',
                         'Kotlin/kotlinc/lib/kotlin-reflect.jar',
@@ -111,7 +111,7 @@ task downloadKotlinCompilerPluginAndExtractSelectedJars {
                         'Kotlin/kotlinc/lib/kotlin-scripting-compiler.jar',
                         'Kotlin/kotlinc/lib/kotlin-scripting-common.jar',
                         'Kotlin/kotlinc/lib/kotlin-scripting-jvm.jar',
-                        'Kotlin/kotlinc/lib/kotlin-scripting-impl.jar',
+                        'Kotlin/kotlinc/lib/kotlin-scripting-compiler-impl.jar',
                         'Kotlin/kotlinc/lib/kotlin-jdk-annotations.jar',
                         'Kotlin/kotlinc/lib/kotlin-stdlib-sources.jar',
                         'Kotlin/kotlinc/lib/allopen-compiler-plugin.jar',
@@ -123,13 +123,25 @@ task downloadKotlinCompilerPluginAndExtractSelectedJars {
 
             into libDir
 
-            rename 'j2k.jar', 'kotlin-converter.jar'
-
             // flatten + rename
             eachFile { FileCopyDetails fileDetails ->
                 fileDetails.setRelativePath new RelativePath(true, fileDetails.name)
             }
         }
+    }
+}
+
+task extractPackagesFromPlugin(type: Jar, dependsOn: downloadKotlinCompilerPluginAndExtractSelectedJars) {
+    from zipTree("$libDir/kotlin-plugin.jar")
+
+    destinationDir = libDir
+
+    archiveName = 'kotlin-converter.jar'
+
+    include "org/jetbrains/kotlin/j2k/**"
+
+    doLast {
+        file("$libDir/kotlin-plugin.jar").delete()
     }
 }
 
@@ -265,6 +277,7 @@ task repackageIdeaAndKotlinCompilerSources(type: Zip, dependsOn: downloadIdeaAnd
 }
 
 task downloadBundled(dependsOn: [downloadKotlinCompilerPluginAndExtractSelectedJars,
+                                 extractPackagesFromPlugin,
                                  downloadIntellijCoreAndExtractSelectedJars,
                                  createIdeDependenciesJar,
                                  downloadKotlinTCArtifacts,

@@ -2,9 +2,9 @@ package org.jetbrains.kotlin.core.model
 
 import org.jetbrains.kotlin.core.script.ScriptTemplateContribution
 import org.jetbrains.kotlin.core.script.template.ProjectScriptTemplate
-import org.jetbrains.kotlin.script.KotlinScriptDefinition
-import org.jetbrains.kotlin.script.KotlinScriptDefinitionFromAnnotatedTemplate
-import org.jetbrains.kotlin.script.ScriptDefinitionProvider
+import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
+import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
+import org.jetbrains.kotlin.scripting.resolve.KotlinScriptDefinitionFromAnnotatedTemplate
 import java.io.File
 
 private const val EXTENSION_POINT_ID = "org.jetbrains.kotlin.core.scriptTemplateContribution"

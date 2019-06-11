@@ -148,7 +148,7 @@ fun prepareOptimizedImports(
 ): List<ImportPath>? =
     OptimizedImportsBuilder(
         file,
-        OptimizedImportsBuilder.InputData(descriptorsToImport.toSet(), emptyList()),
+        OptimizedImportsBuilder.InputData(descriptorsToImport.toSet(), emptyMap(), emptyList()),
         OptimizedImportsBuilder.Options(
             settings.NAME_COUNT_TO_USE_STAR_IMPORT,
             settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS

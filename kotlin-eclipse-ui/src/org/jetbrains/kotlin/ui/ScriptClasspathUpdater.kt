@@ -10,7 +10,7 @@ import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.model.*
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.utils.asFile
-import org.jetbrains.kotlin.script.ScriptContentLoader
+import org.jetbrains.kotlin.scripting.resolve.ScriptContentLoader
 import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
 import kotlin.script.dependencies.Environment
 import kotlin.script.experimental.dependencies.DependenciesResolver
@@ -34,7 +34,6 @@ class ScriptClasspathUpdater : IResourceChangeListener {
     }
 }
 
-// TODO refactor this
 internal fun tryUpdateScriptClasspath(file: IFile) {
     if (findEditor(file) == null) return
 

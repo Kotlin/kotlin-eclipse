@@ -70,8 +70,6 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
-import org.jetbrains.kotlin.script.KotlinScriptDefinition
-import org.jetbrains.kotlin.script.ScriptDefinitionProvider
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
@@ -79,6 +77,9 @@ import java.util.*
 import kotlin.script.dependencies.KotlinScriptExternalDependencies
 import kotlin.script.experimental.dependencies.DependenciesResolver
 import kotlin.script.experimental.dependencies.ScriptDependencies
+import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
+import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
+import org.jetbrains.kotlin.scripting.configuration.ScriptingConfigurationKeys
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -122,7 +123,7 @@ class KotlinScriptEnvironment private constructor(
     init {
         configureClasspath()
 
-        configuration.put(JVMConfigurationKeys.SCRIPT_DEFINITIONS, listOf(definition))
+        configuration.put(ScriptingConfigurationKeys.SCRIPT_DEFINITIONS, listOfNotNull(definition))
 
         definition?.annotationsForSamWithReceivers
                 ?.let { CliSamWithReceiverComponentContributor(it) }

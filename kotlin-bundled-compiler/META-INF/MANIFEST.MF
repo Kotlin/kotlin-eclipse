@@ -6,7 +6,6 @@ Bundle-Version: 0.8.14.qualifier
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
- lib/kotlin-converter.jar,
  lib/kotlin-compiler.jar,
  lib/kotlin-stdlib.jar,
  lib/kotlin-script-runtime.jar,
@@ -17,7 +16,8 @@ Bundle-ClassPath: .,
  lib/kotlin-formatter.jar,
  lib/ide-dependencies.jar,
  lib/annotations-13.0.jar,
- lib/kotlin-scripting-impl.jar
+ lib/kotlin-scripting-compiler-impl.jar,
+ lib/kotlin-converter.jar
 Export-Package: 
  com.intellij,
  com.intellij.codeInsight,
@@ -233,7 +233,6 @@ Export-Package:
  org.jetbrains.kotlin.cli.jvm,
  org.jetbrains.kotlin.cli.jvm.compiler,
  org.jetbrains.kotlin.cli.jvm.index,
- org.jetbrains.kotlin.cli.jvm.repl,
  org.jetbrains.kotlin.codegen,
  org.jetbrains.kotlin.codegen.binding,
  org.jetbrains.kotlin.codegen.context,
@@ -346,9 +345,6 @@ Export-Package:
  org.jetbrains.kotlin.resolve.scopes.utils,
  org.jetbrains.kotlin.resolve.source,
  org.jetbrains.kotlin.resolve.typeBinding,
- org.jetbrains.kotlin.script,
- org.jetbrains.kotlin.scripting.legacy,
- org.jetbrains.kotlin.scripting.shared.extensions,
  org.jetbrains.kotlin.serialization,
  org.jetbrains.kotlin.serialization.builtins,
  org.jetbrains.kotlin.serialization.deserialization,
