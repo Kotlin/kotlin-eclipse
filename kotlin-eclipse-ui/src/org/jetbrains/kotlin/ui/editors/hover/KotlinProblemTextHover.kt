@@ -31,25 +31,20 @@ import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator
 import org.jetbrains.kotlin.ui.editors.quickfix.diagnostic
 import org.jetbrains.kotlin.ui.editors.toCompletionProposals
 
-class KotlinAnnotationTextHover : KotlinEditorTextHover<Any> {
+class KotlinProblemTextHover: ProblemHover(), KotlinEditorTextHover<Any> {
 
     override val hoverPriority: Int
         get() = 1
 
-    private val problemHover = KotlinProblemHover()
-
     override fun getHoverInfo(hoverData: HoverData): Any? =
         hoverData.getRegion()?.let { region ->
-            problemHover.getHoverInfo2(hoverData.editor.javaEditor.viewer, region)
+            getHoverInfo2(hoverData.editor.javaEditor.viewer, region)
         }
 
     override fun isAvailable(hoverData: HoverData): Boolean = true
 
     override fun getHoverControlCreator(editor: KotlinEditor): IInformationControlCreator? =
-        problemHover.hoverControlCreator
-}
-
-private class KotlinProblemHover : ProblemHover() {
+        hoverControlCreator
 
     override fun createAnnotationInfo(
         annotation: Annotation,
@@ -58,7 +53,7 @@ private class KotlinProblemHover : ProblemHover() {
     ): AnnotationInfo =
         ProblemInfo(annotation, position, textViewer)
 
-    class ProblemInfo(annotation: Annotation, position: Position, textViewer: ITextViewer) :
+    private class ProblemInfo(annotation: Annotation, position: Position, textViewer: ITextViewer) :
         ProblemHover.ProblemInfo(annotation, position, textViewer) {
 
         override fun getCompletionProposals(): Array<ICompletionProposal> = when (annotation) {
@@ -73,5 +68,4 @@ private class KotlinProblemHover : ProblemHover() {
         private fun Diagnostic.fixes(file: IFile) =
             KotlinMarkerResolutionGenerator.getResolutions(this).toCompletionProposals(file).toTypedArray()
     }
-
 }

@@ -796,7 +796,7 @@
             name="Kotlin Hover For Java Declarations">
       </hover>
       <hover
-            class="org.jetbrains.kotlin.ui.editors.hover.KotlinAnnotationTextHover"
+            class="org.jetbrains.kotlin.ui.editors.hover.KotlinProblemTextHover"
             name="Kotlin Annotation Hover ">
       </hover>
    </extension>
