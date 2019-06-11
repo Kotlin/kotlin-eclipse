@@ -44,6 +44,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinNature
+import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.core.resolve.KotlinSourceIndex
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElement
@@ -69,13 +70,13 @@ import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.resolve.source.PsiSourceElement
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedCallableMemberDescriptor
+import org.jetbrains.kotlin.serialization.deserialization.getName
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor
 import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
 import org.jetbrains.kotlin.ui.editors.getScriptDependencies
 import org.jetbrains.kotlin.ui.formatter.createKtFile
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
-import org.jetbrains.kotlin.serialization.deserialization.getName
 
 private val KOTLIN_SOURCE_PATH = Path(ProjectUtils.buildLibPath(KotlinClasspathContainer.LIB_RUNTIME_SRC_NAME))
 private val RUNTIME_SOURCE_MAPPER = KOTLIN_SOURCE_PATH.createSourceMapperWithRoot()
@@ -265,7 +266,7 @@ private fun gotoElementInBinaryClass(
     if (targetEditor !is KotlinEditor) return
     
     val targetKtFile = targetEditor.parsedFile ?: return
-    val offset = findDeclarationInParsedFile(descriptor, targetKtFile)
+    val offset = findDeclarationInParsedFileOffset(descriptor, targetKtFile)
     val start = LineEndUtil.convertLfToDocumentOffset(targetKtFile.getText(), offset, targetEditor.document)
     
     targetEditor.javaEditor.selectAndReveal(start, 0)
@@ -293,6 +294,22 @@ private fun tryToFindExternalClassInStdlib(
     val ktFile = createKtFile(content, KtPsiFactory(fromElement), "dummy.kt")
     
     return openKotlinEditorForExternalFile(content, name, pckg, ktFile)
+}
+
+fun getKtFileFromElement(element: KtElement, descriptor: DeclarationDescriptor): KtFile? {
+    val sourceDeclaration = element.resolveToSourceDeclaration().firstOrNull()
+    return when {
+        sourceDeclaration is KotlinSourceElement ->
+            sourceDeclaration.psi.containingKtFile
+        sourceDeclaration is KotlinJvmBinaryPackageSourceElement &&
+                descriptor is DeserializedCallableMemberDescriptor ->
+            (sourceDeclaration.getContainingBinaryClass(descriptor) as? VirtualFileKotlinClass)?.let {
+                val (_, _, source) =  findSourceForElementInStdlib(it) ?: return null
+                val content = String(source)
+                createKtFile(content, KtPsiFactory(element), "dummy.kt")
+            }
+        else -> null
+    }
 }
 
 private fun findSourceForElementInStdlib(binaryClass: VirtualFileKotlinClass): ExternalSourceFile? {
