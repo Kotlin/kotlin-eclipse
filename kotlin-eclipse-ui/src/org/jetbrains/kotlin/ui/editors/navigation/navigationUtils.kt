@@ -296,7 +296,7 @@ private fun tryToFindExternalClassInStdlib(
     return openKotlinEditorForExternalFile(content, name, pckg, ktFile)
 }
 
-fun getKtFileFromElement(element: KtElement, descriptor: DeclarationDescriptor): KtFile? {
+fun getSourceFileForElement(element: KtElement, descriptor: DeclarationDescriptor): KtFile? {
     val sourceDeclaration = element.resolveToSourceDeclaration().firstOrNull()
     return when {
         sourceDeclaration is KotlinSourceElement ->

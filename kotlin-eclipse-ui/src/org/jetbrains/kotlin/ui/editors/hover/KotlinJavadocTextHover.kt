@@ -60,7 +60,7 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.isExtensionProperty
 import org.jetbrains.kotlin.resolve.lazy.descriptors.LazyClassDescriptor
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.navigation.findDeclarationInParsedFile
-import org.jetbrains.kotlin.ui.editors.navigation.getKtFileFromElement
+import org.jetbrains.kotlin.ui.editors.navigation.getSourceFileForElement
 import org.jetbrains.kotlin.ui.editors.quickassist.resolveToDescriptor
 import java.net.URL
 
@@ -68,11 +68,13 @@ class KotlinJavadocTextHover : KotlinEditorTextHover<BrowserInformationControlIn
 
     class KotlinInformationControlCreator : IInformationControlCreator {
 
+        private companion object {
+            const val FONT = "org.eclipse.jdt.ui.javadocfont"
+        }
+
         override fun createInformationControl(parent: Shell?): IInformationControl =
             if (BrowserInformationControl.isAvailable(parent)) {
-                val tbm = ToolBarManager(8388608)
-                val font = "org.eclipse.jdt.ui.javadocfont"
-                BrowserInformationControl(parent, font, tbm)
+                BrowserInformationControl(parent, FONT, ToolBarManager())
             } else {
                 DefaultInformationControl(parent, true)
             }
@@ -87,10 +89,8 @@ class KotlinJavadocTextHover : KotlinEditorTextHover<BrowserInformationControlIn
 
     override fun getHoverControlCreator(): IInformationControlCreator = fHoverControlCreator
 
-    override fun getHoverInfo(hoverData: HoverData): BrowserInformationControlInput? {
-        val (element, _) = hoverData
-        return KotlinAnnotationBrowserInformationControlInput(element)
-    }
+    override fun getHoverInfo(hoverData: HoverData): BrowserInformationControlInput? =
+        KotlinAnnotationBrowserInformationControlInput(hoverData.hoverElement)
 
     override fun isAvailable(hoverData: HoverData): Boolean = true
 
@@ -130,7 +130,7 @@ class KotlinJavadocTextHover : KotlinEditorTextHover<BrowserInformationControlIn
                 val builder = StringBuilder()
                 HTMLPrinter.insertPageProlog(builder, 0, fgRGB, bgRGB, javadocStyleSheet)
                 builder.append(wrappedHeader(header))
-                val content = (descriptor.findKDoc() ?: getKtFileFromElement(element, descriptor)
+                val content = (descriptor.findKDoc() ?: getSourceFileForElement(element, descriptor)
                     ?.findDeclarationForDescriptor(descriptor)?.docComment?.getDefaultSection())?.getContent()
                     ?: element.getJavadocIfAvailable()
                 content?.let {
