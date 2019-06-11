@@ -14,9 +14,9 @@ class KotlinProperties(scope: IScopeContext = InstanceScope.INSTANCE) : Preferen
 
     // Note: default value is defined in preferences.ini
     var jvmTarget by object : Preference<JvmTarget> {
-    	override fun reader(text: String?) = text?.let { enumValueOf<JvmTarget>(it) } ?: JvmTarget.DEFAULT
+        override fun reader(text: String?) = text?.let { enumValueOf<JvmTarget>(it) } ?: JvmTarget.DEFAULT
         override fun writer(value: JvmTarget) = value.name
-	}
+    }
 
     var languageVersion by object : Preference<LanguageVersion> {
         override fun reader(text: String?) = text
