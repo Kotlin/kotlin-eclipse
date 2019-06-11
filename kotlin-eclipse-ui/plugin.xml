@@ -793,11 +793,11 @@
          point="org.jetbrains.kotlin.ui.editor.textHover">
       <hover
             class="org.jetbrains.kotlin.ui.editors.hover.KotlinJavadocTextHover"
-            name="Kotlin Hover For Java Declarations">
+            name="Hover showing details of Kotlin element">
       </hover>
       <hover
             class="org.jetbrains.kotlin.ui.editors.hover.KotlinProblemTextHover"
-            name="Kotlin Annotation Hover ">
+            name="Hover showing problem annotation details">
       </hover>
    </extension>
    <extension
