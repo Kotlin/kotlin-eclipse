@@ -1,13 +1,12 @@
 package org.jetbrains.kotlin.ui.tests.scripts.templates
 
-import org.jetbrains.kotlin.script.KotlinScriptExternalDependencies
-import org.jetbrains.kotlin.script.ScriptContents
-import org.jetbrains.kotlin.script.ScriptDependenciesResolver
-import org.jetbrains.kotlin.script.ScriptDependenciesResolver.ReportSeverity
-import org.jetbrains.kotlin.script.ScriptTemplateDefinition
 import java.io.File
 import java.util.concurrent.Future
-import org.jetbrains.kotlin.script.asFuture
+import kotlin.script.dependencies.KotlinScriptExternalDependencies
+import kotlin.script.dependencies.ScriptContents
+import kotlin.script.dependencies.ScriptDependenciesResolver
+import kotlin.script.dependencies.asFuture
+import kotlin.script.templates.ScriptTemplateDefinition
 
 @ScriptTemplateDefinition(
         resolver = TestKotlinScriptResolver::class,
@@ -35,7 +34,7 @@ fun TestScriptTemplateDefinition.testExtension(x: Int): String {
 class TestKotlinScriptResolver : ScriptDependenciesResolver {
     override fun resolve(script: ScriptContents,
                          environment: Map<String, Any?>?,
-                         report: (ReportSeverity, String, ScriptContents.Position?) -> Unit,
+                         report: (ScriptDependenciesResolver.ReportSeverity, String, ScriptContents.Position?) -> Unit,
                          previousDependencies: KotlinScriptExternalDependencies?): Future<KotlinScriptExternalDependencies?> {
         return TestScriptExternalDependencies.asFuture()
     }
@@ -44,7 +43,7 @@ class TestKotlinScriptResolver : ScriptDependenciesResolver {
 class TestKotlinScriptResolverEx : ScriptDependenciesResolver {
     override fun resolve(script: ScriptContents,
                          environment: Map<String, Any?>?,
-                         report: (ReportSeverity, String, ScriptContents.Position?) -> Unit,
+                         report: (ScriptDependenciesResolver.ReportSeverity, String, ScriptContents.Position?) -> Unit,
                          previousDependencies: KotlinScriptExternalDependencies?): Future<KotlinScriptExternalDependencies?> {
         val additionalImports = if (environment != null) {
             @Suppress("UNCHECKED_CAST")
