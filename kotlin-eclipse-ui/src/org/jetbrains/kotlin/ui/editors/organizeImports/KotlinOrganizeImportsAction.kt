@@ -111,10 +111,10 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
     private fun optimizeImports() {
         val ktFile = editor.parsedFile ?: return
         val file = editor.eclipseFile ?: return
-        val descriptorsToImport = collectDescriptorsToImport(ktFile)
+        val importsData = collectDescriptorsToImport(ktFile)
         val kotlinCodeStyleSettings = file.project.codeStyle.kotlinCustomSettings
 
-        val optimizedImports = prepareOptimizedImports(ktFile, descriptorsToImport, kotlinCodeStyleSettings) ?: return
+        val optimizedImports = prepareOptimizedImports(ktFile, importsData, kotlinCodeStyleSettings) ?: return
 
         replaceImports(optimizedImports.map { it.toString() }, file, editor.document)
     }
@@ -143,12 +143,12 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
 
 fun prepareOptimizedImports(
     file: KtFile,
-    descriptorsToImport: Collection<DeclarationDescriptor>,
+    importsData: OptimizedImportsBuilder.InputData,
     settings: KotlinCodeStyleSettings
 ): List<ImportPath>? =
     OptimizedImportsBuilder(
         file,
-        OptimizedImportsBuilder.InputData(descriptorsToImport.toSet(), emptyMap(), emptyList()),
+        importsData,
         OptimizedImportsBuilder.Options(
             settings.NAME_COUNT_TO_USE_STAR_IMPORT,
             settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS
