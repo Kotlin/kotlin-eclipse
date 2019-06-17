@@ -16,51 +16,45 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.organizeImports
 
-import org.jetbrains.kotlin.psi.KtVisitorVoid
-import org.jetbrains.kotlin.psi.KtFile
-import java.util.HashSet
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.KtImportList
-import org.jetbrains.kotlin.psi.KtPackageDirective
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.KtNameReferenceExpression
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.scopes.HierarchicalScope
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.incremental.components.NoLookupLocation
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
-import org.jetbrains.kotlin.resolve.scopes.utils.findFunction
-import org.jetbrains.kotlin.resolve.scopes.utils.findVariable
-import org.jetbrains.kotlin.resolve.scopes.utils.findClassifier
-import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
-import org.jetbrains.kotlin.resolve.scopes.utils.replaceImportingScopes
-import org.jetbrains.kotlin.resolve.scopes.utils.getImplicitReceiversHierarchy
-import org.jetbrains.kotlin.resolve.scopes.utils.memberScopeAsImportingScope
-import org.jetbrains.kotlin.psi.KtReferenceExpression
-import org.jetbrains.kotlin.core.references.createReferences
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
-import org.jetbrains.kotlin.idea.imports.importableFqName
-import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
-import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.core.references.canBeResolvedViaImport
+import org.jetbrains.kotlin.core.references.createReferences
+import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
+import org.jetbrains.kotlin.idea.imports.importableFqName
+import org.jetbrains.kotlin.incremental.components.NoLookupLocation
+import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.descriptorUtil.getImportableDescriptor
+import org.jetbrains.kotlin.resolve.scopes.HierarchicalScope
+import org.jetbrains.kotlin.resolve.scopes.utils.*
+import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
+import java.util.HashSet
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.LinkedHashSet
 
-fun collectDescriptorsToImport(file: KtFile): Set<DeclarationDescriptor> {
+fun collectDescriptorsToImport(file: KtFile): OptimizedImportsBuilder.InputData {
     val visitor = CollectUsedDescriptorsVisitor(file)
     file.accept(visitor)
-    return visitor.descriptors
+    return OptimizedImportsBuilder.InputData(visitor.descriptorsToImport, visitor.namesToImport, emptyList())
 }
 
 private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() {
-    private val _descriptors = HashSet<DeclarationDescriptor>()
     private val currentPackageName = file.packageFqName
-    
+
+    val descriptorsToImport = LinkedHashSet<DeclarationDescriptor>()
+    val namesToImport = LinkedHashMap<FqName, HashSet<Name>>()
+
     private val bindingContext = getBindingContext(file)!!
 
-    val descriptors: Set<DeclarationDescriptor>
-        get() = _descriptors
+    private val aliases: Map<FqName, List<Name>> = file.importDirectives
+        .asSequence()
+        .filter { !it.isAllUnder && it.alias != null }
+        .mapNotNull { it.importPath }
+        .groupBy(keySelector = { it.fqName }, valueTransform = { it.importedName as Name })
 
     override fun visitElement(element: PsiElement) {
         element.acceptChildren(this)
@@ -78,9 +72,9 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
             val targets = bindingContext[BindingContext.SHORT_REFERENCE_TO_COMPANION_OBJECT, expression]
                     ?.let { listOf(it) }
                     ?: reference.getTargetDescriptors(bindingContext)
-            
+
             val referencedName = (expression as? KtNameReferenceExpression)?.getReferencedNameAsName()
-            
+
             for (target in targets) {
                 val importableFqName = target.importableFqName ?: continue
                 val parentFqName = importableFqName.parent()
@@ -95,10 +89,11 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
 
                 if (isAccessibleAsMember(importableDescriptor, expression, bindingContext)) continue
 
-                _descriptors.add(importableDescriptor)
+                descriptorsToImport.add(importableDescriptor)
+                namesToImport.getOrPut(importableFqName) { HashSet() } += importableFqName.shortName()
             }
         }
-        
+
         super.visitReferenceExpression(expression)
     }
 
