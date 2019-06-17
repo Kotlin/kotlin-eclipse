@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.internal.ui.javaeditor.JavaEditor;
-import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache;
+import org.jetbrains.kotlin.core.resolve.KotlinAnalysisScope;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
 import org.jetbrains.kotlin.testframework.utils.ExpectedCompletionUtils;
@@ -46,23 +46,18 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
     }
     
     private List<KotlinMarkerResolution> createProposals() {
-        // TODO: find better solution than this
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException ignored) {}
-        KotlinAnalysisFileCache.INSTANCE.resetCache();
-
         return KotlinQuickFixTestCaseKt.getProposals(getTestEditor());
     }
     
     @Override
     protected void performTest(String fileText, String content) {
+        KotlinAnalysisScope.INSTANCE.join();
         List<KotlinMarkerResolution> proposals = createProposals();
         assertCount(proposals, fileText);
         assertExistence(proposals, fileText);
         
         if (!proposals.isEmpty()) {
-            proposals.get(0).apply(getTestEditor().getEditingFile());;
+            proposals.get(0).apply(getTestEditor().getEditingFile());
         }
         
         EditorTestUtils.assertByEditor(getEditor(), content);
@@ -72,10 +67,10 @@ public abstract class KotlinAutoImportTestCase extends KotlinEditorWithAfterFile
     protected String getTestDataRelativePath() {
         return AUTOIMPORT_TEST_DATA_PATH_SEGMENT;
     }
-    
+
     private static void assertCount(List<KotlinMarkerResolution> proposals, String fileText) {
         Integer expectedNumber = ExpectedCompletionUtils.numberOfItemsShouldPresent(fileText);
-        
+
         if (expectedNumber != null) {
             Assert.assertEquals(COUNT_ASSERTION_ERROR_MESSAGE, expectedNumber.intValue(), proposals.size());
         }

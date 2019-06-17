@@ -17,8 +17,10 @@ Bundle-ClassPath: .,
  lib/kotlin-formatter.jar,
  lib/ide-dependencies.jar,
  lib/annotations-13.0.jar,
- lib/kotlin-scripting-impl.jar
-Export-Package: 
+ lib/kotlin-scripting-impl.jar,
+ lib/kotlinx-coroutines-core.jar,
+ lib/kotlinx-coroutines-jdk8.jar
+Export-Package:
  com.intellij,
  com.intellij.codeInsight,
  com.intellij.codeInsight.completion.scope,
@@ -180,6 +182,9 @@ Export-Package:
  kotlin.collections,
  kotlin.comparisons,
  kotlin.concurrent,
+ kotlin.coroutines,
+ kotlin.coroutines.intrinsics,
+ kotlin.coroutines.jvm.internal,
  kotlin.internal;x-internal:=true,
  kotlin.io,
  kotlin.jvm,
@@ -197,6 +202,7 @@ Export-Package:
  kotlin.script.templates.standard,
  kotlin.sequences,
  kotlin.text,
+ kotlinx.coroutines,
  org.jetbrains.annotations,
  org.jetbrains.kotlin,
  org.jetbrains.kotlin.analyzer,

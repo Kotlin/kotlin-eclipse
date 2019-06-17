@@ -87,5 +87,5 @@ fun findDiagnosticsBy(invocationContext: IQuickAssistInvocationContext, editor: 
             val range = it.psiElement.textRange
             range.startOffset <= offset && offset <= range.endOffset
         }
-    } ?: emptyList()
+    } ?: emptyList<Diagnostic>()
 }
