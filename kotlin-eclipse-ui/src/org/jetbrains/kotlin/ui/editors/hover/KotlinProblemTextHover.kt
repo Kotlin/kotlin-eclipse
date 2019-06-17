@@ -34,7 +34,7 @@ import org.jetbrains.kotlin.ui.editors.toCompletionProposals
 class KotlinProblemTextHover: ProblemHover(), KotlinEditorTextHover<Any> {
 
     override val hoverPriority: Int
-        get() = 1
+        get() = 2
 
     override fun getHoverInfo(hoverData: HoverData): Any? =
         hoverData.getRegion()?.let { region ->

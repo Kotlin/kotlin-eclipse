@@ -85,7 +85,7 @@ class KotlinJavadocTextHover : KotlinEditorTextHover<BrowserInformationControlIn
     }
 
     override val hoverPriority: Int
-        get() = 2
+        get() = 3
 
     override fun getHoverControlCreator(): IInformationControlCreator = fHoverControlCreator
 
