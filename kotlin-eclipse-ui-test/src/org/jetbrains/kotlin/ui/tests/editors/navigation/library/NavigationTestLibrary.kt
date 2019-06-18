@@ -1,41 +1,15 @@
 package org.jetbrains.kotlin.ui.tests.editors.navigation.library
 
-import org.jetbrains.kotlin.testframework.utils.TestJavaProject
-import org.jetbrains.kotlin.core.compiler.KotlinCompiler
 import org.eclipse.core.runtime.Path
-import java.io.File
-import org.eclipse.jdt.core.IPackageFragmentRoot
-import org.eclipse.core.resources.IFolder
-import java.io.InputStream
-import org.eclipse.core.runtime.CoreException
-import java.util.jar.JarOutputStream
-import java.io.FileOutputStream
-import java.util.jar.Manifest
-import java.util.jar.JarEntry
-import java.io.FileInputStream
-import java.io.BufferedInputStream
-import kotlin.io.use
-import org.eclipse.jdt.internal.compiler.util.Util.isClassFileName
-import org.eclipse.core.resources.IResource
-import java.util.zip.ZipOutputStream
-import java.util.zip.ZipEntry
-import java.io.ByteArrayOutputStream
-import java.io.PrintStream
-import org.jetbrains.kotlin.core.launch.KotlinCLICompiler
-import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
-import java.io.Reader
-import org.jetbrains.kotlin.core.compiler.KotlinCompiler.KotlinCompilerResult
-import org.jetbrains.kotlin.core.launch.CompilerOutputData
-import java.util.ArrayList
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
-import org.jetbrains.kotlin.core.launch.CompilerOutputParser
-import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
-import java.io.BufferedReader
-import java.io.StringReader
-import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.junit.Assert
 import org.jetbrains.kotlin.cli.common.ExitCode
+import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
+import org.jetbrains.kotlin.core.launch.KotlinCLICompiler
+import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.utils.PathUtil
+import org.junit.Assert
+import java.io.*
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 public data class TestLibraryData(val libPath: String, val srcPath: String)
 
@@ -126,7 +100,9 @@ private class NavigationTestLibrary {
         val out = PrintStream(outputStream);
         
         val exitCode = KotlinCLICompiler.doMain(K2JVMCompiler(), out, 
-                arrayOf("-d", targetPath, "-kotlin-home", ProjectUtils.ktHome, srcPath.getAbsolutePath()))
+                arrayOf("-d", targetPath, "-kotlin-home", ProjectUtils.ktHome,
+                    "-Xplugin=" + ProjectUtils.buildLibPath(PathUtil.KOTLIN_SCRIPTING_COMPILER_PLUGIN_NAME),
+                    srcPath.getAbsolutePath()))
         Assert.assertTrue(
                 "Could not compile test library, exitCode = $exitCode\n ${outputStream.toString()}", 
                 exitCode == ExitCode.OK)
