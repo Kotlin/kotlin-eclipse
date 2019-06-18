@@ -465,12 +465,12 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     
     @Test
     public void testResolveOfJavaGenerics() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/ResolveOfJavaGenerics.kt");
+        doTest("testData/compiler/diagnostics/tests/ResolveOfJavaGenerics.kt");
     }
     
     @Test
     public void testResolveToJava() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/ResolveToJava.kt");
+        doTest("testData/compiler/diagnostics/tests/ResolveToJava.kt");
     }
     
     @Test
@@ -521,7 +521,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     
     @Test
     public void testStarsInFunctionCalls() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/StarsInFunctionCalls.kt");
+        doTest("testData/compiler/diagnostics/tests/StarsInFunctionCalls.kt");
     }
     
     @Test
@@ -562,7 +562,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     
     @Test
     public void testTypeInference() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/TypeInference.kt");
+        doTest("testData/compiler/diagnostics/tests/TypeInference.kt");
     }
     
     @Test
