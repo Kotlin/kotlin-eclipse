@@ -16,29 +16,21 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.references
 
-import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.KtSimpleNameExpression
-import org.jetbrains.kotlin.resolve.BindingContext
+import com.intellij.util.SmartList
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.psi.KtReferenceExpression
-import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
-import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
-import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.model.VariableAsFunctionResolvedCall
-import org.jetbrains.kotlin.psi.Call
-import org.jetbrains.kotlin.psi.KtConstructorDelegationReferenceExpression
-import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.psi.KtElement
-import java.util.ArrayList
-import org.jetbrains.kotlin.psi.KtNameReferenceExpression
 import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
-import com.intellij.util.SmartList
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.types.expressions.OperatorConventions
+import org.jetbrains.kotlin.util.OperatorNameConventions
 import org.jetbrains.kotlin.utils.addIfNotNull
-import org.jetbrains.kotlin.lexer.KtTokens
+import java.util.*
 
 inline private fun <reified T> ArrayList<KotlinReference>.register(e: KtElement, action: (T) -> KotlinReference) {
     if (e is T) this.add(action(e))
@@ -74,13 +66,42 @@ public interface KotlinReference {
     val expression: KtReferenceExpression
     
     fun getTargetDescriptors(context: BindingContext): Collection<DeclarationDescriptor>
+
+    val resolvesByNames: Collection<Name>
 }
 
 open class KotlinSimpleNameReference(override val expression: KtSimpleNameExpression) : KotlinReference {
     override fun getTargetDescriptors(context: BindingContext) = expression.getReferenceTargets(context)
+
+    override val resolvesByNames: Collection<Name>
+        get() {
+            val element = expression
+
+            if (element is KtOperationReferenceExpression) {
+                val tokenType = element.operationSignTokenType
+                if (tokenType != null) {
+                    val name = OperatorConventions.getNameForOperationSymbol(
+                        tokenType, element.parent is KtUnaryExpression, element.parent is KtBinaryExpression
+                    ) ?: return emptyList()
+                    val counterpart = OperatorConventions.ASSIGNMENT_OPERATION_COUNTERPARTS[tokenType]
+                    return if (counterpart != null) {
+                        val counterpartName = OperatorConventions.getNameForOperationSymbol(counterpart, false, true)!!
+                        listOf(name, counterpartName)
+                    }
+                    else {
+                        listOf(name)
+                    }
+                }
+            }
+
+            return listOf(element.getReferencedNameAsName())
+        }
 }
 
 public class KotlinInvokeFunctionReference(override val expression: KtCallExpression) : KotlinReference {
+    override val resolvesByNames: Collection<Name>
+        get() = listOf(OperatorNameConventions.INVOKE)
+
     override fun getTargetDescriptors(context: BindingContext): Collection<DeclarationDescriptor> {
         val call = expression.getCall(context)
         val resolvedCall = call.getResolvedCall(context)
@@ -110,6 +131,9 @@ sealed class KotlinSyntheticPropertyAccessorReference(override val expression: K
         }
         return result
     }
+
+    override val resolvesByNames: Collection<Name>
+        get() = listOf(expression.getReferencedNameAsName())
     
     class Getter(expression: KtNameReferenceExpression) : KotlinSyntheticPropertyAccessorReference(expression, true)
     class Setter(expression: KtNameReferenceExpression) : KotlinSyntheticPropertyAccessorReference(expression, false)
@@ -117,6 +141,9 @@ sealed class KotlinSyntheticPropertyAccessorReference(override val expression: K
 
 public class KotlinConstructorDelegationReference(override val expression: KtConstructorDelegationReferenceExpression) : KotlinReference {
     override fun getTargetDescriptors(context: BindingContext) = expression.getReferenceTargets(context)
+
+    override val resolvesByNames: Collection<Name>
+        get() = emptyList()
 }
 
 fun KtReferenceExpression.getReferenceTargets(context: BindingContext): Collection<DeclarationDescriptor> {
