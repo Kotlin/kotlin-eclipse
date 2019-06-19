@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.resolve.scopes.HierarchicalScope
 import org.jetbrains.kotlin.resolve.scopes.utils.*
 import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
 import java.util.HashSet
+import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.LinkedHashSet
 
@@ -69,6 +70,9 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
     override fun visitReferenceExpression(expression: KtReferenceExpression) {
         val references = createReferences(expression)
         for (reference in references) {
+
+            val names = reference.resolvesByNames
+
             val targets = bindingContext[BindingContext.SHORT_REFERENCE_TO_COMPANION_OBJECT, expression]
                     ?.let { listOf(it) }
                     ?: reference.getTargetDescriptors(bindingContext)
@@ -89,8 +93,9 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
 
                 if (isAccessibleAsMember(importableDescriptor, expression, bindingContext)) continue
 
-                descriptorsToImport.add(importableDescriptor)
-                namesToImport.getOrPut(importableFqName) { HashSet() } += importableFqName.shortName()
+                val descriptorNames = (aliases[importableFqName].orEmpty() + importableFqName.shortName()).intersect(names)
+                namesToImport.getOrPut(importableFqName) { LinkedHashSet() } += descriptorNames
+                descriptorsToImport += importableDescriptor
             }
         }
 
