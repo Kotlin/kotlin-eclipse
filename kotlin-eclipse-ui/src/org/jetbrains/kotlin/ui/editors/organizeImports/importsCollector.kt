@@ -33,7 +33,6 @@ import org.jetbrains.kotlin.resolve.scopes.HierarchicalScope
 import org.jetbrains.kotlin.resolve.scopes.utils.*
 import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
 import java.util.HashSet
-import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.LinkedHashSet
 
@@ -83,13 +82,11 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
                 val importableFqName = target.importableFqName ?: continue
                 val parentFqName = importableFqName.parent()
                 if (target is PackageViewDescriptor && parentFqName == FqName.ROOT) continue // no need to import top-level packages
-                if (target !is PackageViewDescriptor && parentFqName == currentPackageName) continue
+                if (target !is PackageViewDescriptor && parentFqName == currentPackageName && (importableFqName !in aliases)) continue
 
                 if (!reference.canBeResolvedViaImport(target)) continue
 
                 val importableDescriptor = target.getImportableDescriptor()
-
-                if (referencedName != null && importableDescriptor.name != referencedName) continue // resolved via alias
 
                 if (isAccessibleAsMember(importableDescriptor, expression, bindingContext)) continue
 
