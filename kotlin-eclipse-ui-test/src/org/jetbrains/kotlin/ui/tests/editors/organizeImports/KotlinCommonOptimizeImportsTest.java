@@ -1,27 +1,23 @@
 package org.jetbrains.kotlin.ui.tests.editors.organizeImports;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinCommonOptimizeImportsTest extends KotlinOrganizeImportsTestCase {
     @Override
-    protected String getTestDataRelativePath() {
+    public String getTestDataRelativePath() {
         return "../common_testData/ide/editor/optimizeImports/common";
     }
     
-    @Ignore("Enable this test when autoimport for functions will be ready")
     @Test
     public void ArrayAccessExpression() {
         doAutoTest();
     }
     
-    @Ignore
     @Test
     public void ClassMemberImported() {
         doAutoTest();
     }
     
-    @Ignore("Enable this test when autoimport for functions will be ready")
     @Test
     public void ComponentFunction() {
         doAutoTest();
@@ -37,19 +33,16 @@ public class KotlinCommonOptimizeImportsTest extends KotlinOrganizeImportsTestCa
         doAutoTest();
     }
     
-    @Ignore
     @Test
     public void Enums() {
         doAutoTest();
     }
     
-    @Ignore
     @Test
     public void InvokeFunction() {
         doAutoTest();
     }
     
-    @Ignore("Enable this test when autoimport for functions will be ready")
     @Test
     public void IteratorFunction() {
         doAutoTest();
@@ -84,4 +77,94 @@ public class KotlinCommonOptimizeImportsTest extends KotlinOrganizeImportsTestCa
     public void NestedClassReferenceOutsideClassBody() {
         doAutoTest();
     }
+
+    @Test
+    public void UnresolvedImport() {
+        doAutoTest();
+     }
+
+    @Test
+    public void Overloads() {
+        doAutoTest();
+     }
+
+    @Test
+    public void DefaultImportAndAlias() {
+        doAutoTest();
+     }
+
+    @Test
+    public void ConflictWithAlias() {
+        doAutoTest();
+     }
+
+    @Test
+    public void MemberImports() {
+        doAutoTest();
+     }
+
+    @Test
+    public void DefaultImportAndAlias2() {
+        doAutoTest();
+     }
+
+    @Test
+    public void TwoConstructors() {
+        doAutoTest();
+     }
+
+    @Test
+    public void ProvideDelegate() {
+        doAutoTest();
+     }
+
+    @Test
+    public void ExtensionFunctionalTypeValFromCompanionObjectNonExtCall() {
+        doAutoTest();
+     }
+
+    @Test
+    public void KT13689() {
+        doAutoTest();
+     }
+
+    @Test
+    public void WithAlias() {
+        doAutoTest();
+     }
+
+    @Test
+    public void ExtensionFunctionalTypeValFromCompanionObject() {
+        doAutoTest();
+     }
+
+    @Test
+    public void WithAlias2() {
+        doAutoTest();
+     }
+
+    @Test
+    public void KT11640_1() {
+        doAutoTest();
+     }
+
+    @Test
+    public void ConflictWithAlias2() {
+        doAutoTest();
+     }
+
+    @Test
+    public void ExtensionFunctionalTypeValFromCompanionObjectCallOnCompanion() {
+        doAutoTest();
+     }
+
+    @Test
+    public void KT11640() {
+        doAutoTest();
+     }
+
+    @Test
+    public void ProvideDelegate2() {
+        doAutoTest();
+     }
 }

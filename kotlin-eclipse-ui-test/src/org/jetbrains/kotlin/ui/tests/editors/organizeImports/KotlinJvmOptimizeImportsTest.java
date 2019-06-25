@@ -1,11 +1,10 @@
 package org.jetbrains.kotlin.ui.tests.editors.organizeImports;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinJvmOptimizeImportsTest extends KotlinOrganizeImportsTestCase {
     @Override
-    protected String getTestDataRelativePath() {
+    public String getTestDataRelativePath() {
         return "../common_testData/ide/editor/optimizeImports/jvm";
     }
     
@@ -103,4 +102,19 @@ public class KotlinJvmOptimizeImportsTest extends KotlinOrganizeImportsTestCase 
     public void WithAliases() {
         doAutoTest();
     }
+
+    @Test
+    public void JavaStaticField() {
+        doAutoTest();
+    }
+
+    @Test
+    public void ExplicitImportOfDefault() {
+        doAutoTest();
+     }
+
+    @Test
+    public void KDocReference() {
+        doAutoTest();
+     }
 }
