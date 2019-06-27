@@ -17,6 +17,8 @@
 package org.jetbrains.kotlin.ui.editors.organizeImports
 
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.core.references.KotlinInvokeFunctionReference
+import org.jetbrains.kotlin.core.references.KotlinReference
 import org.jetbrains.kotlin.core.references.canBeResolvedViaImport
 import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.descriptors.*
@@ -39,7 +41,11 @@ import kotlin.collections.LinkedHashSet
 fun collectDescriptorsToImport(file: KtFile): OptimizedImportsBuilder.InputData {
     val visitor = CollectUsedDescriptorsVisitor(file)
     file.accept(visitor)
-    return OptimizedImportsBuilder.InputData(visitor.descriptorsToImport, visitor.namesToImport, emptyList())
+    return OptimizedImportsBuilder.InputData(
+        visitor.descriptorsToImport,
+        visitor.namesToImport,
+        visitor.abstractReferences
+    )
 }
 
 private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() {
@@ -47,6 +53,7 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
 
     val descriptorsToImport = LinkedHashSet<DeclarationDescriptor>()
     val namesToImport = LinkedHashMap<FqName, HashSet<Name>>()
+    val abstractReferences = mutableListOf<OptimizedImportsBuilder.AbstractReference>()
 
     private val bindingContext = getBindingContext(file)!!
 
@@ -69,14 +76,14 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
     override fun visitReferenceExpression(expression: KtReferenceExpression) {
         val references = createReferences(expression)
         for (reference in references) {
+            abstractReferences += AbstractReferenceImpl(reference)
+
 
             val names = reference.resolvesByNames
 
             val targets = bindingContext[BindingContext.SHORT_REFERENCE_TO_COMPANION_OBJECT, expression]
                     ?.let { listOf(it) }
                     ?: reference.getTargetDescriptors(bindingContext)
-
-            val referencedName = (expression as? KtNameReferenceExpression)?.getReferencedNameAsName()
 
             for (target in targets) {
                 val importableFqName = target.importableFqName ?: continue
@@ -126,4 +133,23 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
         }
         return false
     }
+}
+
+private class AbstractReferenceImpl(private val reference: KotlinReference) : OptimizedImportsBuilder.AbstractReference {
+    private val additionalNames: Collection<Name>
+        get() = ((reference as? KotlinInvokeFunctionReference)?.expression?.calleeExpression as? KtNameReferenceExpression)
+            ?.let { createReferences(it) }
+            ?.firstOrNull()
+            ?.resolvesByNames
+            .orEmpty()
+
+
+    override val dependsOnNames: Collection<Name>
+        get() = reference.resolvesByNames + additionalNames
+
+    override val element: KtElement
+        get() = reference.expression
+
+    override fun resolve(bindingContext: BindingContext) = reference.getTargetDescriptors(bindingContext)
+
 }
