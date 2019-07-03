@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'kotlin-eclipse-plugin'
-version '0.8.15-SNAPSHOT'
+version '0.8.16-SNAPSHOT'
 
 repositories {
     mavenCentral()
