@@ -128,7 +128,7 @@ public class KotlinKeywordCompletionTest extends KotlinKeywordCompletionTestCase
     
     @Test
     public void testInFunctionTypePosition() {
-        doTest("common_testData/ide/completion/keywords/InFunctionTypePosition.kt");
+        doTest("testData/completion/keywords/InFunctionTypePosition.kt");
     }
     
     @Test
