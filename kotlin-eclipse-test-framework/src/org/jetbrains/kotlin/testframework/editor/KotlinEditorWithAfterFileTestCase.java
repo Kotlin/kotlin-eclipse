@@ -133,6 +133,8 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
             loadFiles(files, target);
         }
 
+        KotlinTestUtils.joinBuildThread();
+
         performTest(target.getContent(), target.getContentAfter());
     }
 
@@ -155,6 +157,8 @@ public abstract class KotlinEditorWithAfterFileTestCase extends KotlinEditorAuto
             fileText = loadEditor(mainTestPath);
             loadDependencyFile(dependencyFile);
         }
+
+        KotlinTestUtils.joinBuildThread();
 
         performTest(fileText, KotlinTestUtils.getText(mainTestPath + AFTER_FILE_EXTENSION));
     }
