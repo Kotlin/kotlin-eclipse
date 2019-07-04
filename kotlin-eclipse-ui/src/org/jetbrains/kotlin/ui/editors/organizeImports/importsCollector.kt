@@ -91,7 +91,7 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
                 if (target is PackageViewDescriptor && parentFqName == FqName.ROOT) continue // no need to import top-level packages
                 if (target !is PackageViewDescriptor && parentFqName == currentPackageName && (importableFqName !in aliases)) continue
 
-                if (!reference.canBeResolvedViaImport(target)) continue
+                if (!reference.canBeResolvedViaImport(target, bindingContext)) continue
 
                 val importableDescriptor = target.getImportableDescriptor()
 
