@@ -83,10 +83,11 @@ object EclipseAnalyzerFacadeForJVM {
         }
 
         return analyzeKotlin(
-                filesToAnalyze = filesSet,
-                allFiles = allFiles,
-                environment = environment,
-                javaProject = environment.javaProject
+            filesToAnalyze = filesSet,
+            allFiles = allFiles,
+            environment = environment,
+            javaProject = environment.javaProject,
+            jvmTarget = environment.compilerProperties.jvmTarget
         )
     }
 
@@ -133,7 +134,8 @@ object EclipseAnalyzerFacadeForJVM {
         filesToAnalyze: Collection<KtFile>,
         allFiles: Collection<KtFile>,
         environment: KotlinCommonEnvironment,
-        javaProject: IJavaProject?
+        javaProject: IJavaProject?,
+        jvmTarget: JvmTarget = JvmTarget.DEFAULT
     ): AnalysisResultWithProvider {
         val project = environment.project
         val moduleContext = createModuleContext(project, environment.configuration, true)
@@ -169,7 +171,7 @@ object EclipseAnalyzerFacadeForJVM {
                     dependencyScope,
                     LookupTracker.DO_NOTHING,
                     KotlinPackagePartProvider(environment),
-                    JvmTarget.DEFAULT,
+                    jvmTarget,
                     languageVersionSettings,
                     moduleClassResolver,
                     javaProject)
@@ -193,7 +195,7 @@ object EclipseAnalyzerFacadeForJVM {
                 sourceScope,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
-                JvmTarget.DEFAULT,
+                jvmTarget,
                 languageVersionSettings,
                 moduleClassResolver,
                 javaProject).apply {
