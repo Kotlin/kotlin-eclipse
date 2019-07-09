@@ -267,7 +267,11 @@
       </editor>
    </extension>
    <extension
-         point="org.eclipse.ui.commands">
+         point="org.eclipse.ui.commands">   
+      <command
+            id="org.jetbrains.kotlin.tools.forceRecompile"
+            name="ForceRecompilation">
+      </command>
       <command
             defaultHandler="org.jetbrains.kotlin.ui.commands.psiVisualization.PsiVisualization"
             id="org.jetbrains.kotlin.psi.visualization"
@@ -308,6 +312,15 @@
    </extension>
    <extension
          point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+         <command
+               commandId="org.jetbrains.kotlin.tools.forceRecompile"
+               label="Force Recompilation (EXPERIMENTAL)"
+               style="push">
+         </command>
+      </menuContribution>
       <menuContribution
             allPopups="false"
             locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinFileEditor.EditorContext">
@@ -666,6 +679,10 @@
                </instanceof>
             </with>
          </activeWhen>
+      </handler>
+      <handler
+            class="org.jetbrains.kotlin.tools.ForceRecompile"
+            commandId="org.jetbrains.kotlin.tools.forceRecompile">
       </handler>
    </extension>
    <extension
