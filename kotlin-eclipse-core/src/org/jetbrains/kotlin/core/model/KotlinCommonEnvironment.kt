@@ -74,6 +74,7 @@ import org.jetbrains.kotlin.extensions.DeclarationAttributeAltererExtension
 import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
+import org.jetbrains.kotlin.js.translate.extensions.JsSyntheticTranslateExtension
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
@@ -89,6 +90,7 @@ import org.jetbrains.kotlin.scripting.extensions.ScriptingResolveExtension
 import java.io.File
 import java.util.*
 import kotlin.reflect.KClass
+import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -179,6 +181,8 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
         registerApplicationExtensionPointsAndExtensionsFrom()
 
         ClassBuilderInterceptorExtension.registerExtensionPoint(project)
+        JsSyntheticTranslateExtension.registerExtensionPoint(project)
+		IrGenerationExtension.registerExtensionPoint(project)
     }
     
     fun getRoots(): Set<JavaRoot> = roots

@@ -38,7 +38,6 @@ import org.eclipse.osgi.internal.loader.EquinoxClassLoader
 import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
 import org.jetbrains.kotlin.cli.jvm.compiler.CliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
-import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
 import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
 import org.jetbrains.kotlin.compiler.plugin.CliOptionValue
@@ -70,16 +69,15 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.psi.KtModifierListOwner
 import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import org.jetbrains.kotlin.scripting.configuration.ScriptingConfigurationKeys
+import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
+import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.*
-import kotlin.script.dependencies.KotlinScriptExternalDependencies
 import kotlin.script.experimental.dependencies.DependenciesResolver
 import kotlin.script.experimental.dependencies.ScriptDependencies
-import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
-import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
-import org.jetbrains.kotlin.scripting.configuration.ScriptingConfigurationKeys
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -346,6 +344,8 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
                 val configuration = CompilerConfiguration().apply { applyOptionsFrom(parseOptions(it.args), pluginOptions) }
                 registrar.registerProjectComponents(project, configuration)
             }
+        } else {
+            registrar?.registerProjectComponents(project, configuration)
         }
     }
 
