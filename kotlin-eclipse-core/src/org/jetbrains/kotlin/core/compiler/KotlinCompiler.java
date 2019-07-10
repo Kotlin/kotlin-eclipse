@@ -15,18 +15,9 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.compiler;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import kotlin.Pair;
+import kotlin.text.StringsKt;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.jetbrains.annotations.NotNull;
@@ -43,10 +34,13 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin;
 import org.jetbrains.kotlin.core.preferences.KotlinProperties;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
-
-import kotlin.Pair;
-import kotlin.text.StringsKt;
 import org.jetbrains.kotlin.utils.PathUtil;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class KotlinCompiler {
     public final static KotlinCompiler INSTANCE = new KotlinCompiler();
@@ -128,7 +122,7 @@ public class KotlinCompiler {
         command.add(kotlinProperties.getApiVersion().getVersionString());
 
         for (CompilerPlugin plugin : kotlinProperties.getCompilerPlugins().getEntries()) {
-            command.addAll(configurePlugin(plugin));
+            command.addAll(configurePlugin(plugin, javaProject.getProject()));
         }
         command.add(configureScriptingPlugin());
 
@@ -159,11 +153,12 @@ public class KotlinCompiler {
         return command.toArray(new String[0]);
     }
 
-    private Collection<String> configurePlugin(CompilerPlugin plugin) {
+    private Collection<String> configurePlugin(CompilerPlugin plugin, IProject project) {
         List<String> result = new ArrayList<>();
         String jarPath = plugin.getJarPath();
         if (plugin.getActive() && jarPath != null) {
             String replacedPath = jarPath.replace("$KOTLIN_HOME", ProjectUtils.getKtHome());
+            replacedPath = replacedPath.replace("$PROJECT_HOME", project.getLocation().toOSString());
             result.add("-Xplugin=" + replacedPath);
 
             for (String arg : plugin.getArgs()) {

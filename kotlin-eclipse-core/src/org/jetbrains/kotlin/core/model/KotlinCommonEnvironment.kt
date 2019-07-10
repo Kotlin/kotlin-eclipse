@@ -54,6 +54,7 @@ import org.eclipse.core.runtime.IPath
 import org.jetbrains.kotlin.asJava.KotlinAsJavaSupport
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
+import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
 import org.jetbrains.kotlin.cli.common.CliModuleVisibilityManagerImpl
 import org.jetbrains.kotlin.cli.jvm.compiler.*
@@ -90,7 +91,6 @@ import org.jetbrains.kotlin.scripting.extensions.ScriptingResolveExtension
 import java.io.File
 import java.util.*
 import kotlin.reflect.KClass
-import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
