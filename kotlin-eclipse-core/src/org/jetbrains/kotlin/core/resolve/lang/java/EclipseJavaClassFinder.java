@@ -16,34 +16,10 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve.lang.java;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import javax.inject.Inject;
-
+import com.intellij.mock.MockProject;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.jdt.core.Flags;
-import org.eclipse.jdt.core.IField;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.ISourceReference;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.WorkingCopyOwner;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
-import org.eclipse.jdt.core.dom.ClassInstanceCreation;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.EnumConstantDeclaration;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.NodeFinder;
+import org.eclipse.jdt.core.*;
+import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.NameLookup;
 import org.jetbrains.annotations.NotNull;
@@ -62,14 +38,14 @@ import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer;
 
-import com.intellij.mock.MockProject;
+import java.util.Arrays;
+import java.util.Set;
 
 public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
 
-    private IJavaProject javaProject = null;
-    
-    @Inject
-    public void setProjectScope(@NotNull IJavaProject project) {
+    private IJavaProject javaProject;
+
+    public EclipseJavaClassFinder(@NotNull IJavaProject project) {
         javaProject = project;
     }
     
