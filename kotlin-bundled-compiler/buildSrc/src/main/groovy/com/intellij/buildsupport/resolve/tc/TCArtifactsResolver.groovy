@@ -45,9 +45,8 @@ abstract class TCArtifactsResolver {
     final void downloadTo(TCArtifact tcArtifact, File outputFile) {
         if (resolvedArtifactMap == null) {
             resolvedArtifactMap = lastSuccessfulBuild ? resolveFromLastSuccessfulBuild()
-                                                      : resolveFromBuildId()
+                    : resolveFromBuildId()
         }
-
         BuildArtifact resolvedTCArtifact = resolvedArtifactMap.get(tcArtifact)
 
         println "Downloading artifact: $resolvedTCArtifact.fullName"
@@ -58,7 +57,7 @@ abstract class TCArtifactsResolver {
     // PRIVATE API ====================================================================================================
     private Map<TCArtifact, BuildArtifact> resolveFromBuildId() {
         Build tcBuild = TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
-                                               .build(new BuildId(tcBuildId))
+                .build(new BuildId(tcBuildId))
 
         println "Resolving TC build: $tcBuild"
 
@@ -67,8 +66,8 @@ abstract class TCArtifactsResolver {
 
     private Map<TCArtifact, BuildArtifact> resolveFromLastSuccessfulBuild() {
         BuildLocator builds = TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
-                                                     .builds()
-                                                     .fromConfiguration(new BuildConfigurationId(tcBuildTypeId()))
+                .builds()
+                .fromConfiguration(new BuildConfigurationId(tcBuildTypeId()))
 
         if (!tcBuildBranch.trim().isEmpty())
             builds.withBranch(tcBuildBranch.trim())
@@ -91,22 +90,25 @@ abstract class TCArtifactsResolver {
         Map<TCArtifact, BuildArtifact> resolvedArtifactMap = [:] as HashMap
 
         for (TCArtifact requiredTcArtifact in getRequiredArtifacts()) {
-            try {
-                BuildArtifact resolvedTcArtifact = tcBuild.findArtifact(requiredTcArtifact.fileNameRegex,
-                                                                        requiredTcArtifact.fileParentPathRegex,
-                                                                        true) // recursive search
+            BuildArtifact resolvedTcArtifact
 
-                resolvedArtifactMap.put requiredTcArtifact, resolvedTcArtifact
+            // search the build and dependencies of the build for the artifact (in case of an aggregate build)
+            for (build in [tcBuild] + tcBuild.snapshotDependencies) {
+                try {
+                    resolvedTcArtifact = build.findArtifact(requiredTcArtifact.fileNameRegex,
+                            requiredTcArtifact.fileParentPathRegex,true)
+                    break
+                }
+                catch (TeamCityConversationException ignored) {}
+                catch (TeamCityQueryException ignored) {}
             }
+
             // in the case the latest build does not contain any artifacts, we continue searching the previous build
-            catch (TeamCityConversationException e) {
+            if(resolvedTcArtifact == null)
                 return Collections.EMPTY_MAP
-            }
-            catch (TeamCityQueryException e) {
-                return Collections.EMPTY_MAP
-            }
-        }
 
+            resolvedArtifactMap.put requiredTcArtifact, resolvedTcArtifact
+        }
         return resolvedArtifactMap
     }
 
