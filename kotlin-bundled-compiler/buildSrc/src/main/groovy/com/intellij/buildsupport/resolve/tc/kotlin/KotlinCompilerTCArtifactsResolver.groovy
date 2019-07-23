@@ -48,6 +48,6 @@ class KotlinCompilerTCArtifactsResolver extends TCArtifactsResolver {
         String kotlinCompilerVersionInBuildId = kotlinCompilerVersion.replace('.', '') // '1.3.0'  => '130'
                                                                      .replace('-', '') // '1.3-M2' => '13M2'
 
-        return "Kotlin_${kotlinCompilerVersionInBuildId}_CompilerAllPlugins"
+        return "Kotlin_${kotlinCompilerVersionInBuildId}_Aggregate"
     }
 }
