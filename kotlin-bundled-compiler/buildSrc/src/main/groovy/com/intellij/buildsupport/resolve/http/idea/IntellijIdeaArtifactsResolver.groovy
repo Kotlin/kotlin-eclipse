@@ -20,7 +20,7 @@ class IntellijIdeaArtifactsResolver extends HttpArtifactsResolver {
     }
 
 
-    final HttpArtifact INTELLIJ_CORE_ZIP   = new HttpArtifact("intellij-core/$ideaVersion/intellij-core-${ideaVersion}.zip",)
-    final HttpArtifact IDEA_IC_ZIP         = new HttpArtifact("ideaIC/$ideaVersion/ideaIC-${ideaVersion}.zip",)
-    final HttpArtifact IDEA_IC_SOURCES_JAR = new HttpArtifact("ideaIC/$ideaVersion/ideaIC-$ideaVersion-sources.jar",)
+    public final HttpArtifact INTELLIJ_CORE_ZIP   = new HttpArtifact("intellij-core/$ideaVersion/intellij-core-${ideaVersion}.zip",)
+    public final HttpArtifact IDEA_IC_ZIP         = new HttpArtifact("ideaIC/$ideaVersion/ideaIC-${ideaVersion}.zip",)
+    public final HttpArtifact IDEA_IC_SOURCES_JAR = new HttpArtifact("ideaIC/$ideaVersion/ideaIC-$ideaVersion-sources.jar",)
 }
