@@ -23,29 +23,29 @@ val testDataDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_t
 val testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")
 //TODO later refactor to the proper project dir
 
-val teamcity = project.extensions.findByName("teamcity")
 val downloadDirName = "downloads"
 
 val teamCityWorkingDir = project.findProperty("teamcity.buildsupport.workingDir")
 val libDir = if (teamCityWorkingDir != null) file("$teamCityWorkingDir/lib") else file("lib")
 
-val downloadDir = file("$libDir/$downloadDirName")
+private val localTCArtifacts: Boolean = tcArtifactsPath.isNotBlank()
+val downloadDir = if(localTCArtifacts) file(tcArtifactsPath) else file("$libDir/$downloadDirName")
 
 val tcArtifactsResolver = KotlinCompilerTCArtifactsResolver(teamcityBaseUrl,
         project.hasProperty("lastSuccessfulBuild"),
         kotlinCompilerTcBuildId,
         kotlinCompilerVersion,
         kotlinIdeaCompatibleVersionMinor)
+
 val ideaArtifactsResolver = IntellijIdeaArtifactsResolver(ideaSdkUrl, ideaVersion)
+
 
 tasks.withType<Wrapper> {
     gradleVersion = "5.5.1"
 }
 
-
 val testFrameworkDependencies by configurations.creating
 val kotlinxLibraries by configurations.creating
-
 
 dependencies {
     testFrameworkDependencies("com.google.code.gson:gson:2.3.1")
@@ -57,25 +57,30 @@ repositories {
     mavenCentral()
 }
 
-
 tasks.named<Delete>("clean") {
     doLast {
         FileUtils.cleanDir(testDataDir)
         FileUtils.cleanDir(testModuleLibDir)
-
         FileUtils.cleanDirExceptSubDirName(libDir, downloadDirName)
     }
 }
 
-tasks.register("downloadTestData") {
-    val locallyDownloadedTestDataFile by extra { file("$testDataDir/kotlin-test-data.zip") }
+val downloadTestData by tasks.registering {
+    val locallyDownloadedTestDataFile by extra {
+        if(localTCArtifacts){
+            file("$tcArtifactsPath/kotlin-test-data.zip")
+        } else {
+            file("$testDataDir/kotlin-test-data.zip")
+        }
+    }
 
     doLast {
-        tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_TEST_DATA_ZIP, locallyDownloadedTestDataFile)
+        if (!localTCArtifacts) {
+            tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_TEST_DATA_ZIP, locallyDownloadedTestDataFile)
+        }
 
         copy {
             from(zipTree(locallyDownloadedTestDataFile))
-
             into(testDataDir)
         }
 
@@ -83,18 +88,18 @@ tasks.register("downloadTestData") {
     }
 }
 
-tasks.register<Copy>("downloadTestFrameworkDependencies") {
+val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
     from(testFrameworkDependencies)
     into(testModuleLibDir)
 }
 
-tasks.register("downloadKotlinCompilerPluginAndExtractSelectedJars") {
-
+val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
     val locallyDownloadedCompilerFile by extra { file("$downloadDir/kotlin-compiler.zip") }
 
-
     doLast {
-        tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_PLUGIN_ZIP, locallyDownloadedCompilerFile)
+        if (!localTCArtifacts) {
+            tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_PLUGIN_ZIP, locallyDownloadedCompilerFile)
+        }
 
         copy {
             from(zipTree(locallyDownloadedCompilerFile))
@@ -116,10 +121,9 @@ tasks.register("downloadKotlinCompilerPluginAndExtractSelectedJars") {
                     "Kotlin/kotlinc/lib/annotations-13.0.jar"))
 
             includeEmptyDirs = false
-
             into(libDir)
 
-// flatten + rename
+            // flatten + rename
             eachFile {
                 this.relativePath = RelativePath(true, this.name)
             }
@@ -127,15 +131,12 @@ tasks.register("downloadKotlinCompilerPluginAndExtractSelectedJars") {
     }
 }
 
-tasks.register<Jar>("extractPackagesFromPlugin") {
-    dependsOn("downloadKotlinCompilerPluginAndExtractSelectedJars")
+val extractPackagesFromPlugin by tasks.registering(Jar::class) {
+    dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars)
 
     from(zipTree("$libDir/kotlin-plugin.jar"))
-
     destinationDir = libDir
-
     archiveName = "kotlin-converter.jar"
-
     include("org/jetbrains/kotlin/j2k/**")
 
     doLast {
@@ -143,18 +144,15 @@ tasks.register<Jar>("extractPackagesFromPlugin") {
     }
 }
 
-tasks.register("downloadKotlinTCArtifacts") {
+val downloadKotlinTCArtifacts by tasks.registering {
     doLast {
         tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_IDE_COMMON_JAR, file("$libDir/kotlin-ide-common.jar"))
-
         tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_FORMATTER_JAR, file("$libDir/kotlin-formatter.jar"))
     }
 }
 
-tasks.register("downloadIntellijCoreAndExtractSelectedJars") {
-
+val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
     val locallyDownloadedIntellijCoreFile by extra { file("$downloadDir/intellij-core.zip") }
-
 
     doLast {
         ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.INTELLIJ_CORE_ZIP, locallyDownloadedIntellijCoreFile)
@@ -172,16 +170,13 @@ tasks.register("downloadIntellijCoreAndExtractSelectedJars") {
 }
 
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
-
     val locallyDownloadedIdeaZipFile by extra { file("$downloadDir/ideaIC.zip") }
-
     val chosenJars by extra { setOf("openapi",
             "util",
             "idea",
             "trove4j",
             "platform-api",
             "platform-impl") }
-
 
     doLast {
         ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.IDEA_IC_ZIP, locallyDownloadedIdeaZipFile)
@@ -204,15 +199,13 @@ val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
 }
 
 val extractSelectedFilesFromIdeaJars by tasks.registering {
-    dependsOn(":downloadIdeaDistributionZipAndExtractSelectedJars")
+    dependsOn(downloadIdeaDistributionZipAndExtractSelectedJars)
 
     val packages by extra {
         /*new PackageListFromManifest("META-INF/MANIFEST.MF"),*/
         PackageListFromSimpleFile("referencedPackages.txt").pathsToInclude
     }
-
     val extractDir by extra { file("$downloadDir/dependencies") }
-
 
     doLast {
         val chosenJars: Set<String> by downloadIdeaDistributionZipAndExtractSelectedJars.get().extra
@@ -228,15 +221,13 @@ val extractSelectedFilesFromIdeaJars by tasks.registering {
     }
 }
 
-tasks.register<Jar>("createIdeDependenciesJar") {
-    dependsOn(":extractSelectedFilesFromIdeaJars")
+val createIdeDependenciesJar by tasks.registering(Jar::class) {
+    dependsOn(extractSelectedFilesFromIdeaJars)
 
     val extractDir: File by extractSelectedFilesFromIdeaJars.get().extra
 
     from(extractDir)
-
     destinationDir = libDir
-
     archiveName = "ide-dependencies.jar"
 
     manifest {
@@ -251,22 +242,18 @@ tasks.register<Jar>("createIdeDependenciesJar") {
     }
 }
 
-tasks.register<Copy>("downloadKotlinxLibraries") {
+val downloadKotlinxLibraries by tasks.registering(Copy::class) {
     from(kotlinxLibraries)
-
     into(libDir)
-
-    rename("kotlinx-coroutines-(\\w+)-(.*)", "kotlinx-coroutines-$1.jar")
+    rename("(kotlinx-coroutines-\\w+)-.*", "$1.jar")
 }
 
 val downloadIdeaAndKotlinCompilerSources by tasks.registering {
-
     val locallyDownloadedKotlinCompilerSourcesFile by extra { file("$downloadDir/kotlin-compiler-sources.jar") }
     val locallyDownloadedIdeaSourcesFile by extra { file("$downloadDir/idea-sdk-sources.jar") }
 
     doLast {
         tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_COMPILER_SOURCES_JAR, locallyDownloadedKotlinCompilerSourcesFile)
-
         ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.IDEA_IC_SOURCES_JAR, locallyDownloadedIdeaSourcesFile)
     }
 }
@@ -280,20 +267,28 @@ val repackageIdeaAndKotlinCompilerSources by tasks.registering(Zip::class) {
     from(zipTree(locallyDownloadedKotlinCompilerSourcesFile))
 
     destinationDir = libDir
-
     archiveName = "kotlin-compiler-sources.jar"
 }
 
-tasks.register("downloadBundled") {
-    dependsOn(":downloadKotlinCompilerPluginAndExtractSelectedJars",
-            ":extractPackagesFromPlugin",
-            ":downloadIntellijCoreAndExtractSelectedJars",
-            ":createIdeDependenciesJar",
-            ":downloadKotlinTCArtifacts",
-            ":downloadKotlinxLibraries",
-            ":repackageIdeaAndKotlinCompilerSources")
+val downloadBundled by tasks.registering {
+    if (localTCArtifacts) {
+        dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars,
+                extractPackagesFromPlugin,
+                downloadIntellijCoreAndExtractSelectedJars,
+                createIdeDependenciesJar,
+                downloadKotlinxLibraries,
+                repackageIdeaAndKotlinCompilerSources)
+    } else {
+        dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars,
+                extractPackagesFromPlugin,
+                downloadIntellijCoreAndExtractSelectedJars,
+                createIdeDependenciesJar,
+                downloadKotlinTCArtifacts,
+                downloadKotlinxLibraries,
+                repackageIdeaAndKotlinCompilerSources)
+    }
 }
 
-tasks.register("getBundled"){
-    dependsOn(":downloadTestData", ":downloadTestFrameworkDependencies", ":downloadBundled")
+val getBundled by tasks.registering {
+    dependsOn(downloadTestData, downloadTestFrameworkDependencies, downloadBundled)
 }
