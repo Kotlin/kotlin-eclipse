@@ -68,6 +68,7 @@ abstract class TCArtifactsResolver {
         BuildLocator builds = TeamCityInstanceFactory.guestAuth(teamcityBaseUrl)
                 .builds()
                 .fromConfiguration(new BuildConfigurationId(tcBuildTypeId()))
+                .includeFailed()
 
         if (!tcBuildBranch.trim().isEmpty())
             builds.withBranch(tcBuildBranch.trim())
