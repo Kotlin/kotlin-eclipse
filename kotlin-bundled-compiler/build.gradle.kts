@@ -16,6 +16,7 @@ val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?:
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
 val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "183.5429.1"
 val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2018.3"
+val ignoreSources: Boolean = project.hasProperty("ignoreSources")
 
 //directories
 val testDataDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_testData")
@@ -28,7 +29,7 @@ val downloadDirName = "downloads"
 val teamCityWorkingDir = project.findProperty("teamcity.buildsupport.workingDir")
 val libDir = if (teamCityWorkingDir != null) file("$teamCityWorkingDir/lib") else file("lib")
 
-private val localTCArtifacts: Boolean = tcArtifactsPath.isNotBlank()
+val localTCArtifacts: Boolean = tcArtifactsPath.isNotBlank()
 val downloadDir = if(localTCArtifacts) file(tcArtifactsPath) else file("$libDir/$downloadDirName")
 
 val tcArtifactsResolver = KotlinCompilerTCArtifactsResolver(teamcityBaseUrl,
@@ -94,7 +95,10 @@ val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
 }
 
 val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
-    val locallyDownloadedCompilerFile by extra { file("$downloadDir/kotlin-compiler.zip") }
+    val locallyDownloadedCompilerFile by extra {
+        file(downloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
+                ?: file("$downloadDir/kotlin-plugin.zip")
+    }
 
     doLast {
         if (!localTCArtifacts) {
@@ -262,9 +266,10 @@ val repackageIdeaAndKotlinCompilerSources by tasks.registering(Zip::class) {
     dependsOn(downloadIdeaAndKotlinCompilerSources)
 
     val locallyDownloadedKotlinCompilerSourcesFile: File by downloadIdeaAndKotlinCompilerSources.get().extra
+    val locallyDownloadedIdeaSourcesFile: File by downloadIdeaAndKotlinCompilerSources.get().extra
 
     from(zipTree(locallyDownloadedKotlinCompilerSourcesFile))
-    from(zipTree(locallyDownloadedKotlinCompilerSourcesFile))
+    from(zipTree(locallyDownloadedIdeaSourcesFile))
 
     destinationDir = libDir
     archiveName = "kotlin-compiler-sources.jar"
@@ -276,16 +281,18 @@ val downloadBundled by tasks.registering {
                 extractPackagesFromPlugin,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
-                downloadKotlinxLibraries,
-                repackageIdeaAndKotlinCompilerSources)
+                downloadKotlinxLibraries)
     } else {
         dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars,
                 extractPackagesFromPlugin,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinTCArtifacts,
-                downloadKotlinxLibraries,
-                repackageIdeaAndKotlinCompilerSources)
+                downloadKotlinxLibraries)
+    }
+
+    if (!ignoreSources) {
+        dependsOn(repackageIdeaAndKotlinCompilerSources)
     }
 }
 
