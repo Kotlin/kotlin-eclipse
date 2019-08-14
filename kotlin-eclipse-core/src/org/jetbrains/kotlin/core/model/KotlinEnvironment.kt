@@ -35,10 +35,9 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.core.JavaProject
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader
-import org.jetbrains.kotlin.asJava.classes.KtLightClassForFacade
+import org.jetbrains.kotlin.asJava.classes.FacadeCache
 import org.jetbrains.kotlin.cli.jvm.compiler.CliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
-import org.jetbrains.kotlin.cli.jvm.index.JavaRoot
 import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
 import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
 import org.jetbrains.kotlin.compiler.plugin.CliOptionValue
@@ -58,6 +57,7 @@ import org.jetbrains.kotlin.core.preferences.CompilerPlugin
 import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFactory
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.core.utils.asFile
 import org.jetbrains.kotlin.core.utils.buildLibPath
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
@@ -67,19 +67,19 @@ import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 import org.jetbrains.kotlin.load.java.sam.SamWithReceiverResolver
 import org.jetbrains.kotlin.load.kotlin.MetadataFinderFactory
 import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
+import org.jetbrains.kotlin.platform.TargetPlatform
+import org.jetbrains.kotlin.platform.jvm.JvmPlatform
 import org.jetbrains.kotlin.psi.KtModifierListOwner
-import org.jetbrains.kotlin.resolve.TargetPlatform
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import org.jetbrains.kotlin.scripting.configuration.ScriptingConfigurationKeys
+import org.jetbrains.kotlin.scripting.definitions.ScriptDefinition
+import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
+import org.jetbrains.kotlin.scripting.definitions.annotationsForSamWithReceivers
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.*
-import kotlin.script.dependencies.KotlinScriptExternalDependencies
-import kotlin.script.experimental.dependencies.DependenciesResolver
+import kotlin.script.experimental.api.ScriptCompilationConfiguration
 import kotlin.script.experimental.dependencies.ScriptDependencies
-import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
-import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
-import org.jetbrains.kotlin.scripting.configuration.ScriptingConfigurationKeys
 
 val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
 
@@ -115,19 +115,20 @@ class KotlinScriptEnvironment private constructor(
         disposable: Disposable
 ) : KotlinCommonEnvironment(disposable) {
 
-    val definition: KotlinScriptDefinition? = ScriptDefinitionProvider.getInstance(project)
-            ?.findScriptDefinition(eclipseFile.name)
+    val definition: ScriptDefinition? = ScriptDefinitionProvider.getInstance(project)
+            ?.findDefinition(eclipseFile.asFile)
 
-    val definitionClasspath: Collection<File> = definition?.template?.java?.classLoader?.let(::classpathFromClassloader).orEmpty()
+    val definitionClasspath: Collection<File> = definition?.contextClassLoader?.let(::classpathFromClassloader).orEmpty()
 
     init {
         configureClasspath()
 
         configuration.put(ScriptingConfigurationKeys.SCRIPT_DEFINITIONS, listOfNotNull(definition))
 
-        definition?.annotationsForSamWithReceivers
-                ?.let { CliSamWithReceiverComponentContributor(it) }
-                ?.also { StorageComponentContainerContributor.registerExtension(project, it) }
+        definition?.compilationConfiguration?.get(ScriptCompilationConfiguration.annotationsForSamWithReceivers)
+            ?.map { it.typeName }
+            ?.let { CliSamWithReceiverComponentContributor(it) }
+            ?.also { StorageComponentContainerContributor.registerExtension(project, it) }
 
         val index = JvmDependenciesIndexImpl(getRoots().toList())
 
@@ -154,7 +155,7 @@ class KotlinScriptEnvironment private constructor(
         project.registerService(MetadataFinderFactory::class.java, finderFactory)
         project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
 
-        definition?.dependencyResolver?.also { project.registerService(DependenciesResolver::class.java, it) }
+//        definition?.dependencyResolver?.also { project.registerService(DependenciesResolver::class.java, it) }
     }
 
     companion object {
@@ -181,7 +182,7 @@ class KotlinScriptEnvironment private constructor(
         @JvmStatic
         fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
 
-        fun isScript(file: IFile): Boolean = EclipseScriptDefinitionProvider().isScript(file.name)
+        fun isScript(file: IFile): Boolean = EclipseScriptDefinitionProvider().isScript(file.asFile)
 
         private fun checkIsScript(file: IFile) {
             if (!isScript(file)) {
@@ -203,9 +204,7 @@ class KotlinScriptEnvironment private constructor(
         addToClasspath(KOTLIN_SCRIPT_RUNTIME_PATH.toFile())
         addJREToClasspath()
 
-        definition?.template?.java?.classLoader
-                ?.let { classpathFromClassloader(it) }
-                ?.forEach { addToClasspath(it) }
+        definitionClasspath.forEach { addToClasspath(it) }
     }
 
     private fun addDependenciesToClasspath(dependencies: ScriptDependencies?) {
@@ -265,7 +264,7 @@ private fun classpathFromClassloader(classLoader: ClassLoader): List<File> {
 
 class CliSamWithReceiverComponentContributor(val annotations: List<String>) : StorageComponentContainerContributor {
     override fun registerModuleComponents(container: StorageComponentContainer, platform: TargetPlatform, moduleDescriptor: ModuleDescriptor) {
-        if (platform != JvmPlatform) return
+        if (platform.filterIsInstance<JvmPlatform>().isEmpty() ) return
 
         container.useInstance(SamWithReceiverResolverExtension(annotations))
     }
@@ -311,7 +310,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
         configureClasspath(javaProject)
 
         with(project) {
-            registerService(KtLightClassForFacade.FacadeStubCache::class.java, KtLightClassForFacade.FacadeStubCache(project))
+            registerService(FacadeCache::class.java, FacadeCache(project))
         }
 
         registerCompilerPlugins()

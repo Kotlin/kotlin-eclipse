@@ -43,7 +43,7 @@ internal fun tryUpdateScriptClasspath(file: IFile) {
 
     runJob("Check script dependencies", Job.DECORATE, null, {
         val contents = ScriptContentLoader(environment.project).getScriptContents(
-            environment.definition!!,
+            environment.definition?.legacyDefinition!!,
             environment.getVirtualFile(file.location)!!
         )
 

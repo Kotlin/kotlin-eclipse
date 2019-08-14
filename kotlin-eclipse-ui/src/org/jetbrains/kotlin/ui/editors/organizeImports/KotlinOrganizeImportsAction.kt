@@ -43,7 +43,7 @@ import org.jetbrains.kotlin.idea.formatter.kotlinCustomSettings
 import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.ImportPath
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.ui.editors.quickfix.replaceImports
@@ -73,7 +73,7 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
         val environment = KotlinEnvironment.getEnvironment(file.project)
 
         val languageVersionSettings = environment.compilerProperties.languageVersionSettings
-        val candidatesFilter = DefaultImportPredicate(JvmPlatform, languageVersionSettings)
+        val candidatesFilter = DefaultImportPredicate(JvmPlatformAnalyzerServices, languageVersionSettings)
 
         val referencesToImport = bindingContext.diagnostics
             .filter { it.factory in FIXABLE_DIAGNOSTICS && it.psiFile == ktFile }

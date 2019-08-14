@@ -58,7 +58,6 @@ import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import org.jetbrains.kotlin.util.KotlinFrontEndException
 import java.util.*
-import org.jetbrains.kotlin.frontend.java.di.createContainerForTopDownAnalyzerForJvm as createContainerForScript
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
     companion object {
@@ -241,7 +240,7 @@ object EclipseAnalyzerFacadeForJVM {
         configuration: CompilerConfiguration,
         createBuiltInsFromModule: Boolean
     ): MutableModuleContext {
-        val projectContext = ProjectContext(project)
+        val projectContext = ProjectContext(project, "context for project ${project.name}")
         val builtIns = JvmBuiltIns(projectContext.storageManager,
             if (createBuiltInsFromModule) JvmBuiltIns.Kind.FROM_DEPENDENCIES else JvmBuiltIns.Kind.FROM_CLASS_LOADER)
         return ContextForNewModule(

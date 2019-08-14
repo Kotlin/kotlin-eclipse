@@ -8,11 +8,9 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.util.text.StringUtilRt;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import junit.framework.TestCase;
 import kotlin.Pair;
@@ -39,10 +37,10 @@ import org.jetbrains.kotlin.core.tests.diagnostics.JetTestUtils;
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.diagnostics.*;
 import org.jetbrains.kotlin.diagnostics.PsiDiagnosticUtils.LineAndColumn;
+import org.jetbrains.kotlin.platform.TargetPlatform;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.BindingContext;
-import org.jetbrains.kotlin.resolve.MultiTargetPlatform;
 import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
@@ -472,7 +470,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                                                             : computeJvmSignatureDiagnostics(bindingContext);
 
             final boolean[] ok = { true };
-            List<Pair<MultiTargetPlatform, BindingContext>> implementingModulesBinding = new ArrayList<>();
+            List<Pair<TargetPlatform, BindingContext>> implementingModulesBinding = new ArrayList<>();
             List<ActualDiagnostic> diagnostics = ContainerUtil.filter(
                     CollectionsKt.plus(
                     		CheckerTestUtil.INSTANCE.getDiagnosticsIncludingSyntaxErrors(
@@ -516,7 +514,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 						TextDiagnostic actualDiagnostic, int start, int end) {
 					String message = "Parameters of diagnostic not equal at position "
                                      + PsiDiagnosticUtils.atLocation(jetFile, new TextRange(start, end))
-                                     + ". Expected: " + expectedDiagnostic.asString() + ", actual: " + actualDiagnostic.asString();
+                                     + ". Expected: " + expectedDiagnostic.asString(false, true) + ", actual: " + actualDiagnostic.asString(false, true);
 		            System.err.println(message);
 		            ok[0] = false;
 				}
@@ -526,12 +524,9 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     jetFile.getOriginalFile(),
                     diagnostics,
                     diagnosticToExpectedDiagnostic,
-                    new Function<PsiFile, String>() {
-                        @Override
-                        public String fun(PsiFile file) {
-                            String text = file.getText();
-                            return declareCheckType ? StringUtil.trimEnd(text, CHECK_TYPE_DECLARATIONS) : text;
-                        }
+                    file -> {
+                        String text = file.getText();
+                        return declareCheckType ? StringUtil.trimEnd(text, CHECK_TYPE_DECLARATIONS) : text;
                     },
                     Collections.emptyList(),
                     skipJvmSignatureDiagnostics,
