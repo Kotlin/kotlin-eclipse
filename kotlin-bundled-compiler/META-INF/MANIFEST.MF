@@ -17,7 +17,8 @@ Bundle-ClassPath: .,
  lib/ide-dependencies.jar,
  lib/annotations-13.0.jar,
  lib/kotlin-scripting-compiler-impl.jar,
- lib/kotlin-converter.jar
+ lib/kotlin-converter.jar,
+ lib/kotlin-scripting-common.jar
 Export-Package: 
  com.intellij,
  com.intellij.codeInsight,
@@ -296,6 +297,8 @@ Export-Package:
  org.jetbrains.kotlin.metadata.jvm.deserialization,
  org.jetbrains.kotlin.name,
  org.jetbrains.kotlin.parsing,
+ org.jetbrains.kotlin.platform,
+ org.jetbrains.kotlin.platform.jvm,
  org.jetbrains.kotlin.progress,
  org.jetbrains.kotlin.psi,
  org.jetbrains.kotlin.psi.addRemoveModifier,
@@ -347,7 +350,6 @@ Export-Package:
  org.jetbrains.kotlin.resolve.typeBinding,
  org.jetbrains.kotlin.scripting.configuration,
  org.jetbrains.kotlin.scripting.definitions,
- org.jetbrains.kotlin.scripting.dependencies,
  org.jetbrains.kotlin.scripting.extensions,
  org.jetbrains.kotlin.scripting.resolve,
  org.jetbrains.kotlin.serialization,

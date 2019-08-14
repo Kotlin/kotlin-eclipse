@@ -3,25 +3,32 @@ package org.jetbrains.kotlin.core.model
 import org.jetbrains.kotlin.core.script.ScriptTemplateContribution
 import org.jetbrains.kotlin.core.script.template.ProjectScriptTemplate
 import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
+import org.jetbrains.kotlin.scripting.definitions.ScriptDefinition
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
-import org.jetbrains.kotlin.scripting.resolve.KotlinScriptDefinitionFromAnnotatedTemplate
 import java.io.File
+import kotlin.script.experimental.api.KotlinType
+import kotlin.script.experimental.host.ScriptingHostConfiguration
 
 private const val EXTENSION_POINT_ID = "org.jetbrains.kotlin.core.scriptTemplateContribution"
 
 class EclipseScriptDefinitionProvider: ScriptDefinitionProvider {
+    override fun findDefinition(file: File): ScriptDefinition? =
+        scriptDefinitions.first { it.isScript(file) }
+
+    override fun getDefaultDefinition()=
+        scriptDefinitions.first { it.baseClassType == KotlinType(ProjectScriptTemplate::class) }
+
+    override fun findScriptDefinition(fileName: String): KotlinScriptDefinition? =
+        findDefinition(File(fileName))?.legacyDefinition
 
     override fun getDefaultScriptDefinition() =
-        scriptDefinitions.first { it.template == ProjectScriptTemplate::class }
+        getDefaultDefinition().legacyDefinition
 
     override fun getKnownFilenameExtensions(): Sequence<String> =
         scriptDefinitions.map { it.fileExtension }
 
-    override fun findScriptDefinition(fileName: String) =
-        scriptDefinitions.firstOrNull { it.isScript(fileName) }
-
-    override fun isScript(fileName: String) =
-        scriptDefinitions.any { it.isScript(fileName) }
+    override fun isScript(file: File) =
+        scriptDefinitions.any { it.isScript(file) }
 
     companion object {
         private val contributions: List<WrappedContribution> by lazy {
@@ -31,16 +38,19 @@ class EclipseScriptDefinitionProvider: ScriptDefinitionProvider {
                 .map(::WrappedContribution)
         }
 
-        private val scriptDefinitions: Sequence<KotlinScriptDefinition>
+        private val scriptDefinitions: Sequence<ScriptDefinition>
             get() = contributions.asSequence().map { it.definition }
 
         fun getEnvironment(scriptFile: File) =
-            contributions.find { it.definition.isScript(scriptFile.name) }
+            contributions.find { it.definition.isScript(scriptFile) }
                 ?.contribution?.scriptEnvironment(scriptFile)
                 ?: emptyMap()
     }
 }
 
 private class WrappedContribution(val contribution: ScriptTemplateContribution) {
-    val definition by lazy { KotlinScriptDefinitionFromAnnotatedTemplate(template = contribution.template) }
+    val definition by lazy { ScriptDefinition.FromLegacyTemplate(
+        hostConfiguration = ScriptingHostConfiguration {},
+        template = contribution.template
+    ) }
 }

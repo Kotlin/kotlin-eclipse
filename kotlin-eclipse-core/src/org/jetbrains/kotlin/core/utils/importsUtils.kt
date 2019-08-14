@@ -27,8 +27,8 @@ import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.ImportPath
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
 import java.util.Comparator
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
 
 class KotlinImportInserterHelper : ImportInsertHelper() {
     override val importSortComparator: Comparator<ImportPath> = ImportPathComparator
@@ -38,7 +38,7 @@ class KotlinImportInserterHelper : ImportInsertHelper() {
     }
 
     override fun isImportedWithDefault(importPath: ImportPath, contextFile: KtFile): Boolean {
-        val defaultImports = JvmPlatform.getDefaultImports(
+        val defaultImports = JvmPlatformAnalyzerServices.getDefaultImports(
             if (LanguageVersionSettingsImpl.DEFAULT.supportsFeature(DefaultImportOfPackageKotlinComparisons)) LanguageVersionSettingsImpl.DEFAULT
             else LanguageVersionSettingsImpl(LanguageVersion.KOTLIN_1_0, ApiVersion.KOTLIN_1_0),
             true
