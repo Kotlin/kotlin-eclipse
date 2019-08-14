@@ -35,6 +35,8 @@ import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.utils.asFile
 import java.io.File
+import kotlin.script.experimental.api.ScriptCompilationConfiguration
+import kotlin.script.experimental.api.baseClass
 
 class KotlinScriptLaunchConfigurationDelegate : AbstractJavaLaunchConfigurationDelegate() {
     companion object {
@@ -135,10 +137,14 @@ class KotlinScriptLaunchConfigurationDelegate : AbstractJavaLaunchConfigurationD
             add("-script")
             add(scriptFile.location.toOSString())
 
-            environment.definition?.template?.qualifiedName?.let {
-                add("-script-templates")
-                add(it)
-            }
+            environment.definition
+                ?.compilationConfiguration
+                ?.get(ScriptCompilationConfiguration.baseClass)
+                ?.typeName
+                ?.also {
+                    add("-script-templates")
+                    add(it)
+                }
 
             val formattedEnvironment = EclipseScriptDefinitionProvider.getEnvironment(scriptFile.asFile)
                 .entries

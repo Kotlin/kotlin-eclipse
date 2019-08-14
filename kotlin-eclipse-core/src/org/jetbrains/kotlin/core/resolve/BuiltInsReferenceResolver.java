@@ -16,41 +16,6 @@
 
 package org.jetbrains.kotlin.core.resolve;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.eclipse.core.resources.IProject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
-import org.jetbrains.kotlin.context.ContextKt;
-import org.jetbrains.kotlin.context.MutableModuleContext;
-import org.jetbrains.kotlin.core.model.KotlinEnvironment;
-import org.jetbrains.kotlin.core.utils.ProjectUtils;
-import org.jetbrains.kotlin.descriptors.ClassDescriptor;
-import org.jetbrains.kotlin.descriptors.ConstructorDescriptor;
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
-import org.jetbrains.kotlin.descriptors.FindClassInModuleKt;
-import org.jetbrains.kotlin.descriptors.MemberDescriptor;
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor;
-import org.jetbrains.kotlin.descriptors.PackageFragmentDescriptor;
-import org.jetbrains.kotlin.descriptors.PackageViewDescriptor;
-import org.jetbrains.kotlin.frontend.di.InjectionKt;
-import org.jetbrains.kotlin.name.ClassId;
-import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.psi.KtFile;
-import org.jetbrains.kotlin.renderer.DescriptorRenderer;
-import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
-import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
-import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
-import org.jetbrains.kotlin.resolve.scopes.MemberScope;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
@@ -64,8 +29,42 @@ import com.intellij.psi.PsiManager;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.io.URLUtil;
-
 import kotlin.collections.CollectionsKt;
+import org.eclipse.core.resources.IProject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
+import org.jetbrains.kotlin.container.DslKt;
+import org.jetbrains.kotlin.container.StorageComponentContainer;
+import org.jetbrains.kotlin.context.ContextKt;
+import org.jetbrains.kotlin.context.MutableModuleContext;
+import org.jetbrains.kotlin.core.model.KotlinEnvironment;
+import org.jetbrains.kotlin.core.utils.ProjectUtils;
+import org.jetbrains.kotlin.descriptors.*;
+import org.jetbrains.kotlin.frontend.di.InjectionKt;
+import org.jetbrains.kotlin.name.ClassId;
+import org.jetbrains.kotlin.name.Name;
+import org.jetbrains.kotlin.platform.jvm.JvmPlatforms;
+import org.jetbrains.kotlin.psi.KtFile;
+import org.jetbrains.kotlin.renderer.DescriptorRenderer;
+import org.jetbrains.kotlin.resolve.BindingTraceContext;
+import org.jetbrains.kotlin.resolve.CompilerEnvironment;
+import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices;
+import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
+import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
+import org.jetbrains.kotlin.resolve.scopes.MemberScope;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class BuiltInsReferenceResolver {
     private static final String RUNTIME_SRC_DIR = "jar:file:"+ ProjectUtils.buildLibPath("kotlin-stdlib-sources")+ "!/kotlin";
@@ -96,13 +95,22 @@ public class BuiltInsReferenceResolver {
         assert (jetBuiltInsFiles != null);
         
         MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(
-                ContextKt.ProjectContext(myProject),
+                ContextKt.ProjectContext(myProject, "Context for built-ins resolver module"),
                 Name.special("<built-ins resolver module>"), 
                 DefaultBuiltIns.getInstance(),
                 null);
         newModuleContext.setDependencies(newModuleContext.getModule());
+
+        StorageComponentContainer container = InjectionKt.createContainerForLazyResolve(
+                newModuleContext,
+                new FileBasedDeclarationProviderFactory(newModuleContext.getStorageManager(), jetBuiltInsFiles),
+                new BindingTraceContext(),
+                JvmPlatforms.INSTANCE.getUnspecifiedJvmPlatform(),
+                JvmPlatformAnalyzerServices.INSTANCE,
+                CompilerEnvironment.INSTANCE,
+                LanguageVersionSettingsImpl.DEFAULT);
         
-        ResolveSession resolveSession = InjectionKt.createLazyResolveSession(newModuleContext, jetBuiltInsFiles);
+        ResolveSession resolveSession = DslKt.getService(container, ResolveSession.class);
         
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
         

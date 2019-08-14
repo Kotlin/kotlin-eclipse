@@ -27,6 +27,7 @@ import org.eclipse.jface.text.TextUtilities
 import org.eclipse.swt.graphics.Image
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.imports.DefaultImportPredicate
+import org.jetbrains.kotlin.core.imports.FIXABLE_DIAGNOSTICS
 import org.jetbrains.kotlin.core.imports.ImportCandidate
 import org.jetbrains.kotlin.core.imports.findImportCandidatesForReference
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
@@ -34,14 +35,16 @@ import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.diagnostics.Diagnostic
-import org.jetbrains.kotlin.eclipse.ui.utils.*
+import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
+import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtImportList
 import org.jetbrains.kotlin.psi.KtPackageDirective
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatform
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.core.imports.FIXABLE_DIAGNOSTICS
-import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 
 object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
@@ -57,7 +60,7 @@ object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
             ?: return emptyList()
         val languageVersionSettings = environment.compilerProperties.languageVersionSettings
 
-        val defaultImportsPredicate = DefaultImportPredicate(JvmPlatform, languageVersionSettings)
+        val defaultImportsPredicate = DefaultImportPredicate(JvmPlatformAnalyzerServices, languageVersionSettings)
         return findImportCandidatesForReference(
             diagnostic.psiElement,
             bindingContext,

@@ -22,11 +22,8 @@ import org.eclipse.jface.text.IDocument
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
-import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.scripting.definitions.ScriptDependenciesProvider
 import org.jetbrains.kotlin.ui.tryUpdateScriptClasspath
-import kotlin.script.experimental.dependencies.ScriptDependencies
 
 class KotlinScriptEditor : KotlinCommonEditor() {
     override val parsedFile: KtFile?
@@ -59,17 +56,6 @@ class KotlinScriptEditor : KotlinCommonEditor() {
     override fun doAfterSemanticHighlightingInstallation() {
         eclipseFile?.let { tryUpdateScriptClasspath(it) }
     }
-}
-
-// TODO it is probably broken right now
-fun getScriptDependencies(editor: KotlinScriptEditor): ScriptDependencies? {
-    val eclipseFile = editor.eclipseFile ?: return null
-
-    val project = getEnvironment(eclipseFile).project
-    val definition = ScriptDependenciesProvider.getInstance(project)
-
-    val ktFile = editor.parsedFile ?: return null
-    return definition?.getScriptDependencies(ktFile)
 }
 
 fun KotlinCommonEditor.isOpen(): Boolean {

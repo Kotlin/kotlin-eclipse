@@ -74,7 +74,6 @@ import org.jetbrains.kotlin.serialization.deserialization.getName
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.KotlinExternalReadOnlyEditor
 import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
-import org.jetbrains.kotlin.ui.editors.getScriptDependencies
 import org.jetbrains.kotlin.ui.formatter.createKtFile
 import org.jetbrains.kotlin.ui.navigation.KotlinOpenEditor
 
@@ -109,54 +108,6 @@ fun gotoElement(
         is KotlinJvmBinarySourceElement -> gotoElementInBinaryClass(element.binaryClass, descriptor, fromElement, project)
         
         is KotlinJvmBinaryPackageSourceElement -> gotoClassByPackageSourceElement(element, fromElement, descriptor, project)
-        
-        is PsiSourceElement -> {
-            if (element is JavaSourceElement) {
-                gotoJavaDeclarationFromNonClassPath(element.javaElement, element.psi, fromEditor, project)
-            }
-        }
-    }
-}
-
-private fun gotoJavaDeclarationFromNonClassPath(
-        javaElement: JavaElement,
-        psi: PsiElement?,
-        fromEditor: KotlinEditor,
-        javaProject: IJavaProject) {
-    if (!fromEditor.isScript) return
-    
-    val javaPsi = (javaElement as JavaElementImpl<*>).psi
-    
-    val editorPart = tryToFindSourceInJavaProject(javaPsi, javaProject)
-    if (editorPart != null) {
-        revealJavaElementInEditor(editorPart, javaElement, EditorUtil.getSourceCode(editorPart))
-        return
-    }
-    
-    val virtualFile = psi?.containingFile?.virtualFile ?: return
-    val (sourceName, packagePath) = findSourceFilePath(virtualFile)
-    
-    val dependencies = getScriptDependencies(fromEditor as KotlinScriptEditor) ?: return
-    
-    val pathToSource = packagePath.append(sourceName)
-
-    val source = dependencies.sources.asSequence()
-            .map { Path(it.absolutePath).createSourceMapperWithRoot() }
-            .mapNotNull { it.findSource(pathToSource.toOSString()) }
-            .firstOrNull() ?: return
-    
-    val sourceString = String(source)
-    val targetEditor = openJavaEditorForExternalFile(sourceString, sourceName, packagePath.toOSString()) ?: return
-    
-    revealJavaElementInEditor(targetEditor, javaElement, sourceString)
-    
-    return
-}
-
-private fun revealJavaElementInEditor(editor: IEditorPart, javaElement: JavaElement, source: String) {
-    val offset = findDeclarationInJavaFile(javaElement, source)
-    if (offset != null && editor is AbstractTextEditor) {
-        editor.selectAndReveal(offset, 0)
     }
 }
 

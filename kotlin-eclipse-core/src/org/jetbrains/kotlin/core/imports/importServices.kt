@@ -5,10 +5,10 @@ import org.eclipse.jdt.core.Flags
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.search.*
 import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.core.utils.isImported
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
+import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.idea.imports.canBeReferencedViaImport
 import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
 import org.jetbrains.kotlin.idea.util.ReceiverType
@@ -17,11 +17,10 @@ import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.ImportPath
-import org.jetbrains.kotlin.resolve.TargetPlatform
+import org.jetbrains.kotlin.resolve.PlatformDependentAnalyzerServices
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
 import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
-import org.jetbrains.kotlin.diagnostics.Errors
 
 val FIXABLE_DIAGNOSTICS = setOf(Errors.UNRESOLVED_REFERENCE, Errors.UNRESOLVED_REFERENCE_WRONG_RECEIVER)
 
@@ -176,7 +175,7 @@ private fun queryForCallables(name: String, collector: (IMethod) -> Unit) {
 }
 
 class DefaultImportPredicate(
-    platform: TargetPlatform,
+    platform: PlatformDependentAnalyzerServices,
     languageVersionSettings: LanguageVersionSettings
 ) : (ImportCandidate) -> Boolean {
     private val defaultImports = platform.getDefaultImports(languageVersionSettings, true)
