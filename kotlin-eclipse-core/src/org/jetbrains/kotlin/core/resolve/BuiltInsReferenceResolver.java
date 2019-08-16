@@ -33,6 +33,7 @@ import kotlin.collections.CollectionsKt;
 import org.eclipse.core.resources.IProject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.analyzer.common.CommonPlatformAnalyzerServices;
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
@@ -46,13 +47,12 @@ import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.frontend.di.InjectionKt;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.Name;
-import org.jetbrains.kotlin.platform.jvm.JvmPlatforms;
+import org.jetbrains.kotlin.platform.CommonPlatforms;
 import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.renderer.DescriptorRenderer;
 import org.jetbrains.kotlin.resolve.BindingTraceContext;
 import org.jetbrains.kotlin.resolve.CompilerEnvironment;
 import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
-import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices;
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession;
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory;
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter;
@@ -105,8 +105,8 @@ public class BuiltInsReferenceResolver {
                 newModuleContext,
                 new FileBasedDeclarationProviderFactory(newModuleContext.getStorageManager(), jetBuiltInsFiles),
                 new BindingTraceContext(),
-                JvmPlatforms.INSTANCE.getUnspecifiedJvmPlatform(),
-                JvmPlatformAnalyzerServices.INSTANCE,
+                CommonPlatforms.INSTANCE.getDefaultCommonPlatform(),
+                CommonPlatformAnalyzerServices.INSTANCE,
                 CompilerEnvironment.INSTANCE,
                 LanguageVersionSettingsImpl.DEFAULT);
         

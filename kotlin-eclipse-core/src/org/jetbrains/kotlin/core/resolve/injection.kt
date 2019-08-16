@@ -30,7 +30,6 @@ import org.jetbrains.kotlin.container.StorageComponentContainer
 import org.jetbrains.kotlin.container.registerSingleton
 import org.jetbrains.kotlin.container.useInstance
 import org.jetbrains.kotlin.context.ModuleContext
-import org.jetbrains.kotlin.contracts.ContractDeserializerImpl
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceElementFactory
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache
@@ -75,8 +74,6 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
     useImpl<SignaturePropagatorImpl>()
     useImpl<TraceBasedErrorReporter>()
     useInstance(InternalFlexibleTypeTransformer)
-
-    useImpl<CompilerDeserializationConfiguration>()
 }
 
 fun createContainerForLazyResolveWithJava(
@@ -111,8 +108,6 @@ fun createContainerForLazyResolveWithJava(
     useInstance(declarationProviderFactory)
     javaProject?.let { useInstance(it) }
 
-    useInstance(languageVersionSettings)
-
     useInstance(languageVersionSettings.getFlag(JvmAnalysisFlags.jsr305))
 
     if (useBuiltInsProvider) {
@@ -123,8 +118,6 @@ fun createContainerForLazyResolveWithJava(
     useInstance(JavaClassesTracker.Default)
 
     targetEnvironment.configure(this)
-
-    useImpl<ContractDeserializerImpl>()
 
     useInstance(JavaResolverSettings.create(
             isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines)))
