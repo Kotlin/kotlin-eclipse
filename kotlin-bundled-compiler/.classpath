@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-jvm.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-common.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-converter.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-compiler-impl.jar"/>

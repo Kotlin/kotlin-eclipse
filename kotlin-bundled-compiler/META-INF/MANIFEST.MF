@@ -18,7 +18,8 @@ Bundle-ClassPath: .,
  lib/annotations-13.0.jar,
  lib/kotlin-scripting-compiler-impl.jar,
  lib/kotlin-converter.jar,
- lib/kotlin-scripting-common.jar
+ lib/kotlin-scripting-common.jar,
+ lib/kotlin-scripting-jvm.jar
 Export-Package: 
  com.intellij,
  com.intellij.codeInsight,
@@ -197,8 +198,10 @@ Export-Package:
  kotlin.reflect.full,
  kotlin.reflect.jvm.internal.impl.load.kotlin,
  kotlin.script.dependencies,
+ kotlin.script.experimental.api,
  kotlin.script.experimental.dependencies,
  kotlin.script.experimental.host,
+ kotlin.script.experimental.jvm,
  kotlin.script.extensions,
  kotlin.script.templates,
  kotlin.script.templates.standard,
