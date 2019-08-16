@@ -514,7 +514,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 						TextDiagnostic actualDiagnostic, int start, int end) {
 					String message = "Parameters of diagnostic not equal at position "
                                      + PsiDiagnosticUtils.atLocation(jetFile, new TextRange(start, end))
-                                     + ". Expected: " + expectedDiagnostic.asString(false, true) + ", actual: " + actualDiagnostic.asString(false, true);
+                                     + ". Expected: " + expectedDiagnostic.asString(false, false) + ", actual: " + actualDiagnostic.asString(false, false);
 		            System.err.println(message);
 		            ok[0] = false;
 				}
@@ -529,8 +529,8 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                         return declareCheckType ? StringUtil.trimEnd(text, CHECK_TYPE_DECLARATIONS) : text;
                     },
                     Collections.emptyList(),
-                    skipJvmSignatureDiagnostics,
-                    true));
+                    true,
+                    false));
 
             stripExtras(actualText);
             
