@@ -1,8 +1,16 @@
 package org.jetbrains.kotlin.ui.formatter;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.intellij.formatting.Block;
+import com.intellij.formatting.FormattingDocumentModel;
+import com.intellij.formatting.FormattingModelEx;
+import com.intellij.lang.ASTNode;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
+import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
+import com.intellij.psi.impl.source.SourceTreeToPsiMap;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.internal.corext.refactoring.changes.TextChangeCompatibility;
@@ -16,17 +24,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil;
 
-import com.intellij.formatting.Block;
-import com.intellij.formatting.FormattingDocumentModel;
-import com.intellij.formatting.FormattingModelEx;
-import com.intellij.lang.ASTNode;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.codeStyle.CodeStyleSettings;
-import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
-import com.intellij.psi.impl.source.SourceTreeToPsiMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EclipseDocumentFormattingModel implements FormattingModelEx {
     
@@ -200,7 +199,6 @@ public class EclipseDocumentFormattingModel implements FormattingModelEx {
     }
     
     private int convertOffset(int offset) {
-        return LineEndUtil.convertLfToDocumentOffset(myASTNode.getPsi().getContainingFile().getText(), offset,
-                document);
+        return LineEndUtil.convertLfOffsetForMixedDocument(document, offset);
     }
 }
