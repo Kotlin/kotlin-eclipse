@@ -120,4 +120,20 @@ public class LineEndUtil {
         int endOffset = LineEndUtil.convertLfToDocumentOffset(lfText, lfRange.getEndOffset(), document);
         return new TextRange(startOffset, endOffset);
     }
+
+    public static int convertLfOffsetForMixedDocument(@NotNull IDocument document, int lfOffset) {
+        int countCRs = 0;
+        int current = 0;
+        String text = document.get();
+
+
+        while (current - countCRs < lfOffset) {
+            if (text.charAt(current) == CARRIAGE_RETURN_CHAR) {
+                countCRs++;
+            }
+            current++;
+        }
+
+        return current;
+    }
 }
