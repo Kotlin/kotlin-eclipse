@@ -1,5 +1,6 @@
 import com.intellij.buildsupport.dependencies.PackageListFromSimpleFile
 import com.intellij.buildsupport.resolve.http.idea.IntellijIdeaArtifactsResolver
+import com.intellij.buildsupport.resolve.tc.kotlin.CommonIDEArtifactsResolver
 import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 import com.intellij.buildsupport.utils.FileUtils
 
@@ -11,6 +12,7 @@ val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jet
 
 // properties that might/should be modifiable
 val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "2423158"
+val ideCommonTcBuildId: String = project.findProperty("ideCommonTcBuildId") as String? ?: "2485586"
 val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.3.50"
 val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.1.1"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
@@ -37,6 +39,11 @@ val tcArtifactsResolver = KotlinCompilerTCArtifactsResolver(teamcityBaseUrl,
         kotlinCompilerTcBuildId,
         kotlinCompilerVersion,
         kotlinIdeaCompatibleVersionMinor)
+
+val commonArtifactsResolver = CommonIDEArtifactsResolver(teamcityBaseUrl,
+        project.hasProperty("lastSuccessfulBuild"),
+        ideCommonTcBuildId,
+        kotlinCompilerVersion)
 
 val ideaArtifactsResolver = IntellijIdeaArtifactsResolver(ideaSdkUrl, ideaVersion)
 
@@ -150,8 +157,8 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
 
 val downloadKotlinTCArtifacts by tasks.registering {
     doLast {
-        tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_IDE_COMMON_JAR, file("$libDir/kotlin-ide-common.jar"))
-        tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_FORMATTER_JAR, file("$libDir/kotlin-formatter.jar"))
+        commonArtifactsResolver.downloadTo(commonArtifactsResolver.KOTLIN_IDE_COMMON_JAR, file("$libDir/kotlin-ide-common.jar"))
+        commonArtifactsResolver.downloadTo(commonArtifactsResolver.KOTLIN_FORMATTER_JAR, file("$libDir/kotlin-formatter.jar"))
     }
 }
 
