@@ -1,21 +1,28 @@
 package org.jetbrains.kotlin.core.model
 
+import org.eclipse.osgi.internal.loader.EquinoxClassLoader
 import org.jetbrains.kotlin.core.script.ScriptTemplateContribution
 import org.jetbrains.kotlin.core.script.template.ProjectScriptTemplate
+import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinition
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
 import java.io.File
+import kotlin.reflect.KClass
 import kotlin.script.experimental.api.KotlinType
 import kotlin.script.experimental.host.ScriptingHostConfiguration
+import kotlin.script.experimental.host.configurationDependencies
+import kotlin.script.experimental.host.getScriptingClass
+import kotlin.script.experimental.jvm.JvmDependency
+import kotlin.script.experimental.jvm.JvmGetScriptingClass
 
 private const val EXTENSION_POINT_ID = "org.jetbrains.kotlin.core.scriptTemplateContribution"
 
-class EclipseScriptDefinitionProvider: ScriptDefinitionProvider {
+class EclipseScriptDefinitionProvider : ScriptDefinitionProvider {
     override fun findDefinition(file: File): ScriptDefinition? =
         scriptDefinitions.first { it.isScript(file) }
 
-    override fun getDefaultDefinition()=
+    override fun getDefaultDefinition() =
         scriptDefinitions.first { it.baseClassType == KotlinType(ProjectScriptTemplate::class) }
 
     override fun findScriptDefinition(fileName: String): KotlinScriptDefinition? =
@@ -49,8 +56,26 @@ class EclipseScriptDefinitionProvider: ScriptDefinitionProvider {
 }
 
 private class WrappedContribution(val contribution: ScriptTemplateContribution) {
-    val definition by lazy { ScriptDefinition.FromLegacyTemplate(
-        hostConfiguration = ScriptingHostConfiguration {},
-        template = contribution.template
-    ) }
+    val definition by lazy {
+        ScriptDefinition.FromLegacyTemplate(
+            hostConfiguration = ScriptingHostConfiguration {
+                getScriptingClass(JvmGetScriptingClass())
+                configurationDependencies(JvmDependency(extractClasspath(contribution.template) + scriptingDependencies))
+            },
+            template = contribution.template
+        )
+    }
+}
+
+// TODO: hack for now, will definitely need rethinking
+private fun extractClasspath(kClass: KClass<*>): List<File> =
+    (kClass.java.classLoader as? EquinoxClassLoader)
+        ?.classpathManager
+        ?.hostClasspathEntries
+        ?.map { entry -> entry.bundleFile.baseFile.resolve("bin") }
+        .orEmpty()
+
+private val scriptingDependencies: List<File> by lazy {
+    listOf("kotlin-scripting-jvm")
+        .map { File(ProjectUtils.buildLibPath(it)) }
 }
