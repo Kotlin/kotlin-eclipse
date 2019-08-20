@@ -54,6 +54,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin
+import org.jetbrains.kotlin.core.preferences.KotlinBuildingProperties
 import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFactory
 import org.jetbrains.kotlin.core.utils.ProjectUtils
@@ -302,6 +303,11 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
     val compilerProperties: KotlinProperties
         get() = projectCompilerProperties.takeIf { it.globalsOverridden } ?: KotlinProperties.workspaceInstance
+
+    val projectBuildingProperties: KotlinBuildingProperties = KotlinBuildingProperties(ProjectScope(eclipseProject))
+
+    val buildingProperties: KotlinBuildingProperties
+        get() = projectBuildingProperties.takeIf { it.globalsOverridden } ?: KotlinBuildingProperties.workspaceInstance
 
     val index by lazy { JvmDependenciesIndexImpl(getRoots().toList()) }
 

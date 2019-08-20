@@ -222,6 +222,12 @@
             id="kotlin-eclipse-ui.preferences.compiler"
             name="Compiler">
       </page>
+      <page
+            category="kotlin-eclipse-ui.preferences"
+            class="org.jetbrains.kotlin.preferences.building.WorkspaceBuildingPropertyPage"
+            id="kotlin-eclipse-ui.preferences.compiler"
+            name="Building">
+      </page>
    </extension>
    <extension
          point="org.eclipse.ui.editors">
@@ -922,6 +928,16 @@
                </reference>
            </enabledWhen>
        </page>
+      <page
+            class="org.jetbrains.kotlin.preferences.building.ProjectBuildingPropertyPage"
+            id="org.jetbrains.kotlin.ui.project-properties"
+            name="Kotlin Building">
+         <enabledWhen>
+            <reference
+                  definitionId="org.jetbrains.kotlin.core.hasNature">
+            </reference>
+         </enabledWhen>
+      </page>
    </extension>
    <extension
          point="org.eclipse.jdt.ui.javaElementFilters">
@@ -931,5 +947,19 @@
             id="org.jetbrains.kotlin.ui.scriptEnvironmentsFilter"
             name="Kotlin script environments">
       </filter>
+   </extension>
+   <extension
+       	point="org.eclipse.ui.actionSets">
+       <actionSet
+       	id="kotlin-eclipse-ui.compilation"
+       	visible="true"
+       	label="compilation">
+         	<action
+         		class="org.jetbrains.kotlin.ui.builder.CompileKotlinClassesAction"
+         		id="kotlin-eclipse-ui.compile"
+         		label="Compile Kotlin classes"
+         		menubarPath="project/additions">
+         </action>
+       </actionSet>
    </extension>
 </plugin>
