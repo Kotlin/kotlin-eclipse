@@ -5,14 +5,11 @@ import org.eclipse.core.resources.*
 import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Status
 import org.eclipse.core.runtime.jobs.Job
-import org.eclipse.jdt.core.JavaCore
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.model.*
-import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.utils.asFile
 import org.jetbrains.kotlin.scripting.resolve.ScriptContentLoader
 import org.jetbrains.kotlin.ui.editors.KotlinScriptEditor
-import kotlin.script.dependencies.Environment
 import kotlin.script.experimental.dependencies.DependenciesResolver
 import kotlin.script.experimental.dependencies.ScriptDependencies
 
@@ -39,7 +36,7 @@ internal fun tryUpdateScriptClasspath(file: IFile) {
 
     val environment = getEnvironment(file) as? KotlinScriptEnvironment ?: return
 
-    val dependenciesProvider = ServiceManager.getService(environment.project, DependenciesResolver::class.java)
+    val dependenciesProvider: DependenciesResolver? = ServiceManager.getService(environment.project, DependenciesResolver::class.java)
 
     runJob("Check script dependencies", Job.DECORATE, null, {
         val contents = ScriptContentLoader(environment.project).getScriptContents(
@@ -48,8 +45,8 @@ internal fun tryUpdateScriptClasspath(file: IFile) {
         )
 
         val scriptEnvironment = EclipseScriptDefinitionProvider.getEnvironment(file.asFile)
-        val newDependencies = dependenciesProvider.resolve(contents, scriptEnvironment)
-        StatusWithDependencies(Status.OK_STATUS, newDependencies.dependencies)
+        val newDependencies = dependenciesProvider?.resolve(contents, scriptEnvironment)
+        StatusWithDependencies(Status.OK_STATUS, newDependencies?.dependencies)
     }) { event ->
         val editor = findEditor(file)
         val statusWithDependencies = event.result
