@@ -59,7 +59,7 @@ class KotlinScriptLaunchConfigurationDelegate : AbstractJavaLaunchConfigurationD
 
             monitor.subTask("Building project...")
             val javaProject = JavaCore.create(scriptFile.project)
-            KotlinCompiler.INSTANCE.compileKotlinFiles(javaProject)
+            KotlinCompiler.compileKotlinFiles(javaProject)
 
             if (monitor.isCanceled) return
             monitor.worked(3)
