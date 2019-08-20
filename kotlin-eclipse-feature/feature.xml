@@ -2,7 +2,7 @@
 <feature
       id="org.jetbrains.kotlin.feature"
       label="Kotlin"
-      version="0.8.17.qualifier"
+      version="0.8.18.qualifier"
       provider-name="JetBrains">
 
    <description url="http://kotlinlang.org/">
