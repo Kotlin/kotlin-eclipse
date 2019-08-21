@@ -26,9 +26,12 @@ import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.graphics.Point
 import org.jetbrains.kotlin.core.resolve.AnalysisResultWithProvider
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.psiUtil.endOffset
+import org.jetbrains.kotlin.psi.psiUtil.startOffset
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 abstract class KotlinQuickAssistProposal(editor: KotlinEditor) : KotlinQuickAssist(editor), IJavaCompletionProposal {
@@ -73,6 +76,18 @@ abstract class KotlinQuickAssistProposal(editor: KotlinEditor) : KotlinQuickAssi
     override fun getContextInformation(): IContextInformation? = null
     
     override fun getRelevance(): Int = 0
+}
+
+fun IDocument.replace(element: PsiElement, text: String) = replaceBetween(element, element, text)
+
+fun IDocument.replaceBetween(startElement: PsiElement, endElement: PsiElement, text: String) {
+    val convertedStart = LineEndUtil.convertLfOffsetForMixedDocument(this, startElement.startOffset)
+    val convertedEnd = LineEndUtil.convertLfOffsetForMixedDocument(this, endElement.endOffset)
+    replace(
+        convertedStart,
+        convertedEnd - convertedStart,
+        text
+    )
 }
 
 fun getStartOffset(element: PsiElement, editor: KotlinEditor): Int {
