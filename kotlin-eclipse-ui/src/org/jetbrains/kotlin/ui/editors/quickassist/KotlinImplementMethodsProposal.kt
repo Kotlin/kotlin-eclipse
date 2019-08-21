@@ -80,7 +80,7 @@ public class KotlinImplementMethodsProposal(
         var body = classOrObject.getBody()
         val psiFactory = KtPsiFactory(classOrObject.getProject())
         if (body == null) {
-            val bodyText = "${psiFactory.createWhiteSpace().getText()}${psiFactory.createEmptyClassBody().getText()}"
+            val bodyText = "${psiFactory.createWhiteSpace().text}${psiFactory.createEmptyClassBody().text}"
             insertAfter(classOrObject, bodyText)
         } else {
             removeWhitespaceAfterLBrace(body, editor.document, editor)
@@ -110,7 +110,7 @@ public class KotlinImplementMethodsProposal(
             val sibling = lBrace.getNextSibling()
             val needNewLine = sibling.getNextSibling() is KtDeclaration
             if (sibling is PsiWhiteSpace && !needNewLine) {
-                document.replace(getStartOffset(sibling, editor), sibling.getTextLength(), "")
+                document.replace(sibling, "")
             }
         }
     }
