@@ -21,7 +21,10 @@ Import-Package: junit.framework;version="4.10.0",
  org.eclipse.jface.text,
  org.eclipse.ui.part,
  org.junit;version="4.10.0",
- org.junit.rules;version="4.10.0"
-Export-Package: org.jetbrains.kotlin.testframework.editor,
+ org.junit.rules;version="4.10.0",
+ org.junit.runners;version="4.10.0",
+ org.junit.runners.model;version="4.10.0"
+Export-Package: org.jetbrains.kotlin.testframework,
+ org.jetbrains.kotlin.testframework.editor,
  org.jetbrains.kotlin.testframework.utils
 Bundle-Vendor: JetBrains
