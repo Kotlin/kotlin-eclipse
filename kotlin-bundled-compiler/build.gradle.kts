@@ -11,8 +11,8 @@ val teamcityBaseUrl ="https://teamcity.jetbrains.com"
 val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea"
 
 // properties that might/should be modifiable
-val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "2485599"
-val ideCommonTcBuildId: String = project.findProperty("ideCommonTcBuildId") as String? ?: "2485586"
+val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "2491366"
+val ideCommonTcBuildId: String = project.findProperty("ideCommonTcBuildId") as String? ?: "2491297"
 val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.3.50"
 val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.2.2"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
