@@ -1,8 +1,11 @@
 package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
 import org.jetbrains.kotlin.testframework.editor.AfterSuffixPosition;
+import org.jetbrains.kotlin.testframework.utils.EndLineCheckingTestRunner;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(EndLineCheckingTestRunner.class)
 public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
 
     public KotlinIdeaFormatActionTest() {

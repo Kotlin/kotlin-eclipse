@@ -13,6 +13,7 @@ import java.io.File
 
 abstract class AbstractKotlinQuickAssistTestCase<Proposal : KotlinQuickAssistProposal>
     : KotlinProjectTestCase(), FileReaderHolder by FileReaderHolder() {
+
     @Before
     open fun configure() {
         configureProject()

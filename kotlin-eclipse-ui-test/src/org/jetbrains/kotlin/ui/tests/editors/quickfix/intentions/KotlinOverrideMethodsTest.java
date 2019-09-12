@@ -1,7 +1,10 @@
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.intentions;
 
+import org.jetbrains.kotlin.testframework.utils.EndLineCheckingTestRunner;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(EndLineCheckingTestRunner.class)
 public class KotlinOverrideMethodsTest extends KotlinOverrideMembersTestCase {
     @Test
     public void testEscapeIdentifiers() {

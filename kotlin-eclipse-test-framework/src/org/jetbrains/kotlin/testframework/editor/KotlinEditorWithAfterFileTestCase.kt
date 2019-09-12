@@ -16,8 +16,7 @@
  */
 package org.jetbrains.kotlin.testframework.editor
 
-import com.intellij.openapi.util.io.FileUtil
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorAutoTestCase.EditorSourceFileData
+import org.jetbrains.kotlin.testframework.utils.FileReaderHolder
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils
 import org.jetbrains.kotlin.testframework.utils.SourceFileData
 import java.io.File
@@ -26,7 +25,7 @@ import java.io.IOException
 
 abstract class KotlinEditorWithAfterFileTestCase(
     private val afterPosition: AfterSuffixPosition = AfterSuffixPosition.AFTER_NAME
-) : KotlinEditorAutoTestCase() {
+) : KotlinEditorAutoTestCase(), FileReaderHolder by FileReaderHolder() {
     protected lateinit var testEditor: TextEditorTest
         private set
 
@@ -44,11 +43,11 @@ abstract class KotlinEditorWithAfterFileTestCase(
                 testPath.length - extension.length
             ) + AFTER_FILE_EXTENSION + extension
 
-        performTest(fileText, KotlinTestUtils.getText(afterTestPath))
+        performTest(fileText, fileReader(afterTestPath))
     }
 
     override fun doMultiFileAutoTest(testFolder: File) {
-        val (files, target) = getTestFiles(testFolder)
+        val (files, target) = getTestFiles(testFolder, fileReader)
 
         if (loadFilesBeforeOpeningEditor) {
             loadFiles(files)
@@ -69,15 +68,15 @@ abstract class KotlinEditorWithAfterFileTestCase(
             loadDependencyFile(dependencyFile)
         }
 
-        performTest(fileText, KotlinTestUtils.getText(mainTestPath + AFTER_FILE_EXTENSION))
+        performTest(fileText, fileReader(mainTestPath + AFTER_FILE_EXTENSION))
     }
 
-    private fun loadFiles(files: Collection<EditorSourceFileData>) = files.forEach {
+    private fun loadFiles(files: Collection<SourceFileData>) = files.forEach {
         createSourceFile(it.packageName, it.fileName, it.content)
     }
 
     private fun loadEditor(mainTestPath: String): String {
-        val fileText = KotlinTestUtils.getText(mainTestPath)
+        val fileText = fileReader(mainTestPath)
         testEditor = configureEditor(
             KotlinTestUtils.getNameByPath(mainTestPath),
             fileText,
@@ -88,7 +87,7 @@ abstract class KotlinEditorWithAfterFileTestCase(
 
     private fun loadDependencyFile(dependencyFile: File) {
         try {
-            val dependencySourceFile = SourceFileData(dependencyFile)
+            val dependencySourceFile = SourceFileData(dependencyFile.name, fileReader(dependencyFile.absolutePath))
             val fileName = dependencySourceFile.fileName
             val dependencyFileName =
                 fileName.substring(0, fileName.indexOf(KotlinEditorAutoTestCase.FILE_DEPENDENCY_SUFFIX)) +
@@ -104,10 +103,13 @@ abstract class KotlinEditorWithAfterFileTestCase(
     }
 }
 
-private class WithAfterSourceFileData(file: File, val contentAfter: String) :
-    KotlinEditorAutoTestCase.EditorSourceFileData(file)
+private class WithAfterSourceFileData(file: File, content: String, val contentAfter: String) :
+    SourceFileData(file.name, content)
 
-private fun getTestFiles(testFolder: File): Pair<Collection<EditorSourceFileData>, WithAfterSourceFileData> {
+private fun getTestFiles(
+    testFolder: File,
+    fileReader: (String) -> String
+): Pair<Collection<SourceFileData>, WithAfterSourceFileData> {
     val (afterFiles, files) = testFolder.listFiles()
         ?.partition { it.name.endsWith(KotlinEditorAutoTestCase.AFTER_FILE_EXTENSION) }
         ?: throw AssertionError("$testFolder is not a directory")
@@ -121,11 +123,12 @@ private fun getTestFiles(testFolder: File): Pair<Collection<EditorSourceFileData
         ?: throw AssertionError("No target file found for \'$\' file")
 
     return Pair(
-        otherFiles.map(KotlinEditorAutoTestCase::EditorSourceFileData),
-        WithAfterSourceFileData(targetFile, FileUtil.loadFile(afterFile))
+        otherFiles.map { SourceFileData(it.name, fileReader(it.absolutePath)) },
+        WithAfterSourceFileData(targetFile, fileReader(targetFile.absolutePath), fileReader(afterFile.absolutePath))
     )
 }
 
 enum class AfterSuffixPosition {
     BEFORE_DOT, AFTER_NAME
 }
+

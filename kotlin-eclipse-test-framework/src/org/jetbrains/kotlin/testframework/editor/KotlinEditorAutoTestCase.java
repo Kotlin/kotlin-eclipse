@@ -16,20 +16,12 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.testframework.editor;
 
-import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
-import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
 import java.io.File;
 
 public abstract class KotlinEditorAutoTestCase extends KotlinProjectTestCase {
-    
-    protected static class EditorSourceFileData extends SourceFileData {
-        public EditorSourceFileData(File file) {
-            super(file.getName(), KotlinTestUtils.getText(file.getAbsolutePath()));
-        }
-    }
     
     @Rule
     public TestName name = new TestName();

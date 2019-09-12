@@ -1,8 +1,11 @@
 package org.jetbrains.kotlin.ui.tests.editors.quickfix.autoimport;
 
+import org.jetbrains.kotlin.testframework.utils.EndLineCheckingTestRunner;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(EndLineCheckingTestRunner.class)
 public class KotlinChangeModifiersQuickFixTest extends KotlinQuickFixTestCase {
     
     @Override
