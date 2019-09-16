@@ -16,15 +16,15 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.testframework.editor;
 
+import org.jetbrains.kotlin.testframework.utils.UntaggedTestName;
 import org.junit.Rule;
-import org.junit.rules.TestName;
 
 import java.io.File;
 
 public abstract class KotlinEditorAutoTestCase extends KotlinProjectTestCase {
     
     @Rule
-    public TestName name = new TestName();
+    public UntaggedTestName name = new UntaggedTestName();
     
     private static final String TEST_DATA_PATH = "testData";
     
