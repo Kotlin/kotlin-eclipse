@@ -1,11 +1,12 @@
 package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
+import org.jetbrains.kotlin.testframework.editor.AfterSuffixPosition;
 import org.junit.Test;
 
 public class KotlinIdeaFormatActionTest extends KotlinFormatActionTestCase {
-    @Override
-    protected AfterSuffixPosition getAfterPosition() {
-        return AfterSuffixPosition.BEFORE_DOT;
+
+    public KotlinIdeaFormatActionTest() {
+        super(AfterSuffixPosition.BEFORE_DOT);
     }
     
     @Override

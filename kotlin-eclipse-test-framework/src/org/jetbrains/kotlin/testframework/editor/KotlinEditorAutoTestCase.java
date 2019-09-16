@@ -16,16 +16,16 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.testframework.editor;
 
-import java.io.File;
-
 import org.jetbrains.kotlin.testframework.utils.KotlinTestUtils;
 import org.jetbrains.kotlin.testframework.utils.SourceFileData;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
+import java.io.File;
+
 public abstract class KotlinEditorAutoTestCase extends KotlinProjectTestCase {
     
-    protected abstract static class EditorSourceFileData extends SourceFileData {
+    protected static class EditorSourceFileData extends SourceFileData {
         public EditorSourceFileData(File file) {
             super(file.getName(), KotlinTestUtils.getText(file.getAbsolutePath()));
         }

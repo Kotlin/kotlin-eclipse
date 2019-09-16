@@ -1,13 +1,14 @@
 package org.jetbrains.kotlin.ui.tests.editors.formatter;
 
+import org.jetbrains.kotlin.testframework.editor.AfterSuffixPosition;
 import org.junit.Ignore;
 import org.junit.Test;
 
 @Ignore
 public class KotlinParameterListFormatTest extends KotlinFormatActionTestCase {
-    @Override
-    protected AfterSuffixPosition getAfterPosition() {
-        return AfterSuffixPosition.BEFORE_DOT;
+
+    public KotlinParameterListFormatTest() {
+        super(AfterSuffixPosition.BEFORE_DOT);
     }
 
     @Override
