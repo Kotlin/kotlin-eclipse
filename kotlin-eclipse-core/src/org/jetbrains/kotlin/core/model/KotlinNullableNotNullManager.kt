@@ -34,7 +34,7 @@ class KotlinNullableNotNullManager(project: Project) : NullableNotNullManager(pr
 
     override fun getInstrumentedNotNulls(): List<String> = emptyList()
 
-    override fun isJsr305Default(annotation: PsiAnnotation, placeTargetTypes: Array<out PsiAnnotation.TargetType>): NullabilityAnnotationInfo? = null
+//    override fun isJsr305Default(annotation: PsiAnnotation, placeTargetTypes: Array<out PsiAnnotation.TargetType>): NullabilityAnnotationInfo? = null
 
     override fun setNullables(vararg annotations: String) {
         _nullables.clear()

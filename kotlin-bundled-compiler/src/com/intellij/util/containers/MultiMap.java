@@ -278,7 +278,7 @@ public class MultiMap<K, V> implements Serializable {
       @NotNull
       @Override
       protected Collection<V> createCollection() {
-        return ContainerUtil.newLinkedHashSet();
+        return new LinkedHashSet<V>();
       }
 
       @NotNull

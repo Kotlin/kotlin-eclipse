@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-plugin-parts.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-jvm.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-common.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/kotlin-converter.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-compiler-impl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/annotations-13.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/ide-dependencies.jar"/>
@@ -10,8 +10,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/kotlin-ide-common.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/kotlin-formatter.jar"/>
 	<classpathentry kind="lib" path="lib/kotlin-script-runtime.jar"/>
 	<classpathentry kind="lib" path="lib/kotlin-stdlib.jar"/>
 	<classpathentry kind="con" path="org.jetbrains.kotlin.core.KOTLIN_CONTAINER"/>
