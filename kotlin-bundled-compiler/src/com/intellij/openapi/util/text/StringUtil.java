@@ -635,7 +635,7 @@ public class StringUtil extends StringUtilRt {
             buffer.append("\\").append(ch);
           }
           else if (escapeUnicode && !isPrintableUnicode(ch)) {
-            CharSequence hexCode = StringUtilRt.toUpperCase(Integer.toHexString(ch));
+            CharSequence hexCode = toUpperCase(Integer.toHexString(ch));
             buffer.append("\\u");
             int paddingCount = 4 - hexCode.length();
             while (paddingCount-- > 0) {
@@ -796,14 +796,14 @@ public class StringUtil extends StringUtilRt {
     if (escaped) buffer.append('\\');
   }
 
-  @NotNull
-  @Contract(pure = true)
-  public static String pluralize(@NotNull String word) {
-    String plural = Pluralizer.PLURALIZER.plural(word);
-    if (plural != null) return plural;
-    if (word.endsWith("s")) return Pluralizer.restoreCase(word, word + "es");
-    return Pluralizer.restoreCase(word, word + "s");
-  }
+//  @NotNull
+//  @Contract(pure = true)
+//  public static String pluralize(@NotNull String word) {
+//    String plural = Pluralizer.PLURALIZER.plural(word);
+//    if (plural != null) return plural;
+//    if (word.endsWith("s")) return Pluralizer.restoreCase(word, word + "es");
+//    return Pluralizer.restoreCase(word, word + "s");
+//  }
 
   @NotNull
   @Contract(pure = true)
@@ -852,7 +852,7 @@ public class StringUtil extends StringUtilRt {
   @Contract(pure = true)
   public static String capitalize(@NotNull String s) {
     if (s.isEmpty()) return s;
-    if (s.length() == 1) return StringUtilRt.toUpperCase(s).toString();
+    if (s.length() == 1) return toUpperCase(s).toString();
 
     // Optimization
     if (Character.isUpperCase(s.charAt(0))) return s;
@@ -1093,12 +1093,12 @@ public class StringUtil extends StringUtilRt {
     return index < 0 ? name : name.substring(0, index);
   }
 
-  @NotNull
-  @Contract(pure = true)
-  public static String pluralize(@NotNull String base, int count) {
-    if (count == 1) return base;
-    return pluralize(base);
-  }
+//  @NotNull
+//  @Contract(pure = true)
+//  public static String pluralize(@NotNull String base, int count) {
+//    if (count == 1) return base;
+//    return pluralize(base);
+//  }
 
   public static void repeatSymbol(@NotNull Appendable buffer, char symbol, int times) {
     assert times >= 0 : times;
@@ -3032,9 +3032,24 @@ public class StringUtil extends StringUtilRt {
     return StringUtilRt.toUpperCase(a);
   }
 
-  @Contract(value = "null -> null; !null -> !null", pure = true)
-  public static String toUpperCase(String a) {
-    return a == null ? null : StringUtilRt.toUpperCase(a).toString();
+    @Contract(value = "null -> null; !null -> !null", pure = true)
+    public static String toUpperCase(String a) {
+        if (a == null)
+            return null;
+        
+        StringBuilder answer = null;
+        for (int i = 0; i < a.length(); i++) {
+            char c = a.charAt(i);
+            char upCased = toUpperCase(c);
+            if (answer == null && upCased != c) {
+                answer = new StringBuilder(a.length());
+                answer.append(a.subSequence(0, i));
+            }
+            if (answer != null) {
+                answer.append(upCased);
+            }
+        }
+        return answer == null ? a : answer.toString();
   }
 
   @Contract(pure = true)
@@ -3330,4 +3345,5 @@ public class StringUtil extends StringUtilRt {
     }
     return true;
   }
+ 
 }

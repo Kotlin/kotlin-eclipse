@@ -79,12 +79,7 @@ public class KotlinDiagnosticsTest extends KotlinDiagnosticsTestCase {
     public void testBreakContinue() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/BreakContinue.kt");
     }
-    
-    @Test
-    public void testBreakContinueInWhen() throws Exception {
-        doTest("common_testData/compiler/diagnostics/tests/BreakContinueInWhen.kt");
-    }
-    
+
     @Test
     public void testBuilders() throws Exception {
         doTest("common_testData/compiler/diagnostics/tests/Builders.kt");

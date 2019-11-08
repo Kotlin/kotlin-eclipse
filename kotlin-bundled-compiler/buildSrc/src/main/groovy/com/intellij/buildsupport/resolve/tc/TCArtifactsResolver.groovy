@@ -47,6 +47,7 @@ abstract class TCArtifactsResolver {
             resolvedArtifactMap = lastSuccessfulBuild ? resolveFromLastSuccessfulBuild()
                     : resolveFromBuildId()
         }
+
         BuildArtifact resolvedTCArtifact = resolvedArtifactMap.get(tcArtifact)
 
         println "Downloading artifact: $resolvedTCArtifact.fullName"
@@ -60,7 +61,6 @@ abstract class TCArtifactsResolver {
                 .build(new BuildId(tcBuildId))
 
         println "Resolving TC build: $tcBuild"
-
         return resolveRequiredArtifacts(tcBuild)
     }
 

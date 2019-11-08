@@ -11,9 +11,8 @@ val teamcityBaseUrl ="https://teamcity.jetbrains.com"
 val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea"
 
 // properties that might/should be modifiable
-val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "2491366"
-val ideCommonTcBuildId: String = project.findProperty("ideCommonTcBuildId") as String? ?: "2491297"
-val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.3.50"
+val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "2622559"
+val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.3.60"
 val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.2.2"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
 val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "183.5429.1"
@@ -39,11 +38,6 @@ val tcArtifactsResolver = KotlinCompilerTCArtifactsResolver(teamcityBaseUrl,
         kotlinCompilerTcBuildId,
         kotlinCompilerVersion,
         kotlinIdeaCompatibleVersionMinor)
-
-val commonArtifactsResolver = CommonIDEArtifactsResolver(teamcityBaseUrl,
-        project.hasProperty("lastSuccessfulBuild"),
-        ideCommonTcBuildId,
-        kotlinCompilerVersion)
 
 val ideaArtifactsResolver = IntellijIdeaArtifactsResolver(ideaSdkUrl, ideaVersion)
 
@@ -147,18 +141,12 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
 
     from(zipTree("$libDir/kotlin-plugin.jar"))
     destinationDir = libDir
-    archiveName = "kotlin-converter.jar"
-    include("org/jetbrains/kotlin/j2k/**")
+    archiveName = "kotlin-plugin-parts.jar"
+    include("**")
+    exclude("com/intellij/util/**")
 
     doLast {
         file("$libDir/kotlin-plugin.jar").delete()
-    }
-}
-
-val downloadKotlinTCArtifacts by tasks.registering {
-    doLast {
-        commonArtifactsResolver.downloadTo(commonArtifactsResolver.KOTLIN_IDE_COMMON_JAR, file("$libDir/kotlin-ide-common.jar"))
-        commonArtifactsResolver.downloadTo(commonArtifactsResolver.KOTLIN_FORMATTER_JAR, file("$libDir/kotlin-formatter.jar"))
     }
 }
 
@@ -294,7 +282,6 @@ val downloadBundled by tasks.registering {
                 extractPackagesFromPlugin,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
-                downloadKotlinTCArtifacts,
                 downloadKotlinxLibraries)
     }
 
