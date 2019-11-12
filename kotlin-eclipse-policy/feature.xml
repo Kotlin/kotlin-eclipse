@@ -2,7 +2,7 @@
 <feature
       id="org.jetbrains.kotlin.policy"
       label="kotlin-eclipse-policy"
-      version="0.8.18.qualifier"
+      version="0.8.19.qualifier"
       provider-name="JetBrains">
 
    <copyright url="http://www.jetbrains.com/">
