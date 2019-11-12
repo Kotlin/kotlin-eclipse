@@ -8,12 +8,12 @@
     <relativePath>../pom.xml</relativePath>
     <groupId>kotlin.eclipse</groupId>
     <artifactId>kotlin.eclipse.plugin</artifactId>
-    <version>0.8.18-SNAPSHOT</version>
+    <version>0.8.19-SNAPSHOT</version>
   </parent>
 
   <artifactId>org.jetbrains.kotlin.p2updatesite</artifactId>
 	<groupId>kotlin.eclipse</groupId>
-	<version>0.8.18-SNAPSHOT</version>
+	<version>0.8.19-SNAPSHOT</version>
   <packaging>eclipse-repository</packaging>
 
 </project>
