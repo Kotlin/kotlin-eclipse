@@ -60,7 +60,7 @@
         <repository>
             <id>sonatype.oss.snapshots</id>
             <name>Sonatype OSS Snapshot Repository</name>
-            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -75,7 +75,7 @@
             </snapshots>
             <id>bintray-kotlin-kotlin-dev</id>
             <name>bintray</name>
-            <url>http://dl.bintray.com/kotlin/kotlin-dev</url>
+            <url>https://dl.bintray.com/kotlin/kotlin-dev</url>
         </repository>
     </repositories>
 
@@ -86,7 +86,7 @@
             </snapshots>
             <id>bintray-kotlin-kotlin-dev</id>
             <name>bintray-plugins</name>
-            <url>http://dl.bintray.com/kotlin/kotlin-dev</url>
+            <url>https://dl.bintray.com/kotlin/kotlin-dev</url>
        </pluginRepository>
 	
 		<pluginRepository>
@@ -236,7 +236,7 @@
 						<baselineReplace>none</baselineReplace>
 						<baselineRepositories>
 							<repository>
-								<url>http://download.eclipse.org/eclipse/updates/4.11</url>
+								<url>https://download.eclipse.org/eclipse/updates/4.11</url>
 							</repository>
 						</baselineRepositories>
 					</configuration>
