@@ -16,17 +16,18 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.jetbrains.kotlin.testframework.editor.AfterSuffixPosition;
 import org.junit.Test;
 
 public class KotlinBasicAutoIndentTest extends KotlinAutoIndentTestCase {
-    @Override
-    protected String getTestDataRelativePath() {
-        return "format/autoIndent";
+    
+    public KotlinBasicAutoIndentTest() {
+        super(AfterSuffixPosition.BEFORE_DOT);
     }
     
     @Override
-    protected AfterSuffixPosition getAfterPosition() {
-        return AfterSuffixPosition.BEFORE_DOT;
+    protected String getTestDataRelativePath() {
+        return "format/autoIndent";
     }
 	
 	@Test

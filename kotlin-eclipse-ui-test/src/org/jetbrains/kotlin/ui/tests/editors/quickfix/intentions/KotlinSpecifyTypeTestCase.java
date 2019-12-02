@@ -45,7 +45,7 @@ public abstract class KotlinSpecifyTypeTestCase extends AbstractKotlinQuickAssis
 	}
 	
 	protected void doTestWithBuildThreadJoin(String testPath) {
-		doTestFor(testPath, createProposal, true);
+		doTestFor(testPath, true, createProposal);
 	}
 	
 	@Override

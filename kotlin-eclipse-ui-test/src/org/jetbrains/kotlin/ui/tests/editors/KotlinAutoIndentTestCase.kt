@@ -1,17 +1,17 @@
 package org.jetbrains.kotlin.ui.tests.editors
 
-import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase
-import org.junit.Before
-import org.eclipse.jface.text.TextUtilities
 import org.eclipse.ui.editors.text.EditorsUI
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants
-import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
-import org.jetbrains.kotlin.ui.tests.editors.formatter.KotlinFormatActionTestCase
-import com.intellij.psi.codeStyle.CodeStyleSettings
+import org.jetbrains.kotlin.testframework.editor.AfterSuffixPosition
+import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase
 import org.jetbrains.kotlin.testframework.utils.CodeStyleConfigurator
+import org.jetbrains.kotlin.testframework.utils.EditorTestUtils
 import org.junit.After
+import org.junit.Before
 
-abstract class KotlinAutoIndentTestCase : KotlinEditorWithAfterFileTestCase() {
+abstract class KotlinAutoIndentTestCase(
+    afterSuffixPosition: AfterSuffixPosition = AfterSuffixPosition.AFTER_NAME
+) : KotlinEditorWithAfterFileTestCase(afterSuffixPosition) {
     @Before
     fun before() {
         configureProject()

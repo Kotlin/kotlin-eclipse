@@ -21,6 +21,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.testframework.editor.AfterSuffixPosition;
 import org.jetbrains.kotlin.testframework.editor.KotlinEditorWithAfterFileTestCase;
 import org.jetbrains.kotlin.testframework.utils.CodeStyleConfigurator;
 import org.jetbrains.kotlin.testframework.utils.EditorTestUtils;
@@ -29,6 +31,15 @@ import org.junit.Assert;
 import org.junit.Before;
 
 public abstract class KotlinFormatActionTestCase extends KotlinEditorWithAfterFileTestCase {
+
+    public KotlinFormatActionTestCase(@NotNull AfterSuffixPosition afterPosition) {
+        super(afterPosition);
+    }
+
+    public KotlinFormatActionTestCase() {
+        super();
+    }
+
     @Before
     public void before() {
         configureProject();

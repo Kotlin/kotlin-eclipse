@@ -1,17 +1,18 @@
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.jetbrains.kotlin.testframework.editor.AfterSuffixPosition;
 import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinAutoIndentTest extends KotlinAutoIndentTestCase {
-    @Override
-    protected String getTestDataRelativePath() {
-        return "../common_testData/ide/indentationOnNewline";
+    
+    public KotlinAutoIndentTest() {
+        super(AfterSuffixPosition.BEFORE_DOT);
     }
     
     @Override
-    protected AfterSuffixPosition getAfterPosition() {
-        return AfterSuffixPosition.BEFORE_DOT;
+    protected String getTestDataRelativePath() {
+        return "../common_testData/ide/indentationOnNewline";
     }
     
     @Test

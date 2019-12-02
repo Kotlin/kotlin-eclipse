@@ -11,7 +11,8 @@ Require-Bundle: org.jetbrains.kotlin.core,
  org.eclipse.ui.editors;bundle-version="3.8.0",
  org.eclipse.jface.text;bundle-version="3.8.1",
  org.jetbrains.kotlin.bundled-compiler,
- org.eclipse.jdt.ui
+ org.eclipse.jdt.ui,
+ org.hamcrest.core
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: junit.framework;version="4.10.0",
@@ -21,7 +22,11 @@ Import-Package: junit.framework;version="4.10.0",
  org.eclipse.jface.text,
  org.eclipse.ui.part,
  org.junit;version="4.10.0",
- org.junit.rules;version="4.10.0"
-Export-Package: org.jetbrains.kotlin.testframework.editor,
+ org.junit.rules;version="4.10.0",
+ org.junit.runner;version="4.10.0",
+ org.junit.runners;version="4.10.0",
+ org.junit.runners.model;version="4.10.0"
+Export-Package: org.jetbrains.kotlin.testframework,
+ org.jetbrains.kotlin.testframework.editor,
  org.jetbrains.kotlin.testframework.utils
 Bundle-Vendor: JetBrains

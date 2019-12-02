@@ -1,8 +1,11 @@
 package org.jetbrains.kotlin.ui.tests.refactoring.extract;
 
+import org.jetbrains.kotlin.testframework.utils.EndLineCheckingTestRunner;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(EndLineCheckingTestRunner.class)
 public class KotlinExtractVariableTest extends KotlinExtractVariableTestCase {
     @Test
     public void testIfCondition() {
