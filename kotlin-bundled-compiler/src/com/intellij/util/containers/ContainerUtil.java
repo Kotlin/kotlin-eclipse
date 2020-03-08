@@ -2887,18 +2887,18 @@ public class ContainerUtil extends ContainerUtilRt {
     return new WeakKeySoftValueHashMap<K, V>();
   }
 
-  @Contract(value = " -> new", pure = true)
-  @NotNull
-  public static <K,V> Map<K,V> createWeakKeyWeakValueMap() {
-    //noinspection deprecation
-    return new WeakKeyWeakValueHashMap<K, V>(true);
-  }
+  // @Contract(value = " -> new", pure = true)
+  // @NotNull
+  // public static <K,V> Map<K,V> createWeakKeyWeakValueMap() {
+  //   //noinspection deprecation
+  //   return new WeakKeyWeakValueHashMap<K, V>(true);
+  // }
 
-  @Contract(value = " -> new", pure = true)
-  @NotNull
-  public static <K,V> Map<K,V> createSoftKeySoftValueMap() {
-    return new SoftKeySoftValueHashMap<K, V>(true);
-  }
+  // @Contract(value = " -> new", pure = true)
+  // @NotNull
+  // public static <K,V> Map<K,V> createSoftKeySoftValueMap() {
+  //   return new SoftKeySoftValueHashMap<K, V>(true);
+  // }
 
   /**
    * Hard keys soft values hash map.

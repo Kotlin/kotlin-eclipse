@@ -75,6 +75,7 @@ import org.jetbrains.kotlin.scripting.configuration.ScriptingConfigurationKeys
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinition
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
 import org.jetbrains.kotlin.scripting.definitions.annotationsForSamWithReceivers
+import org.jetbrains.kotlin.scripting.resolve.KtFileScriptSource
 import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
@@ -117,7 +118,7 @@ class KotlinScriptEnvironment private constructor(
 ) : KotlinCommonEnvironment(disposable) {
 
     val definition: ScriptDefinition? = ScriptDefinitionProvider.getInstance(project)
-            ?.findDefinition(eclipseFile.asFile)
+            ?.findDefinition(KtFileScriptSource(KotlinPsiManager.getParsedFile(eclipseFile)))
 
     val definitionClasspath: Collection<File> = definition?.contextClassLoader?.let(::classpathFromClassloader).orEmpty()
 
@@ -150,7 +151,7 @@ class KotlinScriptEnvironment private constructor(
                 index,
                 emptyList(),
                 SingleJavaFileRootsIndex(singleJavaFileRoots),
-                configuration.getBoolean(JVMConfigurationKeys.USE_FAST_CLASS_FILES_READING))
+                configuration.getBoolean(JVMConfigurationKeys.USE_PSI_CLASS_FILES_READING))
 
         val finderFactory = CliVirtualFileFinderFactory(index)
         project.registerService(MetadataFinderFactory::class.java, finderFactory)
@@ -183,7 +184,8 @@ class KotlinScriptEnvironment private constructor(
         @JvmStatic
         fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
 
-        fun isScript(file: IFile): Boolean = EclipseScriptDefinitionProvider().isScript(file.asFile)
+        fun isScript(file: IFile): Boolean =
+            EclipseScriptDefinitionProvider().isScript(KtFileScriptSource(KotlinPsiManager.getParsedFile(file)))
 
         private fun checkIsScript(file: IFile) {
             if (!isScript(file)) {

@@ -11,12 +11,12 @@ val teamcityBaseUrl ="https://teamcity.jetbrains.com"
 val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea"
 
 // properties that might/should be modifiable
-val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "2627362"
-val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.3.60"
-val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.2.2"
+val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "2792503"
+val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.3.70"
+val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.3.1"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
-val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "183.5429.1"
-val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2018.3"
+val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "193.6494.35"
+val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2019.3"
 val ignoreSources: Boolean = project.hasProperty("ignoreSources")
 
 //directories
@@ -110,6 +110,7 @@ val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
             from(zipTree(locallyDownloadedCompilerFile))
 
             setIncludes(setOf("Kotlin/lib/kotlin-plugin.jar",
+                    "Kotlin/lib/ide-common.jar",
                     "Kotlin/kotlinc/lib/kotlin-compiler.jar",
                     "Kotlin/kotlinc/lib/kotlin-stdlib.jar",
                     "Kotlin/kotlinc/lib/kotlin-reflect.jar",
@@ -159,7 +160,7 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
         copy {
             from(zipTree(locallyDownloadedIntellijCoreFile))
 
-            setIncludes(setOf("intellij-core.jar"))
+            setIncludes(setOf("intellij-core.jar", "intellij-core-analysis.jar"))
 
             includeEmptyDirs = false
 

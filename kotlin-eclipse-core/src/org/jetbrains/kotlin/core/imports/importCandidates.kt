@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.core.imports
 
 import org.eclipse.jdt.core.search.TypeNameMatch
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.idea.imports.importableFqName
 
 sealed class ImportCandidate {

@@ -1,15 +1,20 @@
 package org.jetbrains.kotlin.core.model
 
+import org.eclipse.core.resources.IFile
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.script.ScriptTemplateContribution
 import org.jetbrains.kotlin.core.script.template.ProjectScriptTemplate
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.core.utils.asResource
 import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinition
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
+import org.jetbrains.kotlin.scripting.resolve.KtFileScriptSource
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.script.experimental.api.KotlinType
+import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.host.ScriptingHostConfiguration
 import kotlin.script.experimental.host.configurationDependencies
 import kotlin.script.experimental.host.getScriptingClass
@@ -19,14 +24,14 @@ import kotlin.script.experimental.jvm.JvmGetScriptingClass
 private const val EXTENSION_POINT_ID = "org.jetbrains.kotlin.core.scriptTemplateContribution"
 
 class EclipseScriptDefinitionProvider : ScriptDefinitionProvider {
-    override fun findDefinition(file: File): ScriptDefinition? =
-        scriptDefinitions.first { it.isScript(file) }
-
     override fun getDefaultDefinition() =
         scriptDefinitions.first { it.baseClassType == KotlinType(ProjectScriptTemplate::class) }
 
+    override fun findDefinition(script: SourceCode): ScriptDefinition? =
+        scriptDefinitions.first { it.isScript(script) }
+
     override fun findScriptDefinition(fileName: String): KotlinScriptDefinition? =
-        findDefinition(File(fileName))?.legacyDefinition
+        scriptDefinitions.map { it.legacyDefinition }.first { it.isScript(fileName) }
 
     override fun getDefaultScriptDefinition() =
         getDefaultDefinition().legacyDefinition
@@ -34,8 +39,8 @@ class EclipseScriptDefinitionProvider : ScriptDefinitionProvider {
     override fun getKnownFilenameExtensions(): Sequence<String> =
         scriptDefinitions.map { it.fileExtension }
 
-    override fun isScript(file: File) =
-        scriptDefinitions.any { it.isScript(file) }
+    override fun isScript(script: SourceCode) =
+        scriptDefinitions.any { it.isScript(script) }
 
     companion object {
         private val contributions: List<WrappedContribution> by lazy {
@@ -49,9 +54,14 @@ class EclipseScriptDefinitionProvider : ScriptDefinitionProvider {
             get() = contributions.asSequence().map { it.definition }
 
         fun getEnvironment(scriptFile: File) =
-            contributions.find { it.definition.isScript(scriptFile) }
-                ?.contribution?.scriptEnvironment(scriptFile)
-                ?: emptyMap()
+            scriptFile.asResource
+                ?.let { KotlinPsiManager.getKotlinParsedFile(it) }
+                ?.let { KtFileScriptSource(it) }
+                ?.let { source ->
+                    contributions.find { it.definition.isScript(source) }
+                        ?.contribution?.scriptEnvironment(scriptFile)
+                        ?: emptyMap()
+                }
     }
 }
 

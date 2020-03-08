@@ -86,7 +86,7 @@ object KotlinLightClassGeneration {
 					}
 			}).build()
 
-        KotlinCodegenFacade.compileCorrectFiles(state) { _, _ -> Unit }
+        KotlinCodegenFacade.compileCorrectFiles(state)
 
         return state
     }
