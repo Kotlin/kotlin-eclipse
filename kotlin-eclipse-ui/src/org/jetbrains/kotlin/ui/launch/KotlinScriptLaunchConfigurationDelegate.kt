@@ -147,9 +147,11 @@ class KotlinScriptLaunchConfigurationDelegate : AbstractJavaLaunchConfigurationD
                 }
 
             val formattedEnvironment = EclipseScriptDefinitionProvider.getEnvironment(scriptFile.asFile)
-                .entries
-                .joinToString(separator = ",") { (k, v) -> "$k=$v" }
-            add("-Xscript-resolver-environment=$formattedEnvironment")
+                ?.entries
+                ?.joinToString(separator = ",") { (k, v) -> "$k=$v" }
+            if (formattedEnvironment != null) {
+                add("-Xscript-resolver-environment=$formattedEnvironment")
+            }
 
             addAll(programArguments)
         }

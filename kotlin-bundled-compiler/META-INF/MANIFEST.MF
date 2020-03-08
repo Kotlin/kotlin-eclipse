@@ -7,6 +7,8 @@ Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
  lib/kotlin-compiler.jar,
+ lib/intellij-core-analysis.jar,
+ lib/ide-common.jar,
  lib/kotlin-stdlib.jar,
  lib/kotlin-plugin-parts.jar,
  lib/kotlin-script-runtime.jar,

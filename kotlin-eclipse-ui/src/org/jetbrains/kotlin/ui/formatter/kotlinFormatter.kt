@@ -76,7 +76,7 @@ private fun formatRange(
 	val formattingModel = buildModel(containingFile, rootBlock, settings, document, false)
 
 	val ranges = FormatTextRanges(range, true)
-	FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges, false)
+	FormatterImpl().format(formattingModel, settings, settings.indentOptions, ranges)
 }
 
 fun adjustIndent(containingFile: KtFile, rootBlock: Block,

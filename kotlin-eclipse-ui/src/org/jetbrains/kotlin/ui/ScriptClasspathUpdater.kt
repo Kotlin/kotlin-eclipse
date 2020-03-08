@@ -44,7 +44,7 @@ internal fun tryUpdateScriptClasspath(file: IFile) {
             environment.getVirtualFile(file.location)!!
         )
 
-        val scriptEnvironment = EclipseScriptDefinitionProvider.getEnvironment(file.asFile)
+        val scriptEnvironment = EclipseScriptDefinitionProvider.getEnvironment(file.asFile).orEmpty()
         val newDependencies = dependenciesProvider?.resolve(contents, scriptEnvironment)
         StatusWithDependencies(Status.OK_STATUS, newDependencies?.dependencies)
     }) { event ->

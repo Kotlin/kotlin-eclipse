@@ -224,7 +224,6 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
 }
 
 private fun createJavaCoreApplicationEnvironment(disposable: Disposable): JavaCoreApplicationEnvironment {
-    Extensions.cleanRootArea(disposable)
     registerAppExtensionPoints()
 
     return JavaCoreApplicationEnvironment(disposable).apply {
