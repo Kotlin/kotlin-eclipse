@@ -52,7 +52,7 @@ class CachedEnvironment<T, E : KotlinCommonEnvironment> {
         environmentCache.remove(resource)?.also {
             ideaProjectToEclipseResource.remove(it.project)
 
-            Disposer.dispose(it.javaApplicationEnvironment.parentDisposable)
+            Disposer.dispose(it.kotlinCoreApplicationEnvironment.parentDisposable)
             ZipHandler.clearFileAccessorCache()
         }
     }
