@@ -184,8 +184,7 @@ class KotlinScriptEnvironment private constructor(
         @JvmStatic
         fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
 
-        fun isScript(file: IFile): Boolean =
-            EclipseScriptDefinitionProvider().isScript(KtFileScriptSource(KotlinPsiManager.getParsedFile(file)))
+        fun isScript(file: IFile): Boolean = file.fileExtension == "kts"
 
         private fun checkIsScript(file: IFile) {
             if (!isScript(file)) {
