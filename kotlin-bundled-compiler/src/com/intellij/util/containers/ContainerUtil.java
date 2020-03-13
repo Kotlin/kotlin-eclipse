@@ -2912,6 +2912,13 @@ public class ContainerUtil extends ContainerUtilRt {
     return new SoftValueHashMap<K, V>(ContainerUtil.<K>canonicalStrategy());
   }
 
+  @NotNull
+  @Contract(value = " -> new", pure = true)
+  public static <K,V> ConcurrentMap<K,V> createConcurrentSoftKeySoftValueMap() {
+    return createConcurrentSoftKeySoftValueMap(100, 0.75f, Runtime.getRuntime().availableProcessors(), canonicalStrategy());
+  }
+
+
   /**
    * Hard keys weak values hash map.
    * Null keys are NOT allowed
@@ -2984,5 +2991,24 @@ public class ContainerUtil extends ContainerUtilRt {
   public static <T> ObjectIntMap<T> createWeakKeyIntValueMap() {
     return new WeakKeyIntValueHashMap<T>();
   }
-}
 
+
+  /**
+   * Create an immutable copy of the {@code list}.
+   * Modifications of the {@code list} have no effect on the returned copy.
+   */
+  @SuppressWarnings("unchecked")
+  @Contract(value = "_ -> new", pure = true)
+  @NotNull
+  public static <T> List<T> freeze(@NotNull List<? extends T> list) {
+    if (list.isEmpty()) {
+      return Collections.emptyList();
+    }
+    else if (list.size() == 1) {
+      return immutableSingletonList(list.get(0));
+    }
+    else {
+      return immutableList((T[])list.toArray());
+    }
+  }
+}

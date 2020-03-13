@@ -193,7 +193,7 @@
 					<artifactId>tycho-surefire-plugin</artifactId>
 					<version>${tycho.version}</version>
 					<configuration>
-						<testFailureIgnore>true</testFailureIgnore>
+              <testFailureIgnore>true</testFailureIgnore> 
 					</configuration>
 				</plugin>
 				<plugin>
