@@ -81,7 +81,7 @@ private class ScriptsFilesStorage : PsiFilesStorage {
         return getPsiFile(file)
     }
 
-    override fun isApplicable(file: IFile): Boolean = KotlinScriptEnvironment.isScript(file)
+    override fun isApplicable(file: IFile): Boolean = file.fileExtension == "kts"
     
     override fun removeFile(file: IFile) {
         cachedKtFiles.remove(file)
