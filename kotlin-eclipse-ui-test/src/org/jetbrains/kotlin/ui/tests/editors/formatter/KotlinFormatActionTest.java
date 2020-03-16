@@ -122,6 +122,7 @@ public class KotlinFormatActionTest extends KotlinFormatActionTestCase {
     }
     
     @Test
+    @Ignore
     public void formatScriptFile() {
         doAutoTest();
     }

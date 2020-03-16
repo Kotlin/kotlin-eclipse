@@ -24,6 +24,8 @@ import com.intellij.codeInsight.runner.JavaMainMethodProvider
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.core.CoreJavaFileManager
 import com.intellij.core.JavaCoreProjectEnvironment
+import com.intellij.formatting.Formatter
+import com.intellij.formatting.FormatterImpl
 import com.intellij.formatting.KotlinLanguageCodeStyleSettingsProvider
 import com.intellij.formatting.KotlinSettingsProvider
 import com.intellij.lang.MetaLanguage
@@ -245,6 +247,7 @@ private fun createKotlinCoreApplicationEnvironment(disposable: Disposable): Kotl
         registerFileType(KotlinFileType.INSTANCE, KotlinParserDefinition.STD_SCRIPT_SUFFIX)
         registerParserDefinition(KotlinParserDefinition())
 
+        application.registerService(Formatter::class.java, FormatterImpl())
         application.registerService(KotlinBinaryClassCache::class.java, KotlinBinaryClassCache())
         application.registerService(ScriptDefinitionProvider::class.java, EclipseScriptDefinitionProvider())
     }

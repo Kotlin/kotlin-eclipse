@@ -172,6 +172,7 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
     val locallyDownloadedIdeaZipFile by extra { file("$downloadDir/ideaIC.zip") }
     val chosenJars by extra { setOf("openapi",
+            "platform-util-ui",
             "util",
             "idea",
             "trove4j",

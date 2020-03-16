@@ -271,6 +271,7 @@ Export-Package:
  org.jetbrains.kotlin.idea.formatter,
  org.jetbrains.kotlin.idea.imports,
  org.jetbrains.kotlin.idea.kdoc,
+ org.jetbrains.kotlin.idea.resolve,
  org.jetbrains.kotlin.idea.util,
  org.jetbrains.kotlin.incremental,
  org.jetbrains.kotlin.incremental.components,
