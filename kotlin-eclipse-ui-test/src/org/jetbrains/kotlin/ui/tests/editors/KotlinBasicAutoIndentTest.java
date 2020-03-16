@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.tests.editors;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class KotlinBasicAutoIndentTest extends KotlinAutoIndentTestCase {
@@ -140,6 +141,7 @@ public class KotlinBasicAutoIndentTest extends KotlinAutoIndentTestCase {
 	    doAutoTest();
 	}
 	
+	@Ignore
 	@Test
 	public void afterFunCallInScript() {
 	    doAutoTest();
