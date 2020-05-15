@@ -11,6 +11,10 @@ common_testData
 kotlin-eclipse-ui-test/lib
 kotlin-eclipse-gradle-model/lib
 target
+.settings
+.project
+.classpath
 
 *.iml
 *.orig
+/kotlin-bundled-compiler/lib
