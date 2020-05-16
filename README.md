@@ -1,6 +1,8 @@
 Enhanced Kotlin for Eclipse
 ==============
 
+This plugin based on [JetBrains Kotlin plugin](https://github.com/JetBrains/kotlin-eclipse) and contains some enhancements.
+
 Update sites description
 
 Update-site URL | Description
