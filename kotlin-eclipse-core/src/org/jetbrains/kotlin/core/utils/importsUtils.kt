@@ -28,7 +28,6 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.ImportPath
 import java.util.Comparator
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
-import org.jetbrains.kotlin.idea.core.formatter.KotlinPackageEntryTable
 import org.jetbrains.kotlin.idea.util.ActionRunningMode
 
 class KotlinImportInserterHelper : ImportInsertHelper() {
