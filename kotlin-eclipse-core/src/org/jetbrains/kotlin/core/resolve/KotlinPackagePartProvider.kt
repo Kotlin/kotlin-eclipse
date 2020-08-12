@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.metadata.jvm.deserialization.PackageParts
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
 import org.jetbrains.kotlin.utils.SmartList
+import org.jetbrains.kotlin.serialization.deserialization.ClassData
 import java.io.EOFException
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
@@ -66,6 +67,9 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
         }
         return result.toList()
     }
+
+    override fun getAllOptionalAnnotationClasses(): List<ClassData> =
+            emptyList()
 
     fun findMetadataPackageParts(packageFqName: String): List<String> =
             getPackageParts(packageFqName).values.flatMap(PackageParts::metadataParts).distinct()
