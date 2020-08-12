@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.checkers.diagnostics.TextDiagnostic;
 import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory0;
 import org.jetbrains.kotlin.checkers.diagnostics.factories.SyntaxErrorDiagnosticFactory;
 import org.jetbrains.kotlin.checkers.utils.CheckerTestUtil;
+import org.jetbrains.kotlin.checkers.utils.DiagnosticsRenderingConfiguration;
 import org.jetbrains.kotlin.config.ApiVersion;
 import org.jetbrains.kotlin.config.LanguageVersion;
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
@@ -479,8 +480,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                                     jetFile.getOriginalElement(),
                                     markDynamicCalls,
                                     dynamicCallDescriptors,
-                    		        false,
-                                    new LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE),
+                                    new DiagnosticsRenderingConfiguration("JVM", false, new LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE)),
                                     null,
                                     null,
                                     null),
