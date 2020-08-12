@@ -469,7 +469,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                                     jetFile.getOriginalElement(),
                                     markDynamicCalls,
                                     dynamicCallDescriptors,
-                                    new DiagnosticsRenderingConfiguration("JVM", false, new LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE)),
+                                    new DiagnosticsRenderingConfiguration("JVM", true, new LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE)),
                                     null,
                                     null,
                                     null),
