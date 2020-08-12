@@ -200,8 +200,10 @@ object KotlinCompiler {
         ) {
             hasErrors == hasErrors || severity.isError
             severities.add(severity)
-            val messageLocation = CompilerMessageLocation.create(location!!.path, location.line, location.column, location.lineContent)
-            compilerOutput.add(severity, message, messageLocation)
+            if (location != null) {
+                val messageLocation = CompilerMessageLocation.create(location.path, location.line, location.column, location.lineContent)
+                compilerOutput.add(severity, message, messageLocation)
+            }
         }
 
         override fun hasErrors(): Boolean = hasErrors
