@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall;
+import org.jetbrains.kotlin.resolve.calls.tower.NewResolvedCallImpl;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 import org.jetbrains.kotlin.testframework.editor.KotlinProjectTestCase;
 import org.junit.Assert;
@@ -205,7 +206,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     DiagnosticUtils.getLineAndColumnInPsiFile(element.getContainingFile(), element.getTextRange());
 
             TestCase.assertTrue("Resolved call for '" + element.getText() + "'" + lineAndColumn + " is not completed",
-                       ((MutableResolvedCall<?>) resolvedCall).isCompleted());
+                       ((NewResolvedCallImpl<?>) resolvedCall).isCompleted());
         }
 
         checkResolvedCallsInDiagnostics(bindingContext);
