@@ -45,7 +45,7 @@
 					
 					<frameworkExtensions>
 			            <frameworkExtension>
-			              <groupId>p2.osgi.bundle</groupId>
+			              <groupId>org.eclipse.platform</groupId>
 			              <artifactId>org.eclipse.equinox.weaving.hook</artifactId>
 			              <version>${weaving-hook.version}</version>
 			            </frameworkExtension>

@@ -26,19 +26,19 @@
 		<tycho.version>1.7.0</tycho.version>
 		<tycho-extras.version>1.7.0</tycho-extras.version>
 
-		<eclipse-repo.url>http://download.eclipse.org/releases/2020-03</eclipse-repo.url>
+		<eclipse-repo.url>http://download.eclipse.org/releases/2020-12</eclipse-repo.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/48/dev/update</ajdt-eclipse-repo.url>
 		
 		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
-		<kotlin.version>1.4.0-rc-315</kotlin.version>
+		<kotlin.version>1.4.0-release-336</kotlin.version>
 
 		<aspectj.version>1.9.5</aspectj.version>
 		<aspectj.plugin.version>1.11</aspectj.plugin.version>
 
-		<weaving-hook.version>1.2.600</weaving-hook.version>
+		<weaving-hook.version>1.2.700</weaving-hook.version>
 	</properties>
 
 	<repositories>
@@ -236,7 +236,7 @@
 						<baselineReplace>none</baselineReplace>
 						<baselineRepositories>
 							<repository>
-								<url>https://download.eclipse.org/eclipse/updates/4.15</url>
+								<url>https://download.eclipse.org/eclipse/updates/4.18</url>
 							</repository>
 						</baselineRepositories>
 					</configuration>
