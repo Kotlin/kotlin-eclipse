@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-ui-test
 Bundle-SymbolicName: org.jetbrains.kotlin.ui.tests;singleton:=true
-Bundle-Version: 0.8.20.qualifier
+Bundle-Version: 0.8.21.qualifier
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,

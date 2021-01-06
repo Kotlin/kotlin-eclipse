@@ -80,4 +80,6 @@ class EclipseOptimizedJavaClass(val eclipseClass: IType) : JavaClass {
     
     override val visibility: Visibility
         get() = throw UnsupportedOperationException()
+
+    override fun hasDefaultConstructor() = throw UnsupportedOperationException()
 }

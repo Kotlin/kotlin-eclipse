@@ -26,6 +26,7 @@ import org.jetbrains.kotlin.checkers.diagnostics.TextDiagnostic;
 import org.jetbrains.kotlin.checkers.diagnostics.factories.DebugInfoDiagnosticFactory0;
 import org.jetbrains.kotlin.checkers.diagnostics.factories.SyntaxErrorDiagnosticFactory;
 import org.jetbrains.kotlin.checkers.utils.CheckerTestUtil;
+import org.jetbrains.kotlin.checkers.utils.DiagnosticsRenderingConfiguration;
 import org.jetbrains.kotlin.config.ApiVersion;
 import org.jetbrains.kotlin.config.LanguageVersion;
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
@@ -196,17 +197,6 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         }
 
         Map<Call,ResolvedCall<?>> resolvedCallsEntries = bindingContext.getSliceContents(BindingContext.RESOLVED_CALL);
-        for (Entry<Call, ResolvedCall<?>> entry : resolvedCallsEntries.entrySet()) {
-            KtElement element = entry.getKey().getCallElement();
-            ResolvedCall<?> resolvedCall = entry.getValue();
-
-            LineAndColumn lineAndColumn =
-                    DiagnosticUtils.getLineAndColumnInPsiFile(element.getContainingFile(), element.getTextRange());
-
-            TestCase.assertTrue("Resolved call for '" + element.getText() + "'" + lineAndColumn + " is not completed",
-                       ((MutableResolvedCall<?>) resolvedCall).isCompleted());
-        }
-
         checkResolvedCallsInDiagnostics(bindingContext);
     }
     
@@ -479,8 +469,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                                     jetFile.getOriginalElement(),
                                     markDynamicCalls,
                                     dynamicCallDescriptors,
-                    		        false,
-                                    new LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE),
+                                    new DiagnosticsRenderingConfiguration(null, false, new LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE)),
                                     null,
                                     null,
                                     null),

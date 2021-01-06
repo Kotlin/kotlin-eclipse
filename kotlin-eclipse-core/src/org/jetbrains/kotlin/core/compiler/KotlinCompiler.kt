@@ -4,6 +4,7 @@ import com.intellij.openapi.util.Disposer
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity.ERROR
@@ -195,11 +196,14 @@ object KotlinCompiler {
         override fun report(
             severity: CompilerMessageSeverity,
             message: String,
-            location: CompilerMessageLocation?
+            location: CompilerMessageSourceLocation?
         ) {
             hasErrors == hasErrors || severity.isError
             severities.add(severity)
-            compilerOutput.add(severity, message, location)
+            if (location != null) {
+                val messageLocation = CompilerMessageLocation.create(location.path, location.line, location.column, location.lineContent)
+                compilerOutput.add(severity, message, messageLocation)
+            }
         }
 
         override fun hasErrors(): Boolean = hasErrors

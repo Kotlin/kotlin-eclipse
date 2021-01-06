@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.diagnostics.KotlinSuppressCache
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
+import org.jetbrains.kotlin.analyzer.ResolverForProject
 
 class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheService {
     override fun getResolutionFacade(elements: List<KtElement>, platform: TargetPlatform): ResolutionFacade {
@@ -107,6 +108,10 @@ class KotlinSimpleResolutionFacade(
     }
     
     override fun <T : Any> getIdeService(serviceClass: Class<T>): T {
+        throw UnsupportedOperationException()
+    }
+
+    override fun getResolverForProject(): ResolverForProject<out ModuleInfo> {
         throw UnsupportedOperationException()
     }
 }

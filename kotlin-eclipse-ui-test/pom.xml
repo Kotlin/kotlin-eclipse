@@ -8,7 +8,7 @@
 		<relativePath>../pom.xml</relativePath>
 		<groupId>kotlin.eclipse</groupId>
 		<artifactId>kotlin.eclipse.plugin</artifactId>
-		<version>0.8.20-SNAPSHOT</version>
+		<version>0.8.21-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>org.jetbrains.kotlin.ui.tests</artifactId>
@@ -34,7 +34,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<useUIHarness>true</useUIHarness>
-					<argLine>-Xmx1024m -XX:MaxPermSize=256m ${os-jvm-flags}</argLine>
+					<argLine>-Xmx1424m -XX:MaxPermSize=256m ${os-jvm-flags}</argLine>
 					<dependencies>
 						<dependency>
 							<type>eclipse-feature</type>

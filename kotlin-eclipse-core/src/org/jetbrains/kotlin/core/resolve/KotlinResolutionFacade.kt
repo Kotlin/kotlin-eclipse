@@ -30,6 +30,8 @@ import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
+import org.jetbrains.kotlin.analyzer.ModuleInfo
+import org.jetbrains.kotlin.analyzer.ResolverForProject
 
 public class KotlinResolutionFacade(
         val eclipseFile: IFile, 
@@ -68,6 +70,10 @@ public class KotlinResolutionFacade(
     }
     
     override fun <T : Any> getIdeService(serviceClass: Class<T>): T {
+        throw UnsupportedOperationException()
+    }
+
+    override fun getResolverForProject(): ResolverForProject<out ModuleInfo> {
         throw UnsupportedOperationException()
     }
 }

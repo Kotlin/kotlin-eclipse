@@ -94,4 +94,6 @@ public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier
             else
                 null
         }
+
+    override fun hasDefaultConstructor() = !isInterface && constructors.isEmpty()
 }
