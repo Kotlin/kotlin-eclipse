@@ -136,7 +136,8 @@ class EclipseVirtualFileFinder(
 class EclipseVirtualFileFinderFactory(private val project: IJavaProject) : VirtualFileFinderFactory {
 
 	override fun create(_project: Project, module: ModuleDescriptor) =
-        VirtualFileFinderFactory.getInstance(_project).create(_project, module)
+        EclipseVirtualFileFinder(project, GlobalSearchScope.EMPTY_SCOPE)
+    //    VirtualFileFinderFactory.getInstance(_project).create(_project, module)
 
     override fun create(scope: GlobalSearchScope): VirtualFileFinder = EclipseVirtualFileFinder(project, scope)
 }
