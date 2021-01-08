@@ -33,7 +33,7 @@
 		
 		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
-		<kotlin.version>1.4.0-release-336</kotlin.version>
+		<kotlin.version>1.4.0-release-329</kotlin.version>
 
 		<aspectj.version>1.9.5</aspectj.version>
 		<aspectj.plugin.version>1.11</aspectj.plugin.version>
