@@ -33,7 +33,7 @@
 		
 		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
-		<kotlin.version>1.4.0-rc-315</kotlin.version>
+		<kotlin.version>1.4.10</kotlin.version>
 
 		<aspectj.version>1.8.7</aspectj.version>
 		<aspectj.plugin.version>1.8</aspectj.plugin.version>
@@ -67,29 +67,11 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-      </repository>
-        
-        <repository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>bintray-kotlin-kotlin-dev</id>
-            <name>bintray</name>
-            <url>https://dl.bintray.com/kotlin/kotlin-dev</url>
         </repository>
     </repositories>
 
 	<pluginRepositories>
 	   <pluginRepository>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <id>bintray-kotlin-kotlin-dev</id>
-            <name>bintray-plugins</name>
-            <url>https://dl.bintray.com/kotlin/kotlin-dev</url>
-       </pluginRepository>
-	
-		<pluginRepository>
 			<id>sonatype-nexus-staging</id>
 			<name>Sonatype OSS Snapshot Repository</name>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
