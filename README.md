@@ -7,7 +7,8 @@ Update sites description
 
 Update-site URL | Description
 ----------------|------------
-https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2021-03/ | Last version Kotlin for Eclipse 2021-01
+https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2021-06/ | Last version Kotlin for Eclipse 2021-06
+https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2021-03/ | Last version Kotlin for Eclipse 2021-03
 https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2020-12/ | Last version Kotlin for Eclipse 2020-12
 https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2020-03/ | Last version Kotlin for Eclipse 2020-03
 https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/versions/0.8.20/ | Version 0.8.20 Kotlin for Eclipse 2020-03
