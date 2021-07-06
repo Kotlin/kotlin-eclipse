@@ -74,4 +74,13 @@ class KotlinNullableNotNullManager(project: Project) : NullableNotNullManager(pr
     }
 
     override fun isNullable(owner: PsiModifierListOwner, checkBases: Boolean) = !isNotNull(owner, checkBases)
+
+    fun getNullityDefault(
+        var1: PsiModifierListOwner,
+        var2: Array<out PsiAnnotation.TargetType>,
+        var3: PsiModifierListOwner,
+        var4: Boolean
+    ): NullabilityAnnotationInfo? {
+        return null
+    }
 }
