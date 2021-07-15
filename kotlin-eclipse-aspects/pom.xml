@@ -28,25 +28,9 @@
 			</plugin>
 			<plugin>
 				<!-- compile the aspect files -->
-				<groupId>com.github.m50d</groupId>
+				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>process-sources</phase>
-						<id>compile</id>
-						<configuration>
-							<source>1.8</source>
-							<target>1.8</target>
-							<complianceLevel>1.8</complianceLevel>
-							<aspectDirectory>src</aspectDirectory>
-							<Xlint>ignore</Xlint>
-							<deprecation>true</deprecation>
-						</configuration>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-					</execution>
-				</executions>
+				<version>${aspectj.plugin.version}</version>
 			</plugin>
 		</plugins>
 	</build>
