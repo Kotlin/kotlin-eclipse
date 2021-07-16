@@ -68,7 +68,75 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+
+		<!--TODO: rename-->
+		<repository>
+			<id>JetBrains-space</id>
+			<url>https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide</url>
+		</repository>
+		<repository>
+			<id>JetBrains-space2</id>
+			<url>https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies</url>
+		</repository>
+		<repository>
+			<id>JetBrains-space3</id>
+			<url>https://cache-redirector.jetbrains.com/intellij-dependencies</url>
+		</repository>
+		<repository>
+			<id>Maven-central</id>
+			<url>https://repo1.maven.org/maven2/</url>
+		</repository>
     </repositories>
+
+	<dependencies>
+		<!--LOCAL-->
+<!--		<dependency>-->
+<!--			<groupId>com.sample</groupId>-->
+<!--			<artifactId>sample</artifactId>-->
+<!--			<version>1.0</version>-->
+<!--			<scope>system</scope>-->
+<!--			<systemPath>${project.basedir}/src/main/resources/intellij-core.jar</systemPath>-->
+<!--		</dependency>-->
+
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-stdlib</artifactId>
+			<version>1.5.20</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-compiler-for-ide</artifactId>
+			<version>1.5.10-release-894</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-compiler-cli-for-ide</artifactId>
+			<version>1.5.10-release-894</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.intellij.deps</groupId>
+			<artifactId>asm-all</artifactId>
+			<version>9.1</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>common</artifactId>
+			<version>203-1.5.10-release-891-IJ7717.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>formatter</artifactId>
+			<version>203-1.5.10-release-891-IJ7717.8</version>
+		</dependency>
+		<dependency>
+			<groupId>com.jetbrains.intellij.idea</groupId>
+			<artifactId>intellij-core</artifactId>
+			<version>203-1.5.10-release-891-IJ7717.8</version>
+		</dependency>
+	</dependencies>
 
 	<pluginRepositories>
 	   <pluginRepository>
