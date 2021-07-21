@@ -13,7 +13,7 @@
 
 	<artifactId>org.jetbrains.kotlin.bundled-compiler</artifactId>
 	<packaging>eclipse-plugin</packaging>
-	
+
 	<build>
         <sourceDirectory>src</sourceDirectory>
 

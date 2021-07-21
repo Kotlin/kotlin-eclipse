@@ -69,17 +69,20 @@
             </snapshots>
         </repository>
 
-		<!--TODO: rename-->
 		<repository>
-			<id>JetBrains-space</id>
+			<id>Intellij-repository</id>
+			<url>https://www.jetbrains.com/intellij-repository/releases</url>
+		</repository>
+		<repository>
+			<id>Kotlin-ide-repository</id>
 			<url>https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide</url>
 		</repository>
 		<repository>
-			<id>JetBrains-space2</id>
+			<id>Kotlin-ide-plugin-dependencies-repository</id>
 			<url>https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies</url>
 		</repository>
 		<repository>
-			<id>JetBrains-space3</id>
+			<id>Intellij-dependencies-repository</id>
 			<url>https://cache-redirector.jetbrains.com/intellij-dependencies</url>
 		</repository>
 		<repository>
@@ -89,15 +92,6 @@
     </repositories>
 
 	<dependencies>
-		<!--LOCAL-->
-<!--		<dependency>-->
-<!--			<groupId>com.sample</groupId>-->
-<!--			<artifactId>sample</artifactId>-->
-<!--			<version>1.0</version>-->
-<!--			<scope>system</scope>-->
-<!--			<systemPath>${project.basedir}/src/main/resources/intellij-core.jar</systemPath>-->
-<!--		</dependency>-->
-
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-stdlib</artifactId>
@@ -107,19 +101,11 @@
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-compiler-for-ide</artifactId>
 			<version>1.5.10-release-894</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-compiler-cli-for-ide</artifactId>
 			<version>1.5.10-release-894</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.intellij.deps</groupId>
-			<artifactId>asm-all</artifactId>
-			<version>9.1</version>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
@@ -132,9 +118,30 @@
 			<version>203-1.5.10-release-891-IJ7717.8</version>
 		</dependency>
 		<dependency>
-			<groupId>com.jetbrains.intellij.idea</groupId>
-			<artifactId>intellij-core</artifactId>
-			<version>203-1.5.10-release-891-IJ7717.8</version>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-script-runtime</artifactId>
+			<version>1.5.10-release-894</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-scripting-compiler-impl</artifactId>
+			<version>1.5.10-release-894</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.intellij.deps</groupId>
+			<artifactId>asm-all</artifactId>
+			<version>9.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.intellij.deps</groupId>
+			<artifactId>trove4j</artifactId>
+			<version>1.0.20200330</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>21.0.1</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

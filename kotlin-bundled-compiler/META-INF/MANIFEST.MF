@@ -4,22 +4,17 @@ Bundle-Name: Bundled Kotlin Compiler
 Bundle-SymbolicName: org.jetbrains.kotlin.bundled-compiler;singleton:=true
 Bundle-Version: 0.8.21.qualifier
 Bundle-Vendor: JetBrains
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .,
- lib/kotlin-compiler.jar,
+ lib/annotations.jar,
+ lib/idea.jar,
+ lib/intellij-core.jar,
  lib/intellij-core-analysis.jar,
- lib/kotlin-stdlib.jar,
- lib/kotlin-plugin-parts.jar,
- lib/kotlin-script-runtime.jar,
- lib/kotlin-scripting-compiler.jar,
- lib/kotlin-reflect.jar,
- ../kotlin-eclipse-ui-test/lib/gson-2.3.1.jar,
- lib/ide-dependencies.jar,
- lib/annotations-13.0.jar,
- lib/kotlin-scripting-compiler-impl.jar,
- lib/kotlin-scripting-common.jar,
- lib/kotlin-scripting-jvm.jar,
- lib/ide-common.jar
+ lib/platform-api.jar,
+ lib/platform-impl.jar,
+ lib/platform-util-ui.jar,
+ lib/trove4j.jar,
+ lib/util.jar
 Export-Package: 
  com.intellij,
  com.intellij.codeInsight,
