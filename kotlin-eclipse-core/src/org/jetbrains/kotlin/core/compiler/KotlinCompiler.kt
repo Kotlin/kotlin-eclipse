@@ -21,7 +21,6 @@ import org.jetbrains.kotlin.core.model.KOTLIN_COMPILER_PATH
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin
 import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.incremental.makeIncrementally
 import java.io.BufferedReader
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -77,7 +76,7 @@ object KotlinCompiler {
         }
         KotlinCoreEnvironment.getOrCreateApplicationEnvironmentForProduction(disposable, config)
         var cacheDir = File("${outputDir.parentFile.absolutePath}/cache").also { it.mkdirs() }
-        makeIncrementally(cacheDir, sourceDirs, arguments, messageCollector)
+//        makeIncrementally(cacheDir, sourceDirs, arguments, messageCollector)
         return messageCollector.getCompilerResult()
     }
 

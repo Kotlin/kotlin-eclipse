@@ -108,12 +108,12 @@ fun createContainerForLazyResolveWithJava(
     useInstance(declarationProviderFactory)
     javaProject?.let { useInstance(it) }
 
-    useInstance(languageVersionSettings.getFlag(JvmAnalysisFlags.jsr305))
+//    useInstance(languageVersionSettings.getFlag(JvmAnalysisFlags.jsr305))
 
-    if (useBuiltInsProvider) {
-        useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)
-        useImpl<JvmBuiltInsPackageFragmentProvider>()
-    }
+//    if (useBuiltInsProvider) {
+//        useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)
+//        useImpl<JvmBuiltInsPackageFragmentProvider>()
+//    }
 
     useInstance(JavaClassesTracker.Default)
 

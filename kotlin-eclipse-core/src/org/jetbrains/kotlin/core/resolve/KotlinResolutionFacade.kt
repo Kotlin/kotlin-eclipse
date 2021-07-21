@@ -20,55 +20,70 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.analyzer.AnalysisResult
+import org.jetbrains.kotlin.analyzer.ModuleInfo
+import org.jetbrains.kotlin.analyzer.ResolverForProject
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.diagnostics.DiagnosticSink
+import org.jetbrains.kotlin.idea.FrontendInternals
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
-import org.jetbrains.kotlin.analyzer.ModuleInfo
-import org.jetbrains.kotlin.analyzer.ResolverForProject
 
-public class KotlinResolutionFacade(
-        val eclipseFile: IFile, 
-        val componentProvider: ComponentProvider,
-        override val moduleDescriptor: ModuleDescriptor) : ResolutionFacade {
-    override fun <T : Any> tryGetFrontendService(element: PsiElement, serviceClass: Class<T>): T? {
-        throw UnsupportedOperationException()
-    }
+class KotlinResolutionFacade(
+    val eclipseFile: IFile,
+    val componentProvider: ComponentProvider,
+    override val moduleDescriptor: ModuleDescriptor
+) : ResolutionFacade {
 
-    override fun resolveToDescriptor(declaration: KtDeclaration, bodyResolveMode: BodyResolveMode): DeclarationDescriptor {
+    override fun resolveToDescriptor(
+        declaration: KtDeclaration,
+        bodyResolveMode: BodyResolveMode
+    ): DeclarationDescriptor {
         throw UnsupportedOperationException()
     }
 
     override val project: Project
         get() = getEnvironment(eclipseFile).project
-    
+
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()
     }
+
     override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()
     }
-    
-    override fun analyzeWithAllCompilerChecks(elements: Collection<KtElement>): AnalysisResult {
+
+    override fun analyzeWithAllCompilerChecks(
+        elements: Collection<KtElement>,
+        callback: DiagnosticSink.DiagnosticsCallback?
+    ): AnalysisResult {
         throw UnsupportedOperationException()
     }
-    
+
+    @OptIn(FrontendInternals::class)
+    override fun <T : Any> tryGetFrontendService(element: PsiElement, serviceClass: Class<T>): T? {
+        throw UnsupportedOperationException()
+    }
+
+    @OptIn(FrontendInternals::class)
     override fun <T : Any> getFrontendService(element: PsiElement, serviceClass: Class<T>): T {
         throw UnsupportedOperationException()
     }
-    
+
+    @OptIn(FrontendInternals::class)
     override fun <T : Any> getFrontendService(serviceClass: Class<T>): T = componentProvider.getService(serviceClass)
-    
+
+    @OptIn(FrontendInternals::class)
     override fun <T : Any> getFrontendService(moduleDescriptor: ModuleDescriptor, serviceClass: Class<T>): T {
         throw UnsupportedOperationException()
     }
-    
+
     override fun <T : Any> getIdeService(serviceClass: Class<T>): T {
         throw UnsupportedOperationException()
     }

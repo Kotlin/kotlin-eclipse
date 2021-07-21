@@ -21,11 +21,15 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.analyzer.ModuleInfo
+import org.jetbrains.kotlin.analyzer.ResolverForProject
 import org.jetbrains.kotlin.caches.resolve.KotlinCacheService
+import org.jetbrains.kotlin.caches.resolve.PlatformAnalysisSettings
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.diagnostics.DiagnosticSink
+import org.jetbrains.kotlin.idea.FrontendInternals
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
 import org.jetbrains.kotlin.platform.TargetPlatform
 import org.jetbrains.kotlin.psi.KtDeclaration
@@ -33,7 +37,6 @@ import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.diagnostics.KotlinSuppressCache
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
-import org.jetbrains.kotlin.analyzer.ResolverForProject
 
 class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheService {
     override fun getResolutionFacade(elements: List<KtElement>, platform: TargetPlatform): ResolutionFacade {
@@ -51,30 +54,38 @@ class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheService {
     override fun getResolutionFacade(elements: List<KtElement>): ResolutionFacade {
         return KotlinSimpleResolutionFacade(ideaProject, elements)
     }
-	override fun getResolutionFacadeByModuleInfo(moduleInfo: ModuleInfo, platform: TargetPlatform): ResolutionFacade? =
-		null
+
+    override fun getResolutionFacadeByModuleInfo(
+        moduleInfo: ModuleInfo,
+        platform: TargetPlatform
+    ): ResolutionFacade? = null
+
+    override fun getResolutionFacadeByModuleInfo(
+        moduleInfo: ModuleInfo,
+        settings: PlatformAnalysisSettings
+    ): ResolutionFacade? = null
 }
 
 class KotlinSimpleResolutionFacade(
-        override val project: Project,
-        private val elements: List<KtElement>) : ResolutionFacade {
+    override val project: Project,
+    private val elements: List<KtElement>
+) : ResolutionFacade {
 
-    override fun <T : Any> tryGetFrontendService(element: PsiElement, serviceClass: Class<T>): T? {
-        return null
-    }
-
-    override fun resolveToDescriptor(declaration: KtDeclaration, bodyResolveMode: BodyResolveMode): DeclarationDescriptor {
+    override fun resolveToDescriptor(
+        declaration: KtDeclaration,
+        bodyResolveMode: BodyResolveMode
+    ): DeclarationDescriptor {
         throw UnsupportedOperationException()
     }
 
     override val moduleDescriptor: ModuleDescriptor
         get() = throw UnsupportedOperationException()
-    
+
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
         val ktFile = element.getContainingKtFile()
         return KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
     }
-    
+
     override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext {
         if (elements.isEmpty()) {
             return BindingContext.EMPTY
@@ -82,31 +93,42 @@ class KotlinSimpleResolutionFacade(
         val ktFile = elements.first().getContainingKtFile()
         return KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
     }
-    
-    override fun analyzeWithAllCompilerChecks(elements: Collection<KtElement>): AnalysisResult {
+
+    override fun analyzeWithAllCompilerChecks(
+        elements: Collection<KtElement>,
+        callback: DiagnosticSink.DiagnosticsCallback?
+    ): AnalysisResult {
         throw UnsupportedOperationException()
     }
-    
+
+    @OptIn(FrontendInternals::class)
+    override fun <T : Any> tryGetFrontendService(element: PsiElement, serviceClass: Class<T>): T? {
+        return null
+    }
+
+    @OptIn(FrontendInternals::class)
     override fun <T : Any> getFrontendService(element: PsiElement, serviceClass: Class<T>): T {
         throw UnsupportedOperationException()
     }
-    
+
+    @OptIn(FrontendInternals::class)
     override fun <T : Any> getFrontendService(serviceClass: Class<T>): T {
         val files = elements.map { it.getContainingKtFile() }.toSet()
         if (files.isEmpty()) throw IllegalStateException("Elements should not be empty")
-        
+
         val componentProvider = KotlinAnalyzer.analyzeFiles(files).componentProvider
         if (componentProvider == null) {
             throw IllegalStateException("Trying to get service from non-initialized project")
         }
-        
+
         return componentProvider.getService(serviceClass)
     }
-    
+
+    @OptIn(FrontendInternals::class)
     override fun <T : Any> getFrontendService(moduleDescriptor: ModuleDescriptor, serviceClass: Class<T>): T {
         throw UnsupportedOperationException()
     }
-    
+
     override fun <T : Any> getIdeService(serviceClass: Class<T>): T {
         throw UnsupportedOperationException()
     }
@@ -116,6 +138,7 @@ class KotlinSimpleResolutionFacade(
     }
 }
 
-@Suppress("UNCHECKED_CAST") fun <T : Any> ComponentProvider.getService(request: Class<T>): T {
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> ComponentProvider.getService(request: Class<T>): T {
     return resolve(request)!!.getValue() as T
 }
