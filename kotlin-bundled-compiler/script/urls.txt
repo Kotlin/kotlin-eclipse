@@ -1,0 +1,2 @@
+https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea/ideaIC/203.8084.24/ideaIC-203.8084.24.zip
+https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea/intellij-core/203.8084.24/intellij-core-203.8084.24.zip

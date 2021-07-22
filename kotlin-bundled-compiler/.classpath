@@ -3,7 +3,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/idea.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/intellij-core.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/intellij-core-analysis.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/intellij-core-analysis-deprecated.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/platform-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/platform-impl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/platform-util-ui.jar"/>
