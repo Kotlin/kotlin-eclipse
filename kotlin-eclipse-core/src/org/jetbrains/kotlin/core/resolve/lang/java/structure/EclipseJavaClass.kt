@@ -33,7 +33,7 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import java.lang.reflect.Modifier
 
-public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(javaElement), JavaClass {
+class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(javaElement), JavaClass {
     override val name: Name = SpecialNames.safeIdentifier(binding.getName())
     
     override val isAbstract: Boolean = Modifier.isAbstract(binding.getModifiers())
@@ -57,14 +57,25 @@ public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier
     override val fqName: FqName? = binding.getQualifiedName()?.let { FqName(it) }
     
     override val isInterface: Boolean = binding.isInterface()
-    
+
+    override val isRecord: Boolean = binding.isRecord
+
+    override val isSealed: Boolean
+        get() = TODO("Not yet implemented")
+
     override val isAnnotationType: Boolean = binding.isAnnotation()
     
     override val isEnum: Boolean = binding.isEnum()
     
     override val outerClass: JavaClass? 
         get() = binding.getDeclaringClass()?.let { EclipseJavaClass(it) }
-    
+
+    override val permittedTypes: Collection<JavaClassifierType>
+        get() = TODO("Not yet implemented")
+
+    override val recordComponents: Collection<JavaRecordComponent>
+        get() = TODO("Not yet implemented")
+
     override val supertypes: Collection<JavaClassifierType> 
         get() = classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(binding))
     

@@ -9,6 +9,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/platform-util-ui.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/trove4j.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/util.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-compiler-for-ide-1.5.10-release-894.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lib/kotlin-stdlib-1.5.10-release-894.jar"/>
 
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>

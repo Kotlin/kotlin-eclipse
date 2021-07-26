@@ -140,7 +140,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(true))
 
             // For j2k converter
-            registerService(NullableNotNullManager::class.java, KotlinNullableNotNullManager(project))
+//            registerService(NullableNotNullManager::class.java, KotlinNullableNotNullManager(project))
 
             registerService(
                 CoreJavaFileManager::class.java,
@@ -161,7 +161,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
                 registerService(CodeAnalyzerInitializer::class.java, it)
             }
 
-            CliLightClassGenerationSupport(traceHolder).also {
+            CliLightClassGenerationSupport(traceHolder, project).also {
                 registerService(LightClassGenerationSupport::class.java, it)
                 registerService(CliLightClassGenerationSupport::class.java, it)
             }
@@ -283,7 +283,7 @@ private fun registerApplicationExtensionPointsAndExtensionsFrom() {
 private fun registerAppExtensionPoints() {
     registerExtensionPointInRoot(ContainerProvider.EP_NAME, ContainerProvider::class)
     registerExtensionPointInRoot(ClsCustomNavigationPolicy.EP_NAME, ClsCustomNavigationPolicy::class)
-    registerExtensionPointInRoot(ClassFileDecompilers.EP_NAME, ClassFileDecompilers.Decompiler::class)
+    registerExtensionPointInRoot(ClassFileDecompilers.getInstance().EP_NAME, ClassFileDecompilers.Decompiler::class)
 
     // For j2k converter
     registerExtensionPointInRoot(PsiAugmentProvider.EP_NAME, PsiAugmentProvider::class)

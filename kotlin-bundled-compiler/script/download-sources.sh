@@ -28,7 +28,8 @@ for file in "$download_directory"/*; do
 done
 
 # Copy needed dependencies
-for dependency in "${dependencies[@]}"
-do
+for dependency in "${dependencies[@]}"; do
   find "$dependencies_directory" -name "$dependency" -type f -exec cp {} "$lib_directory" \;
 done
+
+rmdir "$dependencies_directory"

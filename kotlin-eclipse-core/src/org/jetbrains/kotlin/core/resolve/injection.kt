@@ -54,10 +54,11 @@ import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 
 fun StorageComponentContainer.configureJavaTopDownAnalysis(
-        moduleContentScope: GlobalSearchScope,
-        project: Project,
-        lookupTracker: LookupTracker,
-        languageFeatureSettings: LanguageVersionSettings) {
+    moduleContentScope: GlobalSearchScope,
+    project: Project,
+    lookupTracker: LookupTracker,
+    languageFeatureSettings: LanguageVersionSettings
+) {
     useInstance(moduleContentScope)
     useInstance(lookupTracker)
 
@@ -77,18 +78,18 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
 }
 
 fun createContainerForLazyResolveWithJava(
-        moduleContext: ModuleContext,
-        bindingTrace: BindingTrace,
-        declarationProviderFactory: DeclarationProviderFactory,
-        moduleContentScope: GlobalSearchScope,
-        moduleClassResolver: ModuleClassResolver,
-        targetEnvironment: TargetEnvironment,
-        lookupTracker: LookupTracker,
-        packagePartProvider: PackagePartProvider,
-        jvmTarget: JvmTarget,
-        languageVersionSettings: LanguageVersionSettings,
-        javaProject: IJavaProject?,
-        useBuiltInsProvider: Boolean
+    moduleContext: ModuleContext,
+    bindingTrace: BindingTrace,
+    declarationProviderFactory: DeclarationProviderFactory,
+    moduleContentScope: GlobalSearchScope,
+    moduleClassResolver: ModuleClassResolver,
+    targetEnvironment: TargetEnvironment,
+    lookupTracker: LookupTracker,
+    packagePartProvider: PackagePartProvider,
+    jvmTarget: JvmTarget,
+    languageVersionSettings: LanguageVersionSettings,
+    javaProject: IJavaProject?,
+    useBuiltInsProvider: Boolean
 ): StorageComponentContainer = createContainer("LazyResolveWithJava", JvmPlatformAnalyzerServices) {
     configureModule(
         moduleContext,
@@ -119,27 +120,35 @@ fun createContainerForLazyResolveWithJava(
 
     targetEnvironment.configure(this)
 
-    useInstance(JavaResolverSettings.create(
-            isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines)))
+    // TODO: fix params
+    //  correctNullabilityForNotNullTypeParameter
+    //  typeEnhancementImprovementsInStrictMode params
+    useInstance(
+        JavaResolverSettings.create(
+            isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines),
+            correctNullabilityForNotNullTypeParameter = false,
+            typeEnhancementImprovementsInStrictMode = false
+        )
+    )
 }.apply {
     get<EclipseJavaClassFinder>().initialize(bindingTrace, get<KotlinCodeAnalyzer>())
 }
 
 fun createContainerForTopDownAnalyzerForJvm(
-        moduleContext: ModuleContext,
-        bindingTrace: BindingTrace,
-        declarationProviderFactory: DeclarationProviderFactory,
-        moduleContentScope: GlobalSearchScope,
-        lookupTracker: LookupTracker,
-        packagePartProvider: PackagePartProvider,
-        jvmTarget: JvmTarget,
-        languageVersionSettings: LanguageVersionSettings,
-        moduleClassResolver: ModuleClassResolver,
-        javaProject: IJavaProject?
+    moduleContext: ModuleContext,
+    bindingTrace: BindingTrace,
+    declarationProviderFactory: DeclarationProviderFactory,
+    moduleContentScope: GlobalSearchScope,
+    lookupTracker: LookupTracker,
+    packagePartProvider: PackagePartProvider,
+    jvmTarget: JvmTarget,
+    languageVersionSettings: LanguageVersionSettings,
+    moduleClassResolver: ModuleClassResolver,
+    javaProject: IJavaProject?
 ): ComponentProvider = createContainerForLazyResolveWithJava(
-        moduleContext, bindingTrace, declarationProviderFactory, moduleContentScope, moduleClassResolver,
-        CompilerEnvironment, lookupTracker, packagePartProvider, jvmTarget, languageVersionSettings, javaProject,
-        useBuiltInsProvider = true
+    moduleContext, bindingTrace, declarationProviderFactory, moduleContentScope, moduleClassResolver,
+    CompilerEnvironment, lookupTracker, packagePartProvider, jvmTarget, languageVersionSettings, javaProject,
+    useBuiltInsProvider = true
 )
 
 // Copy functions from Dsl.kt as they were shrinked by proguard

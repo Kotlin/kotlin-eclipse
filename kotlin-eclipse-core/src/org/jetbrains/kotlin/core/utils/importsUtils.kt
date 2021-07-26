@@ -31,10 +31,14 @@ import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
 import org.jetbrains.kotlin.idea.util.ActionRunningMode
 
 class KotlinImportInserterHelper : ImportInsertHelper() {
-    override val importSortComparator: Comparator<ImportPath> = object : Comparator<ImportPath> {
+    val importSortComparator: Comparator<ImportPath> = object : Comparator<ImportPath> {
         override fun compare(o1: ImportPath?, o2: ImportPath?): Int {
             return 0
         }
+    }
+
+    override fun getImportSortComparator(contextFile: KtFile): Comparator<ImportPath> {
+        throw UnsupportedOperationException()
     }
 
     override fun importDescriptor(file: KtFile, descriptor: DeclarationDescriptor, actionRunningMode: ActionRunningMode, forceAllUnderImport: Boolean): ImportDescriptorResult {
@@ -50,8 +54,11 @@ class KotlinImportInserterHelper : ImportInsertHelper() {
         return importPath.isImported(defaultImports)
     }
 
-    override fun mayImportOnShortenReferences(descriptor: DeclarationDescriptor): Boolean {
-        return false
+    override fun mayImportOnShortenReferences(
+        descriptor: DeclarationDescriptor,
+        contextFile: KtFile
+    ): kotlin.Boolean {
+                return false
     }
 
     override fun isImportedWithLowPriorityDefaultImport(importPath: ImportPath, contextFile: KtFile): Boolean =

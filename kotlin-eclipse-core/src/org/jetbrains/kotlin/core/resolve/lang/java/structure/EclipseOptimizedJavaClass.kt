@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder
+import org.jetbrains.kotlin.load.java.structure.*
 
 class EclipseOptimizedJavaClass(val eclipseClass: IType) : JavaClass {
     override val name: Name
@@ -43,7 +44,13 @@ class EclipseOptimizedJavaClass(val eclipseClass: IType) : JavaClass {
     
     override val isInterface: Boolean
         get() = throw UnsupportedOperationException()
-    
+
+    override val isRecord: Boolean
+        get() = throw UnsupportedOperationException()
+
+    override val isSealed: Boolean
+        get() = throw UnsupportedOperationException()
+
     override val lightClassOriginKind: LightClassOriginKind?
         get() = if (EclipseJavaElementUtil.isKotlinLightClass(eclipseClass)) LightClassOriginKind.SOURCE else null
     
@@ -52,7 +59,13 @@ class EclipseOptimizedJavaClass(val eclipseClass: IType) : JavaClass {
     
     override val outerClass: JavaClass?
         get() = throw UnsupportedOperationException()
-    
+
+    override val permittedTypes: Collection<JavaClassifierType>
+        get() = throw UnsupportedOperationException()
+
+    override val recordComponents: Collection<JavaRecordComponent>
+        get() = throw UnsupportedOperationException()
+
     override val supertypes: Collection<JavaClassifierType>
         get() = throw UnsupportedOperationException()
     

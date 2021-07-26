@@ -9,13 +9,15 @@ Bundle-ClassPath: .,
  lib/annotations.jar,
  lib/idea.jar,
  lib/intellij-core.jar,
- lib/intellij-core-analysis.jar,
+ lib/intellij-core-analysis-deprecated.jar,
  lib/platform-api.jar,
  lib/platform-impl.jar,
  lib/platform-util-ui.jar,
  lib/trove4j.jar,
- lib/util.jar
-Export-Package: 
+ lib/util.jar,
+ lib/kotlin-compiler-for-ide-1.5.10-release-894.jar,
+ lib/kotlin-stdlib-1.5.10-release-894.jar
+Export-Package:
  com.intellij,
  com.intellij.codeInsight,
  com.intellij.codeInsight.completion.scope,

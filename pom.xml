@@ -85,6 +85,7 @@
 			<id>Intellij-dependencies-repository</id>
 			<url>https://cache-redirector.jetbrains.com/intellij-dependencies</url>
 		</repository>
+
 		<repository>
 			<id>Maven-central</id>
 			<url>https://repo1.maven.org/maven2/</url>
@@ -92,16 +93,16 @@
     </repositories>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-stdlib</artifactId>
-			<version>1.5.20</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-compiler-for-ide</artifactId>
-			<version>1.5.10-release-894</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.jetbrains.kotlin</groupId>-->
+<!--			<artifactId>kotlin-stdlib</artifactId>-->
+<!--			<version>1.5.20</version>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.jetbrains.kotlin</groupId>-->
+<!--			<artifactId>kotlin-compiler-for-ide</artifactId>-->
+<!--			<version>1.5.10-release-894</version>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-compiler-cli-for-ide</artifactId>
@@ -141,7 +142,12 @@
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
 			<version>21.0.1</version>
-			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>30.1.1-jre</version>
 		</dependency>
 	</dependencies>
 
