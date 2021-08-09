@@ -15,7 +15,7 @@ Require-Bundle: org.eclipse.ui,
  org.jetbrains.kotlin.ui,
  org.eclipse.debug.core,
  org.eclipse.jdt.debug
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
 Import-Package: org.eclipse.core.resources,

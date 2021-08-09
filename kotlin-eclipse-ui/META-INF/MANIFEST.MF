@@ -54,7 +54,7 @@ Import-Package: org.eclipse.core.expressions,
  org.eclipse.ui.texteditor.templates,
  org.eclipse.ui.views.contentoutline,
  org.eclipse.ui.wizards.newresource
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.builder,

@@ -22,24 +22,27 @@
 		<module>kotlin-eclipse-gradle-feature</module>
 	</modules>
 
-	<properties>
-		<tycho.version>2.3.0</tycho.version>
-		<tycho-extras.version>2.3.0</tycho-extras.version>
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
 
-		<eclipse-repo.url>http://download.eclipse.org/releases/2021-06</eclipse-repo.url>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <tycho.version>2.3.0</tycho.version>
+        <tycho-extras.version>2.3.0</tycho-extras.version>
 
-		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/48/dev/update</ajdt-eclipse-repo.url>
-		
-		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
+        <eclipse-repo.url>http://download.eclipse.org/releases/2021-06</eclipse-repo.url>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<kotlin.version>1.5.20</kotlin.version>
+        <ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/48/dev/update</ajdt-eclipse-repo.url>
 
-		<aspectj.version>1.9.6</aspectj.version>
-		<aspectj.plugin.version>1.11</aspectj.plugin.version>
+        <buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
-		<weaving-hook.version>1.3.0</weaving-hook.version>
-	</properties>
+        <kotlin.version>1.5.20</kotlin.version>
+
+        <aspectj.version>1.9.6</aspectj.version>
+        <aspectj.plugin.version>1.11</aspectj.plugin.version>
+
+        <weaving-hook.version>1.3.0</weaving-hook.version>
+    </properties>
 
 	<repositories>
 		<repository>
@@ -92,64 +95,13 @@
 		</repository>
     </repositories>
 
-	<dependencies>
-<!--		<dependency>-->
-<!--			<groupId>org.jetbrains.kotlin</groupId>-->
-<!--			<artifactId>kotlin-stdlib</artifactId>-->
-<!--			<version>1.5.20</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.jetbrains.kotlin</groupId>-->
-<!--			<artifactId>kotlin-compiler-for-ide</artifactId>-->
-<!--			<version>1.5.10-release-894</version>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-compiler-cli-for-ide</artifactId>
-			<version>1.5.10-release-894</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>common</artifactId>
-			<version>203-1.5.10-release-891-IJ7717.8</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>formatter</artifactId>
-			<version>203-1.5.10-release-891-IJ7717.8</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-script-runtime</artifactId>
-			<version>1.5.10-release-894</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-scripting-compiler-impl</artifactId>
-			<version>1.5.10-release-894</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.intellij.deps</groupId>
-			<artifactId>asm-all</artifactId>
-			<version>9.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.intellij.deps</groupId>
-			<artifactId>trove4j</artifactId>
-			<version>1.0.20200330</version>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains</groupId>
-			<artifactId>annotations</artifactId>
-			<version>21.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>30.1.1-jre</version>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>com.sun.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>3.0.9</version>
+        </dependency>
+    </dependencies>
 
 	<pluginRepositories>
 	   <pluginRepository>
@@ -256,7 +208,7 @@
 					<artifactId>tycho-surefire-plugin</artifactId>
 					<version>${tycho.version}</version>
 					<configuration>
-              <testFailureIgnore>true</testFailureIgnore> 
+              <testFailureIgnore>true</testFailureIgnore>
 					</configuration>
 				</plugin>
 				<plugin>

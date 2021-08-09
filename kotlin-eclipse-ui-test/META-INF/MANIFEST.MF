@@ -4,7 +4,7 @@ Bundle-Name: kotlin-eclipse-ui-test
 Bundle-SymbolicName: org.jetbrains.kotlin.ui.tests;singleton:=true
 Bundle-Version: 0.8.21.qualifier
 Bundle-Vendor: JetBrains
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .,
  lib/gson-2.3.1.jar
 Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
@@ -18,6 +18,7 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.equinox.weaving.aspectj,
  org.jetbrains.kotlin.aspects,
  org.eclipse.core.commands,
+ org.eclipse.core.resources,
  org.eclipse.ui.workbench,
  org.eclipse.search,
  org.eclipse.jface,
