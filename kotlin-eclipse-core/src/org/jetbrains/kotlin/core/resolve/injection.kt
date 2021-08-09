@@ -35,9 +35,12 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator
 import org.jetbrains.kotlin.frontend.di.configureModule
+import org.jetbrains.kotlin.frontend.di.configureStandardResolveComponents
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.load.java.InternalFlexibleTypeTransformer
 import org.jetbrains.kotlin.load.java.JavaClassesTracker
+import org.jetbrains.kotlin.load.java.components.FilesByFacadeFqNameIndexer
+import org.jetbrains.kotlin.load.java.components.JavaDeprecationSettings
 import org.jetbrains.kotlin.load.java.components.SignaturePropagatorImpl
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
 import org.jetbrains.kotlin.load.java.lazy.JavaResolverSettings
@@ -48,6 +51,8 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver
+import org.jetbrains.kotlin.resolve.jvm.JvmDiagnosticComponents
+import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
@@ -74,7 +79,9 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
     useImpl<AnnotationResolverImpl>()
     useImpl<SignaturePropagatorImpl>()
     useImpl<TraceBasedErrorReporter>()
+
     useInstance(InternalFlexibleTypeTransformer)
+    useInstance(JavaDeprecationSettings)
 }
 
 fun createContainerForLazyResolveWithJava(
@@ -109,29 +116,46 @@ fun createContainerForLazyResolveWithJava(
     useInstance(declarationProviderFactory)
     javaProject?.let { useInstance(it) }
 
-//    useInstance(languageVersionSettings.getFlag(JvmAnalysisFlags.jsr305))
+    useInstance(languageVersionSettings.getFlag(JvmAnalysisFlags.javaTypeEnhancementState))
 
-//    if (useBuiltInsProvider) {
-//        useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)
-//        useImpl<JvmBuiltInsPackageFragmentProvider>()
-//    }
+    val builtIns = moduleContext.module.builtIns
+    if (useBuiltInsProvider && builtIns is JvmBuiltIns) {
+        useInstance(builtIns.customizer)
+        useImpl<JvmBuiltInsPackageFragmentProvider>()
+    }
 
     useInstance(JavaClassesTracker.Default)
 
     targetEnvironment.configure(this)
 
-    // TODO: fix params
-    //  correctNullabilityForNotNullTypeParameter
-    //  typeEnhancementImprovementsInStrictMode params
     useInstance(
         JavaResolverSettings.create(
-            isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines),
-            correctNullabilityForNotNullTypeParameter = false,
-            typeEnhancementImprovementsInStrictMode = false
+            isReleaseCoroutines = languageVersionSettings.supportsFeature(
+                LanguageFeature.ReleaseCoroutines
+            ),
+            correctNullabilityForNotNullTypeParameter = languageVersionSettings.supportsFeature(
+                LanguageFeature.ProhibitUsingNullableTypeParameterAgainstNotNullAnnotated
+            ),
+            typeEnhancementImprovementsInStrictMode = languageVersionSettings.supportsFeature(
+                LanguageFeature.TypeEnhancementImprovementsInStrictMode
+            )
         )
     )
+    useInstance(JavaModuleResolver.getInstance(moduleContext.project))
+
+    useImpl<FilesByFacadeFqNameIndexer>()
+    useImpl<JvmDiagnosticComponents>()
 }.apply {
-    get<EclipseJavaClassFinder>().initialize(bindingTrace, get<KotlinCodeAnalyzer>())
+    initializeJavaSpecificComponents(bindingTrace)
+}
+
+fun StorageComponentContainer.initializeJavaSpecificComponents(bindingTrace: BindingTrace) {
+    get<EclipseJavaClassFinder>().initialize(
+        trace = bindingTrace,
+        codeAnalyzer = get<KotlinCodeAnalyzer>(),
+        languageVersionSettings = get<LanguageVersionSettings>(),
+        jvmTarget = get<JvmTarget>()
+    )
 }
 
 fun createContainerForTopDownAnalyzerForJvm(

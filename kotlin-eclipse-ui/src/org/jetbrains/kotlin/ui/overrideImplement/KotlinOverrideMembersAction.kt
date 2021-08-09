@@ -39,41 +39,41 @@ import java.util.LinkedHashMap
 import java.util.LinkedHashSet
 
 public class KotlinOverrideMembersAction(
-        val editor: KotlinCommonEditor, 
+        val editor: KotlinCommonEditor,
         val filterMembersFromAny: Boolean = false) : SelectionDispatchAction(editor.getSite()) {
     init {
         setActionDefinitionId(IJavaEditorActionDefinitionIds.OVERRIDE_METHODS)
         PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.ADD_UNIMPLEMENTED_METHODS_ACTION)
-        
+
         val overrideImplementText = "Override/Implement Members"
         setText(overrideImplementText)
         setDescription("Override or implement members declared in supertypes")
         setToolTipText(overrideImplementText)
-        
+
     }
-    
+
     val membersFromAny = listOf("equals", "hashCode", "toString")
-    
+
     companion object {
         val ACTION_ID = "OverrideMethods"
     }
-    
+
     override fun run(selection: ITextSelection) {
         val jetClassOrObject = getKtClassOrObject(selection)
         if (jetClassOrObject == null) return
-        
+
         val generatedMembers = collectMembersToGenerate(jetClassOrObject)
         val selectedMembers = if (filterMembersFromAny) {
             generatedMembers.filterNot { it.getName().asString() in membersFromAny }
         } else {
             showDialog(generatedMembers)
         }
-        
+
         if (selectedMembers.isEmpty()) return
-        
+
         KotlinImplementMethodsProposal(editor).generateMethods(editor.document, jetClassOrObject, selectedMembers.toSet())
     }
-    
+
     private fun getKtClassOrObject(selection: ITextSelection): KtClassOrObject? {
         val psiElement = EditorUtil.getPsiElement(editor, selection.getOffset())
         return if (psiElement != null) {
@@ -82,38 +82,41 @@ public class KotlinOverrideMembersAction(
                 null
             }
     }
-    
+
     private fun showDialog(descriptors: Set<CallableMemberDescriptor>): Set<CallableMemberDescriptor> {
         val shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell()
-        
+
         val types = descriptors.map { it.getContainingDeclaration() as ClassDescriptor }.toSet()
         val dialog = CheckedTreeSelectionDialog(shell,
                 KotlinCallableLabelProvider(),
                 KotlinCallableContentProvider(descriptors, types))
-        
+
         dialog.setTitle("Override/Implement members")
         dialog.setContainerMode(true)
         dialog.setExpandedElements(types.toTypedArray())
         dialog.setInput(Any()) // Initialize input
-        
+
         if (dialog.open() != Window.OK) {
             return emptySet()
         }
-        
+
         val selected = dialog.getResult()?.filterIsInstance(CallableMemberDescriptor::class.java)
         return selected?.toSet() ?: emptySet()
     }
-    
+
     private fun collectMembersToGenerate(classOrObject: KtClassOrObject): Set<CallableMemberDescriptor> {
         val descriptor = classOrObject.resolveToDescriptor()
         if (descriptor !is ClassDescriptor) return emptySet()
-        
+
         val result = LinkedHashSet<CallableMemberDescriptor>()
         for (member in descriptor.unsubstitutedMemberScope.getContributedDescriptors()) {
             if (member is CallableMemberDescriptor
                 && (member.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE || member.kind == CallableMemberDescriptor.Kind.DELEGATION)) {
                 val overridden = member.overriddenDescriptors
-                if (overridden.any { it.modality == Modality.FINAL || Visibilities.isPrivate(it.visibility.normalize()) }) continue
+                if (overridden.any {
+                    it.modality == Modality.FINAL || Visibilities.isPrivate(it.visibility.delegate.normalize())
+                })
+                    continue
 
                 class Data(
                         val realSuper: CallableMemberDescriptor,
@@ -151,10 +154,10 @@ public class KotlinOverrideMembersAction(
                 }
             }
         }
-        
+
         return result
     }
-    
+
     private fun toRealSupers(immediateSuper: CallableMemberDescriptor): Collection<CallableMemberDescriptor> {
         if (immediateSuper.kind != CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
             return listOf(immediateSuper)

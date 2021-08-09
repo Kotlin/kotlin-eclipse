@@ -3,14 +3,12 @@ package org.jetbrains.kotlin.ui.editors.codeassist
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.resolve.BindingContext
 import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.idea.util.getResolutionScope
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtClassBody
-import org.jetbrains.kotlin.descriptors.ClassDescriptorWithResolutionScopes
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithVisibility
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
-import org.jetbrains.kotlin.descriptors.Visibilities
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.resolve.scopes.receivers.ExpressionReceiver
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingUtils
@@ -21,13 +19,12 @@ import org.jetbrains.kotlin.psi.KtBinaryExpression
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
 import org.jetbrains.kotlin.psi.KtUnaryExpression
 import org.jetbrains.kotlin.psi.KtUserType
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.resolve.scopes.LexicalScope
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.scopes.utils.getImplicitReceiversHierarchy
 import org.jetbrains.kotlin.psi.psiUtil.getReceiverExpression
 import org.jetbrains.kotlin.psi.psiUtil.parentsWithSelf
+import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 
 // from idea/idea-core/src/org/jetbrains/kotlin/idea/core/Utils.kt but without the second parameter
 public fun PsiElement.getResolutionScope(bindingContext: BindingContext): LexicalScope {
@@ -53,7 +50,7 @@ public fun DeclarationDescriptorWithVisibility.isVisible(
     bindingContext: BindingContext? = null,
     element: KtSimpleNameExpression? = null
 ): Boolean {
-    if (Visibilities.isVisibleWithAnyReceiver(this, from)) return true
+    if (DescriptorVisibilities.isVisibleWithAnyReceiver(this, from)) return true
 
     if (bindingContext == null || element == null) return false
 
@@ -61,12 +58,12 @@ public fun DeclarationDescriptorWithVisibility.isVisible(
     if (receiverExpression != null) {
         val receiverType = bindingContext.getType(receiverExpression) ?: return false
         val explicitReceiver = ExpressionReceiver.create(receiverExpression, receiverType, bindingContext)
-        return Visibilities.isVisible(explicitReceiver, this, from)
+        return DescriptorVisibilities.isVisible(explicitReceiver, this, from)
     }
     else {
-        val resolutionScope = element.getResolutionScope(bindingContext)
+        val resolutionScope = element.getResolutionScope()
         return resolutionScope.getImplicitReceiversHierarchy().any {
-            Visibilities.isVisible(it.value, this, from)
+            DescriptorVisibilities.isVisible(it.value, this, from)
         }
     }
 }

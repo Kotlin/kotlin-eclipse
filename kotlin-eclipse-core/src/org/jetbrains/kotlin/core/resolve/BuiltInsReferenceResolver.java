@@ -20,7 +20,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VfsBundle;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiDirectory;
@@ -36,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.common.CommonPlatformAnalyzerServices;
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
+import org.jetbrains.kotlin.builtins.StandardNames;
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
 import org.jetbrains.kotlin.container.DslKt;
 import org.jetbrains.kotlin.container.StorageComponentContainer;
@@ -77,7 +77,7 @@ public class BuiltInsReferenceResolver {
         myProject = project;
         initialize();
     }
-    
+
     @NotNull
     public static BuiltInsReferenceResolver getInstance(@NotNull IProject eclipseProject) {
         Project ideaProject = KotlinEnvironment.Companion.getEnvironment(eclipseProject).getProject();
@@ -88,15 +88,15 @@ public class BuiltInsReferenceResolver {
         if (!areSourcesExist()) {
             return;
         }
-        
+
         Set<KtFile> jetBuiltInsFiles = getBuiltInSourceFiles();
-        
+
         //if the sources are present, then the value cannot be null
         assert (jetBuiltInsFiles != null);
-        
+
         MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(
                 ContextKt.ProjectContext(myProject, "Context for built-ins resolver module"),
-                Name.special("<built-ins resolver module>"), 
+                Name.special("<built-ins resolver module>"),
                 DefaultBuiltIns.getInstance(),
                 null);
         newModuleContext.setDependencies(newModuleContext.getModule());
@@ -109,15 +109,15 @@ public class BuiltInsReferenceResolver {
                 CommonPlatformAnalyzerServices.INSTANCE,
                 CompilerEnvironment.INSTANCE,
                 LanguageVersionSettingsImpl.DEFAULT);
-        
+
         ResolveSession resolveSession = DslKt.getService(container, ResolveSession.class);
-        
+
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
-        
+
         PackageViewDescriptor packageView = newModuleContext.getModule().getPackage(
-                KotlinBuiltIns.BUILT_INS_PACKAGE_FQ_NAME);
+                StandardNames.BUILT_INS_PACKAGE_FQ_NAME);
         List<PackageFragmentDescriptor> fragments = packageView.getFragments();
-        
+
         moduleDescriptor = newModuleContext.getModule();
         builtinsPackageFragment = CollectionsKt.single(fragments);
     }
@@ -132,7 +132,7 @@ public class BuiltInsReferenceResolver {
         }
         VirtualFile vf = getSourceVirtualFile();
         assert vf != null : "Virtual file not found by URL: " + url;
-        
+
         PsiDirectory psiDirectory = PsiManager.getInstance(myProject).findDirectory(vf);
         assert psiDirectory != null : "No PsiDirectory for " + vf;
         return new HashSet<KtFile>(ContainerUtil.mapNotNull(psiDirectory.getFiles(), new Function<PsiFile, KtFile>() {
@@ -142,7 +142,7 @@ public class BuiltInsReferenceResolver {
             }
         }));
     }
-    
+
     @Nullable
     private VirtualFile getSourceVirtualFile() {
         URL runtimeUrl;
@@ -154,7 +154,7 @@ public class BuiltInsReferenceResolver {
             return null;
         }
     }
-    
+
     private boolean areSourcesExist() {
         return getSourceVirtualFile() != null;
     }
@@ -170,11 +170,11 @@ public class BuiltInsReferenceResolver {
               path = subURL.getPath();
             }
             catch (MalformedURLException e) {
-              throw new RuntimeException(VfsBundle.message("url.parse.unhandled.exception"), e);
+                throw new RuntimeException("url.parse.unhandled.exception");
             }
           }
           else {
-            throw new RuntimeException(new IOException(VfsBundle.message("url.parse.error", url.toExternalForm())));
+              throw new RuntimeException(String.format("url.parse.error %s", url.toExternalForm()));
           }
         }
         if (SystemInfo.isWindows) {
@@ -216,28 +216,28 @@ public class BuiltInsReferenceResolver {
         if (moduleDescriptor == null) {
             return null;
         }
-        
+
         if (!KotlinBuiltIns.isBuiltIn(originalDescriptor)) {
             return null;
         }
-        
+
         if (originalDescriptor instanceof ClassDescriptor) {
             ClassId classId = DescriptorUtilsKt.getClassId((ClassDescriptor) originalDescriptor);
             if (classId == null) return null;
-            
+
             return FindClassInModuleKt.findClassAcrossModuleDependencies(moduleDescriptor, classId);
         }
-        
+
         if (originalDescriptor instanceof PackageFragmentDescriptor) {
-            return KotlinBuiltIns.BUILT_INS_PACKAGE_FQ_NAME.equals(((PackageFragmentDescriptor) originalDescriptor).getFqName())
+            return StandardNames.BUILT_INS_PACKAGE_FQ_NAME.equals(((PackageFragmentDescriptor) originalDescriptor).getFqName())
                    ? builtinsPackageFragment
                    : null;
         }
-        
+
         if (originalDescriptor instanceof MemberDescriptor) {
             return findCurrentDescriptorForMember((MemberDescriptor) originalDescriptor);
         }
-        
+
         return null;
     }
 

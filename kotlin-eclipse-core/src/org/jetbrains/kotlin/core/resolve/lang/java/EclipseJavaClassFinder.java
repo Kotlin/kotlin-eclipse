@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2000-2014 JetBrains s.r.o.
- *  
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
- *  
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- *   
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,8 @@ import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.NameLookup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.config.JvmTarget;
+import org.jetbrains.kotlin.config.LanguageVersionSettings;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
@@ -36,6 +38,7 @@ import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
+import org.jetbrains.kotlin.resolve.jvm.JvmCodeAnalyzerInitializer;
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer;
 
 import java.util.Arrays;
@@ -48,15 +51,25 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
     public EclipseJavaClassFinder(@NotNull IJavaProject project) {
         javaProject = project;
     }
-    
+
     @Override
-    public void initialize(@NotNull BindingTrace trace, @NotNull KotlinCodeAnalyzer codeAnalyzer) {
+    public void initialize(
+            @NotNull BindingTrace trace,
+            @NotNull KotlinCodeAnalyzer codeAnalyzer,
+            @NotNull LanguageVersionSettings languageVersionSettings,
+            @NotNull JvmTarget jvmTarget
+    ) {
         if (javaProject == null) {
             return;
         }
-        
+
         MockProject ideaProject = KotlinEnvironment.Companion.getEnvironment(javaProject.getProject()).getProject();
-        CodeAnalyzerInitializer.Companion.getInstance(ideaProject).initialize(trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer);
+        ((JvmCodeAnalyzerInitializer) CodeAnalyzerInitializer.Companion.getInstance(ideaProject)).initialize(
+                trace,
+                codeAnalyzer.getModuleDescriptor(),
+                codeAnalyzer,
+                languageVersionSettings,
+                jvmTarget);
     }
 
     @Override
@@ -83,12 +96,12 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
         if (typeBinding != null) {
             return new EclipseJavaClass(typeBinding);
         }
-        
+
         return null;
     }
-    
+
     @Nullable
-    public static IPackageFragment[] findPackageFragments(IJavaProject javaProject, String name, 
+    public static IPackageFragment[] findPackageFragments(IJavaProject javaProject, String name,
             boolean partialMatch, boolean patternMatch) {
         try {
             NameLookup nameLookup = ((JavaProject) javaProject).newNameLookup((WorkingCopyOwner) null);
@@ -96,10 +109,10 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
+
         return null;
     }
-    
+
     @Nullable
     public static ITypeBinding findType(@NotNull FqName fqName, @NotNull IJavaProject javaProject) {
         IType eclipseType = null;
@@ -111,21 +124,21 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
         if (eclipseType != null) {
             return !isInKotlinBinFolder(eclipseType) ? createTypeBinding(eclipseType) : null;
         }
-        
+
         return null;
     }
-    
+
     public static boolean isInKotlinBinFolder(@NotNull IType eclipseType) {
         IFolder kotlinBinFolder = KotlinJavaManager.INSTANCE.getKotlinBinFolderFor(eclipseType.getJavaProject().getProject());
         IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) eclipseType.getPackageFragment().getParent();
         return kotlinBinFolder.equals(packageFragmentRoot.getResource());
     }
-    
+
     public static ITypeBinding createTypeBinding(IType type) {
         ASTParser parser = ASTParser.newParser(AST.JLS8);
         parser.setCompilerOptions(type.getJavaProject().getOptions(true));
         parser.setIgnoreMethodBodies(true);
-        
+
         if (type.getCompilationUnit() != null) {
             parser.setSource(type.getCompilationUnit());
         } else { // class file with no source
@@ -134,22 +147,22 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
             if (bindings.length == 1 && bindings[0] instanceof ITypeBinding) {
                 return (ITypeBinding) bindings[0];
             }
-            
+
             return null;
         }
-        
+
         parser.setResolveBindings(true);
         CompilationUnit root = (CompilationUnit) parser.createAST(null);
         return getTypeBinding(root, type);
     }
-    
+
     private static ASTNode getParent(ASTNode node, Class<? extends ASTNode> parentClass) {
         do {
             node = node.getParent();
         } while (node != null && !parentClass.isInstance(node));
         return node;
     }
-    
+
     private static ITypeBinding getTypeBinding(CompilationUnit root, IType type) {
         try {
             if (type.isAnonymous()) {
@@ -167,14 +180,14 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
                     if (creation != null) return creation.resolveTypeBinding();
                 }
             } else {
-                final AbstractTypeDeclaration declaration = 
+                final AbstractTypeDeclaration declaration =
                         (AbstractTypeDeclaration) getParent(NodeFinder.perform(root, type.getNameRange()), AbstractTypeDeclaration.class);
                 if (declaration != null) return declaration.resolveBinding();
             }
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
         }
-        
+
         return null;
     }
 

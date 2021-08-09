@@ -39,7 +39,10 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor;
 import org.jetbrains.kotlin.diagnostics.*;
 import org.jetbrains.kotlin.diagnostics.PsiDiagnosticUtils.LineAndColumn;
 import org.jetbrains.kotlin.platform.TargetPlatform;
-import org.jetbrains.kotlin.psi.*;
+import org.jetbrains.kotlin.psi.Call;
+import org.jetbrains.kotlin.psi.KtDeclaration;
+import org.jetbrains.kotlin.psi.KtExpression;
+import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.BindingContext;
 import org.jetbrains.kotlin.resolve.calls.model.MutableResolvedCall;
@@ -52,14 +55,13 @@ import org.junit.Before;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.jetbrains.kotlin.diagnostics.Errors.*;
 
 public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
-    
+
     public static final Pattern DIAGNOSTICS_PATTERN = Pattern.compile("([\\+\\-!])(\\w+)\\s*");
     public static final String DIAGNOSTICS_DIRECTIVE = "DIAGNOSTICS";
     public static final Set<DiagnosticFactory<?>> DIAGNOSTICS_TO_INCLUDE_ANYWAY =
@@ -78,11 +80,11 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             "\nclass Inv<T>" +
             "\nfun <E> Inv<E>._() {}" +
             "\ninfix fun <T> T.checkType(f: Inv<T>.() -> Unit) {}";
-    
+
     public static final String CHECK_TYPE_IMPORT = "import " + CHECK_TYPE_PACKAGE + ".*";
-    
+
     public static final String MARK_DYNAMIC_CALLS_DIRECTIVE = "MARK_DYNAMIC_CALLS";
-    
+
     @Before
     public void configure() {
         configureProject();
@@ -90,7 +92,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
     protected void doTest(String filePath) throws IOException {
         File file = new File(filePath);
-        
+
         String expectedText = JetTestUtils.doLoadFile(file);
         expectedText = StringUtilRt.convertLineSeparators(expectedText);
 
@@ -113,7 +115,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                         if (fileName.endsWith(".java")) {
                             writeJavaFile(fileName, text);
                         }
-                        
+
                         return new TestFile(module, fileName, text, directives);
                     }
 
@@ -144,7 +146,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         analyzeAndCheck(file, testFiles, "<" + file.getName().substring(0, file.getName().length() - ".kt".length()));
     }
-    
+
     protected void analyzeAndCheck(File testDataFile, List<TestFile> testFiles, String moduleName) {
         Map<TestModule, List<TestFile>> groupedByModule = CollectionsKt.groupByTo(
                 testFiles,
@@ -156,7 +158,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     }
                 }
         );
-        
+
         List<KtFile> allKtFiles = new ArrayList<KtFile>();
         Map<TestModule, BindingContext> moduleBindings = new HashMap<TestModule, BindingContext>();
 
@@ -166,14 +168,14 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
             List<KtFile> jetFiles = getKtFiles(testFilesInModule, true);
             allKtFiles.addAll(jetFiles);
-            
+
             AnalysisResult analysisResult = EclipseAnalyzerFacadeForJVM.INSTANCE
                     .analyzeSources(
                             KotlinEnvironment.Companion.getEnvironment(getTestProject().getJavaProject().getProject()), jetFiles)
                     .getAnalysisResult();
-            
+
             moduleBindings.put(testModule, analysisResult.getBindingContext());
-            
+
             checkAllResolvedCallsAreCompleted(jetFiles, analysisResult.getBindingContext());
         }
 
@@ -188,7 +190,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         TestCase.assertTrue("Diagnostics mismatch. See the output above", ok);
     }
-    
+
     private static void checkAllResolvedCallsAreCompleted(@NotNull List<KtFile> jetFiles, @NotNull BindingContext bindingContext) {
         for (KtFile file : jetFiles) {
             if (!AnalyzingUtils.getSyntaxErrorRanges(file).isEmpty()) {
@@ -199,7 +201,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         Map<Call,ResolvedCall<?>> resolvedCallsEntries = bindingContext.getSliceContents(BindingContext.RESOLVED_CALL);
         checkResolvedCallsInDiagnostics(bindingContext);
     }
-    
+
     private static void checkResolvedCallsInDiagnostics(BindingContext bindingContext) {
         Set<DiagnosticFactory1<PsiElement, Collection<? extends ResolvedCall<?>>>> diagnosticsStoringResolvedCalls1 = new HashSet<>(
                 Arrays.asList(OVERLOAD_RESOLUTION_AMBIGUITY, NONE_APPLICABLE, CANNOT_COMPLETE_RESOLVE, UNRESOLVED_REFERENCE_WRONG_RECEIVER,
@@ -207,25 +209,25 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         Set<DiagnosticFactory2<KtExpression,? extends Comparable<?>,Collection<? extends ResolvedCall<?>>>>
                 diagnosticsStoringResolvedCalls2 = new HashSet<>(Arrays.asList(
                 COMPONENT_FUNCTION_AMBIGUITY, DELEGATE_SPECIAL_FUNCTION_AMBIGUITY, DELEGATE_SPECIAL_FUNCTION_NONE_APPLICABLE));
-        
+
         Diagnostics diagnostics = bindingContext.getDiagnostics();
         for (Diagnostic diagnostic : diagnostics) {
             DiagnosticFactory<?> factory = diagnostic.getFactory();
             //noinspection SuspiciousMethodCalls
             if (diagnosticsStoringResolvedCalls1.contains(factory)) {
                 assertResolvedCallsAreCompleted(
-                        diagnostic, DiagnosticFactory.cast(diagnostic, diagnosticsStoringResolvedCalls1).getA());
+                        diagnostic, DiagnosticFactory.Companion.cast(diagnostic, diagnosticsStoringResolvedCalls1).getA());
 
             }
             //noinspection SuspiciousMethodCalls
             if (diagnosticsStoringResolvedCalls2.contains(factory)) {
                 assertResolvedCallsAreCompleted(
                         diagnostic,
-                        DiagnosticFactory.cast(diagnostic, diagnosticsStoringResolvedCalls2).getB());
+                        DiagnosticFactory.Companion.cast(diagnostic, diagnosticsStoringResolvedCalls2).getB());
             }
         }
     }
-    
+
     public static Condition<Diagnostic> parseDiagnosticFilterDirective(Map<String, String> directiveMap) {
         String directives = directiveMap.get(DIAGNOSTICS_DIRECTIVE);
         if (directives == null) {
@@ -291,7 +293,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     }
                 });
     }
-    
+
     private static void assertResolvedCallsAreCompleted(
             @NotNull Diagnostic diagnostic, @NotNull Collection<? extends ResolvedCall<?>> resolvedCalls
     ) {
@@ -310,7 +312,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                    "for '" + element.getText() + "'" + lineAndColumn + " are not completed",
                    allCallsAreCompleted);
     }
-    
+
     protected List<KtFile> getKtFiles(List<? extends TestFile> testFiles, boolean includeExtras) {
         boolean declareCheckType = false;
         List<KtFile> jetFiles = new ArrayList<>();
@@ -320,7 +322,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             }
             declareCheckType |= testFile.declareCheckType;
         }
-        
+
         if (includeExtras) {
             if (declareCheckType) {
                 jetFiles.add(JetLightFixture.createPsiFile(null, "CHECK_TYPE.kt", CHECK_TYPE_DECLARATIONS, getProject()));
@@ -330,20 +332,20 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
 
         return jetFiles;
     }
-    
+
     private boolean writeJavaFile(@NotNull String filePath, @NotNull String content) {
         try {
             File sourceFile = new File(filePath);
             getTestProject().createSourceFile(
-                    sourceFile.getParent(), 
-                    sourceFile.getName(), 
+                    sourceFile.getParent(),
+                    sourceFile.getName(),
                     content);
             return true;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-    
+
     protected static class TestModule {
         private final String name;
         private final List<TestModule> dependencies = new ArrayList<TestModule>();
@@ -360,12 +362,12 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             return dependencies;
         }
     }
-    
+
     @NotNull
     public Project getProject() {
         return getTestProject().getKotlinEnvironment().getProject();
     }
-    
+
     protected class TestFile {
         private final List<DiagnosedRange> diagnosedRanges = new ArrayList<>();
         private final String expectedText;
@@ -400,15 +402,15 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 this.jetFile = JetLightFixture.createCheckAndReturnPsiFile(null, fileName, clearText, getProject());
             }
         }
-        
+
         private String addExtras(String text) {
             return addImports(text, getExtras());
         }
-        
+
         private String getExtras() {
             return "/*extras*/\n" + getImports() + "/*extras*/\n\n";
         }
-        
+
         @NotNull
         private String getImports() {
             String imports = "";
@@ -417,7 +419,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             }
             return imports;
         }
-        
+
         private String addImports(String text, String imports) {
             Pattern pattern = Pattern.compile("^package [\\.\\w\\d]*\n", Pattern.MULTILINE);
             Matcher matcher = pattern.matcher(text);
@@ -439,7 +441,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
         public KtFile getKtFile() {
             return jetFile;
         }
-        
+
         private void stripExtras(StringBuilder actualText) {
             String extras = getExtras();
             int start = actualText.indexOf(extras);
@@ -447,7 +449,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                 actualText.delete(start, start + extras.length());
             }
         }
-        
+
         public boolean getActualText(BindingContext bindingContext, StringBuilder actualText, boolean skipJvmSignatureDiagnostics) {
             if (this.jetFile == null) {
                 // TODO: check java files too
@@ -463,17 +465,25 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             List<Pair<TargetPlatform, BindingContext>> implementingModulesBinding = new ArrayList<>();
             List<ActualDiagnostic> diagnostics = ContainerUtil.filter(
                     CollectionsKt.plus(
-                    		CheckerTestUtil.INSTANCE.getDiagnosticsIncludingSyntaxErrors(
-                    		        bindingContext,
+                            CheckerTestUtil.INSTANCE.getDiagnosticsIncludingSyntaxErrors(
+                                    bindingContext,
                                     implementingModulesBinding,
                                     jetFile.getOriginalElement(),
                                     markDynamicCalls,
                                     dynamicCallDescriptors,
-                                    new DiagnosticsRenderingConfiguration(null, false, new LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE)),
+                                    new DiagnosticsRenderingConfiguration(
+                                            null,
+                                            false,
+                                            new LanguageVersionSettingsImpl(
+                                                    LanguageVersion.LATEST_STABLE,
+                                                    ApiVersion.LATEST_STABLE
+                                            ),
+                                            false
+                                    ),
                                     null,
                                     null,
                                     null),
-                    		jvmSignatureDiagnostics),
+                            jvmSignatureDiagnostics),
                     new Condition<ActualDiagnostic>() {
                         @Override
                         public boolean value(final ActualDiagnostic actualDiagnostic) {
@@ -522,7 +532,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                     false));
 
             stripExtras(actualText);
-            
+
             return ok[0];
         }
 
@@ -530,7 +540,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
             Set<ActualDiagnostic> jvmSignatureDiagnostics = new HashSet<ActualDiagnostic>();
             Collection<KtDeclaration> declarations = PsiTreeUtil.findChildrenOfType(jetFile, KtDeclaration.class);
             for (KtDeclaration declaration : declarations) {
-                Diagnostics diagnostics = DuplicateJvmSignatureUtilKt.getJvmSignatureDiagnostics(declaration, 
+                Diagnostics diagnostics = DuplicateJvmSignatureUtilKt.getJvmSignatureDiagnostics(declaration,
                         bindingContext.getDiagnostics(), GlobalSearchScope.allScope(getProject()));
                 if (diagnostics == null) continue;
                 jvmSignatureDiagnostics.addAll(CollectionsKt.map(diagnostics.forElement(declaration), new Function1<Diagnostic, ActualDiagnostic>() {
@@ -539,7 +549,7 @@ public class KotlinDiagnosticsTestCase extends KotlinProjectTestCase {
                         return new ActualDiagnostic(arg0, null, false);
                     }
                 }));
-                  
+
             }
             return jvmSignatureDiagnostics;
         }

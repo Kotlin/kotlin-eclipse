@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.ui.editors.organizeImports
 
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiElementVisitor
 import org.jetbrains.kotlin.core.references.canBeResolvedViaImport
 import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.descriptors.*
@@ -38,8 +39,8 @@ import kotlin.collections.LinkedHashSet
 
 fun collectDescriptorsToImport(file: KtFile): OptimizedImportsBuilder.InputData {
     val visitor = CollectUsedDescriptorsVisitor(file)
-    file.accept(visitor)
-    return OptimizedImportsBuilder.InputData(visitor.descriptorsToImport, visitor.namesToImport, emptyList())
+//    file.accept(visitor)
+    return OptimizedImportsBuilder.InputData(visitor.descriptorsToImport, visitor.namesToImport, emptyList(), emptySet())
 }
 
 private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() {
