@@ -1,22 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/annotations-13.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-all.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/common.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/formatter.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/guava-29.0-jre.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/idea.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/intellij-core.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/intellij-core-analysis-deprecated.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/intellij-deps-fastutil-8.4.1-4.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/j2k-old.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/javaslang-2.0.6.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/javax.inject-1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jna-3.0.9.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-compiler-cli-for-ide.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-compiler-for-ide.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-reflect.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-script-runtime.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-common.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-compiler-impl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-compiler.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-jvm.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-stdlib.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/platform-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/platform-impl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/platform-util-ui.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/trove4j.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/util.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/kotlin-compiler-for-ide-1.5.10-release-894.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/lib/kotlin-stdlib-1.5.10-release-894.jar"/>
-
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="con" path="org.jetbrains.kotlin.core.KOTLIN_CONTAINER"/>
-
 	<classpathentry kind="src" path="src"/>
-
+	<classpathentry kind="src" path="lib/kotlinc"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
