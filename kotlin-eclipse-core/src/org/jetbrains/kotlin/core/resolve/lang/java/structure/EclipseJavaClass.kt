@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.core.resolve.lang.java.structure
 import org.eclipse.jdt.core.dom.ITypeBinding
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.classifierTypes
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementFactory.typeParameters
+import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.load.java.structure.*
 import org.jetbrains.kotlin.name.FqName
@@ -53,8 +54,9 @@ class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier<ITypeB
 
     override val isRecord: Boolean = binding.isRecord
 
+    // TODO: implement return value
     override val isSealed: Boolean
-        get() = TODO("Not yet implemented")
+        get() = false
 
     override val isAnnotationType: Boolean = binding.isAnnotation()
     
@@ -63,11 +65,13 @@ class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier<ITypeB
     override val outerClass: JavaClass? 
         get() = binding.getDeclaringClass()?.let { EclipseJavaClass(it) }
 
+    // TODO: implement return value
     override val permittedTypes: Collection<JavaClassifierType>
-        get() = TODO("Not yet implemented")
+        get() = emptyList()
 
+    // TODO: implement return value
     override val recordComponents: Collection<JavaRecordComponent>
-        get() = TODO("Not yet implemented")
+        get() = emptyList()
 
     override val supertypes: Collection<JavaClassifierType> 
         get() = classifierTypes(EclipseJavaElementUtil.getSuperTypesWithObject(binding))

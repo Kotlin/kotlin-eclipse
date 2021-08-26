@@ -18,7 +18,9 @@ package org.jetbrains.kotlin.core.utils
 
 import org.eclipse.core.resources.*
 import org.eclipse.core.runtime.*
-import org.eclipse.jdt.core.*
+import org.eclipse.jdt.core.IClasspathEntry
+import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.launching.JavaRuntime
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
@@ -26,7 +28,6 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.jetbrains.kotlin.psi.KtFile
 import java.io.File
-import java.util.*
 
 object ProjectUtils {
 
@@ -276,14 +277,18 @@ object ProjectUtils {
     fun isGradleProject(project: IProject): Boolean = project.hasNature(GRADLE_NATURE_ID)
 
 
-
     @JvmStatic
     fun buildLibPath(libName: String): String = ktHome + buildLibName(libName)
+
+    @JvmStatic
+    fun kotlinCompilerPath(libBinDir: String): String = ktHome + kotlinCompilerName(libBinDir)
 
     fun isAccessibleKotlinProject(project: IProject): Boolean =
         project.isAccessible && KotlinNature.hasKotlinNature(project)
 
     private fun buildLibName(libName: String): String = "$LIB_FOLDER/$libName.$LIB_EXTENSION"
+
+    private fun kotlinCompilerName(libBinDir: String): String = "$LIB_FOLDER/$libBinDir"
 
     fun newExportedLibraryEntry(path: IPath): IClasspathEntry =
         JavaCore.newLibraryEntry(path, null, null, true)

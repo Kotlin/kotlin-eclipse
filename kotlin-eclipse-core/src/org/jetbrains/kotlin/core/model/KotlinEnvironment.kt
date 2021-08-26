@@ -83,7 +83,7 @@ import java.util.*
 import kotlin.script.experimental.api.ScriptCompilationConfiguration
 import kotlin.script.experimental.dependencies.ScriptDependencies
 
-val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler")
+val KOTLIN_COMPILER_PATH = ProjectUtils.buildLibPath("kotlin-compiler-cli-for-ide")
 
 fun getEnvironment(eclipseFile: IFile): KotlinCommonEnvironment {
     return if (KotlinScriptEnvironment.isScript(eclipseFile)) {

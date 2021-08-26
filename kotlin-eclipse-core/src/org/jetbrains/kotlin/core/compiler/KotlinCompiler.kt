@@ -1,14 +1,22 @@
 package org.jetbrains.kotlin.core.compiler
 
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.process.OSProcessHandler
+import com.intellij.execution.process.ProcessAdapter
+import com.intellij.execution.process.ProcessEvent
+import com.intellij.execution.process.ProcessOutputTypes
+import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.SystemInfo
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity.ERROR
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity.EXCEPTION
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
@@ -21,12 +29,8 @@ import org.jetbrains.kotlin.core.model.KOTLIN_COMPILER_PATH
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin
 import org.jetbrains.kotlin.core.utils.ProjectUtils
-import java.io.BufferedReader
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.PrintStream
-import java.io.Reader
-import java.io.StringReader
+import java.io.*
+
 
 object KotlinCompiler {
 
@@ -80,9 +84,24 @@ object KotlinCompiler {
         return messageCollector.getCompilerResult()
     }
 
-    private fun execKotlinCompiler(arguments: Array<String>): KotlinCompilerResult = with(ByteArrayOutputStream()) {
-        KotlinCLICompiler.doMain(K2JVMCompiler(), PrintStream(this), arguments)
-        parseCompilerOutput(BufferedReader(StringReader(this.toString())))
+    private fun execKotlinCompiler(arguments: Array<String>): KotlinCompilerResult {
+        val kotlinCompilerDir = ProjectUtils.kotlinCompilerPath("kotlinc/bin")
+        val kotlinCompilerRunner = "kotlinc" // TODO: change on another OS
+
+        val processBuilder = ProcessBuilder()
+            .directory(File(kotlinCompilerDir))
+
+        processBuilder.command("chmod", "+x", kotlinCompilerRunner)
+        var process = processBuilder.start()
+        process.waitFor()
+
+        processBuilder.command(kotlinCompilerRunner, *arguments)
+        process = processBuilder.start()
+        process.waitFor()
+
+        val reader = BufferedReader(InputStreamReader(process.inputStream))
+
+        return parseCompilerOutput(BufferedReader(StringReader(reader.readText())))
     }
 
     private fun getCompilerArguments(javaProject: IJavaProject, outputDir: File) = K2JVMCompilerArguments().apply {
