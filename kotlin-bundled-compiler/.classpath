@@ -20,6 +20,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-compiler-impl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-compiler.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-scripting-jvm.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/kotlin-stdlib-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/kotlin-stdlib.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/platform-api.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/platform-impl.jar"/>
