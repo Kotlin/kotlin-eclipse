@@ -111,6 +111,10 @@ annotations_filename="annotations-13.0.jar"
 annotations_dependency_url="https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/$annotations_filename"
 curl "$annotations_dependency_url" -L -o "$lib_directory/$annotations_filename"
 
+kotlin_stdlib_sources_filename="kotlin-stdlib-sources.jar"
+kotlin_stdlib_sources_dependency_url="https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies/org/jetbrains/kotlin/kotlin-stdlib/1.5.10-release-894/kotlin-stdlib-1.5.10-release-894-sources.jar"
+curl "$kotlin_stdlib_sources_dependency_url" -L -o "$lib_directory/$kotlin_stdlib_sources_filename"
+
 # Download kotlinc
 kotlin_compiler_name="kotlin-compiler"
 kotlin_compiler_version="1.5.10"
