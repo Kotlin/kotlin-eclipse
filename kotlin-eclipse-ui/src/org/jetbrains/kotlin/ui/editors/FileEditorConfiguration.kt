@@ -49,7 +49,7 @@ class FileEditorConfiguration(colorManager: IColorManager,
     override fun getAutoEditStrategies(sourceViewer: ISourceViewer, contentType: String) =
             arrayOf(KotlinAutoIndentStrategy(fileEditor))
 
-    override fun getContentAssistant(sourceViewer: ISourceViewer): IContentAssistant? = ContentAssistant().apply {
+    override fun getContentAssistant(sourceViewer: ISourceViewer): IContentAssistant? = ContentAssistant(true).apply {
         KotlinCompletionProcessor.createKotlinCompletionProcessors(fileEditor, this).forEach {
             addContentAssistProcessor(it, IDocument.DEFAULT_CONTENT_TYPE)
         }
