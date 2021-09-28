@@ -30,7 +30,7 @@ import org.jetbrains.kotlin.resolve.ImportPath
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
 
 class KotlinImportInserterHelper : ImportInsertHelper() {
-    private val importSortComparator: Comparator<ImportPath> = Comparator<ImportPath> { _, _ -> 0 }
+    private val importSortComparator: Comparator<ImportPath> = Comparator { _, _ -> 0 }
 
     override fun getImportSortComparator(contextFile: KtFile): Comparator<ImportPath> {
         return importSortComparator

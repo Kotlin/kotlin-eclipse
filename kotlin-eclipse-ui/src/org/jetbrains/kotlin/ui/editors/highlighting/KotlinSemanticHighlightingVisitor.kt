@@ -16,44 +16,20 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.highlighting
 
-import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
-import org.eclipse.jface.text.Position
-import org.jetbrains.kotlin.psi.KtVisitorVoid
-import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.KtSimpleNameExpression
-import org.jetbrains.kotlin.psi.KtThisExpression
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
-import org.jetbrains.kotlin.descriptors.VariableDescriptor
-import org.jetbrains.kotlin.psi.KtProperty
-import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.psi.KtNamedDeclaration
-import org.jetbrains.kotlin.resolve.DescriptorUtils
-import org.eclipse.jdt.internal.ui.javaeditor.SemanticHighlightings
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.descriptors.impl.LocalVariableDescriptor
-import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
 import com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.eclipse.jface.text.IDocument
-import org.eclipse.jdt.core.IJavaProject
-import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.psi.KtTypeParameter
-import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.descriptors.ClassKind.*
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtSuperExpression
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtAnnotationEntry
-import org.jetbrains.kotlin.psi.KtValueArgumentList
+import org.eclipse.jface.text.IDocument
+import org.eclipse.jface.text.Position
+import org.jetbrains.kotlin.core.model.KotlinAnalysisFileCache
+import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.ClassKind.*
+import org.jetbrains.kotlin.descriptors.impl.LocalVariableDescriptor
+import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.DescriptorUtils
 
 public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document: IDocument) : KtVisitorVoid() {
     private lateinit var bindingContext: BindingContext
