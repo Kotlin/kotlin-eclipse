@@ -108,7 +108,7 @@ abstract class Preferences(private val scope: IScopeContext, private val path: S
                 in modifiedValues -> modifiedValues[key]
                 in removedValues -> null
                 else -> mainStore.getValue(key)
-            } ?: inheritedStores.firstNotNullResult { it.getValue(key) }
+            } ?: inheritedStores.firstNotNullOfOrNull { it.getValue(key) }
 
     // Does not save changes
     fun setValue(key: String, value: String) {

@@ -21,7 +21,7 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.impl.ZipHandler
 import java.util.concurrent.ConcurrentHashMap
 
-class CachedEnvironment<T, E : KotlinCommonEnvironment> {
+class CachedEnvironment<T: Any, E : KotlinCommonEnvironment> {
     private val environmentLock = Any()
 
     private val environmentCache = ConcurrentHashMap<T, E>()
@@ -39,8 +39,8 @@ class CachedEnvironment<T, E : KotlinCommonEnvironment> {
     }
 
     fun removeEnvironment(resource: T) = synchronized(environmentLock) {
-            removeEnvironmentInternal(resource)
-        }
+        removeEnvironmentInternal(resource)
+    }
 
     fun removeAllEnvironments() = synchronized(environmentLock) {
         environmentCache.keys.toList().forEach {
@@ -52,7 +52,7 @@ class CachedEnvironment<T, E : KotlinCommonEnvironment> {
         environmentCache.remove(resource)?.also {
             ideaProjectToEclipseResource.remove(it.project)
 
-            Disposer.dispose(it.kotlinCoreApplicationEnvironment.parentDisposable)
+            Disposer.dispose(it.projectEnvironment.parentDisposable)
             ZipHandler.clearFileAccessorCache()
         }
     }

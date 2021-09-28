@@ -14,12 +14,11 @@
  * limitations under the License.
  *
  *******************************************************************************/
+@file:Suppress("DEPRECATION")
+
 package org.jetbrains.kotlin.core.model
 
-import com.intellij.codeInsight.ContainerProvider
-import com.intellij.codeInsight.ExternalAnnotationsManager
-import com.intellij.codeInsight.InferredAnnotationsManager
-import com.intellij.codeInsight.NullableNotNullManager
+import com.intellij.codeInsight.*
 import com.intellij.codeInsight.runner.JavaMainMethodProvider
 import com.intellij.core.CoreApplicationEnvironment
 import com.intellij.core.CoreJavaFileManager
@@ -37,6 +36,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.extensions.ExtensionsArea
 import com.intellij.openapi.fileTypes.PlainTextFileType
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.JavaModuleSystem
@@ -74,6 +74,8 @@ import org.jetbrains.kotlin.diagnostics.rendering.DefaultErrorMessages
 import org.jetbrains.kotlin.extensions.DeclarationAttributeAltererExtension
 import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 import org.jetbrains.kotlin.idea.KotlinFileType
+import org.jetbrains.kotlin.idea.j2k.J2KPostProcessingRegistrar
+import org.jetbrains.kotlin.idea.j2k.J2KPostProcessingRegistrarImpl
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
@@ -88,7 +90,6 @@ import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
 import org.jetbrains.kotlin.scripting.extensions.ScriptingResolveExtension
 import java.io.File
-import java.util.*
 import kotlin.reflect.KClass
 
 private fun setIdeaIoUseFallback() {
@@ -97,17 +98,16 @@ private fun setIdeaIoUseFallback() {
 
         properties.setProperty("idea.io.use.nio2", java.lang.Boolean.TRUE.toString())
 
-        if (!(SystemInfo.isJavaVersionAtLeast(1, 7, 0) && !"1.7.0-ea".equals(SystemInfo.JAVA_VERSION))) {
+        if (!(SystemInfo.isJavaVersionAtLeast(1, 7, 0) && "1.7.0-ea" != SystemInfo.JAVA_VERSION)) {
             properties.setProperty("idea.io.use.fallback", java.lang.Boolean.TRUE.toString())
         }
     }
 }
 
 abstract class KotlinCommonEnvironment(disposable: Disposable) {
-    val kotlinCoreApplicationEnvironment: KotlinCoreApplicationEnvironment
     val project: MockProject
 
-    protected val projectEnvironment: JavaCoreProjectEnvironment
+    val projectEnvironment: JavaCoreProjectEnvironment
     private val roots = LinkedHashSet<JavaRoot>()
 
     val configuration = CompilerConfiguration()
@@ -115,13 +115,11 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
     init {
         setIdeaIoUseFallback()
 
-        kotlinCoreApplicationEnvironment = createKotlinCoreApplicationEnvironment(disposable)
-
         projectEnvironment = object : JavaCoreProjectEnvironment(disposable, kotlinCoreApplicationEnvironment) {
             override fun preregisterServices() {
-                registerProjectExtensionPoints(Extensions.getArea(project))
+                registerProjectExtensionPoints(project.extensionArea)
                 CoreApplicationEnvironment.registerExtensionPoint(
-                    Extensions.getArea(project),
+                    project.extensionArea,
                     JvmElementProvider.EP_NAME,
                     JvmElementProvider::class.java
                 )
@@ -161,14 +159,14 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
                 registerService(CodeAnalyzerInitializer::class.java, it)
             }
 
-            CliLightClassGenerationSupport(traceHolder).also {
+            CliLightClassGenerationSupport(traceHolder, project).also {
                 registerService(LightClassGenerationSupport::class.java, it)
                 registerService(CliLightClassGenerationSupport::class.java, it)
             }
 
             registerService(JavaModuleResolver::class.java, EclipseKotlinJavaModuleResolver())
 
-            val area = Extensions.getArea(this)
+            val area = extensionArea
             val javaFileManager = ServiceManager.getService(this, JavaFileManager::class.java)
             (javaFileManager as KotlinCliJavaFileManagerImpl)
                 .initialize(
@@ -182,7 +180,7 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             val kotlinAsJavaSupport = CliKotlinAsJavaSupport(this, traceHolder)
             registerService(KotlinAsJavaSupport::class.java, kotlinAsJavaSupport)
             area.getExtensionPoint(PsiElementFinder.EP_NAME)
-                .registerExtension(JavaElementFinder(this, kotlinAsJavaSupport))
+                .registerExtension(JavaElementFinder(this))
             area.getExtensionPoint(SyntheticResolveExtension.extensionPointName)
                 .registerExtension(ScriptingResolveExtension())
             registerService(KotlinJavaPsiFacade::class.java, KotlinJavaPsiFacade(this))
@@ -236,6 +234,12 @@ abstract class KotlinCommonEnvironment(disposable: Disposable) {
             roots.add(JavaRoot(root, type))
         }
     }
+
+    companion object {
+        val kotlinCoreApplicationEnvironment: KotlinCoreApplicationEnvironment by lazy {
+            createKotlinCoreApplicationEnvironment(Disposer.newDisposable("Root Disposable"))
+        }
+    }
 }
 
 private fun createKotlinCoreApplicationEnvironment(disposable: Disposable): KotlinCoreApplicationEnvironment =
@@ -250,6 +254,7 @@ private fun createKotlinCoreApplicationEnvironment(disposable: Disposable): Kotl
         application.registerService(Formatter::class.java, FormatterImpl())
         application.registerService(KotlinBinaryClassCache::class.java, KotlinBinaryClassCache())
         application.registerService(ScriptDefinitionProvider::class.java, EclipseScriptDefinitionProvider())
+        application.registerService(J2KPostProcessingRegistrar::class.java, J2KPostProcessingRegistrarImpl)
     }
 
 private fun registerProjectExtensionPoints(area: ExtensionsArea) {
@@ -258,6 +263,7 @@ private fun registerProjectExtensionPoints(area: ExtensionsArea) {
     registerExtensionPoint(area, SyntheticResolveExtension.extensionPointName, SyntheticResolveExtension::class)
 }
 
+@Suppress("LocalVariableName")
 private fun registerApplicationExtensionPointsAndExtensionsFrom() {
     val EP_ERROR_MSGS =
         ExtensionPointName.create<DefaultErrorMessages.Extension>("org.jetbrains.defaultErrorMessages.extension")
@@ -283,7 +289,8 @@ private fun registerApplicationExtensionPointsAndExtensionsFrom() {
 private fun registerAppExtensionPoints() {
     registerExtensionPointInRoot(ContainerProvider.EP_NAME, ContainerProvider::class)
     registerExtensionPointInRoot(ClsCustomNavigationPolicy.EP_NAME, ClsCustomNavigationPolicy::class)
-    registerExtensionPointInRoot(ClassFileDecompilers.EP_NAME, ClassFileDecompilers.Decompiler::class)
+    //TODO
+    //registerExtensionPointInRoot(ClassFileDecompilers.EP_NAME, ClassFileDecompilers.Decompiler::class)
 
     // For j2k converter
     registerExtensionPointInRoot(PsiAugmentProvider.EP_NAME, PsiAugmentProvider::class)

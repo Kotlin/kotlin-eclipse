@@ -25,11 +25,7 @@ import org.eclipse.jface.text.ITextSelection
 import org.eclipse.jface.window.Window
 import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.dialogs.CheckedTreeSelectionDialog
-import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.ClassKind
-import org.jetbrains.kotlin.descriptors.Modality
-import org.jetbrains.kotlin.descriptors.Visibilities
+import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
@@ -113,7 +109,7 @@ public class KotlinOverrideMembersAction(
             if (member is CallableMemberDescriptor
                 && (member.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE || member.kind == CallableMemberDescriptor.Kind.DELEGATION)) {
                 val overridden = member.overriddenDescriptors
-                if (overridden.any { it.modality == Modality.FINAL || Visibilities.isPrivate(it.visibility.normalize()) }) continue
+                if (overridden.any { it.modality == Modality.FINAL || DescriptorVisibilities.isPrivate(it.visibility.normalize()) }) continue
 
                 class Data(
                         val realSuper: CallableMemberDescriptor,

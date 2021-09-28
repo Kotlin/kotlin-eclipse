@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.idea.FrontendInternals
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
 import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.incremental.KotlinLookupLocation
@@ -462,6 +463,7 @@ private fun MemberScope.collectStaticMembers(
     )
 }
 
+@OptIn(FrontendInternals::class)
 fun ResolutionScope.collectSyntheticStaticMembersAndConstructors(
     resolutionFacade: ResolutionFacade,
     kindFilter: DescriptorKindFilter,
@@ -474,5 +476,6 @@ fun ResolutionScope.collectSyntheticStaticMembersAndConstructors(
         .filter { kindFilter.accepts(it) && nameFilter(it.name) }
 }
 
+@OptIn(FrontendInternals::class)
 private inline fun <reified T : Any> ResolutionFacade.frontendService(): T
         = this.getFrontendService(T::class.java)

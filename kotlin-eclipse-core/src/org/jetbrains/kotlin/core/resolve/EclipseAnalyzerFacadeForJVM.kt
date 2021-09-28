@@ -182,7 +182,7 @@ object EclipseAnalyzerFacadeForJVM {
                 CompositePackageFragmentProvider(listOf(
                     moduleClassResolver.compiledCodeResolver.packageFragmentProvider,
                     dependenciesContainer.get<JvmBuiltInsPackageFragmentProvider>()
-            ))
+            ), "")
             )
             dependenciesContext.module
         }
@@ -217,7 +217,7 @@ object EclipseAnalyzerFacadeForJVM {
         module.initialize(CompositePackageFragmentProvider(
                 listOf(container.get<KotlinCodeAnalyzer>().packageFragmentProvider) +
                         additionalProviders
-        ))
+        , ""))
 
         try {
             container.get<LazyTopDownAnalyzer>().analyzeDeclarations(TopDownAnalysisMode.TopLevelDeclarations, filesToAnalyze)

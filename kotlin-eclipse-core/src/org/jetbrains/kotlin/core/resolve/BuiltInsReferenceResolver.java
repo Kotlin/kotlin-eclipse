@@ -20,7 +20,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VfsBundle;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiDirectory;
@@ -36,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.common.CommonPlatformAnalyzerServices;
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
+import org.jetbrains.kotlin.builtins.StandardNames;
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl;
 import org.jetbrains.kotlin.container.DslKt;
 import org.jetbrains.kotlin.container.StorageComponentContainer;
@@ -61,10 +61,7 @@ import org.jetbrains.kotlin.resolve.scopes.MemberScope;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BuiltInsReferenceResolver {
     private static final String RUNTIME_SRC_DIR = "jar:file:"+ ProjectUtils.buildLibPath("kotlin-stdlib-sources")+ "!/kotlin";
@@ -93,12 +90,13 @@ public class BuiltInsReferenceResolver {
         
         //if the sources are present, then the value cannot be null
         assert (jetBuiltInsFiles != null);
-        
+
+        Map<ModuleCapability<?>, Object> tempCapabilities = Collections.emptyMap();
         MutableModuleContext newModuleContext = ContextKt.ContextForNewModule(
                 ContextKt.ProjectContext(myProject, "Context for built-ins resolver module"),
                 Name.special("<built-ins resolver module>"), 
                 DefaultBuiltIns.getInstance(),
-                null);
+                null, tempCapabilities);
         newModuleContext.setDependencies(newModuleContext.getModule());
 
         StorageComponentContainer container = InjectionKt.createContainerForLazyResolve(
@@ -115,7 +113,7 @@ public class BuiltInsReferenceResolver {
         newModuleContext.initializeModuleContents(resolveSession.getPackageFragmentProvider());
         
         PackageViewDescriptor packageView = newModuleContext.getModule().getPackage(
-                KotlinBuiltIns.BUILT_INS_PACKAGE_FQ_NAME);
+                StandardNames.BUILT_INS_PACKAGE_FQ_NAME);
         List<PackageFragmentDescriptor> fragments = packageView.getFragments();
         
         moduleDescriptor = newModuleContext.getModule();
@@ -170,11 +168,13 @@ public class BuiltInsReferenceResolver {
               path = subURL.getPath();
             }
             catch (MalformedURLException e) {
-              throw new RuntimeException(VfsBundle.message("url.parse.unhandled.exception"), e);
+                //VfsBundle.message("url.parse.unhandled.exception")
+              throw new RuntimeException("Malformed URL!", e);
             }
           }
           else {
-            throw new RuntimeException(new IOException(VfsBundle.message("url.parse.error", url.toExternalForm())));
+            throw new RuntimeException(new IOException("Url Parse Error" + url.toExternalForm()));
+              //VfsBundle.message("url.parse.error", url.toExternalForm())
           }
         }
         if (SystemInfo.isWindows) {
@@ -229,7 +229,7 @@ public class BuiltInsReferenceResolver {
         }
         
         if (originalDescriptor instanceof PackageFragmentDescriptor) {
-            return KotlinBuiltIns.BUILT_INS_PACKAGE_FQ_NAME.equals(((PackageFragmentDescriptor) originalDescriptor).getFqName())
+            return StandardNames.BUILT_INS_PACKAGE_FQ_NAME.equals(((PackageFragmentDescriptor) originalDescriptor).getFqName())
                    ? builtinsPackageFragment
                    : null;
         }
