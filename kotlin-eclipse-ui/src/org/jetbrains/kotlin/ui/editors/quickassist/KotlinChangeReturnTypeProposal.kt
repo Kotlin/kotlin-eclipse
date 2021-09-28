@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.ui.editors.quickassist
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
@@ -128,6 +129,6 @@ class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistPr
         val ktFile = editor.parsedFile
         if (ktFile == null) return null
         
-        return getBindingContext(ktFile)
+        return ktFile.getBindingContext()
     }
 }
