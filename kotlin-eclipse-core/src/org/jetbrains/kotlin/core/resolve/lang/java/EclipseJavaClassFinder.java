@@ -24,6 +24,8 @@ import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.NameLookup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.kotlin.config.JvmTarget;
+import org.jetbrains.kotlin.config.LanguageVersionSettings;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 import org.jetbrains.kotlin.core.model.KotlinEnvironment;
 import org.jetbrains.kotlin.core.model.KotlinJavaManager;
@@ -36,6 +38,7 @@ import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.name.FqName;
 import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.CodeAnalyzerInitializer;
+import org.jetbrains.kotlin.resolve.jvm.JvmCodeAnalyzerInitializer;
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer;
 
 import java.util.Arrays;
@@ -48,15 +51,18 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
     public EclipseJavaClassFinder(@NotNull IJavaProject project) {
         javaProject = project;
     }
-    
+
     @Override
-    public void initialize(@NotNull BindingTrace trace, @NotNull KotlinCodeAnalyzer codeAnalyzer) {
+    public void initialize(@NotNull BindingTrace trace, @NotNull KotlinCodeAnalyzer codeAnalyzer, @NotNull LanguageVersionSettings languageVersionSettings, @NotNull JvmTarget jvmTarget) {
         if (javaProject == null) {
             return;
         }
-        
+
         MockProject ideaProject = KotlinEnvironment.Companion.getEnvironment(javaProject.getProject()).getProject();
-        CodeAnalyzerInitializer.Companion.getInstance(ideaProject).initialize(trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer);
+        JvmCodeAnalyzerInitializer tempInitializer = (JvmCodeAnalyzerInitializer) CodeAnalyzerInitializer.Companion.getInstance(ideaProject);
+        //trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer, languageVersionSettings
+        tempInitializer.initialize(trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer, languageVersionSettings, jvmTarget);
+        //trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer
     }
 
     @Override

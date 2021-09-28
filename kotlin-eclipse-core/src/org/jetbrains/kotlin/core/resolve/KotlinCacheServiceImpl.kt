@@ -34,13 +34,23 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.diagnostics.KotlinSuppressCache
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.kotlin.analyzer.ResolverForProject
+import org.jetbrains.kotlin.caches.resolve.PlatformAnalysisSettings
+import org.jetbrains.kotlin.diagnostics.DiagnosticSink
+import org.jetbrains.kotlin.idea.FrontendInternals
 
-class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheService {
+class KotlinCacheServiceImpl(private val ideaProject: Project) : KotlinCacheService {
     override fun getResolutionFacade(elements: List<KtElement>, platform: TargetPlatform): ResolutionFacade {
         return KotlinSimpleResolutionFacade(ideaProject, elements)
     }
 
     override fun getResolutionFacadeByFile(file: PsiFile, platform: TargetPlatform): ResolutionFacade {
+        throw UnsupportedOperationException()
+    }
+
+    override fun getResolutionFacadeByModuleInfo(
+        moduleInfo: ModuleInfo,
+        settings: PlatformAnalysisSettings
+    ): ResolutionFacade? {
         throw UnsupportedOperationException()
     }
 
@@ -55,6 +65,7 @@ class KotlinCacheServiceImpl(val ideaProject: Project) : KotlinCacheService {
 		null
 }
 
+@OptIn(FrontendInternals::class)
 class KotlinSimpleResolutionFacade(
         override val project: Project,
         private val elements: List<KtElement>) : ResolutionFacade {
@@ -71,35 +82,37 @@ class KotlinSimpleResolutionFacade(
         get() = throw UnsupportedOperationException()
     
     override fun analyze(element: KtElement, bodyResolveMode: BodyResolveMode): BindingContext {
-        val ktFile = element.getContainingKtFile()
+        val ktFile = element.containingKtFile
         return KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
     }
-    
+
+    override fun analyzeWithAllCompilerChecks(
+        elements: Collection<KtElement>,
+        callback: DiagnosticSink.DiagnosticsCallback?
+    ): AnalysisResult {
+        val ktFile = elements.first().containingKtFile
+        return KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult
+    }
+
     override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext {
         if (elements.isEmpty()) {
             return BindingContext.EMPTY
         }
-        val ktFile = elements.first().getContainingKtFile()
+        val ktFile = elements.first().containingKtFile
         return KotlinAnalysisFileCache.getAnalysisResult(ktFile).analysisResult.bindingContext
     }
-    
-    override fun analyzeWithAllCompilerChecks(elements: Collection<KtElement>): AnalysisResult {
-        throw UnsupportedOperationException()
-    }
-    
+
     override fun <T : Any> getFrontendService(element: PsiElement, serviceClass: Class<T>): T {
         throw UnsupportedOperationException()
     }
     
     override fun <T : Any> getFrontendService(serviceClass: Class<T>): T {
-        val files = elements.map { it.getContainingKtFile() }.toSet()
+        val files = elements.map { it.containingKtFile }.toSet()
         if (files.isEmpty()) throw IllegalStateException("Elements should not be empty")
         
         val componentProvider = KotlinAnalyzer.analyzeFiles(files).componentProvider
-        if (componentProvider == null) {
-            throw IllegalStateException("Trying to get service from non-initialized project")
-        }
-        
+            ?: throw IllegalStateException("Trying to get service from non-initialized project")
+
         return componentProvider.getService(serviceClass)
     }
     

@@ -47,7 +47,7 @@ import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.Visibilities;
 import org.jetbrains.kotlin.descriptors.Visibility;
-import org.jetbrains.kotlin.load.java.JavaVisibilities;
+import org.jetbrains.kotlin.descriptors.java.JavaVisibilities;
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaValueParameter;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
@@ -70,14 +70,14 @@ public class EclipseJavaElementUtil {
     static Visibility getVisibility(@NotNull IBinding member) {
         int flags = member.getModifiers();
         if (Modifier.isPublic(flags)) {
-            return Visibilities.PUBLIC;
+            return Visibilities.Public.INSTANCE;
         } else if (Modifier.isPrivate(flags)) {
-            return Visibilities.PRIVATE;
+            return Visibilities.Private.INSTANCE;
         } else if (Modifier.isProtected(flags)) {
-            return Flags.isStatic(flags) ? JavaVisibilities.PROTECTED_STATIC_VISIBILITY : JavaVisibilities.PROTECTED_AND_PACKAGE;
+            return Flags.isStatic(flags) ? JavaVisibilities.ProtectedAndPackage.INSTANCE : JavaVisibilities.ProtectedAndPackage.INSTANCE;
         }
 
-        return JavaVisibilities.PACKAGE_VISIBILITY;
+        return JavaVisibilities.PackageVisibility.INSTANCE;
     }
 
     private static List<ITypeBinding> getSuperTypes(@NotNull ITypeBinding typeBinding) {

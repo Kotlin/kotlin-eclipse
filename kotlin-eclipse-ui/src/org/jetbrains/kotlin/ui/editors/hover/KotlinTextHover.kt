@@ -59,7 +59,7 @@ class KotlinTextHover(private val editor: KotlinEditor) : ITextHover, ITextHover
 
     override fun getHoverInfo2(textViewer: ITextViewer?, hoverRegion: IRegion): Any? =
         createHoverData(hoverRegion.offset)?.let { data ->
-            extensionsHovers.firstNotNullResult { hover ->
+            extensionsHovers.firstNotNullOfOrNull { hover ->
                 hover.takeIf { it.isAvailable(data) }?.getHoverInfo(data)?.also {
                     bestHover = hover
                 }

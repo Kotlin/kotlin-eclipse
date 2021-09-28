@@ -40,6 +40,7 @@ import org.jetbrains.kotlin.load.java.InternalFlexibleTypeTransformer
 import org.jetbrains.kotlin.load.java.JavaClassesTracker
 import org.jetbrains.kotlin.load.java.components.SignaturePropagatorImpl
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
+import org.jetbrains.kotlin.load.java.lazy.JavaModuleAnnotationsProvider
 import org.jetbrains.kotlin.load.java.lazy.JavaResolverSettings
 import org.jetbrains.kotlin.load.java.lazy.ModuleClassResolver
 import org.jetbrains.kotlin.load.kotlin.DeserializationComponentsForJava
@@ -48,8 +49,8 @@ import org.jetbrains.kotlin.load.kotlin.VirtualFileFinderFactory
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
 import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver
+import org.jetbrains.kotlin.resolve.jvm.SyntheticJavaPartsProvider
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
-import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 
@@ -108,10 +109,12 @@ fun createContainerForLazyResolveWithJava(
     useInstance(declarationProviderFactory)
     javaProject?.let { useInstance(it) }
 
-    useInstance(languageVersionSettings.getFlag(JvmAnalysisFlags.jsr305))
+    //TODO???
+    useInstance(languageVersionSettings.getFlag(JvmAnalysisFlags.javaTypeEnhancementState))
 
     if (useBuiltInsProvider) {
-        useInstance((moduleContext.module.builtIns as JvmBuiltIns).settings)
+        //TODO???
+        useInstance((moduleContext.module.builtIns as JvmBuiltIns).customizer)
         useImpl<JvmBuiltInsPackageFragmentProvider>()
     }
 
@@ -120,9 +123,9 @@ fun createContainerForLazyResolveWithJava(
     targetEnvironment.configure(this)
 
     useInstance(JavaResolverSettings.create(
-            isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines)))
+            isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines), false, false))
 }.apply {
-    get<EclipseJavaClassFinder>().initialize(bindingTrace, get<KotlinCodeAnalyzer>())
+    get<EclipseJavaClassFinder>().initialize(bindingTrace, get(),languageVersionSettings, jvmTarget)
 }
 
 fun createContainerForTopDownAnalyzerForJvm(

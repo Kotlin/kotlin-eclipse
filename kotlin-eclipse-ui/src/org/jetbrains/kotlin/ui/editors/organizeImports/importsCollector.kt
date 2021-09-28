@@ -39,7 +39,7 @@ import kotlin.collections.LinkedHashSet
 fun collectDescriptorsToImport(file: KtFile): OptimizedImportsBuilder.InputData {
     val visitor = CollectUsedDescriptorsVisitor(file)
     file.accept(visitor)
-    return OptimizedImportsBuilder.InputData(visitor.descriptorsToImport, visitor.namesToImport, emptyList())
+    return OptimizedImportsBuilder.InputData(visitor.descriptorsToImport, visitor.namesToImport, emptyList(), emptySet() /*TODO??*/)
 }
 
 private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() {

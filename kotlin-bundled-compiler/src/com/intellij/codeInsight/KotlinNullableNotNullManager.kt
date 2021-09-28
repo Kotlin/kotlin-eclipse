@@ -14,14 +14,14 @@
  * limitations under the License.
  *
  *******************************************************************************/
-package org.jetbrains.kotlin.core.model
+package com.intellij.codeInsight
 
-import com.intellij.codeInsight.NullabilityAnnotationInfo
-import com.intellij.codeInsight.NullableNotNullManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiModifierListOwner
+import org.jetbrains.annotations.Nullable
+
 
 // Dummy implementation. Will be changed to something more useful, when KE-277 is fixed.
 class KotlinNullableNotNullManager(project: Project) : NullableNotNullManager(project) {
@@ -41,13 +41,27 @@ class KotlinNullableNotNullManager(project: Project) : NullableNotNullManager(pr
         _nullables.addAll(annotations)
     }
 
-    override fun getDefaultNotNull(): String = "NotNull"
-
     override fun getNotNulls(): List<String> = _notNulls
+
+    override fun setDefaultNotNull(defaultNotNull: String) {
+    }
 
     override fun getDefaultNullable(): String = "Nullable"
 
-    override fun setDefaultNotNull(defaultNotNull: String) {
+    override fun getDefaultNotNull(): String {
+        return "NotNullable"
+    }
+
+    override fun getDefaultNullables(): MutableList<String> {
+        return mutableListOf(defaultNullable)
+    }
+
+    override fun getDefaultNotNulls(): MutableList<String> {
+        return mutableListOf(defaultNotNull)
+    }
+
+    override fun getAllDefaultAnnotations(): MutableList<String> {
+        return (defaultNullables + defaultNotNulls).toMutableList()
     }
 
     override fun setNotNulls(vararg annotations: String) {
@@ -71,6 +85,15 @@ class KotlinNullableNotNullManager(project: Project) : NullableNotNullManager(pr
         return owner.modifierList?.annotations?.any { annotation ->
             annotation.qualifiedName in notNullAnnotations
         } ?: false
+    }
+
+    @Nullable
+    override fun getNullityDefault(
+        container: PsiModifierListOwner,
+        placeTargetTypes: Array<PsiAnnotation.TargetType>,
+        context: PsiElement, superPackage: Boolean
+    ): NullabilityAnnotationInfo? {
+        return null
     }
 
     override fun isNullable(owner: PsiModifierListOwner, checkBases: Boolean) = !isNotNull(owner, checkBases)
