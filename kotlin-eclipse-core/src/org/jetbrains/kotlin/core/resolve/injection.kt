@@ -78,23 +78,25 @@ fun StorageComponentContainer.configureJavaTopDownAnalysis(
 }
 
 fun createContainerForLazyResolveWithJava(
-        moduleContext: ModuleContext,
-        bindingTrace: BindingTrace,
-        declarationProviderFactory: DeclarationProviderFactory,
-        moduleContentScope: GlobalSearchScope,
-        moduleClassResolver: ModuleClassResolver,
-        targetEnvironment: TargetEnvironment,
-        lookupTracker: LookupTracker,
-        packagePartProvider: PackagePartProvider,
-        jvmTarget: JvmTarget,
-        languageVersionSettings: LanguageVersionSettings,
-        javaProject: IJavaProject?,
-        useBuiltInsProvider: Boolean
+    moduleContext: ModuleContext,
+    bindingTrace: BindingTrace,
+    declarationProviderFactory: DeclarationProviderFactory,
+    moduleContentScope: GlobalSearchScope,
+    moduleClassResolver: ModuleClassResolver,
+    targetEnvironment: TargetEnvironment,
+    lookupTracker: LookupTracker,
+    packagePartProvider: PackagePartProvider,
+    jvmTarget: JvmTarget,
+    languageVersionSettings: LanguageVersionSettings,
+    javaProject: IJavaProject?,
+    useBuiltInsProvider: Boolean,
+    javaModuleAnnotationsProvider: JavaModuleAnnotationsProvider,
+    analyzerService: PlatformDependentAnalyzerServices?
 ): StorageComponentContainer = createContainer("LazyResolveWithJava", JvmPlatformAnalyzerServices) {
     configureModule(
         moduleContext,
         JvmPlatforms.jvmPlatformByTargetVersion(jvmTarget),
-        JvmPlatformAnalyzerServices,
+        analyzerService ?: JvmPlatformAnalyzerServices,
         bindingTrace,
         languageVersionSettings
     )
@@ -104,8 +106,10 @@ fun createContainerForLazyResolveWithJava(
     useImpl<EclipseTraceBasedJavaResolverCache>()
     useImpl<EclipseJavaSourceElementFactory>()
 
+    useInstance(SyntheticJavaPartsProvider.EMPTY)
     useInstance(packagePartProvider)
     useInstance(moduleClassResolver)
+    useInstance(javaModuleAnnotationsProvider)
     useInstance(declarationProviderFactory)
     javaProject?.let { useInstance(it) }
 
@@ -138,11 +142,13 @@ fun createContainerForTopDownAnalyzerForJvm(
         jvmTarget: JvmTarget,
         languageVersionSettings: LanguageVersionSettings,
         moduleClassResolver: ModuleClassResolver,
-        javaProject: IJavaProject?
+        javaProject: IJavaProject?,
+        javaModuleAnnotationsProvider: JavaModuleAnnotationsProvider,
+        analyzerService: PlatformDependentAnalyzerServices?
 ): ComponentProvider = createContainerForLazyResolveWithJava(
         moduleContext, bindingTrace, declarationProviderFactory, moduleContentScope, moduleClassResolver,
         CompilerEnvironment, lookupTracker, packagePartProvider, jvmTarget, languageVersionSettings, javaProject,
-        useBuiltInsProvider = true
+        useBuiltInsProvider = true, javaModuleAnnotationsProvider, analyzerService
 )
 
 // Copy functions from Dsl.kt as they were shrinked by proguard

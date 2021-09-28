@@ -16,28 +16,26 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.asJava
 
-import org.eclipse.core.internal.jobs.JobStatus
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
-import org.eclipse.core.resources.WorkspaceJob
-import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.codegen.KotlinCodegenFacade
 import org.jetbrains.kotlin.codegen.state.GenerationState
+import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinJavaManager
+import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.fileClasses.JvmFileClassUtil
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtClassOrObject
+import org.jetbrains.kotlin.psi.KtCodeFragment
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtScript
-import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.psi.KtCodeFragment
 
 object KotlinLightClassGeneration {
 
@@ -55,13 +53,20 @@ object KotlinLightClassGeneration {
             eclipseProject: IProject,
             jetFiles: List<KtFile>,
             requestedClassName: String): GenerationState {
+
+        val tempProps = KotlinEnvironment.getEnvironment(eclipseProject).compilerProperties
+
+        val tempConfig = CompilerConfiguration().apply {
+            put(CommonConfigurationKeys.LANGUAGE_VERSION_SETTINGS, tempProps.languageVersionSettings)
+        }
+
         val state = GenerationState.Builder(
                 KotlinEnvironment.getEnvironment(eclipseProject).project,
                 LightClassBuilderFactory(),
                 analysisResult.moduleDescriptor,
                 analysisResult.bindingContext,
                 jetFiles,
-                CompilerConfiguration.EMPTY)
+                tempConfig)
         	.generateDeclaredClassFilter(object : GenerationState.GenerateClassFilter() {
 
                     override fun shouldGenerateCodeFragment(script: KtCodeFragment): Boolean = false
