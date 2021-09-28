@@ -1,6 +1,5 @@
 import com.intellij.buildsupport.dependencies.PackageListFromSimpleFile
 import com.intellij.buildsupport.resolve.http.idea.IntellijIdeaArtifactsResolver
-import com.intellij.buildsupport.resolve.tc.kotlin.CommonIDEArtifactsResolver
 import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 import com.intellij.buildsupport.utils.FileUtils
 
@@ -12,8 +11,8 @@ val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jet
 
 // properties that might/should be modifiable
 val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3546752"
-val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.5.30"
-val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.5.1"
+val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.5.31"
+val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.5.2"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
 val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "202.8194.7"
 val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2020.2"
@@ -148,8 +147,8 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
     dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars)
 
     from(zipTree("$libDir/kotlin-plugin.jar"))
-    destinationDir = libDir
-    archiveName = "kotlin-plugin-parts.jar"
+    destinationDirectory.set(libDir)
+    archiveFileName.set("kotlin-plugin-parts.jar")
     include("**")
     exclude("com/intellij/util/**")
 
@@ -237,8 +236,8 @@ val createIdeDependenciesJar by tasks.registering(Jar::class) {
     val extractDir: File by extractSelectedFilesFromIdeaJars.get().extra
 
     from(extractDir)
-    destinationDir = libDir
-    archiveName = "ide-dependencies.jar"
+    destinationDirectory.set(libDir)
+    archiveFileName.set("ide-dependencies.jar")
 
     manifest {
         attributes(mapOf("Built-By" to "JetBrains",
@@ -281,8 +280,8 @@ val repackageIdeaAndKotlinCompilerSources by tasks.registering(Zip::class) {
     from(zipTree(locallyDownloadedKotlinCompilerSourcesFile))
     from(zipTree(locallyDownloadedIdeaSourcesFile))
 
-    destinationDir = libDir
-    archiveName = "kotlin-compiler-sources.jar"
+    destinationDirectory.set(libDir)
+    archiveFileName.set("kotlin-compiler-sources.jar")
 }
 
 val downloadBundled by tasks.registering {
