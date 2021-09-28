@@ -1,15 +1,9 @@
 package org.jetbrains.kotlin.ui.commands.j2k;
 
-import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -17,14 +11,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.IBuffer;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.ITypeRoot;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.*;
 import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.DocumentAdapter;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
@@ -57,10 +44,11 @@ import org.jetbrains.kotlin.ui.formatter.KotlinFormatterKt;
 import org.jetbrains.kotlin.ui.launch.KotlinRuntimeConfigurator;
 import org.jetbrains.kotlin.wizards.FileCreationOp;
 
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.text.StringUtil;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
+import static org.eclipse.ui.ide.undo.WorkspaceUndoUtil.getUIInfoAdapter;
 
 public class JavaToKotlinActionHandler extends AbstractHandler {
     
@@ -170,7 +158,7 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
     
     private Pair<IStatus, List<IFile>> convertToKotlin(@NotNull Set<CompilationUnit> compilationUnits, @NotNull Shell shell) {
         try {
-            List<IFile> convertedFiles = new ArrayList<IFile>();
+            List<IFile> convertedFiles = new ArrayList<>();
             CompositeUndoableOperation compositeOperation = new CompositeUndoableOperation("Convert Java to Kotlin");
             for (CompilationUnit compilationUnit : compilationUnits) {
                 ConvertedKotlinData convertedFile = getConvertedFileData(compilationUnit, shell);
@@ -194,10 +182,10 @@ public class JavaToKotlinActionHandler extends AbstractHandler {
             PlatformUI.getWorkbench().getOperationSupport().getOperationHistory().execute(
                     compositeOperation, null, getUIInfoAdapter(shell));
             
-            return new Pair<IStatus, List<IFile>>(Status.OK_STATUS, convertedFiles);
+            return new Pair<>(Status.OK_STATUS, convertedFiles);
         } catch (ExecutionException e) {
             KotlinLogger.logError(e.getMessage(), null);
-            return new Pair<IStatus, List<IFile>>(new Status(IStatus.ERROR, Activator.Companion.getPLUGIN_ID(), e.getMessage()), Collections.<IFile>emptyList());
+            return new Pair<>(new Status(IStatus.ERROR, Activator.Companion.getPLUGIN_ID(), e.getMessage()), Collections.<IFile>emptyList());
         }
     }
     
