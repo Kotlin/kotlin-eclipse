@@ -2,6 +2,7 @@
 
 com.intellij.psi.codeStyle
 com.intellij.psi.formatter
+com.intellij.openapi.components
 com.intellij.openapi.options
 com.intellij.application.options
 com.intellij.application.options.codeStyle.properties
@@ -10,8 +11,9 @@ com.intellij.formatting.engine
 com.intellij.util.containers
 gnu.trove
 com.intellij.openapi.util
+com.intellij.openapi.util.text
 com.intellij.psi.codeStyle.arrangement
 com.intellij.configurationStore
 com.intellij.openapi.progress
-com.intellij.openapi.util
 com.intellij.ui
+com.intellij.util.text

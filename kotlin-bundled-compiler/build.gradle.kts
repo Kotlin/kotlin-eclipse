@@ -11,13 +11,13 @@ val teamcityBaseUrl ="https://teamcity.jetbrains.com"
 val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea"
 
 // properties that might/should be modifiable
-val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3282462"
-val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.4.0"
-val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.3.1"
+val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3546752"
+val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.5.30"
+val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.5.1"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
-val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "193.6494.35"
-val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2019.3"
-val ignoreSources: Boolean = project.hasProperty("ignoreSources")
+val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "202.8194.7"
+val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2020.2"
+val ignoreSources: Boolean = true//project.hasProperty("ignoreSources")
 
 //directories
 val testDataDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_testData")
@@ -77,7 +77,7 @@ val downloadTestData by tasks.registering {
     }
 
     doLast {
-        if (!localTCArtifacts) {
+        if (!localTCArtifacts && !locallyDownloadedTestDataFile.exists()) {
             tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_TEST_DATA_ZIP, locallyDownloadedTestDataFile)
         }
 
@@ -85,8 +85,6 @@ val downloadTestData by tasks.registering {
             from(zipTree(locallyDownloadedTestDataFile))
             into(testDataDir)
         }
-
-        locallyDownloadedTestDataFile.delete()
     }
 }
 
@@ -102,7 +100,7 @@ val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
     }
 
     doLast {
-        if (!localTCArtifacts) {
+        if (!localTCArtifacts && !locallyDownloadedCompilerFile.exists()) {
             tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_PLUGIN_ZIP, locallyDownloadedCompilerFile)
         }
 
@@ -111,6 +109,15 @@ val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
 
             setIncludes(setOf("Kotlin/lib/kotlin-plugin.jar",
                     "Kotlin/lib/ide-common.jar",
+                    "Kotlin/lib/kotlin-core.jar",
+                    "Kotlin/lib/kotlin-idea.jar",
+                    "Kotlin/lib/kotlin-common.jar",
+                    "Kotlin/lib/kotlin-j2k-old.jar",
+                    "Kotlin/lib/kotlin-j2k-new.jar",
+                    "Kotlin/lib/kotlin-j2k-idea.jar",
+                    "Kotlin/lib/kotlin-j2k-services.jar",
+                    "Kotlin/lib/kotlin-frontend-independent.jar",
+                    "Kotlin/lib/kotlin-formatter.jar",
                     "Kotlin/kotlinc/lib/kotlin-compiler.jar",
                     "Kotlin/kotlinc/lib/kotlin-stdlib.jar",
                     "Kotlin/kotlinc/lib/kotlin-reflect.jar",
@@ -155,12 +162,13 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
     val locallyDownloadedIntellijCoreFile by extra { file("$downloadDir/intellij-core.zip") }
 
     doLast {
-        ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.INTELLIJ_CORE_ZIP, locallyDownloadedIntellijCoreFile)
-
+        if(!locallyDownloadedIntellijCoreFile.exists()) {
+            ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.INTELLIJ_CORE_ZIP, locallyDownloadedIntellijCoreFile)
+        }
         copy {
             from(zipTree(locallyDownloadedIntellijCoreFile))
 
-            setIncludes(setOf("intellij-core.jar", "intellij-core-analysis.jar"))
+            setIncludes(setOf("intellij-core.jar", "intellij-core-analysis-deprecated.jar"))
 
             includeEmptyDirs = false
 
@@ -171,7 +179,7 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
     val locallyDownloadedIdeaZipFile by extra { file("$downloadDir/ideaIC.zip") }
-    val chosenJars by extra { setOf("openapi",
+    val chosenJars by extra { setOf(//"openapi",
             "platform-util-ui",
             "util",
             "idea",
@@ -180,8 +188,9 @@ val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
             "platform-impl") }
 
     doLast {
-        ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.IDEA_IC_ZIP, locallyDownloadedIdeaZipFile)
-
+        if(!locallyDownloadedIdeaZipFile.exists()) {
+            ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.IDEA_IC_ZIP, locallyDownloadedIdeaZipFile)
+        }
         copy {
             from(zipTree(locallyDownloadedIdeaZipFile))
 
@@ -204,7 +213,7 @@ val extractSelectedFilesFromIdeaJars by tasks.registering {
 
     val packages by extra {
         /*new PackageListFromManifest("META-INF/MANIFEST.MF"),*/
-        PackageListFromSimpleFile("referencedPackages.txt").pathsToInclude
+        PackageListFromSimpleFile(file("referencedPackages.txt").path).pathsToInclude
     }
     val extractDir by extra { file("$downloadDir/dependencies") }
 
@@ -254,8 +263,12 @@ val downloadIdeaAndKotlinCompilerSources by tasks.registering {
     val locallyDownloadedIdeaSourcesFile by extra { file("$downloadDir/idea-sdk-sources.jar") }
 
     doLast {
-        tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_COMPILER_SOURCES_JAR, locallyDownloadedKotlinCompilerSourcesFile)
-        ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.IDEA_IC_SOURCES_JAR, locallyDownloadedIdeaSourcesFile)
+        if(!locallyDownloadedKotlinCompilerSourcesFile.exists()) {
+            tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_COMPILER_SOURCES_JAR, locallyDownloadedKotlinCompilerSourcesFile)
+        }
+        if(!locallyDownloadedIdeaSourcesFile.exists()) {
+            ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.IDEA_IC_SOURCES_JAR, locallyDownloadedIdeaSourcesFile)
+        }
     }
 }
 

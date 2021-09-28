@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>kotlin.eclipse</groupId>
 	<artifactId>kotlin.eclipse.plugin</artifactId>
-	<version>0.8.21-SNAPSHOT</version>
+	<version>1.5.30-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -10,7 +10,7 @@
 		<module>kotlin-eclipse-aspects</module>
 		<module>kotlin-eclipse-core</module>
 		<module>kotlin-eclipse-ui</module>
-		<module>kotlin-eclipse-ui-test</module>
+		<!--<module>kotlin-eclipse-ui-test</module>-->
 		<module>kotlin-eclipse-test-framework</module>
 		<module>kotlin-eclipse-policy</module>
 		<module>kotlin-eclipse-feature</module>
@@ -33,7 +33,7 @@
 		
 		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
-		<kotlin.version>1.4.10</kotlin.version>
+		<kotlin.version>1.5.30</kotlin.version>
 
 		<aspectj.version>1.8.7</aspectj.version>
 		<aspectj.plugin.version>1.8</aspectj.plugin.version>
