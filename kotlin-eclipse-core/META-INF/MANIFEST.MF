@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-core
 Bundle-SymbolicName: org.jetbrains.kotlin.core;singleton:=true
-Bundle-Version: 0.8.21.qualifier
+Bundle-Version: 1.5.30.qualifier
 Bundle-Activator: org.jetbrains.kotlin.core.Activator
 Bundle-Vendor: JetBrains
 Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
@@ -14,7 +14,15 @@ Require-Bundle: org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.core.expressions,
  org.eclipse.jdt.junit
 Bundle-ActivationPolicy: lazy
-Import-Package: org.eclipse.core.filesystem,
+Import-Package: com.intellij.codeInsight,
+ com.intellij.openapi.components,
+ kotlin.script.experimental.annotations,
+ kotlin.script.experimental.api,
+ kotlin.script.experimental.dependencies,
+ kotlin.script.experimental.host,
+ kotlin.script.experimental.util,
+ kotlin.script.experimental.jvm,
+ org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.debug.internal.ui.viewers,
  org.eclipse.jdt.core,
@@ -25,7 +33,8 @@ Import-Package: org.eclipse.core.filesystem,
  org.eclipse.jdt.internal.debug.core.breakpoints,
  org.eclipse.jdt.junit.launcher,
  org.eclipse.jdt.ui,
- org.eclipse.jface.text
+ org.eclipse.jface.text,
+ org.jetbrains.kotlin.resolve.sam
 Export-Package: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.core.asJava,
  org.jetbrains.kotlin.core.builder,
