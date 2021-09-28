@@ -12,3 +12,10 @@ abstract class ScriptTemplateContribution {
 
     open fun scriptEnvironment(script: File): Map<String, Any?> = emptyMap()
 }
+
+abstract class JavaScriptTemplateContribution : ScriptTemplateContribution() {
+
+    abstract val javaClass: Class<*>
+
+    override fun loadTemplate(): KClass<*> = javaClass.kotlin
+}

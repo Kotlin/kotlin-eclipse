@@ -69,7 +69,7 @@ object KotlinCompiler {
     ): KotlinCompilerResult {
         val arguments = getCompilerArguments(javaProject, outputDir)
         val messageCollector = CompilerMessageCollector()
-        val disposable = Disposer.newDisposable()
+        val disposable = Disposer.newDisposable("Incremental compilation")
         val config = CompilerConfiguration().apply {
             put(JVMConfigurationKeys.NO_JDK, true)
             put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
@@ -203,6 +203,8 @@ object KotlinCompiler {
             if (location != null) {
                 val messageLocation = CompilerMessageLocation.create(location.path, location.line, location.column, location.lineContent)
                 compilerOutput.add(severity, message, messageLocation)
+            } else {
+                compilerOutput.add(severity, message, null)
             }
         }
 
