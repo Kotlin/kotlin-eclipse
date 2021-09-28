@@ -16,13 +16,10 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.annotations;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiErrorElement;
+import com.intellij.psi.PsiFile;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -49,10 +46,7 @@ import org.jetbrains.kotlin.psi.KtFile;
 import org.jetbrains.kotlin.resolve.AnalyzingUtils;
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics;
 
-import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiErrorElement;
-import com.intellij.psi.PsiFile;
+import java.util.*;
 
 public class DiagnosticAnnotationUtil {
 
@@ -63,7 +57,7 @@ public class DiagnosticAnnotationUtil {
     
     @NotNull
     public Map<IFile, List<DiagnosticAnnotation>> handleDiagnostics(@NotNull Diagnostics diagnostics) {
-        Map<IFile, List<DiagnosticAnnotation>> annotations = new HashMap<IFile, List<DiagnosticAnnotation>>();
+        Map<IFile, List<DiagnosticAnnotation>> annotations = new HashMap<>();
         for (Diagnostic diagnostic : diagnostics) {
             if (diagnostic.getTextRanges().isEmpty()) {
                 continue;
@@ -78,13 +72,15 @@ public class DiagnosticAnnotationUtil {
                     getFileForLocation(new Path(virtualFile.getPath()));
             
             if (!annotations.containsKey(curFile)) {
-                annotations.put(curFile, new ArrayList<DiagnosticAnnotation>());
+                annotations.put(curFile, new ArrayList<>());
             }
-            
+
+            if (curFile != null) {
             DiagnosticAnnotation annotation = createKotlinAnnotation(diagnostic, curFile);
             annotations.get(curFile).add(annotation);
         }
-        
+        }
+
         return annotations;
     }
     
@@ -101,7 +97,7 @@ public class DiagnosticAnnotationUtil {
     @NotNull
     public List<DiagnosticAnnotation> createParsingDiagnosticAnnotations(@NotNull IFile file) {
         KtFile jetFile = KotlinPsiManager.INSTANCE.getParsedFile(file);
-        List<DiagnosticAnnotation> result = new ArrayList<DiagnosticAnnotation>();
+        List<DiagnosticAnnotation> result = new ArrayList<>();
         for (PsiErrorElement syntaxError : AnalyzingUtils.getSyntaxErrorRanges(jetFile)) {
             try {
                 result.add(createKotlinAnnotation(syntaxError, file));

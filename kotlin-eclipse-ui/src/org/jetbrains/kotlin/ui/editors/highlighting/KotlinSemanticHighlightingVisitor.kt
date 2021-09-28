@@ -219,8 +219,7 @@ public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document:
             }
             
             is ValueParameterDescriptor -> KotlinHighlightingAttributes.PARAMETER_VARIABLE
-            
-            else -> throw IllegalStateException("Cannot find highlight attributes for $descriptor")
+            else -> KotlinHighlightingAttributes.PARAMETER_VARIABLE
         }
         if (typeName != null) highlightSmartCast(element.getTextRange(), typeName)
         highlight(attributes, element.getTextRange())

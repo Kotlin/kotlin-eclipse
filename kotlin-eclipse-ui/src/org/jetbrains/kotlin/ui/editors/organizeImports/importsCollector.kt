@@ -19,8 +19,8 @@ package org.jetbrains.kotlin.ui.editors.organizeImports
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.core.references.canBeResolvedViaImport
 import org.jetbrains.kotlin.core.references.createReferences
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.descriptors.*
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
 import org.jetbrains.kotlin.idea.imports.importableFqName
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
@@ -48,7 +48,7 @@ private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() 
     val descriptorsToImport = LinkedHashSet<DeclarationDescriptor>()
     val namesToImport = LinkedHashMap<FqName, HashSet<Name>>()
 
-    private val bindingContext = getBindingContext(file)!!
+    private val bindingContext = file.getBindingContext()
 
     private val aliases: Map<FqName, List<Name>> = file.importDirectives
         .asSequence()

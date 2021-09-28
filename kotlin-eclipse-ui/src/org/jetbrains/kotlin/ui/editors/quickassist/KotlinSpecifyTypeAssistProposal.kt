@@ -19,23 +19,15 @@ package org.jetbrains.kotlin.ui.editors.quickassist
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
-import org.jetbrains.kotlin.psi.KtCallableDeclaration
-import org.jetbrains.kotlin.psi.KtCodeFragment
-import org.jetbrains.kotlin.psi.KtConstructor
-import org.jetbrains.kotlin.psi.KtDeclarationWithInitializer
-import org.jetbrains.kotlin.psi.KtFunction
-import org.jetbrains.kotlin.psi.KtFunctionLiteral
-import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.ErrorUtils
 import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.types.isError
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
 
 public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     private var displayString: String? = null
@@ -85,7 +77,7 @@ public class KotlinSpecifyTypeAssistProposal(editor: KotlinEditor) : KotlinQuick
     }
     
     private fun getTypeForDeclaration(declaration: KtCallableDeclaration): KotlinType {
-        val bindingContext = getBindingContext(declaration)
+        val bindingContext = declaration.getBindingContext()
         if (bindingContext == null) return ErrorUtils.createErrorType("null type")
         
         val descriptor = bindingContext[BindingContext.DECLARATION_TO_DESCRIPTOR, declaration]

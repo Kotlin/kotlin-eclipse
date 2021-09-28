@@ -144,7 +144,7 @@ class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image?,
                     typeName.simpleTypeName,
                     image,
                     typeName.simpleTypeName,
-                    typeName.packageName,
+                    typeName.fullyQualifiedName.removeSuffix(".${typeName.simpleTypeName}"),
                     identifierPart = identifierPart)  {
 
     var importShift = -1

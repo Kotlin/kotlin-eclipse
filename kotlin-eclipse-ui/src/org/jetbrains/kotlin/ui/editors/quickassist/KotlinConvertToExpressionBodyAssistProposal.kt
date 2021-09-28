@@ -25,32 +25,21 @@ import org.eclipse.jface.text.TextUtilities
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.core.formatting.codeStyle
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.psi.KtBinaryExpression
-import org.jetbrains.kotlin.psi.KtBlockExpression
-import org.jetbrains.kotlin.psi.KtCallableDeclaration
-import org.jetbrains.kotlin.psi.KtDeclaration
-import org.jetbrains.kotlin.psi.KtDeclarationWithBody
-import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.psi.KtFunctionLiteral
-import org.jetbrains.kotlin.psi.KtLoopExpression
-import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtPropertyAccessor
-import org.jetbrains.kotlin.psi.KtPsiFactory
-import org.jetbrains.kotlin.psi.KtReturnExpression
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.isError
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.selection.handlers.siblings
 import org.jetbrains.kotlin.ui.formatter.formatCode
-import org.jetbrains.kotlin.types.isError
 
 public class KotlinConvertToExpressionBodyAssistProposal(editor: KotlinEditor) : KotlinQuickAssistProposal(editor) {
     override fun isApplicable(psiElement: PsiElement): Boolean {
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java) ?: return false
-        val context = getBindingContext(declaration.getContainingKtFile()) ?: return false
+        val context = declaration.getContainingKtFile().getBindingContext() ?: return false
         val value = calcValue(declaration, context)
         return value != null && !containsReturn(value)
     }

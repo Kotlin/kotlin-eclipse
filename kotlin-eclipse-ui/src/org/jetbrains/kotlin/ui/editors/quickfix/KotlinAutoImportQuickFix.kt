@@ -34,10 +34,10 @@ import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.eclipse.ui.utils.getEndLfOffset
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import org.jetbrains.kotlin.psi.KtFile
@@ -50,7 +50,7 @@ object KotlinAutoImportQuickFix : KotlinDiagnosticQuickFix {
     override fun getResolutions(diagnostic: Diagnostic): List<KotlinMarkerResolution> {
         val ktFile = diagnostic.psiElement.containingFile as? KtFile ?: return emptyList()
         val file = KotlinPsiManager.getEclipseFile(ktFile) ?: return emptyList()
-        val bindingContext = getBindingContext(ktFile) ?: return emptyList()
+        val bindingContext = ktFile.getBindingContext()
         val (result, container) = KotlinAnalyzer.analyzeFile(ktFile)
         val resolutionFacade = container?.let { KotlinResolutionFacade(file, it, result.moduleDescriptor) }
             ?: return emptyList()

@@ -19,20 +19,20 @@ package org.jetbrains.kotlin.ui.editors.quickfix
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
-
 import com.intellij.psi.PsiWhiteSpace
+import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import org.jetbrains.kotlin.diagnostics.DiagnosticWithParameters2
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.lexer.KtTokens.*
@@ -43,7 +43,6 @@ import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.quickassist.insertBefore
 import org.jetbrains.kotlin.ui.editors.quickassist.replace
-import com.intellij.psi.tree.IElementType
 
 fun DiagnosticFactory<*>.createAddModifierFix(modifier: KtModifierKeywordToken): KotlinDiagnosticQuickFix =
     createAddModifierFix(modifier, KtModifierListOwner::class.java)
@@ -94,7 +93,7 @@ class KotlinMakeClassOpenQuickFix(private val diagnosticTrigger: DiagnosticFacto
 
         val ktFile = typeReference.containingKtFile
 
-        val bindingContext = getBindingContext(ktFile) ?: return emptyList()
+        val bindingContext = ktFile.getBindingContext()
 
         val type = bindingContext[BindingContext.TYPE, typeReference] ?: return emptyList()
 
