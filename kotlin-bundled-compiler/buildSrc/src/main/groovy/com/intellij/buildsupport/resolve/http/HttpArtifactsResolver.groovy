@@ -5,10 +5,12 @@ import groovy.transform.TupleConstructor
 
 
 @TupleConstructor(includeFields = true)
-abstract class HttpArtifactsResolver {
+class HttpArtifactsResolver {
 
     // FIELDS =========================================================================================================
     protected final String httpBaseUrl
+
+    static Map<String, Object> proxyProps = new HashMap<>()
 
 
     // PUBLIC API =====================================================================================================
@@ -23,8 +25,16 @@ abstract class HttpArtifactsResolver {
     private void downloadFileFromUrlInto(String fileURL, File destinationFile) {
         destinationFile.parentFile.mkdirs()
 
-        new AntBuilder().get(src:          fileURL,
-                             dest:         destinationFile,
-                             usetimestamp: true)
+        def ant = new AntBuilder()
+        if (!proxyProps.isEmpty()) {
+            if (proxyProps.get("https.proxyUser") == null) {
+                ant.setproxy(proxyHost: proxyProps['https.proxyHost'], proxyPort: proxyProps['https.proxyPort'])
+            } else {
+                ant.setproxy(proxyHost: proxyProps['https.proxyHost'], proxyPort: proxyProps['https.proxyPort'], proxyUser: proxyProps['https.proxyUser'], proxyPassword: proxyProps['https.proxyPassword'])
+            }
+        }
+        ant.get(src: fileURL,
+                dest: destinationFile,
+                usetimestamp: true)
     }
 }
