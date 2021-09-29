@@ -1,4 +1,6 @@
 import com.intellij.buildsupport.dependencies.PackageListFromSimpleFile
+import com.intellij.buildsupport.resolve.http.HttpArtifact
+import com.intellij.buildsupport.resolve.http.HttpArtifactsResolver
 import com.intellij.buildsupport.resolve.http.idea.IntellijIdeaArtifactsResolver
 import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 import com.intellij.buildsupport.utils.FileUtils
@@ -10,11 +12,14 @@ val teamcityBaseUrl ="https://teamcity.jetbrains.com"
 val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea"
 
 // properties that might/should be modifiable
-val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3546752"
+
+//val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3546752"
+val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "137461" // Kotlin Plugin 1.5.31 for Idea 2020.2
+
 val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.5.31"
 val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.5.2"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
-val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "202.8194.7"
+val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "202.8194.7" //Idea 2020.2
 val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2020.2"
 val ignoreSources: Boolean = true//project.hasProperty("ignoreSources")
 
@@ -32,14 +37,21 @@ val libDir = if (teamCityWorkingDir != null) file("$teamCityWorkingDir/lib") els
 val localTCArtifacts: Boolean = tcArtifactsPath.isNotBlank()
 val downloadDir = if(localTCArtifacts) file(tcArtifactsPath) else file("$libDir/$downloadDirName")
 
-val tcArtifactsResolver = KotlinCompilerTCArtifactsResolver(teamcityBaseUrl,
+/*val tcArtifactsResolver = KotlinCompilerTCArtifactsResolver(teamcityBaseUrl,
         project.hasProperty("lastSuccessfulBuild"),
         kotlinCompilerTcBuildId,
         kotlinCompilerVersion,
-        kotlinIdeaCompatibleVersionMinor)
+        kotlinIdeaCompatibleVersionMinor)*/
+
+HttpArtifactsResolver.getProxyProps()["https.proxyHost"] = project.findProperty("https.proxyHost") ?: System.getProperty("https.proxyHost")
+HttpArtifactsResolver.getProxyProps()["https.proxyPort"] = project.findProperty("https.proxyPort") ?: System.getProperty("https.proxyPort")
+HttpArtifactsResolver.getProxyProps()["https.proxyUser"] = project.findProperty("https.proxyUser") ?: System.getProperty("https.proxyUser")
+HttpArtifactsResolver.getProxyProps()["https.proxyPassword"] = project.findProperty("https.proxyPassword") ?: System.getProperty("https.proxyPassword")
 
 val ideaArtifactsResolver = IntellijIdeaArtifactsResolver(ideaSdkUrl, ideaVersion)
+val kotlinPluginArtifactsResolver = HttpArtifactsResolver("https://plugins.jetbrains.com")
 
+val tempKotlinHttpArtifact = HttpArtifact("plugin/download?rel=true&updateId=$kotlinPluginUpdateId")
 
 tasks.withType<Wrapper> {
     gradleVersion = "5.5.1"
@@ -76,14 +88,15 @@ val downloadTestData by tasks.registering {
     }
 
     doLast {
+        //TODO can we get the test data from somewhere?
         if (!localTCArtifacts && !locallyDownloadedTestDataFile.exists()) {
-            tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_TEST_DATA_ZIP, locallyDownloadedTestDataFile)
+            //tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_TEST_DATA_ZIP, locallyDownloadedTestDataFile)
         }
 
-        copy {
+        /*copy {
             from(zipTree(locallyDownloadedTestDataFile))
             into(testDataDir)
-        }
+        }*/
     }
 }
 
@@ -100,7 +113,8 @@ val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
 
     doLast {
         if (!localTCArtifacts && !locallyDownloadedCompilerFile.exists()) {
-            tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_PLUGIN_ZIP, locallyDownloadedCompilerFile)
+            kotlinPluginArtifactsResolver.downloadTo(tempKotlinHttpArtifact, locallyDownloadedCompilerFile)
+            //tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_PLUGIN_ZIP, locallyDownloadedCompilerFile)
         }
 
         copy {
@@ -263,7 +277,8 @@ val downloadIdeaAndKotlinCompilerSources by tasks.registering {
 
     doLast {
         if(!locallyDownloadedKotlinCompilerSourcesFile.exists()) {
-            tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_COMPILER_SOURCES_JAR, locallyDownloadedKotlinCompilerSourcesFile)
+            //TODO can we get the sources from somewhere?
+            //tcArtifactsResolver.downloadTo(tcArtifactsResolver.KOTLIN_COMPILER_SOURCES_JAR, locallyDownloadedKotlinCompilerSourcesFile)
         }
         if(!locallyDownloadedIdeaSourcesFile.exists()) {
             ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.IDEA_IC_SOURCES_JAR, locallyDownloadedIdeaSourcesFile)
