@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.context.MutableModuleContext
 import org.jetbrains.kotlin.context.ProjectContext
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.model.EclipseScriptDefinitionProvider
 import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
@@ -136,9 +137,13 @@ object EclipseAnalyzerFacadeForJVM {
 
         ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).toCollection(allFiles)
 
+        val tempSourceCode = KtFileScriptSource(scriptFile)
+
         val tempRefinedConfig = environment.definition?.let {
-            refineScriptCompilationConfiguration(KtFileScriptSource(scriptFile), it, environment.project)
+            refineScriptCompilationConfiguration(tempSourceCode, it, environment.project)
         }?.valueOrNull()?.configuration
+
+        val tempContribution = EclipseScriptDefinitionProvider.getContribution(tempSourceCode)
 
         val tempDefaultImports =
             tempRefinedConfig?.get(PropertiesCollection.Key("defaultImports", emptyList<String>())) ?: emptyList()
@@ -182,9 +187,10 @@ object EclipseAnalyzerFacadeForJVM {
             val tempPackageName = "scriptParameters${scriptFile.virtualFilePath.hashCode().absoluteValue}"
             val tempContent =
                 "package $tempPackageName\n" + tempProperties.entries.joinToString(separator = "\n") { (key, value) ->
+                    val isNullable = tempContribution?.isNullable(key, tempRefinedConfig) ?: true
                     """
                         |@Deprecated(message = "Do not import this explicitly! Used only in eclipse as workaround for providedProperties in Scripts!", level = DeprecationLevel.WARNING)
-                        |val $key: ${value.typeName}? = null
+                        |val $key: ${value.typeName}${if(isNullable) "? = null" else " = TODO()"}
                     """.trimMargin("|")
                 }
 
