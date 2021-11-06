@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 import org.jetbrains.kotlin.resolve.descriptorUtil.getImportableDescriptor
 import org.jetbrains.kotlin.resolve.scopes.HierarchicalScope
 import org.jetbrains.kotlin.resolve.scopes.utils.*
@@ -39,7 +40,8 @@ import kotlin.collections.LinkedHashSet
 fun collectDescriptorsToImport(file: KtFile): OptimizedImportsBuilder.InputData {
     val visitor = CollectUsedDescriptorsVisitor(file)
     file.accept(visitor)
-    return OptimizedImportsBuilder.InputData(visitor.descriptorsToImport, visitor.namesToImport, emptyList(), emptySet() /*TODO??*/)
+    val tempDescriptors = visitor.descriptorsToImport.mapTo(hashSetOf()) { OptimizedImportsBuilder.ImportableDescriptor(it, it.fqNameSafe) }
+    return OptimizedImportsBuilder.InputData(tempDescriptors, visitor.namesToImport, emptyList(), emptySet() /*TODO??*/)
 }
 
 private class CollectUsedDescriptorsVisitor(val file: KtFile) : KtVisitorVoid() {

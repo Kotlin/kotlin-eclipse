@@ -14,13 +14,13 @@ val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jet
 // properties that might/should be modifiable
 
 //val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3546752"
-val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "137462" // Kotlin Plugin 1.5.31 for Idea 2020.2
+val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "137466" // Kotlin Plugin 1.5.31 for Idea 2020.2
 
 val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.5.31"
 val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.5.2"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
-val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "203.8084.24" //Idea 2020.2
-val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2020.3"
+val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "212.5457.46" //Idea 2021.2
+val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2021.2"
 val ignoreSources: Boolean = true//project.hasProperty("ignoreSources")
 
 //directories
@@ -193,10 +193,10 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
     val locallyDownloadedIdeaZipFile by extra { file("$downloadDir/ideaIC.zip") }
     val chosenJars by extra { setOf(//"openapi",
-            "platform-util-ui",
+            //"platform-util-ui",
             "util",
             "idea",
-            "trove4j",
+            //"trove4j",
             "platform-api",
             "platform-impl") }
 

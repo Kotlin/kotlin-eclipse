@@ -6,10 +6,9 @@ Bundle-Version: 1.5.31.qualifier
 Bundle-Vendor: JetBrains
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
- lib/intellij-core-analysis-deprecated.jar,
  lib/ide-common.jar,
- lib/ide-dependencies.jar,
  lib/kotlin-compiler.jar,
+ lib/ide-dependencies.jar,
  lib/kotlin-stdlib.jar,
  lib/kotlin-plugin-parts.jar,
  lib/kotlin-script-runtime.jar,
@@ -29,7 +28,8 @@ Bundle-ClassPath: .,
  lib/kotlin-scripting-compiler-impl.jar,
  lib/kotlin-scripting-common.jar,
  lib/kotlin-scripting-jvm.jar,
- lib/kotlinx-coroutines-core.jar
+ lib/kotlinx-coroutines-core.jar,
+ lib/intellij-core-analysis-deprecated.jar
 Export-Package: com.google.common.collect,
  com.intellij,
  org.jetbrains.kotlin.idea.util.application,
