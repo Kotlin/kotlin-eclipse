@@ -26,7 +26,7 @@ class HttpArtifactsResolver {
         destinationFile.parentFile.mkdirs()
 
         def ant = new AntBuilder()
-        if (!proxyProps.isEmpty()) {
+        if (!proxyProps.isEmpty() && proxyProps['https.proxyHost'] != null) {
             if (proxyProps.get("https.proxyUser") == null) {
                 ant.setproxy(proxyHost: proxyProps['https.proxyHost'], proxyPort: proxyProps['https.proxyPort'])
             } else {
