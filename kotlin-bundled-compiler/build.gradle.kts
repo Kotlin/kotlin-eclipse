@@ -29,7 +29,7 @@ val testDataDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_t
 val testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")
 //TODO later refactor to the proper project dir
 
-val downloadDirName = "downloads"
+val downloadDirName = "downloads$ideaVersion-$kotlinCompilerVersion"
 
 val teamCityWorkingDir = project.findProperty("teamcity.buildsupport.workingDir")
 val libDir = if (teamCityWorkingDir != null) file("$teamCityWorkingDir/lib") else file("lib")
