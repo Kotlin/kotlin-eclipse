@@ -312,6 +312,7 @@ val repackageIdeaAndKotlinCompilerSources by tasks.registering(Zip::class) {
 }
 
 val downloadBundled by tasks.registering {
+    libDir.listFiles()?.filter { it.isFile }?.forEach { it.deleteRecursively() }
     if (localTCArtifacts) {
         dependsOn(extractPackagesFromPlugin,
                 downloadIntellijCoreAndExtractSelectedJars,
