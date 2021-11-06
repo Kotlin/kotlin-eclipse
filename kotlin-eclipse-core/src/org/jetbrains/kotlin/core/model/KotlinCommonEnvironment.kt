@@ -76,6 +76,7 @@ import org.jetbrains.kotlin.extensions.StorageComponentContainerContributor
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.j2k.J2KPostProcessingRegistrar
 import org.jetbrains.kotlin.idea.j2k.J2KPostProcessingRegistrarImpl
+import org.jetbrains.kotlin.idea.j2k.J2kPostProcessing
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache
 import org.jetbrains.kotlin.load.kotlin.ModuleVisibilityManager
@@ -254,7 +255,12 @@ private fun createKotlinCoreApplicationEnvironment(disposable: Disposable): Kotl
         application.registerService(Formatter::class.java, FormatterImpl())
         application.registerService(KotlinBinaryClassCache::class.java, KotlinBinaryClassCache())
         application.registerService(ScriptDefinitionProvider::class.java, EclipseScriptDefinitionProvider())
-        application.registerService(J2KPostProcessingRegistrar::class.java, J2KPostProcessingRegistrarImpl)
+        application.registerService(J2KPostProcessingRegistrar::class.java, object : J2KPostProcessingRegistrar {
+            override val processings: Collection<J2kPostProcessing>
+                get() = emptyList()
+
+            override fun priority(processing: J2kPostProcessing): Int = 0
+        })
     }
 
 private fun registerProjectExtensionPoints(area: ExtensionsArea) {

@@ -29,6 +29,7 @@ import org.eclipse.jface.window.Window
 import org.eclipse.swt.graphics.Image
 import org.eclipse.ui.ISharedImages
 import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.formatting.codeStyle
 import org.jetbrains.kotlin.core.imports.*
@@ -101,16 +102,16 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
 
         KotlinPsiManager.commitFile(file, editor.document)
 
-        optimizeImports()
+        optimizeImports(languageVersionSettings)
     }
 
-    private fun optimizeImports() {
+    private fun optimizeImports(languageVersionSettings: LanguageVersionSettings) {
         val ktFile = editor.parsedFile ?: return
         val file = editor.eclipseFile ?: return
         val importsData = collectDescriptorsToImport(ktFile)
         val kotlinCodeStyleSettings = file.project.codeStyle.kotlinCustomSettings
 
-        val optimizedImports = prepareOptimizedImports(ktFile, importsData, kotlinCodeStyleSettings) ?: return
+        val optimizedImports = prepareOptimizedImports(ktFile, importsData, kotlinCodeStyleSettings, languageVersionSettings) ?: return
 
         replaceImports(
             optimizedImports.sortedWith(ImportPathComparator(kotlinCodeStyleSettings.PACKAGES_IMPORT_LAYOUT))
@@ -143,7 +144,8 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
 fun prepareOptimizedImports(
     file: KtFile,
     importsData: OptimizedImportsBuilder.InputData,
-    settings: KotlinCodeStyleSettings
+    settings: KotlinCodeStyleSettings,
+    languageVersionSettings: LanguageVersionSettings
 ): List<ImportPath>? =
     OptimizedImportsBuilder(
         file,
@@ -151,7 +153,8 @@ fun prepareOptimizedImports(
         OptimizedImportsBuilder.Options(
             settings.NAME_COUNT_TO_USE_STAR_IMPORT,
             settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS
-        ) { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS }
+        ) { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS },
+        languageVersionSettings.apiVersion
     ).buildOptimizedImports()
 
 object ImportCandidatesLabelProvider : LabelProvider() {

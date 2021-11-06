@@ -1,19 +1,20 @@
 package org.jetbrains.kotlin.core.model
 
-import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.project.Project
-import com.intellij.psi.codeStyle.Indent
-import com.intellij.openapi.fileTypes.FileType
-import com.intellij.psi.PsiFile
 import com.intellij.openapi.editor.Document
-import com.intellij.psi.PsiElement
-import com.intellij.openapi.util.TextRange
-import com.intellij.util.ThrowableRunnable
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.ChangedRangesInfo
+import com.intellij.psi.codeStyle.CodeStyleManager
+import com.intellij.psi.codeStyle.Indent
+import com.intellij.util.ThrowableRunnable
 
-public class DummyCodeStyleManager : CodeStyleManager() {
+@Suppress("DEPRECATION")
+class DummyCodeStyleManager : CodeStyleManager() {
     override fun reformatTextWithContext(arg0: PsiFile, arg1: ChangedRangesInfo) {
         throw UnsupportedOperationException()
     }
@@ -53,8 +54,8 @@ public class DummyCodeStyleManager : CodeStyleManager() {
     override fun reformat(element: PsiElement, canChangeWhiteSpacesOnly: Boolean): PsiElement {
         throw UnsupportedOperationException()
     }
-    
-    override fun reformatTextWithContext(arg0: PsiFile, arg1: MutableCollection<TextRange>) {
+
+    override fun reformatTextWithContext(file: PsiFile, ranges: MutableCollection<out TextRange>) {
         throw UnsupportedOperationException()
     }
     
@@ -77,8 +78,8 @@ public class DummyCodeStyleManager : CodeStyleManager() {
     override fun isSequentialProcessingAllowed(): Boolean {
         throw UnsupportedOperationException()
     }
-    
-    override fun reformatText(file: PsiFile, ranges: MutableCollection<TextRange>) {
+
+    override fun reformatText(p0: PsiFile, p1: MutableCollection<out TextRange>) {
         throw UnsupportedOperationException()
     }
     
@@ -86,9 +87,9 @@ public class DummyCodeStyleManager : CodeStyleManager() {
         throw UnsupportedOperationException()
     }
     
-    override fun reformatRange(element: PsiElement, startOffset: Int, endOffset: Int): PsiElement? = element
+    override fun reformatRange(element: PsiElement, startOffset: Int, endOffset: Int): PsiElement = element
     
-    override fun reformatRange(element: PsiElement, startOffset: Int, endOffset: Int, canChangeWhiteSpacesOnly: Boolean): PsiElement? = element
+    override fun reformatRange(element: PsiElement, startOffset: Int, endOffset: Int, canChangeWhiteSpacesOnly: Boolean): PsiElement = element
     
     override fun performActionWithFormatterDisabled(r: Runnable?) {
         throw UnsupportedOperationException()
