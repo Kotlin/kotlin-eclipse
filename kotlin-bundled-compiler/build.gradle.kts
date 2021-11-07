@@ -29,7 +29,7 @@ val testDataDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_t
 val testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")
 //TODO later refactor to the proper project dir
 
-val downloadDirName = "downloads$ideaVersion-$kotlinCompilerVersion"
+val downloadDirName = "downloads"
 
 val teamCityWorkingDir = project.findProperty("teamcity.buildsupport.workingDir")
 val libDir = if (teamCityWorkingDir != null) file("$teamCityWorkingDir/lib") else file("lib")
@@ -106,9 +106,10 @@ val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
 }
 
 val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
+    val kotlinDownloadDir = file("$downloadDir/$kotlinCompilerVersion/$kotlinIdeaCompatibleVersionMinor")
     val locallyDownloadedCompilerFile by extra {
-        file(downloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
-                ?: file("$downloadDir/kotlin-plugin.zip")
+        file(kotlinDownloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
+                ?: file("$kotlinDownloadDir/kotlin-plugin.zip")
     }
 
     doLast {
@@ -172,7 +173,8 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
 }
 
 val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
-    val locallyDownloadedIntellijCoreFile by extra { file("$downloadDir/intellij-core.zip") }
+    val ideaDownloadDir = file("$downloadDir/$ideaVersion")
+    val locallyDownloadedIntellijCoreFile by extra { file("$ideaDownloadDir/intellij-core.zip") }
 
     doLast {
         if(!locallyDownloadedIntellijCoreFile.exists()) {
@@ -191,7 +193,8 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 }
 
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
-    val locallyDownloadedIdeaZipFile by extra { file("$downloadDir/ideaIC.zip") }
+    val ideaDownloadDir = file("$downloadDir/$ideaVersion")
+    val locallyDownloadedIdeaZipFile by extra { file("$ideaDownloadDir/ideaIC.zip") }
     val chosenJars by extra { setOf(//"openapi",
             "platform-util-ui",
             "util",
