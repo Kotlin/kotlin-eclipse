@@ -28,7 +28,7 @@ val testDataDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_t
 val testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")
 //TODO later refactor to the proper project dir
 
-val downloadDirName = "downloads$ideaVersion-$kotlinCompilerVersion"
+val downloadDirName = "downloads"
 
 val teamCityWorkingDir = project.findProperty("teamcity.buildsupport.workingDir")
 val libDir = if (teamCityWorkingDir != null) file("$teamCityWorkingDir/lib") else file("lib")
@@ -107,7 +107,7 @@ val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
 val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
     val kotlinDownloadDir = file("$downloadDir/kotlin-$kotlinCompilerVersion/$kotlinIdeaCompatibleVersionMinor")
     val locallyDownloadedCompilerFile by extra {
-        file(downloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
+        file(kotlinDownloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
                 ?: file("$kotlinDownloadDir/kotlin-plugin.zip")
     }
 
