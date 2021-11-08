@@ -2,7 +2,6 @@ import com.intellij.buildsupport.dependencies.PackageListFromSimpleFile
 import com.intellij.buildsupport.resolve.http.HttpArtifact
 import com.intellij.buildsupport.resolve.http.HttpArtifactsResolver
 import com.intellij.buildsupport.resolve.http.idea.IntellijIdeaArtifactsResolver
-import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 import com.intellij.buildsupport.utils.FileUtils
 
 apply(plugin = "base")
@@ -106,9 +105,10 @@ val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
 }
 
 val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
+    val kotlinDownloadDir = file("$downloadDir/kotlin-$kotlinCompilerVersion/$kotlinIdeaCompatibleVersionMinor")
     val locallyDownloadedCompilerFile by extra {
         file(downloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
-                ?: file("$downloadDir/kotlin-plugin.zip")
+                ?: file("$kotlinDownloadDir/kotlin-plugin.zip")
     }
 
     doLast {
@@ -172,7 +172,8 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
 }
 
 val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
-    val locallyDownloadedIntellijCoreFile by extra { file("$downloadDir/intellij-core.zip") }
+    val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
+    val locallyDownloadedIntellijCoreFile by extra { file("$ideaDownloadDir/intellij-core.zip") }
 
     doLast {
         if(!locallyDownloadedIntellijCoreFile.exists()) {
@@ -191,7 +192,8 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 }
 
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
-    val locallyDownloadedIdeaZipFile by extra { file("$downloadDir/ideaIC.zip") }
+    val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
+    val locallyDownloadedIdeaZipFile by extra { file("$ideaDownloadDir/ideaIC.zip") }
     val chosenJars by extra { setOf(//"openapi",
             "platform-util-ui",
             "util",
