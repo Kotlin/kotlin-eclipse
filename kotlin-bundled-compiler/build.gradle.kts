@@ -13,7 +13,7 @@ val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jet
 // properties that might/should be modifiable
 
 //val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3546752"
-val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "137466" // Kotlin Plugin 1.5.31 for Idea 2020.2
+val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "137466" // Kotlin Plugin 1.5.31 for Idea 2021.2
 
 val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.5.31"
 val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.5.2"
@@ -28,7 +28,7 @@ val testDataDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/common_t
 val testModuleLibDir = file("${projectDir.parentFile}/kotlin-eclipse-ui-test/lib")
 //TODO later refactor to the proper project dir
 
-val downloadDirName = "downloads$ideaVersion-$kotlinCompilerVersion"
+val downloadDirName = "downloads"
 
 val teamCityWorkingDir = project.findProperty("teamcity.buildsupport.workingDir")
 val libDir = if (teamCityWorkingDir != null) file("$teamCityWorkingDir/lib") else file("lib")
@@ -107,7 +107,7 @@ val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
 val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
     val kotlinDownloadDir = file("$downloadDir/kotlin-$kotlinCompilerVersion/$kotlinIdeaCompatibleVersionMinor")
     val locallyDownloadedCompilerFile by extra {
-        file(downloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
+        file(kotlinDownloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
                 ?: file("$kotlinDownloadDir/kotlin-plugin.zip")
     }
 
