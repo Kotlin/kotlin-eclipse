@@ -16,7 +16,7 @@
 
     <build>
         <sourceDirectory>src</sourceDirectory>
-		<finalName>kotlin-eclipse-gradle-model</finalName>
+
         <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -32,29 +32,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-            	<groupId>org.apache.maven.plugins</groupId>
-            	<artifactId>maven-jar-plugin</artifactId>
-            	<version>3.2.0</version>
-            	<executions>
-            		<execution>
-            			<id>kotlin-jar</id>
-            			<goals>
-            				<goal>jar</goal>
-            			</goals>
-            			<phase>prepare-package</phase>
-            			<configuration>
-            				<outputDirectory>${project.basedir}/lib</outputDirectory>
-            				<includes>
-            					<include>**/*.class</include>
-            				</includes>
-            			</configuration>
-            		</execution>
-            	</executions>
-            	<configuration>
-            		<excludes>**/*</excludes>
-            	</configuration>
             </plugin>
         </plugins>
     </build>
