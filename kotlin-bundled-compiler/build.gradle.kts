@@ -2,7 +2,6 @@ import com.intellij.buildsupport.dependencies.PackageListFromSimpleFile
 import com.intellij.buildsupport.resolve.http.HttpArtifact
 import com.intellij.buildsupport.resolve.http.HttpArtifactsResolver
 import com.intellij.buildsupport.resolve.http.idea.IntellijIdeaArtifactsResolver
-import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 import com.intellij.buildsupport.utils.FileUtils
 
 apply(plugin = "base")
@@ -106,7 +105,7 @@ val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
 }
 
 val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
-    val kotlinDownloadDir = file("$downloadDir/$kotlinCompilerVersion/$kotlinIdeaCompatibleVersionMinor")
+    val kotlinDownloadDir = file("$downloadDir/kotlin-$kotlinCompilerVersion/$kotlinIdeaCompatibleVersionMinor")
     val locallyDownloadedCompilerFile by extra {
         file(kotlinDownloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
                 ?: file("$kotlinDownloadDir/kotlin-plugin.zip")
@@ -173,7 +172,7 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
 }
 
 val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
-    val ideaDownloadDir = file("$downloadDir/$ideaVersion")
+    val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
     val locallyDownloadedIntellijCoreFile by extra { file("$ideaDownloadDir/intellij-core.zip") }
 
     doLast {
@@ -193,7 +192,7 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 }
 
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
-    val ideaDownloadDir = file("$downloadDir/$ideaVersion")
+    val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
     val locallyDownloadedIdeaZipFile by extra { file("$ideaDownloadDir/ideaIC.zip") }
     val chosenJars by extra { setOf(//"openapi",
             "platform-util-ui",
