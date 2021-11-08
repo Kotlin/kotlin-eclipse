@@ -78,8 +78,8 @@ object KotlinLightClassGeneration {
                         return checkByInternalName(internalName, requestedClassName)
                     }
 
-                    override fun shouldGeneratePackagePart(jetFile: KtFile): Boolean {
-                        val internalName = JvmFileClassUtil.getFileClassInternalName(jetFile)
+                    override fun shouldGeneratePackagePart(ktFile: KtFile): Boolean {
+                        val internalName = JvmFileClassUtil.getFileClassInternalName(ktFile)
                         return checkByInternalName(internalName, requestedClassName)
                     }
 
