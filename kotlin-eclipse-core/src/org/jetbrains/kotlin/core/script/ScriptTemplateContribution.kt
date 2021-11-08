@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.core.script
 
 import java.io.File
 import kotlin.reflect.KClass
+import kotlin.script.experimental.api.ScriptCompilationConfiguration
 
 abstract class ScriptTemplateContribution {
     open val priority = 0
@@ -9,6 +10,8 @@ abstract class ScriptTemplateContribution {
     protected abstract fun loadTemplate(): KClass<*>
 
     val template by lazy { loadTemplate() }
+
+    open fun isNullable(propName: String, compilationConfig: ScriptCompilationConfiguration): Boolean = true
 
     open fun scriptEnvironment(script: File): Map<String, Any?> = emptyMap()
 }
