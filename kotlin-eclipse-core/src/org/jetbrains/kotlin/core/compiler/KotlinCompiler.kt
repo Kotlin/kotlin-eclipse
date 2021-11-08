@@ -81,7 +81,7 @@ object KotlinCompiler {
             put(CLIConfigurationKeys.INTELLIJ_PLUGIN_ROOT, KOTLIN_COMPILER_PATH)
         }
         KotlinCoreEnvironment.getOrCreateApplicationEnvironmentForProduction(disposable, config)
-        var cacheDir = File("${outputDir.parentFile.absolutePath}/cache").also { it.mkdirs() }
+        val cacheDir = File("${outputDir.parentFile.absolutePath}/cache").also { it.mkdirs() }
         makeIncrementally(cacheDir, sourceDirs, arguments, messageCollector)
         return messageCollector.getCompilerResult()
     }
