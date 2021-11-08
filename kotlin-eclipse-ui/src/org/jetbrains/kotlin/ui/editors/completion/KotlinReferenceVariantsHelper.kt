@@ -21,6 +21,8 @@ import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationResolver
 import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.scopes.*
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.FUNCTIONS_MASK
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.VARIABLES_MASK
 import org.jetbrains.kotlin.resolve.scopes.receivers.ClassQualifier
 import org.jetbrains.kotlin.resolve.scopes.utils.collectDescriptorsFiltered
 import org.jetbrains.kotlin.resolve.scopes.utils.memberScopeAsImportingScope
@@ -30,7 +32,6 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.expressions.DoubleColonLHS
 import org.jetbrains.kotlin.types.typeUtil.isUnit
 import org.jetbrains.kotlin.ui.refactorings.extract.parentsWithSelf
-import java.util.*
 
 class KotlinReferenceVariantsHelper(
     val bindingContext: BindingContext,
@@ -52,19 +53,11 @@ class KotlinReferenceVariantsHelper(
                     )
                 }
 
-        ShadowedDeclarationsFilter.create(bindingContext, resolutionFacade, simpleNameExpression, callTypeAndReceiver)
-            ?.let {
+        ShadowedDeclarationsFilter.create(bindingContext, resolutionFacade, simpleNameExpression, callTypeAndReceiver)?.let {
             variants = it.filter(variants)
-            }
-        if (kindFilter.kindMask.and(DescriptorKindFilter.FUNCTIONS_MASK) != 0) {
-            variants = filterOutJavaGettersAndSetters(variants)
         }
 
-        if (kindFilter.kindMask.and(DescriptorKindFilter.VARIABLES_MASK) != 0) {
-            variants = excludeNonInitializedVariable(variants, simpleNameExpression)
-        }
-
-        return variants
+        return variants.filter { kindFilter.accepts(it) }
     }
 
     private fun getVariantsForImportOrPackageDirective(
@@ -357,7 +350,7 @@ class KotlinReferenceVariantsHelper(
         )
 
         // should process classes if we need constructors
-        if (filterToUse.acceptsKinds(DescriptorKindFilter.FUNCTIONS_MASK)) {
+        if (filterToUse.acceptsKinds(FUNCTIONS_MASK)) {
             filterToUse = filterToUse.withKinds(DescriptorKindFilter.NON_SINGLETON_CLASSIFIERS_MASK)
         }
 
@@ -401,7 +394,7 @@ class KotlinReferenceVariantsHelper(
         }
 
         val syntheticScopes = resolutionFacade.getFrontendService(SyntheticScopes::class.java)
-        if (kindFilter.acceptsKinds(DescriptorKindFilter.VARIABLES_MASK)) {
+        if (kindFilter.acceptsKinds(VARIABLES_MASK)) {
             val lookupLocation =
                 (scope.ownerDescriptor.toSourceElement.getPsi() as? KtElement)?.let { KotlinLookupLocation(it) }
                     ?: NoLookupLocation.FROM_IDE
@@ -411,7 +404,7 @@ class KotlinReferenceVariantsHelper(
             }
         }
 
-        if (kindFilter.acceptsKinds(DescriptorKindFilter.FUNCTIONS_MASK)) {
+        if (kindFilter.acceptsKinds(FUNCTIONS_MASK)) {
             for (syntheticMember in syntheticScopes.collectSyntheticMemberFunctions(receiverTypes)) {
                 process(syntheticMember)
             }

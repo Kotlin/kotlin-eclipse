@@ -26,14 +26,7 @@ import org.eclipse.jdt.internal.ui.viewsupport.JavaElementImageProvider
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.ITextViewer
 import org.eclipse.jface.text.Region
-import org.eclipse.jface.text.contentassist.ContentAssistEvent
-import org.eclipse.jface.text.contentassist.ContentAssistant
-import org.eclipse.jface.text.contentassist.ICompletionListener
-import org.eclipse.jface.text.contentassist.ICompletionProposal
-import org.eclipse.jface.text.contentassist.ICompletionProposalSorter
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor
-import org.eclipse.jface.text.contentassist.IContextInformation
-import org.eclipse.jface.text.contentassist.IContextInformationValidator
+import org.eclipse.jface.text.contentassist.*
 import org.eclipse.jface.text.templates.TemplateContext
 import org.eclipse.jface.text.templates.TemplateProposal
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
@@ -50,7 +43,6 @@ import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
-import java.util.Comparator
 
 abstract class KotlinCompletionProcessor(
     val editor: KotlinEditor,
@@ -126,7 +118,7 @@ abstract class KotlinCompletionProcessor(
         if (assistant != null) {
             configureContentAssistant(assistant)
         }
-        
+
         val generatedProposals = generateCompletionProposals(viewer, offset).let {
             if (needSorting) sortProposals(it) else it
         }
@@ -135,11 +127,7 @@ abstract class KotlinCompletionProcessor(
     }
 
     private fun sortProposals(proposals: List<ICompletionProposal>): List<ICompletionProposal> {
-        return proposals.sortedWith(object : Comparator<ICompletionProposal> {
-            override fun compare(o1: ICompletionProposal, o2: ICompletionProposal): Int {
-                return KotlinCompletionSorter.compare(o1, o2)
-            }
-        })
+        return proposals.sortedWith(KotlinCompletionSorter::compare)
     }
     
     private fun configureContentAssistant(contentAssistant: ContentAssistant) {
