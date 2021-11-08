@@ -77,6 +77,12 @@ tasks.named<Delete>("clean") {
     }
 }
 
+val deleteLibrariesFromLibFolder by tasks.registering {
+    doFirst {
+        libDir.listFiles()?.filter { it.isFile }?.forEach { it.deleteRecursively() }
+    }
+}
+
 val downloadTestData by tasks.registering {
     val locallyDownloadedTestDataFile by extra {
         if(localTCArtifacts){
@@ -105,6 +111,8 @@ val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
 }
 
 val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
+    dependsOn(deleteLibrariesFromLibFolder)
+
     val kotlinDownloadDir = file("$downloadDir/kotlin-$kotlinCompilerVersion/$kotlinIdeaCompatibleVersionMinor")
     val locallyDownloadedCompilerFile by extra {
         file(kotlinDownloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
@@ -172,6 +180,7 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
 }
 
 val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
+    dependsOn(deleteLibrariesFromLibFolder)
     val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
     val locallyDownloadedIntellijCoreFile by extra { file("$ideaDownloadDir/intellij-core.zip") }
 
@@ -192,6 +201,7 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 }
 
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
+    dependsOn(deleteLibrariesFromLibFolder)
     val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
     val locallyDownloadedIdeaZipFile by extra { file("$ideaDownloadDir/ideaIC.zip") }
     val chosenJars by extra { setOf(//"openapi",
@@ -302,16 +312,13 @@ val repackageIdeaAndKotlinCompilerSources by tasks.registering(Zip::class) {
 }
 
 val downloadBundled by tasks.registering {
-    libDir.listFiles()?.filter { it.isFile }?.forEach { it.deleteRecursively() }
     if (localTCArtifacts) {
-        dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars,
-                extractPackagesFromPlugin,
+        dependsOn(extractPackagesFromPlugin,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)
     } else {
-        dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars,
-                extractPackagesFromPlugin,
+        dependsOn(extractPackagesFromPlugin,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)
