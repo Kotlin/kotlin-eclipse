@@ -162,7 +162,7 @@ public class BuiltInsReferenceResolver {
         String protocol = url.getProtocol();
         String path = url.getPath();
         if (protocol.equals("jar")) {
-          if (StringUtil.startsWithConcatenation(path, "file", ":")) {
+          if (StringUtil.startsWith(path, "file:")) {
             try {
               URL subURL = new URL(path);
               path = subURL.getPath();

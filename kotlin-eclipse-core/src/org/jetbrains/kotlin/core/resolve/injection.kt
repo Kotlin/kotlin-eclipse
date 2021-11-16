@@ -126,8 +126,14 @@ fun createContainerForLazyResolveWithJava(
 
     targetEnvironment.configure(this)
 
-    useInstance(JavaResolverSettings.create(
-            isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines), false, false))
+    useInstance(
+        JavaResolverSettings.create(
+            isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines),
+            correctNullabilityForNotNullTypeParameter = false,
+            typeEnhancementImprovementsInStrictMode = false,
+            ignoreNullabilityForErasedValueParameters = false
+        )
+    )
 }.apply {
     get<EclipseJavaClassFinder>().initialize(bindingTrace, get(),languageVersionSettings, jvmTarget)
 }

@@ -229,7 +229,7 @@ abstract class KotlinCompletionProcessor(
         val callTypeAndReceiver = if (expression is KtSimpleNameExpression) CallTypeAndReceiver.detect(expression) else null
         
         return arrayListOf<String>().apply {
-            KeywordCompletion.complete(expression, identifierPart, true) { keywordProposal ->
+            KeywordCompletion.complete(expression, identifierPart, true, editor.javaProject) { keywordProposal ->
                 if (!KotlinCompletionUtils.applicableNameFor(identifierPart, keywordProposal)) return@complete
                 
                 when (keywordProposal) {
