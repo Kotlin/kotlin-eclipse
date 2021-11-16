@@ -13,9 +13,9 @@ val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jet
 // properties that might/should be modifiable
 
 //val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3546752"
-val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "137466" // Kotlin Plugin 1.5.31 for Idea 2021.2
+val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "145849" // Kotlin Plugin 1.6.0 for Idea 2021.2
 
-val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.5.31"
+val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.6.0"
 val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.5.2"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
 val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "212.5457.46" //Idea 2021.2
