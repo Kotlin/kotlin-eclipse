@@ -1,5 +1,7 @@
 package org.jetbrains.kotlin.core.utils;
 
+import java.util.Optional;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IVariable;
@@ -19,7 +21,7 @@ public class DebugUtils {
     public static Boolean hasKotlinSource(IStackFrame frame) throws DebugException {
         if (frame instanceof IJavaStackFrame) {
             IJavaStackFrame javaFrame = (IJavaStackFrame) frame;
-            return javaFrame.getSourceName().endsWith(".kt");
+            return Optional.ofNullable(javaFrame.getSourceName()).map(s -> s.endsWith(".kt")).orElse(false);
         } else {
             return false;
         }
