@@ -14,3 +14,9 @@ target
 
 *.iml
 *.orig
+
+target/
+.settings
+.classpath
+.project
+lib
