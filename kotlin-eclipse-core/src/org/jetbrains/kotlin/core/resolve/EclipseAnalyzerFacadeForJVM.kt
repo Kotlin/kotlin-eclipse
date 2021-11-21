@@ -116,7 +116,7 @@ object EclipseAnalyzerFacadeForJVM {
             JavaCore.newLibraryEntry(Path(it.absolutePath), null, null)
         }
 
-        javaProject.setRawClasspath(tempNewClasspath, null)
+        javaProject.setRawClasspath(tempNewClasspath.toSet().toTypedArray(), null)
 
         try {
 
