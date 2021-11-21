@@ -196,12 +196,9 @@ object EclipseAnalyzerFacadeForJVM {
                                         factory.createProperty(tempText)
                                     } ?: emptyList()
 
-                                    val tempTestProp = factory.createProperty("val test: String = TODO()")
-
                                     val tempDeclarations = ownerInfo.declarations +
                                             ownerInfo.primaryConstructorParameters +
-                                            tempProvidedProperties +
-                                            tempTestProp
+                                            tempProvidedProperties
 
                                     tempDeclarations.forEach(index::putToIndex)
                                 }
