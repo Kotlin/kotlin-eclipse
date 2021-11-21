@@ -9,8 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.*;
 import java.util.HashMap;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Consider to use factory methods {@link #createLinked()}, {@link #createSet()}, {@link #createSmart()}, {@link #create(TObjectHashingStrategy)} instead of override.
@@ -323,7 +324,7 @@ public class MultiMap<K, V> implements Serializable {
       @NotNull
       @Override
       protected Collection<V> createCollection() {
-        return ContainerUtil.newConcurrentSet();
+          return Collections.newSetFromMap(new ConcurrentHashMap<>());
       }
 
       @NotNull
