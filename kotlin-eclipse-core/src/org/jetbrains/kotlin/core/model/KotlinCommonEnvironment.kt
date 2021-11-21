@@ -43,10 +43,7 @@ import com.intellij.psi.JavaModuleSystem
 import com.intellij.psi.PsiElementFinder
 import com.intellij.psi.PsiManager
 import com.intellij.psi.augment.PsiAugmentProvider
-import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.psi.codeStyle.CodeStyleSettingsProvider
-import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider
-import com.intellij.psi.compiled.ClassFileDecompilers
+import com.intellij.psi.codeStyle.*
 import com.intellij.psi.impl.PsiElementFinderImpl
 import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
@@ -261,6 +258,7 @@ private fun createKotlinCoreApplicationEnvironment(disposable: Disposable): Kotl
 
             override fun priority(processing: J2kPostProcessing): Int = 0
         })
+        application.registerService(CodeStyleSettingsService::class.java, CodeStyleSettingsServiceImpl())
     }
 
 private fun registerProjectExtensionPoints(area: ExtensionsArea) {
