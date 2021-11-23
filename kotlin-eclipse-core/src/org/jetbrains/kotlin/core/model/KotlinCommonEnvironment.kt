@@ -49,6 +49,7 @@ import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
 import com.intellij.psi.impl.file.impl.JavaFileManager
 import org.eclipse.core.runtime.IPath
+import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.asJava.KotlinAsJavaSupport
 import org.jetbrains.kotlin.asJava.LightClassGenerationSupport
 import org.jetbrains.kotlin.asJava.finder.JavaElementFinder
@@ -105,10 +106,14 @@ private fun setIdeaIoUseFallback() {
 abstract class KotlinCommonEnvironment(disposable: Disposable) {
     val project: MockProject
 
+    var hasError = false
+
     val projectEnvironment: JavaCoreProjectEnvironment
     private val roots = LinkedHashSet<JavaRoot>()
 
     val configuration = CompilerConfiguration()
+
+    abstract val javaProject: IJavaProject
 
     init {
         setIdeaIoUseFallback()
