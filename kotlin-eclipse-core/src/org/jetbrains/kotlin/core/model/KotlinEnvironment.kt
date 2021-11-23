@@ -57,6 +57,7 @@ import org.jetbrains.kotlin.core.preferences.CompilerPlugin
 import org.jetbrains.kotlin.core.preferences.KotlinBuildingProperties
 import org.jetbrains.kotlin.core.preferences.KotlinProperties
 import org.jetbrains.kotlin.core.resolve.lang.kotlin.EclipseVirtualFileFinderFactory
+import org.jetbrains.kotlin.core.utils.DependencyResolverException
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.utils.asFile
 import org.jetbrains.kotlin.core.utils.buildLibPath
@@ -122,7 +123,7 @@ class KotlinScriptEnvironment private constructor(
 
     val definitionClasspath: Collection<File> = definition?.contextClassLoader?.let(::classpathFromClassloader).orEmpty()
 
-    val javaProject: IJavaProject = JavaCore.create(eclipseFile.project)
+    override val javaProject: IJavaProject = JavaCore.create(eclipseFile.project)
 
     init {
         configureClasspath()
@@ -186,6 +187,14 @@ class KotlinScriptEnvironment private constructor(
             cachedEnvironment.removeEnvironment(file)
         }
 
+        fun removeAllEnvironments() {
+            cachedEnvironment.removeAllEnvironments()
+        }
+
+        fun removeEnvironmentIf(check: (KotlinCommonEnvironment) -> Boolean) {
+            cachedEnvironment.removeEnvironmentIf(check)
+        }
+
         @JvmStatic
         fun getEclipseFile(project: Project): IFile? = cachedEnvironment.getEclipseResource(project)
 
@@ -214,9 +223,13 @@ class KotlinScriptEnvironment private constructor(
 
         if (!javaProject.exists()) return
 
-        for (file in ProjectUtils.collectClasspathWithDependenciesForBuild(javaProject)) {
-            addToClasspath(file)
+        val tempFiles = try {
+            ProjectUtils.collectClasspathWithDependenciesForBuild(javaProject)
+        } catch (e: DependencyResolverException) {
+            hasError = true
+            e.resolvedFiles
         }
+        tempFiles.forEach(::addToClasspath)
     }
 
     private fun addDependenciesToClasspath(dependencies: ScriptDependencies?) {
@@ -312,7 +325,7 @@ class SamWithReceiverResolverExtension(
 class KotlinEnvironment private constructor(val eclipseProject: IProject, disposable: Disposable) :
         KotlinCommonEnvironment(disposable) {
 
-    val javaProject = JavaCore.create(eclipseProject)
+    override val javaProject = JavaCore.create(eclipseProject)
 
     val projectCompilerProperties: KotlinProperties = KotlinProperties(ProjectScope(eclipseProject))
 
@@ -382,9 +395,14 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
     private fun configureClasspath(javaProject: IJavaProject) {
         if (!javaProject.exists()) return
 
-        for (file in ProjectUtils.collectClasspathWithDependenciesForBuild(javaProject)) {
-            addToClasspath(file)
+        val tempFiles = try {
+            ProjectUtils.collectClasspathWithDependenciesForBuild(javaProject)
+        } catch (e: DependencyResolverException) {
+            hasError = true
+            e.resolvedFiles
+            e.resolvedFiles
         }
+        tempFiles.forEach(::addToClasspath)
     }
 
     companion object {
@@ -403,6 +421,17 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
             KotlinPsiManager.invalidateCachedProjectSourceFiles()
             KotlinAnalysisFileCache.resetCache()
             KotlinAnalysisProjectCache.resetCache(eclipseProject)
+        }
+
+        fun removeEnvironmentIf(check: (KotlinCommonEnvironment) -> Boolean) {
+            val tempRemoved = cachedEnvironment.removeEnvironmentIf(check)
+            if(tempRemoved.isNotEmpty()) {
+                KotlinPsiManager.invalidateCachedProjectSourceFiles()
+                KotlinAnalysisFileCache.resetCache()
+                for (removedPrj in tempRemoved) {
+                    KotlinAnalysisProjectCache.resetCache(removedPrj)
+                }
+            }
         }
 
         @JvmStatic

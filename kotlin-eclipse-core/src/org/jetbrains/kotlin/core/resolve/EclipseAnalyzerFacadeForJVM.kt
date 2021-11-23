@@ -112,13 +112,15 @@ object EclipseAnalyzerFacadeForJVM {
 
         val tempOrigClasspath = javaProject.rawClasspath
 
-        val tempNewClasspath = tempOrigClasspath + environment.definitionClasspath.map {
-            JavaCore.newLibraryEntry(Path(it.absolutePath), null, null)
-        }
-
-        javaProject.setRawClasspath(tempNewClasspath.toSet().toTypedArray(), null)
-
         try {
+            val tempSourceCode = KtFileScriptSource(scriptFile)
+            val tempContribution = EclipseScriptDefinitionProvider.getContribution(tempSourceCode)
+
+            val tempNewClasspath = tempContribution?.createClasspath(environment) ?: (tempOrigClasspath + environment.definitionClasspath.map {
+                JavaCore.newLibraryEntry(Path(it.absolutePath), null, null)
+            }).distinctBy { it.path }.toTypedArray()
+
+            javaProject.setRawClasspath(tempNewClasspath, null)
 
             val allFiles = LinkedHashSet<KtFile>().run {
                 add(scriptFile)
@@ -131,13 +133,10 @@ object EclipseAnalyzerFacadeForJVM {
 
             ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).toCollection(allFiles)
 
-            val tempSourceCode = KtFileScriptSource(scriptFile)
-
             val tempRefinedConfig = environment.definition?.let {
                 refineScriptCompilationConfiguration(tempSourceCode, it, environment.project)
             }?.valueOrNull()?.configuration
 
-            val tempContribution = EclipseScriptDefinitionProvider.getContribution(tempSourceCode)
 
             val tempDefaultImports =
                 tempRefinedConfig?.get(PropertiesCollection.Key("defaultImports", emptyList<String>())) ?: emptyList()
@@ -192,7 +191,9 @@ object EclipseAnalyzerFacadeForJVM {
                                     val tempProvidedProperties = tempProperties?.entries?.map { (key, value) ->
                                         val isNullable = tempContribution?.isNullable(key, tempRefinedConfig) ?: true
                                         val tempText =
-                                            """val $key: ${value.typeName}${'$'}${if (isNullable) "? = null" else " = TODO()"}"""
+                                            """
+                                                /** Provided property '$key' of type: ${value.typeName} */
+                                                val $key: ${value.typeName}${'$'}${if (isNullable) "? = null" else " = TODO()"}""".trimIndent()
                                         factory.createProperty(tempText)
                                     } ?: emptyList()
 
