@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.core.launch.KotlinCLICompiler
 import org.jetbrains.kotlin.core.model.KOTLIN_COMPILER_PATH
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin
+import org.jetbrains.kotlin.core.utils.DependencyResolverException
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.incremental.makeIncrementally
 import java.io.*
@@ -127,10 +128,13 @@ object KotlinCompiler {
         pluginClasspaths = pluginClasspathsList.toTypedArray()
         pluginOptions = pluginOptionsList.toTypedArray()
 
-        classpath = ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkUndefined)
-                .joinToString(separator = System.getProperty("path.separator")) { it.absolutePath }
+        val tempFiles = try {
+            ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkUndefined)
+        } catch (e: DependencyResolverException) {
+            e.resolvedFiles
+        }
 
-
+        classpath = tempFiles.joinToString(separator = System.getProperty("path.separator")) { it.absolutePath }
     }
 
     private fun configureCompilerArguments(
@@ -169,9 +173,14 @@ object KotlinCompiler {
         }
 
         add("-classpath")
-        ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkUndefined)
-                .joinToString(separator = System.getProperty("path.separator")) { it.absolutePath }
-                .let { add(it) }
+
+        val tempFiles = try {
+            ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkUndefined)
+        } catch (e: DependencyResolverException) {
+            e.resolvedFiles
+        }
+
+        add(tempFiles.joinToString(separator = System.getProperty("path.separator")) { it.absolutePath })
 
         add("-d")
         add(outputDir)
