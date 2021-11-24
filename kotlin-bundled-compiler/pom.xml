@@ -22,7 +22,6 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
-
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -44,4 +43,52 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>with-gradle</id>
+            <activation>
+                <property>
+                    <name>with-gradle</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                       <groupId>org.codehaus.mojo</groupId>
+                       <artifactId>exec-maven-plugin</artifactId>
+                       <version>3.0.0</version>
+                       <executions>
+                           <execution>
+                               <id>gradle-clean</id>
+                               <phase>clean</phase>
+                               <goals>
+                                   <goal>exec</goal>
+                               </goals>
+                               <configuration>
+                                   <executable>${project.basedir}/gradlew.bat</executable>
+                                   <arguments>
+                                       <argument>clean</argument>
+                                   </arguments>
+                               </configuration>
+                           </execution>
+                           <execution>
+                               <id>gradle-getBundled</id>
+                               <phase>initialize</phase>
+                               <goals>
+                                   <goal>exec</goal>
+                               </goals>
+                               <configuration>
+                                   <executable>${project.basedir}/gradlew.bat</executable>
+                                   <arguments>
+                                       <argument>getBundled</argument>
+                                   </arguments>
+                               </configuration>
+                           </execution>
+                       </executions>
+                   </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
