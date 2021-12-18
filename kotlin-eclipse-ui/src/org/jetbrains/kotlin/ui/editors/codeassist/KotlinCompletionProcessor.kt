@@ -31,6 +31,7 @@ import org.eclipse.jface.text.templates.TemplateContext
 import org.eclipse.jface.text.templates.TemplateProposal
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.eclipse.ui.utils.CompletionElementType
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
 import org.jetbrains.kotlin.name.Name
@@ -43,9 +44,6 @@ import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
-import java.util.Comparator
-import com.intellij.codeInsight.completion.scope.CompletionElement
-import org.jetbrains.kotlin.eclipse.ui.utils.CompletionElementType
 
 abstract class KotlinCompletionProcessor(
     val editor: KotlinEditor,

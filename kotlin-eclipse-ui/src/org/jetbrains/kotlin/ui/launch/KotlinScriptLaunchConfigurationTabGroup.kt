@@ -9,6 +9,6 @@ import org.eclipse.jdt.debug.ui.launchConfigurations.JavaArgumentsTab
 class KotlinScriptLaunchConfigurationTabGroup : AbstractLaunchConfigurationTabGroup() {
     override fun createTabs(dialog: ILaunchConfigurationDialog, mode: String) {
         val arr = arrayOf(CommonTab())
-        tabs = arr
+        setTabs(*arr)
     }
 }
