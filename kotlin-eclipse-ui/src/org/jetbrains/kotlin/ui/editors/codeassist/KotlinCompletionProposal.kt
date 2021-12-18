@@ -37,6 +37,7 @@ import org.jetbrains.kotlin.resolve.calls.util.getValueParametersCountFromFuncti
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
 import org.jetbrains.kotlin.core.imports.TypeCandidate
+import org.jetbrains.kotlin.eclipse.ui.utils.CompletionElementType
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
@@ -86,7 +87,8 @@ open class KotlinCompletionProposal(
         val containmentPresentableString: String? = null,
         val information: IContextInformation? = null,
         val additionalInfo: String? = null,
-        identifierPart: String) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
+        identifierPart: String,
+		val type: CompletionElementType = CompletionElementType.UNKNOWN) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
     
     var selectedOffset = -1
     

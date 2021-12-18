@@ -32,7 +32,9 @@ import org.eclipse.jdt.core.IImportDeclaration
 import org.eclipse.jdt.core.IInitializer
 import org.eclipse.jdt.core.IJavaElement
 import org.eclipse.jdt.core.IJavaModel
+import org.eclipse.jdt.internal.core.JavaModel
 import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.internal.core.JavaProject
 import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.IOpenable
 import org.eclipse.jdt.core.IPackageFragment
@@ -79,7 +81,7 @@ class KotlinLightType(val originElement: IType) :
 
     override fun getNameRange(): ISourceRange = DUMMY_NAME_RANGE
 
-    override fun getPrimaryElement(): IJavaElement? = this
+    override fun getPrimaryElement(): JavaElement = this as JavaElement
 
     override fun isBinary(): Boolean = false
 
@@ -281,9 +283,9 @@ class KotlinLightType(val originElement: IType) :
 
     override fun getSuperInterfaceNames(): Array<out String>? = originElement.getSuperInterfaceNames()
 
-    override fun getJavaModel(): IJavaModel? = originElement.getJavaModel()
+    override fun getJavaModel(): JavaModel = originElement.getJavaModel() as JavaModel
 
-    override fun getParent(): IJavaElement? = originElement.getParent()
+    override fun getParent(): JavaElement = originElement.getParent() as JavaElement
 
     override fun getChildren(): Array<out IJavaElement>? = originElement.getChildren()
 
@@ -311,7 +313,7 @@ class KotlinLightType(val originElement: IType) :
         return originElement.createMethod(contents, sibling, force, monitor)
     }
 
-    override fun getJavaProject(): IJavaProject? = originElement.getJavaProject()
+    override fun getJavaProject(): JavaProject = originElement.getJavaProject() as JavaProject
 
     override fun move(container: IJavaElement?, sibling: IJavaElement?, rename: String?, replace: Boolean, monitor: IProgressMonitor?) {
         originElement.move(container, sibling, rename, replace, monitor)
