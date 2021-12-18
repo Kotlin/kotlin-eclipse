@@ -29,18 +29,4 @@ See the License for the specific language governing permissions and
 limitations under the License.
    </license>
 
-   <plugin
-         id="org.jetbrains.kotlin.gradle"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jetbrains.kotlin.gradle.model"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
 </feature>
