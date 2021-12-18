@@ -4,14 +4,19 @@ import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResourceDelta
 import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.core.runtime.Status
+import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
+import org.jetbrains.kotlin.core.model.runJob
+import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.resolve.diagnostics.Diagnostics
+import org.jetbrains.kotlin.ui.KotlinPluginUpdater
 import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.editors.annotations.DiagnosticAnnotation
@@ -72,6 +77,51 @@ abstract class BaseKotlinBuilderElement {
     protected fun updateLineMarkers(diagnostics: Diagnostics, affectedFiles: List<IFile>) {
         clearMarkersFromFiles(affectedFiles)
         addMarkersToProject(DiagnosticAnnotationUtil.INSTANCE.handleDiagnostics(diagnostics), affectedFiles)
+    }
+
+    protected fun postBuild(delta: IResourceDelta?, javaProject: IJavaProject) {
+        val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
+
+        if (allAffectedFiles.isNotEmpty()) {
+            if (isAllFilesApplicableForFilters(allAffectedFiles, javaProject)) {
+                return
+            }
+        }
+
+        val kotlinAffectedFiles =
+                allAffectedFiles
+                        .filterTo(hashSetOf()) { KotlinPsiManager.isKotlinSourceFile(it, javaProject) }
+
+        val existingAffectedFiles = kotlinAffectedFiles.filter { it.exists() }
+
+        commitFiles(existingAffectedFiles)
+
+        KotlinLightClassGeneration.updateLightClasses(javaProject.project, kotlinAffectedFiles)
+        if (kotlinAffectedFiles.isNotEmpty()) {
+
+            runJob("Checking for update", Job.DECORATE) {
+                KotlinPluginUpdater.kotlinFileEdited()
+                Status.OK_STATUS
+            }
+        }
+
+        val ktFiles = existingAffectedFiles.map { KotlinPsiManager.getParsedFile(it) }
+
+        val analysisResultWithProvider = if (ktFiles.isEmpty())
+            KotlinAnalyzer.analyzeProject(javaProject.project)
+        else
+            KotlinAnalyzer.analyzeFiles(ktFiles)
+
+        clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
+        updateLineMarkers(analysisResultWithProvider.analysisResult.bindingContext.diagnostics, existingAffectedFiles)
+
+        runCancellableAnalysisFor(javaProject) { analysisResult ->
+            val projectFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
+            updateLineMarkers(
+                    analysisResult.bindingContext.diagnostics,
+                    (projectFiles - existingAffectedFiles.toSet()).toList()
+            )
+        }
     }
 }
 
