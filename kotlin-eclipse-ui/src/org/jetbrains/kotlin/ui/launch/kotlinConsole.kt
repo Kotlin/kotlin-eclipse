@@ -16,24 +16,31 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.launch
 
+import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.ui.console.ConsolePlugin
-import org.eclipse.ui.console.IConsoleManager
 import org.eclipse.ui.console.MessageConsole
 
 private const val KOTLIN_CONSOLE_ID = "org.jetbrains.kotlin.ui.console"
 
-fun createCleanKotlinConsole(): MessageConsole {
-    val consoleManager = ConsolePlugin.getDefault().getConsoleManager()
-    removeKotlinConsoles(consoleManager)
-    
-    val messageConsole = MessageConsole(KOTLIN_CONSOLE_ID, null)
-    consoleManager.addConsoles(arrayOf(messageConsole))
-    
+private val manager get() = ConsolePlugin.getDefault().consoleManager
+
+private val IJavaProject.consoleName get() = "$KOTLIN_CONSOLE_ID.${project.name}"
+
+fun createCleanKotlinConsole(javaProject: IJavaProject): MessageConsole {
+    removeKotlinConsoles(javaProject)
+
+    return createNewKotlinConsole(javaProject)
+}
+
+private fun createNewKotlinConsole(javaProject: IJavaProject): MessageConsole {
+    val messageConsole = MessageConsole(javaProject.consoleName, null)
+    manager.addConsoles(arrayOf(messageConsole))
+
     return messageConsole
 }
 
-fun removeKotlinConsoles(manager: IConsoleManager) {
+fun removeKotlinConsoles(javaProject: IJavaProject) {
     manager.removeConsoles(manager.consoles
-            .filter { it.name == KOTLIN_CONSOLE_ID }
+            .filter { it.name == javaProject.consoleName }
             .toTypedArray())
 }
