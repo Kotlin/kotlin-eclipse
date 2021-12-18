@@ -43,6 +43,11 @@ public class StringUtil extends StringUtilRt {
                 charSeq.subSequence(end, charSeq.length()));
     }
 
+    @Contract(value = "null -> null; !null->!null", pure = true)
+    public static String internEmptyString(String s) {
+        return s == null ? null : (s.isEmpty() ? "" : s);
+    }
+
     private static class MyHtml2Text extends HTMLEditorKit.ParserCallback {
         @NotNull private final StringBuilder myBuffer = new StringBuilder();
         private final boolean myIsSkipStyleTag;

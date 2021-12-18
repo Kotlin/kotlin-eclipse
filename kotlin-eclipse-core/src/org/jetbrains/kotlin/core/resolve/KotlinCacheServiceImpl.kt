@@ -61,6 +61,9 @@ class KotlinCacheServiceImpl(private val ideaProject: Project) : KotlinCacheServ
     override fun getResolutionFacade(elements: List<KtElement>): ResolutionFacade {
         return KotlinSimpleResolutionFacade(ideaProject, elements)
     }
+
+    override fun getResolutionFacade(element: KtElement): ResolutionFacade = getResolutionFacade(listOf(element))
+
 	override fun getResolutionFacadeByModuleInfo(moduleInfo: ModuleInfo, platform: TargetPlatform): ResolutionFacade? =
 		null
 }

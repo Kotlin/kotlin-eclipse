@@ -30,6 +30,10 @@ public class MultiMap<K, V> implements Serializable {
     myMap = createMap();
   }
 
+  public MultiMap(@NotNull Map<K, Collection<V>> mapImpl) {
+    myMap = mapImpl;
+  }
+
   public MultiMap(@NotNull MultiMap<? extends K, ? extends V> toCopy) {
     this();
     putAllValues(toCopy);
@@ -37,7 +41,7 @@ public class MultiMap<K, V> implements Serializable {
 
   @NotNull
   public MultiMap<K, V> copy() {
-    return new MultiMap<K, V>(this);
+    return new MultiMap<>(this);
   }
   
   public MultiMap(int initialCapacity, float loadFactor) {
@@ -314,6 +318,16 @@ public class MultiMap<K, V> implements Serializable {
       @Override
       protected Map<K, Collection<V>> createMap() {
         return new THashMap<K, Collection<V>>();
+      }
+    };
+  }
+
+  @NotNull
+  public static <K, V> MultiMap<K, V> createConcurrent() {
+    return new MultiMap<K, V>(new ConcurrentHashMap<>()) {
+      @NotNull
+      protected Collection<V> createCollection() {
+        return ContainerUtil.createLockFreeCopyOnWriteList();
       }
     };
   }

@@ -2,7 +2,7 @@
 <feature
       id="org.jetbrains.kotlin.gradle.feature"
       label="Kotlin-gradle"
-      version="1.6.0.qualifier"
+      version="1.6.10.qualifier"
       provider-name="JetBrains">
 
    <description url="http://kotlinlang.org/">
