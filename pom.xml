@@ -30,7 +30,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/48/dev/update</ajdt-eclipse-repo.url>
-
 		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
 		<kotlin.version>1.5.31</kotlin.version>

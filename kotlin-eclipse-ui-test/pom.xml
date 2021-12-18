@@ -45,9 +45,9 @@
 					
 					<frameworkExtensions>
 			            <frameworkExtension>
-			              <groupId>org.eclipse.platform</groupId>
-			              <artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-			              <version>${weaving-hook.version}</version>
+							<groupId>org.eclipse.platform</groupId>
+			              	<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
+			              	<version>${weaving-hook.version}</version>
 			            </frameworkExtension>
 		          	</frameworkExtensions>
 		          	<bundleStartLevel>
