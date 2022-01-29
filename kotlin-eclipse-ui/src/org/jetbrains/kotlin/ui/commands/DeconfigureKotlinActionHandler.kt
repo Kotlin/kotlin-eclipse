@@ -10,12 +10,13 @@ import org.jetbrains.kotlin.core.model.canBeDeconfigured
 import org.eclipse.ui.ISources
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.eclipse.jdt.core.JavaCore
 
 public class DeconfigureKotlinActionHandler : AbstractHandler() {
 	override fun execute(event: ExecutionEvent): Any? {
 		val selection = HandlerUtil.getActiveMenuSelection(event)
-		val project = getFirstOrNullJavaProject(selection as IStructuredSelection)
-		unconfigureKotlinProject(project!!)
+		val project = getFirstOrNullProject(selection as IStructuredSelection)
+		unconfigureKotlinProject(JavaCore.create(project!!))
 		
 		return null
 	}
@@ -23,9 +24,9 @@ public class DeconfigureKotlinActionHandler : AbstractHandler() {
 	override fun setEnabled(evaluationContext: Any) {
 		val selection = HandlerUtil.getVariable(evaluationContext, ISources.ACTIVE_CURRENT_SELECTION_NAME)
 		if (selection is IStructuredSelection) {
-			val javaProject = getFirstOrNullJavaProject(selection)
-			if (javaProject != null) {
-				setBaseEnabled(canBeDeconfigured(javaProject.getProject()))
+			val project = getFirstOrNullProject(selection)
+			if (project != null) {
+				setBaseEnabled(canBeDeconfigured(project))
 				return
 			}
 		}

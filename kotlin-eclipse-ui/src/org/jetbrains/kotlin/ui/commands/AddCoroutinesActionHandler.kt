@@ -22,16 +22,18 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.ui.ISources
 import org.eclipse.ui.handlers.HandlerUtil
+import org.jetbrains.kotlin.core.model.isConfigurationMissing
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.utils.buildLibPath
+import org.eclipse.jdt.core.JavaCore
 
 public class AddCoroutinesActionHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
         val selection = HandlerUtil.getActiveMenuSelection(event)
-        val project = getFirstOrNullJavaProject(selection as IStructuredSelection)!!
+        val project = getFirstOrNullProject(selection as IStructuredSelection)!!
 
         ProjectUtils.addToClasspath(
-            project,
+            JavaCore.create(project),
             ProjectUtils.newExportedLibraryEntry("kotlinx-coroutines-core".buildLibPath()),
             ProjectUtils.newExportedLibraryEntry("kotlinx-coroutines-jdk8".buildLibPath())
         )
@@ -42,7 +44,8 @@ public class AddCoroutinesActionHandler : AbstractHandler() {
     override fun setEnabled(evaluationContext: Any) {
         val selection = HandlerUtil.getVariable(evaluationContext, ISources.ACTIVE_CURRENT_SELECTION_NAME)
         val newEnabled = (selection as? IStructuredSelection)
-            ?.let { getFirstOrNullJavaProject(it) }
+            ?.let { getFirstOrNullProject(it) }
+        	?.let { if (it.hasNature(JavaCore.NATURE_ID)) JavaCore.create(it) else null }
             ?.let { needsCoroutinesLibrary(it) }
             ?: false
 
@@ -52,5 +55,5 @@ public class AddCoroutinesActionHandler : AbstractHandler() {
     private fun needsCoroutinesLibrary(javaProject: IJavaProject): Boolean =
         javaProject.findType("kotlinx.coroutines.CoroutineScope") == null
                 && !ProjectUtils.isGradleProject(javaProject.project)
-                && !ProjectUtils.isMavenProject(javaProject.project)
+                && !ProjectUtils.isMavenProject(javaProject.project) && !isConfigurationMissing(javaProject.project)
 }
