@@ -325,46 +325,6 @@
       </menuContribution>
       <menuContribution
             allPopups="false"
-            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
-         <command
-               commandId="org.jetbrains.kotlin.ui.commands.j2k"
-               label="Convert Java to Kotlin"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
-         <menu
-               label="Configure Kotlin">
-            <command
-                  commandId="org.jetbrains.kotlin.ui.commands.deconfiguration"
-                  label="Remove Kotlin Nature"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="org.jetbrains.kotlin.ui.commands.configuration"
-                  label="Add Kotlin Nature"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="org.jetbrains.kotlin.ui.commands.configuration.coroutines"
-                  label="Add Coroutines Library"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-         </menu>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
             locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinFileEditor.EditorContext">
          <menu
                label="References">
@@ -961,5 +921,35 @@
          		menubarPath="project/additions">
          </action>
        </actionSet>
+   </extension>
+   <extension
+         id="org.jetbrains.kotlin.project.menus"
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.projectConfigure">
+         <command
+               commandId="org.jetbrains.kotlin.ui.commands.configuration"
+               label="Add Kotlin Nature"
+               style="push">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.jetbrains.kotlin.ui.commands.deconfiguration"
+               label="Remove Kotlin Nature"
+               style="push">
+            <visibleWhen checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.jetbrains.kotlin.ui.commands.configuration.coroutines"
+               label="Add Coroutines Library"
+               style="push">
+            <visibleWhen checkEnabled="true">
+            </visibleWhen>
+         </command>
+      </menuContribution>
    </extension>
 </plugin>

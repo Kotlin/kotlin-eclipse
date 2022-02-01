@@ -8,11 +8,12 @@ import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IFile
 import org.eclipse.ui.PlatformUI
 import org.eclipse.ui.ide.IDE
+import org.eclipse.jdt.core.JavaCore
 
 data class ConvertedKotlinData(val file: IFile, val kotlinFileData: String)
 
-fun getFirstOrNullJavaProject(selection: IStructuredSelection): IJavaProject? {
-	return selection.toArray().firstOrNull() as? IJavaProject
+fun getFirstOrNullProject(selection: IStructuredSelection): IProject? {
+	return selection.toArray().firstOrNull().let { if( it is IJavaProject) it.getProject() else it as? IProject }
 }
 
 fun getDeleteOperation(compilationUnits: Set<CompilationUnit>): DeleteResourcesOperation {
