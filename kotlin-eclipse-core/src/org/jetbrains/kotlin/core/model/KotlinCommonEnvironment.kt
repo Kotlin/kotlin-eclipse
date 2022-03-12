@@ -92,6 +92,8 @@ import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
 import org.jetbrains.kotlin.scripting.extensions.ScriptingResolveExtension
 import java.io.File
 import kotlin.reflect.KClass
+import com.intellij.psi.codeStyle.CodeStyleSettingsService
+import com.intellij.psi.codeStyle.CodeStyleSettingsServiceImpl
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {
@@ -261,6 +263,7 @@ private fun createKotlinCoreApplicationEnvironment(disposable: Disposable): Kotl
 
             override fun priority(processing: J2kPostProcessing): Int = 0
         })
+        application.registerService(CodeStyleSettingsService::class.java, CodeStyleSettingsServiceImpl())
     }
 
 private fun registerProjectExtensionPoints(area: ExtensionsArea) {

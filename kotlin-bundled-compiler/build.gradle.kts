@@ -179,6 +179,39 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
     }
 }
 
+val extractPackagesFromKTCompiler by tasks.registering(Jar::class) {
+    dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars)
+
+    from(zipTree("$libDir/kotlin-compiler.jar"))
+    destinationDirectory.set(libDir)
+    archiveFileName.set("kotlin-compiler-tmp.jar")
+    include("**")
+    exclude("com/intellij/openapi/util/text/**")
+    exclude("com/intellij/util/containers/MultiMap*")
+
+    doLast {
+        file("$libDir/kotlin-compiler.jar").delete()
+        file("$libDir/kotlin-compiler-tmp.jar").renameTo(file("$libDir/kotlin-compiler.jar"))
+    }
+}
+
+val extractPackagesFromCoreAnalysis by tasks.registering(Jar::class) {
+    dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars)
+
+    from(zipTree("$libDir/intellij-core-analysis-deprecated.jar"))
+    destinationDirectory.set(libDir)
+    archiveFileName.set("intellij-core-analysis-deprecated-tmp.jar")
+    include("**")
+    exclude("com/intellij/openapi/util/text/**")
+    exclude("com/intellij/psi/codeStyle/**")
+    exclude("com/intellij/util/containers/**")
+
+    doLast {
+        file("$libDir/intellij-core-analysis-deprecated.jar").delete()
+        file("$libDir/intellij-core-analysis-deprecated-tmp.jar").renameTo(file("$libDir/intellij-core-analysis-deprecated.jar"))
+    }
+}
+
 val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
     dependsOn(deleteLibrariesFromLibFolder)
     val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
@@ -315,11 +348,15 @@ val downloadBundled by tasks.registering {
     libDir.listFiles()?.filter { it.isFile }?.forEach { it.deleteRecursively() }
     if (localTCArtifacts) {
         dependsOn(extractPackagesFromPlugin,
+                extractPackagesFromKTCompiler,
+                extractPackagesFromCoreAnalysis,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)
     } else {
         dependsOn(extractPackagesFromPlugin,
+                extractPackagesFromKTCompiler,
+                extractPackagesFromCoreAnalysis,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)
