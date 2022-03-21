@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationResolver
 import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.scopes.*
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CALLABLES
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.FUNCTIONS_MASK
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.VARIABLES_MASK
 import org.jetbrains.kotlin.resolve.scopes.receivers.ClassQualifier
@@ -45,8 +46,6 @@ import org.jetbrains.kotlin.types.typeUtil.isUnit
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinBasicCompletionProposal
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinImportCallableCompletionProposal
 import org.jetbrains.kotlin.ui.refactorings.extract.parentsWithSelf
-import java.util.*
-import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 class KotlinReferenceVariantsHelper(
@@ -412,12 +411,13 @@ class KotlinReferenceVariantsHelper(
             val javaProjectSearchScope =
                 JavaSearchScopeFactory.getInstance().createJavaSearchScope(dependencyProjects.toTypedArray(), false)
 
-            val tempMethodNamePackages = mutableSetOf<String>()
+            val tempClassNames = hashMapOf<String, String>()
 
             val collector = object : MethodNameMatchRequestor() {
                 override fun acceptMethodNameMatch(match: MethodNameMatch) {
-                    if (Flags.isPublic(match.modifiers) && Flags.isStatic(match.modifiers)) {
-                        tempMethodNamePackages.add(match.method.declaringType.packageFragment.elementName)
+                    if (Flags.isPublic(match.modifiers)) {
+                        tempClassNames[match.method.declaringType.typeQualifiedName] =
+                            match.method.declaringType.packageFragment.elementName
                     }
                 }
             }
@@ -452,8 +452,31 @@ class KotlinReferenceVariantsHelper(
                 null
             )
 
-            val tempPackages = tempMethodNamePackages.map {
+            val tempPackages = tempClassNames.values.map {
                 resolutionFacade.moduleDescriptor.getPackage(FqName(it))
+            }
+
+            val tempClasses = tempClassNames.mapNotNull { (className, packageName) ->
+                val tempPackage = resolutionFacade.moduleDescriptor.getPackage(FqName(packageName))
+                if (className.contains('$')) {
+                    val tempNames = className.split('$')
+                    val topLevelClass = tempNames.first()
+                    var tempClassDescriptor = tempPackage.memberScope.getDescriptorsFiltered {
+                        !it.isSpecial && it.identifier == topLevelClass
+                    }.filterIsInstance<ClassDescriptor>().singleOrNull() ?: return@mapNotNull null
+
+                    tempNames.drop(1).forEach { subName ->
+                        tempClassDescriptor = tempClassDescriptor.unsubstitutedMemberScope.getDescriptorsFiltered {
+                            !it.isSpecial && it.identifier == subName
+                        }.filterIsInstance<ClassDescriptor>().singleOrNull() ?: return@mapNotNull null
+                    }
+
+                    tempClassDescriptor
+                } else {
+                    tempPackage.memberScope.getDescriptorsFiltered {
+                        !it.isSpecial && it.identifier == className
+                    }.filterIsInstance<ClassDescriptor>().singleOrNull()
+                }
             }
 
             val importsSet = ktFile.importDirectives
@@ -462,24 +485,25 @@ class KotlinReferenceVariantsHelper(
 
             val originPackage = ktFile.packageFqName.asString()
 
-            val tempDeferreds = tempPackages.map { packageDesc ->
-                KotlinEclipseScope.async {
-                   packageDesc.memberScope.getDescriptorsFiltered(
-                        kindFilter.intersect(DescriptorKindFilter.CALLABLES),
-                        nameFilter
-                    ).asSequence().filterIsInstance<CallableDescriptor>()
-                        .filter { callDesc ->
-                            val tempFuzzy = callDesc.fuzzyExtensionReceiverType()
-                            (allowNoReceiver && tempFuzzy == null) || (tempFuzzy != null && receiverTypes.any { receiverType ->
-                                tempFuzzy.checkIsSuperTypeOf(receiverType) != null
-                            })
-                        }
-                        .filter { callDesc ->
-                            callDesc.importableFqName?.asString() !in importsSet &&
-                                    callDesc.importableFqName?.parent()?.asString() != originPackage
-                        }.toList()
+            fun MemberScope.filterDescriptors() = getDescriptorsFiltered(
+                kindFilter.intersect(CALLABLES),
+                nameFilter
+            ).asSequence()
+                .filterIsInstance<CallableDescriptor>()
+                .filter { callDesc ->
+                    val tempFuzzy = callDesc.fuzzyExtensionReceiverType()
+                    (allowNoReceiver && tempFuzzy == null) || (tempFuzzy != null && receiverTypes.any { receiverType ->
+                        tempFuzzy.checkIsSuperTypeOf(receiverType) != null
+                    })
                 }
-            }
+                .filter { callDesc ->
+                    callDesc.importableFqName?.asString() !in importsSet &&
+                            callDesc.importableFqName?.parent()?.asString() != originPackage
+                }.toList()
+
+            val tempDeferreds =
+                tempPackages.map { desc -> KotlinEclipseScope.async { desc.memberScope.filterDescriptors() } } +
+                        tempClasses.map { desc -> KotlinEclipseScope.async { desc.unsubstitutedMemberScope.filterDescriptors() } }
 
             val tempDescriptors = tempDeferreds.awaitAll().flatten()
 
