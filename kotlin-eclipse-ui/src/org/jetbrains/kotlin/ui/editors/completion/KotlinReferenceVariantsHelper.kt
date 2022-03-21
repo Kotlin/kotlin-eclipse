@@ -1,11 +1,22 @@
 package org.jetbrains.kotlin.ui.editors.completion
 
 import com.intellij.psi.PsiElement
+import kotlinx.coroutines.*
+import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.core.Flags
+import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.core.search.*
+import org.eclipse.jdt.internal.ui.search.JavaSearchScopeFactory
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
+import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.eclipse.ui.utils.KotlinEclipseScope
+import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 import org.jetbrains.kotlin.idea.FrontendInternals
+import org.jetbrains.kotlin.idea.imports.importableFqName
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
 import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.incremental.KotlinLookupLocation
@@ -31,7 +42,12 @@ import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.expressions.DoubleColonLHS
 import org.jetbrains.kotlin.types.typeUtil.isUnit
+import org.jetbrains.kotlin.ui.editors.codeassist.KotlinBasicCompletionProposal
+import org.jetbrains.kotlin.ui.editors.codeassist.KotlinImportCallableCompletionProposal
 import org.jetbrains.kotlin.ui.refactorings.extract.parentsWithSelf
+import java.util.*
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 class KotlinReferenceVariantsHelper(
     val bindingContext: BindingContext,
@@ -42,22 +58,41 @@ class KotlinReferenceVariantsHelper(
     fun getReferenceVariants(
         simpleNameExpression: KtSimpleNameExpression,
         kindFilter: DescriptorKindFilter,
-        nameFilter: (Name) -> Boolean
-    ): Collection<DeclarationDescriptor> {
+        nameFilter: (Name) -> Boolean,
+        javaProject: IJavaProject,
+        ktFile: KtFile,
+        file: IFile,
+        identifierPart: String?
+    ): Collection<KotlinBasicCompletionProposal> {
         val callTypeAndReceiver = CallTypeAndReceiver.detect(simpleNameExpression)
-        var variants: Collection<DeclarationDescriptor> =
-            getReferenceVariants(simpleNameExpression, callTypeAndReceiver, kindFilter, nameFilter)
-                .filter {
-                    !resolutionFacade.frontendService<DeprecationResolver>().isHiddenInResolution(it) && visibilityFilter(
-                        it
-                    )
-                }
+        var variants: Collection<KotlinBasicCompletionProposal> =
+            getReferenceVariants(
+                simpleNameExpression,
+                callTypeAndReceiver,
+                kindFilter,
+                nameFilter,
+                javaProject,
+                ktFile,
+                file,
+                identifierPart
+            ).filter {
+                !resolutionFacade.frontendService<DeprecationResolver>().isHiddenInResolution(it.descriptor) &&
+                        visibilityFilter(it.descriptor)
+            }
 
-        ShadowedDeclarationsFilter.create(bindingContext, resolutionFacade, simpleNameExpression, callTypeAndReceiver)?.let {
-            variants = it.filter(variants)
+        val tempFilter = ShadowedDeclarationsFilter.create(
+            bindingContext,
+            resolutionFacade,
+            simpleNameExpression,
+            callTypeAndReceiver
+        )
+        if (tempFilter != null) {
+            variants = variants.mapNotNull {
+                if (tempFilter.filter(listOf(it.descriptor)).isEmpty()) null else it
+            }
         }
 
-        return variants.filter { kindFilter.accepts(it) }
+        return variants.filter { kindFilter.accepts(it.descriptor) }
     }
 
     private fun getVariantsForImportOrPackageDirective(
@@ -103,8 +138,8 @@ class KotlinReferenceVariantsHelper(
         useReceiverType: KotlinType?,
         kindFilter: DescriptorKindFilter,
         nameFilter: (Name) -> Boolean
-    ): Collection<DeclarationDescriptor> {
-        val descriptors = LinkedHashSet<DeclarationDescriptor>()
+    ): Collection<KotlinBasicCompletionProposal> {
+        val descriptors = LinkedHashSet<KotlinBasicCompletionProposal>()
 
         val resolutionScope = contextElement.getResolutionScope(bindingContext, resolutionFacade)
 
@@ -136,7 +171,10 @@ class KotlinReferenceVariantsHelper(
             if (isStatic) {
                 explicitReceiverTypes
                     .mapNotNull { (it.constructor.declarationDescriptor as? ClassDescriptor)?.staticScope }
-                    .flatMapTo(descriptors) { it.collectStaticMembers(resolutionFacade, kindFilter, nameFilter) }
+                    .flatMapTo(descriptors) {
+                        it.collectStaticMembers(resolutionFacade, kindFilter, nameFilter)
+                            .map { KotlinBasicCompletionProposal.Descriptor(it) }
+                    }
             }
         } else {
             descriptors.addNonExtensionCallablesAndConstructors(
@@ -152,8 +190,12 @@ class KotlinReferenceVariantsHelper(
         simpleNameExpression: KtSimpleNameExpression,
         callTypeAndReceiver: CallTypeAndReceiver<*, *>,
         kindFilter: DescriptorKindFilter,
-        nameFilter: (Name) -> Boolean
-    ): Collection<DeclarationDescriptor> {
+        nameFilter: (Name) -> Boolean,
+        javaProject: IJavaProject,
+        ktFile: KtFile,
+        file: IFile,
+        identifierPart: String?
+    ): Collection<KotlinBasicCompletionProposal> {
         val callType = callTypeAndReceiver.callType
 
         @Suppress("NAME_SHADOWING")
@@ -163,10 +205,12 @@ class KotlinReferenceVariantsHelper(
         when (callTypeAndReceiver) {
             is CallTypeAndReceiver.IMPORT_DIRECTIVE -> {
                 return getVariantsForImportOrPackageDirective(callTypeAndReceiver.receiver, kindFilter, nameFilter)
+                    .map { KotlinBasicCompletionProposal.Descriptor(it) }
             }
 
             is CallTypeAndReceiver.PACKAGE_DIRECTIVE -> {
                 return getVariantsForImportOrPackageDirective(callTypeAndReceiver.receiver, kindFilter, nameFilter)
+                    .map { KotlinBasicCompletionProposal.Descriptor(it) }
             }
 
             is CallTypeAndReceiver.TYPE -> {
@@ -175,7 +219,7 @@ class KotlinReferenceVariantsHelper(
                     simpleNameExpression,
                     kindFilter,
                     nameFilter
-                )
+                ).map { KotlinBasicCompletionProposal.Descriptor(it) }
             }
 
             is CallTypeAndReceiver.ANNOTATION -> {
@@ -184,7 +228,7 @@ class KotlinReferenceVariantsHelper(
                     simpleNameExpression,
                     kindFilter,
                     nameFilter
-                )
+                ).map { KotlinBasicCompletionProposal.Descriptor(it) }
             }
 
             is CallTypeAndReceiver.CALLABLE_REFERENCE -> {
@@ -227,7 +271,7 @@ class KotlinReferenceVariantsHelper(
             )
         }.toSet()
 
-        val descriptors = LinkedHashSet<DeclarationDescriptor>()
+        val descriptors = LinkedHashSet<KotlinBasicCompletionProposal>()
 
         val filterWithoutExtensions = kindFilter exclude DescriptorKindExclude.Extensions
         if (receiverExpression != null) {
@@ -238,7 +282,7 @@ class KotlinReferenceVariantsHelper(
                         resolutionFacade,
                         filterWithoutExtensions,
                         nameFilter
-                    )
+                    ).map { KotlinBasicCompletionProposal.Descriptor(it) }
                 )
             }
 
@@ -256,7 +300,12 @@ class KotlinReferenceVariantsHelper(
                 resolutionScope,
                 callType,
                 kindFilter,
-                nameFilter
+                nameFilter,
+                javaProject,
+                ktFile,
+                file,
+                identifierPart,
+                false
             )
         } else {
             descriptors.processAll(
@@ -265,7 +314,12 @@ class KotlinReferenceVariantsHelper(
                 resolutionScope,
                 callType,
                 kindFilter,
-                nameFilter
+                nameFilter,
+                javaProject,
+                ktFile,
+                file,
+                identifierPart,
+                true
             )
 
             descriptors.addAll(
@@ -273,50 +327,193 @@ class KotlinReferenceVariantsHelper(
                     filterWithoutExtensions,
                     nameFilter,
                     changeNamesForAliased = true
-                )
+                ).map { KotlinBasicCompletionProposal.Descriptor(it) }
             )
         }
 
         if (callType == CallType.SUPER_MEMBERS) { // we need to unwrap fake overrides in case of "super." because ShadowedDeclarationsFilter does not work correctly
-            return descriptors.flatMapTo(LinkedHashSet<DeclarationDescriptor>()) {
-                if (it is CallableMemberDescriptor && it.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) it.overriddenDescriptors else listOf(
-                    it
-                )
-            }
+            return descriptors.filterIsInstance<KotlinBasicCompletionProposal.Descriptor>()
+                .flatMapTo(LinkedHashSet<KotlinBasicCompletionProposal>()) {
+                    if (it.descriptor is CallableMemberDescriptor && it.descriptor.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
+                        it.descriptor.overriddenDescriptors.map { KotlinBasicCompletionProposal.Descriptor(it) }
+                    } else {
+                        listOf(it)
+                    }
+                }
         }
 
-        return descriptors
+        return descriptors.distinctBy { it.descriptor }
     }
 
-    private fun MutableSet<DeclarationDescriptor>.processAll(
+    private fun MutableSet<KotlinBasicCompletionProposal>.processAll(
         implicitReceiverTypes: Collection<KotlinType>,
         receiverTypes: Collection<KotlinType>,
         resolutionScope: LexicalScope,
         callType: CallType<*>,
         kindFilter: DescriptorKindFilter,
-        nameFilter: (Name) -> Boolean
+        nameFilter: (Name) -> Boolean,
+        javaProject: IJavaProject,
+        ktFile: KtFile,
+        file: IFile,
+        identifierPart: String?,
+        allowNoReceiver: Boolean
     ) {
-        addNonExtensionMembers(receiverTypes, kindFilter, nameFilter, constructorFilter = { it.isInner })
-        addMemberExtensions(implicitReceiverTypes, receiverTypes, callType, kindFilter, nameFilter)
-        addScopeAndSyntheticExtensions(resolutionScope, receiverTypes, callType, kindFilter, nameFilter)
+        runBlocking {
+            val tempJobs = mutableListOf<Job>()
+            var tempJob = KotlinEclipseScope.launch {
+                addNonExtensionMembers(receiverTypes, kindFilter, nameFilter, constructorFilter = { it.isInner })
+            }
+            tempJobs += tempJob
+            tempJob = KotlinEclipseScope.launch {
+                addMemberExtensions(implicitReceiverTypes, receiverTypes, callType, kindFilter, nameFilter)
+            }
+            tempJobs += tempJob
+            tempJob = KotlinEclipseScope.launch {
+                addNotImportedTopLevelCallables(
+                    receiverTypes,
+                    kindFilter,
+                    nameFilter,
+                    javaProject,
+                    ktFile,
+                    file,
+                    identifierPart,
+                    allowNoReceiver
+                )
+                println("Finished!")
+            }
+            tempJobs += tempJob
+            tempJob = KotlinEclipseScope.launch {
+                addScopeAndSyntheticExtensions(resolutionScope, receiverTypes, callType, kindFilter, nameFilter)
+            }
+            tempJobs += tempJob
+            tempJobs.joinAll()
+        }
     }
 
-    private fun MutableSet<DeclarationDescriptor>.addMemberExtensions(
+    @OptIn(ExperimentalTime::class)
+    private suspend fun MutableSet<KotlinBasicCompletionProposal>.addNotImportedTopLevelCallables(
+        receiverTypes: Collection<KotlinType>,
+        kindFilter: DescriptorKindFilter,
+        nameFilter: (Name) -> Boolean,
+        javaProject: IJavaProject,
+        ktFile: KtFile,
+        file: IFile,
+        identifierPart: String?,
+        allowNoReceiver: Boolean
+    ) {
+        if (!identifierPart.isNullOrBlank()) {
+            val searchEngine = SearchEngine()
+
+            val dependencyProjects = arrayListOf<IJavaProject>().apply {
+                addAll(ProjectUtils.getDependencyProjects(javaProject).map { JavaCore.create(it) })
+                add(javaProject)
+            }
+
+            val javaProjectSearchScope =
+                JavaSearchScopeFactory.getInstance().createJavaSearchScope(dependencyProjects.toTypedArray(), false)
+
+            val tempMethodNamePackages = mutableSetOf<String>()
+
+            val collector = object : MethodNameMatchRequestor() {
+                override fun acceptMethodNameMatch(match: MethodNameMatch) {
+                    if (Flags.isPublic(match.modifiers) && Flags.isStatic(match.modifiers)) {
+                        tempMethodNamePackages.add(match.method.declaringType.packageFragment.elementName)
+                    }
+                }
+            }
+
+            searchEngine.searchAllMethodNames(
+                null,
+                SearchPattern.R_EXACT_MATCH,
+                null,
+                SearchPattern.R_EXACT_MATCH,
+                null,
+                SearchPattern.R_EXACT_MATCH,
+                identifierPart.toCharArray(),
+                SearchPattern.R_PREFIX_MATCH,
+                javaProjectSearchScope,
+                collector,
+                IJavaSearchConstants.FORCE_IMMEDIATE_SEARCH,
+                null
+            )
+
+            searchEngine.searchAllMethodNames(
+                null,
+                SearchPattern.R_EXACT_MATCH,
+                null,
+                SearchPattern.R_EXACT_MATCH,
+                null,
+                SearchPattern.R_EXACT_MATCH,
+                "get${identifierPart.capitalize()}".toCharArray(),
+                SearchPattern.R_PREFIX_MATCH,
+                javaProjectSearchScope,
+                collector,
+                IJavaSearchConstants.FORCE_IMMEDIATE_SEARCH,
+                null
+            )
+
+            val tempPackages = tempMethodNamePackages.map {
+                resolutionFacade.moduleDescriptor.getPackage(FqName(it))
+            }
+
+            val importsSet = ktFile.importDirectives
+                .mapNotNull { it.importedFqName?.asString() }
+                .toSet()
+
+            val originPackage = ktFile.packageFqName.asString()
+
+            val tempDeferreds = tempPackages.map { packageDesc ->
+                KotlinEclipseScope.async {
+                   packageDesc.memberScope.getDescriptorsFiltered(
+                        kindFilter.intersect(DescriptorKindFilter.CALLABLES),
+                        nameFilter
+                    ).asSequence().filterIsInstance<CallableDescriptor>()
+                        .filter { callDesc ->
+                            val tempFuzzy = callDesc.fuzzyExtensionReceiverType()
+                            (allowNoReceiver && tempFuzzy == null) || (tempFuzzy != null && receiverTypes.any { receiverType ->
+                                tempFuzzy.checkIsSuperTypeOf(receiverType) != null
+                            })
+                        }
+                        .filter { callDesc ->
+                            callDesc.importableFqName?.asString() !in importsSet &&
+                                    callDesc.importableFqName?.parent()?.asString() != originPackage
+                        }.toList()
+                }
+            }
+
+            val tempDescriptors = tempDeferreds.awaitAll().flatten()
+
+            tempDescriptors
+                .map {
+                    KotlinBasicCompletionProposal.Proposal(
+                        KotlinImportCallableCompletionProposal(
+                            it,
+                            KotlinImageProvider.getImage(it),
+                            file,
+                            identifierPart
+                        ), it
+                    )
+                }.toCollection(this)
+        }
+    }
+
+    private fun MutableSet<KotlinBasicCompletionProposal>.addMemberExtensions(
         dispatchReceiverTypes: Collection<KotlinType>,
         extensionReceiverTypes: Collection<KotlinType>,
         callType: CallType<*>,
         kindFilter: DescriptorKindFilter,
-        nameFilter: (Name) -> Boolean
+        nameFilter: (Name) -> Boolean,
     ) {
         val memberFilter = kindFilter exclude DescriptorKindExclude.NonExtensions
         for (dispatchReceiverType in dispatchReceiverTypes) {
             for (member in dispatchReceiverType.memberScope.getDescriptorsFiltered(memberFilter, nameFilter)) {
-                addAll((member as CallableDescriptor).substituteExtensionIfCallable(extensionReceiverTypes, callType))
+                addAll((member as CallableDescriptor).substituteExtensionIfCallable(extensionReceiverTypes, callType)
+                    .map { KotlinBasicCompletionProposal.Descriptor(it) })
             }
         }
     }
 
-    private fun MutableSet<DeclarationDescriptor>.addNonExtensionMembers(
+    private fun MutableSet<KotlinBasicCompletionProposal>.addNonExtensionMembers(
         receiverTypes: Collection<KotlinType>,
         kindFilter: DescriptorKindFilter,
         nameFilter: (Name) -> Boolean,
@@ -338,7 +535,7 @@ class KotlinReferenceVariantsHelper(
         }
     }
 
-    private fun MutableSet<DeclarationDescriptor>.addNonExtensionCallablesAndConstructors(
+    private fun MutableSet<KotlinBasicCompletionProposal>.addNonExtensionCallablesAndConstructors(
         scope: HierarchicalScope,
         kindFilter: DescriptorKindFilter,
         nameFilter: (Name) -> Boolean,
@@ -358,14 +555,15 @@ class KotlinReferenceVariantsHelper(
             if (descriptor is ClassDescriptor) {
                 if (descriptor.modality == Modality.ABSTRACT || descriptor.modality == Modality.SEALED) continue
                 if (!constructorFilter(descriptor)) continue
-                descriptor.constructors.filterTo(this) { kindFilter.accepts(it) }
+                descriptor.constructors.map { KotlinBasicCompletionProposal.Descriptor(it) }
+                    .filterTo(this) { kindFilter.accepts(it.descriptor) }
             } else if (!classesOnly && kindFilter.accepts(descriptor)) {
-                this.add(descriptor)
+                this.add(KotlinBasicCompletionProposal.Descriptor(descriptor))
             }
         }
     }
 
-    private fun MutableSet<DeclarationDescriptor>.addScopeAndSyntheticExtensions(
+    private fun MutableSet<KotlinBasicCompletionProposal>.addScopeAndSyntheticExtensions(
         scope: LexicalScope,
         receiverTypes: Collection<KotlinType>,
         callType: CallType<*>,
@@ -378,9 +576,11 @@ class KotlinReferenceVariantsHelper(
         fun process(extensionOrSyntheticMember: CallableDescriptor) {
             if (kindFilter.accepts(extensionOrSyntheticMember) && nameFilter(extensionOrSyntheticMember.name)) {
                 if (extensionOrSyntheticMember.isExtension) {
-                    addAll(extensionOrSyntheticMember.substituteExtensionIfCallable(receiverTypes, callType))
+                    addAll(
+                        extensionOrSyntheticMember.substituteExtensionIfCallable(receiverTypes, callType)
+                            .map { KotlinBasicCompletionProposal.Descriptor(it) })
                 } else {
-                    add(extensionOrSyntheticMember)
+                    add(KotlinBasicCompletionProposal.Descriptor(extensionOrSyntheticMember))
                 }
             }
         }
@@ -465,10 +665,11 @@ fun ResolutionScope.collectSyntheticStaticMembersAndConstructors(
     val syntheticScopes = resolutionFacade.getFrontendService(SyntheticScopes::class.java)
     val functionDescriptors = this.getContributedDescriptors(DescriptorKindFilter.FUNCTIONS)
     val classifierDescriptors = this.getContributedDescriptors(DescriptorKindFilter.CLASSIFIERS)
-    return (syntheticScopes.collectSyntheticStaticFunctions(functionDescriptors) + syntheticScopes.collectSyntheticConstructors(classifierDescriptors))
+    return (syntheticScopes.collectSyntheticStaticFunctions(functionDescriptors) + syntheticScopes.collectSyntheticConstructors(
+        classifierDescriptors
+    ))
         .filter { kindFilter.accepts(it) && nameFilter(it.name) }
 }
 
 @OptIn(FrontendInternals::class)
-private inline fun <reified T : Any> ResolutionFacade.frontendService(): T
-        = this.getFrontendService(T::class.java)
+private inline fun <reified T : Any> ResolutionFacade.frontendService(): T = this.getFrontendService(T::class.java)

@@ -44,6 +44,7 @@ public class KotlinFunctionCompletionProposal(
                     proposal.replacementString,
                     proposal.img,
                     proposal.presentableString,
+                    proposal.containmentPresentableString,
                     identifierPart = identifierPart) {
     
     init {

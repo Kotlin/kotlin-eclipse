@@ -16,53 +16,55 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.editors.codeassist
 
-import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtValueArgumentList
 import org.eclipse.jface.text.contentassist.IContextInformation
-import org.jetbrains.kotlin.psi.KtSimpleNameExpression
-import org.jetbrains.kotlin.psi.KtCallElement
-import org.jetbrains.kotlin.psi.psiUtil.getCallNameExpression
-import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.eclipse.swt.graphics.Image
-import org.jetbrains.kotlin.descriptors.ValueParameterDescriptor
-import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
+import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.resolve.descriptorUtil.declaresOrInheritsDefaultValue
-import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
-import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
+import org.jetbrains.kotlin.psi.KtCallElement
 import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.core.references.getReferenceExpression
-import org.jetbrains.kotlin.core.references.createReferences
+import org.jetbrains.kotlin.psi.KtSimpleNameExpression
+import org.jetbrains.kotlin.psi.KtValueArgumentList
+import org.jetbrains.kotlin.psi.psiUtil.getCallNameExpression
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
+import org.jetbrains.kotlin.resolve.descriptorUtil.declaresOrInheritsDefaultValue
+import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 
-public object KotlinFunctionParameterInfoAssist {
-    public fun computeContextInformation(editor: KotlinEditor, offset: Int): Array<IContextInformation> {
-        val expression = getCallSimpleNameExpression(editor, offset)
-        if (expression == null) return emptyArray()
-        
+object KotlinFunctionParameterInfoAssist {
+    fun computeContextInformation(editor: KotlinEditor, offset: Int): Array<IContextInformation> {
+        val file = editor.eclipseFile ?: throw IllegalStateException("Failed to retrieve IFile from editor $editor")
+        val ktFile = editor.parsedFile ?: throw IllegalStateException("Failed to retrieve KTFile from editor $editor")
+        val javaProject = editor.javaProject ?: throw IllegalStateException("Failed to retrieve JavaProject from editor $editor")
+
+        val expression = getCallSimpleNameExpression(editor, offset) ?: return emptyArray()
+
         val referencedName = expression.getReferencedName()
 
         val nameFilter: (Name) -> Boolean = { name -> name.asString() == referencedName }
-        val variants = KotlinCompletionUtils.getReferenceVariants(expression, nameFilter, editor.eclipseFile!!, null)
+        val variants = KotlinCompletionUtils.getReferenceVariants(
+            expression,
+            nameFilter,
+            ktFile,
+            file,
+            referencedName,
+            javaProject
+        )
         
-        return variants
+        return variants.map { it.descriptor }
                 .flatMap { 
                     when (it) {
                         is FunctionDescriptor -> listOf(it)
-                        is ClassDescriptor -> it.getConstructors()
+                        is ClassDescriptor -> it.constructors
                         else -> emptyList<FunctionDescriptor>()
                     }
                 }
-                .filter { it.getValueParameters().isNotEmpty() }
+                .filter { it.valueParameters.isNotEmpty() }
                 .map { KotlinFunctionParameterContextInformation(it) }
                 .toTypedArray()
     }
@@ -73,16 +75,16 @@ fun getCallSimpleNameExpression(editor: KotlinEditor, offset: Int): KtSimpleName
     val argumentList = PsiTreeUtil.getParentOfType(psiElement, KtValueArgumentList::class.java)
     if (argumentList == null) return null
     
-    val argumentListParent = argumentList.getParent()
+    val argumentListParent = argumentList.parent
     return if (argumentListParent is KtCallElement) argumentListParent.getCallNameExpression() else null
 }
 
-public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescriptor) : IContextInformation {
+class KotlinFunctionParameterContextInformation(descriptor: FunctionDescriptor) : IContextInformation {
     val displayString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
-    val renderedParameters = descriptor.getValueParameters().map { renderParameter(it) }
+    val renderedParameters = descriptor.valueParameters.map { renderParameter(it) }
     val informationString = renderedParameters.joinToString(", ")
     val displayImage = KotlinImageProvider.getImage(descriptor)
-    val name = if (descriptor is ConstructorDescriptor) descriptor.getContainingDeclaration().getName() else descriptor.getName()
+    val name = if (descriptor is ConstructorDescriptor) descriptor.containingDeclaration.name else descriptor.name
     
     override fun getContextDisplayString(): String = displayString
     
@@ -94,7 +96,7 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
         val result = StringBuilder()
         
         if (parameter.varargElementType != null) result.append("vararg ")
-        result.append(parameter.getName())
+        result.append(parameter.name)
                 .append(": ")
                 .append(DescriptorRenderer.SHORT_NAMES_IN_TYPES.renderType(getActualParameterType(parameter)))
         
@@ -111,7 +113,7 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
     private fun getDefaultExpressionString(parameterDeclaration: SourceElement): String {
         val parameterText: String? = if (parameterDeclaration is KotlinSourceElement) {
                 val parameter = parameterDeclaration.psi
-                (parameter as? KtParameter)?.getDefaultValue()?.getText()
+                (parameter as? KtParameter)?.defaultValue?.text
             } else {
                 null
             }
@@ -120,6 +122,6 @@ public class KotlinFunctionParameterContextInformation(descriptor: FunctionDescr
     }
     
     private fun getActualParameterType(descriptor: ValueParameterDescriptor): KotlinType {
-        return descriptor.varargElementType ?: descriptor.getType()
+        return descriptor.varargElementType ?: descriptor.type
     }
 }

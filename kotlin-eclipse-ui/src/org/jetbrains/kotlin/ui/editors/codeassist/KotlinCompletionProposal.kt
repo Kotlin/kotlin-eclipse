@@ -31,12 +31,17 @@ import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.graphics.Point
 import org.jetbrains.kotlin.builtins.isExtensionFunctionType
 import org.jetbrains.kotlin.builtins.isFunctionType
+import org.jetbrains.kotlin.core.imports.FunctionCandidate
+import org.jetbrains.kotlin.core.imports.TypeCandidate
+import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.resolve.calls.util.getValueParametersCountFromFunctionType
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
-import org.jetbrains.kotlin.core.imports.TypeCandidate
 
 public fun withKotlinInsertHandler(
         descriptor: DeclarationDescriptor,
@@ -79,7 +84,7 @@ fun getIdentifierInfo(document: IDocument, offset: Int): IdentifierInfo {
 
 data class IdentifierInfo(val identifierPart: String, val identifierStart: Int)
 
-open class KotlinCompletionProposal(
+open class KotlinCompletionProposal constructor(
         val replacementString: String,
         val img: Image?,
         val presentableString: String,
@@ -139,7 +144,7 @@ open class KotlinCompletionProposal(
     }
 }
 
-class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image?, val file: IFile, identifierPart: String) : 
+class KotlinImportTypeCompletionProposal(val typeName: TypeNameMatch, image: Image?, val file: IFile, identifierPart: String) :
             KotlinCompletionProposal(
                     typeName.simpleTypeName,
                     image,
@@ -162,6 +167,29 @@ class KotlinImportCompletionProposal(val typeName: TypeNameMatch, image: Image?,
     override fun getRelevance(): Int {
         return -1
     }
+}
+
+class KotlinImportCallableCompletionProposal(val descriptor: CallableDescriptor, image: Image?, val file: IFile, identifierPart: String) :
+    KotlinCompletionProposal(
+        "${descriptor.name.identifier}${if(descriptor is PropertyDescriptor) "" else "()"}",
+        image,
+        DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor),
+        DescriptorRenderer.COMPACT_WITH_SHORT_TYPES.render(descriptor.containingDeclaration),
+        identifierPart = identifierPart)  {
+
+    private var importShift = -1
+
+    override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
+        super.apply(viewer, trigger, stateMask, offset)
+        importShift = placeImports(listOf(FunctionCandidate(descriptor)), file, viewer.document)
+    }
+
+    override fun getSelection(document: IDocument): Point? {
+        val selection = super.getSelection(document)
+        return if (importShift > 0 && selection != null) Point(selection.x + importShift, 0) else selection
+    }
+
+    override fun getRelevance(): Int = -1
 }
 
 class KotlinKeywordCompletionProposal(keyword: String, identifierPart: String) :
