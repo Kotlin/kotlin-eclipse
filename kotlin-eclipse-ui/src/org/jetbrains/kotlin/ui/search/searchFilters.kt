@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.eclipse.jdt.ui.search.QuerySpecification
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtPropertyDelegate
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
@@ -49,9 +50,9 @@ interface SearchFilterAfterResolve {
 
 fun getBeforeResolveFilters(querySpecification: QuerySpecification): List<SearchFilter> {
     val filters = arrayListOf<SearchFilter>()
-    if (querySpecification.getLimitTo() == IJavaSearchConstants.REFERENCES) {
+    if (querySpecification.limitTo == IJavaSearchConstants.REFERENCES) {
         filters.add(NonImportFilter())
-        filters.add(ReferenceFilter())
+        filters.add(ElementWithPossibleReferencesFilter())
     }
     
     return filters
@@ -59,8 +60,8 @@ fun getBeforeResolveFilters(querySpecification: QuerySpecification): List<Search
 
 fun getAfterResolveFilters(): List<SearchFilterAfterResolve> = listOf(ResolvedReferenceFilter())
 
-class ReferenceFilter : SearchFilter {
-    override fun isApplicable(jetElement: KtElement): Boolean = jetElement is KtReferenceExpression
+class ElementWithPossibleReferencesFilter : SearchFilter {
+    override fun isApplicable(jetElement: KtElement): Boolean = jetElement is KtReferenceExpression || (jetElement is KtPropertyDelegate)
 }
 
 class NonImportFilter : SearchFilter {

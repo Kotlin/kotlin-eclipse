@@ -94,9 +94,12 @@ class KotlinQueryParticipant : IQueryParticipant {
                 val elements = obtainElements(searchResult as FileSearchResult, kotlinFiles).flatMap {
                     val tempImportAlias = it.getParentOfType<KtImportDirective>(false)?.alias
 
-                    if(tempImportAlias != null) {
+                    if (tempImportAlias != null) {
                         val tempEclipseFile = KotlinPsiManager.getEclipseFile(tempImportAlias.containingKtFile)!!
-                        val tempResult = searchTextOccurrences(SearchElement.KotlinSearchElement(tempImportAlias), listOf(tempEclipseFile))
+                        val tempResult = searchTextOccurrences(
+                            SearchElement.KotlinSearchElement(tempImportAlias),
+                            listOf(tempEclipseFile)
+                        )
                         return@flatMap obtainElements(tempResult as FileSearchResult, listOf(tempEclipseFile)) + it
                     }
 
@@ -227,6 +230,7 @@ class KotlinQueryParticipant : IQueryParticipant {
                                 "set" -> "\\[.*?]\\s*?="
                                 "invoke" -> "\\(.*?\\)"
                                 "contains" -> "in|!in"
+                                "getValue", "setValue" -> "by"
                                 else -> null
                             }
                     if (tempOperationSymbol != null) {
@@ -265,21 +269,13 @@ class KotlinQueryParticipant : IQueryParticipant {
         val afterResolveFilters = getAfterResolveFilters()
 
         // This is important for optimization: 
-        // we will consequentially cache files one by one which are containing these references
+        // we will consequentially cache files one by one which do contain these references
         val sortedByFileNameElements = elements.sortedBy { it.containingKtFile.name }
 
         return sortedByFileNameElements.flatMap { element ->
-            var tempElement: KtElement? = element
-            var beforeResolveCheck = beforeResolveFilters.all { it.isApplicable(tempElement!!) }
-            if (!beforeResolveCheck) {
-                tempElement = PsiTreeUtil.getParentOfType(tempElement, KtReferenceExpression::class.java)
-            }
-            if (tempElement != null) {
-                beforeResolveCheck = beforeResolveFilters.all { it.isApplicable(tempElement) }
-            }
-            if (!beforeResolveCheck) return@flatMap emptyList()
+            val tempElement = findApplicableElement(element, beforeResolveFilters) ?: return@flatMap emptyList()
 
-            val sourceElements = tempElement!!.resolveToSourceDeclaration()
+            val sourceElements = tempElement.resolveToSourceDeclaration()
             if (sourceElements.isEmpty()) return@flatMap emptyList()
 
             val additionalElements = getContainingClassOrObjectForConstructor(sourceElements)
@@ -289,6 +285,15 @@ class KotlinQueryParticipant : IQueryParticipant {
                 return@flatMap listOf(tempElement)
             }
             emptyList()
+        }
+    }
+
+    private fun findApplicableElement(
+        element: KtElement, beforeResolveFilters: List<SearchFilter>
+    ): KtElement? {
+        if(beforeResolveFilters.all { it.isApplicable(element) }) return element
+        return element.getParentOfType<KtReferenceExpression>(false)?.takeIf { refExp ->
+            beforeResolveFilters.all { it.isApplicable(refExp) }
         }
     }
 
