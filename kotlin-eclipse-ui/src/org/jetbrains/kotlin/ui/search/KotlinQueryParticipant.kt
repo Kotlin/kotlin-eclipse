@@ -46,14 +46,17 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.jetbrains.kotlin.core.utils.getBindingContext
+import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.findElementByDocumentOffset
+import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
 import org.jetbrains.kotlin.lexer.KtSingleValueToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
@@ -111,24 +114,15 @@ class KotlinQueryParticipant : IQueryParticipant {
                 if (monitor?.isCanceled == true) return
                 matchedReferences.forEach { ktElement ->
                     val tempElement = ktElement.getCall(ktElement.getBindingContext())?.toString() ?: ktElement.text
-                    var tempFunction = PsiTreeUtil.getNonStrictParentOfType(ktElement, KtFunction::class.java)
-                    while (tempFunction?.isLocal == true) {
-                        tempFunction = PsiTreeUtil.getParentOfType(tempFunction, KtFunction::class.java)
-                    }
-                    val tempClassObjectOrFileName =
-                        PsiTreeUtil.getNonStrictParentOfType(ktElement, KtClassOrObject::class.java)?.name
-                            ?: ktElement.containingKtFile.name
+
+                    val tempParentDescriptor = PsiTreeUtil.getParentOfType(ktElement, KtDeclaration::class.java)?.resolveToDescriptorIfAny()
 
                     val tempLabel = buildString {
-                        append(tempClassObjectOrFileName)
-                        if (tempFunction != null) {
-                            append("#")
-                            append(tempFunction.name)
-                        }
-                        if (isNotEmpty()) {
-                            append(": ")
-                        }
                         append(tempElement)
+                        if(tempParentDescriptor != null) {
+                            append(" in ")
+                            append(DescriptorRenderer.SHORT_NAMES_IN_TYPES.render(tempParentDescriptor))
+                        }
                     }
 
                     requestor.reportMatch(KotlinElementMatch(ktElement, tempLabel))
@@ -222,20 +216,17 @@ class KotlinQueryParticipant : IQueryParticipant {
 
         if (searchElement is SearchElement.KotlinSearchElement) {
             if (searchElement.kotlinElement is KtFunction) {
+                //Either it has an operator keyword directly, or it overrides something. In this case we could look in the overridden element, or we could just try to search for it!
                 if (searchElement.kotlinElement.hasModifier(KtTokens.OPERATOR_KEYWORD)) {
-                    val tempOperationSymbol =
-                        (OperatorConventions.getOperationSymbolForName(Name.identifier(searchText)) as? KtSingleValueToken)?.value?.let { "\\Q$it\\E" }
-                            ?: when (searchText) {
-                                "get" -> "\\[.*?]"
-                                "set" -> "\\[.*?]\\s*?="
-                                "invoke" -> "\\(.*?\\)"
-                                "contains" -> "in|!in"
-                                "getValue", "setValue" -> "by"
-                                else -> null
-                            }
-                    if (tempOperationSymbol != null) {
-                        asRegex = true
-                        searchText = "(\\b$searchText\\b|$tempOperationSymbol)"
+                    val pair = getSearchTextAsRegex(searchText)
+                    asRegex = pair.first
+                    searchText = pair.second
+                } else if(searchElement.kotlinElement.hasModifier(KtTokens.OVERRIDE_KEYWORD)) {
+                    val tempDescriptor = searchElement.kotlinElement.resolveToDescriptorIfAny() as? FunctionDescriptor
+                    if(tempDescriptor?.isOperator == true) {
+                        val pair = getSearchTextAsRegex(searchText)
+                        asRegex = pair.first
+                        searchText = pair.second
                     }
                 }
             }
@@ -258,6 +249,25 @@ class KotlinQueryParticipant : IQueryParticipant {
         query.run(null)
 
         return query.searchResult
+    }
+
+    private fun getSearchTextAsRegex(
+        searchText: String
+    ): Pair<Boolean, String> {
+        val tempOperationSymbol =
+            (OperatorConventions.getOperationSymbolForName(Name.identifier(searchText)) as? KtSingleValueToken)?.value?.let { "\\Q$it\\E" }
+                ?: when (searchText) {
+                    "get" -> "\\[.*?]"
+                    "set" -> "\\[.*?]\\s*?="
+                    "invoke" -> "\\(.*?\\)"
+                    "contains" -> "in|!in"
+                    "getValue", "setValue", "provideDelegate" -> "by"
+                    else -> null
+                }
+        if (tempOperationSymbol != null) {
+            return Pair(true, "(\\b$searchText\\b|$tempOperationSymbol)")
+        }
+        return Pair(false, searchText)
     }
 
     private fun resolveElementsAndMatch(

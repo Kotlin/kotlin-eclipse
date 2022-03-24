@@ -91,9 +91,10 @@ class KotlinKtPropertyDelegateReference(override val expression: KtPropertyDeleg
         val tempProperty = expression.getParentOfType<KtProperty>(false) ?: return emptyList()
         val tempDescriptor =
             tempProperty.resolveToDescriptorIfAny() as? VariableDescriptorWithAccessors ?: return emptyList()
+        val tempDelegateProvider = context[BindingContext.PROVIDE_DELEGATE_RESOLVED_CALL, tempDescriptor]?.candidateDescriptor
         return tempDescriptor.accessors.mapNotNull {
             context[BindingContext.DELEGATED_PROPERTY_RESOLVED_CALL, it]?.candidateDescriptor
-        }
+        } + (tempDelegateProvider?.let { arrayOf(it) } ?: emptyArray())
     }
 
     override val resolvesByNames: Collection<Name>

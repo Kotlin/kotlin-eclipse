@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.resolve.EclipseDescriptorUtils
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.descriptors.VariableDescriptorWithAccessors
@@ -49,10 +50,7 @@ fun List<KotlinReference<*>>.resolveToSourceElements(ktFile: KtFile): List<Sourc
     val javaProject = JavaCore.create(KotlinPsiManager.getEclipseFile(ktFile)?.project)
         ?: ktFile.getUserData(FILE_PROJECT) ?: return emptyList()
 
-    return resolveToSourceElements(
-        KotlinAnalyzer.analyzeFile(ktFile).analysisResult.bindingContext,
-        javaProject
-    )
+    return resolveToSourceElements(ktFile.getBindingContext(), javaProject)
 }
 
 fun List<KotlinReference<*>>.resolveToSourceElements(

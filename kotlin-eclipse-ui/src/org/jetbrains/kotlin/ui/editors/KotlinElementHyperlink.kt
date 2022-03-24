@@ -19,8 +19,11 @@ package org.jetbrains.kotlin.ui.editors
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.hyperlink.IHyperlink
 import org.jetbrains.kotlin.core.utils.getBindingContext
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.descriptors.VariableDescriptorWithAccessors
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyDelegate
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -58,19 +61,25 @@ fun KtPropertyDelegate.doOpenDelegateFun(editor: KotlinEditor, openSetter: Boole
     gotoElement(tempTargetDescriptor, property, editor, javaProject)
 }
 
-class KotlinKTDelegateHyperLink(
+class KTGenericHyperLink(
     private val region: IRegion,
-    private val property: KtPropertyDelegate,
-    private val isSetter: Boolean,
-    private val editor: KotlinEditor
-) : IHyperlink {
+    private val label: String,
+    private val editor: KotlinEditor,
+    private val targetDescriptor: DeclarationDescriptor,
+    private val fromElement: KtElement
+) :
+    IHyperlink {
     override fun getHyperlinkRegion(): IRegion = region
 
     override fun getTypeLabel(): String? = null
 
-    override fun getHyperlinkText(): String = "$HYPERLINK_TEXT (${if (isSetter) "set" else "get"})"
+    override fun getHyperlinkText(): String = label
 
-    override fun open() = property.doOpenDelegateFun(editor, isSetter)
+    override fun open() {
+        val tempPrj = editor.javaProject ?: return
+        gotoElement(targetDescriptor, fromElement, editor, tempPrj)
+    }
+
 }
 
 private const val HYPERLINK_TEXT = "Open Kotlin Declaration"

@@ -30,9 +30,11 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.getDataFlowInfoBefore
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationResolver
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
 import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.scopes.*
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CALLABLES
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CLASSIFIERS
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.FUNCTIONS_MASK
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.VARIABLES_MASK
 import org.jetbrains.kotlin.resolve.scopes.receivers.ClassQualifier
@@ -416,7 +418,7 @@ class KotlinReferenceVariantsHelper(
             val collector = object : MethodNameMatchRequestor() {
                 override fun acceptMethodNameMatch(match: MethodNameMatch) {
                     if (Flags.isPublic(match.modifiers)) {
-                        tempClassNames[match.method.declaringType.typeQualifiedName] =
+                        tempClassNames[match.method.declaringType.getTypeQualifiedName('$')] =
                             match.method.declaringType.packageFragment.elementName
                     }
                 }
@@ -461,21 +463,21 @@ class KotlinReferenceVariantsHelper(
                 if (className.contains('$')) {
                     val tempNames = className.split('$')
                     val topLevelClass = tempNames.first()
-                    var tempClassDescriptor = tempPackage.memberScope.getDescriptorsFiltered {
+                    var tempClassDescriptor = tempPackage.memberScope.getDescriptorsFiltered(CLASSIFIERS) {
                         !it.isSpecial && it.identifier == topLevelClass
-                    }.filterIsInstance<ClassDescriptor>().singleOrNull() ?: return@mapNotNull null
+                    }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull() ?: return@mapNotNull null
 
                     tempNames.drop(1).forEach { subName ->
-                        tempClassDescriptor = tempClassDescriptor.unsubstitutedMemberScope.getDescriptorsFiltered {
+                        tempClassDescriptor = tempClassDescriptor.unsubstitutedMemberScope.getDescriptorsFiltered(CLASSIFIERS) {
                             !it.isSpecial && it.identifier == subName
-                        }.filterIsInstance<ClassDescriptor>().singleOrNull() ?: return@mapNotNull null
+                        }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull() ?: return@mapNotNull null
                     }
 
                     tempClassDescriptor
                 } else {
-                    tempPackage.memberScope.getDescriptorsFiltered {
+                    tempPackage.memberScope.getDescriptorsFiltered(CLASSIFIERS) {
                         !it.isSpecial && it.identifier == className
-                    }.filterIsInstance<ClassDescriptor>().singleOrNull()
+                    }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull()
                 }
             }
 
@@ -485,7 +487,7 @@ class KotlinReferenceVariantsHelper(
 
             val originPackage = ktFile.packageFqName.asString()
 
-            fun MemberScope.filterDescriptors() = getDescriptorsFiltered(
+            fun MemberScope.filterByKindAndName() = getDescriptorsFiltered(
                 kindFilter.intersect(CALLABLES),
                 nameFilter
             ).asSequence()
@@ -502,8 +504,8 @@ class KotlinReferenceVariantsHelper(
                 }.toList()
 
             val tempDeferreds =
-                tempPackages.map { desc -> KotlinEclipseScope.async { desc.memberScope.filterDescriptors() } } +
-                        tempClasses.map { desc -> KotlinEclipseScope.async { desc.unsubstitutedMemberScope.filterDescriptors() } }
+                tempPackages.map { desc -> KotlinEclipseScope.async { desc.memberScope.filterByKindAndName() } } +
+                        tempClasses.map { desc -> KotlinEclipseScope.async { desc.unsubstitutedMemberScope.filterByKindAndName() } }
 
             val tempDescriptors = tempDeferreds.awaitAll().flatten()
 
@@ -566,7 +568,7 @@ class KotlinReferenceVariantsHelper(
         constructorFilter: (ClassDescriptor) -> Boolean,
         classesOnly: Boolean
     ) {
-        var filterToUse = DescriptorKindFilter(kindFilter.kindMask and DescriptorKindFilter.CALLABLES.kindMask).exclude(
+        var filterToUse = DescriptorKindFilter(kindFilter.kindMask and CALLABLES.kindMask).exclude(
             DescriptorKindExclude.Extensions
         )
 

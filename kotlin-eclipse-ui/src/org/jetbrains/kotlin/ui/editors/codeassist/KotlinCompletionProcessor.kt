@@ -214,10 +214,14 @@ abstract class KotlinCompletionProcessor(
                     val descriptor = basicDescriptor.descriptor
                     val completion = descriptor.name.identifier
                     val image = KotlinImageProvider.getImage(descriptor)
-                    val presentableString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
-                    val containmentPresentableString = descriptor.containingDeclaration?.let {
-                        DescriptorRenderer.COMPACT_WITH_SHORT_TYPES.render(it)
+
+                    val tempRenderer = DescriptorRenderer.SHORT_NAMES_IN_TYPES.withOptions {
+                        modifiers = emptySet()
+                        includeAdditionalModifiers = false
                     }
+
+                    val presentableString = tempRenderer.render(descriptor)
+                    val containmentPresentableString = null
 
                     val proposal = KotlinCompletionProposal(
                         completion,

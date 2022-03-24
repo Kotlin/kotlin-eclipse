@@ -173,8 +173,8 @@ class KotlinImportCallableCompletionProposal(val descriptor: CallableDescriptor,
     KotlinCompletionProposal(
         "${descriptor.name.identifier}${if(descriptor is PropertyDescriptor) "" else "()"}",
         image,
-        DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor),
-        DescriptorRenderer.COMPACT_WITH_SHORT_TYPES.render(descriptor.containingDeclaration),
+        DescriptorRenderer.SHORT_NAMES_IN_TYPES.render(descriptor),
+        null,
         identifierPart = identifierPart)  {
 
     private var importShift = -1
