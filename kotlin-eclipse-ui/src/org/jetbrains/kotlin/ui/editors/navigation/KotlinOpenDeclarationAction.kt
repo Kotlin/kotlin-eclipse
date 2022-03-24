@@ -25,23 +25,17 @@ import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.descriptors.VariableDescriptorWithAccessors
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
-import org.jetbrains.kotlin.psi.KtProperty
-import org.jetbrains.kotlin.psi.KtPropertyDelegate
-import org.jetbrains.kotlin.psi.KtReferenceExpression
-import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.editors.codeassist.getParentOfType
 
 class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchAction(editor.javaEditor.site) {
     companion object {
         const val OPEN_EDITOR_TEXT = "OpenEditor"
 
-        fun getNavigationData(referenceExpression: KtReferenceExpression, javaProject: IJavaProject): NavigationData? {
-            val context = referenceExpression.getBindingContext()
-            return createReferences(referenceExpression)
+        fun getNavigationData(ktElement: KtElement, javaProject: IJavaProject): NavigationData? {
+            val context = ktElement.getBindingContext()
+            return createReferences(ktElement)
                 .asSequence()
                 .flatMap { it.getTargetDescriptors(context).asSequence() }
                 .mapNotNull { descriptor ->
@@ -60,36 +54,12 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
     }
 
     override fun run(selection: ITextSelection) {
-        val selectedExpression = EditorUtil.getReferenceExpression(editor, selection.offset) ?: kotlin.run {
-            val tempElement = EditorUtil.getJetElement(editor, selection.offset)
-            if (tempElement is KtPropertyDelegate) {
-                tempElement.doOpenDelegateFun()
-            }
-            return
-        }
+        val selectedExpression = EditorUtil.getReferenceExpression(editor, selection.offset) ?:
+            EditorUtil.getJetElement(editor, selection.offset) ?: return
         val javaProject = editor.javaProject ?: return
 
         val data = getNavigationData(selectedExpression, javaProject) ?: return
 
         gotoElement(data.sourceElement, data.descriptor, selectedExpression, editor, javaProject)
-    }
-
-    private fun KtPropertyDelegate.doOpenDelegateFun() {
-        val property = getParentOfType<KtProperty>(false) ?: return
-        val javaProject = editor.javaProject ?: return
-
-        val context = property.getBindingContext()
-        val tempDescriptor = property.resolveToDescriptorIfAny() as? VariableDescriptorWithAccessors ?: return
-
-        var tempTargetDescriptor =
-            context[BindingContext.PROVIDE_DELEGATE_RESOLVED_CALL, tempDescriptor]?.candidateDescriptor
-
-        if (tempTargetDescriptor == null) {
-            val tempAccessor = tempDescriptor.getter ?: tempDescriptor.setter
-            tempTargetDescriptor =
-                context[BindingContext.DELEGATED_PROPERTY_RESOLVED_CALL, tempAccessor]?.candidateDescriptor ?: return
-        }
-
-        gotoElement(tempTargetDescriptor, property, editor, javaProject)
     }
 }
