@@ -16,7 +16,6 @@
  */
 package org.jetbrains.kotlin.ui.editors
 
-import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.internal.ui.text.JavaWordFinder
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.ITextViewer
@@ -26,17 +25,14 @@ import org.eclipse.jface.text.hyperlink.IHyperlink
 import org.eclipse.ui.texteditor.ITextEditor
 import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.core.utils.getBindingContext
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.descriptors.VariableDescriptorWithAccessors
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
-import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.KtArrayAccessExpression
+import org.jetbrains.kotlin.psi.KtCallExpression
+import org.jetbrains.kotlin.psi.KtOperationReferenceExpression
+import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.ui.editors.codeassist.getParentOfType
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
-import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction.Companion.OPEN_EDITOR_TEXT
 
 @Suppress("unused")
 class KotlinElementHyperlinkDetector : AbstractHyperlinkDetector() {
@@ -49,9 +45,6 @@ class KotlinElementHyperlinkDetector : AbstractHyperlinkDetector() {
         if (region == null || textEditor !is KotlinEditor) return null
 
         val tempProject = textEditor.javaProject ?: return null
-
-        val openAction = textEditor.getAction(OPEN_EDITOR_TEXT) as? KotlinOpenDeclarationAction
-            ?: return null
 
         val tempDocument = textEditor.documentProvider.getDocument(textEditor.editorInput)
 
