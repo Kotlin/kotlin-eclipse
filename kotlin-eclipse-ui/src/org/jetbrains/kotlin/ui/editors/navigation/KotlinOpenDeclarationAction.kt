@@ -25,11 +25,15 @@ import org.jetbrains.kotlin.core.references.createReferences
 import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
+import org.jetbrains.kotlin.descriptors.VariableDescriptorWithAccessors
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
+import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtPropertyDelegate
 import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.editors.doOpenDelegateFun
+import org.jetbrains.kotlin.ui.editors.codeassist.getParentOfType
 
 class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchAction(editor.javaEditor.site) {
     companion object {
@@ -59,7 +63,7 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         val selectedExpression = EditorUtil.getReferenceExpression(editor, selection.offset) ?: kotlin.run {
             val tempElement = EditorUtil.getJetElement(editor, selection.offset)
             if (tempElement is KtPropertyDelegate) {
-                tempElement.doOpenDelegateFun(editor, false)
+                tempElement.doOpenDelegateFun()
             }
             return
         }
@@ -70,10 +74,22 @@ class KotlinOpenDeclarationAction(val editor: KotlinEditor) : SelectionDispatchA
         gotoElement(data.sourceElement, data.descriptor, selectedExpression, editor, javaProject)
     }
 
-    internal fun run(refElement: KtReferenceExpression) {
+    private fun KtPropertyDelegate.doOpenDelegateFun() {
+        val property = getParentOfType<KtProperty>(false) ?: return
         val javaProject = editor.javaProject ?: return
-        val data = getNavigationData(refElement, javaProject) ?: return
 
-        gotoElement(data.sourceElement, data.descriptor, refElement, editor, javaProject)
+        val context = property.getBindingContext()
+        val tempDescriptor = property.resolveToDescriptorIfAny() as? VariableDescriptorWithAccessors ?: return
+
+        var tempTargetDescriptor =
+            context[BindingContext.PROVIDE_DELEGATE_RESOLVED_CALL, tempDescriptor]?.candidateDescriptor
+
+        if (tempTargetDescriptor == null) {
+            val tempAccessor = tempDescriptor.getter ?: tempDescriptor.setter
+            tempTargetDescriptor =
+                context[BindingContext.DELEGATED_PROPERTY_RESOLVED_CALL, tempAccessor]?.candidateDescriptor ?: return
+        }
+
+        gotoElement(tempTargetDescriptor, property, editor, javaProject)
     }
 }
