@@ -48,7 +48,7 @@ import org.jetbrains.kotlin.types.typeUtil.isUnit
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinBasicCompletionProposal
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinImportCallableCompletionProposal
 import org.jetbrains.kotlin.ui.refactorings.extract.parentsWithSelf
-import kotlin.time.ExperimentalTime
+import java.util.*
 
 class KotlinReferenceVariantsHelper(
     val bindingContext: BindingContext,
@@ -172,8 +172,8 @@ class KotlinReferenceVariantsHelper(
             if (isStatic) {
                 explicitReceiverTypes
                     .mapNotNull { (it.constructor.declarationDescriptor as? ClassDescriptor)?.staticScope }
-                    .flatMapTo(descriptors) {
-                        it.collectStaticMembers(resolutionFacade, kindFilter, nameFilter)
+                    .flatMapTo(descriptors) { scope ->
+                        scope.collectStaticMembers(resolutionFacade, kindFilter, nameFilter)
                             .map { KotlinBasicCompletionProposal.Descriptor(it) }
                     }
             }
@@ -334,11 +334,11 @@ class KotlinReferenceVariantsHelper(
 
         if (callType == CallType.SUPER_MEMBERS) { // we need to unwrap fake overrides in case of "super." because ShadowedDeclarationsFilter does not work correctly
             return descriptors.filterIsInstance<KotlinBasicCompletionProposal.Descriptor>()
-                .flatMapTo(LinkedHashSet<KotlinBasicCompletionProposal>()) {
-                    if (it.descriptor is CallableMemberDescriptor && it.descriptor.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
-                        it.descriptor.overriddenDescriptors.map { KotlinBasicCompletionProposal.Descriptor(it) }
+                .flatMapTo(LinkedHashSet<KotlinBasicCompletionProposal>()) { descriptor ->
+                    if (descriptor.descriptor is CallableMemberDescriptor && descriptor.descriptor.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
+                        descriptor.descriptor.overriddenDescriptors.map { KotlinBasicCompletionProposal.Descriptor(it) }
                     } else {
-                        listOf(it)
+                        listOf(descriptor)
                     }
                 }
         }
@@ -361,15 +361,13 @@ class KotlinReferenceVariantsHelper(
     ) {
         runBlocking {
             val tempJobs = mutableListOf<Job>()
-            var tempJob = KotlinEclipseScope.launch {
+            tempJobs += KotlinEclipseScope.launch {
                 addNonExtensionMembers(receiverTypes, kindFilter, nameFilter, constructorFilter = { it.isInner })
             }
-            tempJobs += tempJob
-            tempJob = KotlinEclipseScope.launch {
+            tempJobs += KotlinEclipseScope.launch {
                 addMemberExtensions(implicitReceiverTypes, receiverTypes, callType, kindFilter, nameFilter)
             }
-            tempJobs += tempJob
-            tempJob = KotlinEclipseScope.launch {
+            tempJobs += KotlinEclipseScope.launch {
                 addNotImportedTopLevelCallables(
                     receiverTypes,
                     kindFilter,
@@ -382,16 +380,13 @@ class KotlinReferenceVariantsHelper(
                 )
                 println("Finished!")
             }
-            tempJobs += tempJob
-            tempJob = KotlinEclipseScope.launch {
+            tempJobs += KotlinEclipseScope.launch {
                 addScopeAndSyntheticExtensions(resolutionScope, receiverTypes, callType, kindFilter, nameFilter)
             }
-            tempJobs += tempJob
             tempJobs.joinAll()
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private suspend fun MutableSet<KotlinBasicCompletionProposal>.addNotImportedTopLevelCallables(
         receiverTypes: Collection<KotlinType>,
         kindFilter: DescriptorKindFilter,
@@ -439,6 +434,9 @@ class KotlinReferenceVariantsHelper(
                 null
             )
 
+            val tempCapitalIdentifier =
+                identifierPart.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
             searchEngine.searchAllMethodNames(
                 null,
                 SearchPattern.R_EXACT_MATCH,
@@ -446,7 +444,7 @@ class KotlinReferenceVariantsHelper(
                 SearchPattern.R_EXACT_MATCH,
                 null,
                 SearchPattern.R_EXACT_MATCH,
-                "get${identifierPart.capitalize()}".toCharArray(),
+                "get$tempCapitalIdentifier".toCharArray(),
                 SearchPattern.R_PREFIX_MATCH,
                 javaProjectSearchScope,
                 collector,
@@ -465,19 +463,24 @@ class KotlinReferenceVariantsHelper(
                     val topLevelClass = tempNames.first()
                     var tempClassDescriptor = tempPackage.memberScope.getDescriptorsFiltered(CLASSIFIERS) {
                         !it.isSpecial && it.identifier == topLevelClass
-                    }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull() ?: return@mapNotNull null
+                    }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }
+                        .singleOrNull() ?: return@mapNotNull null
 
                     tempNames.drop(1).forEach { subName ->
-                        tempClassDescriptor = tempClassDescriptor.unsubstitutedMemberScope.getDescriptorsFiltered(CLASSIFIERS) {
-                            !it.isSpecial && it.identifier == subName
-                        }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull() ?: return@mapNotNull null
+                        tempClassDescriptor =
+                            tempClassDescriptor.unsubstitutedMemberScope.getDescriptorsFiltered(CLASSIFIERS) {
+                                !it.isSpecial && it.identifier == subName
+                            }.filterIsInstance<ClassDescriptor>()
+                                .distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull()
+                                ?: return@mapNotNull null
                     }
 
                     tempClassDescriptor
                 } else {
                     tempPackage.memberScope.getDescriptorsFiltered(CLASSIFIERS) {
                         !it.isSpecial && it.identifier == className
-                    }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull()
+                    }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }
+                        .singleOrNull()
                 }
             }
 

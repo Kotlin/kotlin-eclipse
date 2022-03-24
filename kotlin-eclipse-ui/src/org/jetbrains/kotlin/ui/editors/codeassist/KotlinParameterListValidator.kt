@@ -32,39 +32,38 @@ import org.jetbrains.kotlin.psi.KtValueArgumentList
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import kotlin.properties.Delegates
 
-public class KotlinParameterListValidator(val editor: KotlinEditor) : IContextInformationValidator, 
-        IContextInformationPresenter {
+class KotlinParameterListValidator(val editor: KotlinEditor) : IContextInformationValidator,
+    IContextInformationPresenter {
     var info: KotlinFunctionParameterContextInformation by Delegates.notNull()
     var viewer: ITextViewer by Delegates.notNull()
     var position: Int by Delegates.notNull()
     var previousIndex: Int by Delegates.notNull()
-    
+
     override fun install(info: IContextInformation, viewer: ITextViewer, offset: Int) {
         this.info = info as KotlinFunctionParameterContextInformation
         this.viewer = viewer
         this.position = offset
         this.previousIndex = -1
     }
-    
+
     override fun isContextInformationValid(offset: Int): Boolean {
-        if (info !is KotlinFunctionParameterContextInformation) return false
         EditorUtil.updatePsiFile(editor)
-        
-        val document = viewer.getDocument()
+
+        val document = viewer.document
         val line = document.getLineInformationOfOffset(position)
-        
-        if (offset < line.getOffset()) return false
-        
+
+        if (offset < line.offset) return false
+
         val currentArgumentIndex = getCurrentArgumentIndex(offset)
         if (currentArgumentIndex == null || isIndexOutOfBound(currentArgumentIndex)) {
             return false
         }
-        
+
         val expression = getCallSimpleNameExpression(editor, offset)
-        
+
         return expression?.getReferencedName() == info.name.asString()
     }
-    
+
     override fun updatePresentation(offset: Int, presentation: TextPresentation): Boolean {
         val currentArgumentIndex = getCurrentArgumentIndex(offset)
         if (currentArgumentIndex == null || previousIndex == currentArgumentIndex) {
@@ -72,43 +71,44 @@ public class KotlinParameterListValidator(val editor: KotlinEditor) : IContextIn
         }
         presentation.clear()
         previousIndex = currentArgumentIndex
-        
+
         if (isIndexOutOfBound(currentArgumentIndex)) return false
-        
+
         val renderedParameter = info.renderedParameters[currentArgumentIndex]
-        
-        val displayString = info.getInformationDisplayString()
+
+        val displayString = info.informationDisplayString
         val start = displayString.indexOf(renderedParameter)
         if (start >= 0) {
             presentation.addStyleRange(StyleRange(0, start, null, null, SWT.NORMAL))
-            
+
             val end = start + renderedParameter.length
             presentation.addStyleRange(StyleRange(start, end - start, null, null, SWT.BOLD))
             presentation.addStyleRange(StyleRange(end, displayString.length - end, null, null, SWT.NORMAL))
-            
+
             return true
         }
-        
+
         return true
     }
-    
+
     private fun isIndexOutOfBound(index: Int): Boolean = info.renderedParameters.size <= index
-    
-//    Copied with some changes from JetFunctionParameterInfoHandler.java
+
+    //    Copied with some changes from JetFunctionParameterInfoHandler.java
     private fun getCurrentArgumentIndex(offset: Int): Int? {
         val psiElement = EditorUtil.getPsiElement(editor, offset)
-        val argumentList = PsiTreeUtil.getNonStrictParentOfType(psiElement, KtValueArgumentList::class.java)
-        if (argumentList == null) return null
-        
+        val argumentList =
+            PsiTreeUtil.getNonStrictParentOfType(psiElement, KtValueArgumentList::class.java) ?: return null
+
         val offsetInPSI = LineEndUtil.convertCrToDocumentOffset(editor.document, offset)
-        var child = argumentList.getNode().getFirstChildNode()
+        var child = argumentList.node.firstChildNode
         var index = 0
-        while (child != null && child.getStartOffset() < offsetInPSI) {
-            if (child.getElementType() == KtTokens.COMMA || 
-                (child.getText() == "," && child is PsiErrorElement)) ++index
-            child = child.getTreeNext()
+        while (child != null && child.startOffset < offsetInPSI) {
+            if (child.elementType == KtTokens.COMMA ||
+                (child.text == "," && child is PsiErrorElement)
+            ) ++index
+            child = child.treeNext
         }
-        
+
         return index
     }
 }

@@ -29,7 +29,6 @@ import org.eclipse.jface.text.Region
 import org.eclipse.jface.text.contentassist.*
 import org.eclipse.jface.text.templates.TemplateContext
 import org.eclipse.jface.text.templates.TemplateProposal
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
@@ -37,14 +36,13 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.templates.KotlinApplicableTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinDocumentTemplateContext
 import org.jetbrains.kotlin.ui.editors.templates.KotlinTemplateManager
 
-sealed class KotlinBasicCompletionProposal() {
+sealed class KotlinBasicCompletionProposal {
 
     abstract val descriptor: DeclarationDescriptor
 
@@ -62,7 +60,6 @@ abstract class KotlinCompletionProcessor(
 
     companion object {
         private val VALID_PROPOSALS_CHARS = charArrayOf()
-        private val VALID_INFO_CHARS = charArrayOf('(', ',')
         fun createKotlinCompletionProcessors(
             editor: KotlinEditor,
             assistant: ContentAssistant? = null,
@@ -124,10 +121,6 @@ abstract class KotlinCompletionProcessor(
                     }
             }
         )
-    }
-
-    private val kotlinParameterValidator by lazy {
-        KotlinParameterListValidator(editor)
     }
 
     override fun computeCompletionProposals(viewer: ITextViewer, offset: Int): Array<ICompletionProposal> {
@@ -207,7 +200,7 @@ abstract class KotlinCompletionProcessor(
     protected fun collectCompletionProposals(
         descriptors: Collection<KotlinBasicCompletionProposal>,
         part: String
-    ): List<KotlinCompletionProposal> {
+    ): List<ICompletionProposal> {
         return descriptors.map { basicDescriptor ->
             when (basicDescriptor) {
                 is KotlinBasicCompletionProposal.Descriptor -> {
@@ -233,7 +226,7 @@ abstract class KotlinCompletionProcessor(
                         part
                     )
 
-                    withKotlinInsertHandler(descriptor, proposal, part)
+                    withKotlinInsertHandler(descriptor, proposal)
                 }
                 is KotlinBasicCompletionProposal.Proposal -> basicDescriptor.proposal
             }
@@ -303,17 +296,15 @@ abstract class KotlinCompletionProcessor(
         }.map { KotlinKeywordCompletionProposal(it, identifierPart) }
     }
 
-    override fun computeContextInformation(viewer: ITextViewer?, offset: Int): Array<IContextInformation> {
-        return KotlinFunctionParameterInfoAssist.computeContextInformation(editor, offset)
-    }
+    override fun computeContextInformation(viewer: ITextViewer?, offset: Int): Array<IContextInformation> = emptyArray()
 
     override fun getCompletionProposalAutoActivationCharacters(): CharArray = VALID_PROPOSALS_CHARS
 
-    override fun getContextInformationAutoActivationCharacters(): CharArray = VALID_INFO_CHARS
+    override fun getContextInformationAutoActivationCharacters(): CharArray = charArrayOf()
 
     override fun getErrorMessage(): String? = ""
 
-    override fun getContextInformationValidator(): IContextInformationValidator = kotlinParameterValidator
+    override fun getContextInformationValidator() = null
 
     override fun assistSessionStarted(event: ContentAssistEvent?) {
     }

@@ -72,18 +72,19 @@ object KotlinFunctionParameterInfoAssist {
 
 fun getCallSimpleNameExpression(editor: KotlinEditor, offset: Int): KtSimpleNameExpression? {
     val psiElement = EditorUtil.getPsiElement(editor, offset)
-    val argumentList = PsiTreeUtil.getParentOfType(psiElement, KtValueArgumentList::class.java)
-    if (argumentList == null) return null
-    
+    val argumentList = PsiTreeUtil.getParentOfType(psiElement, KtValueArgumentList::class.java) ?: return null
+
     val argumentListParent = argumentList.parent
     return if (argumentListParent is KtCallElement) argumentListParent.getCallNameExpression() else null
 }
 
 class KotlinFunctionParameterContextInformation(descriptor: FunctionDescriptor) : IContextInformation {
-    val displayString = DescriptorRenderer.ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor)
+    private val displayString = DescriptorRenderer.COMPACT_WITH_SHORT_TYPES.withOptions {
+        this.withDefinedIn = false
+    }.render(descriptor)
     val renderedParameters = descriptor.valueParameters.map { renderParameter(it) }
-    val informationString = renderedParameters.joinToString(", ")
-    val displayImage = KotlinImageProvider.getImage(descriptor)
+    private val informationString = renderedParameters.joinToString(", ")
+    private val displayImage = KotlinImageProvider.getImage(descriptor)
     val name = if (descriptor is ConstructorDescriptor) descriptor.containingDeclaration.name else descriptor.name
     
     override fun getContextDisplayString(): String = displayString
