@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.incremental.KotlinLookupLocation
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.load.kotlin.toSourceElement
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
@@ -452,36 +453,29 @@ class KotlinReferenceVariantsHelper(
                 null
             )
 
-            val tempPackages = tempClassNames.values.map {
-                resolutionFacade.moduleDescriptor.getPackage(FqName(it))
-            }
+            val tempPackages = mutableListOf<PackageViewDescriptor>()
 
             val tempClasses = tempClassNames.mapNotNull { (className, packageName) ->
                 val tempPackage = resolutionFacade.moduleDescriptor.getPackage(FqName(packageName))
-                if (className.contains('$')) {
-                    val tempNames = className.split('$')
-                    val topLevelClass = tempNames.first()
-                    var tempClassDescriptor = tempPackage.memberScope.getDescriptorsFiltered(CLASSIFIERS) {
-                        !it.isSpecial && it.identifier == topLevelClass
-                    }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }
-                        .singleOrNull() ?: return@mapNotNull null
+                val tempNames = className.split('$')
+                val topLevelClass = tempNames.first()
+                var tempClassDescriptor =
+                    moduleDescriptor.findClassAcrossModuleDependencies(ClassId.topLevel(FqName(tempPackage.fqName.asString() + "." + topLevelClass)))
+                        ?: run {
+                            tempPackages.add(tempPackage)
+                            return@mapNotNull null
+                        }
 
-                    tempNames.drop(1).forEach { subName ->
-                        tempClassDescriptor =
-                            tempClassDescriptor.unsubstitutedMemberScope.getDescriptorsFiltered(CLASSIFIERS) {
-                                !it.isSpecial && it.identifier == subName
-                            }.filterIsInstance<ClassDescriptor>()
-                                .distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull()
-                                ?: return@mapNotNull null
-                    }
-
-                    tempClassDescriptor
-                } else {
-                    tempPackage.memberScope.getDescriptorsFiltered(CLASSIFIERS) {
-                        !it.isSpecial && it.identifier == className
-                    }.filterIsInstance<ClassDescriptor>().distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }
-                        .singleOrNull()
+                tempNames.drop(1).forEach { subName ->
+                    tempClassDescriptor =
+                        tempClassDescriptor.unsubstitutedMemberScope.getDescriptorsFiltered(CLASSIFIERS) {
+                            !it.isSpecial && it.identifier == subName
+                        }.filterIsInstance<ClassDescriptor>()
+                            .distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull()
+                            ?: return@mapNotNull null
                 }
+
+                tempClassDescriptor
             }
 
             val importsSet = ktFile.importDirectives
