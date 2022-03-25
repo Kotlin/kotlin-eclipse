@@ -21,10 +21,7 @@ import org.eclipse.jdt.core.IMethod
 import org.eclipse.jdt.core.search.IJavaSearchConstants
 import org.eclipse.jdt.ui.search.QuerySpecification
 import org.jetbrains.kotlin.descriptors.SourceElement
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.KtPropertyDelegate
-import org.jetbrains.kotlin.psi.KtReferenceExpression
-import org.jetbrains.kotlin.psi.KtSimpleNameExpression
+import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isImportDirectiveExpression
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant.SearchElement.JavaSearchElement
@@ -36,9 +33,9 @@ interface SearchFilter {
 
 interface SearchFilterAfterResolve {
     fun isApplicable(sourceElement: KtElement, originElement: KtElement): Boolean
-    
+
     fun isApplicable(sourceElement: IJavaElement, originElement: IJavaElement): Boolean
-    
+
     fun isApplicable(sourceElements: List<SourceElement>, originElement: SearchElement): Boolean {
         val (javaElements, kotlinElements) = getJavaAndKotlinElements(sourceElements)
         return when (originElement) {
@@ -48,54 +45,52 @@ interface SearchFilterAfterResolve {
     }
 }
 
-fun getBeforeResolveFilters(querySpecification: QuerySpecification): List<SearchFilter> {
-    val filters = arrayListOf<SearchFilter>()
-    if (querySpecification.limitTo == IJavaSearchConstants.REFERENCES) {
-        filters.add(NonImportFilter())
-        filters.add(ElementWithPossibleReferencesFilter())
+fun getBeforeResolveFilters(querySpecification: QuerySpecification): List<SearchFilter> =
+    when (querySpecification.limitTo) {
+        IJavaSearchConstants.REFERENCES -> listOf(NonImportFilter, ElementWithPossibleReferencesFilter)
+        else -> emptyList()
     }
-    
-    return filters
+
+fun getAfterResolveFilters(querySpecification: QuerySpecification): List<SearchFilterAfterResolve> =
+    listOf(ResolvedReferenceFilter)
+
+object ElementWithPossibleReferencesFilter : SearchFilter {
+    override fun isApplicable(jetElement: KtElement): Boolean =
+        jetElement is KtReferenceExpression || (jetElement is KtPropertyDelegate)
 }
 
-fun getAfterResolveFilters(): List<SearchFilterAfterResolve> = listOf(ResolvedReferenceFilter())
-
-class ElementWithPossibleReferencesFilter : SearchFilter {
-    override fun isApplicable(jetElement: KtElement): Boolean = jetElement is KtReferenceExpression || (jetElement is KtPropertyDelegate)
-}
-
-class NonImportFilter : SearchFilter {
+object NonImportFilter : SearchFilter {
     override fun isApplicable(jetElement: KtElement): Boolean {
         return jetElement !is KtSimpleNameExpression || !jetElement.isImportDirectiveExpression()
     }
 }
 
-class ResolvedReferenceFilter : SearchFilterAfterResolve {
+object ResolvedReferenceFilter : SearchFilterAfterResolve {
     override fun isApplicable(sourceElement: KtElement, originElement: KtElement): Boolean {
         return sourceElement == originElement
     }
-    
+
     override fun isApplicable(sourceElement: IJavaElement, originElement: IJavaElement): Boolean {
-        return  referenceFilter(sourceElement, originElement)
+        return referenceFilter(sourceElement, originElement)
     }
-    
+
     private fun referenceFilter(potentialElement: IJavaElement, originElement: IJavaElement): Boolean {
         return when {
             originElement.isConstructorCall() && potentialElement.isConstructorCall() -> {
-                (originElement as IMethod).getDeclaringType() == (potentialElement as IMethod).getDeclaringType()
+                (originElement as IMethod).declaringType == (potentialElement as IMethod).declaringType
             }
-            
+
             originElement.isConstructorCall() -> {
-                (originElement as IMethod).getDeclaringType() == potentialElement
+                (originElement as IMethod).declaringType == potentialElement
             }
-            
+
             potentialElement.isConstructorCall() -> {
-                originElement == (potentialElement as IMethod).getDeclaringType()
+                originElement == (potentialElement as IMethod).declaringType
             }
-            
+
             else -> potentialElement == originElement
         }
     }
-    
-    private fun IJavaElement.isConstructorCall() = this is IMethod && this.isConstructor()
+
+    private fun IJavaElement.isConstructorCall() = this is IMethod && isConstructor
 }

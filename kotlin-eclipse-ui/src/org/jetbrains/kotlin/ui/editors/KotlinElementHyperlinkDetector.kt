@@ -40,7 +40,7 @@ class KotlinElementHyperlinkDetector : AbstractHyperlinkDetector() {
         textViewer: ITextViewer,
         region: IRegion?,
         canShowMultipleHyperlinks: Boolean
-    ): Array<IHyperlink>? {
+    ): Array<out IHyperlink>? {
         val textEditor = getAdapter(ITextEditor::class.java)
         if (region == null || textEditor !is KotlinEditor) return null
 
@@ -92,6 +92,6 @@ class KotlinElementHyperlinkDetector : AbstractHyperlinkDetector() {
                 it,
                 tempRef
             )
-        }.toTypedArray()
+        }.toTypedArray().takeIf { it.isNotEmpty() }
     }
 }

@@ -18,7 +18,6 @@ package org.jetbrains.kotlin.ui.commands.findReferences
 
 import org.eclipse.core.commands.AbstractHandler
 import org.eclipse.core.commands.ExecutionEvent
-import org.eclipse.core.resources.IFile
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.core.search.IJavaSearchConstants
@@ -45,14 +44,14 @@ abstract class KotlinFindReferencesHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
         val editor = HandlerUtil.getActiveEditor(event)
         if (editor !is KotlinCommonEditor) return null
-        
-        getAction(editor).run(editor.getViewer().getSelectionProvider().getSelection() as ITextSelection)
-        
+
+        getAction(editor).run(editor.viewer.selectionProvider.selection as ITextSelection)
+
         return null
     }
-    
+
     abstract fun getAction(editor: KotlinCommonEditor): KotlinFindReferencesAction
-    
+
 }
 
 class KotlinFindReferencesInProjectHandler : KotlinFindReferencesHandler() {
@@ -61,83 +60,79 @@ class KotlinFindReferencesInProjectHandler : KotlinFindReferencesHandler() {
     }
 
 }
+
 class KotlinFindReferencesInWorkspaceHandler : KotlinFindReferencesHandler() {
     override fun getAction(editor: KotlinCommonEditor): KotlinFindReferencesAction {
         return KotlinFindReferencesInWorkspaceAction(editor)
     }
 }
 
-public class KotlinFindReferencesInProjectAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
+class KotlinFindReferencesInProjectAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
     init {
-        setActionDefinitionId(IJavaEditorActionDefinitionIds.SEARCH_REFERENCES_IN_PROJECT)
-        setText(SearchMessages.Search_FindReferencesInProjectAction_label)
-        setToolTipText(SearchMessages.Search_FindReferencesInProjectAction_tooltip)
-        setImageDescriptor(JavaPluginImages.DESC_OBJS_SEARCH_REF)
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.FIND_REFERENCES_IN_PROJECT_ACTION)
+        actionDefinitionId = IJavaEditorActionDefinitionIds.SEARCH_REFERENCES_IN_PROJECT
+        text = SearchMessages.Search_FindReferencesInProjectAction_label
+        toolTipText = SearchMessages.Search_FindReferencesInProjectAction_tooltip
+        imageDescriptor = JavaPluginImages.DESC_OBJS_SEARCH_REF
+        PlatformUI.getWorkbench().helpSystem.setHelp(this, IJavaHelpContextIds.FIND_REFERENCES_IN_PROJECT_ACTION)
     }
-    
+
     companion object {
-        val ACTION_ID = "SearchReferencesInProject"
+        const val ACTION_ID = "SearchReferencesInProject"
     }
-    
+
     override fun createScopeQuerySpecification(jetElement: KtElement): QuerySpecification {
         val factory = JavaSearchScopeFactory.getInstance()
         return createQuerySpecification(
-                jetElement,
-                factory.createJavaProjectSearchScope(javaProject, false), 
-                factory.getProjectScopeDescription(javaProject, false))
+            jetElement,
+            factory.createJavaProjectSearchScope(javaProject, false),
+            factory.getProjectScopeDescription(javaProject, false)
+        )
     }
 }
 
-public class KotlinFindReferencesInWorkspaceAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
+class KotlinFindReferencesInWorkspaceAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
     init {
-        setActionDefinitionId(IJavaEditorActionDefinitionIds.SEARCH_REFERENCES_IN_WORKSPACE)
-        setText(SearchMessages.Search_FindReferencesAction_label)
-        setToolTipText(SearchMessages.Search_FindReferencesAction_tooltip)
-        setImageDescriptor(JavaPluginImages.DESC_OBJS_SEARCH_REF)
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(this, IJavaHelpContextIds.FIND_REFERENCES_IN_WORKSPACE_ACTION)
+        actionDefinitionId = IJavaEditorActionDefinitionIds.SEARCH_REFERENCES_IN_WORKSPACE
+        text = SearchMessages.Search_FindReferencesAction_label
+        toolTipText = SearchMessages.Search_FindReferencesAction_tooltip
+        imageDescriptor = JavaPluginImages.DESC_OBJS_SEARCH_REF
+        PlatformUI.getWorkbench().helpSystem.setHelp(this, IJavaHelpContextIds.FIND_REFERENCES_IN_WORKSPACE_ACTION)
     }
-    
+
     companion object {
-        val ACTION_ID = "SearchReferencesInWorkspace"
+        const val ACTION_ID = "SearchReferencesInWorkspace"
     }
-    
+
     override fun createScopeQuerySpecification(jetElement: KtElement): QuerySpecification {
         val factory = JavaSearchScopeFactory.getInstance()
         return createQuerySpecification(
-                jetElement,
-                factory.createWorkspaceScope(false), 
-                factory.getWorkspaceScopeDescription(false))
+            jetElement,
+            factory.createWorkspaceScope(false),
+            factory.getWorkspaceScopeDescription(false)
+        )
     }
 }
 
-abstract class KotlinFindReferencesAction(val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.getSite()) {
+abstract class KotlinFindReferencesAction(val editor: KotlinCommonEditor) : SelectionDispatchAction(editor.site) {
     var javaProject: IJavaProject by Delegates.notNull()
-    
-    override public fun run(selection: ITextSelection) {
-        val file = editor.eclipseFile
-        if (file == null) return
-        
-        javaProject = JavaCore.create(file.getProject())
-        
-        val jetElement = EditorUtil.getJetElement(editor, selection.getOffset())
-        if (jetElement == null) return
-        
+
+    override fun run(selection: ITextSelection) {
+        val file = editor.eclipseFile ?: return
+
+        javaProject = JavaCore.create(file.project)
+
+        val jetElement = EditorUtil.getJetElement(editor, selection.offset) ?: return
+
         val querySpecification = createScopeQuerySpecification(jetElement)
         val query = JavaSearchQuery(querySpecification)
-        
+
         SearchUtil.runQueryInBackground(query)
     }
-    
+
     abstract fun createScopeQuerySpecification(jetElement: KtElement): QuerySpecification
-    
-    private fun getFile(event: ExecutionEvent): IFile? {
-        val activeEditor = HandlerUtil.getActiveEditor(event)
-        return EditorUtil.getFile(activeEditor)
-    }
 }
 
-fun createQuerySpecification(jetElement: KtElement, scope: IJavaSearchScope, description: String): QuerySpecification {
+fun createQuerySpecification(jetElement: KtElement, scope: IJavaSearchScope, description: String, limitTo: Int = IJavaSearchConstants.REFERENCES): QuerySpecification {
     val sourceElements = jetElement.resolveToSourceDeclaration()
-    return KotlinJavaQuerySpecification(sourceElements, IJavaSearchConstants.REFERENCES, scope, description)
+    return KotlinJavaQuerySpecification(sourceElements, limitTo, scope, description)
 }

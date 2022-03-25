@@ -52,12 +52,10 @@ object KotlinJavaManager {
         
         if (containingElement == null) return emptyList()
         
-        val declaringTypeFqName = getTypeFqName(containingElement)
-        if (declaringTypeFqName == null) return emptyList()
-        
-        val eclipseType = javaProject.findType(declaringTypeFqName.asString())
-        if (eclipseType == null) return emptyList()
-        
+        val declaringTypeFqName = getTypeFqName(containingElement) ?: return emptyList()
+
+        val eclipseType = javaProject.findType(declaringTypeFqName.asString()) ?: return emptyList()
+
         val typeMembers = findMembersIn(eclipseType, declaration, klass)
         return if (seekInParent) {
                 val parentMembers = findMembersIn(eclipseType.declaringType, declaration, klass)
@@ -68,7 +66,7 @@ object KotlinJavaManager {
     }
     
     fun hasLinkedKotlinBinFolder(project: IProject): Boolean {
-        val folder = project.getFolder(KotlinJavaManager.KOTLIN_BIN_FOLDER)
+        val folder = project.getFolder(KOTLIN_BIN_FOLDER)
         return folder.isLinked && KotlinFileSystem.SCHEME == folder.locationURI.scheme
     }
     

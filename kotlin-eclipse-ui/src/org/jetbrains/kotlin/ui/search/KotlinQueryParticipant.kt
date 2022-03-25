@@ -45,7 +45,6 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
-import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
@@ -56,8 +55,6 @@ import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
-import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinAndJavaSearchable
@@ -110,22 +107,12 @@ class KotlinQueryParticipant : IQueryParticipant {
                 }
 
                 if (monitor?.isCanceled == true) return
-                val matchedReferences = resolveElementsAndMatch(elements, searchElement, querySpecification, monitor)
+                val matchedReferences = resolveElementsAndMatch(elements, searchElement, querySpecification)
                 if (monitor?.isCanceled == true) return
                 matchedReferences.forEach { ktElement ->
-                    val tempElement = ktElement.getCall(ktElement.getBindingContext())?.toString() ?: ktElement.text
+                    val tempRenderer = SearchResultRenderer.getResultRenderer(querySpecification)
 
-                    val tempParentDescriptor = PsiTreeUtil.getParentOfType(ktElement, KtDeclaration::class.java)?.resolveToDescriptorIfAny()
-
-                    val tempLabel = buildString {
-                        append(tempElement)
-                        if(tempParentDescriptor != null) {
-                            append(" in ")
-                            append(DescriptorRenderer.SHORT_NAMES_IN_TYPES.render(tempParentDescriptor))
-                        }
-                    }
-
-                    requestor.reportMatch(KotlinElementMatch(ktElement, tempLabel))
+                    requestor.reportMatch(KotlinElementMatch(ktElement, tempRenderer.render(ktElement)))
                 }
             }
 
@@ -272,11 +259,10 @@ class KotlinQueryParticipant : IQueryParticipant {
 
     private fun resolveElementsAndMatch(
         elements: List<KtElement>, searchElement: SearchElement,
-        querySpecification: QuerySpecification,
-        monitor: IProgressMonitor?
+        querySpecification: QuerySpecification
     ): List<KtElement> {
         val beforeResolveFilters = getBeforeResolveFilters(querySpecification)
-        val afterResolveFilters = getAfterResolveFilters()
+        val afterResolveFilters = getAfterResolveFilters(querySpecification)
 
         // This is important for optimization: 
         // we will consequentially cache files one by one which do contain these references

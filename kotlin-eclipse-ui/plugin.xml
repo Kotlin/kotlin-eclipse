@@ -311,6 +311,12 @@
             id="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
             name="Find References In Workspace">
       </command>
+       <command defaultHandler="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"
+                id="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"
+                name="Super Implementations"/>
+       <command defaultHandler="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenAllSuperImplementationActionHandler"
+                id="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenAllSuperImplementationActionHandler"
+                name="All Super Implementations"/>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -370,14 +376,24 @@
                label="References">
             <command
                   commandId="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInProject"
-                  label="Project"
+                  label="References in Project"
                   style="push">
             </command>
             <command
                   commandId="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
-                  label="Workspace"
+                  label="References in Workspace"
                   style="push">
             </command>
+            <command
+                  commandId="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInWorkspaceHandler"
+                  label="Implementations in Workspace"
+                  style="push">
+            </command>
+             <command commandId="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"
+                      label="Super Implementations" style="push"/>
+             <command
+                     commandId="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenAllSuperImplementationActionHandler"
+                     label="All Super Implementations" style="push"/>
          </menu>
       </menuContribution>
    </extension>
@@ -600,8 +616,7 @@
             class="org.jetbrains.kotlin.ui.editors.KotlinElementHyperlinkDetector"
             id="org.jetbrains.kotlin.ui.editors.KotlinElementHyperlinkDetector"
             name="KotlinElementHyperlinkDetector"
-            targetId="org.jetbrains.kotlin.ui.editors.kotlinCode">
-      </hyperlinkDetector>
+            targetId="org.jetbrains.kotlin.ui.editors.kotlinCode"/>
    </extension>
    <extension
          point="org.eclipse.ui.startup">
