@@ -311,6 +311,16 @@
             id="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
             name="Find References In Workspace">
       </command>
+      <command
+              defaultHandler="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInWorkspaceHandler"
+              id="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInWorkspaceHandler"
+              name="Find Implementations in Workspace">
+      </command>
+      <command
+              defaultHandler="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInProjectHandler"
+              id="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInProjectHandler"
+              name="Find Implementations in Project">
+      </command>
        <command defaultHandler="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"
                 id="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"
                 name="Super Implementations"/>
@@ -387,6 +397,11 @@
             <command
                   commandId="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInWorkspaceHandler"
                   label="Implementations in Workspace"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInProjectHandler"
+                  label="Implementations in Project"
                   style="push">
             </command>
              <command commandId="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"

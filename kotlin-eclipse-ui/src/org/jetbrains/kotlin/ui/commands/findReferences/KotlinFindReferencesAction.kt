@@ -67,6 +67,66 @@ class KotlinFindReferencesInWorkspaceHandler : KotlinFindReferencesHandler() {
     }
 }
 
+class KotlinFindImplementationsInWorkspaceHandler : KotlinFindReferencesHandler() {
+
+    override fun getAction(editor: KotlinCommonEditor): KotlinFindReferencesAction {
+        return KotlinFindImplementationsInWorkspaceAction(editor)
+    }
+}
+
+class KotlinFindImplementationsInProjectHandler : KotlinFindReferencesHandler() {
+
+    override fun getAction(editor: KotlinCommonEditor): KotlinFindReferencesAction {
+        return KotlinFindImplementationsInProjectAction(editor)
+    }
+}
+
+class KotlinFindImplementationsInProjectAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
+
+    init {
+        actionDefinitionId = IJavaEditorActionDefinitionIds.SEARCH_IMPLEMENTORS_IN_WORKSPACE
+        text = SearchMessages.Search_FindImplementorsAction_label
+        toolTipText = SearchMessages.Search_FindImplementorsAction_tooltip
+        imageDescriptor = JavaPluginImages.DESC_OBJS_SEARCH_REF
+        PlatformUI.getWorkbench().helpSystem.setHelp(this, IJavaHelpContextIds.FIND_IMPLEMENTORS_IN_WORKSPACE_ACTION)
+    }
+
+    override fun createScopeQuerySpecification(jetElement: KtElement): QuerySpecification {
+        val factory = JavaSearchScopeFactory.getInstance()
+        return createQuerySpecification(
+            jetElement,
+            factory.createJavaProjectSearchScope(javaProject, false),
+            factory.getProjectScopeDescription(javaProject, false),
+            IMPLEMENTORS_LIMIT_TO
+        )
+    }
+
+    companion object {
+        const val IMPLEMENTORS_LIMIT_TO = 48
+    }
+}
+
+class KotlinFindImplementationsInWorkspaceAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
+
+    init {
+        actionDefinitionId = IJavaEditorActionDefinitionIds.SEARCH_IMPLEMENTORS_IN_WORKSPACE
+        text = SearchMessages.Search_FindImplementorsAction_label
+        toolTipText = SearchMessages.Search_FindImplementorsAction_tooltip
+        imageDescriptor = JavaPluginImages.DESC_OBJS_SEARCH_REF
+        PlatformUI.getWorkbench().helpSystem.setHelp(this, IJavaHelpContextIds.FIND_IMPLEMENTORS_IN_WORKSPACE_ACTION)
+    }
+
+    override fun createScopeQuerySpecification(jetElement: KtElement): QuerySpecification {
+        val factory = JavaSearchScopeFactory.getInstance()
+        return createQuerySpecification(
+            jetElement,
+            factory.createWorkspaceScope(false),
+            factory.getWorkspaceScopeDescription(false),
+            KotlinFindImplementationsInProjectAction.IMPLEMENTORS_LIMIT_TO
+        )
+    }
+}
+
 class KotlinFindReferencesInProjectAction(editor: KotlinCommonEditor) : KotlinFindReferencesAction(editor) {
     init {
         actionDefinitionId = IJavaEditorActionDefinitionIds.SEARCH_REFERENCES_IN_PROJECT

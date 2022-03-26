@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.search
 
+import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.core.resources.IFile
 import org.eclipse.core.resources.IProject
@@ -24,6 +25,7 @@ import org.eclipse.core.runtime.IAdaptable
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.core.runtime.ISafeRunnable
 import org.eclipse.jdt.core.IJavaElement
+import org.eclipse.jdt.core.IType
 import org.eclipse.jdt.core.search.IJavaSearchScope
 import org.eclipse.jdt.internal.core.JavaModel
 import org.eclipse.jdt.internal.ui.search.AbstractJavaSearchResult
@@ -45,6 +47,7 @@ import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.sourceElementsToLightElements
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
+import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaElementUtil
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
@@ -57,12 +60,34 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getParentOfType
 import org.jetbrains.kotlin.resolve.source.KotlinSourceElement
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinAndJavaSearchable
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinJavaQuerySpecification
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinOnlyQuerySpecification
-import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScoped
+import org.jetbrains.kotlin.ui.commands.findReferences.*
 
 class KotlinQueryParticipant : IQueryParticipant {
+
+    private inner class DelegatedUniqueMatchSearchRequestor(
+        private val delegate: ISearchRequestor,
+        private val querySpecification: QuerySpecification
+    ) : ISearchRequestor {
+
+        private val seenMatches: MutableSet<Any> = mutableSetOf()
+        override fun reportMatch(match: Match) {
+            val tempElement = match.element
+            if ((match is KotlinElementMatch && !seenMatches.add(match.jetElement)) || (tempElement is IJavaElement && !seenMatches.add(tempElement))) return
+
+            delegate.reportMatch(match)
+
+            if (querySpecification.limitTo == KotlinFindImplementationsInProjectAction.IMPLEMENTORS_LIMIT_TO && match is KotlinElementMatch && match.jetElement is KtClass) {
+                val tempNewSpec = KotlinOnlyQuerySpecification(
+                    match.jetElement,
+                    querySpecification.getFilesInScope(),
+                    KotlinFindImplementationsInProjectAction.IMPLEMENTORS_LIMIT_TO,
+                    querySpecification.scopeDescription
+                )
+                search(this, tempNewSpec, null)
+            }
+        }
+    }
+
     override fun search(
         requestor: ISearchRequestor,
         querySpecification: QuerySpecification,
@@ -70,11 +95,16 @@ class KotlinQueryParticipant : IQueryParticipant {
     ) {
         SafeRunnable.run(object : ISafeRunnable {
             override fun run() {
+                val tempRequestor =
+                    requestor as? DelegatedUniqueMatchSearchRequestor ?: DelegatedUniqueMatchSearchRequestor(
+                        requestor,
+                        querySpecification
+                    )
                 val searchElements = getSearchElements(querySpecification)
                 if (searchElements.isEmpty()) return
 
                 if (querySpecification is KotlinAndJavaSearchable) {
-                    runCompositeSearch(searchElements, requestor, querySpecification, monitor)
+                    runCompositeSearch(searchElements, tempRequestor, querySpecification, monitor)
                     return
                 }
 
@@ -110,9 +140,8 @@ class KotlinQueryParticipant : IQueryParticipant {
                 val matchedReferences = resolveElementsAndMatch(elements, searchElement, querySpecification)
                 if (monitor?.isCanceled == true) return
                 matchedReferences.forEach { ktElement ->
-                    val tempRenderer = SearchResultRenderer.getResultRenderer(querySpecification)
-
-                    requestor.reportMatch(KotlinElementMatch(ktElement, tempRenderer.render(ktElement)))
+                    val tempCreator = KotlinElementMatchCreator.getMatchCreator(querySpecification)
+                    tempCreator.createMatch(ktElement)?.let { tempRequestor.reportMatch(it) }
                 }
             }
 
@@ -131,9 +160,19 @@ class KotlinQueryParticipant : IQueryParticipant {
         monitor: IProgressMonitor?
     ) {
 
+        fun reportMatch(match: Match) {
+            val tempElement = match.element
+            if (tempElement is IJavaElement && EclipseJavaElementUtil.isFromKotlinBinFolder(tempElement)) {
+                return
+            }
+            requestor.reportMatch(match)
+        }
+
         fun reportSearchResults(result: AbstractJavaSearchResult) {
             for (searchElement in result.elements) {
-                result.getMatches(searchElement).forEach { requestor.reportMatch(it) }
+                result.getMatches(searchElement).forEach { match ->
+                    reportMatch(match)
+                }
             }
         }
 
@@ -159,7 +198,14 @@ class KotlinQueryParticipant : IQueryParticipant {
 
         for (specification in specifications) {
             if (specification is KotlinScoped) {
-                KotlinQueryParticipant().search({ requestor.reportMatch(it) }, specification, monitor)
+                search(requestor, specification, monitor)
+            } else if (specification is ElementQuerySpecification && specification.limitTo == KotlinFindImplementationsInProjectAction.IMPLEMENTORS_LIMIT_TO && specification.element is IType) {
+                //We need this workaround to find java subclasses!
+                val tempElement = specification.element as IType
+                val tempSubTypes = tempElement.newTypeHierarchy(monitor).getAllSubtypes(tempElement)
+                for (tempMatch in tempSubTypes.map { Match(it, it.nameRange.offset, it.nameRange.length) }) {
+                    reportMatch(tempMatch)
+                }
             } else {
                 val searchQuery = JavaSearchQuery(specification)
                 searchQuery.run(monitor)
@@ -208,9 +254,9 @@ class KotlinQueryParticipant : IQueryParticipant {
                     val pair = getSearchTextAsRegex(searchText)
                     asRegex = pair.first
                     searchText = pair.second
-                } else if(searchElement.kotlinElement.hasModifier(KtTokens.OVERRIDE_KEYWORD)) {
+                } else if (searchElement.kotlinElement.hasModifier(KtTokens.OVERRIDE_KEYWORD)) {
                     val tempDescriptor = searchElement.kotlinElement.resolveToDescriptorIfAny() as? FunctionDescriptor
-                    if(tempDescriptor?.isOperator == true) {
+                    if (tempDescriptor?.isOperator == true) {
                         val pair = getSearchTextAsRegex(searchText)
                         asRegex = pair.first
                         searchText = pair.second
@@ -263,13 +309,14 @@ class KotlinQueryParticipant : IQueryParticipant {
     ): List<KtElement> {
         val beforeResolveFilters = getBeforeResolveFilters(querySpecification)
         val afterResolveFilters = getAfterResolveFilters(querySpecification)
+        val mapper = SearchParentObjectMapper.getMapper(querySpecification)
 
         // This is important for optimization: 
         // we will consequentially cache files one by one which do contain these references
         val sortedByFileNameElements = elements.sortedBy { it.containingKtFile.name }
 
         return sortedByFileNameElements.flatMap { element ->
-            val tempElement = findApplicableElement(element, beforeResolveFilters) ?: return@flatMap emptyList()
+            val tempElement = findApplicableElement(element, beforeResolveFilters, mapper) ?: return@flatMap emptyList()
 
             val sourceElements = tempElement.resolveToSourceDeclaration()
             if (sourceElements.isEmpty()) return@flatMap emptyList()
@@ -285,10 +332,10 @@ class KotlinQueryParticipant : IQueryParticipant {
     }
 
     private fun findApplicableElement(
-        element: KtElement, beforeResolveFilters: List<SearchFilter>
+        element: KtElement, beforeResolveFilters: List<SearchFilter>, mapper: SearchParentObjectMapper
     ): KtElement? {
-        if(beforeResolveFilters.all { it.isApplicable(element) }) return element
-        return element.getParentOfType<KtReferenceExpression>(false)?.takeIf { refExp ->
+        if (beforeResolveFilters.all { it.isApplicable(element) }) return element
+        return mapper.map(element)?.takeIf { refExp ->
             beforeResolveFilters.all { it.isApplicable(refExp) }
         }
     }
@@ -334,15 +381,11 @@ fun getContainingClassOrObjectForConstructor(sourceElements: List<SourceElement>
     }
 }
 
-fun getJavaAndKotlinElements(sourceElements: List<SourceElement>): Pair<List<IJavaElement>, List<KtElement>> {
+fun getJavaAndKotlinElements(
+    sourceElements: List<SourceElement>
+): Pair<List<IJavaElement>, List<KtElement>> {
     val javaElements = sourceElementsToLightElements(sourceElements)
-
-    // Filter out Kotlin elements which have light elements because Javas search will call KotlinQueryParticipant
-    // to look up for these elements
-    val kotlinElements = sourceElementsToKotlinElements(sourceElements).filterNot { kotlinElement ->
-        (kotlinElement !is KtFunction || !kotlinElement.hasModifier(KtTokens.OPERATOR_KEYWORD)) && javaElements.any { it.elementName == kotlinElement.name }
-    }
-
+    val kotlinElements = sourceElementsToKotlinElements(sourceElements)
     return Pair(javaElements, kotlinElements)
 }
 
@@ -366,8 +409,8 @@ fun QuerySpecification.getFilesInScope(): List<IFile> {
     }
 }
 
-class KotlinElementMatch(val jetElement: KtElement, val label: String) :
-    Match(KotlinAdaptableElement(jetElement, label), jetElement.textOffset, jetElement.textLength)
+class KotlinElementMatch(val jetElement: KtElement, val label: String, val identifier: PsiElement) :
+    Match(KotlinAdaptableElement(jetElement, label), identifier.textOffset, identifier.textLength)
 
 class KotlinAdaptableElement(val jetElement: KtElement, val label: String) : IAdaptable {
     @Suppress("UNCHECKED_CAST")

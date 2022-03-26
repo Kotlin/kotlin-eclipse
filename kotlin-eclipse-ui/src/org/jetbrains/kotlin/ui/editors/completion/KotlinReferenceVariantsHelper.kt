@@ -31,11 +31,9 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.getDataFlowInfoBefore
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationResolver
-import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
 import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.scopes.*
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CALLABLES
-import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CLASSIFIERS
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.FUNCTIONS_MASK
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.VARIABLES_MASK
 import org.jetbrains.kotlin.resolve.scopes.receivers.ClassQualifier
@@ -414,7 +412,7 @@ class KotlinReferenceVariantsHelper(
             val collector = object : MethodNameMatchRequestor() {
                 override fun acceptMethodNameMatch(match: MethodNameMatch) {
                     if (Flags.isPublic(match.modifiers)) {
-                        tempClassNames[match.method.declaringType.getTypeQualifiedName('$')] =
+                        tempClassNames[match.method.declaringType.getTypeQualifiedName('.')] =
                             match.method.declaringType.packageFragment.elementName
                     }
                 }
@@ -456,26 +454,11 @@ class KotlinReferenceVariantsHelper(
             val tempPackages = mutableListOf<PackageViewDescriptor>()
 
             val tempClasses = tempClassNames.mapNotNull { (className, packageName) ->
-                val tempPackage = resolutionFacade.moduleDescriptor.getPackage(FqName(packageName))
-                val tempNames = className.split('$')
-                val topLevelClass = tempNames.first()
-                var tempClassDescriptor =
-                    moduleDescriptor.findClassAcrossModuleDependencies(ClassId.topLevel(FqName(tempPackage.fqName.asString() + "." + topLevelClass)))
-                        ?: run {
-                            tempPackages.add(tempPackage)
-                            return@mapNotNull null
-                        }
-
-                tempNames.drop(1).forEach { subName ->
-                    tempClassDescriptor =
-                        tempClassDescriptor.unsubstitutedMemberScope.getDescriptorsFiltered(CLASSIFIERS) {
-                            !it.isSpecial && it.identifier == subName
-                        }.filterIsInstance<ClassDescriptor>()
-                            .distinctBy { it.fqNameOrNull()?.asString() ?: it.toString() }.singleOrNull()
-                            ?: return@mapNotNull null
+                val tempClassId = ClassId(FqName(packageName), FqName(className), false)
+                moduleDescriptor.findClassAcrossModuleDependencies(tempClassId) ?: run {
+                    tempPackages.add(resolutionFacade.moduleDescriptor.getPackage(FqName(packageName)))
+                    null
                 }
-
-                tempClassDescriptor
             }
 
             val importsSet = ktFile.importDirectives
