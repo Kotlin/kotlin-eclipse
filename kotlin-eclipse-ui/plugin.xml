@@ -29,7 +29,7 @@
             icon="icons/newfile_wiz.gif"
             id="org.jetbrains.kotlin.wizard"
             name="Kotlin File"
-            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            preferredPerspectives="org.jetbrains.kotlin.perspective,org.eclipse.jdt.ui.JavaPerspective"
             project="false">
            <description>
               Create a new Kotlin file
@@ -51,6 +51,20 @@
       </wizard>
       <wizard
             category="org.jetbrains.kotlin.wizards"
+            class="org.jetbrains.kotlin.wizards.NewSealedClassWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            hasPages="true"
+            icon="icons/newclass_wiz.gif"
+            id="org.jetbrains.kotlin.classWizard"
+            name="Kotlin sealed Class"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="false">
+         <description>
+            Create a new Kotlin sealed class
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.wizards"
             class="org.jetbrains.kotlin.wizards.NewInterfaceWizard"
             finalPerspective="org.jetbrains.kotlin.perspective"
             hasPages="true"
@@ -60,7 +74,21 @@
             preferredPerspectives="org.jetbrains.kotlin.perspective"
             project="false">
          <description>
-            Create a new Kotlin trait
+            Create a new Kotlin interface
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.wizards"
+            class="org.jetbrains.kotlin.wizards.NewSealedInterfaceWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            hasPages="true"
+            icon="icons/newint_wiz.gif"
+            id="org.jetbrains.kotlin.traitWizard"
+            name="Kotlin sealed Interface"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="false">
+         <description>
+            Create a new Kotlin sealed interface
          </description>
       </wizard>
       <wizard
@@ -89,6 +117,34 @@
             project="false">
          <description>
             Create a new Kotlin enum
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.wizards"
+            class="org.jetbrains.kotlin.wizards.NewDataClassWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            hasPages="true"
+            icon="icons/newclass_wiz.gif"
+            id="org.jetbrains.kotlin.enumWizard"
+            name="Kotlin Data Class"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="false">
+         <description>
+            Create a new Kotlin data class
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.wizards"
+            class="org.jetbrains.kotlin.wizards.NewAnnotationWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            hasPages="true"
+            icon="icons/newclass_wiz.gif"
+            id="org.jetbrains.kotlin.enumWizard"
+            name="Kotlin Annotation Class"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="false">
+         <description>
+            Create a new Kotlin annotation
          </description>
       </wizard>
       <wizard
