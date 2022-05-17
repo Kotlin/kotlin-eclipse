@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.ui.editors.completion
 import com.intellij.openapi.util.text.StringUtilRt
 import com.intellij.psi.PsiElement
 import org.eclipse.core.resources.IFile
+import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.search.SearchPattern
 import org.eclipse.jdt.internal.ui.JavaPlugin
 import org.eclipse.jdt.ui.PreferenceConstants
@@ -37,6 +38,7 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
+import org.jetbrains.kotlin.ui.editors.codeassist.KotlinBasicCompletionProposal
 import org.jetbrains.kotlin.ui.editors.codeassist.getResolutionScope
 import org.jetbrains.kotlin.ui.editors.codeassist.isVisible
 
@@ -54,11 +56,13 @@ object KotlinCompletionUtils {
     }
     
     fun getReferenceVariants(
-            simpleNameExpression: KtSimpleNameExpression,
-            nameFilter: (Name) -> Boolean,
-            file: IFile,
-            identifierPart: String?
-    ): Collection<DeclarationDescriptor> {
+        simpleNameExpression: KtSimpleNameExpression,
+        nameFilter: (Name) -> Boolean,
+        ktFile: KtFile,
+        file: IFile,
+        identifierPart: String?,
+        javaProject: IJavaProject
+    ): Collection<KotlinBasicCompletionProposal> {
         val (analysisResult, container) = KotlinAnalyzer.analyzeFile(simpleNameExpression.containingKtFile)
         if (container == null) return emptyList()
         
@@ -84,13 +88,13 @@ object KotlinCompletionUtils {
         
         val collectAll = (identifierPart == null || identifierPart.length > 2) || !KotlinScriptEnvironment.isScript(file)
         val kind = if (collectAll) DescriptorKindFilter.ALL else DescriptorKindFilter.CALLABLES
-        
-        return KotlinReferenceVariantsHelper (
-                analysisResult.bindingContext,
-                KotlinResolutionFacade(file, container, analysisResult.moduleDescriptor),
-                analysisResult.moduleDescriptor,
-                visibilityFilter).getReferenceVariants(
-                simpleNameExpression, kind, nameFilter)
+
+        return KotlinReferenceVariantsHelper(
+            analysisResult.bindingContext,
+            KotlinResolutionFacade(file, container, analysisResult.moduleDescriptor),
+            analysisResult.moduleDescriptor,
+            visibilityFilter
+        ).getReferenceVariants(simpleNameExpression, kind, nameFilter, javaProject, ktFile, file, identifierPart)
     }
     
     fun getPsiElement(editor: KotlinEditor, identOffset: Int): PsiElement? {
