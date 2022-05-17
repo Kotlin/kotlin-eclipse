@@ -190,10 +190,11 @@ object EclipseAnalyzerFacadeForJVM {
                                 override fun doCreateIndex(index: Index) {
                                     val tempProvidedProperties = tempProperties?.entries?.map { (key, value) ->
                                         val isNullable = tempContribution?.isNullable(key, tempRefinedConfig) ?: true
+                                        val tempTypeName = value.fromClass?.qualifiedName ?: value.typeName
                                         val tempText =
                                             """
-                                                /** Provided property '$key' of type: ${value.typeName} */
-                                                val $key: ${value.typeName}${'$'}${if (isNullable) "? = null" else " = TODO()"}""".trimIndent()
+                                                /** Provided property '$key' of type: $tempTypeName */
+                                                val $key: $tempTypeName${'$'}${if (isNullable) "? = null" else " = TODO()"}""".trimIndent()
                                         factory.createProperty(tempText)
                                     } ?: emptyList()
 

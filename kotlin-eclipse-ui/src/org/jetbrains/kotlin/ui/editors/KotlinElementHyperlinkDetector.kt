@@ -23,14 +23,16 @@ import org.eclipse.jface.text.Region
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector
 import org.eclipse.jface.text.hyperlink.IHyperlink
 import org.eclipse.ui.texteditor.ITextEditor
+import org.jetbrains.kotlin.core.references.createReferences
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.psi.KtArrayAccessExpression
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtOperationReferenceExpression
 import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
-import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction.Companion.OPEN_EDITOR_TEXT
 
 @Suppress("unused")
 class KotlinElementHyperlinkDetector : AbstractHyperlinkDetector() {
@@ -38,12 +40,11 @@ class KotlinElementHyperlinkDetector : AbstractHyperlinkDetector() {
         textViewer: ITextViewer,
         region: IRegion?,
         canShowMultipleHyperlinks: Boolean
-    ): Array<IHyperlink>? {
+    ): Array<out IHyperlink>? {
         val textEditor = getAdapter(ITextEditor::class.java)
         if (region == null || textEditor !is KotlinEditor) return null
 
-        val openAction = textEditor.getAction(OPEN_EDITOR_TEXT) as? KotlinOpenDeclarationAction
-            ?: return null
+        val tempProject = textEditor.javaProject ?: return null
 
         val tempDocument = textEditor.documentProvider.getDocument(textEditor.editorInput)
 
@@ -60,17 +61,37 @@ class KotlinElementHyperlinkDetector : AbstractHyperlinkDetector() {
                 val tempOffset =
                     LineEndUtil.convertLfOffsetForMixedDocument(tempDocument, tempReferenceExpression.textOffset)
                 wordRegion = Region(tempOffset, tempReferenceExpression.textLength)
-            }
-            else if (tempReferenceExpression is KtCallExpression) {
-                if(textEditor.javaProject != null && KotlinOpenDeclarationAction.getNavigationData(tempReferenceExpression, textEditor.javaProject!!) != null) {
+            } else if (tempReferenceExpression is KtCallExpression) {
+                if (KotlinOpenDeclarationAction.getNavigationData(tempReferenceExpression, tempProject) != null) {
                     val tempOffset =
                         LineEndUtil.convertLfOffsetForMixedDocument(tempDocument, tempReferenceExpression.textOffset)
                     wordRegion = Region(tempOffset, tempReferenceExpression.textLength)
                 }
             }
         }
-        tempReferenceExpression ?: EditorUtil.getReferenceExpression(textEditor, region.offset) ?: return null
 
-        return arrayOf(KotlinElementHyperlink(openAction, wordRegion, tempReferenceExpression))
+        val tempRenderer = DescriptorRenderer.SHORT_NAMES_IN_TYPES.withOptions {
+            modifiers = emptySet()
+            includeAdditionalModifiers = false
+        }
+
+        val tempRef = tempReferenceExpression
+            ?: EditorUtil.getReferenceExpression(textEditor, region.offset)
+            ?: EditorUtil.getJetElement(textEditor, region.offset)
+            ?: return null
+
+        val context = tempRef.getBindingContext()
+        val tempTargets = createReferences(tempRef)
+            .flatMap { it.getTargetDescriptors(context) }
+
+        return tempTargets.map {
+            KTGenericHyperLink(
+                wordRegion,
+                tempRenderer.render(it),
+                textEditor,
+                it,
+                tempRef
+            )
+        }.toTypedArray().takeIf { it.isNotEmpty() }
     }
 }
