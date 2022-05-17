@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.psi.KtReferenceExpression
 
 fun getLengthOfIdentifier(jetElement: KtElement): Int? {
     return when (jetElement) {
-        is KtNamedDeclaration -> jetElement.getNameIdentifier()!!.getTextLength()
+        is KtNamedDeclaration -> jetElement.nameIdentifier!!.textLength
         is KtReferenceExpression -> jetElement.getTextLength()
         else -> null
     }

@@ -47,9 +47,12 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     private static final String PACKAGE_FORMAT = "package %s\n\n";
     
     private final WizardType type;
+
+    private boolean isDynamicType;
     
     public NewUnitWizard() {
         this(WizardType.NONE);
+        isDynamicType = true;
     }
     
     public NewUnitWizard(WizardType type) {
@@ -59,7 +62,13 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     @Override
     public boolean performFinish() {
         NewUnitWizardPage wizardPage = getWizardPage();
-        String contents = createPackageHeader() + createTypeBody();
+        WizardType finalType;
+        if(isDynamicType) {
+            finalType = wizardPage.getType();
+        } else {
+            finalType = type;
+        }
+        String contents = createPackageHeader() + createTypeBody(finalType);
         
         IFile kotlinSourceFile;
         try {
@@ -108,7 +117,7 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
     @Override
     protected NewUnitWizardPage createWizardPage() {
         return new NewUnitWizardPage(getPageTitle(), String.format(DESCRIPTION_FORMAT,
-                type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, getStructuredSelection());
+                type.getWizardTypeName().toLowerCase()), DEFAULT_FILE_NAME, getStructuredSelection(), isDynamicType);
     }
     
     @Nullable
@@ -130,12 +139,12 @@ public class NewUnitWizard extends AbstractWizard<NewUnitWizardPage> {
         return operation.getResult();
     }
     
-    private String createTypeBody() {
-        if (type == WizardType.NONE) {
+    private String createTypeBody(WizardType finalType) {
+        if (finalType == WizardType.NONE) {
             return DEFAULT_TYPE_BODY;
         }
         
-        return String.format(type.getFileBodyFormat(), FileCreationOp.getSimpleUnitName(getWizardPage().getUnitName()));
+        return String.format(finalType.getFileBodyFormat(), FileCreationOp.getSimpleUnitName(getWizardPage().getUnitName()));
     }
     
     private String createPackageHeader() {

@@ -36,7 +36,7 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
-import org.eclipse.jdt.internal.core.AnnotationInfo;
+import org.eclipse.jdt.internal.core.BinaryMethod;
 import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.core.ClassFile;
 import org.jetbrains.annotations.NotNull;
@@ -207,6 +207,20 @@ public class EclipseJavaElementUtil {
         }
 
         return false;
+    }
+
+    public static boolean isFromKotlinBinFolder(@NotNull IJavaElement element) {
+        IClassFile classFile;
+        if (element instanceof IClassFile) {
+            classFile = (IClassFile) element;
+        } else if (element instanceof BinaryType) {
+            classFile = ((BinaryType) element).getClassFile();
+        } else if(element instanceof BinaryMethod) {
+            classFile = ((BinaryMethod) element).getClassFile();
+        } else {
+            return false;
+        }
+        return classFile.getResource() == null || isFromKotlinBinFolder(classFile.getResource());
     }
 
     public static boolean isKotlinBinaryElement(@NotNull IJavaElement element) {

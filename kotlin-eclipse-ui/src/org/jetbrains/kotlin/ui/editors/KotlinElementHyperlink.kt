@@ -18,25 +18,37 @@ package org.jetbrains.kotlin.ui.editors
 
 import org.eclipse.jface.text.IRegion
 import org.eclipse.jface.text.hyperlink.IHyperlink
-import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.jetbrains.kotlin.core.utils.getBindingContext
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.VariableDescriptorWithAccessors
+import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
+import org.jetbrains.kotlin.psi.KtElement
+import org.jetbrains.kotlin.psi.KtProperty
+import org.jetbrains.kotlin.psi.KtPropertyDelegate
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.ui.editors.codeassist.getParentOfType
 import org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenDeclarationAction
+import org.jetbrains.kotlin.ui.editors.navigation.gotoElement
 
-class KotlinElementHyperlink(
-    private val openAction: KotlinOpenDeclarationAction,
+class KTGenericHyperLink(
     private val region: IRegion,
-    private val refExpression: KtReferenceExpression? = null
-) : IHyperlink {
+    private val label: String,
+    private val editor: KotlinEditor,
+    private val targetDescriptor: DeclarationDescriptor,
+    private val fromElement: KtElement
+) :
+    IHyperlink {
     override fun getHyperlinkRegion(): IRegion = region
 
     override fun getTypeLabel(): String? = null
 
-    override fun getHyperlinkText(): String = HYPERLINK_TEXT
+    override fun getHyperlinkText(): String = label
 
     override fun open() {
-        refExpression?.let { openAction.run(it) } ?: openAction.run()
+        val tempPrj = editor.javaProject ?: return
+        gotoElement(targetDescriptor, fromElement, editor, tempPrj)
     }
 
-    companion object {
-        private const val HYPERLINK_TEXT = "Open Kotlin Declaration"
-    }
 }
+
+private const val HYPERLINK_TEXT = "Open Kotlin Declaration"
