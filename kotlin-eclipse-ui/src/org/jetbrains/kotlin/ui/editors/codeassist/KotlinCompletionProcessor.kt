@@ -339,11 +339,11 @@ private object KotlinCompletionSorter : ICompletionProposalSorter {
     }
 
 	private fun ICompletionProposal.typeRelevance(): Int {
-		return when {
-			(this is KotlinKeywordCompletionProposal) -> 0
-			(this is KotlinImportCompletionProposal) -> 1
-			(this is TemplateProposal) -> 2
-			(this is KotlinCompletionProposal) -> 3 + this.type.ordinal
+		return when(this) {
+			is KotlinKeywordCompletionProposal -> 0
+			is KotlinImportTypeCompletionProposal -> 1
+			is TemplateProposal -> 2
+			is KotlinCompletionProposal -> 3 + type.ordinal
 			else -> 4
 		}
 	}

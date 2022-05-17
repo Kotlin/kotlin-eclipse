@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.builtins.isFunctionType
 import org.jetbrains.kotlin.core.imports.FunctionCandidate
 import org.jetbrains.kotlin.core.imports.TypeCandidate
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.eclipse.ui.utils.CompletionElementType
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
@@ -42,7 +43,6 @@ import org.jetbrains.kotlin.ui.editors.codeassist.CaretPosition.AFTER_BRACKETS
 import org.jetbrains.kotlin.ui.editors.codeassist.CaretPosition.IN_BRACKETS
 import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
 import org.jetbrains.kotlin.ui.editors.quickfix.placeImports
-import org.jetbrains.kotlin.eclipse.ui.utils.CompletionElementType
 
 fun withKotlinInsertHandler(
     descriptor: DeclarationDescriptor,
