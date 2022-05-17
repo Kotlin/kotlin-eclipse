@@ -16,75 +16,78 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards;
 
-import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
-import static org.jetbrains.kotlin.wizards.FileCreationOp.fileExists;
-import static org.jetbrains.kotlin.wizards.FileCreationOp.makeFile;
-import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createButton;
-import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createEmptySpace;
-import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createLabel;
-import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createSeparator;
-import static org.jetbrains.kotlin.wizards.SWTWizardUtils.createText;
-
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.*;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.SelectionDialog;
 import org.jetbrains.kotlin.core.log.KotlinLogger;
 
+import java.util.Arrays;
+
+import static org.eclipse.jdt.internal.ui.refactoring.nls.SourceContainerDialog.getSourceContainer;
+import static org.jetbrains.kotlin.wizards.FileCreationOp.fileExists;
+import static org.jetbrains.kotlin.wizards.FileCreationOp.makeFile;
+import static org.jetbrains.kotlin.wizards.SWTWizardUtils.*;
+
 public class NewUnitWizardPage extends AbstractWizardPage {
-    
+
     private static final String DEFAULT_SOURCE_FOLDER = "";
     private static final String DEFAULT_PACKAGE = "";
-    
+
     private static final String NAME_LABEL_TITLE = "Na&me";
     private static final String SOURCE_FOLDER_LABEL_TITLE = "Source fol&der";
     private static final String PACKAGE_LABEL_TITLE = "Pac&kage";
-    
+
     private static final String ILLEGAL_UNIT_NAME_MESSAGE = "Please enter a legal compilation unit name";
     private static final String SELECT_SOURCE_FOLDER_MESSAGE = "Please select a source folder";
     private static final String ILLEGAL_PACKAGE_NAME_MESSAGE = "Please enter a legal package name";
     private static final String UNIT_EXISTS_MESSAGE = "File already exists";
-    
+
     private static final String JAVA_IDENTIFIER_REGEXP = "[a-zA-Z_]\\w*";
-    
+
     private String unitName;
     private String packageName;
     private IPackageFragmentRoot sourceDir;
     private IPackageFragment packageFragment;
+
+    private WizardType type = WizardType.NONE;
+
+    private final boolean isDynamicType;
     private Text nameField = null;
     private final IStructuredSelection selection;
-    
-    protected NewUnitWizardPage(String title, String description, String unitName, IStructuredSelection selection) {
+
+    protected NewUnitWizardPage(String title, String description, String unitName, IStructuredSelection selection, boolean isDynamicType) {
         super(title, description);
-        
+
         this.selection = selection;
         this.unitName = unitName;
+        this.isDynamicType = isDynamicType;
     }
-    
+
     public IPackageFragment getPackageFragment() {
         return packageFragment;
     }
-    
+
     public IPackageFragmentRoot getSourceDir() {
         return sourceDir;
     }
-    
+
+    public WizardType getType() {
+        return type;
+    }
+
     public String getUnitName() {
         return unitName;
     }
-    
+
     public IProject getProject() {
         if (sourceDir != null) {
             return sourceDir.getJavaProject().getProject();
@@ -92,17 +95,36 @@ public class NewUnitWizardPage extends AbstractWizardPage {
             return null;
         }
     }
-    
+
     @Override
     protected void createControls(Composite parent) {
         createSourceFolderField(parent);
         createPackageField(parent);
-        
+
         createSeparator(parent);
-        
+
         nameField = createNameField(parent);
+        if (isDynamicType) {
+            createDynamicTypeField(parent);
+        }
     }
-    
+
+    private void createDynamicTypeField(Composite parent) {
+        createLabel(parent, "Type:");
+        Combo tempCombo = new Combo(parent, SWT.READ_ONLY);
+        for (WizardType tempType : WizardType.values()) {
+            tempCombo.add(tempType.getWizardTypeName());
+        }
+        tempCombo.select(0);
+
+        tempCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                type = Arrays.stream(WizardType.values()).filter(it -> it.getWizardTypeName().equals(tempCombo.getText())).findFirst().orElse(WizardType.CLASS);
+            }
+        });
+    }
+
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
@@ -117,12 +139,9 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         createLabel(parent, NAME_LABEL_TITLE);
         
         final Text name = createText(parent, unitName);
-        name.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                unitName = name.getText();
-                validate();
-            }
+        name.addModifyListener(e -> {
+            unitName = name.getText();
+            validate();
         });
         
         createEmptySpace(parent);
@@ -146,7 +165,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         }
     }
     
-    private Text createSourceFolderField(Composite parent) {
+    private void createSourceFolderField(Composite parent) {
         createLabel(parent, SOURCE_FOLDER_LABEL_TITLE);
         
         IPackageFragmentRoot srcFolder = WizardUtilsKt.getSourceFolderBySelection(selection);
@@ -154,12 +173,9 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         sourceDir = srcFolder;
         
         final Text folder = createText(parent, sourceFolderFromSelection);
-        folder.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                setSourceDirByFolderName(folder.getText());
-                validate();
-            }
+        folder.addModifyListener(e -> {
+            setSourceDirByFolderName(folder.getText());
+            validate();
         });
         
         createButton(parent, BROWSE_BUTTON_TITLE, new SelectionAdapter() {
@@ -176,11 +192,10 @@ public class NewUnitWizardPage extends AbstractWizardPage {
                 validate();
             }
         });
-        
-        return folder;
+
     }
     
-    private Text createPackageField(Composite parent) {
+    private void createPackageField(Composite parent) {
         createLabel(parent, PACKAGE_LABEL_TITLE);
         
         IPackageFragment fragment = WizardUtilsKt.getPackageBySelection(selection);
@@ -188,12 +203,9 @@ public class NewUnitWizardPage extends AbstractWizardPage {
         packageName = packageFromSelection;
         
         final Text pkg = createText(parent, packageFromSelection);
-        pkg.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                packageName = pkg.getText();
-                validate();
-            }
+        pkg.addModifyListener(e -> {
+            packageName = pkg.getText();
+            validate();
         });
         
         createButton(parent, BROWSE_BUTTON_TITLE, new SelectionAdapter() {
@@ -226,8 +238,7 @@ public class NewUnitWizardPage extends AbstractWizardPage {
                 }
             }
         });
-        
-        return pkg;
+
     }
     
     @Override
