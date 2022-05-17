@@ -16,21 +16,15 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.wizards
 
+import org.eclipse.core.resources.IResource
+import org.eclipse.jdt.core.*
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.jetbrains.kotlin.core.utils.sourceFolders
-import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.core.IPackageFragmentRoot
-import org.eclipse.jdt.core.IPackageFragment
-import org.eclipse.jdt.core.ICompilationUnit
-import org.eclipse.core.resources.IFile
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.core.resources.IResource
 
 fun getSourceFolderBySelection(selection: IStructuredSelection): IPackageFragmentRoot? {
     if (selection.isEmpty) return null
-    
-    val element = selection.firstElement
-    return when (element) {
+
+    return when (val element = selection.firstElement) {
         is IPackageFragmentRoot -> element
         is IJavaProject -> element.sourceFolders.firstOrNull()
         is IPackageFragment -> element.parent as IPackageFragmentRoot
@@ -42,14 +36,13 @@ fun getSourceFolderBySelection(selection: IStructuredSelection): IPackageFragmen
 
 fun getPackageBySelection(selection: IStructuredSelection): IPackageFragment? {
     if (selection.isEmpty) return null
-    
-    val element = selection.firstElement
-    return when (element) {
+
+    return when (val element = selection.firstElement) {
         is IPackageFragment -> element
         is ICompilationUnit -> element.parent as IPackageFragment
         is IResource -> {
             val javaProject = JavaCore.create(element.project)
-            javaProject.findPackageFragment(element.getFullPath().removeLastSegments(1))
+            javaProject.findPackageFragment(element.fullPath.removeLastSegments(1))
         }
         else -> null
     }

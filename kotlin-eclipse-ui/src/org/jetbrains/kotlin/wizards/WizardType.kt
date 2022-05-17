@@ -22,12 +22,16 @@ import org.jetbrains.kotlin.lexer.KtToken
 enum class WizardType(val wizardTypeName: String, val fileBodyFormat: String = "") {
     NONE("Source"),
     CLASS("Class", buildFileBody(KtTokens.CLASS_KEYWORD)),
+    SEALED_CLASS("Sealed Class", buildFileBody(KtTokens.SEALED_KEYWORD, KtTokens.CLASS_KEYWORD)),
     INTERFACE("Interface", buildFileBody(KtTokens.INTERFACE_KEYWORD)),
+    SEALED_INTERFACE("Sealed Interface", buildFileBody(KtTokens.SEALED_KEYWORD, KtTokens.INTERFACE_KEYWORD)),
     OBJECT("Object", buildFileBody(KtTokens.OBJECT_KEYWORD)),
-    ENUM("Enum", buildFileBody(KtTokens.ENUM_KEYWORD, KtTokens.CLASS_KEYWORD))
+    ENUM("Enum", buildFileBody(KtTokens.ENUM_KEYWORD, KtTokens.CLASS_KEYWORD)),
+    DATA("Data", buildFileBody(KtTokens.DATA_KEYWORD, KtTokens.CLASS_KEYWORD)),
+    ANNOTATION("Annotation", buildFileBody(KtTokens.ANNOTATION_KEYWORD, KtTokens.CLASS_KEYWORD)),
 }
 
-private val NOT_EMPTY_BODY_FORMAT = "%s {\n}"
+private const val NOT_EMPTY_BODY_FORMAT = "%s {\n}"
 
 private fun buildFileBody(vararg modifiers: KtToken): String =
-        "${modifiers.joinToString(separator = " ")} $NOT_EMPTY_BODY_FORMAT"
+    "${modifiers.joinToString(separator = " ")} $NOT_EMPTY_BODY_FORMAT"
