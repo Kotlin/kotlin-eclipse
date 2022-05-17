@@ -16,36 +16,28 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.eclipse.ui.utils
 
+import org.eclipse.jdt.ui.ISharedImages
 import org.eclipse.jdt.ui.JavaUI
 import org.eclipse.swt.graphics.Image
-import org.eclipse.jdt.ui.ISharedImages
-import org.jetbrains.kotlin.psi.KtVariableDeclaration
-import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.descriptors.VariableDescriptor
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
-import org.jetbrains.kotlin.descriptors.TypeAliasDescriptor
+import org.jetbrains.kotlin.psi.KtFunction
+import org.jetbrains.kotlin.psi.KtVariableDeclaration
 
-public object KotlinImageProvider {
-    public fun getImage(descriptor: DeclarationDescriptor): Image? {
+object KotlinImageProvider {
+    fun getImage(descriptor: DeclarationDescriptor): Image? {
         return when(descriptor) {
             is ClassDescriptor, is TypeParameterDescriptor, is TypeAliasDescriptor ->
                 getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
             is FunctionDescriptor -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PUBLIC)
             is VariableDescriptor -> getImageFromJavaUI(ISharedImages.IMG_FIELD_PUBLIC)
             is PackageViewDescriptor -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PACKAGE)
-            is PropertyDescriptor -> getImageFromJavaUI(ISharedImages.IMG_FIELD_PUBLIC)
             else -> null
         }
     }
     
-    public fun getImage(element: KtElement): Image? {
+    fun getImage(element: KtElement): Image? {
         return when(element) {
             is KtClassOrObject -> getImageFromJavaUI(ISharedImages.IMG_OBJS_CLASS)
             is KtFunction -> getImageFromJavaUI(ISharedImages.IMG_OBJS_PUBLIC)
