@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
-import org.jetbrains.kotlin.resolve.calls.callUtil.getCall
+import org.jetbrains.kotlin.resolve.calls.util.getCall
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInProjectAction
 
 interface KotlinElementMatchCreator {

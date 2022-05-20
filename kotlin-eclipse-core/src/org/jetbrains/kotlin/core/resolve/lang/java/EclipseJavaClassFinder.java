@@ -65,9 +65,9 @@ public class EclipseJavaClassFinder extends AbstractJavaClassFinder {
         //trace, codeAnalyzer.getModuleDescriptor(), codeAnalyzer
     }
 
-    @Override
     @Nullable
-    public JavaPackage findPackage(@NotNull FqName fqName) {
+    @Override
+    public JavaPackage findPackage(@NotNull FqName fqName, boolean b) {
         IPackageFragment[] packageFragments = findPackageFragments(javaProject, fqName.asString(), false, false);
         if (packageFragments != null && packageFragments.length > 0) {
             return new EclipseJavaPackage(Arrays.asList(packageFragments));

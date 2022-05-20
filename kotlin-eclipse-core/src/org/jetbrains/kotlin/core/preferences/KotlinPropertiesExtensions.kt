@@ -14,7 +14,7 @@ private enum class CompilerFlagsMapping(val flag: String) : (List<String>) -> Pa
     OPT_IN("-Xopt-in") {
         override fun invoke(value: List<String>): Pair<AnalysisFlag<*>, *>? {
             if (value.isEmpty()) return null
-            return AnalysisFlags.useExperimental to value
+            return AnalysisFlags.optIn to value
         }
     },
 

@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>kotlin.eclipse</groupId>
 	<artifactId>kotlin.eclipse.plugin</artifactId>
-	<version>1.6.10-SNAPSHOT</version>
+	<version>1.6.21-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<modules>
@@ -33,7 +33,7 @@
 		
 		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
-		<kotlin.version>1.6.10</kotlin.version>
+		<kotlin.version>1.6.21</kotlin.version>
 
 		<aspectj.version>1.8.7</aspectj.version>
 		<aspectj.plugin.version>1.8</aspectj.plugin.version>
