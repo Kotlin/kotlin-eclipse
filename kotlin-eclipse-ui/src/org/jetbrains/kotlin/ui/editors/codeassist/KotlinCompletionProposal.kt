@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.builtins.isFunctionType
 import org.jetbrains.kotlin.core.imports.FunctionCandidate
 import org.jetbrains.kotlin.core.imports.TypeCandidate
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.eclipse.ui.utils.CompletionElementType
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
@@ -119,10 +120,10 @@ open class KotlinCompletionProposal constructor(
     private val information: IContextInformation? = null,
     private val additionalInfo: String? = null,
     @Volatile private var identifierPart: String
-) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
+,
+		val type: CompletionElementType = CompletionElementType.UNKNOWN) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
 
     private var selectedOffset = -1
-
     open fun getRelevance(): Int {
         return computeCaseMatchingRelevance(identifierPart.toCharArray(), replacementString.toCharArray())
     }

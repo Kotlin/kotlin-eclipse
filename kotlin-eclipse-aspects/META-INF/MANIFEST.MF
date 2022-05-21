@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ltk.core.refactoring,
  org.jetbrains.kotlin.ui,
  org.eclipse.debug.core,
- org.eclipse.jdt.debug
+ org.eclipse.jdt.debug,
+ org.eclipse.jdt.core.manipulation
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains

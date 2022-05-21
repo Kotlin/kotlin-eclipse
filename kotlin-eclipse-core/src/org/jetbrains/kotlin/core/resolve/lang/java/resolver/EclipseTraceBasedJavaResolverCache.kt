@@ -30,20 +30,8 @@ import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.ResolveSessionUtils
 import javax.inject.Inject
 
-class EclipseTraceBasedJavaResolverCache : JavaResolverCache {
-    private lateinit var trace: BindingTrace
-    private lateinit var resolveSession: ResolveSession
-    
-    @Inject
-    fun setTrace(trace: BindingTrace) {
-        this.trace = trace
-    }
-    
-    @Inject
-    fun setResolveSession(resolveSession: ResolveSession) {
-        this.resolveSession = resolveSession
-    }
-
+class EclipseTraceBasedJavaResolverCache(@Inject val trace: BindingTrace, @Inject val resolveSession: ResolveSession) : JavaResolverCache {
+	
     override fun getClassResolvedFromSource(fqName: FqName): ClassDescriptor? {
         return trace[BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, fqName.toUnsafe()] ?: findInPackageFragments(fqName)
     }

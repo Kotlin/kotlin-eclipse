@@ -30,6 +30,7 @@ import org.eclipse.jface.text.contentassist.*
 import org.eclipse.jface.text.templates.TemplateContext
 import org.eclipse.jface.text.templates.TemplateProposal
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.eclipse.ui.utils.CompletionElementType
 import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
 import org.jetbrains.kotlin.idea.util.CallTypeAndReceiver
 import org.jetbrains.kotlin.name.Name
@@ -224,9 +225,10 @@ abstract class KotlinCompletionProcessor(
                         null,
                         completion,
                         part
-                    )
+                    ,
+            					CompletionElementType.from(descriptor))
 
-                    withKotlinInsertHandler(descriptor, proposal)
+            withKotlinInsertHandler(descriptor, proposal)
                 }
                 is KotlinBasicCompletionProposal.Proposal -> basicDescriptor.proposal
             }
@@ -317,14 +319,15 @@ abstract class KotlinCompletionProcessor(
 
 private object KotlinCompletionSorter : ICompletionProposalSorter {
     override fun compare(p1: ICompletionProposal, p2: ICompletionProposal): Int {
-        val relevance2 = p2.relevance()
-        val relevance1 = p1.relevance()
 
-        return when {
+		// simple and lazy hashing to make relevance more accurate.
+        val relevance2 = ((p2.relevance() * p2.typeRelevance()) + (p2.typeRelevance() / 2))
+        val relevance1 = ((p1.relevance() * p1.typeRelevance()) + (p1.typeRelevance() / 2))
+		return when {
             relevance2 > relevance1 -> 1
             relevance2 < relevance1 -> -1
-            else -> p1.sortString().compareTo(p2.sortString(), ignoreCase = true)
-        }
+			else -> p1.sortString().compareTo(p2.sortString(), ignoreCase = true)
+		}
     }
 
     private fun ICompletionProposal.sortString(): String {
@@ -334,4 +337,14 @@ private object KotlinCompletionSorter : ICompletionProposalSorter {
     private fun ICompletionProposal.relevance(): Int {
         return if (this is KotlinCompletionProposal) this.getRelevance() else 0
     }
+
+	private fun ICompletionProposal.typeRelevance(): Int {
+		return when(this) {
+			is KotlinKeywordCompletionProposal -> 0
+			is KotlinImportTypeCompletionProposal -> 1
+			is TemplateProposal -> 2
+			is KotlinCompletionProposal -> 3 + type.ordinal
+			else -> 4
+		}
+	}
 }
