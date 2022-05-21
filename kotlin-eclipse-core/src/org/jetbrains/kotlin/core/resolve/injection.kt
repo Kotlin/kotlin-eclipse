@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator
 import org.jetbrains.kotlin.frontend.di.configureModule
+import org.jetbrains.kotlin.incremental.InlineConstTrackerImpl
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.load.java.InternalFlexibleTypeTransformer
 import org.jetbrains.kotlin.load.java.JavaClassesTracker
@@ -104,6 +105,7 @@ fun createContainerForLazyResolveWithJava(
     useImpl<EclipseJavaClassFinder>()
     useImpl<EclipseTraceBasedJavaResolverCache>()
     useImpl<EclipseJavaSourceElementFactory>()
+    useImpl<InlineConstTrackerImpl>()
 
     useInstance(SyntheticJavaPartsProvider.EMPTY)
     useInstance(packagePartProvider)
