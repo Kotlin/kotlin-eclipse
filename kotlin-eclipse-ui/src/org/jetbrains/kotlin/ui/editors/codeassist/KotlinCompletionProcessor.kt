@@ -49,14 +49,7 @@ sealed class KotlinBasicCompletionProposal {
     class Proposal(val proposal: KotlinCompletionProposal, override val descriptor: DeclarationDescriptor) :
         KotlinBasicCompletionProposal()
 
-    class Descriptor(override val descriptor: DeclarationDescriptor, val type: DescriptorType) : KotlinBasicCompletionProposal()
-}
-
-enum class DescriptorType {
-    OTHER,
-    TOP_LEVEL,
-    MEMBER_EXTENSION,
-    MEMBER
+    class Descriptor(override val descriptor: DeclarationDescriptor) : KotlinBasicCompletionProposal()
 }
 
 abstract class KotlinCompletionProcessor(
@@ -230,8 +223,7 @@ abstract class KotlinCompletionProcessor(
                         containmentPresentableString,
                         null,
                         completion,
-                        part,
-                        basicDescriptor.type
+                        part
                     )
 
                     withKotlinInsertHandler(descriptor, proposal)
@@ -340,6 +332,6 @@ private object KotlinCompletionSorter : ICompletionProposalSorter {
     }
 
     private fun ICompletionProposal.relevance(): Int {
-        return if (this is KotlinRelevanceCompletionProposal) this.getRelevance() else 0
+        return if (this is KotlinCompletionProposal) this.getRelevance() else 0
     }
 }
