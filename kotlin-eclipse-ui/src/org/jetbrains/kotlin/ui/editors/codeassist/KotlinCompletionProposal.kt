@@ -115,7 +115,12 @@ interface KotlinRelevanceCompletionProposal {
     fun getRelevance(): Int
 }
 
-open class KotlinCompletionProposal(
+interface KotlinTypedCompletionProposal {
+
+    val type: CompletionElementType
+}
+
+open class KotlinCompletionProposal constructor(
     val replacementString: String,
     private val img: Image?,
     private val presentableString: String,
@@ -123,16 +128,12 @@ open class KotlinCompletionProposal(
     private val information: IContextInformation? = null,
     private val additionalInfo: String? = null,
     @Volatile private var identifierPart: String,
-    private val type: DescriptorType? = null
-) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6, KotlinRelevanceCompletionProposal {
+    override val type: CompletionElementType = CompletionElementType.UNKNOWN
+) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6, KotlinTypedCompletionProposal, KotlinRelevanceCompletionProposal {
 
     private var selectedOffset = -1
-
     override fun getRelevance(): Int {
-        //Case Matching takes precedence always. So multiply it with a high number.
-        val tempCaseMatchingRelevance = computeCaseMatchingRelevance(identifierPart.toCharArray(), replacementString.toCharArray()) * 10000
-        //If available we then sort by type, but only after sorting by case matching. So multiply it with a lower number.
-        return type?.let { tempCaseMatchingRelevance + (it.ordinal * 1000) } ?: tempCaseMatchingRelevance
+        return computeCaseMatchingRelevance(identifierPart.toCharArray(), replacementString.toCharArray())
     }
 
     override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
