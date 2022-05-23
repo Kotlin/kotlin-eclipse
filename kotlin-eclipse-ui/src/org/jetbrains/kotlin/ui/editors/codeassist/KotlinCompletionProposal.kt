@@ -34,7 +34,6 @@ import org.jetbrains.kotlin.builtins.isFunctionType
 import org.jetbrains.kotlin.core.imports.FunctionCandidate
 import org.jetbrains.kotlin.core.imports.TypeCandidate
 import org.jetbrains.kotlin.descriptors.*
-import org.jetbrains.kotlin.eclipse.ui.utils.CompletionElementType
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.renderer.DescriptorRenderer
@@ -112,6 +111,15 @@ fun getIdentifierInfo(document: IDocument, offset: Int): IdentifierInfo {
 
 data class IdentifierInfo(val identifierPart: String, val identifierStart: Int)
 
+interface KotlinRelevanceCompletionProposal {
+    fun getRelevance(): Int
+}
+
+interface KotlinTypedCompletionProposal {
+
+    val type: CompletionElementType
+}
+
 open class KotlinCompletionProposal constructor(
     val replacementString: String,
     private val img: Image?,
@@ -119,12 +127,12 @@ open class KotlinCompletionProposal constructor(
     private val containmentPresentableString: String? = null,
     private val information: IContextInformation? = null,
     private val additionalInfo: String? = null,
-    @Volatile private var identifierPart: String
-,
-		val type: CompletionElementType = CompletionElementType.UNKNOWN) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
+    @Volatile private var identifierPart: String,
+    override val type: CompletionElementType = CompletionElementType.UNKNOWN
+) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6, KotlinTypedCompletionProposal, KotlinRelevanceCompletionProposal {
 
     private var selectedOffset = -1
-    open fun getRelevance(): Int {
+    override fun getRelevance(): Int {
         return computeCaseMatchingRelevance(identifierPart.toCharArray(), replacementString.toCharArray())
     }
 
