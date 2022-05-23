@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.getDataFlowInfoBefore
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationResolver
+import org.jetbrains.kotlin.resolve.descriptorUtil.classValueType
 import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.scopes.*
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CALLABLES
@@ -43,8 +44,8 @@ import org.jetbrains.kotlin.resolve.source.getPsi
 import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.expressions.DoubleColonLHS
+import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
 import org.jetbrains.kotlin.types.typeUtil.isUnit
-import org.jetbrains.kotlin.ui.editors.codeassist.DescriptorType
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinBasicCompletionProposal
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinImportCallableCompletionProposal
 import org.jetbrains.kotlin.ui.refactorings.extract.parentsWithSelf
@@ -174,7 +175,7 @@ class KotlinReferenceVariantsHelper(
                     .mapNotNull { (it.constructor.declarationDescriptor as? ClassDescriptor)?.staticScope }
                     .flatMapTo(descriptors) { scope ->
                         scope.collectStaticMembers(resolutionFacade, kindFilter, nameFilter)
-                            .map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.OTHER) }
+                            .map { KotlinBasicCompletionProposal.Descriptor(it) }
                     }
             }
         } else {
@@ -206,12 +207,12 @@ class KotlinReferenceVariantsHelper(
         when (callTypeAndReceiver) {
             is CallTypeAndReceiver.IMPORT_DIRECTIVE -> {
                 return getVariantsForImportOrPackageDirective(callTypeAndReceiver.receiver, kindFilter, nameFilter)
-                    .map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.OTHER) }
+                    .map { KotlinBasicCompletionProposal.Descriptor(it) }
             }
 
             is CallTypeAndReceiver.PACKAGE_DIRECTIVE -> {
                 return getVariantsForImportOrPackageDirective(callTypeAndReceiver.receiver, kindFilter, nameFilter)
-                    .map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.OTHER) }
+                    .map { KotlinBasicCompletionProposal.Descriptor(it) }
             }
 
             is CallTypeAndReceiver.TYPE -> {
@@ -220,7 +221,7 @@ class KotlinReferenceVariantsHelper(
                     simpleNameExpression,
                     kindFilter,
                     nameFilter
-                ).map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.OTHER) }
+                ).map { KotlinBasicCompletionProposal.Descriptor(it) }
             }
 
             is CallTypeAndReceiver.ANNOTATION -> {
@@ -229,7 +230,7 @@ class KotlinReferenceVariantsHelper(
                     simpleNameExpression,
                     kindFilter,
                     nameFilter
-                ).map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.OTHER) }
+                ).map { KotlinBasicCompletionProposal.Descriptor(it) }
             }
 
             is CallTypeAndReceiver.CALLABLE_REFERENCE -> {
@@ -283,7 +284,7 @@ class KotlinReferenceVariantsHelper(
                         resolutionFacade,
                         filterWithoutExtensions,
                         nameFilter
-                    ).map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.OTHER) }
+                    ).map { KotlinBasicCompletionProposal.Descriptor(it) }
                 )
             }
 
@@ -328,7 +329,7 @@ class KotlinReferenceVariantsHelper(
                     filterWithoutExtensions,
                     nameFilter,
                     changeNamesForAliased = true
-                ).map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.OTHER) }
+                ).map { KotlinBasicCompletionProposal.Descriptor(it) }
             )
         }
 
@@ -336,7 +337,7 @@ class KotlinReferenceVariantsHelper(
             return descriptors.filterIsInstance<KotlinBasicCompletionProposal.Descriptor>()
                 .flatMapTo(LinkedHashSet<KotlinBasicCompletionProposal>()) { descriptor ->
                     if (descriptor.descriptor is CallableMemberDescriptor && descriptor.descriptor.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
-                        descriptor.descriptor.overriddenDescriptors.map { KotlinBasicCompletionProposal.Descriptor(it, descriptor.type) }
+                        descriptor.descriptor.overriddenDescriptors.map { KotlinBasicCompletionProposal.Descriptor(it) }
                     } else {
                         listOf(descriptor)
                     }
@@ -475,9 +476,19 @@ class KotlinReferenceVariantsHelper(
                 .filterIsInstance<CallableDescriptor>()
                 .filter { callDesc ->
                     val tempFuzzy = callDesc.fuzzyExtensionReceiverType()
-                    (allowNoReceiver && tempFuzzy == null) || (tempFuzzy != null && receiverTypes.any { receiverType ->
+                    //We need all where the receiver matches.
+                    val anyReceiverMatch = tempFuzzy != null && receiverTypes.any { receiverType ->
                         tempFuzzy.checkIsSuperTypeOf(receiverType) != null
-                    })
+                    }
+                    //Or all, where we have no receiver, it's ok to have no receiver and the containing class of the callable Descriptor is not in the list of receivers, as this would give us the same completion twice.
+                    val isTopLevelOrObjectCallable = callDesc.isTopLevelInPackage() || (callDesc.containingDeclaration as? ClassDescriptor)?.let { containing ->
+                        val tempContainingKotlinType = containing.classValueType
+                        val tempIsObject = containing.kind == ClassKind.OBJECT
+                        val tempContainingIsReceiver =  tempContainingKotlinType != null && receiverTypes.any { receiver -> receiver.isSubtypeOf(tempContainingKotlinType) }
+                        tempIsObject && !tempContainingIsReceiver
+                    } == true
+                    val noReceiverMatches = allowNoReceiver && tempFuzzy == null && isTopLevelOrObjectCallable
+                    noReceiverMatches || anyReceiverMatch
                 }
                 .filter { callDesc ->
                     callDesc.importableFqName?.asString() !in importsSet &&
@@ -515,7 +526,7 @@ class KotlinReferenceVariantsHelper(
         for (dispatchReceiverType in dispatchReceiverTypes) {
             for (member in dispatchReceiverType.memberScope.getDescriptorsFiltered(memberFilter, nameFilter)) {
                 addAll((member as CallableDescriptor).substituteExtensionIfCallable(extensionReceiverTypes, callType)
-                    .map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.MEMBER_EXTENSION) })
+                    .map { KotlinBasicCompletionProposal.Descriptor(it) })
             }
         }
     }
@@ -562,10 +573,10 @@ class KotlinReferenceVariantsHelper(
             if (descriptor is ClassDescriptor) {
                 if (descriptor.modality == Modality.ABSTRACT || descriptor.modality == Modality.SEALED) continue
                 if (!constructorFilter(descriptor)) continue
-                descriptor.constructors.map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.MEMBER) }
+                descriptor.constructors.map { KotlinBasicCompletionProposal.Descriptor(it) }
                     .filterTo(this) { kindFilter.accepts(it.descriptor) }
             } else if (!classesOnly && kindFilter.accepts(descriptor)) {
-                this.add(KotlinBasicCompletionProposal.Descriptor(descriptor, DescriptorType.MEMBER))
+                this.add(KotlinBasicCompletionProposal.Descriptor(descriptor))
             }
         }
     }
@@ -585,9 +596,9 @@ class KotlinReferenceVariantsHelper(
                 if (extensionOrSyntheticMember.isExtension) {
                     addAll(
                         extensionOrSyntheticMember.substituteExtensionIfCallable(receiverTypes, callType)
-                            .map { KotlinBasicCompletionProposal.Descriptor(it, DescriptorType.MEMBER_EXTENSION) })
+                            .map { KotlinBasicCompletionProposal.Descriptor(it) })
                 } else {
-                    add(KotlinBasicCompletionProposal.Descriptor(extensionOrSyntheticMember, DescriptorType.TOP_LEVEL))
+                    add(KotlinBasicCompletionProposal.Descriptor(extensionOrSyntheticMember))
                 }
             }
         }
