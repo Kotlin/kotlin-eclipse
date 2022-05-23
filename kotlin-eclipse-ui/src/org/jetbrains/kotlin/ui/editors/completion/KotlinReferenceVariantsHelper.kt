@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.ImportedFromObjectCallableDescriptor
 import org.jetbrains.kotlin.resolve.bindingContextUtil.getDataFlowInfoBefore
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationResolver
@@ -344,7 +345,7 @@ class KotlinReferenceVariantsHelper(
                 }
         }
 
-        return descriptors.distinctBy { it.descriptor }
+        return descriptors.distinctBy { (it.descriptor as? ImportedFromObjectCallableDescriptor<*>)?.callableFromObject ?: it.descriptor }
     }
 
     private fun MutableSet<KotlinBasicCompletionProposal>.processAll(
