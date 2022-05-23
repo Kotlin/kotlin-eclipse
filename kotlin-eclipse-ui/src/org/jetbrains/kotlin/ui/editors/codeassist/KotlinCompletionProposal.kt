@@ -111,20 +111,28 @@ fun getIdentifierInfo(document: IDocument, offset: Int): IdentifierInfo {
 
 data class IdentifierInfo(val identifierPart: String, val identifierStart: Int)
 
-open class KotlinCompletionProposal constructor(
+interface KotlinRelevanceCompletionProposal {
+    fun getRelevance(): Int
+}
+
+open class KotlinCompletionProposal(
     val replacementString: String,
     private val img: Image?,
     private val presentableString: String,
     private val containmentPresentableString: String? = null,
     private val information: IContextInformation? = null,
     private val additionalInfo: String? = null,
-    @Volatile private var identifierPart: String
-) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6 {
+    @Volatile private var identifierPart: String,
+    private val type: DescriptorType? = null
+) : ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension6, KotlinRelevanceCompletionProposal {
 
     private var selectedOffset = -1
 
-    open fun getRelevance(): Int {
-        return computeCaseMatchingRelevance(identifierPart.toCharArray(), replacementString.toCharArray())
+    override fun getRelevance(): Int {
+        //Case Matching takes precedence always. So multiply it with a high number.
+        val tempCaseMatchingRelevance = computeCaseMatchingRelevance(identifierPart.toCharArray(), replacementString.toCharArray()) * 10000
+        //If available we then sort by type, but only after sorting by case matching. So multiply it with a lower number.
+        return type?.let { tempCaseMatchingRelevance + (it.ordinal * 1000) } ?: tempCaseMatchingRelevance
     }
 
     override fun apply(viewer: ITextViewer, trigger: Char, stateMask: Int, offset: Int) {
