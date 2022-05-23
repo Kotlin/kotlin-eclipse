@@ -33,7 +33,8 @@ class KotlinFunctionCompletionProposal(
     private val caretPosition: CaretPosition,
     private val hasLambda: Boolean,
     private val lambdaParamNames: String = ""
-) : ICompletionProposal by proposal, ICompletionProposalExtension2 by proposal, ICompletionProposalExtension6 by proposal {
+) : ICompletionProposal by proposal, ICompletionProposalExtension2 by proposal,
+    ICompletionProposalExtension6 by proposal, KotlinRelevanceCompletionProposal by proposal {
 
     init {
         if (caretPosition == CaretPosition.AFTER_BRACKETS && hasLambda) {
