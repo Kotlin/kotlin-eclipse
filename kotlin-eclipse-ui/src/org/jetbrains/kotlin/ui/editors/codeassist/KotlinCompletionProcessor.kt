@@ -223,9 +223,9 @@ abstract class KotlinCompletionProcessor(
                         containmentPresentableString,
                         null,
                         completion,
-                        part
+                        part,
+                        CompletionElementType.from(descriptor)
                     )
-
                     withKotlinInsertHandler(descriptor, proposal)
                 }
                 is KotlinBasicCompletionProposal.Proposal -> basicDescriptor.proposal
@@ -317,9 +317,10 @@ abstract class KotlinCompletionProcessor(
 
 private object KotlinCompletionSorter : ICompletionProposalSorter {
     override fun compare(p1: ICompletionProposal, p2: ICompletionProposal): Int {
-        val relevance2 = p2.relevance()
-        val relevance1 = p1.relevance()
 
+        // simple and lazy hashing to make relevance more accurate.
+        val relevance2 = ((p2.relevance() * p2.typeRelevance()) + (p2.typeRelevance() / 2))
+        val relevance1 = ((p1.relevance() * p1.typeRelevance()) + (p1.typeRelevance() / 2))
         return when {
             relevance2 > relevance1 -> 1
             relevance2 < relevance1 -> -1
@@ -327,11 +328,18 @@ private object KotlinCompletionSorter : ICompletionProposalSorter {
         }
     }
 
-    private fun ICompletionProposal.sortString(): String {
-        return if (this is KotlinCompletionProposal) this.replacementString else this.displayString
-    }
+    private fun ICompletionProposal.sortString(): String =
+        if (this is KotlinCompletionProposal) replacementString else displayString
 
-    private fun ICompletionProposal.relevance(): Int {
-        return if (this is KotlinCompletionProposal) this.getRelevance() else 0
+    private fun ICompletionProposal.relevance(): Int = (this as? KotlinRelevanceCompletionProposal)?.getRelevance() ?: 0
+
+    private fun ICompletionProposal.typeRelevance(): Int {
+        return when (this) {
+            is KotlinKeywordCompletionProposal -> 0
+            is KotlinImportTypeCompletionProposal -> 1
+            is TemplateProposal -> 2
+            is KotlinTypedCompletionProposal -> 3 + type.ordinal
+            else -> 4
+        }
     }
 }
