@@ -31,6 +31,7 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.bindingContextUtil.getDataFlowInfoBefore
 import org.jetbrains.kotlin.resolve.calls.smartcasts.SmartCastManager
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationResolver
+import org.jetbrains.kotlin.resolve.descriptorUtil.classValueType
 import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.scopes.*
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter.Companion.CALLABLES
@@ -43,6 +44,7 @@ import org.jetbrains.kotlin.resolve.source.getPsi
 import org.jetbrains.kotlin.synthetic.SyntheticJavaPropertyDescriptor
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.expressions.DoubleColonLHS
+import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
 import org.jetbrains.kotlin.types.typeUtil.isUnit
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinBasicCompletionProposal
 import org.jetbrains.kotlin.ui.editors.codeassist.KotlinImportCallableCompletionProposal
@@ -474,9 +476,19 @@ class KotlinReferenceVariantsHelper(
                 .filterIsInstance<CallableDescriptor>()
                 .filter { callDesc ->
                     val tempFuzzy = callDesc.fuzzyExtensionReceiverType()
-                    (allowNoReceiver && tempFuzzy == null) || (tempFuzzy != null && receiverTypes.any { receiverType ->
+                    //We need all where the receiver matches.
+                    val anyReceiverMatch = tempFuzzy != null && receiverTypes.any { receiverType ->
                         tempFuzzy.checkIsSuperTypeOf(receiverType) != null
-                    })
+                    }
+                    //Or all, where we have no receiver, it's ok to have no receiver and the containing class of the callable Descriptor is not in the list of receivers, as this would give us the same completion twice.
+                    val isTopLevelOrObjectCallable = callDesc.isTopLevelInPackage() || (callDesc.containingDeclaration as? ClassDescriptor)?.let { containing ->
+                        val tempContainingKotlinType = containing.classValueType
+                        val tempIsObject = containing.kind == ClassKind.OBJECT
+                        val tempContainingIsReceiver =  tempContainingKotlinType != null && receiverTypes.any { receiver -> receiver.isSubtypeOf(tempContainingKotlinType) }
+                        tempIsObject && !tempContainingIsReceiver
+                    } == true
+                    val noReceiverMatches = allowNoReceiver && tempFuzzy == null && isTopLevelOrObjectCallable
+                    noReceiverMatches || anyReceiverMatch
                 }
                 .filter { callDesc ->
                     callDesc.importableFqName?.asString() !in importsSet &&
