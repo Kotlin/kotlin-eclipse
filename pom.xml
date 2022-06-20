@@ -30,7 +30,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/48/dev/update</ajdt-eclipse-repo.url>
-		<mylyn-eclipse-repo.url>http://download.eclipse.org/mylyn/releases/3.25</mylyn-eclipse-repo.url>
 		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
 
 		<kotlin.version>1.5.31</kotlin.version>
@@ -45,11 +44,6 @@
 		<repository>
 			<id>eclipse</id>
 			<url>${eclipse-repo.url}</url>
-			<layout>p2</layout>
-		</repository>
-		<repository>
-			<id>mylyn</id>
-			<url>${mylyn-eclipse-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
 		<repository>
@@ -223,7 +217,7 @@
 						<baselineReplace>none</baselineReplace>
 						<baselineRepositories>
 							<repository>
-								<url>https://download.eclipse.org/eclipse/updates/4.24-I-builds</url>
+								<url>https://download.eclipse.org/eclipse/updates/4.24</url>
 							</repository>
 						</baselineRepositories>
 					</configuration>

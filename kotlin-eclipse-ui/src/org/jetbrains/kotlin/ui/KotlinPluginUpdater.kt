@@ -26,13 +26,13 @@ import org.eclipse.jface.dialogs.MessageDialog
 import org.eclipse.swt.widgets.Display
 import org.eclipse.equinox.p2.operations.ProfileModificationJob
 import org.eclipse.equinox.p2.operations.ProvisioningJob
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Label
 import org.eclipse.swt.SWT
 import org.eclipse.swt.layout.GridData
 import org.eclipse.swt.widgets.Link
+import org.eclipse.swt.widgets.Shell
 import org.eclipse.swt.events.SelectionAdapter
 import org.eclipse.swt.events.SelectionEvent
 import org.eclipse.equinox.p2.operations.UpdateOperation
@@ -147,8 +147,8 @@ public object KotlinPluginUpdater {
         val result = updateOperation.resolveModal(monitor)
         if (result.isOK) {
             Display.getDefault().asyncExec { 
-                val updateNotification = UpdatePluginNotification(updateOperation, monitor, Display.getDefault())
-                updateNotification.open()
+                MessageDialog.openInformation(Shell(Display.getDefault()), "Kotlin Plugin",
+                    "A new version " + updateOperation.getProfileChangeRequest().getAdditions().first().getVersion() + " of the Kotlin plugin is available.")
             }
         }
         
@@ -218,44 +218,6 @@ public object KotlinPluginUpdater {
         fun retryToUpdate(): Boolean {
             return isActive && checkTimeIsUp(lastRetryTime, retryDelay)
         }
-    }
-}
-
-private class UpdatePluginNotification(
-        val updateOperation: UpdateOperation,
-        val monitor: IProgressMonitor,
-        val display: Display) : AbstractNotificationPopup(display) {
-    init {
-        setDelayClose(0) // Don't close popup automatically
-    }
-    
-    override fun createContentArea(parent: Composite) {
-        parent.setLayout(GridLayout(1, true))
-        
-        val textLabel = Label(parent, SWT.LEFT)
-        val installbleUnit = getInstallableUnit()
-        textLabel.setText("A new version ${installbleUnit.version} of the Kotlin plugin is available.")
-        textLabel.setLayoutData(gridData())
-        
-        val updateLink = Link(parent, SWT.RIGHT)
-        updateLink.setText("<a>Update Plugin</a>")
-        updateLink.setLayoutData(gridData(verticalAlignment = SWT.BOTTOM, grabExcessVerticalSpace = true))
-        
-        updateLink.addSelectionListener(object : SelectionAdapter() {
-            override fun widgetSelected(e: SelectionEvent) {
-                val job = updateOperation.getProvisioningJob(monitor)
-                job.addJobChangeListener(RestartJobAdapter(display))
-                job.schedule()
-                
-                this@UpdatePluginNotification.close()
-            }
-        })
-    }
-
-    override fun getPopupShellTitle(): String = "Kotlin Plugin"
-    
-    private fun getInstallableUnit(): IInstallableUnit {
-        return updateOperation.getProfileChangeRequest().getAdditions().first()
     }
 }
 
