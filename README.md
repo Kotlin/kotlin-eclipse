@@ -1,12 +1,13 @@
 Enhanced Kotlin for Eclipse
 ==============
 
-This plugin based on [JetBrains Kotlin plugin](https://github.com/JetBrains/kotlin-eclipse) and contains small enhancements. These enhancements mostly related to adaptations for latest versions ov Java, Eclipse and so on.
+This plugin based on [JetBrains Kotlin plugin](https://github.com/JetBrains/kotlin-eclipse) and contains small enhancements. These enhancements mostly related to adaptations for latest versions of Java, Eclipse and so on.
 
 Update sites description
 
 Update-site URL | Description
 ----------------|------------
+https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2022-06/ | Last version Kotlin for Eclipse 2022-06
 https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2022-03/ | Last version Kotlin for Eclipse 2022-03
 https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2021-12/ | Last version Kotlin for Eclipse 2021-12
 https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/eclipse-releases/2021-09/ | Last version Kotlin for Eclipse 2021-09
