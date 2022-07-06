@@ -25,7 +25,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.core,
  org.eclipse.equinox.p2.metadata,
  org.eclipse.equinox.p2.engine,
- org.eclipse.mylyn.commons.ui,
  org.eclipse.equinox.p2.director,
  org.eclipse.core.variables
 Bundle-ActivationPolicy: lazy
@@ -59,7 +58,7 @@ Import-Package: com.google.common.collect,
  org.eclipse.ui.views.contentoutline,
  org.eclipse.ui.wizards.newresource,
  org.jetbrains.kotlin.idea.util
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.builder,

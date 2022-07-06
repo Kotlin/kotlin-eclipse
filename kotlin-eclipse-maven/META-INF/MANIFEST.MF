@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.m2e.maven.runtime,
  org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.bundled-compiler
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.core.resources,
  org.eclipse.jdt.core,
