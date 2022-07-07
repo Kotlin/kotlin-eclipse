@@ -1,19 +1,19 @@
 /*******************************************************************************
-* Copyright 2000-2016 JetBrains s.r.o.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*
-*******************************************************************************/
+ * Copyright 2000-2016 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ *******************************************************************************/
 package org.jetbrains.kotlin.core.resolve
 
 import com.intellij.openapi.vfs.VirtualFile
@@ -25,22 +25,23 @@ import org.jetbrains.kotlin.metadata.jvm.deserialization.ModuleMapping
 import org.jetbrains.kotlin.metadata.jvm.deserialization.PackageParts
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.resolve.CompilerDeserializationConfiguration
-import org.jetbrains.kotlin.utils.SmartList
 import org.jetbrains.kotlin.serialization.deserialization.ClassData
+import org.jetbrains.kotlin.utils.SmartList
 import java.io.EOFException
+import java.io.FileNotFoundException
 
 public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvironment) : PackagePartProvider {
     private data class ModuleMappingInfo(val root: VirtualFile, val mapping: ModuleMapping, val name: String)
-    
+
     private val notLoadedRoots by lazy(LazyThreadSafetyMode.NONE) {
-            environment.getRoots()
-            .map { it.file }
-            .filter { it.findChild("META-INF") != null }
-            .toMutableList()
+        environment.getRoots()
+                .map { it.file }
+                .filter { it.findChild("META-INF") != null }
+                .toMutableList()
     }
-    
+
     private val loadedModules: MutableList<ModuleMappingInfo> = SmartList()
-    
+
     private val deserializationConfiguration = CompilerDeserializationConfiguration(LanguageVersionSettingsImpl.DEFAULT)
 
     override fun getAnnotationsOnBinaryModule(moduleName: String): List<ClassId> =
@@ -93,8 +94,7 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
 
         val relevantRoots = notLoadedRoots.filter {
             //filter all roots by package path existing
-            pathParts.fold(it) {
-                parent, part ->
+            pathParts.fold(it) { parent, part ->
                 if (part.isEmpty()) parent
                 else parent.findChild(part) ?: return@filter false
             }
@@ -115,10 +115,12 @@ public class KotlinPackagePartProvider(private val environment: KotlinCommonEnvi
                     ) {
                         KotlinLogger.logWarning("Incompatible version for '$moduleFile': $it")
                     }
-                }
-                catch (e: EOFException) {
+                } catch (e: EOFException) {
                     throw RuntimeException("Error on reading package parts for '$packageFqName' package in '$moduleFile', " +
-                                           "roots: $notLoadedRoots", e)
+                            "roots: $notLoadedRoots", e)
+                } catch (e: FileNotFoundException) {
+                    notLoadedRoots.add(root)
+                    continue
                 }
                 loadedModules.add(ModuleMappingInfo(root, mapping, moduleFile.nameWithoutExtension))
             }

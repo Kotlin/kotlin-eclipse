@@ -2,7 +2,6 @@ import com.intellij.buildsupport.dependencies.PackageListFromSimpleFile
 import com.intellij.buildsupport.resolve.http.HttpArtifact
 import com.intellij.buildsupport.resolve.http.HttpArtifactsResolver
 import com.intellij.buildsupport.resolve.http.idea.IntellijIdeaArtifactsResolver
-import com.intellij.buildsupport.resolve.tc.kotlin.KotlinCompilerTCArtifactsResolver
 import com.intellij.buildsupport.utils.FileUtils
 
 apply(plugin = "base")
@@ -78,6 +77,12 @@ tasks.named<Delete>("clean") {
     }
 }
 
+val deleteLibrariesFromLibFolder by tasks.registering {
+    doFirst {
+        libDir.listFiles()?.filter { it.isFile }?.forEach { it.deleteRecursively() }
+    }
+}
+
 val downloadTestData by tasks.registering {
     val locallyDownloadedTestDataFile by extra {
         if(localTCArtifacts){
@@ -106,9 +111,12 @@ val downloadTestFrameworkDependencies by tasks.registering(Copy::class) {
 }
 
 val downloadKotlinCompilerPluginAndExtractSelectedJars by tasks.registering {
+    dependsOn(deleteLibrariesFromLibFolder)
+
+    val kotlinDownloadDir = file("$downloadDir/kotlin-$kotlinCompilerVersion/$kotlinIdeaCompatibleVersionMinor")
     val locallyDownloadedCompilerFile by extra {
-        file(downloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
-                ?: file("$downloadDir/kotlin-plugin.zip")
+        file(kotlinDownloadDir).listFiles()?.firstOrNull { it.name.startsWith("kotlin-plugin-") }
+                ?: file("$kotlinDownloadDir/kotlin-plugin.zip")
     }
 
     doLast {
@@ -172,7 +180,9 @@ val extractPackagesFromPlugin by tasks.registering(Jar::class) {
 }
 
 val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
-    val locallyDownloadedIntellijCoreFile by extra { file("$downloadDir/intellij-core.zip") }
+    dependsOn(deleteLibrariesFromLibFolder)
+    val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
+    val locallyDownloadedIntellijCoreFile by extra { file("$ideaDownloadDir/intellij-core.zip") }
 
     doLast {
         if(!locallyDownloadedIntellijCoreFile.exists()) {
@@ -191,7 +201,9 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 }
 
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
-    val locallyDownloadedIdeaZipFile by extra { file("$downloadDir/ideaIC.zip") }
+    dependsOn(deleteLibrariesFromLibFolder)
+    val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
+    val locallyDownloadedIdeaZipFile by extra { file("$ideaDownloadDir/ideaIC.zip") }
     val chosenJars by extra { setOf(//"openapi",
             "platform-util-ui",
             "util",
@@ -301,14 +313,12 @@ val repackageIdeaAndKotlinCompilerSources by tasks.registering(Zip::class) {
 
 val downloadBundled by tasks.registering {
     if (localTCArtifacts) {
-        dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars,
-                extractPackagesFromPlugin,
+        dependsOn(extractPackagesFromPlugin,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)
     } else {
-        dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars,
-                extractPackagesFromPlugin,
+        dependsOn(extractPackagesFromPlugin,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)

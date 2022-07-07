@@ -17,9 +17,10 @@
 package org.jetbrains.kotlin.core.resolve
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.search.GlobalSearchScope
+import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.builtins.jvm.JvmBuiltIns
 import org.jetbrains.kotlin.builtins.jvm.JvmBuiltInsPackageFragmentProvider
@@ -35,6 +36,7 @@ import org.jetbrains.kotlin.context.MutableModuleContext
 import org.jetbrains.kotlin.context.ProjectContext
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.model.EclipseScriptDefinitionProvider
 import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
@@ -44,16 +46,20 @@ import org.jetbrains.kotlin.core.utils.asResource
 import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
 import org.jetbrains.kotlin.descriptors.impl.CompositePackageFragmentProvider
 import org.jetbrains.kotlin.frontend.java.di.initJvmBuiltInsForTopDownAnalysis
-import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtPsiFactory
 import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver
 import org.jetbrains.kotlin.resolve.jvm.extensions.PackageFragmentProviderExtension
 import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformConfigurator
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
+import org.jetbrains.kotlin.resolve.lazy.data.KtClassLikeInfo
+import org.jetbrains.kotlin.resolve.lazy.data.KtScriptInfo
+import org.jetbrains.kotlin.resolve.lazy.declarations.AbstractPsiBasedDeclarationProvider
+import org.jetbrains.kotlin.resolve.lazy.declarations.ClassMemberDeclarationProvider
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
@@ -62,7 +68,6 @@ import org.jetbrains.kotlin.scripting.resolve.KtFileScriptSource
 import org.jetbrains.kotlin.scripting.resolve.refineScriptCompilationConfiguration
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.util.KotlinFrontEndException
-import kotlin.math.absoluteValue
 import kotlin.script.experimental.api.KotlinType
 import kotlin.script.experimental.api.valueOrNull
 import kotlin.script.experimental.util.PropertiesCollection
@@ -103,108 +108,120 @@ object EclipseAnalyzerFacadeForJVM {
         scriptFile: KtFile
     ): AnalysisResultWithProvider {
         //TODO actually take dependencies from script configuration!
-        val javaProject = environment.javaProject/*.apply {
-            /*tempClasspath += JavaRuntime.getDefaultVMInstall()
-                    ?.let { JavaRuntime.getLibraryLocations(it) }
-                    ?.map { JavaCore.newLibraryEntry(it.systemLibraryPath, null, null) }
-                    .orEmpty()*/
+        val javaProject = environment.javaProject
 
-            /*tempClasspath += (environment.dependencies
-                    ?.classpath.orEmpty() + environment.definitionClasspath)
-                    .map { JavaCore.newLibraryEntry(Path(it.absolutePath), null, null) }*/
+        val tempOrigClasspath = javaProject.rawClasspath
 
-            val tempClasspath = environment.getRoots().mapTo(hashSetOf()) {
-                val tempFile = it.file
-                if(it.type == JavaRoot.RootType.SOURCE) {
-                    JavaCore.newSourceEntry(Path(tempFile.path))
-                } else {
-                    JavaCore.newLibraryEntry(Path(tempFile.path), null, null)
-                }
-            }.toTypedArray()
+        try {
+            val tempSourceCode = KtFileScriptSource(scriptFile)
+            val tempContribution = EclipseScriptDefinitionProvider.getContribution(tempSourceCode)
 
-            setRawClasspath(tempClasspath, null)
-        }*/
+            val tempNewClasspath = tempContribution?.createClasspath(environment) ?: (tempOrigClasspath + environment.definitionClasspath.map {
+                JavaCore.newLibraryEntry(Path(it.absolutePath), null, null)
+            }).distinctBy { it.path }.toTypedArray()
 
-        val allFiles = LinkedHashSet<KtFile>().run {
-            add(scriptFile)
-            environment.dependencies?.sources?.toList()
-                .orEmpty()
-                .mapNotNull { it.asResource }
-                .mapNotNull { KotlinPsiManager.getKotlinParsedFile(it) }
-                .toCollection(this)
-        }
+            javaProject.setRawClasspath(tempNewClasspath, null)
 
-        ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).toCollection(allFiles)
+            val allFiles = LinkedHashSet<KtFile>().run {
+                add(scriptFile)
+                environment.dependencies?.sources?.toList()
+                    .orEmpty()
+                    .mapNotNull { it.asResource }
+                    .mapNotNull { KotlinPsiManager.getKotlinParsedFile(it) }
+                    .toCollection(this)
+            }
 
-        val tempRefinedConfig = environment.definition?.let {
-            refineScriptCompilationConfiguration(KtFileScriptSource(scriptFile), it, environment.project)
-        }?.valueOrNull()?.configuration
+            ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).toCollection(allFiles)
 
-        val tempDefaultImports =
-            tempRefinedConfig?.get(PropertiesCollection.Key("defaultImports", emptyList<String>())) ?: emptyList()
-        val tempImports = ArrayList(tempDefaultImports)
+            val tempRefinedConfig = environment.definition?.let {
+                refineScriptCompilationConfiguration(tempSourceCode, it, environment.project)
+            }?.valueOrNull()?.configuration
 
-        val analyzerService = object : PlatformDependentAnalyzerServices() {
 
-            override val defaultLowPriorityImports: List<ImportPath> = listOf(ImportPath.fromString("java.lang.*"))
+            val tempDefaultImports =
+                tempRefinedConfig?.get(PropertiesCollection.Key("defaultImports", emptyList<String>())) ?: emptyList()
+            val tempImports = ArrayList(tempDefaultImports)
 
-            override val platformConfigurator: PlatformConfigurator = JvmPlatformConfigurator
+            val analyzerService = object : PlatformDependentAnalyzerServices() {
 
-            override fun computePlatformSpecificDefaultImports(
-                storageManager: StorageManager,
-                result: MutableList<ImportPath>
-            ) {
-                result.add(ImportPath.fromString("kotlin.jvm.*"))
-                tempImports.map(ImportPath::fromString).toCollection(result)
+                override val defaultLowPriorityImports: List<ImportPath> = listOf(ImportPath.fromString("java.lang.*"))
 
-                fun addAllClassifiersFromScope(scope: MemberScope) {
-                    for (descriptor in scope.getContributedDescriptors(
-                        DescriptorKindFilter.CLASSIFIERS,
-                        MemberScope.ALL_NAME_FILTER
-                    )) {
-                        result.add(ImportPath(DescriptorUtils.getFqNameSafe(descriptor), false))
+                override val platformConfigurator: PlatformConfigurator = JvmPlatformConfigurator
+
+                override fun computePlatformSpecificDefaultImports(
+                    storageManager: StorageManager,
+                    result: MutableList<ImportPath>
+                ) {
+                    result.add(ImportPath.fromString("kotlin.jvm.*"))
+                    tempImports.map(ImportPath::fromString).toCollection(result)
+
+                    fun addAllClassifiersFromScope(scope: MemberScope) {
+                        for (descriptor in scope.getContributedDescriptors(
+                            DescriptorKindFilter.CLASSIFIERS,
+                            MemberScope.ALL_NAME_FILTER
+                        )) {
+                            result.add(ImportPath(DescriptorUtils.getFqNameSafe(descriptor), false))
+                        }
+                    }
+
+                    for (builtInPackage in JvmBuiltIns(
+                        storageManager,
+                        JvmBuiltIns.Kind.FROM_CLASS_LOADER
+                    ).builtInPackagesImportedByDefault) {
+                        addAllClassifiersFromScope(builtInPackage.memberScope)
                     }
                 }
+            }
 
-                for (builtInPackage in JvmBuiltIns(
-                    storageManager,
-                    JvmBuiltIns.Kind.FROM_CLASS_LOADER
-                ).builtInPackagesImportedByDefault) {
-                    addAllClassifiersFromScope(builtInPackage.memberScope)
+            val tempProperties =
+                tempRefinedConfig?.get(PropertiesCollection.Key("providedProperties", emptyMap<String, KotlinType>()))
+
+            val declarationProviderFactory: (StorageManager) -> DeclarationProviderFactory = { storageManager ->
+                object : FileBasedDeclarationProviderFactory(storageManager, allFiles) {
+
+                    private val factory = KtPsiFactory(environment.project, true)
+
+                    override fun getClassMemberDeclarationProvider(classLikeInfo: KtClassLikeInfo): ClassMemberDeclarationProvider {
+                        if (classLikeInfo is KtScriptInfo) {
+                            return object : AbstractPsiBasedDeclarationProvider(storageManager),
+                                ClassMemberDeclarationProvider {
+                                override val ownerInfo: KtClassLikeInfo = classLikeInfo
+
+                                override fun doCreateIndex(index: Index) {
+                                    val tempProvidedProperties = tempProperties?.entries?.map { (key, value) ->
+                                        val isNullable = tempContribution?.isNullable(key, tempRefinedConfig) ?: true
+                                        val tempTypeName = value.fromClass?.qualifiedName ?: value.typeName
+                                        val tempText =
+                                            """
+                                                /** Provided property '$key' of type: $tempTypeName */
+                                                val $key: $tempTypeName${'$'}${if (isNullable) "? = null" else " = TODO()"}""".trimIndent()
+                                        factory.createProperty(tempText)
+                                    } ?: emptyList()
+
+                                    val tempDeclarations = ownerInfo.declarations +
+                                            ownerInfo.primaryConstructorParameters +
+                                            tempProvidedProperties
+
+                                    tempDeclarations.forEach(index::putToIndex)
+                                }
+                            }
+                        }
+                        return super.getClassMemberDeclarationProvider(classLikeInfo)
+                    }
                 }
             }
+
+            return analyzeKotlin(
+                filesToAnalyze = listOf(scriptFile),
+                allFiles = allFiles,
+                environment = environment,
+                javaProject = javaProject,
+                analyzerService = analyzerService,
+                providerFactoryCreator = declarationProviderFactory
+            )
+        } finally {
+            javaProject.setRawClasspath(tempOrigClasspath, null)
         }
-
-        val tempProperties =
-            tempRefinedConfig?.get(PropertiesCollection.Key("providedProperties", emptyMap<String, KotlinType>()))
-
-        if (!tempProperties.isNullOrEmpty()) {
-            val tempPackageName = "scriptParameters${scriptFile.virtualFilePath.hashCode().absoluteValue}"
-            val tempContent =
-                "package $tempPackageName\n" + tempProperties.entries.joinToString(separator = "\n") { (key, value) ->
-                    """
-                        |@Deprecated(message = "Do not import this explicitly! Used only in eclipse as workaround for providedProperties in Scripts!", level = DeprecationLevel.WARNING)
-                        |val $key: ${value.typeName}? = null
-                    """.trimMargin("|")
-                }
-
-            tempImports.add("$tempPackageName.*")
-
-            val tempKtFile = PsiFileFactory.getInstance(environment.project)
-                .createFileFromText("scriptParameters.kt", KotlinLanguage.INSTANCE, tempContent) as? KtFile
-
-            if (tempKtFile != null) {
-                allFiles.add(tempKtFile)
-            }
-        }
-
-        return analyzeKotlin(
-            filesToAnalyze = listOf(scriptFile),
-            allFiles = allFiles,
-            environment = environment,
-            javaProject = javaProject,
-            analyzerService = analyzerService
-        )
     }
 
     private fun analyzeKotlin(
@@ -213,14 +230,18 @@ object EclipseAnalyzerFacadeForJVM {
         environment: KotlinCommonEnvironment,
         javaProject: IJavaProject?,
         jvmTarget: JvmTarget = JvmTarget.DEFAULT,
-        analyzerService: PlatformDependentAnalyzerServices? = null
+        analyzerService: PlatformDependentAnalyzerServices? = null,
+        providerFactoryCreator: (StorageManager) -> DeclarationProviderFactory = { storageManager ->
+            FileBasedDeclarationProviderFactory(storageManager, allFiles)
+        }
+
     ): AnalysisResultWithProvider {
         val project = environment.project
         val moduleContext = createModuleContext(project, environment.configuration, true)
         val storageManager = moduleContext.storageManager
         val module = moduleContext.module
 
-        val providerFactory = FileBasedDeclarationProviderFactory(moduleContext.storageManager, allFiles)
+        val providerFactory = providerFactoryCreator(storageManager)
         val trace = CliBindingTrace()
 
         val sourceScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(project, filesToAnalyze)

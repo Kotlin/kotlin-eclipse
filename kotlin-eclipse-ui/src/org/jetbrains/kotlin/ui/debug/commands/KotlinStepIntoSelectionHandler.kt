@@ -41,10 +41,10 @@ import org.eclipse.debug.core.model.IThread
 import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.eclipse.jdt.core.IType
 
-public class KotlinStepIntoSelectionHandler : AbstractHandler() {
+class KotlinStepIntoSelectionHandler : AbstractHandler() {
     override fun execute(event: ExecutionEvent): Any? {
         val editor = HandlerUtil.getActiveEditor(event) as KotlinFileEditor
-        val selection = editor.getEditorSite().getSelectionProvider().getSelection()
+        val selection = editor.editorSite.selectionProvider.selection
         if (selection is ITextSelection) {
             stepIntoSelection(editor, selection)
         }
@@ -55,23 +55,20 @@ public class KotlinStepIntoSelectionHandler : AbstractHandler() {
 
 private fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelection) {
     val frame = EvaluationContextManager.getEvaluationContext(editor)
-    if (frame == null || !frame.isSuspended()) return
+    if (frame == null || !frame.isSuspended) return
     
-    val psiElement = EditorUtil.getPsiElement(editor, selection.getOffset())
-    if (psiElement == null) return
-    
-    val expression = getReferenceExpression(psiElement)
-    if (expression == null) return
-    
-    val sourceElements = createReferences(expression).resolveToSourceElements()
+    val psiElement = EditorUtil.getPsiElement(editor, selection.offset) ?: return
+
+    val expression = getReferenceExpression(psiElement) ?: return
+
+    val sourceElements = createReferences(expression).resolveToSourceElements(expression.containingKtFile)
     val javaElements = sourceElementsToLightElements(sourceElements)
     if (javaElements.size > 1) {
         KotlinLogger.logWarning("There are more than one java element for $sourceElements")
         return
     }
 
-    val element = javaElements.first()
-    val method = when (element) {
+    val method = when (val element = javaElements.first()) {
         is IMethod -> element
         is IType -> element.getMethod(element.elementName, emptyArray())
         else -> null
@@ -81,8 +78,8 @@ private fun stepIntoSelection(editor: KotlinFileEditor, selection: ITextSelectio
 }
 
 private fun stepIntoElement(method: IMethod, frame: IJavaStackFrame, selection: ITextSelection, editor: KotlinFileEditor) {
-    if (selection.getStartLine() + 1 == frame.getLineNumber()) {
-        val handler = StepIntoSelectionHandler(frame.getThread() as IJavaThread, frame, method)
+    if (selection.startLine + 1 == frame.lineNumber) {
+        val handler = StepIntoSelectionHandler(frame.thread as IJavaThread, frame, method)
         handler.step()
     } else {
         val refMethod = StepIntoSelectionUtils::class.java.getDeclaredMethod(
@@ -92,7 +89,7 @@ private fun stepIntoElement(method: IMethod, frame: IJavaStackFrame, selection: 
                 ITextSelection::class.java,
                 IThread::class.java,
                 IMethod::class.java)
-        refMethod.setAccessible(true)
-        refMethod.invoke(null, editor, frame.getReceivingTypeName(), selection, frame.getThread(), method)
+        refMethod.isAccessible = true
+        refMethod.invoke(null, editor, frame.receivingTypeName, selection, frame.thread, method)
     }
 }

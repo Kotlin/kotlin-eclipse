@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000-2015 JetBrains s.r.o.
+ * Copyright 2000-2014 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *******************************************************************************/
-package org.jetbrains.kotlin.ui.refactorings.rename
+ */
+package org.jetbrains.kotlin.core.resolve.lang.java.structure
 
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.KtNamedDeclaration
-import org.jetbrains.kotlin.psi.KtReferenceExpression
+import org.eclipse.jdt.core.dom.ITypeBinding
+import org.jetbrains.kotlin.load.java.structure.JavaArrayType
+import org.jetbrains.kotlin.load.java.structure.JavaType
 
-fun getLengthOfIdentifier(jetElement: KtElement): Int? {
-    return when (jetElement) {
-        is KtNamedDeclaration -> jetElement.nameIdentifier!!.textLength
-        is KtReferenceExpression -> jetElement.getTextLength()
-        else -> null
-    }
+class EclipseJavaArrayType(typeBinding: ITypeBinding) : EclipseJavaType<ITypeBinding>(typeBinding), JavaArrayType {
+
+	override val componentType: JavaType get() = create(binding.componentType)
 }
