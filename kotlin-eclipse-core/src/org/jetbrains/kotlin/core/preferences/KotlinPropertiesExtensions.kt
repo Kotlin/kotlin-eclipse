@@ -2,7 +2,7 @@ package org.jetbrains.kotlin.core.preferences
 
 import org.jetbrains.kotlin.config.*
 
-private enum class CompilerFlagsMapping(val flag: String) : (List<String>) -> Pair<AnalysisFlag<*>, *>? {
+private enum class CompilerFlagsMapping(val flag: String, vararg val alternativeFlags: String) : (List<String>) -> Pair<AnalysisFlag<*>, *>? {
     JVM_DEFAULT("-Xjvm-default") {
         override fun invoke(value: List<String>): Pair<AnalysisFlag<JvmDefaultMode>, JvmDefaultMode>? {
             if (value.isEmpty()) return null
@@ -11,10 +11,10 @@ private enum class CompilerFlagsMapping(val flag: String) : (List<String>) -> Pa
                 ?.let { JvmAnalysisFlags.jvmDefaultMode to it }
         }
     },
-    OPT_IN("-Xopt-in") {
+    OPT_IN("-opt-in", "-Xopt-in") {
         override fun invoke(value: List<String>): Pair<AnalysisFlag<*>, *>? {
             if (value.isEmpty()) return null
-            return AnalysisFlags.useExperimental to value
+            return AnalysisFlags.optIn to value
         }
     },
 
@@ -31,7 +31,7 @@ private enum class CompilerFlagsMapping(val flag: String) : (List<String>) -> Pa
     };
 
     companion object {
-        fun flagByString(flag: String) = values().firstOrNull { it.flag == flag }
+        fun flagByString(flag: String) = values().firstOrNull { it.flag == flag || flag in it.alternativeFlags }
     }
 }
 

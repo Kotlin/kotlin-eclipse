@@ -17,3 +17,8 @@ com.intellij.configurationStore
 com.intellij.openapi.progress
 com.intellij.ui
 com.intellij.util.text
+custom:com/intellij/CodeStyleBundle.class
+custom:com/intellij/DynamicBundle.class
+custom:com/intellij/AbstractBundle.class
+custom:messages/CodeStyleBundle.*
+it.unimi.dsi.fastutil.objects

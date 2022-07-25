@@ -1,15 +1,13 @@
-package org.jetbrains.kotlin.eclipse.ui.utils
+package org.jetbrains.kotlin.ui.editors.codeassist
 
-import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
-import org.jetbrains.kotlin.descriptors.TypeAliasDescriptor
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.VariableDescriptor
-import org.jetbrains.kotlin.descriptors.PackageViewDescriptor
-import org.eclipse.jdt.core.Flags
+import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 
 enum class CompletionElementType {
+	KFUNCTION_TOP,
+	KVARIABLE_TOP,
+	KFUNCTION_EXT,
+	KVARIABLE_EXT,
 	KFUNCTION,
 	KVARIABLE,
 	KCLASS_OBJECT,
@@ -19,8 +17,16 @@ enum class CompletionElementType {
 		fun from(descriptor: DeclarationDescriptor) : CompletionElementType {
 	        return when(descriptor) {
 	            is ClassDescriptor, is TypeParameterDescriptor, is TypeAliasDescriptor -> KCLASS_OBJECT
-	            is FunctionDescriptor -> KFUNCTION
-	            is VariableDescriptor -> KVARIABLE
+	            is FunctionDescriptor -> when {
+					descriptor.isExtension -> KFUNCTION_EXT
+					descriptor.isTopLevelInPackage() -> KFUNCTION_TOP
+					else -> KFUNCTION
+				}
+	            is VariableDescriptor -> when {
+					descriptor.isExtension -> KVARIABLE_EXT
+					descriptor.isTopLevelInPackage() -> KVARIABLE_TOP
+					else -> KVARIABLE
+				}
 	            else -> UNKNOWN
 			}
 		}

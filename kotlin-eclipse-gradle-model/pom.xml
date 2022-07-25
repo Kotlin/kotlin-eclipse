@@ -8,7 +8,7 @@
 		<relativePath>../pom.xml</relativePath>
 		<groupId>kotlin.eclipse</groupId>
 		<artifactId>kotlin.eclipse.plugin</artifactId>
-		<version>1.5.31-SNAPSHOT</version>
+		<version>1.6.21-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>org.jetbrains.kotlin.gradle.model</artifactId>
@@ -22,7 +22,9 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
-
+                <configuration>
+                    <jvmTarget>11</jvmTarget>
+                </configuration>
                 <executions>
                     <execution>
                         <id>compile</id>

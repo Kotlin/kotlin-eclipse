@@ -16,6 +16,7 @@
 *******************************************************************************/
 package org.jetbrains.kotlin.core.utils
 
+import com.intellij.psi.PsiClass
 import org.jetbrains.kotlin.config.ApiVersion
 import org.jetbrains.kotlin.config.LanguageFeature.DefaultImportOfPackageKotlinComparisons
 import org.jetbrains.kotlin.config.LanguageVersion
@@ -25,6 +26,7 @@ import org.jetbrains.kotlin.idea.util.ActionRunningMode
 import org.jetbrains.kotlin.idea.util.ImportDescriptorResult
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.ImportPath
 import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformAnalyzerServices
@@ -36,7 +38,20 @@ class KotlinImportInserterHelper : ImportInsertHelper() {
         return importSortComparator
     }
 
-    override fun importDescriptor(file: KtFile, descriptor: DeclarationDescriptor, actionRunningMode: ActionRunningMode, forceAllUnderImport: Boolean): ImportDescriptorResult {
+    override fun importDescriptor(
+        element: KtElement,
+        descriptor: DeclarationDescriptor,
+        actionRunningMode: ActionRunningMode,
+        forceAllUnderImport: Boolean
+    ): ImportDescriptorResult {
+        throw UnsupportedOperationException()
+    }
+
+    override fun importPsiClass(
+        element: KtElement,
+        psiClass: PsiClass,
+        actionRunningMode: ActionRunningMode
+    ): ImportDescriptorResult {
         throw UnsupportedOperationException()
     }
 

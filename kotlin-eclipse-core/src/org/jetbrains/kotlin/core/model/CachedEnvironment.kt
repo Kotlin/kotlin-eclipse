@@ -42,6 +42,13 @@ class CachedEnvironment<T: Any, E : KotlinCommonEnvironment> {
         removeEnvironmentInternal(resource)
     }
 
+
+    fun removeEnvironmentIf(check: (KotlinCommonEnvironment) -> Boolean): List<T> {
+        val tempToRemove = environmentCache.filter { check(it.value) }.map { it.key }
+        tempToRemove.forEach(::removeEnvironmentInternal)
+        return tempToRemove
+    }
+
     fun removeAllEnvironments() = synchronized(environmentLock) {
         environmentCache.keys.toList().forEach {
             removeEnvironmentInternal(it)

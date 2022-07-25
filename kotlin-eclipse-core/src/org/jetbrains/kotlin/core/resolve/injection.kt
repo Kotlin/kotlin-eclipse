@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.builtins.jvm.JvmBuiltIns
 import org.jetbrains.kotlin.builtins.jvm.JvmBuiltInsPackageFragmentProvider
 import org.jetbrains.kotlin.config.JvmAnalysisFlags
 import org.jetbrains.kotlin.config.JvmTarget
-import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.StorageComponentContainer
@@ -35,12 +34,13 @@ import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseJavaSourceEle
 import org.jetbrains.kotlin.core.resolve.lang.java.resolver.EclipseTraceBasedJavaResolverCache
 import org.jetbrains.kotlin.core.resolve.lang.java.structure.EclipseJavaPropertyInitializerEvaluator
 import org.jetbrains.kotlin.frontend.di.configureModule
+import org.jetbrains.kotlin.incremental.InlineConstTrackerImpl
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.load.java.InternalFlexibleTypeTransformer
 import org.jetbrains.kotlin.load.java.JavaClassesTracker
+import org.jetbrains.kotlin.load.java.JavaModuleAnnotationsProvider
 import org.jetbrains.kotlin.load.java.components.SignaturePropagatorImpl
 import org.jetbrains.kotlin.load.java.components.TraceBasedErrorReporter
-import org.jetbrains.kotlin.load.java.lazy.JavaModuleAnnotationsProvider
 import org.jetbrains.kotlin.load.java.lazy.JavaResolverSettings
 import org.jetbrains.kotlin.load.java.lazy.ModuleClassResolver
 import org.jetbrains.kotlin.load.kotlin.DeserializationComponentsForJava
@@ -105,6 +105,7 @@ fun createContainerForLazyResolveWithJava(
     useImpl<EclipseJavaClassFinder>()
     useImpl<EclipseTraceBasedJavaResolverCache>()
     useImpl<EclipseJavaSourceElementFactory>()
+    useImpl<InlineConstTrackerImpl>()
 
     useInstance(SyntheticJavaPartsProvider.EMPTY)
     useInstance(packagePartProvider)
@@ -126,8 +127,14 @@ fun createContainerForLazyResolveWithJava(
 
     targetEnvironment.configure(this)
 
-    useInstance(JavaResolverSettings.create(
-            isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines), false, false))
+    useInstance(
+        JavaResolverSettings.create(
+            //isReleaseCoroutines = languageVersionSettings.supportsFeature(LanguageFeature.ReleaseCoroutines),
+            correctNullabilityForNotNullTypeParameter = false,
+            typeEnhancementImprovementsInStrictMode = false,
+            ignoreNullabilityForErasedValueParameters = false
+        )
+    )
 }.apply {
     get<EclipseJavaClassFinder>().initialize(bindingTrace, get(),languageVersionSettings, jvmTarget)
 }

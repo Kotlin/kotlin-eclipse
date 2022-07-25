@@ -39,7 +39,11 @@ import org.jetbrains.kotlin.diagnostics.DiagnosticSink
 import org.jetbrains.kotlin.idea.FrontendInternals
 
 class KotlinCacheServiceImpl(private val ideaProject: Project) : KotlinCacheService {
-    override fun getResolutionFacade(elements: List<KtElement>, platform: TargetPlatform): ResolutionFacade {
+
+    override fun getResolutionFacadeWithForcedPlatform(
+        elements: List<KtElement>,
+        platform: TargetPlatform
+    ): ResolutionFacade {
         return KotlinSimpleResolutionFacade(ideaProject, elements)
     }
 
@@ -61,6 +65,9 @@ class KotlinCacheServiceImpl(private val ideaProject: Project) : KotlinCacheServ
     override fun getResolutionFacade(elements: List<KtElement>): ResolutionFacade {
         return KotlinSimpleResolutionFacade(ideaProject, elements)
     }
+
+    override fun getResolutionFacade(element: KtElement): ResolutionFacade = getResolutionFacade(listOf(element))
+
 	override fun getResolutionFacadeByModuleInfo(moduleInfo: ModuleInfo, platform: TargetPlatform): ResolutionFacade? =
 		null
 }

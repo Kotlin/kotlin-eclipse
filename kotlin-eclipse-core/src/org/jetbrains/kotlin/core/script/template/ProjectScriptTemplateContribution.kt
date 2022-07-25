@@ -17,15 +17,18 @@
 package org.jetbrains.kotlin.core.script.template
 
 import org.eclipse.core.resources.IFile
+import org.eclipse.core.runtime.Path
+import org.eclipse.jdt.core.IClasspathEntry
+import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
 import org.jetbrains.kotlin.core.script.ScriptTemplateContribution
-import org.jetbrains.kotlin.core.utils.ProjectUtils
-import org.jetbrains.kotlin.core.utils.asResource
-import org.jetbrains.kotlin.core.utils.isInClasspath
-import org.jetbrains.kotlin.core.utils.javaProject
+import org.jetbrains.kotlin.core.utils.*
 import java.io.File
 
 class ProjectScriptTemplateContribution : ScriptTemplateContribution() {
+
+    override val priority: Int get() = Int.MAX_VALUE
+
     override fun loadTemplate() = ProjectScriptTemplate::class
 
     override fun scriptEnvironment(script: File): Map<String, Any?> {
@@ -46,8 +49,17 @@ class ProjectScriptTemplateContribution : ScriptTemplateContribution() {
         val javaProject = file.javaProject ?: return emptyList()
         if (!file.isInClasspath) return emptyList()
 
-        val projectClasspath = ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, false)
+        val projectClasspath = try {
+            ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, false)
+        } catch (e: DependencyResolverException) {
+            e.resolvedFiles
+        }
         val outputFolders = ProjectUtils.getAllOutputFolders(javaProject).map { it.location.toFile() }
         return projectClasspath + outputFolders
     }
+
+    override fun createClasspath(environment: KotlinScriptEnvironment): Array<IClasspathEntry> =
+        (environment.javaProject.rawClasspath + environment.definitionClasspath.map {
+            JavaCore.newLibraryEntry(Path(it.absolutePath), null, null)
+        }).distinctBy { it.path }.toTypedArray()
 }

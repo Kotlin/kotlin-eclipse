@@ -6,7 +6,6 @@ import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.Errors
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.idea.core.quickfix.QuickFixUtil
 import org.jetbrains.kotlin.idea.util.IdeDescriptorRenderers
 import org.jetbrains.kotlin.idea.util.approximateWithResolvableType
@@ -33,12 +32,12 @@ class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistPr
             Errors.TYPE_INFERENCE_EXPECTED_TYPE_MISMATCH)
     
     override fun apply(document: IDocument, psiElement: PsiElement) {
-        val oldTypeRef = function.getTypeReference()
+        val oldTypeRef = function.typeReference
         val renderedType = IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_NO_ANNOTATIONS.renderType(type)
         if (oldTypeRef != null) {
             replace(oldTypeRef, renderedType)
         } else {
-            val anchor = function.getValueParameterList()
+            val anchor = function.valueParameterList
             if (anchor != null) {
                 insertAfter(anchor, ": $renderedType")
             }
@@ -46,7 +45,7 @@ class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistPr
     }
     
     override fun getDisplayString(): String {
-        val functionName = function.getName()
+        val functionName = function.name
         val renderedType = IdeDescriptorRenderers.SOURCE_CODE_SHORT_NAMES_NO_ANNOTATIONS.renderType(type)
         return if (functionName != null) {
             "Change '$functionName' function return type to '$renderedType'"
@@ -56,24 +55,22 @@ class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistPr
     }
     
     override fun isApplicable(psiElement: PsiElement): Boolean {
-        val bindingContext = getBindingContext()
-        if (bindingContext == null) return false
-        
-        val activeDiagnostic = getActiveDiagnostic(psiElement.textOffset, bindingContext.diagnostics)
-        if (activeDiagnostic == null) return false
-        
+        val bindingContext = getBindingContext() ?: return false
+
+        val activeDiagnostic = getActiveDiagnostic(psiElement.textOffset, bindingContext.diagnostics) ?: return false
+
         val expression = PsiTreeUtil.getNonStrictParentOfType(activeDiagnostic.psiElement, KtExpression::class.java)
-        if (expression == null) return false
-        
+            ?: return false
+
         val expressionType = when (activeDiagnostic.factory) {
             Errors.TYPE_MISMATCH -> {
                 val diagnosticWithParameters = Errors.TYPE_MISMATCH.cast(activeDiagnostic)
-                diagnosticWithParameters.getB()
+                diagnosticWithParameters.b
             }
             
             Errors.NULL_FOR_NONNULL_TYPE -> {
                 val diagnosticWithParameters = Errors.NULL_FOR_NONNULL_TYPE.cast(activeDiagnostic)
-                val expectedType = diagnosticWithParameters.getA()
+                val expectedType = diagnosticWithParameters.a
                 expectedType.makeNullable()
             }
             
@@ -81,15 +78,13 @@ class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistPr
             
             Errors.TYPE_INFERENCE_EXPECTED_TYPE_MISMATCH -> {
                 val diagnosticWithParameters = Errors.TYPE_INFERENCE_EXPECTED_TYPE_MISMATCH.cast(activeDiagnostic)
-                diagnosticWithParameters.getB()
+                diagnosticWithParameters.b
             }
             
             else -> null
-        }
-        
-        if (expressionType == null) return false
-        
-        val expressionParent = expression.getParent()
+        } ?: return false
+
+        val expressionParent = expression.parent
         val ktFunction = if (expressionParent is KtReturnExpression) {
             expressionParent.getTargetFunction(bindingContext)
         } else {
@@ -126,9 +121,8 @@ class KotlinChangeReturnTypeProposal(editor: KotlinEditor) : KotlinQuickAssistPr
     }
     
     private fun getBindingContext(): BindingContext? {
-        val ktFile = editor.parsedFile
-        if (ktFile == null) return null
-        
+        val ktFile = editor.parsedFile ?: return null
+
         return ktFile.getBindingContext()
     }
 }

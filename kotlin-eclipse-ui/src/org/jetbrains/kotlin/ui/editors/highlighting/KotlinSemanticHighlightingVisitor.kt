@@ -66,7 +66,7 @@ public class KotlinSemanticHighlightingVisitor(val ktFile: KtFile, val document:
         if (target == null) return
         
         val smartCast = bindingContext.get(BindingContext.SMARTCAST, expression)
-        val typeName = smartCast?.defaultType?.let { DescriptorRenderer.FQ_NAMES_IN_TYPES.renderType(it) } ?: null
+        val typeName = smartCast?.defaultType?.let { DescriptorRenderer.FQ_NAMES_IN_TYPES.renderType(it) }
         
         when (target) {
             is TypeParameterDescriptor -> highlightTypeParameter(expression)

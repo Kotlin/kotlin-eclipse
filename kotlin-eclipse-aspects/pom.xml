@@ -1,54 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<relativePath>../pom.xml</relativePath>
-		<groupId>kotlin.eclipse</groupId>
-		<artifactId>kotlin.eclipse.plugin</artifactId>
-		<version>1.5.31-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <relativePath>../pom.xml</relativePath>
+        <groupId>kotlin.eclipse</groupId>
+        <artifactId>kotlin.eclipse.plugin</artifactId>
+        <version>1.6.21-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>org.jetbrains.kotlin.aspects</artifactId>
-	<packaging>eclipse-plugin</packaging>
+    <artifactId>org.jetbrains.kotlin.aspects</artifactId>
+    <packaging>eclipse-plugin</packaging>
 
-	<build>
-		<plugins>
-			<plugin>
-				<!-- have the tycho compiler skip the aspect files -->
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-compiler-plugin</artifactId>
-				<configuration>
-					<excludeResources>
-						<exludeResource>**/*.aj</exludeResource>
-					</excludeResources>
-				</configuration>
-			</plugin>
-			<plugin>
-				<!-- compile the aspect files -->
-				<groupId>com.github.m50d</groupId>
-				<artifactId>aspectj-maven-plugin</artifactId>
-				<version>1.11.1</version>
-				<executions>
-					<execution>
-						<phase>process-sources</phase>
-						<id>compile</id>
-						<configuration>
-							<source>1.8</source>
-							<target>1.8</target>
-							<complianceLevel>1.8</complianceLevel>
-							<aspectDirectory>src</aspectDirectory>
-							<Xlint>ignore</Xlint>
-							<deprecation>true</deprecation>
-						</configuration>
-						<goals>
-							<goal>compile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <!-- have the tycho compiler skip the aspect files -->
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-compiler-plugin</artifactId>
+                <configuration>
+                    <excludeResources>
+                        <exludeResource>**/*.aj</exludeResource>
+                    </excludeResources>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.14.0</version>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <id>compile</id>
+                        <configuration>
+                            <source>11</source>
+                            <target>11</target>
+                            <complianceLevel>11</complianceLevel>
+                            <aspectDirectory>src</aspectDirectory>
+                            <Xlint>ignore</Xlint>
+                            <deprecation>true</deprecation>
+                        </configuration>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -8,7 +8,7 @@
 		<relativePath>../pom.xml</relativePath>
 		<groupId>kotlin.eclipse</groupId>
 		<artifactId>kotlin.eclipse.plugin</artifactId>
-		<version>1.5.31-SNAPSHOT</version>
+		<version>1.6.21-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>org.jetbrains.kotlin.ui.tests</artifactId>
@@ -45,9 +45,9 @@
 					
 					<frameworkExtensions>
 			            <frameworkExtension>
-			              <groupId>org.eclipse.platform</groupId>
-			              <artifactId>org.eclipse.equinox.weaving.hook</artifactId>
-			              <version>${weaving-hook.version}</version>
+							<groupId>org.eclipse.platform</groupId>
+			              	<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
+			              	<version>${weaving-hook.version}</version>
 			            </frameworkExtension>
 		          	</frameworkExtensions>
 		          	<bundleStartLevel>
@@ -63,7 +63,9 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
-
+				<configuration>
+					<jvmTarget>11</jvmTarget>
+				</configuration>
                 <executions>
                     <execution>
                         <id>compile</id>
