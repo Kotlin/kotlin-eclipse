@@ -195,23 +195,6 @@ val extractPackagesFromKTCompiler by tasks.registering(Jar::class) {
     }
 }
 
-val extractPackagesFromCoreAnalysis by tasks.registering(Jar::class) {
-    dependsOn(downloadKotlinCompilerPluginAndExtractSelectedJars)
-
-    from(zipTree("$libDir/intellij-core-analysis-deprecated.jar"))
-    destinationDirectory.set(libDir)
-    archiveFileName.set("intellij-core-analysis-deprecated-tmp.jar")
-    include("**")
-    exclude("com/intellij/openapi/util/text/**")
-    exclude("com/intellij/psi/codeStyle/**")
-    exclude("com/intellij/util/containers/**")
-
-    doLast {
-        file("$libDir/intellij-core-analysis-deprecated.jar").delete()
-        file("$libDir/intellij-core-analysis-deprecated-tmp.jar").renameTo(file("$libDir/intellij-core-analysis-deprecated.jar"))
-    }
-}
-
 val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
     dependsOn(deleteLibrariesFromLibFolder)
     val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
@@ -224,7 +207,7 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
         copy {
             from(zipTree(locallyDownloadedIntellijCoreFile))
 
-            setIncludes(setOf("intellij-core.jar", "intellij-core-analysis-deprecated.jar"))
+            setIncludes(setOf("intellij-core.jar"))
 
             includeEmptyDirs = false
 
@@ -349,14 +332,12 @@ val downloadBundled by tasks.registering {
     if (localTCArtifacts) {
         dependsOn(extractPackagesFromPlugin,
                 extractPackagesFromKTCompiler,
-                extractPackagesFromCoreAnalysis,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)
     } else {
         dependsOn(extractPackagesFromPlugin,
                 extractPackagesFromKTCompiler,
-                extractPackagesFromCoreAnalysis,
                 downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)

@@ -28,8 +28,7 @@ Bundle-ClassPath: .,
  lib/kotlin-scripting-compiler-impl.jar,
  lib/kotlin-scripting-common.jar,
  lib/kotlin-scripting-jvm.jar,
- lib/kotlinx-coroutines-core.jar,
- lib/intellij-core-analysis-deprecated.jar
+ lib/kotlinx-coroutines-core.jar
 Export-Package: com.google.common.collect,
  com.intellij,
  org.jetbrains.kotlin.idea.util.application,
