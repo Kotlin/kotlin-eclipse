@@ -114,15 +114,30 @@ object EclipseAnalyzerFacadeForJVM {
                     ?.classpath.orEmpty() + environment.definitionClasspath)
                     .map { JavaCore.newLibraryEntry(Path(it.absolutePath), null, null) }*/
 
-        try {
-            val tempSourceCode = KtFileScriptSource(scriptFile)
-            val tempContribution = EclipseScriptDefinitionProvider.getContribution(tempSourceCode)
+            val tempClasspath = environment.getRoots().mapTo(hashSetOf()) {
+                val tempFile = it.file
+                if(it.type == JavaRoot.RootType.SOURCE) {
+                    JavaCore.newSourceEntry(Path(tempFile.path))
+                } else {
+                    JavaCore.newLibraryEntry(Path(tempFile.path), null, null)
+                }
+            }.toTypedArray()
 
-            val tempNewClasspath = tempContribution?.createClasspath(environment) ?: (tempOrigClasspath + environment.definitionClasspath.map {
-                JavaCore.newLibraryEntry(Path(it.absolutePath), null, null)
-            }).distinctBy { it.path }.toTypedArray()
+            setRawClasspath(tempClasspath, null)
+        }*/
 
-            javaProject.setRawClasspath(tempNewClasspath, null)
+        val allFiles = LinkedHashSet<KtFile>().run {
+            add(scriptFile)
+            environment.dependencies?.sources?.toList()
+                .orEmpty()
+                .mapNotNull { it.asResource }
+                .mapNotNull { KotlinPsiManager.getKotlinParsedFile(it) }
+                .toCollection(this)
+        }
+
+        ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).toCollection(allFiles)
+
+        val tempSourceCode = KtFileScriptSource(scriptFile)
 
         val tempRefinedConfig = environment.definition?.let {
             refineScriptCompilationConfiguration(tempSourceCode, it, environment.project)
@@ -130,10 +145,13 @@ object EclipseAnalyzerFacadeForJVM {
 
         val tempContribution = EclipseScriptDefinitionProvider.getContribution(tempSourceCode)
 
-            val tempRefinedConfig = environment.definition?.let {
-                refineScriptCompilationConfiguration(tempSourceCode, it, environment.project)
-            }?.valueOrNull()?.configuration
+        val tempDefaultImports =
+            tempRefinedConfig?.get(PropertiesCollection.Key("defaultImports", emptyList<String>())) ?: emptyList()
+        val tempImports = ArrayList(tempDefaultImports)
 
+        val analyzerService = object : PlatformDependentAnalyzerServices() {
+
+            override val defaultLowPriorityImports: List<ImportPath> = listOf(ImportPath.fromString("java.lang.*"))
 
             override val platformConfigurator: PlatformConfigurator = JvmPlatformConfigurator
 
@@ -153,41 +171,11 @@ object EclipseAnalyzerFacadeForJVM {
                     }
                 }
 
-            val tempProperties =
-                tempRefinedConfig?.get(PropertiesCollection.Key("providedProperties", emptyMap<String, KotlinType>()))
-
-            val declarationProviderFactory: (StorageManager) -> DeclarationProviderFactory = { storageManager ->
-                object : FileBasedDeclarationProviderFactory(storageManager, allFiles) {
-
-                    private val factory = KtPsiFactory(environment.project, true)
-
-                    override fun getClassMemberDeclarationProvider(classLikeInfo: KtClassLikeInfo): ClassMemberDeclarationProvider {
-                        if (classLikeInfo is KtScriptInfo) {
-                            return object : AbstractPsiBasedDeclarationProvider(storageManager),
-                                ClassMemberDeclarationProvider {
-                                override val ownerInfo: KtClassLikeInfo = classLikeInfo
-
-                                override fun doCreateIndex(index: Index) {
-                                    val tempProvidedProperties = tempProperties?.entries?.map { (key, value) ->
-                                        val isNullable = tempContribution?.isNullable(key, tempRefinedConfig) ?: true
-                                        val tempTypeName = value.fromClass?.qualifiedName ?: value.typeName
-                                        val tempText =
-                                            """
-                                                /** Provided property '$key' of type: $tempTypeName */
-                                                val $key: $tempTypeName${'$'}${if (isNullable) "? = null" else " = TODO()"}""".trimIndent()
-                                        factory.createProperty(tempText)
-                                    } ?: emptyList()
-
-                                    val tempDeclarations = ownerInfo.declarations +
-                                            ownerInfo.primaryConstructorParameters +
-                                            tempProvidedProperties
-
-                                    tempDeclarations.forEach(index::putToIndex)
-                                }
-                            }
-                        }
-                        return super.getClassMemberDeclarationProvider(classLikeInfo)
-                    }
+                for (builtInPackage in JvmBuiltIns(
+                    storageManager,
+                    JvmBuiltIns.Kind.FROM_CLASS_LOADER
+                ).builtInPackagesImportedByDefault) {
+                    addAllClassifiersFromScope(builtInPackage.memberScope)
                 }
             }
         }
