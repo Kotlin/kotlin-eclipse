@@ -54,10 +54,10 @@ public class LightClassBuilderFactory implements ClassBuilderFactory {
                 if (element != null) {
                     Set<Pair<String, String>> userData = element.getUserData(JVM_SIGNATURE);
                     if (userData == null) {
-                        userData = Collections.newSetFromMap(new ConcurrentHashMap<Pair<String, String>, Boolean>());
+                        userData = Collections.newSetFromMap(new ConcurrentHashMap<>());
                         element.putUserData(JVM_SIGNATURE, userData);
                     }
-                    userData.add(new Pair<String, String>(desc, name));
+                    userData.add(new Pair<>(desc, name));
                 }
             }
         };
