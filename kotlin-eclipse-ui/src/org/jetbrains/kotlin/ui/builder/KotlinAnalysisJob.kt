@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.core.model.KotlinAnalysisProjectCache
 import org.jetbrains.kotlin.progress.CompilationCanceledException
 import org.jetbrains.kotlin.progress.CompilationCanceledStatus
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
+import org.eclipse.core.resources.ResourcesPlugin
 
 public class KotlinAnalysisJob(private val javaProject: IJavaProject) : Job("Kotlin Analysis") {
     init {
@@ -86,6 +87,7 @@ fun runCancellableAnalysisFor(javaProject: IJavaProject, postAnalysisTask: (Anal
     KotlinAnalysisProjectCache.resetCache(javaProject.project)
     
     val analysisJob = KotlinAnalysisJob(javaProject)
+    analysisJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
     
     analysisJob.addJobChangeListener(object : JobChangeAdapter() {
         override fun done(event: IJobChangeEvent) {

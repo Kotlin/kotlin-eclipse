@@ -116,6 +116,9 @@ public class EclipseJavaElementUtil {
     private static ITypeBinding getJavaLangObjectBinding(@NotNull IJavaProject javaProject) {
         try {
             IType javaType = javaProject.findType(CommonClassNames.JAVA_LANG_OBJECT);
+            if(javaType == null) {
+            	return null; // this happens if the project was modified while analyzing in progress.
+            }
             return EclipseJavaClassFinder.createTypeBinding(javaType);
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
