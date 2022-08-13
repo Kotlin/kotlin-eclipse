@@ -50,11 +50,6 @@
     <profiles>
         <profile>
             <id>with-gradle</id>
-            <activation>
-                <property>
-                    <name>with-gradle</name>
-                </property>
-            </activation>
             <build>
                 <plugins>
                     <plugin>
@@ -69,7 +64,7 @@
                                    <goal>exec</goal>
                                </goals>
                                <configuration>
-                                   <executable>${project.basedir}/gradlew.bat</executable>
+                                   <executable>${project.basedir}/gradlew</executable>
                                    <arguments>
                                        <argument>clean</argument>
                                    </arguments>
@@ -77,12 +72,12 @@
                            </execution>
                            <execution>
                                <id>gradle-getBundled</id>
-                               <phase>initialize</phase>
+                               <phase>validate</phase>
                                <goals>
                                    <goal>exec</goal>
                                </goals>
                                <configuration>
-                                   <executable>${project.basedir}/gradlew.bat</executable>
+                                   <executable>${project.basedir}/gradlew</executable>
                                    <arguments>
                                        <argument>getBundled</argument>
                                    </arguments>

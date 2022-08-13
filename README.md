@@ -19,6 +19,6 @@ https://s3.eu-central-1.amazonaws.com/github.bvfalcon/kotlin-eclipse/versions/0.
 
 #### Build from source
 
-To build from source run command: `mvn clean && mvn validate -Dwith-gradle && mvn package`
+To build from source run command: `mvn clean && mvn clean validate -Pwith-gradle -pl kotlin-bundled-compiler && mvn package`
 
 After build was successfully finished update-site will be located in directory `kotlin-eclipse-p2updatesite/target/repository`
