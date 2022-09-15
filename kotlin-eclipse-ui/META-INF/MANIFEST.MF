@@ -58,7 +58,7 @@ Import-Package: com.google.common.collect,
  org.eclipse.ui.views.contentoutline,
  org.eclipse.ui.wizards.newresource,
  org.jetbrains.kotlin.idea.util
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.jetbrains.kotlin.eclipse.ui.utils,
  org.jetbrains.kotlin.ui,
  org.jetbrains.kotlin.ui.builder,

@@ -4,7 +4,7 @@ Bundle-Name: Bundled Kotlin Compiler
 Bundle-SymbolicName: org.jetbrains.kotlin.bundled-compiler;singleton:=true
 Bundle-Version: 1.6.21.qualifier
 Bundle-Vendor: JetBrains
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .,
  lib/ide-common.jar,
  lib/kotlin-compiler.jar,
