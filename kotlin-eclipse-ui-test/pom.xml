@@ -44,7 +44,7 @@
 					</dependencies>
 					
 					<frameworkExtensions>
-			            <frameworkExtension>
+						<frameworkExtension>
 							<groupId>org.eclipse.platform</groupId>
 							<artifactId>org.eclipse.equinox.weaving.hook</artifactId>
 							<version>${weaving-hook.version}</version>
@@ -64,7 +64,7 @@
 				<artifactId>kotlin-maven-plugin</artifactId>
 				<version>${kotlin.version}</version>
 				<configuration>
-					<jvmTarget>1</jvmTarget>
+					<jvmTarget>17</jvmTarget>
 				</configuration>
 				<executions>
 					<execution>
