@@ -29,8 +29,8 @@
 		<eclipse-repo.url>http://download.eclipse.org/releases/2022-09</eclipse-repo.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/48/dev/update</ajdt-eclipse-repo.url>
-		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e49/releases/3.x</buildship-repo.url>
+		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/423/dev/update</ajdt-eclipse-repo.url>
+		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e423/releases/3.x</buildship-repo.url>
 
 		<kotlin.version>1.6.21</kotlin.version>
 
