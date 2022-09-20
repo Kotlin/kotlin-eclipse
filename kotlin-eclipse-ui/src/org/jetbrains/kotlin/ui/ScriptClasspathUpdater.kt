@@ -39,13 +39,16 @@ internal fun tryUpdateScriptClasspath(file: IFile) {
     val dependenciesProvider: DependenciesResolver? = ServiceManager.getService(environment.project, DependenciesResolver::class.java)
 
     runJob("Check script dependencies", Job.DECORATE, null, {
-        val contents = ScriptContentLoader(environment.project).getScriptContents(
-            environment.definition?.legacyDefinition!!,
-            environment.getVirtualFile(file.location)!!
-        )
+        var newDependencies: DependenciesResolver.ResolveResult? = null
+        if(dependenciesProvider != null) {
+            val contents = ScriptContentLoader(environment.project).getScriptContents(
+                    environment.definition?.legacyDefinition!!,
+                    environment.getVirtualFile(file.location)!!
+            )
 
-        val scriptEnvironment = EclipseScriptDefinitionProvider.getEnvironment(file.asFile).orEmpty()
-        val newDependencies = dependenciesProvider?.resolve(contents, scriptEnvironment)
+            val scriptEnvironment = EclipseScriptDefinitionProvider.getEnvironment(file.asFile).orEmpty()
+            newDependencies = dependenciesProvider.resolve(contents, scriptEnvironment)
+        }
         StatusWithDependencies(Status.OK_STATUS, newDependencies?.dependencies)
     }) { event ->
         val editor = findEditor(file)
@@ -53,8 +56,11 @@ internal fun tryUpdateScriptClasspath(file: IFile) {
         val newDependencies = (statusWithDependencies as? StatusWithDependencies)?.dependencies
         if (file.isAccessible && editor != null) {
             editor.reconcile {
-                KotlinScriptEnvironment.updateDependencies(file, newDependencies)
-                KotlinAnalysisFileCache.resetCache()
+                val tempEnv = KotlinScriptEnvironment.getEnvironment(file)
+                if(tempEnv.dependencies != newDependencies) {
+                    KotlinScriptEnvironment.updateDependencies(file, newDependencies)
+                    KotlinAnalysisFileCache.resetCache()
+                }
             }
         }
     }

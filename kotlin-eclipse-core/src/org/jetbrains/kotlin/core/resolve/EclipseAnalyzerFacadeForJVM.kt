@@ -17,11 +17,9 @@
 package org.jetbrains.kotlin.core.resolve
 
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.search.GlobalSearchScope
-import org.eclipse.core.runtime.Path
 import org.eclipse.jdt.core.IJavaProject
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.launching.JavaRuntime
 import org.jetbrains.kotlin.analyzer.AnalysisResult
 import org.jetbrains.kotlin.builtins.jvm.JvmBuiltIns
 import org.jetbrains.kotlin.builtins.jvm.JvmBuiltInsPackageFragmentProvider
@@ -37,27 +35,38 @@ import org.jetbrains.kotlin.context.MutableModuleContext
 import org.jetbrains.kotlin.context.ProjectContext
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.log.KotlinLogger
+import org.jetbrains.kotlin.core.model.EclipseScriptDefinitionProvider
 import org.jetbrains.kotlin.core.model.KotlinCommonEnvironment
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
-import org.jetbrains.kotlin.core.script.EnvironmentProjectsManager
+import org.jetbrains.kotlin.core.preferences.languageVersionSettings
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.core.utils.asResource
 import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
 import org.jetbrains.kotlin.descriptors.impl.CompositePackageFragmentProvider
 import org.jetbrains.kotlin.frontend.java.di.initJvmBuiltInsForTopDownAnalysis
+import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.resolve.LazyTopDownAnalyzer
-import org.jetbrains.kotlin.resolve.TopDownAnalysisMode
+import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.jvm.JavaDescriptorResolver
 import org.jetbrains.kotlin.resolve.jvm.extensions.PackageFragmentProviderExtension
+import org.jetbrains.kotlin.resolve.jvm.modules.JavaModuleResolver
+import org.jetbrains.kotlin.resolve.jvm.platform.JvmPlatformConfigurator
 import org.jetbrains.kotlin.resolve.lazy.KotlinCodeAnalyzer
 import org.jetbrains.kotlin.resolve.lazy.declarations.DeclarationProviderFactory
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
+import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
+import org.jetbrains.kotlin.resolve.scopes.MemberScope
+import org.jetbrains.kotlin.scripting.resolve.KtFileScriptSource
+import org.jetbrains.kotlin.scripting.resolve.refineScriptCompilationConfiguration
+import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.util.KotlinFrontEndException
-import java.util.*
+import kotlin.math.absoluteValue
+import kotlin.script.experimental.api.KotlinType
+import kotlin.script.experimental.api.valueOrNull
+import kotlin.script.experimental.util.PropertiesCollection
 
 data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val componentProvider: ComponentProvider?) {
     companion object {
@@ -67,8 +76,8 @@ data class AnalysisResultWithProvider(val analysisResult: AnalysisResult, val co
 
 object EclipseAnalyzerFacadeForJVM {
     fun analyzeSources(
-            environment: KotlinEnvironment,
-            filesToAnalyze: Collection<KtFile>
+        environment: KotlinEnvironment,
+        filesToAnalyze: Collection<KtFile>
     ): AnalysisResultWithProvider {
         val filesSet = filesToAnalyze.toSet()
         if (filesSet.size != filesToAnalyze.size) {
@@ -91,42 +100,117 @@ object EclipseAnalyzerFacadeForJVM {
     }
 
     fun analyzeScript(
-            environment: KotlinScriptEnvironment,
-            scriptFile: KtFile
+        environment: KotlinScriptEnvironment,
+        scriptFile: KtFile
     ): AnalysisResultWithProvider {
-        val javaProject = EnvironmentProjectsManager[scriptFile].apply {
-            val jvmLibraries = JavaRuntime.getDefaultVMInstall()
-                ?.let { JavaRuntime.getLibraryLocations(it) }
-                ?.map { JavaCore.newLibraryEntry(it.systemLibraryPath, null, null) }
-                .orEmpty()
+        //TODO actually take dependencies from script configuration!
+        val javaProject = environment.javaProject/*.apply {
+            /*tempClasspath += JavaRuntime.getDefaultVMInstall()
+                    ?.let { JavaRuntime.getLibraryLocations(it) }
+                    ?.map { JavaCore.newLibraryEntry(it.systemLibraryPath, null, null) }
+                    .orEmpty()*/
 
-			val userLibraries = (environment.dependencies
-                ?.classpath.orEmpty() + environment.definitionClasspath)
-                .map { JavaCore.newLibraryEntry(Path(it.absolutePath), null, null) }
-                .orEmpty()
-                .toSet()
+            /*tempClasspath += (environment.dependencies
+                    ?.classpath.orEmpty() + environment.definitionClasspath)
+                    .map { JavaCore.newLibraryEntry(Path(it.absolutePath), null, null) }*/
 
-            (jvmLibraries + userLibraries)
-                .toTypedArray()
-                .also { setRawClasspath(it, null) }
-		}
-		
+            val tempClasspath = environment.getRoots().mapTo(hashSetOf()) {
+                val tempFile = it.file
+                if(it.type == JavaRoot.RootType.SOURCE) {
+                    JavaCore.newSourceEntry(Path(tempFile.path))
+                } else {
+                    JavaCore.newLibraryEntry(Path(tempFile.path), null, null)
+                }
+            }.toTypedArray()
+
+            setRawClasspath(tempClasspath, null)
+        }*/
+
         val allFiles = LinkedHashSet<KtFile>().run {
             add(scriptFile)
             environment.dependencies?.sources?.toList()
-                    .orEmpty()
-                    .mapNotNull { it.asResource }
-                    .mapNotNull { KotlinPsiManager.getKotlinParsedFile(it) }
-                    .toCollection(this)
+                .orEmpty()
+                .mapNotNull { it.asResource }
+                .mapNotNull { KotlinPsiManager.getKotlinParsedFile(it) }
+                .toCollection(this)
+        }
+
+        ProjectUtils.getSourceFilesWithDependencies(environment.javaProject).toCollection(allFiles)
+
+        val tempSourceCode = KtFileScriptSource(scriptFile)
+
+        val tempRefinedConfig = environment.definition?.let {
+            refineScriptCompilationConfiguration(tempSourceCode, it, environment.project)
+        }?.valueOrNull()?.configuration
+
+        val tempContribution = EclipseScriptDefinitionProvider.getContribution(tempSourceCode)
+
+        val tempDefaultImports =
+            tempRefinedConfig?.get(PropertiesCollection.Key("defaultImports", emptyList<String>())) ?: emptyList()
+        val tempImports = ArrayList(tempDefaultImports)
+
+        val analyzerService = object : PlatformDependentAnalyzerServices() {
+
+            override val defaultLowPriorityImports: List<ImportPath> = listOf(ImportPath.fromString("java.lang.*"))
+
+            override val platformConfigurator: PlatformConfigurator = JvmPlatformConfigurator
+
+            override fun computePlatformSpecificDefaultImports(
+                storageManager: StorageManager,
+                result: MutableList<ImportPath>
+            ) {
+                result.add(ImportPath.fromString("kotlin.jvm.*"))
+                tempImports.map(ImportPath::fromString).toCollection(result)
+
+                fun addAllClassifiersFromScope(scope: MemberScope) {
+                    for (descriptor in scope.getContributedDescriptors(
+                        DescriptorKindFilter.CLASSIFIERS,
+                        MemberScope.ALL_NAME_FILTER
+                    )) {
+                        result.add(ImportPath(DescriptorUtils.getFqNameSafe(descriptor), false))
+                    }
+                }
+
+                for (builtInPackage in JvmBuiltIns(
+                    storageManager,
+                    JvmBuiltIns.Kind.FROM_CLASS_LOADER
+                ).builtInPackagesImportedByDefault) {
+                    addAllClassifiersFromScope(builtInPackage.memberScope)
+                }
+            }
+        }
+
+        val tempProperties =
+            tempRefinedConfig?.get(PropertiesCollection.Key("providedProperties", emptyMap<String, KotlinType>()))
+
+        if (!tempProperties.isNullOrEmpty()) {
+            val tempPackageName = "scriptParameters${scriptFile.virtualFilePath.hashCode().absoluteValue}"
+            val tempContent =
+                "package $tempPackageName\n" + tempProperties.entries.joinToString(separator = "\n") { (key, value) ->
+                    val isNullable = tempContribution?.isNullable(key, tempRefinedConfig) ?: true
+                    """
+                        |@Deprecated(message = "Do not import this explicitly! Used only in eclipse as workaround for providedProperties in Scripts!", level = DeprecationLevel.WARNING)
+                        |val $key: ${value.typeName}${if(isNullable) "? = null" else " = TODO()"}
+                    """.trimMargin("|")
+                }
+
+            tempImports.add("$tempPackageName.*")
+
+            val tempKtFile = PsiFileFactory.getInstance(environment.project)
+                .createFileFromText("scriptParameters.kt", KotlinLanguage.INSTANCE, tempContent) as? KtFile
+
+            if (tempKtFile != null) {
+                allFiles.add(tempKtFile)
+            }
         }
 
         return analyzeKotlin(
-                filesToAnalyze = listOf(scriptFile),
-                allFiles = allFiles,
-                environment = environment,
-                javaProject = javaProject
+            filesToAnalyze = listOf(scriptFile),
+            allFiles = allFiles,
+            environment = environment,
+            javaProject = javaProject,
+            analyzerService = analyzerService
         )
-
     }
 
     private fun analyzeKotlin(
@@ -134,7 +218,8 @@ object EclipseAnalyzerFacadeForJVM {
         allFiles: Collection<KtFile>,
         environment: KotlinCommonEnvironment,
         javaProject: IJavaProject?,
-        jvmTarget: JvmTarget = JvmTarget.DEFAULT
+        jvmTarget: JvmTarget = JvmTarget.DEFAULT,
+        analyzerService: PlatformDependentAnalyzerServices? = null
     ): AnalysisResultWithProvider {
         val project = environment.project
         val moduleContext = createModuleContext(project, environment.configuration, true)
@@ -147,9 +232,13 @@ object EclipseAnalyzerFacadeForJVM {
         val sourceScope = TopDownAnalyzerFacadeForJVM.newModuleSearchScope(project, filesToAnalyze)
         val moduleClassResolver = TopDownAnalyzerFacadeForJVM.SourceOrBinaryModuleClassResolver(sourceScope)
 
-        val languageVersionSettings = LanguageVersionSettingsImpl(
-                LanguageVersionSettingsImpl.DEFAULT.languageVersion,
-                LanguageVersionSettingsImpl.DEFAULT.apiVersion)
+        val languageVersionSettings =
+            javaProject?.project?.let { KotlinEnvironment.getEnvironment(it).compilerProperties.languageVersionSettings }
+                ?: LanguageVersionSettingsImpl(
+                    LanguageVersionSettingsImpl.DEFAULT.languageVersion,
+                    LanguageVersionSettingsImpl.DEFAULT.apiVersion
+                )
+
 
         val optionalBuiltInsModule = JvmBuiltIns(storageManager, JvmBuiltIns.Kind.FROM_CLASS_LOADER)
             .apply { initialize(module, true) }
@@ -157,47 +246,60 @@ object EclipseAnalyzerFacadeForJVM {
 
         val dependencyModule = run {
             val dependenciesContext = ContextForNewModule(
-                    moduleContext, Name.special("<dependencies of ${environment.configuration.getNotNull(
-                    CommonConfigurationKeys.MODULE_NAME)}>"),
-                    module.builtIns, null
+                moduleContext, Name.special(
+                    "<dependencies of ${
+                        environment.configuration.getNotNull(
+                            CommonConfigurationKeys.MODULE_NAME
+                        )
+                    }>"
+                ),
+                module.builtIns, null
             )
 
             val dependencyScope = GlobalSearchScope.notScope(sourceScope)
             val dependenciesContainer = createContainerForTopDownAnalyzerForJvm(
-                    dependenciesContext,
-                    trace,
-                    DeclarationProviderFactory.EMPTY,
-                    dependencyScope,
-                    LookupTracker.DO_NOTHING,
-                    KotlinPackagePartProvider(environment),
-                    jvmTarget,
-                    languageVersionSettings,
-                    moduleClassResolver,
-                    javaProject)
-
-            moduleClassResolver.compiledCodeResolver = dependenciesContainer.get<JavaDescriptorResolver>()
-
-            dependenciesContext.setDependencies(listOfNotNull(dependenciesContext.module, optionalBuiltInsModule))
-            dependenciesContext.initializeModuleContents(
-                CompositePackageFragmentProvider(listOf(
-                    moduleClassResolver.compiledCodeResolver.packageFragmentProvider,
-                    dependenciesContainer.get<JvmBuiltInsPackageFragmentProvider>()
-            ))
-            )
-            dependenciesContext.module
-        }
-
-        val container = createContainerForTopDownAnalyzerForJvm(
-                moduleContext,
+                dependenciesContext,
                 trace,
-                providerFactory,
-                sourceScope,
+                DeclarationProviderFactory.EMPTY,
+                dependencyScope,
                 LookupTracker.DO_NOTHING,
                 KotlinPackagePartProvider(environment),
                 jvmTarget,
                 languageVersionSettings,
                 moduleClassResolver,
-                javaProject).apply {
+                javaProject,
+                environment.project.getService(JavaModuleResolver::class.java),
+                null
+            )
+
+            moduleClassResolver.compiledCodeResolver = dependenciesContainer.get<JavaDescriptorResolver>()
+
+            dependenciesContext.setDependencies(listOfNotNull(dependenciesContext.module, optionalBuiltInsModule))
+            dependenciesContext.initializeModuleContents(
+                CompositePackageFragmentProvider(
+                    listOf(
+                        moduleClassResolver.compiledCodeResolver.packageFragmentProvider,
+                        dependenciesContainer.get<JvmBuiltInsPackageFragmentProvider>()
+                    ), ""
+                )
+            )
+            dependenciesContext.module
+        }
+
+        val container = createContainerForTopDownAnalyzerForJvm(
+            moduleContext,
+            trace,
+            providerFactory,
+            sourceScope,
+            LookupTracker.DO_NOTHING,
+            KotlinPackagePartProvider(environment),
+            jvmTarget,
+            languageVersionSettings,
+            moduleClassResolver,
+            javaProject,
+            environment.project.getService(JavaModuleResolver::class.java),
+            analyzerService
+        ).apply {
             initJvmBuiltInsForTopDownAnalysis()
         }
 
@@ -211,16 +313,19 @@ object EclipseAnalyzerFacadeForJVM {
         }
 
         module.setDependencies(
-                listOfNotNull(module, dependencyModule, optionalBuiltInsModule),
-                setOf(dependencyModule)
+            listOfNotNull(module, dependencyModule, optionalBuiltInsModule),
+            setOf(dependencyModule)
         )
-        module.initialize(CompositePackageFragmentProvider(
+        module.initialize(
+            CompositePackageFragmentProvider(
                 listOf(container.get<KotlinCodeAnalyzer>().packageFragmentProvider) +
-                        additionalProviders
-        ))
+                        additionalProviders, ""
+            )
+        )
 
         try {
-            container.get<LazyTopDownAnalyzer>().analyzeDeclarations(TopDownAnalysisMode.TopLevelDeclarations, filesToAnalyze)
+            container.get<LazyTopDownAnalyzer>()
+                .analyzeDeclarations(TopDownAnalysisMode.TopLevelDeclarations, filesToAnalyze)
         } catch (e: KotlinFrontEndException) {
 //          Editor will break if we do not catch this exception
 //          and will not be able to save content without reopening it.
@@ -229,8 +334,9 @@ object EclipseAnalyzerFacadeForJVM {
         }
 
         return AnalysisResultWithProvider(
-                AnalysisResult.success(trace.bindingContext, module),
-                container)
+            AnalysisResult.success(trace.bindingContext, module),
+            container
+        )
     }
 
     private fun getPath(jetFile: KtFile): String? = jetFile.virtualFile?.path
@@ -241,10 +347,15 @@ object EclipseAnalyzerFacadeForJVM {
         createBuiltInsFromModule: Boolean
     ): MutableModuleContext {
         val projectContext = ProjectContext(project, "context for project ${project.name}")
-        val builtIns = JvmBuiltIns(projectContext.storageManager,
-            if (createBuiltInsFromModule) JvmBuiltIns.Kind.FROM_DEPENDENCIES else JvmBuiltIns.Kind.FROM_CLASS_LOADER)
+        val builtIns = JvmBuiltIns(
+            projectContext.storageManager,
+            if (createBuiltInsFromModule) JvmBuiltIns.Kind.FROM_DEPENDENCIES else JvmBuiltIns.Kind.FROM_CLASS_LOADER
+        )
         return ContextForNewModule(
-                projectContext, Name.special("<${configuration.getNotNull(CommonConfigurationKeys.MODULE_NAME)}>"), builtIns, null
+            projectContext,
+            Name.special("<${configuration.getNotNull(CommonConfigurationKeys.MODULE_NAME)}>"),
+            builtIns,
+            null
         ).apply {
             if (createBuiltInsFromModule) {
                 builtIns.builtInsModule = module

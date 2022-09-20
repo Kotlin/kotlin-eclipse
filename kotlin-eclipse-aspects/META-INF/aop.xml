@@ -16,4 +16,7 @@
         <aspect name="org.jetbrains.kotlin.aspects.refactoring.KotlinJavaDescriptorAspect"/>
         <aspect name="org.jetbrains.kotlin.aspects.ui.PackageExplorerLabelProviderAspect"/>
     </aspects>
+	<weaver options="-Xlint:ignore">
+         <include within="com.sun.jdi..*"/>
+    </weaver>
 </aspectj>

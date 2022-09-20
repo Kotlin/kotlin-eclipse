@@ -29,7 +29,7 @@
             icon="icons/newfile_wiz.gif"
             id="org.jetbrains.kotlin.wizard"
             name="Kotlin File"
-            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            preferredPerspectives="org.jetbrains.kotlin.perspective,org.eclipse.jdt.ui.JavaPerspective"
             project="false">
            <description>
               Create a new Kotlin file
@@ -51,6 +51,20 @@
       </wizard>
       <wizard
             category="org.jetbrains.kotlin.wizards"
+            class="org.jetbrains.kotlin.wizards.NewSealedClassWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            hasPages="true"
+            icon="icons/newclass_wiz.gif"
+            id="org.jetbrains.kotlin.classWizard"
+            name="Kotlin sealed Class"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="false">
+         <description>
+            Create a new Kotlin sealed class
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.wizards"
             class="org.jetbrains.kotlin.wizards.NewInterfaceWizard"
             finalPerspective="org.jetbrains.kotlin.perspective"
             hasPages="true"
@@ -60,7 +74,21 @@
             preferredPerspectives="org.jetbrains.kotlin.perspective"
             project="false">
          <description>
-            Create a new Kotlin trait
+            Create a new Kotlin interface
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.wizards"
+            class="org.jetbrains.kotlin.wizards.NewSealedInterfaceWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            hasPages="true"
+            icon="icons/newint_wiz.gif"
+            id="org.jetbrains.kotlin.traitWizard"
+            name="Kotlin sealed Interface"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="false">
+         <description>
+            Create a new Kotlin sealed interface
          </description>
       </wizard>
       <wizard
@@ -89,6 +117,34 @@
             project="false">
          <description>
             Create a new Kotlin enum
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.wizards"
+            class="org.jetbrains.kotlin.wizards.NewDataClassWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            hasPages="true"
+            icon="icons/newclass_wiz.gif"
+            id="org.jetbrains.kotlin.enumWizard"
+            name="Kotlin Data Class"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="false">
+         <description>
+            Create a new Kotlin data class
+         </description>
+      </wizard>
+      <wizard
+            category="org.jetbrains.kotlin.wizards"
+            class="org.jetbrains.kotlin.wizards.NewAnnotationWizard"
+            finalPerspective="org.jetbrains.kotlin.perspective"
+            hasPages="true"
+            icon="icons/newclass_wiz.gif"
+            id="org.jetbrains.kotlin.enumWizard"
+            name="Kotlin Annotation Class"
+            preferredPerspectives="org.jetbrains.kotlin.perspective"
+            project="false">
+         <description>
+            Create a new Kotlin annotation
          </description>
       </wizard>
       <wizard
@@ -311,6 +367,22 @@
             id="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
             name="Find References In Workspace">
       </command>
+      <command
+              defaultHandler="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInWorkspaceHandler"
+              id="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInWorkspaceHandler"
+              name="Find Implementations in Workspace">
+      </command>
+      <command
+              defaultHandler="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInProjectHandler"
+              id="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInProjectHandler"
+              name="Find Implementations in Project">
+      </command>
+       <command defaultHandler="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"
+                id="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"
+                name="Super Implementations"/>
+       <command defaultHandler="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenAllSuperImplementationActionHandler"
+                id="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenAllSuperImplementationActionHandler"
+                name="All Super Implementations"/>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -325,59 +397,34 @@
       </menuContribution>
       <menuContribution
             allPopups="false"
-            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
-         <command
-               commandId="org.jetbrains.kotlin.ui.commands.j2k"
-               label="Convert Java to Kotlin"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
-         <menu
-               label="Configure Kotlin">
-            <command
-                  commandId="org.jetbrains.kotlin.ui.commands.deconfiguration"
-                  label="Remove Kotlin Nature"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="org.jetbrains.kotlin.ui.commands.configuration"
-                  label="Add Kotlin Nature"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="org.jetbrains.kotlin.ui.commands.configuration.coroutines"
-                  label="Add Coroutines Library"
-                  style="push">
-               <visibleWhen
-                     checkEnabled="true">
-               </visibleWhen>
-            </command>
-         </menu>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
             locationURI="popup:org.jetbrains.kotlin.ui.editors.KotlinFileEditor.EditorContext">
          <menu
                label="References">
             <command
                   commandId="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInProject"
-                  label="Project"
+                  label="References in Project"
                   style="push">
             </command>
             <command
                   commandId="org.jetbrains.kotlin.ui.commands.findReferences.findReferencesInWorkspace"
-                  label="Workspace"
+                  label="References in Workspace"
                   style="push">
             </command>
+            <command
+                  commandId="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInWorkspaceHandler"
+                  label="Implementations in Workspace"
+                  style="push">
+            </command>
+            <command
+                  commandId="org.jetbrains.kotlin.ui.commands.findReferences.KotlinFindImplementationsInProjectHandler"
+                  label="Implementations in Project"
+                  style="push">
+            </command>
+             <command commandId="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenSuperImplementationActionHandler"
+                      label="Super Implementations" style="push"/>
+             <command
+                     commandId="org.jetbrains.kotlin.ui.editors.navigation.KotlinOpenAllSuperImplementationActionHandler"
+                     label="All Super Implementations" style="push"/>
          </menu>
       </menuContribution>
    </extension>
@@ -600,8 +647,7 @@
             class="org.jetbrains.kotlin.ui.editors.KotlinElementHyperlinkDetector"
             id="org.jetbrains.kotlin.ui.editors.KotlinElementHyperlinkDetector"
             name="KotlinElementHyperlinkDetector"
-            targetId="org.jetbrains.kotlin.ui.editors.kotlinCode">
-      </hyperlinkDetector>
+            targetId="org.jetbrains.kotlin.ui.editors.kotlinCode"/>
    </extension>
    <extension
          point="org.eclipse.ui.startup">
@@ -961,5 +1007,35 @@
          		menubarPath="project/additions">
          </action>
        </actionSet>
+   </extension>
+   <extension
+         id="org.jetbrains.kotlin.project.menus"
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.projectConfigure">
+         <command
+               commandId="org.jetbrains.kotlin.ui.commands.configuration"
+               label="Add Kotlin Nature"
+               style="push">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.jetbrains.kotlin.ui.commands.deconfiguration"
+               label="Remove Kotlin Nature"
+               style="push">
+            <visibleWhen checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.jetbrains.kotlin.ui.commands.configuration.coroutines"
+               label="Add Coroutines Library"
+               style="push">
+            <visibleWhen checkEnabled="true">
+            </visibleWhen>
+         </command>
+      </menuContribution>
    </extension>
 </plugin>

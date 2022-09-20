@@ -27,9 +27,9 @@ import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.graphics.Point
 import org.eclipse.ui.ide.IDE
 import org.eclipse.ui.texteditor.MarkerAnnotation
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
-import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.ui.editors.quickassist.KotlinQuickAssistProcessor
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolution
 import org.jetbrains.kotlin.ui.editors.quickfix.KotlinMarkerResolutionGenerator
@@ -83,7 +83,7 @@ private class KotlinMarkerResolutionProposal(
 fun findDiagnosticsBy(invocationContext: IQuickAssistInvocationContext, editor: KotlinEditor): List<Diagnostic> {
     val offset = LineEndUtil.convertCrToDocumentOffset(editor.document, invocationContext.offset)
     return editor.parsedFile?.let { ktFile ->
-        getBindingContext(ktFile)?.diagnostics?.filter {
+        ktFile.getBindingContext().diagnostics.filter {
             val range = it.psiElement.textRange
             range.startOffset <= offset && offset <= range.endOffset
         }

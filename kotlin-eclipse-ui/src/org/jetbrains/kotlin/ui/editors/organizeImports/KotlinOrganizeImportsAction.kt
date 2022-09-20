@@ -29,6 +29,7 @@ import org.eclipse.jface.window.Window
 import org.eclipse.swt.graphics.Image
 import org.eclipse.ui.ISharedImages
 import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.formatting.codeStyle
 import org.jetbrains.kotlin.core.imports.*
@@ -39,6 +40,9 @@ import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.core.resolve.KotlinResolutionFacade
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.idea.core.formatter.KotlinCodeStyleSettings
+import org.jetbrains.kotlin.idea.core.formatter.KotlinPackageEntry
+import org.jetbrains.kotlin.idea.core.formatter.KotlinPackageEntry.Companion.ALL_OTHER_ALIAS_IMPORTS_ENTRY
+import org.jetbrains.kotlin.idea.core.formatter.KotlinPackageEntryTable
 import org.jetbrains.kotlin.idea.formatter.kotlinCustomSettings
 import org.jetbrains.kotlin.idea.imports.OptimizedImportsBuilder
 import org.jetbrains.kotlin.psi.KtFile
@@ -65,7 +69,7 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
     }
 
     override fun run() {
-        val bindingContext = getBindingContext(editor) ?: return
+        val bindingContext = editor.getBindingContext() ?: return
         val ktFile = editor.parsedFile ?: return
         val file = editor.eclipseFile ?: return
         val (result, container) = KotlinAnalyzer.analyzeFile(ktFile)
@@ -98,18 +102,21 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
 
         KotlinPsiManager.commitFile(file, editor.document)
 
-        optimizeImports()
+        optimizeImports(languageVersionSettings)
     }
 
-    private fun optimizeImports() {
+    private fun optimizeImports(languageVersionSettings: LanguageVersionSettings) {
         val ktFile = editor.parsedFile ?: return
         val file = editor.eclipseFile ?: return
         val importsData = collectDescriptorsToImport(ktFile)
         val kotlinCodeStyleSettings = file.project.codeStyle.kotlinCustomSettings
 
-        val optimizedImports = prepareOptimizedImports(ktFile, importsData, kotlinCodeStyleSettings) ?: return
+        val optimizedImports = prepareOptimizedImports(ktFile, importsData, kotlinCodeStyleSettings, languageVersionSettings) ?: return
 
-        replaceImports(optimizedImports.map { it.toString() }, file, editor.document)
+        replaceImports(
+            optimizedImports.sortedWith(ImportPathComparator(kotlinCodeStyleSettings.PACKAGES_IMPORT_LAYOUT))
+                .map { it.toString() }, file, editor.document
+        )
     }
 
     // null signalizes about cancelling operation
@@ -137,7 +144,8 @@ class KotlinOrganizeImportsAction(private val editor: KotlinCommonEditor) : Sele
 fun prepareOptimizedImports(
     file: KtFile,
     importsData: OptimizedImportsBuilder.InputData,
-    settings: KotlinCodeStyleSettings
+    settings: KotlinCodeStyleSettings,
+    languageVersionSettings: LanguageVersionSettings
 ): List<ImportPath>? =
     OptimizedImportsBuilder(
         file,
@@ -145,7 +153,8 @@ fun prepareOptimizedImports(
         OptimizedImportsBuilder.Options(
             settings.NAME_COUNT_TO_USE_STAR_IMPORT,
             settings.NAME_COUNT_TO_USE_STAR_IMPORT_FOR_MEMBERS
-        ) { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS }
+        ) { fqName -> fqName.asString() in settings.PACKAGES_TO_USE_STAR_IMPORTS },
+        languageVersionSettings.apiVersion
     ).buildOptimizedImports()
 
 object ImportCandidatesLabelProvider : LabelProvider() {
@@ -163,4 +172,59 @@ object ImportCandidatesLabelProvider : LabelProvider() {
         else -> element.toString()
             .also { KotlinLogger.logWarning("Unknown type of import candidate: $element") }
     }
+}
+
+internal class ImportPathComparator(private val packageTable: KotlinPackageEntryTable) : Comparator<ImportPath> {
+
+    override fun compare(import1: ImportPath, import2: ImportPath): Int {
+        val ignoreAlias = import1.hasAlias() && import2.hasAlias()
+
+        return compareValuesBy(
+            import1,
+            import2,
+            { import -> bestEntryMatchIndex(import, ignoreAlias) },
+            { import -> import.toString() }
+        )
+    }
+
+    private fun bestEntryMatchIndex(path: ImportPath, ignoreAlias: Boolean): Int {
+        var bestEntryMatch: KotlinPackageEntry? = null
+        var bestIndex: Int = -1
+
+        for ((index, entry) in packageTable.getEntries().withIndex()) {
+            if (entry.isBetterMatchForPackageThan(bestEntryMatch, path, ignoreAlias)) {
+                bestEntryMatch = entry
+                bestIndex = index
+            }
+        }
+
+        return bestIndex
+    }
+}
+
+private fun KotlinPackageEntry.isBetterMatchForPackageThan(entry: KotlinPackageEntry?, path: ImportPath, ignoreAlias: Boolean): Boolean {
+    if (!matchesImportPath(path, ignoreAlias)) return false
+    if (entry == null) return true
+
+    // Any matched package is better than ALL_OTHER_IMPORTS_ENTRY
+    if (this == KotlinPackageEntry.ALL_OTHER_IMPORTS_ENTRY) return false
+    if (entry == KotlinPackageEntry.ALL_OTHER_IMPORTS_ENTRY) return true
+
+    if (entry.withSubpackages != withSubpackages) return !withSubpackages
+
+    return entry.packageName.count { it == '.' } < packageName.count { it == '.' }
+}
+
+/**
+ * In current implementation we assume that aliased import can be matched only by
+ * [ALL_OTHER_ALIAS_IMPORTS_ENTRY] which is always present.
+ */
+private fun KotlinPackageEntry.matchesImportPath(importPath: ImportPath, ignoreAlias: Boolean): Boolean {
+    if (!ignoreAlias && importPath.hasAlias()) {
+        return this == ALL_OTHER_ALIAS_IMPORTS_ENTRY
+    }
+
+    if (this == KotlinPackageEntry.ALL_OTHER_IMPORTS_ENTRY) return true
+
+    return matchesPackageName(importPath.pathStr)
 }

@@ -6,6 +6,9 @@ import org.eclipse.jdt.internal.ui.packageview.PackageExplorerContentProvider
 import org.eclipse.jdt.internal.ui.packageview.PackageExplorerLabelProvider
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementImageProvider
 import org.eclipse.swt.graphics.Image
+import org.jetbrains.kotlin.core.model.EclipseScriptDefinitionProvider
+import org.jetbrains.kotlin.core.utils.asFile
+import kotlin.script.experimental.host.FileScriptSource
 
 /**
  * Modified version of [PackageExplorerLabelProvider] that returns correct images for packages
@@ -18,7 +21,7 @@ import org.eclipse.swt.graphics.Image
  */
 class KotlinAwarePackageExplorerLabelProvider(cp: PackageExplorerContentProvider) : PackageExplorerLabelProvider(cp) {
 
-    override fun getImage(element: Any?): Image {
+    override fun getImage(element: Any?): Image? {
         // Replace instances of IPackageFragment with instances of KotlinAwarePackageFragment
         return super.getImage(when (element) {
             is IPackageFragment -> KotlinAwarePackageFragment(element)
@@ -35,7 +38,7 @@ class KotlinAwarePackageExplorerLabelProvider(cp: PackageExplorerContentProvider
         override fun hasChildren(): Boolean {
             return base.hasChildren() ||
                     base.nonJavaResources.any { obj ->
-                        obj is IFile && (obj.name.endsWith(".kt") || obj.name.endsWith(".kts"))
+                        obj is IFile && (obj.name.endsWith(".kt") || EclipseScriptDefinitionProvider.isScript(FileScriptSource(obj.asFile)))
                     }
         }
     }

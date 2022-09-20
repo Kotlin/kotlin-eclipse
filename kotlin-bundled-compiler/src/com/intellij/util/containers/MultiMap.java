@@ -9,8 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
-import java.util.*;
 import java.util.HashMap;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Consider to use factory methods {@link #createLinked()}, {@link #createSet()}, {@link #createSmart()}, {@link #create(TObjectHashingStrategy)} instead of override.
@@ -29,6 +30,10 @@ public class MultiMap<K, V> implements Serializable {
     myMap = createMap();
   }
 
+  public MultiMap(@NotNull Map<K, Collection<V>> mapImpl) {
+    myMap = mapImpl;
+  }
+
   public MultiMap(@NotNull MultiMap<? extends K, ? extends V> toCopy) {
     this();
     putAllValues(toCopy);
@@ -36,7 +41,7 @@ public class MultiMap<K, V> implements Serializable {
 
   @NotNull
   public MultiMap<K, V> copy() {
-    return new MultiMap<K, V>(this);
+    return new MultiMap<>(this);
   }
   
   public MultiMap(int initialCapacity, float loadFactor) {
@@ -318,12 +323,22 @@ public class MultiMap<K, V> implements Serializable {
   }
 
   @NotNull
+  public static <K, V> MultiMap<K, V> createConcurrent() {
+    return new MultiMap<K, V>(new ConcurrentHashMap<>()) {
+      @NotNull
+      protected Collection<V> createCollection() {
+        return ContainerUtil.createLockFreeCopyOnWriteList();
+      }
+    };
+  }
+
+  @NotNull
   public static <K, V> MultiMap<K, V> createConcurrentSet() {
     return new ConcurrentMultiMap<K, V>() {
       @NotNull
       @Override
       protected Collection<V> createCollection() {
-        return ContainerUtil.newConcurrentSet();
+          return Collections.newSetFromMap(new ConcurrentHashMap<>());
       }
 
       @NotNull

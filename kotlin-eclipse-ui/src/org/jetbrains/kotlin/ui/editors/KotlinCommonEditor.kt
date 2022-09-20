@@ -195,9 +195,9 @@ abstract class KotlinCommonEditor : CompilationUnitEditor(), KotlinEditor {
     override fun dispose() {
         colorManager.dispose()
 
-        if (kotlinSemanticHighlighter != null) {
-            kotlinReconcilingStrategy.removeListener(kotlinSemanticHighlighter!!)
-            kotlinSemanticHighlighter!!.uninstall()
+        kotlinSemanticHighlighter?.let {
+            kotlinReconcilingStrategy.removeListener(it)
+            it.uninstall()
         }
 
         kotlinReconcilingStrategy.removeListener(KotlinLineAnnotationsReconciler)

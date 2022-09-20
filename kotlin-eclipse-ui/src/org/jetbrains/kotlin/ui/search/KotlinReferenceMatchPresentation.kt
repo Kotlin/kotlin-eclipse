@@ -16,39 +16,22 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui.search
 
+import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jdt.ui.search.IMatchPresentation
 import org.eclipse.jface.viewers.ILabelProvider
-import org.eclipse.search.ui.text.Match
 import org.eclipse.jface.viewers.LabelProvider
-import org.jetbrains.kotlin.psi.KtReferenceExpression
-import org.eclipse.swt.graphics.Image
-import com.intellij.psi.util.PsiTreeUtil
-import org.eclipse.jdt.ui.JavaUI
-import org.eclipse.jdt.ui.ISharedImages
-import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
-import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
 import org.eclipse.search.internal.ui.text.EditorOpener
-import org.eclipse.core.resources.ResourcesPlugin
+import org.eclipse.search.ui.text.Match
+import org.eclipse.swt.graphics.Image
 import org.eclipse.ui.PlatformUI
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
-import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider
-import org.eclipse.jface.viewers.StyledString
-import org.eclipse.jface.viewers.ITreeContentProvider
-import org.eclipse.jface.viewers.Viewer
-import org.eclipse.jdt.ui.JavaElementLabels
-import org.eclipse.jdt.internal.corext.util.Strings
-import org.jetbrains.kotlin.psi.KtElement
-import org.jetbrains.kotlin.psi.KtNamedDeclaration
-import org.jetbrains.kotlin.psi.KtClass
-import org.jetbrains.kotlin.ui.editors.completion.KotlinCompletionUtils
-import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.kotlin.psi.KtProperty
-import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
-import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.core.asJava.getTypeFqName
+import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
+import org.jetbrains.kotlin.eclipse.ui.utils.KotlinImageProvider
+import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.psi.*
 
-public class KotlinReferenceMatchPresentation : IMatchPresentation {
+class KotlinReferenceMatchPresentation : IMatchPresentation {
     private val editorOpener = EditorOpener()
     
     override fun createLabelProvider(): ILabelProvider = KotlinReferenceLabelProvider()
@@ -56,32 +39,31 @@ public class KotlinReferenceMatchPresentation : IMatchPresentation {
     override fun showMatch(match: Match, currentOffset: Int, currentLength: Int, activate: Boolean) {
         if (match !is KotlinElementMatch) return 
         
+        val identifier = match.identifier
         val element = match.jetElement
-        val eclipseFile = KotlinPsiManager.getEclipseFile(element.getContainingKtFile())
+        val eclipseFile = KotlinPsiManager.getEclipseFile(element.containingKtFile)
         if (eclipseFile != null) {
             val document = EditorUtil.getDocument(eclipseFile)
             editorOpener.openAndSelect(
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
-                    eclipseFile,
-                    element.getTextDocumentOffset(document),
-                    element.getTextLength(),
-                    activate)
+                PlatformUI.getWorkbench().activeWorkbenchWindow.activePage,
+                eclipseFile,
+                identifier.getTextDocumentOffset(document),
+                identifier.textLength,
+                activate
+            )
         }
     }
 }
 
-public class KotlinReferenceLabelProvider : LabelProvider() {
+class KotlinReferenceLabelProvider : LabelProvider() {
     override fun getText(element: Any): String {
         if (element !is KotlinAdaptableElement) {
             throw IllegalArgumentException("KotlinReferenceLabelProvider asked for non-reference expression: $element")
         }
-        
-        val declaration = getContainingDeclaration(element.jetElement)
-        return when (declaration) {
-            is KtNamedDeclaration -> declaration.let { 
-                with (it) {
-                    getFqName()?.asString() ?: getNameAsSafeName().asString()
-                }
+
+        return when (val declaration = getContainingDeclaration(element.jetElement)) {
+            is KtNamedDeclaration -> with (declaration) {
+                fqName?.asString() ?: nameAsSafeName.asString()
             }
             is KtFile -> getTypeFqName(declaration)?.asString() ?: ""
             else -> ""
@@ -91,7 +73,7 @@ public class KotlinReferenceLabelProvider : LabelProvider() {
     override fun getImage(element: Any): Image? {
         val jetElement = (element as KotlinAdaptableElement).jetElement
         val containingDeclaration = getContainingDeclaration(jetElement)
-        return containingDeclaration?.let { KotlinImageProvider.getImage(it) } ?: null
+        return containingDeclaration?.let { KotlinImageProvider.getImage(it) }
     }
     
     private fun getContainingDeclaration(jetElement: KtElement): KtElement? {

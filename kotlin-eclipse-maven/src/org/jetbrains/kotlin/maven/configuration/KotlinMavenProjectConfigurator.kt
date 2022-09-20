@@ -28,7 +28,7 @@ class KotlinMavenProjectConfigurator : AbstractSourcesGenerationProjectConfigura
         val plugin: Plugin = mavenProject.buildPlugins
             .find { checkCoordinates(it, GROUP_ID, MAVEN_PLUGIN_ID) } ?: return
 
-        val compilerProperties = KotlinEnvironment.getEnvironment(request.project).projectCompilerProperties
+        val compilerProperties = KotlinEnvironment.getEnvironment(request.mavenProjectFacade.project).projectCompilerProperties
         var configurationChanged = false
 
         fun configureProperty(
@@ -64,7 +64,7 @@ class KotlinMavenProjectConfigurator : AbstractSourcesGenerationProjectConfigura
 
         configureProperty(propertyPath = "kotlin.code.style", isChangingConfiguration = false) { alias ->
             KotlinCodeStyleManager.buildsystemAliases[alias]?.let {
-                with(KotlinCodeStyleProperties(ProjectScope(request.project))) {
+                with(KotlinCodeStyleProperties(ProjectScope(request.mavenProjectFacade.project))) {
                     codeStyleId = it
                     globalsOverridden = true
                     saveChanges()
@@ -84,7 +84,7 @@ class KotlinMavenProjectConfigurator : AbstractSourcesGenerationProjectConfigura
     ) {
         if (hasKotlinMavenPlugin(request.mavenProject)) {
             classpath.addEntry(KotlinClasspathContainer.CONTAINER_ENTRY)
-            AbstractProjectConfigurator.addNature(request.project, KotlinNature.KOTLIN_NATURE, monitor)
+            AbstractProjectConfigurator.addNature(request.mavenProjectFacade.project, KotlinNature.KOTLIN_NATURE, monitor)
         }
     }
 

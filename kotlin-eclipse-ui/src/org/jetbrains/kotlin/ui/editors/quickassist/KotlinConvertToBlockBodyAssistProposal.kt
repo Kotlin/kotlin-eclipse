@@ -23,6 +23,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.eclipse.jface.text.IDocument
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.core.formatting.codeStyle
+import org.jetbrains.kotlin.core.utils.getBindingContext
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.eclipse.ui.utils.getBindingContext
 import org.jetbrains.kotlin.psi.KtBlockExpression
@@ -47,7 +48,7 @@ class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuick
 
         when (declaration) {
             is KtNamedFunction -> {
-                val bindingContext = getBindingContext(declaration) ?: return false;
+                val bindingContext = declaration.getBindingContext()
                 val returnType: KotlinType = declaration.returnType(bindingContext) ?: return false
                 
                 // do not convert when type is implicit and unknown
@@ -66,7 +67,7 @@ class KotlinConvertToBlockBodyAssistProposal(editor: KotlinEditor) : KotlinQuick
 
     override fun apply(document: IDocument, psiElement: PsiElement) {
         val declaration = PsiTreeUtil.getParentOfType(psiElement, KtDeclarationWithBody::class.java)!!
-        val context = getBindingContext(declaration)!!
+        val context = declaration.getBindingContext()!!
 
         val shouldSpecifyType = declaration is KtNamedFunction
                 && !declaration.hasDeclaredReturnType()

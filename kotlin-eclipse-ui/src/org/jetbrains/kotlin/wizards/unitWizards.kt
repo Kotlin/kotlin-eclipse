@@ -14,10 +14,10 @@
  * limitations under the License.
  *
  *******************************************************************************/
+@file:Suppress("unused")
+
 package org.jetbrains.kotlin.wizards
 
-import org.eclipse.core.resources.IFile
-import org.eclipse.core.runtime.IPath
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.ui.IWorkbench
 import org.eclipse.ui.dialogs.WizardNewFileCreationPage
@@ -26,37 +26,41 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
 
 class NewClassWizard : NewUnitWizard(WizardType.CLASS)
+class NewSealedClassWizard : NewUnitWizard(WizardType.SEALED_CLASS)
 class NewEnumWizard : NewUnitWizard(WizardType.ENUM)
+class NewDataClassWizard : NewUnitWizard(WizardType.DATA)
+class NewAnnotationWizard : NewUnitWizard(WizardType.ANNOTATION)
 class NewObjectWizard : NewUnitWizard(WizardType.OBJECT)
 class NewInterfaceWizard : NewUnitWizard(WizardType.INTERFACE)
+class NewSealedInterfaceWizard : NewUnitWizard(WizardType.SEALED_INTERFACE)
 
 class NewScriptWizard : BasicNewResourceWizard() {
     companion object {
         private const val pageName = "New Kotlin Script"
     }
-    
+
     private lateinit var mainPage: WizardNewFileCreationPage
-    
+
     override fun addPages() {
         super.addPages()
-        
+
         mainPage = WizardNewFileCreationPage(pageName, getSelection()).apply {
-            setFileExtension(KotlinParserDefinition.STD_SCRIPT_SUFFIX)
-            setTitle("Kotlin Script")
-            setDescription("Create a new Kotlin script")
+            fileExtension = KotlinParserDefinition.STD_SCRIPT_SUFFIX
+            title = "Kotlin Script"
+            description = "Create a new Kotlin script"
         }
-        
+
         addPage(mainPage)
     }
-    
+
     override fun init(workbench: IWorkbench, currentSelection: IStructuredSelection) {
         super.init(workbench, currentSelection)
-        setWindowTitle(pageName)
+        windowTitle = pageName
     }
-    
+
     override fun performFinish(): Boolean {
         val file = mainPage.createNewFile() ?: return false
-        
+
         selectAndReveal(file)
         workbench.activeWorkbenchWindow?.let {
             val page = it.activePage
@@ -64,7 +68,7 @@ class NewScriptWizard : BasicNewResourceWizard() {
                 IDE.openEditor(page, file, true)
             }
         }
-        
+
         return true
     }
 }

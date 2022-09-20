@@ -36,7 +36,7 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.compiler.env.IBinaryAnnotation;
-import org.eclipse.jdt.internal.core.AnnotationInfo;
+import org.eclipse.jdt.internal.core.BinaryMethod;
 import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.core.ClassFile;
 import org.jetbrains.annotations.NotNull;
@@ -47,7 +47,7 @@ import org.jetbrains.kotlin.core.resolve.lang.java.EclipseJavaClassFinder;
 import org.jetbrains.kotlin.core.utils.ProjectUtils;
 import org.jetbrains.kotlin.descriptors.Visibilities;
 import org.jetbrains.kotlin.descriptors.Visibility;
-import org.jetbrains.kotlin.load.java.JavaVisibilities;
+import org.jetbrains.kotlin.descriptors.java.JavaVisibilities;
 import org.jetbrains.kotlin.load.java.structure.JavaAnnotation;
 import org.jetbrains.kotlin.load.java.structure.JavaValueParameter;
 import org.jetbrains.kotlin.load.kotlin.KotlinBinaryClassCache;
@@ -70,14 +70,14 @@ public class EclipseJavaElementUtil {
     static Visibility getVisibility(@NotNull IBinding member) {
         int flags = member.getModifiers();
         if (Modifier.isPublic(flags)) {
-            return Visibilities.PUBLIC;
+            return Visibilities.Public.INSTANCE;
         } else if (Modifier.isPrivate(flags)) {
-            return Visibilities.PRIVATE;
+            return Visibilities.Private.INSTANCE;
         } else if (Modifier.isProtected(flags)) {
-            return Flags.isStatic(flags) ? JavaVisibilities.PROTECTED_STATIC_VISIBILITY : JavaVisibilities.PROTECTED_AND_PACKAGE;
+            return Flags.isStatic(flags) ? JavaVisibilities.ProtectedAndPackage.INSTANCE : JavaVisibilities.ProtectedAndPackage.INSTANCE;
         }
 
-        return JavaVisibilities.PACKAGE_VISIBILITY;
+        return JavaVisibilities.PackageVisibility.INSTANCE;
     }
 
     private static List<ITypeBinding> getSuperTypes(@NotNull ITypeBinding typeBinding) {
@@ -116,6 +116,9 @@ public class EclipseJavaElementUtil {
     private static ITypeBinding getJavaLangObjectBinding(@NotNull IJavaProject javaProject) {
         try {
             IType javaType = javaProject.findType(CommonClassNames.JAVA_LANG_OBJECT);
+            if(javaType == null) {
+            	return null; // this happens if the project was modified while analyzing in progress.
+            }
             return EclipseJavaClassFinder.createTypeBinding(javaType);
         } catch (JavaModelException e) {
             KotlinLogger.logAndThrow(e);
@@ -207,6 +210,20 @@ public class EclipseJavaElementUtil {
         }
 
         return false;
+    }
+
+    public static boolean isFromKotlinBinFolder(@NotNull IJavaElement element) {
+        IClassFile classFile;
+        if (element instanceof IClassFile) {
+            classFile = (IClassFile) element;
+        } else if (element instanceof BinaryType) {
+            classFile = ((BinaryType) element).getClassFile();
+        } else if(element instanceof BinaryMethod) {
+            classFile = ((BinaryMethod) element).getClassFile();
+        } else {
+            return false;
+        }
+        return classFile.getResource() == null || isFromKotlinBinFolder(classFile.getResource());
     }
 
     public static boolean isKotlinBinaryElement(@NotNull IJavaElement element) {

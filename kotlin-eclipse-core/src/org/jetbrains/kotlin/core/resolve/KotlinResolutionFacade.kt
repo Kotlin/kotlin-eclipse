@@ -20,19 +20,22 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.eclipse.core.resources.IFile
 import org.jetbrains.kotlin.analyzer.AnalysisResult
+import org.jetbrains.kotlin.analyzer.ModuleInfo
+import org.jetbrains.kotlin.analyzer.ResolverForProject
 import org.jetbrains.kotlin.container.ComponentProvider
 import org.jetbrains.kotlin.container.getService
 import org.jetbrains.kotlin.core.model.getEnvironment
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
+import org.jetbrains.kotlin.diagnostics.DiagnosticSink
+import org.jetbrains.kotlin.idea.FrontendInternals
 import org.jetbrains.kotlin.idea.resolve.ResolutionFacade
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
-import org.jetbrains.kotlin.analyzer.ModuleInfo
-import org.jetbrains.kotlin.analyzer.ResolverForProject
 
+@OptIn(FrontendInternals::class)
 public class KotlinResolutionFacade(
         val eclipseFile: IFile, 
         val componentProvider: ComponentProvider,
@@ -54,8 +57,10 @@ public class KotlinResolutionFacade(
     override fun analyze(elements: Collection<KtElement>, bodyResolveMode: BodyResolveMode): BindingContext {
         throw UnsupportedOperationException()
     }
-    
-    override fun analyzeWithAllCompilerChecks(elements: Collection<KtElement>): AnalysisResult {
+
+    override fun analyzeWithAllCompilerChecks(
+        elements: Collection<KtElement>, callback: DiagnosticSink.DiagnosticsCallback?
+    ): AnalysisResult {
         throw UnsupportedOperationException()
     }
     

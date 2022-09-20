@@ -6,8 +6,10 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.internal.core.BinaryType;
 import org.eclipse.jdt.internal.ui.javaeditor.EditorUtility;
 import org.eclipse.ui.IEditorPart;
@@ -17,6 +19,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager;
@@ -30,8 +33,11 @@ import org.jetbrains.kotlin.ui.editors.KotlinClassFileEditorInput;
 import org.jetbrains.kotlin.ui.editors.KotlinEditor;
 
 // Seeks Kotlin editor by IJavaElement
+@SuppressWarnings("restriction")
 public class KotlinOpenEditor {
-    @Nullable
+    private static final String CLASS_WITHOUT_SOURCE = "*.class without source";
+
+	@Nullable
     public static IEditorPart openKotlinEditor(@NotNull IJavaElement element, boolean activate) {
         List<KtFile> sourceFiles = findSourceFiles(element);
         
@@ -66,7 +72,7 @@ public class KotlinOpenEditor {
         }
         
         File lightClass = resource.getFullPath().toFile();
-        List<KtFile> sourceFiles = KotlinLightClassManager
+        List<KtFile> sourceFiles = KotlinLightClassManager.Companion
                 .getInstance(element.getJavaProject().getProject()).getSourceFiles(lightClass);
         KtFile navigationFile = KotlinOpenEditorUtilsKt.findNavigationFileFromSources(element, sourceFiles);
         
@@ -112,7 +118,7 @@ public class KotlinOpenEditor {
         IWorkbenchPage page = win.getActivePage();
         
         try {
-            IEditorPart reusedEditor = page.openEditor(editorInput, KotlinClassFileEditor.Companion.getEDITOR_ID(), activate);
+            IEditorPart reusedEditor = page.openEditor(editorInput, resolveEditorID((ISourceReference)element), activate);
             if (reusedEditor != null) {
                 // the input is compared by a source path, but corresponding
                 // classes may be different
@@ -121,9 +127,17 @@ public class KotlinOpenEditor {
                 page.reuseEditor((IReusableEditor) reusedEditor, editorInput);
             }
             return reusedEditor;
-        } catch (PartInitException e) {
+        } catch (CoreException e) {
             KotlinLogger.logAndThrow(e);
         }
         return null;
+    }
+    
+	private static String resolveEditorID(@NotNull ISourceReference reference) throws CoreException {
+		// if no source let the java decompiler handle it.
+		if(reference.getSourceRange() != null && reference.getSourceRange().getLength() > 0) {
+    		return KotlinClassFileEditor.Companion.getEDITOR_ID();
+		}
+		return IDE.getEditorDescriptor(CLASS_WITHOUT_SOURCE, true, false).getId();
     }
 }

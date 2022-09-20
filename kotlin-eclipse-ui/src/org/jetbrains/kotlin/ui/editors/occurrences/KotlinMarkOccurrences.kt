@@ -29,25 +29,24 @@ import org.eclipse.search.ui.text.Match
 import org.eclipse.ui.ISelectionListener
 import org.eclipse.ui.IWorkbenchPart
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
+import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.core.references.resolveToSourceDeclaration
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.eclipse.ui.utils.EditorUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
-import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.ui.commands.findReferences.KotlinScopedQuerySpecification
 import org.jetbrains.kotlin.ui.editors.KotlinCommonEditor
 import org.jetbrains.kotlin.ui.editors.KotlinEditor
-import org.jetbrains.kotlin.ui.editors.KotlinFileEditor
 import org.jetbrains.kotlin.ui.editors.annotations.AnnotationManager
 import org.jetbrains.kotlin.ui.refactorings.rename.getLengthOfIdentifier
 import org.jetbrains.kotlin.ui.search.KotlinElementMatch
 import org.jetbrains.kotlin.ui.search.KotlinQueryParticipant
 import org.jetbrains.kotlin.ui.search.getContainingClassOrObjectForConstructor
 
-public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISelectionListener {
+class KotlinMarkOccurrences(private val kotlinEditor: KotlinCommonEditor) : ISelectionListener {
     companion object {
-        private val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
+        private const val ANNOTATION_TYPE = "org.eclipse.jdt.ui.occurrences"
     }
     
     override fun selectionChanged(part: IWorkbenchPart, selection: ISelection) {
@@ -58,16 +57,12 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
                 val file = part.eclipseFile
                 if (file == null || !file.exists()) return@runJob Status.CANCEL_STATUS
                 
-                val document = part.getDocumentSafely()
-                if (document == null) return@runJob Status.CANCEL_STATUS
-                
+                val document = part.getDocumentSafely() ?: return@runJob Status.CANCEL_STATUS
+
                 KotlinPsiManager.getKotlinFileIfExist(file, document.get())
                 
-                val ktElement = EditorUtil.getJetElement(part, selection.getOffset())
-                if (ktElement == null) {
-                    return@runJob Status.CANCEL_STATUS
-                }
-                
+                val ktElement = EditorUtil.getJetElement(part, selection.offset) ?: return@runJob Status.CANCEL_STATUS
+
                 val occurrences = findOccurrences(part, ktElement, file)
                 updateOccurrences(part, occurrences)
             }
@@ -88,25 +83,24 @@ public class KotlinMarkOccurrences(val kotlinEditor: KotlinCommonEditor) : ISele
         val searchingElements = getSearchingElements(sourceElements)
         
         val querySpecification = KotlinScopedQuerySpecification(searchingElements, listOf(file), 
-                IJavaSearchConstants.ALL_OCCURRENCES, "Searching in ${file.getName()}")
+                IJavaSearchConstants.ALL_OCCURRENCES, "Searching in ${file.name}")
         
         val occurrences = arrayListOf<Match>()
         KotlinQueryParticipant().search({ occurrences.add(it) }, querySpecification, NullProgressMonitor())
         
-        return occurrences.map { 
-            if (it !is KotlinElementMatch) return@map null
+        return occurrences.mapNotNull {
+            if (it !is KotlinElementMatch) return@mapNotNull null
             
             val element = it.jetElement
-            val length = getLengthOfIdentifier(element)
-            if (length == null) return@map null
-            
-            val document = editor.getDocumentSafely() ?: return@map null
+            val length = getLengthOfIdentifier(element) ?: return@mapNotNull null
+
+            val document = editor.getDocumentSafely() ?: return@mapNotNull null
             Position(element.getTextDocumentOffset(document), length)
-        }.filterNotNull()
+        }
     }
     
     private fun getSearchingElements(sourceElements: List<SourceElement>): List<SourceElement> {
         val classOrObjects = getContainingClassOrObjectForConstructor(sourceElements)
-        return if (classOrObjects.isNotEmpty()) classOrObjects else sourceElements
+        return classOrObjects.ifEmpty { sourceElements }
     }
 }

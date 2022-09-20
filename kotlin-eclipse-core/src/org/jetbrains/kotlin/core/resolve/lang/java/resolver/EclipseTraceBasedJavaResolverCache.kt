@@ -21,10 +21,7 @@ import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
 import org.jetbrains.kotlin.load.java.components.JavaResolverCache
-import org.jetbrains.kotlin.load.java.structure.JavaClass
-import org.jetbrains.kotlin.load.java.structure.JavaElement
-import org.jetbrains.kotlin.load.java.structure.JavaField
-import org.jetbrains.kotlin.load.java.structure.JavaMethod
+import org.jetbrains.kotlin.load.java.structure.*
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.tail
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -33,25 +30,13 @@ import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.ResolveSessionUtils
 import javax.inject.Inject
 
-class EclipseTraceBasedJavaResolverCache : JavaResolverCache {
-    private lateinit var trace: BindingTrace
-    private lateinit var resolveSession: ResolveSession
-    
-    @Inject
-    fun setTrace(trace: BindingTrace) {
-        this.trace = trace
-    }
-    
-    @Inject
-    fun setResolveSession(resolveSession: ResolveSession) {
-        this.resolveSession = resolveSession
-    }
-
+class EclipseTraceBasedJavaResolverCache(@Inject val trace: BindingTrace, @Inject val resolveSession: ResolveSession) : JavaResolverCache {
+	
     override fun getClassResolvedFromSource(fqName: FqName): ClassDescriptor? {
         return trace[BindingContext.FQNAME_TO_CLASS_DESCRIPTOR, fqName.toUnsafe()] ?: findInPackageFragments(fqName)
     }
 
-    override fun recordMethod(method: JavaMethod, descriptor: SimpleFunctionDescriptor) {
+    override fun recordMethod(p0: JavaMember, p1: SimpleFunctionDescriptor) {
     }
 
     override fun recordConstructor(element: JavaElement, descriptor: ConstructorDescriptor) {

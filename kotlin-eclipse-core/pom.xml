@@ -8,32 +8,42 @@
 		<relativePath>../pom.xml</relativePath>
 		<groupId>kotlin.eclipse</groupId>
 		<artifactId>kotlin.eclipse.plugin</artifactId>
-		<version>0.8.21-SNAPSHOT</version>
+		<version>1.6.21-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>org.jetbrains.kotlin.core</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
-    <build>
-        <sourceDirectory>src</sourceDirectory>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
 
-        <plugins>
-            <plugin>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-maven-plugin</artifactId>
-                <version>${kotlin.version}</version>
-
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+		<plugins>
+			<plugin>
+				<groupId>org.jetbrains.kotlin</groupId>
+				<artifactId>kotlin-maven-plugin</artifactId>
+				<version>${kotlin.version}</version>
+				<configuration>
+					<jvmTarget>17</jvmTarget>
+				</configuration>
+				<executions>
+					<execution>
+						<id>compile</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.10.1</version>
+				<configuration>
+					<release>17</release>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 	
 </project>

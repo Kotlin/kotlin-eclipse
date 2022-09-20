@@ -2,7 +2,7 @@
 <feature
       id="org.jetbrains.kotlin.gradle.feature"
       label="Kotlin-gradle"
-      version="0.8.21.qualifier"
+      version="1.6.21.qualifier"
       provider-name="JetBrains">
 
    <description url="http://kotlinlang.org/">
@@ -28,19 +28,5 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
    </license>
-
-   <plugin
-         id="org.jetbrains.kotlin.gradle"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jetbrains.kotlin.gradle.model"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
 </feature>
