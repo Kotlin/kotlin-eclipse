@@ -4,79 +4,85 @@ import com.intellij.openapi.util.Disposer
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
-import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity.ERROR
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity.EXCEPTION
+import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSourceLocation
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
+import org.jetbrains.kotlin.core.filesystem.KotlinLightClassManager.Companion.KOTLIN_TOUCHED_FILES_FILE_NAME
 import org.jetbrains.kotlin.core.launch.CompilerOutputData
 import org.jetbrains.kotlin.core.launch.CompilerOutputParser
 import org.jetbrains.kotlin.core.launch.KotlinCLICompiler
 import org.jetbrains.kotlin.core.model.KOTLIN_COMPILER_PATH
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.core.preferences.CompilerPlugin
+import org.jetbrains.kotlin.core.utils.DependencyResolverException
 import org.jetbrains.kotlin.core.utils.ProjectUtils
 import org.jetbrains.kotlin.incremental.makeIncrementally
-import java.io.BufferedReader
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.PrintStream
-import java.io.Reader
-import java.io.StringReader
+import java.io.*
 
 object KotlinCompiler {
 
     private fun compileKotlinFiles(
-        javaProject: IJavaProject,
-        compilation: (IJavaProject, File, List<File>) -> KotlinCompilerResult
+            javaProject: IJavaProject,
+            compilation: (IJavaProject, File, List<File>) -> KotlinCompilerResult
     ): KotlinCompilerResult =
-        ProjectUtils.getSrcOutDirectories(javaProject)
-            .groupingBy { it.second }.fold(mutableListOf<File>()) { list, key ->
-                list.apply { add(key.first) }
-            }.map { (out, sources) ->
-                compilation(javaProject, out, sources)
-            }.fold(KotlinCompilerResult(true, CompilerOutputData())) { previous, current ->
-                KotlinCompilerResult(previous.result and current.result, CompilerOutputData().apply {
-                    previous.compilerOutput.list.union(current.compilerOutput.list).forEach {
-                        add(it.messageSeverity, it.message, it.messageLocation)
+            ProjectUtils.getSrcOutDirectories(javaProject)
+                    .groupingBy { it.second }.fold(mutableListOf<File>()) { list, key ->
+                        list.apply { add(key.first) }
+                    }.onEach { (out) ->
+                        val tempFile = File(out, KOTLIN_TOUCHED_FILES_FILE_NAME).takeIf { it.exists() }
+                        tempFile?.readLines()?.map(::File)?.flatMap { tempFileToDelete ->
+                            val tempName = tempFileToDelete.nameWithoutExtension
+                            val tempFiles = tempFileToDelete.parentFile?.listFiles(FileFilter { it.name == "$tempName.class" || (it.name.startsWith("$tempName$") && it.name.endsWith(".class")) })
+                            tempFiles?.toList() ?: emptyList()
+                        }?.distinct()?.forEach(File::delete)
+                        tempFile?.delete()
+                        out.walkTopDown().filter { it.extension == "kt" }.forEach { it.delete() }
+                    }.map { (out, sources) ->
+                        compilation(javaProject, out, sources)
+                    }.fold(KotlinCompilerResult(true, CompilerOutputData())) { previous, current ->
+                        KotlinCompilerResult(previous.result and current.result, CompilerOutputData().apply {
+                            previous.compilerOutput.list.union(current.compilerOutput.list).forEach {
+                                add(it.messageSeverity, it.message, it.messageLocation)
+                            }
+                        })
                     }
-                })
-            }
 
     @JvmStatic
     fun compileKotlinFiles(javaProject: IJavaProject): KotlinCompilerResult =
-        compileKotlinFiles(javaProject) { project, path, sources ->
-            execKotlinCompiler(configureCompilerArguments(project, path.absolutePath, sources))
-        }
+            compileKotlinFiles(javaProject) { project, path, sources ->
+                execKotlinCompiler(configureCompilerArguments(project, path.absolutePath, sources))
+            }
 
     @JvmStatic
     fun compileIncrementallyFiles(
-        javaProject: IJavaProject
+            javaProject: IJavaProject
     ): KotlinCompilerResult =
-        compileKotlinFiles(javaProject) { project, path, sources ->
-            execIncrementalKotlinCompiler(project, path.absoluteFile, sources)
-        }
+            compileKotlinFiles(javaProject) { project, path, sources ->
+                execIncrementalKotlinCompiler(project, path.absoluteFile, sources)
+            }
 
     private fun execIncrementalKotlinCompiler(
-        javaProject: IJavaProject,
-        outputDir: File,
-        sourceDirs: List<File>
+            javaProject: IJavaProject,
+            outputDir: File,
+            sourceDirs: List<File>
     ): KotlinCompilerResult {
         val arguments = getCompilerArguments(javaProject, outputDir)
         val messageCollector = CompilerMessageCollector()
-        val disposable = Disposer.newDisposable()
+        val disposable = Disposer.newDisposable("Incremental compilation")
         val config = CompilerConfiguration().apply {
             put(JVMConfigurationKeys.NO_JDK, true)
             put(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY, MessageCollector.NONE)
             put(CLIConfigurationKeys.INTELLIJ_PLUGIN_ROOT, KOTLIN_COMPILER_PATH)
         }
         KotlinCoreEnvironment.getOrCreateApplicationEnvironmentForProduction(disposable, config)
-        var cacheDir = File("${outputDir.parentFile.absolutePath}/cache").also { it.mkdirs() }
+        val cacheDir = File("${outputDir.parentFile.absolutePath}/cache").also { it.mkdirs() }
         makeIncrementally(cacheDir, sourceDirs, arguments, messageCollector)
         return messageCollector.getCompilerResult()
     }
@@ -88,7 +94,7 @@ object KotlinCompiler {
 
     private fun getCompilerArguments(javaProject: IJavaProject, outputDir: File) = K2JVMCompilerArguments().apply {
         val kotlinProperties =
-            KotlinEnvironment.getEnvironment(javaProject.project).compilerProperties
+                KotlinEnvironment.getEnvironment(javaProject.project).compilerProperties
 
         kotlinHome = ProjectUtils.ktHome
         destination = outputDir.absolutePath
@@ -122,17 +128,20 @@ object KotlinCompiler {
         pluginClasspaths = pluginClasspathsList.toTypedArray()
         pluginOptions = pluginOptionsList.toTypedArray()
 
-        classpath = ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkUndefined)
-            .joinToString(separator = System.getProperty("path.separator")) { it.absolutePath }
+        val tempFiles = try {
+            ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkUndefined)
+        } catch (e: DependencyResolverException) {
+            e.resolvedFiles
+        }
 
-
+        classpath = tempFiles.joinToString(separator = System.getProperty("path.separator")) { it.absolutePath }
     }
 
     private fun configureCompilerArguments(
-        javaProject: IJavaProject, outputDir: String, sourceDirs: List<File>
+            javaProject: IJavaProject, outputDir: String, sourceDirs: List<File>
     ): Array<String> = with(mutableListOf<String>()) {
         val kotlinProperties =
-            KotlinEnvironment.getEnvironment(javaProject.project).compilerProperties
+                KotlinEnvironment.getEnvironment(javaProject.project).compilerProperties
 
         add("-kotlin-home")
         add(ProjectUtils.ktHome)
@@ -164,9 +173,14 @@ object KotlinCompiler {
         }
 
         add("-classpath")
-        ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkUndefined)
-            .joinToString(separator = System.getProperty("path.separator")) { it.absolutePath }
-            .let { add(it) }
+
+        val tempFiles = try {
+            ProjectUtils.collectClasspathWithDependenciesForLaunch(javaProject, jdkUndefined)
+        } catch (e: DependencyResolverException) {
+            e.resolvedFiles
+        }
+
+        add(tempFiles.joinToString(separator = System.getProperty("path.separator")) { it.absolutePath })
 
         add("-d")
         add(outputDir)
@@ -194,15 +208,17 @@ object KotlinCompiler {
         val compilerOutput = CompilerOutputData()
 
         override fun report(
-            severity: CompilerMessageSeverity,
-            message: String,
-            location: CompilerMessageSourceLocation?
+                severity: CompilerMessageSeverity,
+                message: String,
+                location: CompilerMessageSourceLocation?
         ) {
             hasErrors == hasErrors || severity.isError
             severities.add(severity)
             if (location != null) {
                 val messageLocation = CompilerMessageLocation.create(location.path, location.line, location.column, location.lineContent)
                 compilerOutput.add(severity, message, messageLocation)
+            } else {
+                compilerOutput.add(severity, message, null)
             }
         }
 
@@ -213,7 +229,7 @@ object KotlinCompiler {
         }
 
         fun getCompilerResult(): KotlinCompilerResult =
-            KotlinCompilerResult(severities.firstOrNull { it == ERROR || it == EXCEPTION } == null, compilerOutput)
+                KotlinCompilerResult(severities.firstOrNull { it == ERROR || it == EXCEPTION } == null, compilerOutput)
     }
 
     private fun parseCompilerOutput(reader: Reader): KotlinCompilerResult {

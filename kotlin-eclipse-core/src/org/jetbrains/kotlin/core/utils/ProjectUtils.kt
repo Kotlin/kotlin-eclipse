@@ -18,7 +18,10 @@ package org.jetbrains.kotlin.core.utils
 
 import org.eclipse.core.resources.*
 import org.eclipse.core.runtime.*
-import org.eclipse.jdt.core.*
+import org.eclipse.jdt.core.IClasspathEntry
+import org.eclipse.jdt.core.IJavaProject
+import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.core.JavaModelException
 import org.eclipse.jdt.launching.JavaRuntime
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.builder.KotlinPsiManager
@@ -26,7 +29,6 @@ import org.jetbrains.kotlin.core.log.KotlinLogger
 import org.jetbrains.kotlin.core.model.KotlinNature
 import org.jetbrains.kotlin.psi.KtFile
 import java.io.File
-import java.util.*
 
 object ProjectUtils {
 
@@ -82,31 +84,45 @@ object ProjectUtils {
 
     @JvmStatic
     fun getAllOutputFolders(javaProject: IJavaProject): List<IFolder> =
-            javaProject.getResolvedClasspath(true)
-                .asSequence()
-                .filter { it.entryKind == IClasspathEntry.CPE_SOURCE }
-                .map { it.outputLocation }
-                .let { it + javaProject.outputLocation }
-                .filterNotNull()
-                .distinct()
-                .mapNotNull { ResourcesPlugin.getWorkspace().root.findMember(it) as? IFolder }
-                .filter { it.exists() }
-                .toList()
+        javaProject.getResolvedClasspath(true)
+            .asSequence()
+            .filter { it.entryKind == IClasspathEntry.CPE_SOURCE }
+            .map { it.outputLocation }
+            .let { it + javaProject.outputLocation }
+            .filterNotNull()
+            .distinct()
+            .mapNotNull { ResourcesPlugin.getWorkspace().root.findMember(it) as? IFolder }
+            .filter { it.exists() }
+            .toList()
 
-    fun getSourceFiles(project: IProject): List<KtFile> =
-        KotlinPsiManager.getFilesByProject(project)
+    fun getSourceFiles(project: IProject): List<KtFile> {
+        var tempFiles = KotlinPsiManager.getFilesByProject(project)
+        if (tempFiles.any { !it.asFile.exists() }) {
+            project.refreshLocal(IResource.DEPTH_INFINITE, NullProgressMonitor())
+        }
+        tempFiles = KotlinPsiManager.getFilesByProject(project)
+        return tempFiles
             .map { KotlinPsiManager.getParsedFile(it) }
+    }
 
     fun getSourceFilesWithDependencies(javaProject: IJavaProject): List<KtFile> =
-        (getDependencyProjects(javaProject) + javaProject.project)
+        (listOf(javaProject).getDependencyProjects() + javaProject.project)
             .flatMap { getSourceFiles(it) }
 
-    fun getDependencyProjects(javaProject: IJavaProject): List<IProject> =
-            javaProject.getResolvedClasspath(true)
-                .filter { it.entryKind == IClasspathEntry.CPE_PROJECT }
-                .map { ResourcesPlugin.getWorkspace().root.getProject(it.path.toPortableString()) }
-                .filter { it.isAccessible }
-                .flatMap { listOf(it) + getDependencyProjects(JavaCore.create(it)) }
+    fun getDependencyProjects(javaProject: IJavaProject) = listOf(javaProject).getDependencyProjects()
+
+    tailrec fun Collection<IJavaProject>.getDependencyProjects(result: MutableSet<IProject> = hashSetOf()): Set<IProject> {
+        if (isEmpty()) return result
+        return flatMap { it.getResolvedClasspath(true).toList() }
+            .asSequence()
+            .filter { it.entryKind == IClasspathEntry.CPE_PROJECT }
+            .map { ResourcesPlugin.getWorkspace().root.getProject(it.path.toPortableString()) }
+            .filter { it.isAccessible }
+            .filter { result.add(it) }
+            .map { JavaCore.create(it) }
+            .toList()
+            .getDependencyProjects(result)
+    }
 
     fun collectClasspathWithDependenciesForBuild(javaProject: IJavaProject): List<File> {
         return expandClasspath(javaProject, true, false) { true }
@@ -115,28 +131,45 @@ object ProjectUtils {
     @JvmStatic
     fun collectClasspathWithDependenciesForLaunch(javaProject: IJavaProject, includeJRE: Boolean): List<File> {
         val jreEntries = getJREClasspathElements(javaProject)
-        return expandClasspath(javaProject, true, true) {
-                entry -> entry.entryKind == IClasspathEntry.CPE_LIBRARY && (includeJRE || jreEntries.none { it.path == entry.path })
+        return expandClasspath(javaProject, true, true) { entry ->
+            entry.entryKind == IClasspathEntry.CPE_LIBRARY && (includeJRE || jreEntries.none { it.path == entry.path })
         }
     }
 
     private fun getJREClasspathElements(javaProject: IJavaProject): List<IClasspathEntry> =
-        JavaRuntime.resolveRuntimeClasspathEntry(JavaRuntime.computeJREEntry(javaProject), javaProject).map { it.classpathEntry }
+        JavaRuntime.resolveRuntimeClasspathEntry(JavaRuntime.computeJREEntry(javaProject), javaProject)
+            .map { it.classpathEntry }
 
     private fun expandClasspath(
         javaProject: IJavaProject, includeDependencies: Boolean,
         includeBinFolders: Boolean, entryPredicate: Function1<IClasspathEntry, Boolean>
     ): List<File> {
         val orderedFiles = LinkedHashSet<File>()
+        var wasError = false
 
         for (classpathEntry in javaProject.getResolvedClasspath(true)) {
             if (classpathEntry.entryKind == IClasspathEntry.CPE_PROJECT && includeDependencies) {
-                orderedFiles.addAll(expandDependentProjectClasspath(classpathEntry, includeBinFolders, entryPredicate))
+                try {
+                    orderedFiles.addAll(
+                        expandDependentProjectClasspath(
+                            classpathEntry,
+                            includeBinFolders,
+                            entryPredicate
+                        )
+                    )
+                } catch (e: DependencyResolverException) {
+                    wasError = true
+                    orderedFiles.addAll(e.resolvedFiles)
+                }
             } else { // Source folder or library
                 if (entryPredicate.invoke(classpathEntry)) {
                     orderedFiles.addAll(getFileByEntry(classpathEntry, javaProject))
                 }
             }
+        }
+
+        if(wasError) {
+            throw DependencyResolverException(orderedFiles.toList())
         }
 
         return orderedFiles.toList()
@@ -151,7 +184,6 @@ object ProjectUtils {
                 ?.let { listOf(it) }
             ?: emptyList()
 
-
     private fun expandDependentProjectClasspath(
         projectEntry: IClasspathEntry,
         includeBinFolders: Boolean, entryPredicate: Function1<IClasspathEntry, Boolean>
@@ -161,35 +193,50 @@ object ProjectUtils {
         val javaProject = JavaCore.create(dependentProject)
 
         val orderedFiles = LinkedHashSet<File>()
+        var wasError = false
 
-        for (classpathEntry in javaProject.getResolvedClasspath(true)) {
-            if (!(classpathEntry.isExported || classpathEntry.entryKind == IClasspathEntry.CPE_SOURCE)) {
-                continue
-            }
+        try {
+            for (classpathEntry in javaProject.getResolvedClasspath(true)) {
+                if (!(classpathEntry.isExported || classpathEntry.entryKind == IClasspathEntry.CPE_SOURCE)) {
+                    continue
+                }
 
-            if (classpathEntry.entryKind == IClasspathEntry.CPE_PROJECT) {
-                orderedFiles.addAll(expandDependentProjectClasspath(classpathEntry, includeBinFolders, entryPredicate))
-            } else {
-                if (entryPredicate.invoke(classpathEntry)) {
-                    orderedFiles.addAll(getFileByEntry(classpathEntry, javaProject))
+                if (classpathEntry.entryKind == IClasspathEntry.CPE_PROJECT) {
+                    try {
+                        orderedFiles.addAll(
+                            expandDependentProjectClasspath(
+                                classpathEntry,
+                                includeBinFolders,
+                                entryPredicate
+                            )
+                        )
+                    } catch (e: DependencyResolverException) {
+                        wasError = true
+                        orderedFiles.addAll(e.resolvedFiles)
+                    }
+                } else {
+                    if (entryPredicate.invoke(classpathEntry)) {
+                        orderedFiles.addAll(getFileByEntry(classpathEntry, javaProject))
+                    }
                 }
             }
+
+
+            if (includeBinFolders) {
+                getAllOutputFolders(javaProject)
+                    .map { it.location.toFile() }
+                    .toCollection(orderedFiles)
+            }
+        } catch (e: JavaModelException) {
+            throw DependencyResolverException(emptyList())
         }
 
-        if (includeBinFolders) {
-            getAllOutputFolders(javaProject)
-                .map { it.location.toFile() }
-                .toCollection(orderedFiles)
+        if(wasError) {
+            throw DependencyResolverException(orderedFiles.toList())
         }
 
         return orderedFiles.toList()
     }
-
-    @JvmStatic
-    fun getSrcDirectories(javaProject: IJavaProject): List<File> =
-        expandClasspath(javaProject, false, false) { entry ->
-            entry.entryKind == IClasspathEntry.CPE_SOURCE
-        }
 
     @JvmStatic
     fun getSrcOutDirectories(javaProject: IJavaProject): List<Pair<File, File>> {
@@ -274,7 +321,6 @@ object ProjectUtils {
 
 
     fun isGradleProject(project: IProject): Boolean = project.hasNature(GRADLE_NATURE_ID)
-
 
 
     @JvmStatic

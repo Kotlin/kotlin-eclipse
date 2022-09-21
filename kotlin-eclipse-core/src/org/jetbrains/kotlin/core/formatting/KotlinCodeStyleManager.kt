@@ -40,7 +40,7 @@ object KotlinCodeStyleManager {
         stylesCache.getOrPut(id) { CodeStyleSettings().also { it.settingsApplier() } }
 
     fun get(id: String): CodeStyleSettings? = stylesCache[id] ?: createStyleFromPredef(id)
-    
+
     // Uses the same logic as ConcurrentHashMap.getOrPut() but due to possible nullability cannot be expressed by that method.
     private fun createStyleFromPredef(id: String): CodeStyleSettings? = predefinedStyles[id]
         ?.let { CodeStyleSettings().also(it::apply) }
@@ -60,9 +60,9 @@ private val IProject.codeStyleSettings
         ?: KotlinCodeStyleProperties.workspaceInstance
 
 val IProject.codeStyle: CodeStyleSettings
-    get() = codeStyleSettings
-        .codeStyleId
-        ?.let { KotlinCodeStyleManager.get(it) }
-        ?: CodeStyleSettings()
+    get() {
+        val tempId = codeStyleSettings.codeStyleId ?: "KOTLIN_OFFICIAL"
+        return KotlinCodeStyleManager.get(tempId) ?: CodeStyleSettings()
+    }
 
 private val ExecutableExtensionPointDescriptor<KotlinPredefinedCodeStyle>.nameInBuildsystem: String? by EPAttribute

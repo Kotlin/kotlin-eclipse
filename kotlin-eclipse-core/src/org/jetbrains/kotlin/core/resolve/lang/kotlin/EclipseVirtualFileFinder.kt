@@ -53,6 +53,8 @@ class EclipseVirtualFileFinder(
                 classId.shortClassName.asString() + MetadataPackageFragment.DOT_METADATA_FILE_EXTENSION)?.inputStream
     }
 
+    override fun findSourceOrBinaryVirtualFile(classId: ClassId): VirtualFile? = findVirtualFileWithHeader(classId)
+
     override fun hasMetadataPackage(fqName: FqName): Boolean {
         var found = false
         
@@ -136,7 +138,7 @@ class EclipseVirtualFileFinder(
 class EclipseVirtualFileFinderFactory(private val project: IJavaProject) : VirtualFileFinderFactory {
 
 	override fun create(_project: Project, module: ModuleDescriptor) =
-        VirtualFileFinderFactory.getInstance(_project).create(_project, module)
+			EclipseVirtualFileFinder(project, GlobalSearchScope.allScope(_project))
 
     override fun create(scope: GlobalSearchScope): VirtualFileFinder = EclipseVirtualFileFinder(project, scope)
 }

@@ -97,7 +97,7 @@ public class TextEditorTest {
     }
     
     public void runOpenDeclarationAction() {
-        ((KotlinEditor) editor).getJavaEditor().getAction(KotlinOpenDeclarationAction.Companion.getOPEN_EDITOR_TEXT()).run();
+        ((KotlinEditor) editor).getJavaEditor().getAction(KotlinOpenDeclarationAction.OPEN_EDITOR_TEXT).run();
     }
     
     public void runFormatAction() {

@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-testframework
 Bundle-SymbolicName: org.jetbrains.kotlin.testframework
-Bundle-Version: 0.8.21.qualifier
+Bundle-Version: 1.6.21.qualifier
 Bundle-Activator: org.jetbrains.kotlin.testframework.Activator
 Require-Bundle: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.ui,
@@ -13,7 +13,7 @@ Require-Bundle: org.jetbrains.kotlin.core,
  org.jetbrains.kotlin.bundled-compiler,
  org.eclipse.jdt.ui
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Import-Package: junit.framework;version="4.10.0",
  org.eclipse.core.resources,
  org.eclipse.jdt.core,

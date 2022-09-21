@@ -15,12 +15,14 @@ import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils
 import org.jetbrains.kotlin.core.model.runJob
 import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
 import org.jetbrains.kotlin.ui.KotlinPluginUpdater
+import org.jetbrains.kotlin.ui.launch.removeKotlinConsoles
 
 class KotlinBuilderElement : BaseKotlinBuilderElement() {
 
     override fun build(project: IProject, delta: IResourceDelta?, kind: Int): Array<IProject>? {
         val javaProject = JavaCore.create(project)
         if (isBuildingForLaunch()) {
+            removeKotlinConsoles(javaProject)
             compileKotlinFiles(javaProject)
             return null
         }
@@ -30,49 +32,7 @@ class KotlinBuilderElement : BaseKotlinBuilderElement() {
             return null
         }
 
-        val allAffectedFiles = if (delta != null) getAllAffectedFiles(delta) else emptySet()
-
-        if (allAffectedFiles.isNotEmpty()) {
-            if (isAllFilesApplicableForFilters(allAffectedFiles, javaProject)) {
-                return null
-            }
-        }
-
-        val kotlinAffectedFiles =
-            allAffectedFiles
-                .filter { KotlinPsiManager.isKotlinSourceFile(it, javaProject) }
-                .toSet()
-
-        val existingAffectedFiles = kotlinAffectedFiles.filter { it.exists() }
-
-        commitFiles(existingAffectedFiles)
-
-        KotlinLightClassGeneration.updateLightClasses(javaProject.project, kotlinAffectedFiles)
-        if (kotlinAffectedFiles.isNotEmpty()) {
-
-            runJob("Checking for update", Job.DECORATE) {
-                KotlinPluginUpdater.kotlinFileEdited()
-                Status.OK_STATUS
-            }
-        }
-
-        val ktFiles = existingAffectedFiles.map { KotlinPsiManager.getParsedFile(it) }
-
-        val analysisResultWithProvider = if (ktFiles.isEmpty())
-            KotlinAnalyzer.analyzeProject(project)
-        else
-            KotlinAnalyzer.analyzeFiles(ktFiles)
-
-        clearProblemAnnotationsFromOpenEditorsExcept(existingAffectedFiles)
-        updateLineMarkers(analysisResultWithProvider.analysisResult.bindingContext.diagnostics, existingAffectedFiles)
-
-        runCancellableAnalysisFor(javaProject) { analysisResult ->
-            val projectFiles = KotlinPsiManager.getFilesByProject(javaProject.project)
-            updateLineMarkers(
-                analysisResult.bindingContext.diagnostics,
-                (projectFiles - existingAffectedFiles).toList()
-            )
-        }
+        postBuild(delta, javaProject)
 
         return null
     }
@@ -87,7 +47,7 @@ class KotlinBuilderElement : BaseKotlinBuilderElement() {
     private fun compileKotlinFiles(javaProject: IJavaProject) {
         val compilerResult: KotlinCompilerResult = KotlinCompilerUtils.compileWholeProject(javaProject)
         if (!compilerResult.compiledCorrectly()) {
-            KotlinCompilerUtils.handleCompilerOutput(compilerResult.compilerOutput)
+            KotlinCompilerUtils.handleCompilerOutput(KotlinCompilerUtils.CompilerOutputWithProject(compilerResult.compilerOutput, javaProject))
         }
     }
 }

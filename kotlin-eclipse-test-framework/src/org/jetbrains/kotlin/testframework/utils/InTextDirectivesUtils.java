@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.intellij.openapi.util.text.StringUtil;
+import kotlin.text.StringsKt;
 
 //	Source code is taken from org.jetbrains.kotlin.InTextDirectivesUtils
 public class InTextDirectivesUtils {
@@ -70,7 +71,7 @@ public class InTextDirectivesUtils {
         
         for (String prefix : prefixes) {
             if (prefix.startsWith("//")) {
-                resultPrefixes.add(StringUtil.trimStart(prefix, prefix.substring(0, 2)).trim());
+                resultPrefixes.add(StringsKt.removePrefix(prefix, prefix.substring(0, 2)).trim());
             } else {
                 resultPrefixes.add(prefix.trim());
             }

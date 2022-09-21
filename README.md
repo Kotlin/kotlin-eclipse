@@ -20,7 +20,7 @@ To give it a try you will need a clean installation of Eclipse Neon or newer. Th
 
 <a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2257536" class="drag" title="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse"><img src="https://marketplace.eclipse.org/sites/all/themes/solstice/public/images/components/drag-drop/installbutton.png" alt="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse" /></a>
 
-Alternatively, you can use *Help -> Eclipse Marketplaceâ€¦* menu, or the following update site:
+Alternatively, you can use *Help -> Eclipse Marketplace…* menu, or the following update site:
 
     https://dl.bintray.com/jetbrains/kotlin/eclipse-plugin/last/
 

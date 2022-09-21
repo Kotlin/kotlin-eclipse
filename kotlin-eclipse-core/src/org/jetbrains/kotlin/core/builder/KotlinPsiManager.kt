@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.core.builder
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.util.text.StringUtilRt
@@ -33,21 +34,23 @@ import org.eclipse.jdt.core.IClasspathEntry
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jface.text.IDocument
+import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreApplicationEnvironment
 import org.jetbrains.kotlin.core.log.KotlinLogger
-import org.jetbrains.kotlin.core.model.KotlinLightVirtualFile
-import org.jetbrains.kotlin.core.model.KotlinNature
-import org.jetbrains.kotlin.core.model.KotlinScriptEnvironment
-import org.jetbrains.kotlin.core.model.getEnvironment
+import org.jetbrains.kotlin.core.model.*
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.jetbrains.kotlin.core.utils.asFile
+import org.jetbrains.kotlin.core.utils.javaProject
 import org.jetbrains.kotlin.core.utils.sourceFolders
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.idea.KotlinLanguage
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
 import java.io.File
 import java.util.Collections
 import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.script.experimental.host.FileScriptSource
 
 interface PsiFilesStorage {
     fun getPsiFile(eclipseFile: IFile): KtFile
@@ -81,8 +84,9 @@ private class ScriptsFilesStorage : PsiFilesStorage {
         return getPsiFile(file)
     }
 
-    override fun isApplicable(file: IFile): Boolean = file.fileExtension == "kts"
-    
+    override fun isApplicable(file: IFile): Boolean =
+            EclipseScriptDefinitionProvider.isScript(FileScriptSource(file.asFile))
+
     override fun removeFile(file: IFile) {
         cachedKtFiles.remove(file)
     }

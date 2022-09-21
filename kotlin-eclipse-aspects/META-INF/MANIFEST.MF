@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: kotlin-eclipse-aspects
 Bundle-SymbolicName: org.jetbrains.kotlin.aspects
-Bundle-Version: 0.8.21.qualifier
+Bundle-Version: 1.6.21.qualifier
 Bundle-Activator: org.jetbrains.kotlin.aspects.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -14,8 +14,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ltk.core.refactoring,
  org.jetbrains.kotlin.ui,
  org.eclipse.debug.core,
- org.eclipse.jdt.debug
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+ org.eclipse.jdt.debug,
+ org.eclipse.jdt.core.manipulation
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: JetBrains
 Import-Package: org.eclipse.core.resources,

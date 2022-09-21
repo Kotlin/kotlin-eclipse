@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter
 import org.eclipse.jdt.core.IJavaProject
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
 import org.jetbrains.kotlin.core.utils.ProjectUtils
+import org.eclipse.core.resources.ResourcesPlugin
 
 fun unconfigureKotlinProject(javaProject: IJavaProject) {
     val project = javaProject.getProject()
@@ -95,6 +96,7 @@ fun runJob(
     }
     
     job.setPriority(priority)
+    job.setRule(ResourcesPlugin.getWorkspace().getRoot());
     
     job.addJobChangeListener(object : JobChangeAdapter() {
         override fun done(event: IJobChangeEvent) {

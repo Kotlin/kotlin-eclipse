@@ -1,38 +1,48 @@
 package org.jetbrains.kotlin.core.preferences
 
-import org.jetbrains.kotlin.config.AnalysisFlag
-import org.jetbrains.kotlin.config.JvmDefaultMode
-import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
-import org.jetbrains.kotlin.config.JvmAnalysisFlags
-import org.jetbrains.kotlin.utils.ReportLevel
-import org.jetbrains.kotlin.utils.Jsr305State
+import org.jetbrains.kotlin.config.*
 
-private enum class CompilerFlagsMapping(val flag: String) : (String) -> Pair<AnalysisFlag<*>, *>? {
+private enum class CompilerFlagsMapping(val flag: String, vararg val alternativeFlags: String) : (List<String>) -> Pair<AnalysisFlag<*>, *>? {
     JVM_DEFAULT("-Xjvm-default") {
-        override fun invoke(value: String) =
-            JvmDefaultMode.fromStringOrNull(value)
+        override fun invoke(value: List<String>): Pair<AnalysisFlag<JvmDefaultMode>, JvmDefaultMode>? {
+            if (value.isEmpty()) return null
+            val tempSingle = value.single()
+            return JvmDefaultMode.fromStringOrNull(tempSingle)
                 ?.let { JvmAnalysisFlags.jvmDefaultMode to it }
+        }
     },
-    JSR_305("-Xjsr305") {
-        override fun invoke(value: String) =
-            when (ReportLevel.findByDescription(value)) {
-                ReportLevel.IGNORE -> Jsr305State.DISABLED
-                ReportLevel.WARN -> Jsr305State.DEFAULT
-                ReportLevel.STRICT -> Jsr305State.STRICT
+    OPT_IN("-opt-in", "-Xopt-in") {
+        override fun invoke(value: List<String>): Pair<AnalysisFlag<*>, *>? {
+            if (value.isEmpty()) return null
+            return AnalysisFlags.optIn to value
+        }
+    },
+
+    USE_XR("-Xuse-ir") {
+        override fun invoke(value: List<String>): Pair<AnalysisFlag<*>, *>? {
+            if (value.isEmpty()) return null
+            val tempSingle = value.single()
+            val tempUseIr = tempSingle.toBooleanStrictOrNull()
+            return when {
+                tempUseIr != null -> JvmAnalysisFlags.useIR to tempUseIr
                 else -> null
-            }?.let { JvmAnalysisFlags.jsr305 to it }
+            }
+        }
     };
 
     companion object {
-        fun flagByString(flag: String) = values().firstOrNull { it.flag == flag }
+        fun flagByString(flag: String) = values().firstOrNull { it.flag == flag || flag in it.alternativeFlags }
     }
 }
 
 private val KotlinProperties.analyzerCompilerFlags: Map<AnalysisFlag<*>, Any?>
     get() = compilerFlags?.split("\\s+".toRegex())?.mapNotNull { flagString ->
         flagString.split("=", limit = 2).takeIf { it.size == 2 }
-    }?.mapNotNull { (key, value) ->
+    }?.groupBy( { (key) ->
+        key
+    }, { (_, value) ->
+        value
+    })?.mapNotNull { (key, value) ->
         CompilerFlagsMapping.flagByString(key)?.invoke(value)
     }.orEmpty().toMap()
 

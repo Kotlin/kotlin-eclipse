@@ -17,7 +17,8 @@
 package org.jetbrains.kotlin.ui.launch
 
 import org.eclipse.core.resources.IProject
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup
+import org.eclipse.jface.dialogs.MessageDialog
+import org.eclipse.jface.window.Window
 import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.StyleRange
 import org.eclipse.swt.custom.StyledText
@@ -25,6 +26,7 @@ import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Display
+import org.eclipse.swt.widgets.Shell
 import org.eclipse.ui.ISharedImages
 import org.eclipse.ui.PlatformUI
 import org.jetbrains.kotlin.core.KotlinClasspathContainer
@@ -43,46 +45,7 @@ class KotlinRuntimeConfigurator(private val project: IProject) : Runnable {
 
         ProjectUtils.addKotlinRuntime(project)
         
-        RuntimeNotificationPopup(Display.getDefault()).open()
-    }
-}
-
-private class RuntimeNotificationPopup(display: Display) : AbstractNotificationPopup(display) {
-    companion object {
-        private val RUNTIME_JAR = KotlinClasspathContainer.LIB_RUNTIME_NAME.toJar()
-        private val REFLECT_JAR = KotlinClasspathContainer.LIB_REFLECT_NAME.toJar()
-        
-        private fun String.toJar() = "$this.jar" 
-    }
-    
-    init {
-        setDelayClose(0)
-    }
-    
-    override fun createContentArea(parent: Composite) {
-        parent.setLayout(GridLayout(1, true))
-        parent.setLayoutData(gridData().apply { widthHint = 300 })
-        
-        StyledText(parent, SWT.LEFT).apply {
-            setText("$RUNTIME_JAR, $REFLECT_JAR were added\nto the project classpath.")
-            makeBold(RUNTIME_JAR, REFLECT_JAR)
-        }
-    }
-    
-    override fun getPopupShellTitle(): String = "Configure Kotlin in Project"
-    
-    override fun getPopupShellImage(maximumHeight: Int): Image? {
-        return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_INFO_TSK);
-    }
-    
-    private fun StyledText.makeBold(vararg strs: String) {
-        val styleRanges = strs.mapNotNull { str ->
-            val start = text.indexOf(str)
-            if (start < 0) return@mapNotNull null
-
-            StyleRange(start, str.length, null, null, SWT.BOLD)
-        }
-        
-        setStyleRanges(styleRanges.toTypedArray())
+        MessageDialog.openInformation(Shell(Display.getDefault()), "Configure Kotlin in Project",
+            KotlinClasspathContainer.LIB_RUNTIME_NAME + ".jar, " + KotlinClasspathContainer.LIB_REFLECT_NAME + ".jar were added\nto the project classpath.")
     }
 }
