@@ -17,7 +17,7 @@
 package org.jetbrains.kotlin.ui.launch
 
 import org.eclipse.core.resources.IProject
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup
+import org.eclipse.jface.notifications.AbstractNotificationPopup
 import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.StyleRange
 import org.eclipse.swt.custom.StyledText
