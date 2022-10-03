@@ -16,42 +16,37 @@
  *******************************************************************************/
 package org.jetbrains.kotlin.ui
 
-import java.util.concurrent.TimeUnit
+import com.intellij.openapi.util.SystemInfo
 import org.eclipse.core.runtime.IProgressMonitor
-import org.eclipse.equinox.p2.metadata.IInstallableUnit
-import org.eclipse.equinox.p2.operations.OperationFactory
+import org.eclipse.core.runtime.IStatus
 import org.eclipse.core.runtime.NullProgressMonitor
-import java.net.URI
+import org.eclipse.core.runtime.jobs.IJobChangeEvent
+import org.eclipse.core.runtime.jobs.JobChangeAdapter
+import org.eclipse.equinox.p2.metadata.IInstallableUnit
+import org.eclipse.equinox.p2.metadata.Version
+import org.eclipse.equinox.p2.operations.OperationFactory
+import org.eclipse.equinox.p2.operations.UpdateOperation
 import org.eclipse.jface.dialogs.MessageDialog
-import org.eclipse.swt.widgets.Display
-import org.eclipse.equinox.p2.operations.ProfileModificationJob
-import org.eclipse.equinox.p2.operations.ProvisioningJob
-import org.eclipse.mylyn.commons.ui.dialogs.AbstractNotificationPopup
-import org.eclipse.swt.widgets.Composite
-import org.eclipse.swt.layout.GridLayout
-import org.eclipse.swt.widgets.Label
+import org.eclipse.jface.notifications.AbstractNotificationPopup
+import org.eclipse.jface.preference.IPreferenceStore
 import org.eclipse.swt.SWT
-import org.eclipse.swt.layout.GridData
-import org.eclipse.swt.widgets.Link
 import org.eclipse.swt.events.SelectionAdapter
 import org.eclipse.swt.events.SelectionEvent
-import org.eclipse.equinox.p2.operations.UpdateOperation
-import java.net.URL
-import java.net.URLConnection
-import java.net.HttpURLConnection
-import org.jetbrains.kotlin.core.log.KotlinLogger
-import com.intellij.openapi.util.SystemInfo
-import java.net.URLEncoder
-import org.eclipse.jface.preference.IPreferenceStore
-import org.eclipse.equinox.p2.metadata.Version
-import java.util.Random
-import org.jetbrains.kotlin.core.model.runJob
-import org.eclipse.core.runtime.IStatus
-import org.eclipse.core.runtime.Status
-import java.io.IOException
-import org.eclipse.core.runtime.jobs.JobChangeAdapter
-import org.eclipse.core.runtime.jobs.IJobChangeEvent
+import org.eclipse.swt.layout.GridData
+import org.eclipse.swt.layout.GridLayout
+import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Display
+import org.eclipse.swt.widgets.Label
+import org.eclipse.swt.widgets.Link
 import org.eclipse.ui.PlatformUI
+import org.jetbrains.kotlin.core.log.KotlinLogger
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URI
+import java.net.URL
+import java.net.URLEncoder
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 private sealed class PluginUpdateStatus() {
     object Update : PluginUpdateStatus()
