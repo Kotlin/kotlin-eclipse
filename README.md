@@ -20,9 +20,9 @@ To give it a try you will need a clean installation of Eclipse Neon or newer. Th
 
 <a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2257536" class="drag" title="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse"><img src="https://marketplace.eclipse.org/sites/all/themes/solstice/public/images/components/drag-drop/installbutton.png" alt="Drag to your running Eclipse workspace to install Kotlin Plugin for Eclipse" /></a>
 
-Alternatively, you can use *Help -> Eclipse Marketplace…* menu, or the following update site:
+Alternatively, you can use *Help -> Eclipse Marketplaceï¿½* menu, or the following update site:
 
-    https://dl.bintray.com/jetbrains/kotlin/eclipse-plugin/last/
+    https://files.pkg.jetbrains.space/kotlin/p/kotlin-eclipse/main/last/
 
 ### Building and Development
 
@@ -67,11 +67,11 @@ Building from the command line is also available (Note that Maven **3.0.5** is r
 
 Latest stable release:
 
-    https://dl.bintray.com/jetbrains/kotlin/eclipse-plugin/last/
+    https://files.pkg.jetbrains.space/kotlin/p/kotlin-eclipse/main/last/
 
 Any previously released version (replace *:version* with the version number):
 
-    https://dl.bintray.com/jetbrains/kotlin/eclipse-plugin/:version/
+    https://files.pkg.jetbrains.space/kotlin/p/kotlin-eclipse/main/:version/
 
 Nightly build:
 
