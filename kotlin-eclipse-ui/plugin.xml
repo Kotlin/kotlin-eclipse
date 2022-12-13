@@ -844,6 +844,10 @@
    <extension
          point="org.jetbrains.kotlin.ui.editor.textHover">
       <hover
+            class="org.jetbrains.kotlin.ui.editors.hover.KotlinDebugHover"
+            name="Hover showing debugged variable info">
+      </hover>
+      <hover
             class="org.jetbrains.kotlin.ui.editors.hover.KotlinJavadocTextHover"
             name="Hover showing details of Kotlin element">
       </hover>
