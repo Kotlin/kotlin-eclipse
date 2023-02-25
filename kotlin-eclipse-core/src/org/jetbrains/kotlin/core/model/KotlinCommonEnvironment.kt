@@ -43,10 +43,7 @@ import com.intellij.psi.JavaModuleSystem
 import com.intellij.psi.PsiElementFinder
 import com.intellij.psi.PsiManager
 import com.intellij.psi.augment.PsiAugmentProvider
-import com.intellij.psi.codeStyle.CodeStyleManager
-import com.intellij.psi.codeStyle.CodeStyleSettingsProvider
-import com.intellij.psi.codeStyle.LanguageCodeStyleSettingsProvider
-import com.intellij.psi.compiled.ClassFileDecompilers
+import com.intellij.psi.codeStyle.*
 import com.intellij.psi.impl.PsiElementFinderImpl
 import com.intellij.psi.impl.PsiTreeChangePreprocessor
 import com.intellij.psi.impl.compiled.ClsCustomNavigationPolicy
@@ -93,8 +90,6 @@ import org.jetbrains.kotlin.scripting.definitions.ScriptDefinitionProvider
 import org.jetbrains.kotlin.scripting.extensions.ScriptingResolveExtension
 import java.io.File
 import kotlin.reflect.KClass
-import com.intellij.psi.codeStyle.CodeStyleSettingsService
-import com.intellij.psi.codeStyle.CodeStyleSettingsServiceImpl
 
 private fun setIdeaIoUseFallback() {
     if (SystemInfo.isWindows) {

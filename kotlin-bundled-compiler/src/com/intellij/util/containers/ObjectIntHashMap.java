@@ -30,6 +30,15 @@ public class ObjectIntHashMap<K> extends TObjectIntHashMap<K> implements ObjectI
     }
 
     @Override
+    public int getOrDefault(@NotNull K k, int i) {
+        if(contains(k)) {
+            return get(k);
+        } else {
+            return i;
+        }
+    }
+
+    @Override
     public @NotNull
     Set<K> keySet() {
         return Collections.emptySet();

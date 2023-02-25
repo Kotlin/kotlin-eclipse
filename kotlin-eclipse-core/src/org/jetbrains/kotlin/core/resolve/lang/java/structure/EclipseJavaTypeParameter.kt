@@ -26,6 +26,9 @@ import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
 
 public class EclipseJavaTypeParameter(binding: ITypeBinding) : EclipseJavaClassifier<ITypeBinding>(binding), JavaTypeParameter {
+    override val isFromSource: Boolean
+        get() = binding.isFromSource
+
     override val name: Name = SpecialNames.safeIdentifier(binding.getName())
     
     override val upperBounds: Collection<JavaClassifierType>

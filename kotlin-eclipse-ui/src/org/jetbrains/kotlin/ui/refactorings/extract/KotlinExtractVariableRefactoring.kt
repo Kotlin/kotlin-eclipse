@@ -35,8 +35,9 @@ import org.jetbrains.kotlin.eclipse.ui.utils.IndenterUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.LineEndUtil
 import org.jetbrains.kotlin.eclipse.ui.utils.getOffsetByDocument
 import org.jetbrains.kotlin.eclipse.ui.utils.getTextDocumentOffset
+import org.jetbrains.kotlin.idea.base.psi.unifier.KotlinPsiUnificationResult
+import org.jetbrains.kotlin.idea.base.psi.unifier.toRange
 import org.jetbrains.kotlin.idea.util.psi.patternMatching.KotlinPsiUnifier
-import org.jetbrains.kotlin.idea.util.psi.patternMatching.toRange
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.canPlaceAfterSimpleNameEntry
@@ -160,7 +161,9 @@ public class KotlinExtractVariableRefactoring(val selection: ITextSelection, val
 
 private fun KtExpression.findOccurrences(occurrenceContainer: PsiElement): List<KtExpression> {
     return toRange()
-            .match(occurrenceContainer, KotlinPsiUnifier.DEFAULT)
+            .match(occurrenceContainer, { r1, r2 ->
+                KotlinPsiUnifier.DEFAULT.unify(r1, r2) as? KotlinPsiUnificationResult.Success<KtExpression>
+            })
             .map {
                 val candidate = it.range.elements.first()
                 when (candidate) {

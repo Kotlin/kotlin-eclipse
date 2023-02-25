@@ -13,13 +13,13 @@ val ideaSdkUrl = "https://www.jetbrains.com/intellij-repository/releases/com/jet
 // properties that might/should be modifiable
 
 //val kotlinCompilerTcBuildId: String = project.findProperty("kotlinCompilerTcBuildId") as String? ?: "3546752"
-val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "169248" // Kotlin Plugin 1.6.21 for Idea 2021.3
+val kotlinPluginUpdateId = project.findProperty("kotlinPluginUpdateId") as String? ?: "286278" // Kotlin Plugin 1.8.10 for Idea 2022.2
 
-val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.6.21"
-val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.5.2"
+val kotlinCompilerVersion: String = project.findProperty("kotlinCompilerVersion") as String? ?: "1.8.10"
+val kotlinxVersion: String = project.findProperty("kolinxVersion") as String? ?: "1.6.3"
 val tcArtifactsPath: String = project.findProperty("tcArtifactsPath") as String? ?: ""
-val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "213.5744.223" //Idea 2021.3
-val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2021.3"
+val ideaVersion: String = project.findProperty("ideaVersion") as String? ?: "222.4459.24" //Idea 2022.2
+val kotlinIdeaCompatibleVersionMinor: String = project.findProperty("kotlinIdeaCompatibleVersionMinor") as String? ?: "2022.2"
 val ignoreSources: Boolean = true//project.hasProperty("ignoreSources")
 
 //directories
@@ -196,7 +196,7 @@ val extractPackagesFromKTCompiler by tasks.registering(Jar::class) {
 }
 
 val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
-    dependsOn(deleteLibrariesFromLibFolder)
+    /*dependsOn(deleteLibrariesFromLibFolder)
     val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
     val locallyDownloadedIntellijCoreFile by extra { file("$ideaDownloadDir/intellij-core.zip") }
 
@@ -213,7 +213,7 @@ val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
 
             into(libDir)
         }
-    }
+    }*/
 }
 
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
@@ -223,10 +223,11 @@ val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
     val chosenJars by extra { setOf(//"openapi",
             //"platform-util-ui",
             "util",
-            "idea",
-            //"trove4j",
-            "platform-api",
-            "platform-impl") }
+            "util_rt",
+            "idea_rt",
+            "app"
+        )
+    }
 
     doLast {
         if(!locallyDownloadedIdeaZipFile.exists()) {
@@ -328,7 +329,6 @@ val repackageIdeaAndKotlinCompilerSources by tasks.registering(Zip::class) {
 }
 
 val downloadBundled by tasks.registering {
-    libDir.listFiles()?.filter { it.isFile }?.forEach { it.deleteRecursively() }
     if (localTCArtifacts) {
         dependsOn(extractPackagesFromPlugin,
                 extractPackagesFromKTCompiler,
