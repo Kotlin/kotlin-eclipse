@@ -27,7 +27,7 @@ import java.io.File
 
 class ProjectScriptTemplateContribution : ScriptTemplateContribution() {
 
-    override val priority: Int get() = Int.MAX_VALUE
+    override val priority: Int get() = Int.MIN_VALUE
 
     override fun loadTemplate() = ProjectScriptTemplate::class
 
