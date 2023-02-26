@@ -3,38 +3,34 @@ package org.jetbrains.kotlin.ui.builder
 import org.eclipse.core.resources.IProject
 import org.eclipse.core.resources.IResourceDelta
 import org.eclipse.core.resources.IncrementalProjectBuilder.FULL_BUILD
-import org.eclipse.core.runtime.Status
-import org.eclipse.core.runtime.jobs.Job
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate
 import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
-import org.jetbrains.kotlin.core.asJava.KotlinLightClassGeneration
-import org.jetbrains.kotlin.core.builder.KotlinPsiManager
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerResult
 import org.jetbrains.kotlin.core.compiler.KotlinCompilerUtils
-import org.jetbrains.kotlin.core.model.runJob
-import org.jetbrains.kotlin.core.resolve.KotlinAnalyzer
-import org.jetbrains.kotlin.ui.KotlinPluginUpdater
+import org.jetbrains.kotlin.core.model.KotlinEnvironment
 import org.jetbrains.kotlin.ui.launch.removeKotlinConsoles
 
 class KotlinBuilderElement : BaseKotlinBuilderElement() {
 
-    override fun build(project: IProject, delta: IResourceDelta?, kind: Int): Array<IProject>? {
+    override fun build(project: IProject, delta: IResourceDelta?, kind: Int) {
         val javaProject = JavaCore.create(project)
-        if (isBuildingForLaunch()) {
+        val isBuildRealAlways = KotlinEnvironment.getEnvironment(project).buildingProperties.alwaysRealBuild
+        if (isBuildRealAlways || isBuildingForLaunch()) {
             removeKotlinConsoles(javaProject)
             compileKotlinFiles(javaProject)
-            return null
+
+            if(!isBuildRealAlways) {
+                return
+            }
         }
 
         if (kind == FULL_BUILD) {
             makeClean(javaProject)
-            return null
+            return
         }
 
         postBuild(delta, javaProject)
-
-        return null
     }
 
     private fun isBuildingForLaunch(): Boolean {
