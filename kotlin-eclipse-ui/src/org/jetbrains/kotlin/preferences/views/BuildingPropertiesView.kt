@@ -33,9 +33,14 @@ class BuildingPropertiesView(
         kotlinBuildingProperties.useIncremental = value
     }
 
+    private var alwaysRealBuild by Delegates.observable(kotlinBuildingProperties.alwaysRealBuild) { _, _, value ->
+        kotlinBuildingProperties.alwaysRealBuild = value
+    }
+
     init {
         control = parent.gridContainer {
             checkbox(::useIncremental, "Use incremental compiler (experimental)")
+            checkbox(::alwaysRealBuild, "Always build real class files")
         }.control
     }
 }

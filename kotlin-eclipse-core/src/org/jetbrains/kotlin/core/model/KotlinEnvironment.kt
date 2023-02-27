@@ -14,11 +14,12 @@
  * limitations under the License.
  *
  *******************************************************************************/
+@file:OptIn(ExperimentalCompilerApi::class)
+
 package org.jetbrains.kotlin.core.model
 
 import com.intellij.core.CoreJavaFileManager
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -35,15 +36,11 @@ import org.eclipse.jdt.core.IJavaProject
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.internal.core.JavaProject
 import org.eclipse.osgi.internal.loader.EquinoxClassLoader
-import org.jetbrains.kotlin.asJava.classes.FacadeCache
 import org.jetbrains.kotlin.cli.jvm.compiler.CliVirtualFileFinderFactory
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCliJavaFileManagerImpl
 import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndexImpl
 import org.jetbrains.kotlin.cli.jvm.index.SingleJavaFileRootsIndex
-import org.jetbrains.kotlin.compiler.plugin.CliOptionValue
-import org.jetbrains.kotlin.compiler.plugin.CommandLineProcessor
-import org.jetbrains.kotlin.compiler.plugin.ComponentRegistrar
-import org.jetbrains.kotlin.compiler.plugin.parsePluginOption
+import org.jetbrains.kotlin.compiler.plugin.*
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.config.JVMConfigurationKeys
 import org.jetbrains.kotlin.container.ComponentProvider
@@ -156,11 +153,10 @@ class KotlinScriptEnvironment private constructor(
                 SingleJavaFileRootsIndex(singleJavaFileRoots),
                 configuration.getBoolean(JVMConfigurationKeys.USE_PSI_CLASS_FILES_READING))
 
-        val finderFactory = CliVirtualFileFinderFactory(index)
+        val finderFactory = CliVirtualFileFinderFactory(index, false)
         project.registerService(MetadataFinderFactory::class.java, finderFactory)
         project.registerService(VirtualFileFinderFactory::class.java, finderFactory)
 
-        project.registerService(FacadeCache::class.java, FacadeCache(project))
         project.registerService(KotlinLightClassManager::class.java, KotlinLightClassManager(javaProject.project))
 
 //        definition?.dependencyResolver?.also { project.registerService(DependenciesResolver::class.java, it) }
@@ -343,10 +339,6 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
         registerProjectDependenServices(javaProject)
         configureClasspath(javaProject)
 
-        with(project) {
-            registerService(FacadeCache::class.java, FacadeCache(project))
-        }
-
         registerCompilerPlugins()
 
         cachedEnvironment.putEnvironment(eclipseProject, this)
@@ -388,7 +380,7 @@ class KotlinEnvironment private constructor(val eclipseProject: IProject, dispos
 
     private fun parseOptions(args: List<String>): Map<String, List<String>> =
             args.asSequence()
-                    .map { parsePluginOption("plugin:$it") }
+                    .map { parseLegacyPluginOption("plugin:$it") }
                     .filterNotNull()
                     .groupBy(CliOptionValue::optionName, CliOptionValue::value)
 

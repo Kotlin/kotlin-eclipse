@@ -22,10 +22,10 @@ import org.jetbrains.kotlin.config.LanguageFeature.DefaultImportOfPackageKotlinC
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
-import org.jetbrains.kotlin.idea.util.ActionRunningMode
 import org.jetbrains.kotlin.idea.util.ImportDescriptorResult
 import org.jetbrains.kotlin.idea.util.ImportInsertHelper
 import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtElement
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.ImportPath
@@ -38,20 +38,11 @@ class KotlinImportInserterHelper : ImportInsertHelper() {
         return importSortComparator
     }
 
-    override fun importDescriptor(
-        element: KtElement,
-        descriptor: DeclarationDescriptor,
-        actionRunningMode: ActionRunningMode,
-        forceAllUnderImport: Boolean
-    ): ImportDescriptorResult {
+    override fun importDescriptor(element: KtElement, descriptor: DeclarationDescriptor, runImmediately: Boolean, forceAllUnderImport: Boolean, aliasName: Name?): ImportDescriptorResult {
         throw UnsupportedOperationException()
     }
 
-    override fun importPsiClass(
-        element: KtElement,
-        psiClass: PsiClass,
-        actionRunningMode: ActionRunningMode
-    ): ImportDescriptorResult {
+    override fun importPsiClass(element: KtElement, psiClass: PsiClass, runImmediately: Boolean): ImportDescriptorResult {
         throw UnsupportedOperationException()
     }
 

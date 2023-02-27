@@ -27,7 +27,7 @@ abstract class BaseKotlinBuilderElement {
 
     private val fileFilters = listOf(ScriptFileFilter, FileFromOutputFolderFilter, FileFromKotlinBinFolderFilter)
 
-    abstract fun build(project: IProject, delta: IResourceDelta?, kind: Int): Array<IProject>?
+    abstract fun build(project: IProject, delta: IResourceDelta?, kind: Int)
 
     protected fun isAllFilesApplicableForFilters(files: Set<IFile>, javaProject: IJavaProject): Boolean {
         return files.all { file ->

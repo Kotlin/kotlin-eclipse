@@ -21,6 +21,8 @@ import org.eclipse.core.resources.IncrementalProjectBuilder
 import org.eclipse.core.runtime.IProgressMonitor
 import org.eclipse.jdt.core.JavaCore
 import org.jetbrains.kotlin.core.model.KotlinEnvironment
+import org.jetbrains.kotlin.core.utils.ProjectUtils
+
 
 class KotlinBuilder : IncrementalProjectBuilder() {
 
@@ -38,11 +40,13 @@ class KotlinBuilder : IncrementalProjectBuilder() {
     override fun build(kind: Int, args: Map<String, String>?, monitor: IProgressMonitor?): Array<IProject>? {
         val javaProject = JavaCore.create(project)
         val delta = getDelta(project)
-        return if (KotlinEnvironment.getEnvironment(javaProject.project).buildingProperties.useIncremental) {
+        if (KotlinEnvironment.getEnvironment(javaProject.project).buildingProperties.useIncremental) {
             incrementalBuilder
         } else {
             oldBuilderElement
         }.build(project, delta, kind)
+
+        return ProjectUtils.getDependencyProjects(javaProject).toTypedArray()
     }
 
     override fun startupOnInitialize() {

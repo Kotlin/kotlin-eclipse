@@ -32,7 +32,7 @@
 		<ajdt-eclipse-repo.url>http://download.eclipse.org/tools/ajdt/423/dev/update</ajdt-eclipse-repo.url>
 		<buildship-repo.url>http://download.eclipse.org/buildship/updates/e423/releases/3.x</buildship-repo.url>
 
-		<kotlin.version>1.6.21</kotlin.version>
+		<kotlin.version>1.8.10</kotlin.version>
 
 		<weaving-hook.version>1.3.200</weaving-hook.version>
 	</properties>

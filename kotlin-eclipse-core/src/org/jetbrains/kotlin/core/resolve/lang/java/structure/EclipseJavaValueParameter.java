@@ -78,4 +78,9 @@ public class EclipseJavaValueParameter extends EclipseJavaElement<ITypeBinding> 
     public boolean isDeprecatedInJavaDoc() {
         return getBinding().isDeprecated();
     }
+
+    @Override
+    public boolean isFromSource() {
+        return getBinding().isFromSource();
+    }
 }

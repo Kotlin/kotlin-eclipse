@@ -35,6 +35,8 @@ public class EclipseJavaClass(javaElement: ITypeBinding) : EclipseJavaClassifier
 
     override val isFinal: Boolean = Modifier.isFinal(binding.getModifiers())
 
+    override val isFromSource: Boolean get() = binding.isFromSource
+
     override val visibility: Visibility = EclipseJavaElementUtil.getVisibility(binding)
 
     override val typeParameters: List<JavaTypeParameter>

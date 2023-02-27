@@ -11,6 +11,8 @@ class KotlinBuildingProperties(scope: IScopeContext = InstanceScope.INSTANCE) :
 
     var useIncremental by BooleanPreference()
 
+    var alwaysRealBuild by BooleanPreference()
+
     companion object {
         val workspaceInstance by lazy { KotlinBuildingProperties() }
     }
