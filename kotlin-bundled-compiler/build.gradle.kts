@@ -195,33 +195,11 @@ val extractPackagesFromKTCompiler by tasks.registering(Jar::class) {
     }
 }
 
-val downloadIntellijCoreAndExtractSelectedJars by tasks.registering {
-    /*dependsOn(deleteLibrariesFromLibFolder)
-    val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
-    val locallyDownloadedIntellijCoreFile by extra { file("$ideaDownloadDir/intellij-core.zip") }
-
-    doLast {
-        if(!locallyDownloadedIntellijCoreFile.exists()) {
-            ideaArtifactsResolver.downloadTo(ideaArtifactsResolver.INTELLIJ_CORE_ZIP, locallyDownloadedIntellijCoreFile)
-        }
-        copy {
-            from(zipTree(locallyDownloadedIntellijCoreFile))
-
-            setIncludes(setOf("intellij-core.jar"))
-
-            includeEmptyDirs = false
-
-            into(libDir)
-        }
-    }*/
-}
-
 val downloadIdeaDistributionZipAndExtractSelectedJars by tasks.registering {
     dependsOn(deleteLibrariesFromLibFolder)
     val ideaDownloadDir = file("$downloadDir/idea-$ideaVersion")
     val locallyDownloadedIdeaZipFile by extra { file("$ideaDownloadDir/ideaIC.zip") }
-    val chosenJars by extra { setOf(//"openapi",
-            //"platform-util-ui",
+    val chosenJars by extra { setOf(
             "util",
             "util_rt",
             "idea_rt",
@@ -332,13 +310,11 @@ val downloadBundled by tasks.registering {
     if (localTCArtifacts) {
         dependsOn(extractPackagesFromPlugin,
                 extractPackagesFromKTCompiler,
-                downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)
     } else {
         dependsOn(extractPackagesFromPlugin,
                 extractPackagesFromKTCompiler,
-                downloadIntellijCoreAndExtractSelectedJars,
                 createIdeDependenciesJar,
                 downloadKotlinxLibraries)
     }
